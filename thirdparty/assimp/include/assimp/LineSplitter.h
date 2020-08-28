@@ -48,9 +48,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef INCLUDED_LINE_SPLITTER_H
 #define INCLUDED_LINE_SPLITTER_H
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <stdexcept>
-#include "StreamReader.h"
-#include "ParsingUtils.h"
+#include <assimp/StreamReader.h>
+#include <assimp/ParsingUtils.h>
 
 namespace Assimp {
 
@@ -140,7 +144,7 @@ private:
     bool mSwallow, mSkip_empty_lines, mTrim;
 };
 
-inline
+AI_FORCE_INLINE
 LineSplitter::LineSplitter(StreamReaderLE& stream, bool skip_empty_lines, bool trim )
 : mIdx(0)
 , mCur()
@@ -153,12 +157,12 @@ LineSplitter::LineSplitter(StreamReaderLE& stream, bool skip_empty_lines, bool t
     mIdx = 0;
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter::~LineSplitter() {
     // empty
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter& LineSplitter::operator++() {
     if (mSwallow) {
         mSwallow = false;
@@ -199,12 +203,12 @@ LineSplitter& LineSplitter::operator++() {
     return *this;
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter &LineSplitter::operator++(int) {
     return ++(*this);
 }
 
-inline
+AI_FORCE_INLINE
 const char *LineSplitter::operator[] (size_t idx) const {
     const char* s = operator->()->c_str();
 
@@ -222,7 +226,7 @@ const char *LineSplitter::operator[] (size_t idx) const {
 }
 
 template <size_t N>
-inline
+AI_FORCE_INLINE
 void LineSplitter::get_tokens(const char* (&tokens)[N]) const {
     const char* s = operator->()->c_str();
 
@@ -238,44 +242,44 @@ void LineSplitter::get_tokens(const char* (&tokens)[N]) const {
     }
 }
 
-inline
+AI_FORCE_INLINE
 const std::string* LineSplitter::operator -> () const {
     return &mCur;
 }
 
-inline
+AI_FORCE_INLINE
 std::string LineSplitter::operator* () const {
     return mCur;
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter::operator bool() const {
     return mStream.GetRemainingSize() > 0;
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter::operator line_idx() const {
     return mIdx;
 }
 
-inline
+AI_FORCE_INLINE
 LineSplitter::line_idx LineSplitter::get_index() const {
     return mIdx;
 }
 
-inline
+AI_FORCE_INLINE
 StreamReaderLE &LineSplitter::get_stream() {
     return mStream;
 }
 
-inline
+AI_FORCE_INLINE
 bool LineSplitter::match_start(const char* check) {
     const size_t len = ::strlen(check);
 
     return len <= mCur.length() && std::equal(check, check + len, mCur.begin());
 }
 
-inline
+AI_FORCE_INLINE
 void LineSplitter::swallow_next_increment() {
     mSwallow = true;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 #define SOFT_BODY_BULLET_H
 
 #include "collision_object_bullet.h"
-#include "scene/resources/material.h" // TODO remove this please
 
 #ifdef None
 /// This is required to remove the macro None defined by x11 compiler because this word "None" is used internally by Bullet
@@ -43,7 +42,7 @@
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -56,25 +55,24 @@
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
-
 private:
-	btSoftBody *bt_soft_body;
-	Vector<Vector<int> > indices_table;
+	btSoftBody *bt_soft_body = nullptr;
+	LocalVector<Vector<int>> indices_table;
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
-	bool isScratched;
+	bool isScratched = false;
 
 	Ref<Mesh> soft_mesh;
 
-	int simulation_precision;
-	real_t total_mass;
-	real_t linear_stiffness; // [0,1]
-	real_t areaAngular_stiffness; // [0,1]
-	real_t volume_stiffness; // [0,1]
-	real_t pressure_coefficient; // [-inf,+inf]
-	real_t pose_matching_coefficient; // [0,1]
-	real_t damping_coefficient; // [0,1]
-	real_t drag_coefficient; // [0,1]
-	Vector<int> pinned_nodes;
+	int simulation_precision = 5;
+	real_t total_mass = 1.;
+	real_t linear_stiffness = 0.5; // [0,1]
+	real_t areaAngular_stiffness = 0.5; // [0,1]
+	real_t volume_stiffness = 0.5; // [0,1]
+	real_t pressure_coefficient = 0.; // [-inf,+inf]
+	real_t pose_matching_coefficient = 0.; // [0,1]
+	real_t damping_coefficient = 0.01; // [0,1]
+	real_t drag_coefficient = 0.; // [0,1]
+	LocalVector<int> pinned_nodes;
 
 	// Other property to add
 	//btScalar				kVC;			// Volume conversation coefficient [0,+inf]
@@ -88,19 +86,18 @@ public:
 	SoftBodyBullet();
 	~SoftBodyBullet();
 
-	virtual void reload_body();
-	virtual void set_space(SpaceBullet *p_space);
+	virtual void do_reload_body() override;
+	virtual void set_space(SpaceBullet *p_space) override;
 
-	virtual void dispatch_callbacks() {}
-	virtual void on_collision_filters_change() {}
-	virtual void on_collision_checker_start() {}
-	virtual void on_collision_checker_end() {}
-	virtual void on_enter_area(AreaBullet *p_area);
-	virtual void on_exit_area(AreaBullet *p_area);
+	virtual void do_reload_collision_filters() override {}
+	virtual void on_collision_checker_start() override {}
+	virtual void on_collision_checker_end() override {}
+	virtual void on_enter_area(AreaBullet *p_area) override;
+	virtual void on_exit_area(AreaBullet *p_area) override;
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_visual_server(class SoftBodyVisualServerHandler *p_visual_server_handler);
+	void update_rendering_server(class SoftBodyRenderingServerHandler *p_rendering_server_handler);
 
 	void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void destroy_soft_body();
@@ -152,7 +149,7 @@ public:
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
 
 private:
-	void set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices);
+	void set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
 	void setup_soft_body();
 
 	void pin_node(int p_node_index);

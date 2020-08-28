@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,9 @@ class GDNativeLibraryResourceLoader;
 class GDNative;
 
 class GDNativeLibrary : public Resource {
-	GDCLASS(GDNativeLibrary, Resource)
+	GDCLASS(GDNativeLibrary, Resource);
 
-	static Map<String, Vector<Ref<GDNative> > > *loaded_libraries;
+	static Map<String, Vector<Ref<GDNative>>> loaded_libraries;
 
 	friend class GDNativeLibraryResourceLoader;
 	friend class GDNative;
@@ -137,7 +137,7 @@ struct GDNativeCallRegistry {
 };
 
 class GDNative : public Reference {
-	GDCLASS(GDNative, Reference)
+	GDCLASS(GDNative, Reference);
 
 	Ref<GDNativeLibrary> library;
 
@@ -165,16 +165,14 @@ public:
 };
 
 class GDNativeLibraryResourceLoader : public ResourceFormatLoader {
-	GDCLASS(GDNativeLibraryResourceLoader, ResourceFormatLoader)
 public:
-	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error);
+	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 
 class GDNativeLibraryResourceSaver : public ResourceFormatSaver {
-	GDCLASS(GDNativeLibraryResourceSaver, ResourceFormatSaver)
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
 	virtual bool recognize(const RES &p_resource) const;

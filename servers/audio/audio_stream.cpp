@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,13 @@
 /*************************************************************************/
 
 #include "audio_stream.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
 //////////////////////////////
 
 void AudioStreamPlaybackResampled::_begin_resample() {
-
 	//clear cubic interpolation history
 	internal_buffer[0] = AudioFrame(0.0, 0.0);
 	internal_buffer[1] = AudioFrame(0.0, 0.0);
@@ -47,13 +47,12 @@ void AudioStreamPlaybackResampled::_begin_resample() {
 }
 
 void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
-
 	float target_rate = AudioServer::get_singleton()->get_mix_rate();
+	float global_rate_scale = AudioServer::get_singleton()->get_global_rate_scale();
 
-	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale) / double(target_rate)) * double(FP_LEN));
+	uint64_t mix_increment = uint64_t(((get_stream_sampling_rate() * p_rate_scale) / double(target_rate * global_rate_scale)) * double(FP_LEN));
 
 	for (int i = 0; i < p_frames; i++) {
-
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
 		//standard cubic interpolation (great quality/performance ratio)
 		//this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
@@ -74,7 +73,6 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 		mix_offset += mix_increment;
 
 		while ((mix_offset >> FP_BITS) >= INTERNAL_BUFFER_LEN) {
-
 			internal_buffer[0] = internal_buffer[INTERNAL_BUFFER_LEN + 0];
 			internal_buffer[1] = internal_buffer[INTERNAL_BUFFER_LEN + 1];
 			internal_buffer[2] = internal_buffer[INTERNAL_BUFFER_LEN + 2];
@@ -95,7 +93,6 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 ////////////////////////////////
 
 void AudioStream::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_length"), &AudioStream::get_length);
 }
 
@@ -114,7 +111,6 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
 }
 
 String AudioStreamMicrophone::get_stream_name() const {
-
 	//if (audio_stream.is_valid()) {
 	//return "Random: " + audio_stream->get_name();
 	//}
@@ -132,7 +128,6 @@ AudioStreamMicrophone::AudioStreamMicrophone() {
 }
 
 void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
 	AudioDriver::get_singleton()->lock();
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
@@ -185,13 +180,12 @@ float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
 }
 
 void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
-
 	if (active) {
 		return;
 	}
 
 	if (!GLOBAL_GET("audio/enable_audio_input")) {
-		WARN_PRINTS("Need to enable Project settings > Audio > Enable Audio Input option to use capturing.");
+		WARN_PRINT("Need to enable Project settings > Audio > Enable Audio Input option to use capturing.");
 		return;
 	}
 
@@ -223,7 +217,7 @@ float AudioStreamPlaybackMicrophone::get_playback_position() const {
 }
 
 void AudioStreamPlaybackMicrophone::seek(float p_time) {
-	return; // Can't seek a microphone input
+	// Can't seek a microphone input
 }
 
 AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
@@ -237,7 +231,6 @@ AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
 ////////////////////////////////
 
 void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_stream) {
-
 	audio_stream = p_audio_stream;
 	if (audio_stream.is_valid()) {
 		for (Set<AudioStreamPlaybackRandomPitch *>::Element *E = playbacks.front(); E; E = E->next()) {
@@ -247,14 +240,13 @@ void AudioStreamRandomPitch::set_audio_stream(const Ref<AudioStream> &p_audio_st
 }
 
 Ref<AudioStream> AudioStreamRandomPitch::get_audio_stream() const {
-
 	return audio_stream;
 }
 
 void AudioStreamRandomPitch::set_random_pitch(float p_pitch) {
-
-	if (p_pitch < 1)
+	if (p_pitch < 1) {
 		p_pitch = 1;
+	}
 	random_pitch = p_pitch;
 }
 
@@ -265,8 +257,9 @@ float AudioStreamRandomPitch::get_random_pitch() const {
 Ref<AudioStreamPlayback> AudioStreamRandomPitch::instance_playback() {
 	Ref<AudioStreamPlaybackRandomPitch> playback;
 	playback.instance();
-	if (audio_stream.is_valid())
+	if (audio_stream.is_valid()) {
 		playback->playback = audio_stream->instance_playback();
+	}
 
 	playbacks.insert(playback.ptr());
 	playback->random_pitch = Ref<AudioStreamRandomPitch>((AudioStreamRandomPitch *)this);
@@ -274,7 +267,6 @@ Ref<AudioStreamPlayback> AudioStreamRandomPitch::instance_playback() {
 }
 
 String AudioStreamRandomPitch::get_stream_name() const {
-
 	if (audio_stream.is_valid()) {
 		return "Random: " + audio_stream->get_name();
 	}
@@ -290,7 +282,6 @@ float AudioStreamRandomPitch::get_length() const {
 }
 
 void AudioStreamRandomPitch::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_audio_stream", "stream"), &AudioStreamRandomPitch::set_audio_stream);
 	ClassDB::bind_method(D_METHOD("get_audio_stream"), &AudioStreamRandomPitch::get_audio_stream);
 
@@ -298,7 +289,7 @@ void AudioStreamRandomPitch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_random_pitch"), &AudioStreamRandomPitch::get_random_pitch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "audio_stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_audio_stream", "get_audio_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
 }
 
 AudioStreamRandomPitch::AudioStreamRandomPitch() {
@@ -323,6 +314,7 @@ void AudioStreamPlaybackRandomPitch::stop() {
 		;
 	}
 }
+
 bool AudioStreamPlaybackRandomPitch::is_playing() const {
 	if (playing.is_valid()) {
 		return playing->is_playing();
@@ -346,6 +338,7 @@ float AudioStreamPlaybackRandomPitch::get_playback_position() const {
 
 	return 0;
 }
+
 void AudioStreamPlaybackRandomPitch::seek(float p_time) {
 	if (playing.is_valid()) {
 		playing->seek(p_time);

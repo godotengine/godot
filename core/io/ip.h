@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -73,16 +73,25 @@ protected:
 
 	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
 	Array _get_local_addresses() const;
+	Array _get_local_interfaces() const;
 
 	static IP *(*_create)();
 
 public:
+	struct Interface_Info {
+		String name;
+		String name_friendly;
+		String index;
+		List<IP_Address> ip_addresses;
+	};
+
 	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
 	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
 	IP_Address get_resolve_item_address(ResolverID p_id) const;
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const = 0;
+	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
+	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 
 	void clear_cache(const String &p_hostname = "");

@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing Windows fnt-specific data.
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -58,7 +58,7 @@ FT_BEGIN_HEADER
    * @description:
    *   A list of valid values for the `charset` byte in @FT_WinFNT_HeaderRec. 
    *   Exact mapping tables for the various 'cpXXXX' encodings (except for
-   *   'cp1361') can be found at 'ftp://ftp.unicode.org/Public' in the
+   *   'cp1361') can be found at 'ftp://ftp.unicode.org/Public/' in the
    *   `MAPPINGS/VENDORS/MICSFT/WINDOWS` subdirectory.  'cp1361' is roughly a
    *   superset of `MAPPINGS/OBSOLETE/EASTASIA/KSC/JOHAB.TXT`.
    *

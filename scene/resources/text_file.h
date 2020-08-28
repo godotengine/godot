@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,7 @@
 #include "core/io/resource_saver.h"
 
 class TextFile : public Resource {
-
-	GDCLASS(TextFile, Resource)
+	GDCLASS(TextFile, Resource);
 
 private:
 	String text;
@@ -46,7 +45,7 @@ public:
 	virtual bool has_text() const;
 	virtual String get_text() const;
 	virtual void set_text(const String &p_code);
-	virtual void reload_from_file();
+	virtual void reload_from_file() override;
 
 	void set_file_path(const String &p_path) { path = p_path; }
 	Error load_text(const String &p_path);

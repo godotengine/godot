@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PackedStringArray" version="4.0">
+	<brief_description>
+		A packed [Array] of [String]s.
+	</brief_description>
+	<description>
+		An [Array] specifically designed to hold [String]s. Packs data tightly, so it saves memory for large array sizes.
+		[b]Note:[/b] This type is passed by value and not by reference.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="PackedStringArray">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Constructs a new [PackedStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
+			</description>
+		</method>
+		<method name="append">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="array" type="PackedStringArray">
+			</argument>
+			<description>
+				Appends a [PackedStringArray] at the end of this array.
+			</description>
+		</method>
+		<method name="empty">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the array contains [code]value[/code].
+			</description>
+		</method>
+		<method name="insert">
+			<return type="int">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="string" type="String">
+			</argument>
+			<description>
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
+			</description>
+		</method>
+		<method name="invert">
+			<return type="void">
+			</return>
+			<description>
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="push_back">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Appends a string element at end of the array.
+			</description>
+		</method>
+		<method name="remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes an element from the array by index.
+			</description>
+		</method>
+		<method name="resize">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Sets the size of the array. If the array is grown, reserves elements at the end of the array. If the array is shrunk, truncates the array to the new size.
+			</description>
+		</method>
+		<method name="set">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="string" type="String">
+			</argument>
+			<description>
+				Changes the [String] at the given index.
+			</description>
+		</method>
+		<method name="size">
+			<return type="int">
+			</return>
+			<description>
+				Returns the size of the array.
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void">
+			</return>
+			<description>
+				Sorts the elements of the array in ascending order.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

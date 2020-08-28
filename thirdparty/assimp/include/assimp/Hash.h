@@ -39,9 +39,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
-
+#pragma once
 #ifndef AI_HASH_H_INCLUDED
 #define AI_HASH_H_INCLUDED
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <stdint.h>
 #include <string.h>

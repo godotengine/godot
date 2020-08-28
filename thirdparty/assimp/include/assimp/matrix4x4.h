@@ -47,8 +47,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_MATRIX4X4_H_INC
 #define AI_MATRIX4X4_H_INC
 
-#include "vector3.h"
-#include "defs.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
+#include <assimp/vector3.h>
+#include <assimp/defs.h>
 
 #ifdef __cplusplus
 
@@ -66,8 +70,7 @@ template<typename TReal> class aiQuaterniont;
  *  defined thereby.
  */
 template<typename TReal>
-class aiMatrix4x4t
-{
+class aiMatrix4x4t {
 public:
 
     /** set to identity */
@@ -90,8 +93,6 @@ public:
      */
     aiMatrix4x4t(const aiVector3t<TReal>& scaling, const aiQuaterniont<TReal>& rotation,
         const aiVector3t<TReal>& position);
-
-public:
 
     // array access operators
 	/** @fn TReal* operator[] (unsigned int p_iIndex)
@@ -119,8 +120,6 @@ public:
 
     template <typename TOther>
     operator aiMatrix4x4t<TOther> () const;
-
-public:
 
     // -------------------------------------------------------------------
     /** @brief Transpose the matrix */
@@ -182,7 +181,6 @@ public:
     void DecomposeNoScaling (aiQuaterniont<TReal>& rotation,
         aiVector3t<TReal>& position) const;
 
-
     // -------------------------------------------------------------------
     /** @brief Creates a trafo matrix from a set of euler angles
      *  @param x Rotation angle for the x-axis, in radians
@@ -192,7 +190,6 @@ public:
     aiMatrix4x4t& FromEulerAnglesXYZ(TReal x, TReal y, TReal z);
     aiMatrix4x4t& FromEulerAnglesXYZ(const aiVector3t<TReal>& blubb);
 
-public:
     // -------------------------------------------------------------------
     /** @brief Returns a rotation matrix for a rotation around the x axis
      *  @param a Rotation angle, in radians
@@ -256,7 +253,6 @@ public:
     static aiMatrix4x4t& FromToMatrix(const aiVector3t<TReal>& from,
             const aiVector3t<TReal>& to, aiMatrix4x4t& out);
 
-public:
     TReal a1, a2, a3, a4;
     TReal b1, b2, b3, b4;
     TReal c1, c2, c3, c4;

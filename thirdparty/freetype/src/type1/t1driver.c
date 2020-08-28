@@ -4,7 +4,7 @@
  *
  *   Type 1 driver interface (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -70,8 +70,8 @@
 
 
   static FT_UInt
-  t1_get_name_index( T1_Face     face,
-                     FT_String*  glyph_name )
+  t1_get_name_index( T1_Face           face,
+                     const FT_String*  glyph_name )
   {
     FT_Int  i;
 

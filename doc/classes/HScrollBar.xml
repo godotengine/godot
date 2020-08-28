@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HScrollBar" inherits="ScrollBar" category="Core" version="3.2">
+<class name="HScrollBar" inherits="ScrollBar" version="4.0">
 	<brief_description>
 		Horizontal scroll bar.
 	</brief_description>
 	<description>
-		Horizontal scroll bar. See [ScrollBar]. This one goes from left (min) to right (max).
+		Horizontal version of [ScrollBar], which goes from left (min) to right (max).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,23 +13,32 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="decrement" type="Texture">
+		<theme_item name="decrement" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] left. Supports custom step using the [member ScrollBar.custom_step] property.
 		</theme_item>
-		<theme_item name="decrement_highlight" type="Texture">
+		<theme_item name="decrement_highlight" type="Texture2D">
+			Displayed when the mouse cursor hovers over the decrement button.
 		</theme_item>
 		<theme_item name="grabber" type="StyleBox">
+			Used as texture for the grabber, the draggable element representing current scroll.
 		</theme_item>
 		<theme_item name="grabber_highlight" type="StyleBox">
+			Used when the mouse hovers over the grabber.
 		</theme_item>
 		<theme_item name="grabber_pressed" type="StyleBox">
+			Used when the grabber is being dragged.
 		</theme_item>
-		<theme_item name="increment" type="Texture">
+		<theme_item name="increment" type="Texture2D">
+			Icon used as a button to scroll the [ScrollBar] right. Supports custom step using the [member ScrollBar.custom_step] property.
 		</theme_item>
-		<theme_item name="increment_highlight" type="Texture">
+		<theme_item name="increment_highlight" type="Texture2D">
+			Displayed when the mouse cursor hovers over the increment button.
 		</theme_item>
 		<theme_item name="scroll" type="StyleBox">
+			Used as background of this [ScrollBar].
 		</theme_item>
 		<theme_item name="scroll_focus" type="StyleBox">
+			Used as background when the [ScrollBar] has the GUI focus.
 		</theme_item>
 	</theme_items>
 </class>

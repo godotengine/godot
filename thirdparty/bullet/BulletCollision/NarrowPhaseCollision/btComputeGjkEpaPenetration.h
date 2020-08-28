@@ -95,11 +95,11 @@ int btComputeGjkEpaPenetration(const btConvexTemplate& a, const btConvexTemplate
 		for (;;)
 		//while (true)
 		{
-			btVector3 seperatingAxisInA = (-m_cachedSeparatingAxis) * localTransA.getBasis();
-			btVector3 seperatingAxisInB = m_cachedSeparatingAxis * localTransB.getBasis();
+			btVector3 separatingAxisInA = (-m_cachedSeparatingAxis) * localTransA.getBasis();
+			btVector3 separatingAxisInB = m_cachedSeparatingAxis * localTransB.getBasis();
 
-			btVector3 pInA = a.getLocalSupportWithoutMargin(seperatingAxisInA);
-			btVector3 qInB = b.getLocalSupportWithoutMargin(seperatingAxisInB);
+			btVector3 pInA = a.getLocalSupportWithoutMargin(separatingAxisInA);
+			btVector3 qInB = b.getLocalSupportWithoutMargin(separatingAxisInB);
 
 			btVector3 pWorld = localTransA(pInA);
 			btVector3 qWorld = localTransB(qInB);

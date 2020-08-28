@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,15 @@
 #ifndef NETWORKED_MULTIPLAYER_ENET_H
 #define NETWORKED_MULTIPLAYER_ENET_H
 
+#include "core/crypto/crypto.h"
 #include "core/io/compression.h"
 #include "core/io/networked_multiplayer_peer.h"
 
 #include <enet/enet.h>
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
+	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer);
 
-	GDCLASS(NetworkedMultiplayerENet, NetworkedMultiplayerPeer)
 public:
 	enum CompressionMode {
 		COMPRESS_NONE,
@@ -77,13 +78,13 @@ private:
 	ENetHost *host;
 
 	bool refuse_connections;
+	bool server_relay;
 
 	ConnectionStatus connection_status;
 
 	Map<int, ENetPeer *> peer_map;
 
 	struct Packet {
-
 		ENetPacket *packet;
 		int from;
 		int channel;
@@ -109,15 +110,20 @@ private:
 
 	IP_Address bind_ip;
 
+	bool dtls_enabled;
+	Ref<CryptoKey> dtls_key;
+	Ref<X509Certificate> dtls_cert;
+	bool dtls_verify;
+
 protected:
 	static void _bind_methods();
 
 public:
-	virtual void set_transfer_mode(TransferMode p_mode);
-	virtual TransferMode get_transfer_mode() const;
-	virtual void set_target_peer(int p_peer);
+	virtual void set_transfer_mode(TransferMode p_mode) override;
+	virtual TransferMode get_transfer_mode() const override;
+	virtual void set_target_peer(int p_peer) override;
 
-	virtual int get_packet_peer() const;
+	virtual int get_packet_peer() const override;
 
 	virtual IP_Address get_peer_address(int p_peer_id) const;
 	virtual int get_peer_port(int p_peer_id) const;
@@ -129,22 +135,22 @@ public:
 
 	void disconnect_peer(int p_peer, bool now = false);
 
-	virtual void poll();
+	virtual void poll() override;
 
-	virtual bool is_server() const;
+	virtual bool is_server() const override;
 
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	virtual int get_max_packet_size() const;
+	virtual int get_max_packet_size() const override;
 
-	virtual ConnectionStatus get_connection_status() const;
+	virtual ConnectionStatus get_connection_status() const override;
 
-	virtual void set_refuse_new_connections(bool p_enable);
-	virtual bool is_refusing_new_connections() const;
+	virtual void set_refuse_new_connections(bool p_enable) override;
+	virtual bool is_refusing_new_connections() const override;
 
-	virtual int get_unique_id() const;
+	virtual int get_unique_id() const override;
 
 	void set_compression_mode(CompressionMode p_mode);
 	CompressionMode get_compression_mode() const;
@@ -157,11 +163,19 @@ public:
 	int get_channel_count() const;
 	void set_always_ordered(bool p_ordered);
 	bool is_always_ordered() const;
+	void set_server_relay_enabled(bool p_enabled);
+	bool is_server_relay_enabled() const;
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();
 
 	void set_bind_ip(const IP_Address &p_ip);
+	void set_dtls_enabled(bool p_enabled);
+	bool is_dtls_enabled() const;
+	void set_dtls_verify_enabled(bool p_enabled);
+	bool is_dtls_verify_enabled() const;
+	void set_dtls_key(Ref<CryptoKey> p_key);
+	void set_dtls_certificate(Ref<X509Certificate> p_cert);
 };
 
 VARIANT_ENUM_CAST(NetworkedMultiplayerENet::CompressionMode);

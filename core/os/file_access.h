@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,6 @@
  */
 
 class FileAccess {
-
 public:
 	enum AccessType {
 		ACCESS_RESOURCES,
@@ -53,8 +52,8 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef FileAccess *(*CreateFunc)();
-	bool endian_swap;
-	bool real_is_double;
+	bool endian_swap = false;
+	bool real_is_double = false;
 
 	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
@@ -69,11 +68,10 @@ protected:
 private:
 	static bool backup_save;
 
-	AccessType _access_type;
+	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <class T>
 	static FileAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -153,7 +151,7 @@ public:
 
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
-	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = NULL); /// Create a file access (for the current platform) this is the only portable way of accessing files.
+	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
@@ -167,33 +165,35 @@ public:
 	static String get_sha256(const String &p_file);
 	static String get_multiple_md5(const Vector<String> &p_file);
 
-	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = NULL);
-	static String get_file_as_string(const String &p_path, Error *r_error = NULL);
+	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = nullptr);
+	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
-	FileAccess();
+	FileAccess() {}
 	virtual ~FileAccess() {}
 };
 
 struct FileAccessRef {
-
 	_FORCE_INLINE_ FileAccess *operator->() {
-
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
+
 	FileAccess *f;
+
 	operator FileAccess *() { return f; }
+
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
-		if (f) memdelete(f);
+		if (f) {
+			memdelete(f);
+		}
 	}
 };
 
-#endif
+#endif // FILE_ACCESS_H

@@ -2,7 +2,13 @@
  *  RFC 1186/1320 compliant MD4 implementation
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -137,15 +164,21 @@ int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
     GET_UINT32_LE( X[14], data, 56 );
     GET_UINT32_LE( X[15], data, 60 );
 
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+#define S(x,n) (((x) << (n)) | (((x) & 0xFFFFFFFF) >> (32 - (n))))
 
     A = ctx->state[0];
     B = ctx->state[1];
     C = ctx->state[2];
     D = ctx->state[3];
 
-#define F(x, y, z) ((x & y) | ((~x) & z))
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x; a = S(a,s); }
+#define F(x, y, z) (((x) & (y)) | ((~(x)) & (z)))
+#define P(a,b,c,d,x,s)                           \
+    do                                           \
+    {                                            \
+        (a) += F((b),(c),(d)) + (x);             \
+        (a) = S((a),(s));                        \
+    } while( 0 )
+
 
     P( A, B, C, D, X[ 0],  3 );
     P( D, A, B, C, X[ 1],  7 );
@@ -167,8 +200,13 @@ int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
 #undef P
 #undef F
 
-#define F(x,y,z) ((x & y) | (x & z) | (y & z))
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x + 0x5A827999; a = S(a,s); }
+#define F(x,y,z) (((x) & (y)) | ((x) & (z)) | ((y) & (z)))
+#define P(a,b,c,d,x,s)                          \
+    do                                          \
+    {                                           \
+        (a) += F((b),(c),(d)) + (x) + 0x5A827999;       \
+        (a) = S((a),(s));                               \
+    } while( 0 )
 
     P( A, B, C, D, X[ 0],  3 );
     P( D, A, B, C, X[ 4],  5 );
@@ -190,8 +228,13 @@ int mbedtls_internal_md4_process( mbedtls_md4_context *ctx,
 #undef P
 #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define P(a,b,c,d,x,s) { a += F(b,c,d) + x + 0x6ED9EBA1; a = S(a,s); }
+#define F(x,y,z) ((x) ^ (y) ^ (z))
+#define P(a,b,c,d,x,s)                                  \
+    do                                                  \
+    {                                                   \
+        (a) += F((b),(c),(d)) + (x) + 0x6ED9EBA1;       \
+        (a) = S((a),(s));                               \
+    } while( 0 )
 
     P( A, B, C, D, X[ 0],  3 );
     P( D, A, B, C, X[ 8],  9 );

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,10 @@ ICloud *ICloud::instance = NULL;
 
 void ICloud::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_key"), &ICloud::remove_key);
+
 	ClassDB::bind_method(D_METHOD("set_key_values"), &ICloud::set_key_values);
 	ClassDB::bind_method(D_METHOD("get_key_value"), &ICloud::get_key_value);
+
 	ClassDB::bind_method(D_METHOD("synchronize_key_values"), &ICloud::synchronize_key_values);
 	ClassDB::bind_method(D_METHOD("get_all_key_values"), &ICloud::get_all_key_values);
 
@@ -58,12 +60,10 @@ void ICloud::_bind_methods() {
 };
 
 int ICloud::get_pending_event_count() {
-
 	return pending_events.size();
 };
 
 Variant ICloud::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
@@ -80,20 +80,20 @@ Variant nsobject_to_variant(NSObject *object) {
 		const char *str = [(NSString *)object UTF8String];
 		return String::utf8(str != NULL ? str : "");
 	} else if ([object isKindOfClass:[NSData class]]) {
-		PoolByteArray ret;
+		PackedByteArray ret;
 		NSData *data = (NSData *)object;
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
-				PoolByteArray::Write w = ret.write();
-				copymem(w.ptr(), [data bytes], [data length]);
+				// PackedByteArray::Write w = ret.write();
+				copymem((void *)ret.ptr(), [data bytes], [data length]);
 			}
 		}
 		return ret;
 	} else if ([object isKindOfClass:[NSArray class]]) {
 		Array result;
 		NSArray *array = (NSArray *)object;
-		for (unsigned int i = 0; i < [array count]; ++i) {
+		for (NSUInteger i = 0; i < [array count]; ++i) {
 			NSObject *value = [array objectAtIndex:i];
 			result.push_back(nsobject_to_variant(value));
 		}
@@ -138,7 +138,7 @@ Variant nsobject_to_variant(NSObject *object) {
 		//this is a type that icloud supports...but how did you submit it in the first place?
 		//I guess this is a type that *might* show up, if you were, say, trying to make your game
 		//compatible with existing cloud data written by another engine's version of your game
-		WARN_PRINT("NSDate unsupported, returning null Variant")
+		WARN_PRINT("NSDate unsupported, returning null Variant");
 		return Variant();
 	} else if ([object isKindOfClass:[NSNull class]] or object == nil) {
 		return Variant();
@@ -151,7 +151,7 @@ Variant nsobject_to_variant(NSObject *object) {
 NSObject *variant_to_nsobject(Variant v) {
 	if (v.get_type() == Variant::STRING) {
 		return [[[NSString alloc] initWithUTF8String:((String)v).utf8().get_data()] autorelease];
-	} else if (v.get_type() == Variant::REAL) {
+	} else if (v.get_type() == Variant::FLOAT) {
 		return [NSNumber numberWithDouble:(double)v];
 	} else if (v.get_type() == Variant::INT) {
 		return [NSNumber numberWithLongLong:(long)(int)v];
@@ -161,7 +161,7 @@ NSObject *variant_to_nsobject(Variant v) {
 		NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 		Dictionary dic = v;
 		Array keys = dic.keys();
-		for (unsigned int i = 0; i < keys.size(); ++i) {
+		for (int i = 0; i < keys.size(); ++i) {
 			NSString *key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
 			NSObject *value = variant_to_nsobject(dic[keys[i]]);
 
@@ -175,7 +175,7 @@ NSObject *variant_to_nsobject(Variant v) {
 	} else if (v.get_type() == Variant::ARRAY) {
 		NSMutableArray *result = [[[NSMutableArray alloc] init] autorelease];
 		Array arr = v;
-		for (unsigned int i = 0; i < arr.size(); ++i) {
+		for (int i = 0; i < arr.size(); ++i) {
 			NSObject *value = variant_to_nsobject(arr[i]);
 			if (value == NULL) {
 				//trying to add something unsupported to the array. cancel the whole array
@@ -184,19 +184,18 @@ NSObject *variant_to_nsobject(Variant v) {
 			[result addObject:value];
 		}
 		return result;
-	} else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
-		PoolByteArray arr = v;
-		PoolByteArray::Read r = arr.read();
-		NSData *result = [NSData dataWithBytes:r.ptr() length:arr.size()];
+	} else if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
+		PackedByteArray arr = v;
+		// PackedByteArray::Read r = arr.read();
+		NSData *result = [NSData dataWithBytes:arr.ptr() length:arr.size()];
 		return result;
 	}
 	WARN_PRINT(String("Could not add unsupported type to iCloud: '" + Variant::get_type_name(v.get_type()) + "'").utf8().get_data());
 	return NULL;
 }
 
-Error ICloud::remove_key(Variant p_param) {
-	String param = p_param;
-	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+Error ICloud::remove_key(String p_param) {
+	NSString *key = [[[NSString alloc] initWithUTF8String:p_param.utf8().get_data()] autorelease];
 
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
@@ -209,15 +208,14 @@ Error ICloud::remove_key(Variant p_param) {
 }
 
 //return an array of the keys that could not be set
-Variant ICloud::set_key_values(Variant p_params) {
-	Dictionary params = p_params;
-	Array keys = params.keys();
+Array ICloud::set_key_values(Dictionary p_params) {
+	Array keys = p_params.keys();
 
 	Array error_keys;
 
-	for (unsigned int i = 0; i < keys.size(); ++i) {
+	for (int i = 0; i < keys.size(); ++i) {
 		String variant_key = keys[i];
-		Variant variant_value = params[variant_key];
+		Variant variant_value = p_params[variant_key];
 
 		NSString *key = [[[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()] autorelease];
 		if (key == NULL) {
@@ -239,10 +237,8 @@ Variant ICloud::set_key_values(Variant p_params) {
 	return error_keys;
 }
 
-Variant ICloud::get_key_value(Variant p_param) {
-	String param = p_param;
-
-	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+Variant ICloud::get_key_value(String p_param) {
+	NSString *key = [[[NSString alloc] initWithUTF8String:p_param.utf8().get_data()] autorelease];
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
 	if (![[store dictionaryRepresentation] objectForKey:key]) {
@@ -284,6 +280,7 @@ Error ICloud::synchronize_key_values() {
 		return FAILED;
 	}
 }
+
 /*
 Error ICloud::initial_sync() {
 	//you sometimes have to write something to the store to get it to download new data.  go apple!
@@ -298,6 +295,7 @@ Error ICloud::initial_sync() {
 		}
 		return synchronize();
 }
+
 */
 ICloud::ICloud() {
 	ERR_FAIL_COND(instance != NULL);
@@ -315,7 +313,7 @@ ICloud::ICloud() {
 						Dictionary ret;
 						ret["type"] = "key_value_changed";
 
-						//PoolStringArray result_keys;
+						//PackedStringArray result_keys;
 						//Array result_values;
 						Dictionary keyValues;
 						String reason = "";
@@ -354,6 +352,6 @@ ICloud::ICloud() {
 					}];
 }
 
-ICloud::~ICloud(){};
+ICloud::~ICloud() {}
 
 #endif

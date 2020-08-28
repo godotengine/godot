@@ -10,6 +10,8 @@
 #ifndef WEBP_DSP_QUANT_H_
 #define WEBP_DSP_QUANT_H_
 
+#include <string.h>
+
 #include "src/dsp/dsp.h"
 #include "src/webp/types.h"
 
@@ -66,5 +68,18 @@ static WEBP_INLINE int IsFlat(const int16_t* levels, int num_blocks,
 
 #endif  // defined(WEBP_USE_NEON) && !defined(WEBP_ANDROID_NEON) &&
         // !defined(WEBP_HAVE_NEON_RTCD)
+
+static WEBP_INLINE int IsFlatSource16(const uint8_t* src) {
+  const uint32_t v = src[0] * 0x01010101u;
+  int i;
+  for (i = 0; i < 16; ++i) {
+    if (memcmp(src + 0, &v, 4) || memcmp(src +  4, &v, 4) ||
+        memcmp(src + 8, &v, 4) || memcmp(src + 12, &v, 4)) {
+      return 0;
+    }
+    src += BPS;
+  }
+  return 1;
+}
 
 #endif  // WEBP_DSP_QUANT_H_

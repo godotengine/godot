@@ -847,7 +847,7 @@ namespace Etc
 		int iMaxRed1 = iColor1Red + (int)a_uiRadius;
 		if (iMaxRed1 > 15)
 		{
-			iMinRed1 = 15;
+			iMaxRed1 = 15;
 		}
 
 		int iMinGreen1 = iColor1Green - (int)a_uiRadius;
@@ -858,7 +858,7 @@ namespace Etc
 		int iMaxGreen1 = iColor1Green + (int)a_uiRadius;
 		if (iMaxGreen1 > 15)
 		{
-			iMinGreen1 = 15;
+			iMaxGreen1 = 15;
 		}
 
 		int iMinBlue1 = iColor1Blue - (int)a_uiRadius;
@@ -869,7 +869,7 @@ namespace Etc
 		int iMaxBlue1 = iColor1Blue + (int)a_uiRadius;
 		if (iMaxBlue1 > 15)
 		{
-			iMinBlue1 = 15;
+			iMaxBlue1 = 15;
 		}
 
 		int iColor2Red = m_frgbaOriginalColor2_TAndH.IntRed(15.0f);
@@ -884,7 +884,7 @@ namespace Etc
 		int iMaxRed2 = iColor2Red + (int)a_uiRadius;
 		if (iMaxRed2 > 15)
 		{
-			iMinRed2 = 15;
+			iMaxRed2 = 15;
 		}
 
 		int iMinGreen2 = iColor2Green - (int)a_uiRadius;
@@ -895,7 +895,7 @@ namespace Etc
 		int iMaxGreen2 = iColor2Green + (int)a_uiRadius;
 		if (iMaxGreen2 > 15)
 		{
-			iMinGreen2 = 15;
+			iMaxGreen2 = 15;
 		}
 
 		int iMinBlue2 = iColor2Blue - (int)a_uiRadius;
@@ -906,7 +906,7 @@ namespace Etc
 		int iMaxBlue2 = iColor2Blue + (int)a_uiRadius;
 		if (iMaxBlue2 > 15)
 		{
-			iMinBlue2 = 15;
+			iMaxBlue2 = 15;
 		}
 
 		for (unsigned int uiDistance = 0; uiDistance < TH_DISTANCES; uiDistance++)
@@ -1108,7 +1108,7 @@ namespace Etc
 		int iMaxRed1 = iColor1Red + (int)a_uiRadius;
 		if (iMaxRed1 > 15)
 		{
-			iMinRed1 = 15;
+			iMaxRed1 = 15;
 		}
 
 		int iMinGreen1 = iColor1Green - (int)a_uiRadius;
@@ -1119,7 +1119,7 @@ namespace Etc
 		int iMaxGreen1 = iColor1Green + (int)a_uiRadius;
 		if (iMaxGreen1 > 15)
 		{
-			iMinGreen1 = 15;
+			iMaxGreen1 = 15;
 		}
 
 		int iMinBlue1 = iColor1Blue - (int)a_uiRadius;
@@ -1130,7 +1130,7 @@ namespace Etc
 		int iMaxBlue1 = iColor1Blue + (int)a_uiRadius;
 		if (iMaxBlue1 > 15)
 		{
-			iMinBlue1 = 15;
+			iMaxBlue1 = 15;
 		}
 
 		int iColor2Red = m_frgbaOriginalColor2_TAndH.IntRed(15.0f);
@@ -1145,7 +1145,7 @@ namespace Etc
 		int iMaxRed2 = iColor2Red + (int)a_uiRadius;
 		if (iMaxRed2 > 15)
 		{
-			iMinRed2 = 15;
+			iMaxRed2 = 15;
 		}
 
 		int iMinGreen2 = iColor2Green - (int)a_uiRadius;
@@ -1156,7 +1156,7 @@ namespace Etc
 		int iMaxGreen2 = iColor2Green + (int)a_uiRadius;
 		if (iMaxGreen2 > 15)
 		{
-			iMinGreen2 = 15;
+			iMaxGreen2 = 15;
 		}
 
 		int iMinBlue2 = iColor2Blue - (int)a_uiRadius;
@@ -1167,7 +1167,7 @@ namespace Etc
 		int iMaxBlue2 = iColor2Blue + (int)a_uiRadius;
 		if (iMaxBlue2 > 15)
 		{
-			iMinBlue2 = 15;
+			iMaxBlue2 = 15;
 		}
 
 		for (unsigned int uiDistance = 0; uiDistance < TH_DISTANCES; uiDistance++)

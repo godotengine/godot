@@ -1,3 +1,4 @@
+/* clang-format off */
 static const int _lodpi_font_height=14;
 static const int _lodpi_font_ascent=11;
 static const int _lodpi_font_charcount=191;
@@ -13113,3 +13114,4 @@ static const unsigned char _lodpi_font_img_data[12909]={
 96,
 130,
 };
+/* clang-format on */

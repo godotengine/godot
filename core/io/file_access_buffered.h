@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,18 +32,17 @@
 #define FILE_ACCESS_BUFFERED_H
 
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
+
 #include "core/ustring.h"
 
 class FileAccessBuffered : public FileAccess {
-
 public:
 	enum {
 		DEFAULT_CACHE_SIZE = 128 * 1024,
 	};
 
 private:
-	int cache_size;
+	int cache_size = DEFAULT_CACHE_SIZE;
 
 	int cache_data_left() const;
 	mutable Error last_error;
@@ -52,21 +51,19 @@ protected:
 	Error set_error(Error p_error) const;
 
 	mutable struct File {
-
-		bool open;
-		int size;
-		int offset;
+		bool open = false;
+		int size = 0;
+		int offset = 0;
 		String name;
-		int access_flags;
+		int access_flags = 0;
 	} file;
 
 	mutable struct Cache {
-
 		Vector<uint8_t> buffer;
-		int offset;
+		int offset = 0;
 	} cache;
 
-	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const = 0;
+	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = nullptr) const = 0;
 
 	void set_cache_size(int p_size);
 	int get_cache_size();
@@ -87,8 +84,8 @@ public:
 
 	virtual Error get_error() const;
 
-	FileAccessBuffered();
-	virtual ~FileAccessBuffered();
+	FileAccessBuffered() {}
+	virtual ~FileAccessBuffered() {}
 };
 
 #endif

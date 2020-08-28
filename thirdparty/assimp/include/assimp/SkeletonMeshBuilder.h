@@ -47,8 +47,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  for animation skeletons.
  */
 
+#pragma once
 #ifndef AI_SKELETONMESHBUILDER_H_INC
 #define AI_SKELETONMESHBUILDER_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <vector>
 #include <assimp/mesh.h>

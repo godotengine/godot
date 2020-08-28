@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,12 +32,8 @@
 #define BUTTON_H
 
 #include "scene/gui/base_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Button : public BaseButton {
-
 	GDCLASS(Button, BaseButton);
 
 public:
@@ -51,7 +47,8 @@ private:
 	bool flat;
 	String text;
 	String xl_text;
-	Ref<Texture> icon;
+	Ref<Texture2D> icon;
+	bool expand_icon;
 	bool clip_text;
 	TextAlign align;
 	float _internal_margin[4];
@@ -62,15 +59,16 @@ protected:
 	static void _bind_methods();
 
 public:
-	//
-
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_text(const String &p_text);
 	String get_text() const;
 
-	void set_icon(const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon() const;
+	void set_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon() const;
+
+	void set_expand_icon(bool p_expand_icon);
+	bool is_expand_icon() const;
 
 	void set_flat(bool p_flat);
 	bool is_flat() const;

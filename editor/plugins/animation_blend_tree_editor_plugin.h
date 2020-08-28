@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,12 +40,10 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
+class ProgressBar;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;
@@ -131,10 +129,10 @@ public:
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
 	void remove_custom_type(const Ref<Script> &p_script);
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	AnimationNodeBlendTreeEditor();
 };

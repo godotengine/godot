@@ -1,24 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MainLoop" inherits="Object" category="Core" version="3.2">
+<class name="MainLoop" inherits="Object" version="4.0">
 	<brief_description>
-		Main loop is the abstract main loop base class.
+		Abstract base class for the game's main loop.
 	</brief_description>
 	<description>
-		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
+		[MainLoop] is the abstract base class for a Godot project's game loop. It is inherited by [SceneTree], which is the default game loop implementation used in Godot projects, though it is also possible to write and use one's own [MainLoop] subclass instead of the scene tree.
+		Upon the application start, a [MainLoop] implementation must be provided to the OS; otherwise, the application will exit. This happens automatically (and a [SceneTree] is created) unless a main [Script] is provided from the command line (with e.g. [code]godot -s my_loop.gd[/code], which should then be a [MainLoop] implementation.
+		Here is an example script implementing a simple [MainLoop]:
+		[b]FIXME:[/b] No longer valid after DisplayServer split and Input refactoring.
+		[codeblock]
+		extends MainLoop
+
+		var time_elapsed = 0
+		var keys_typed = []
+		var quit = false
+
+		func _initialize():
+		    print("Initialized:")
+		    print("  Starting time: %s" % str(time_elapsed))
+
+		func _idle(delta):
+		    time_elapsed += delta
+		    # Return true to end the main loop.
+		    return quit
+
+		func _input_event(event):
+		    # Record keys.
+		    if event is InputEventKey and event.pressed and !event.echo:
+		        keys_typed.append(OS.get_keycode_string(event.keycode))
+		        # Quit on Escape press.
+		        if event.keycode == KEY_ESCAPE:
+		            quit = true
+		    # Quit on any mouse click.
+		    if event is InputEventMouseButton:
+		        quit = true
+
+		func _finalize():
+		    print("Finalized:")
+		    print("  End time: %s" % str(time_elapsed))
+		    print("  Keys typed: %s" % var2str(keys_typed))
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_drop_files" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="files" type="PoolStringArray">
-			</argument>
-			<argument index="1" name="screen" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="_finalize" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -27,12 +52,13 @@
 			</description>
 		</method>
 		<method name="_idle" qualifiers="virtual">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Called each idle frame with time since last call as an only argument.
+				Called each idle frame with the time since the last idle frame as argument (in seconds). Equivalent to [method Node._process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
 		<method name="_initialize" qualifiers="virtual">
@@ -42,34 +68,21 @@
 				Called once during initialization.
 			</description>
 		</method>
-		<method name="_input_event" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="_input_text" qualifiers="virtual">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="_iteration" qualifiers="virtual">
-			<return type="void">
+			<return type="bool">
 			</return>
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Called each physics frame with the time since the last physics frame as argument (in seconds). Equivalent to [method Node._physics_process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
 		<method name="finish">
 			<return type="void">
 			</return>
 			<description>
+				Should not be called manually, override [method _finalize] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="idle">
@@ -78,28 +91,14 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Should not be called manually, override [method _idle] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="init">
 			<return type="void">
 			</return>
 			<description>
-			</description>
-		</method>
-		<method name="input_event">
-			<return type="void">
-			</return>
-			<argument index="0" name="event" type="InputEvent">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="input_text">
-			<return type="void">
-			</return>
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
+				Should not be called manually, override [method _initialize] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 		<method name="iteration">
@@ -108,33 +107,56 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Should not be called manually, override [method _iteration] instead. Will be removed in Godot 4.0.
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="on_request_permissions_result">
+			<argument index="0" name="permission" type="String">
+			</argument>
+			<argument index="1" name="granted" type="bool">
+			</argument>
+			<description>
+				Emitted when a user responds to a permission request.
+			</description>
+		</signal>
+	</signals>
 	<constants>
-		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
+			Notification received from the OS when the application is exceeding its allocated memory.
+			Specific to the iOS platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="2010">
+			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
+		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
+			Notification received from the OS when a request for "About" information is sent.
+			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
+		<constant name="NOTIFICATION_CRASH" value="2012">
+			Notification received from Godot's crash handler when the engine is about to crash.
+			Implemented on desktop platforms if the crash handler is enabled.
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="2013">
+			Notification received from the OS when an update of the Input Method Engine occurs (e.g. change of IME cursor position or composition string).
+			Specific to the macOS platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
+		<constant name="NOTIFICATION_APPLICATION_RESUMED" value="2014">
+			Notification received from the OS when the application is resumed.
+			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
+		<constant name="NOTIFICATION_APPLICATION_PAUSED" value="2015">
+			Notification received from the OS when the application is paused.
+			Specific to the Android platform.
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_IN" value="2016">
+			Notification received from the OS when the application is focused, i.e. when changing the focus from the OS desktop or a thirdparty application to any open window of the Godot instance.
+			Implemented on desktop platforms.
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
-		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
-		</constant>
-		<constant name="NOTIFICATION_CRASH" value="1012">
-		</constant>
-		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
+		<constant name="NOTIFICATION_APPLICATION_FOCUS_OUT" value="2017">
+			Notification received from the OS when the application is defocused, i.e. when changing the focus from any open window of the Godot instance to the OS desktop or a thirdparty application.
+			Implemented on desktop platforms.
 		</constant>
 	</constants>
 </class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +29,21 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "audio_stream_ogg_vorbis.h"
-#include "resource_importer_ogg_vorbis.h"
 
-void register_stb_vorbis_types() {
+#include "audio_stream_ogg_vorbis.h"
 
 #ifdef TOOLS_ENABLED
-	Ref<ResourceImporterOGGVorbis> ogg_import;
-	ogg_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(ogg_import);
+#include "core/engine.h"
+#include "resource_importer_ogg_vorbis.h"
+#endif
+
+void register_stb_vorbis_types() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		Ref<ResourceImporterOGGVorbis> ogg_import;
+		ogg_import.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(ogg_import);
+	}
 #endif
 	ClassDB::register_class<AudioStreamOGGVorbis>();
 }

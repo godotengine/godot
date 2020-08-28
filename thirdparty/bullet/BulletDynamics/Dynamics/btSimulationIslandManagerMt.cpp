@@ -65,7 +65,7 @@ inline int getIslandId(const btPersistentManifold* lhs)
 	return islandId;
 }
 
-SIMD_FORCE_INLINE int btGetConstraintIslandId(const btTypedConstraint* lhs)
+SIMD_FORCE_INLINE int btGetConstraintIslandId1(const btTypedConstraint* lhs)
 {
 	const btCollisionObject& rcolObj0 = lhs->getRigidBodyA();
 	const btCollisionObject& rcolObj1 = lhs->getRigidBodyB();
@@ -171,6 +171,8 @@ void btSimulationIslandManagerMt::initIslandPools()
 
 btSimulationIslandManagerMt::Island* btSimulationIslandManagerMt::getIsland(int id)
 {
+	btAssert(id >= 0);
+	btAssert(id < m_lookupIslandFromId.size());
 	Island* island = m_lookupIslandFromId[id];
 	if (island == NULL)
 	{
@@ -452,7 +454,7 @@ void btSimulationIslandManagerMt::addConstraintsToIslands(btAlignedObjectArray<b
 		btTypedConstraint* constraint = constraints[i];
 		if (constraint->isEnabled())
 		{
-			int islandId = btGetConstraintIslandId(constraint);
+			int islandId = btGetConstraintIslandId1(constraint);
 			// if island is not sleeping,
 			if (Island* island = getIsland(islandId))
 			{

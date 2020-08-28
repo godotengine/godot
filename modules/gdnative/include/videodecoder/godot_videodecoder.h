@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ typedef struct
 	void *next;
 	void *(*constructor)(godot_object *);
 	void (*destructor)(void *);
-	const char *(*get_plugin_name)(void);
+	const char *(*get_plugin_name)();
 	const char **(*get_supported_extensions)(int *count);
 	godot_bool (*open_file)(void *, void *); // data struct, and a FileAccess pointer
 	godot_real (*get_length)(const void *);
@@ -54,7 +54,7 @@ typedef struct
 	void (*seek)(void *, godot_real);
 	void (*set_audio_track)(void *, godot_int);
 	void (*update)(void *, godot_real);
-	godot_pool_byte_array *(*get_videoframe)(void *);
+	godot_packed_byte_array *(*get_videoframe)(void *);
 	godot_int (*get_audioframe)(void *, float *, int);
 	godot_int (*get_channels)(const void *);
 	godot_int (*get_mix_rate)(const void *);

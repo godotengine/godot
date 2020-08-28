@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineColorBlendState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="attachments" type="RDPipelineColorBlendStateAttachment[]" setter="set_attachments" getter="get_attachments" default="[  ]">
+		</member>
+		<member name="blend_constant" type="Color" setter="set_blend_constant" getter="get_blend_constant" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="enable_logic_op" type="bool" setter="set_enable_logic_op" getter="get_enable_logic_op" default="false">
+		</member>
+		<member name="logic_op" type="int" setter="set_logic_op" getter="get_logic_op" enum="RenderingDevice.LogicOperation" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

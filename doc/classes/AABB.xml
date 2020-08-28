@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AABB" category="Built-In Types" version="3.2">
+<class name="AABB" version="4.0">
 	<brief_description>
 		Axis-Aligned Bounding Box.
 	</brief_description>
@@ -18,7 +18,14 @@
 			<argument index="1" name="size" type="Vector3">
 			</argument>
 			<description>
-				Optional constructor, accepts position and size.
+				Constructs an [AABB] from a position and size.
+			</description>
+		</method>
+		<method name="abs">
+			<return type="AABB">
+			</return>
+			<description>
+				Returns an AABB with equivalent position and size, modified so that the most-negative corner is the origin and the size is positive.
 			</description>
 		</method>
 		<method name="encloses">
@@ -43,7 +50,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Gets the area of the [AABB].
+				Returns the volume of the [AABB].
 			</description>
 		</method>
 		<method name="get_endpoint">
@@ -66,7 +73,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the index of the longest axis of the [AABB] (according to [Vector3]::AXIS* enum).
+				Returns the index of the longest axis of the [AABB] (according to [Vector3]'s [code]AXIS_*[/code] constants).
 			</description>
 		</method>
 		<method name="get_longest_axis_size">
@@ -176,25 +183,35 @@
 				Returns [code]true[/code] if the [AABB] intersects the line segment between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this [AABB] and [code]aabb[/code] are approximately equal, by calling [method @GDScript.is_equal_approx] on each component.
+			</description>
+		</method>
 		<method name="merge">
 			<return type="AABB">
 			</return>
 			<argument index="0" name="with" type="AABB">
 			</argument>
 			<description>
-				Returns a larger AABB that contains this AABB and [code]with[/code].
+				Returns a larger [AABB] that contains both this [AABB] and [code]with[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="end" type="Vector3" setter="" getter="">
-			Ending corner.
+		<member name="end" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+			Ending corner. This is calculated as [code]position + size[/code]. Setting this value will change the size.
 		</member>
-		<member name="position" type="Vector3" setter="" getter="">
-			Beginning corner.
+		<member name="position" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+			Beginning corner. Typically has values lower than [member end].
 		</member>
-		<member name="size" type="Vector3" setter="" getter="">
-			Size from position to end.
+		<member name="size" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+			Size from [member position] to [member end]. Typically all components are positive.
+			If the size is negative, you can use [method abs] to fix it.
 		</member>
 	</members>
 	<constants>

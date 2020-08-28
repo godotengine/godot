@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" category="Core" version="3.2">
+<class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -22,8 +22,10 @@
 	</methods>
 	<constants>
 		<constant name="MAGNITUDE_AVERAGE" value="0" enum="MagnitudeMode">
+			Use the average value as magnitude.
 		</constant>
 		<constant name="MAGNITUDE_MAX" value="1" enum="MagnitudeMode">
+			Use the maximum value as magnitude.
 		</constant>
 	</constants>
 </class>

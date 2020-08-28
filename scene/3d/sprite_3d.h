@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,11 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
-#include "scene/2d/animated_sprite.h"
-#include "scene/3d/visual_instance.h"
+#include "scene/2d/animated_sprite_2d.h"
+#include "scene/3d/visual_instance_3d.h"
 
-class SpriteBase3D : public GeometryInstance {
-
-	GDCLASS(SpriteBase3D, GeometryInstance);
+class SpriteBase3D : public GeometryInstance3D {
+	GDCLASS(SpriteBase3D, GeometryInstance3D);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 
@@ -80,6 +79,7 @@ private:
 
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
+	StandardMaterial3D::BillboardMode billboard_mode;
 	bool pending_update;
 	void _im_update();
 
@@ -130,11 +130,13 @@ public:
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
+	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
+	StandardMaterial3D::BillboardMode get_billboard_mode() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 
-	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 	Ref<TriangleMesh> generate_triangle_mesh() const;
 
 	SpriteBase3D();
@@ -142,9 +144,8 @@ public:
 };
 
 class Sprite3D : public SpriteBase3D {
-
 	GDCLASS(Sprite3D, SpriteBase3D);
-	Ref<Texture> texture;
+	Ref<Texture2D> texture;
 
 	bool region;
 	Rect2 region_rect;
@@ -154,15 +155,17 @@ class Sprite3D : public SpriteBase3D {
 	int vframes;
 	int hframes;
 
+	void _texture_changed();
+
 protected:
-	virtual void _draw();
+	virtual void _draw() override;
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
-	void set_texture(const Ref<Texture> &p_texture);
-	Ref<Texture> get_texture() const;
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
 
 	void set_region(bool p_region);
 	bool is_region() const;
@@ -173,20 +176,22 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
+	void set_frame_coords(const Vector2 &p_coord);
+	Vector2 get_frame_coords() const;
+
 	void set_vframes(int p_amount);
 	int get_vframes() const;
 
 	void set_hframes(int p_amount);
 	int get_hframes() const;
 
-	virtual Rect2 get_item_rect() const;
+	virtual Rect2 get_item_rect() const override;
 
 	Sprite3D();
 	//~Sprite3D();
 };
 
 class AnimatedSprite3D : public SpriteBase3D {
-
 	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
@@ -210,10 +215,10 @@ class AnimatedSprite3D : public SpriteBase3D {
 	bool _is_playing() const;
 
 protected:
-	virtual void _draw();
+	virtual void _draw() override;
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
@@ -229,9 +234,9 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	virtual Rect2 get_item_rect() const;
+	virtual Rect2 get_item_rect() const override;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 	AnimatedSprite3D();
 };
 

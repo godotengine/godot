@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:
@@ -52,8 +51,8 @@ private:
 		bool enable_right;
 		int type_right;
 		Color color_right;
-		Ref<Texture> custom_slot_left;
-		Ref<Texture> custom_slot_right;
+		Ref<Texture2D> custom_slot_left;
+		Ref<Texture2D> custom_slot_right;
 
 		Slot() {
 			enable_left = false;
@@ -110,9 +109,9 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	bool has_point(const Point2 &p_point) const;
+	bool has_point(const Point2 &p_point) const override;
 
-	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture> &p_custom_left = Ref<Texture>(), const Ref<Texture> &p_custom_right = Ref<Texture>());
+	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>());
 	void clear_slot(int p_idx);
 	void clear_all_slots();
 	bool is_slot_enabled_left(int p_idx) const;
@@ -155,7 +154,7 @@ public:
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	bool is_resizing() const { return resizing; }
 

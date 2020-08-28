@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,23 +33,21 @@
 #include "api/javascript_eval.h"
 #include "emscripten.h"
 
-extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_poolbytearray_and_open_write(PoolByteArray *p_arr, PoolByteArray::Write *r_write, int p_len) {
-
+extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_PackedByteArray_and_open_write(PackedByteArray *p_arr, VectorWriteProxy<uint8_t> *r_write, int p_len) {
 	p_arr->resize(p_len);
-	*r_write = p_arr->write();
-	return r_write->ptr();
+	*r_write = p_arr->write;
+	return p_arr->ptrw();
 }
 
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
-
 	union {
 		bool b;
 		double d;
 		char *s;
 	} js_data;
 
-	PoolByteArray arr;
-	PoolByteArray::Write arr_write;
+	PackedByteArray arr;
+	VectorWriteProxy<uint8_t> arr_write;
 
 	/* clang-format off */
 	Variant::Type return_type = static_cast<Variant::Type>(EM_ASM_INT({
@@ -81,7 +79,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
 			case 'number':
 				setValue(PTR, eval_ret, 'double');
-				return 3; // REAL
+				return 3; // FLOAT
 
 			case 'string':
 				var array_len = lengthBytesUTF8(eval_ret)+1;
@@ -114,9 +112,9 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 					eval_ret = new Uint8Array(eval_ret);
 				}
 				if (eval_ret instanceof Uint8Array) {
-					var bytes_ptr = ccall('resize_poolbytearray_and_open_write', 'number', ['number', 'number' ,'number'], [BYTEARRAY_PTR, BYTEARRAY_WRITE_PTR, eval_ret.length]);
+					var bytes_ptr = ccall('resize_PackedByteArray_and_open_write', 'number', ['number', 'number' ,'number'], [BYTEARRAY_PTR, BYTEARRAY_WRITE_PTR, eval_ret.length]);
 					HEAPU8.set(eval_ret, bytes_ptr);
-					return 20; // POOL_BYTE_ARRAY
+					return 20; // PACKED_BYTE_ARRAY
 				}
 				break;
 		}
@@ -128,7 +126,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 	switch (return_type) {
 		case Variant::BOOL:
 			return js_data.b;
-		case Variant::REAL:
+		case Variant::FLOAT:
 			return js_data.d;
 		case Variant::STRING: {
 			String str = String::utf8(js_data.s);
@@ -137,8 +135,8 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 			/* clang-format on */
 			return str;
 		}
-		case Variant::POOL_BYTE_ARRAY:
-			arr_write = PoolByteArray::Write();
+		case Variant::PACKED_BYTE_ARRAY:
+			arr_write = VectorWriteProxy<uint8_t>();
 			return arr;
 		default:
 			return Variant();

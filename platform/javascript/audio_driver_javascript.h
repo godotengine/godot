@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,13 @@
 #include "servers/audio_server.h"
 
 class AudioDriverJavaScript : public AudioDriver {
+	float *internal_buffer = nullptr;
 
-	float *internal_buffer;
-
-	int buffer_length;
+	int _driver_id = 0;
+	int buffer_length = 0;
 
 public:
+	static bool is_available();
 	void mix_to_js();
 	void process_capture(float sample);
 
@@ -50,11 +51,13 @@ public:
 	virtual Error init();
 	virtual void start();
 	void resume();
+	virtual float get_latency();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();

@@ -2,7 +2,13 @@
  *  Elliptic curves over GF(p): curve-specific data and functions
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -51,11 +78,11 @@
  */
 #if defined(MBEDTLS_HAVE_INT32)
 
-#define BYTES_TO_T_UINT_4( a, b, c, d )             \
-    ( (mbedtls_mpi_uint) a <<  0 ) |                          \
-    ( (mbedtls_mpi_uint) b <<  8 ) |                          \
-    ( (mbedtls_mpi_uint) c << 16 ) |                          \
-    ( (mbedtls_mpi_uint) d << 24 )
+#define BYTES_TO_T_UINT_4( a, b, c, d )                       \
+    ( (mbedtls_mpi_uint) (a) <<  0 ) |                        \
+    ( (mbedtls_mpi_uint) (b) <<  8 ) |                        \
+    ( (mbedtls_mpi_uint) (c) << 16 ) |                        \
+    ( (mbedtls_mpi_uint) (d) << 24 )
 
 #define BYTES_TO_T_UINT_2( a, b )                   \
     BYTES_TO_T_UINT_4( a, b, 0, 0 )
@@ -67,14 +94,14 @@
 #else /* 64-bits */
 
 #define BYTES_TO_T_UINT_8( a, b, c, d, e, f, g, h ) \
-    ( (mbedtls_mpi_uint) a <<  0 ) |                          \
-    ( (mbedtls_mpi_uint) b <<  8 ) |                          \
-    ( (mbedtls_mpi_uint) c << 16 ) |                          \
-    ( (mbedtls_mpi_uint) d << 24 ) |                          \
-    ( (mbedtls_mpi_uint) e << 32 ) |                          \
-    ( (mbedtls_mpi_uint) f << 40 ) |                          \
-    ( (mbedtls_mpi_uint) g << 48 ) |                          \
-    ( (mbedtls_mpi_uint) h << 56 )
+    ( (mbedtls_mpi_uint) (a) <<  0 ) |                        \
+    ( (mbedtls_mpi_uint) (b) <<  8 ) |                        \
+    ( (mbedtls_mpi_uint) (c) << 16 ) |                        \
+    ( (mbedtls_mpi_uint) (d) << 24 ) |                        \
+    ( (mbedtls_mpi_uint) (e) << 32 ) |                        \
+    ( (mbedtls_mpi_uint) (f) << 40 ) |                        \
+    ( (mbedtls_mpi_uint) (g) << 48 ) |                        \
+    ( (mbedtls_mpi_uint) (h) << 56 )
 
 #define BYTES_TO_T_UINT_4( a, b, c, d )             \
     BYTES_TO_T_UINT_8( a, b, c, d, 0, 0, 0, 0 )
@@ -890,7 +917,7 @@ static inline void carry64( mbedtls_mpi_uint *dst, mbedtls_mpi_uint *carry )
 }
 
 #define WIDTH       8 / sizeof( mbedtls_mpi_uint )
-#define A( i )      N->p + i * WIDTH
+#define A( i )      N->p + (i) * WIDTH
 #define ADD( i )    add64( p, A( i ), &c )
 #define NEXT        p += WIDTH; carry64( p, &c )
 #define LAST        p += WIDTH; *p = c; while( ++p < end ) *p = 0
@@ -955,7 +982,8 @@ cleanup:
 #else                               /* 64-bit */
 
 #define MAX32       N->n * 2
-#define A( j ) j % 2 ? (uint32_t)( N->p[j/2] >> 32 ) : (uint32_t)( N->p[j/2] )
+#define A( j ) (j) % 2 ? (uint32_t)( N->p[(j)/2] >> 32 ) : \
+                         (uint32_t)( N->p[(j)/2] )
 #define STORE32                                   \
     if( i % 2 ) {                                 \
         N->p[i/2] &= 0x00000000FFFFFFFF;          \
@@ -989,20 +1017,21 @@ static inline void sub32( uint32_t *dst, uint32_t src, signed char *carry )
  * Helpers for the main 'loop'
  * (see fix_negative for the motivation of C)
  */
-#define INIT( b )                                           \
-    int ret;                                                \
-    signed char c = 0, cc;                                  \
-    uint32_t cur;                                           \
-    size_t i = 0, bits = b;                                 \
-    mbedtls_mpi C;                                                  \
-    mbedtls_mpi_uint Cp[ b / 8 / sizeof( mbedtls_mpi_uint) + 1 ];               \
-                                                            \
-    C.s = 1;                                                \
-    C.n = b / 8 / sizeof( mbedtls_mpi_uint) + 1;                      \
-    C.p = Cp;                                               \
-    memset( Cp, 0, C.n * sizeof( mbedtls_mpi_uint ) );                \
-                                                            \
-    MBEDTLS_MPI_CHK( mbedtls_mpi_grow( N, b * 2 / 8 / sizeof( mbedtls_mpi_uint ) ) ); \
+#define INIT( b )                                                       \
+    int ret;                                                            \
+    signed char c = 0, cc;                                              \
+    uint32_t cur;                                                       \
+    size_t i = 0, bits = (b);                                           \
+    mbedtls_mpi C;                                                      \
+    mbedtls_mpi_uint Cp[ (b) / 8 / sizeof( mbedtls_mpi_uint) + 1 ];     \
+                                                                        \
+    C.s = 1;                                                            \
+    C.n = (b) / 8 / sizeof( mbedtls_mpi_uint) + 1;                      \
+    C.p = Cp;                                                           \
+    memset( Cp, 0, C.n * sizeof( mbedtls_mpi_uint ) );                  \
+                                                                        \
+    MBEDTLS_MPI_CHK( mbedtls_mpi_grow( N, (b) * 2 / 8 /                 \
+                                       sizeof( mbedtls_mpi_uint ) ) );  \
     LOAD32;
 
 #define NEXT                    \

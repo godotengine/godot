@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,14 +38,16 @@
 namespace {
 
 int sfind(const String &p_text, int p_from) {
-	if (p_from < 0)
+	if (p_from < 0) {
 		return -1;
+	}
 
 	int src_len = 2;
 	int len = p_text.length();
 
-	if (src_len == 0 || len == 0)
+	if (len == 0) {
 		return -1;
+	}
 
 	const CharType *src = p_text.c_str();
 
@@ -55,10 +57,7 @@ int sfind(const String &p_text, int p_from) {
 		for (int j = 0; j < src_len; j++) {
 			int read_pos = i + j;
 
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos >= len");
-				return -1;
-			};
+			ERR_FAIL_COND_V(read_pos >= len, -1);
 
 			switch (j) {
 				case 0:
@@ -78,17 +77,20 @@ int sfind(const String &p_text, int p_from) {
 			}
 		}
 
-		if (found)
+		if (found) {
 			return i;
+		}
 	}
 
 	return -1;
 }
+
 } // namespace
 
 String sformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {
-	if (p_text.length() < 2)
+	if (p_text.length() < 2) {
 		return p_text;
+	}
 
 	Array args;
 
@@ -135,7 +137,6 @@ String sformat(const String &p_text, const Variant &p1, const Variant &p2, const
 
 #ifdef TOOLS_ENABLED
 bool is_csharp_keyword(const String &p_name) {
-
 	// Reserved keywords
 
 	return p_name == "abstract" || p_name == "as" || p_name == "base" || p_name == "bool" ||
@@ -165,22 +166,22 @@ String escape_csharp_keyword(const String &p_name) {
 #endif
 
 Error read_all_file_utf8(const String &p_path, String &r_content) {
-	PoolVector<uint8_t> sourcef;
+	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint8_t *w = sourcef.ptrw();
+	int r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)w.ptr())) {
+	if (source.parse_utf8((const char *)w)) {
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 
@@ -199,26 +200,39 @@ String str_format(const char *p_format, ...) {
 
 	return res;
 }
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER) && _MSC_VER < 1900
-#define vsnprintf(m_buffer, m_count, m_format, m_argptr) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_argptr)
+#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
+#else
+#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) vsnprintf(nullptr, 0, p_format, m_args_copy)
 #endif
 
 String str_format(const char *p_format, va_list p_list) {
+	char *buffer = str_format_new(p_format, p_list);
+
+	String res(buffer);
+	memdelete_arr(buffer);
+
+	return res;
+}
+
+char *str_format_new(const char *p_format, ...) {
+	va_list list;
+
+	va_start(list, p_format);
+	char *res = str_format_new(p_format, list);
+	va_end(list);
+
+	return res;
+}
+
+char *str_format_new(const char *p_format, va_list p_list) {
 	va_list list;
 
 	va_copy(list, p_list);
-	int len = vsnprintf(NULL, 0, p_format, list);
+	int len = gd_vscprintf(p_format, list);
 	va_end(list);
 
 	len += 1; // for the trailing '/0'
@@ -226,11 +240,8 @@ String str_format(const char *p_format, va_list p_list) {
 	char *buffer(memnew_arr(char, len));
 
 	va_copy(list, p_list);
-	vsnprintf(buffer, len, p_format, list);
+	gd_vsnprintf(buffer, len, p_format, list);
 	va_end(list);
 
-	String res(buffer);
-	memdelete_arr(buffer);
-
-	return res;
+	return buffer;
 }

@@ -39,8 +39,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
+#pragma once
 #ifndef INCLUDED_AI_STRINGUTILS_H
 #define INCLUDED_AI_STRINGUTILS_H
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/defs.h>
 

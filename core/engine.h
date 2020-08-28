@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,12 +37,11 @@
 #include "core/vector.h"
 
 class Engine {
-
 public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) :
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr) :
 				name(p_name),
 				ptr(p_ptr) {
 		}
@@ -51,26 +50,28 @@ public:
 private:
 	friend class Main;
 
-	uint64_t frames_drawn;
-	uint32_t _frame_delay;
-	uint64_t _frame_ticks;
-	float _frame_step;
+	uint64_t frames_drawn = 0;
+	uint32_t _frame_delay = 0;
+	uint64_t _frame_ticks = 0;
+	float _frame_step = 0;
 
-	int ips;
-	float physics_jitter_fix;
-	float _fps;
-	int _target_fps;
-	float _time_scale;
-	bool _pixel_snap;
-	uint64_t _physics_frames;
+	int ips = 60;
+	float physics_jitter_fix = 0.5;
+	float _fps = 1;
+	int _target_fps = 0;
+	float _time_scale = 1.0;
+	bool _pixel_snap = false;
+	uint64_t _physics_frames = 0;
+	float _physics_interpolation_fraction = 0.0f;
+	bool abort_on_gpu_errors = false;
 
-	uint64_t _idle_frames;
-	bool _in_physics;
+	uint64_t _idle_frames = 0;
+	bool _in_physics = false;
 
 	List<Singleton> singletons;
 	Map<StringName, Object *> singleton_ptrs;
 
-	bool editor_hint;
+	bool editor_hint = false;
 
 	static Engine *singleton;
 
@@ -84,7 +85,7 @@ public:
 	float get_physics_jitter_fix() const;
 
 	virtual void set_target_fps(int p_fps);
-	virtual float get_target_fps() const;
+	virtual int get_target_fps() const;
 
 	virtual float get_frames_per_second() const { return _fps; }
 
@@ -95,6 +96,7 @@ public:
 	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_idle_frame_ticks() const { return _frame_ticks; }
 	float get_idle_frame_step() const { return _frame_step; }
+	float get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
@@ -123,6 +125,8 @@ public:
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
+
+	bool is_abort_on_gpu_errors_enabled() const;
 
 	Engine();
 	virtual ~Engine() {}

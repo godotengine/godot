@@ -2,7 +2,13 @@
  *  FIPS-180-2 compliant SHA-384/512 implementation
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -224,8 +251,8 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
     SHA512_VALIDATE_RET( ctx != NULL );
     SHA512_VALIDATE_RET( (const unsigned char *)data != NULL );
 
-#define  SHR(x,n) (x >> n)
-#define ROTR(x,n) (SHR(x,n) | (x << (64 - n)))
+#define  SHR(x,n) ((x) >> (n))
+#define ROTR(x,n) (SHR((x),(n)) | ((x) << (64 - (n))))
 
 #define S0(x) (ROTR(x, 1) ^ ROTR(x, 8) ^  SHR(x, 7))
 #define S1(x) (ROTR(x,19) ^ ROTR(x,61) ^  SHR(x, 6))
@@ -233,15 +260,16 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
 #define S2(x) (ROTR(x,28) ^ ROTR(x,34) ^ ROTR(x,39))
 #define S3(x) (ROTR(x,14) ^ ROTR(x,18) ^ ROTR(x,41))
 
-#define F0(x,y,z) ((x & y) | (z & (x | y)))
-#define F1(x,y,z) (z ^ (x & (y ^ z)))
+#define F0(x,y,z) (((x) & (y)) | ((z) & ((x) | (y))))
+#define F1(x,y,z) ((z) ^ ((x) & ((y) ^ (z))))
 
-#define P(a,b,c,d,e,f,g,h,x,K)                  \
-{                                               \
-    temp1 = h + S3(e) + F1(e,f,g) + K + x;      \
-    temp2 = S2(a) + F0(a,b,c);                  \
-    d += temp1; h = temp1 + temp2;              \
-}
+#define P(a,b,c,d,e,f,g,h,x,K)                                  \
+    do                                                          \
+    {                                                           \
+        temp1 = (h) + S3(e) + F1((e),(f),(g)) + (K) + (x);      \
+        temp2 = S2(a) + F0((a),(b),(c));                        \
+        (d) += temp1; (h) = temp1 + temp2;                      \
+    } while( 0 )
 
     for( i = 0; i < 16; i++ )
     {

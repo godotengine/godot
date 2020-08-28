@@ -206,9 +206,9 @@ UPNP_DeletePortMappingRange(const char * controlURL, const char * servicetype,
 /* UPNP_GetPortMappingNumberOfEntries()
  * not supported by all routers */
 MINIUPNP_LIBSPEC int
-UPNP_GetPortMappingNumberOfEntries(const char* controlURL,
-                                   const char* servicetype,
-                                   unsigned int * num);
+UPNP_GetPortMappingNumberOfEntries(const char * controlURL,
+                                   const char * servicetype,
+                                   unsigned int * numEntries);
 
 /* UPNP_GetSpecificPortMappingEntry()
  *    retrieves an existing port mapping

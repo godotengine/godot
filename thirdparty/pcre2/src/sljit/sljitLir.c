@@ -144,6 +144,7 @@
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 #	define PATCH_MD		0x10
 #endif
+#	define TYPE_SHIFT	13
 #endif
 
 #if (defined SLJIT_CONFIG_ARM_V5 && SLJIT_CONFIG_ARM_V5) || (defined SLJIT_CONFIG_ARM_V7 && SLJIT_CONFIG_ARM_V7)
@@ -201,15 +202,16 @@
 #	define IS_CALL		0x010
 #	define IS_BIT26_COND	0x020
 #	define IS_BIT16_COND	0x040
+#	define IS_BIT23_COND	0x080
 
-#	define IS_COND		(IS_BIT26_COND | IS_BIT16_COND)
+#	define IS_COND		(IS_BIT26_COND | IS_BIT16_COND | IS_BIT23_COND)
 
-#	define PATCH_B		0x080
-#	define PATCH_J		0x100
+#	define PATCH_B		0x100
+#	define PATCH_J		0x200
 
 #if (defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64)
-#	define PATCH_ABS32	0x200
-#	define PATCH_ABS48	0x400
+#	define PATCH_ABS32	0x400
+#	define PATCH_ABS48	0x800
 #endif
 
 	/* instruction types */
@@ -520,6 +522,12 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_target(struct sljit_jump *jump, sljit_uw
 	}
 }
 
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_put_label(struct sljit_put_label *put_label, struct sljit_label *label)
+{
+	if (SLJIT_LIKELY(!!put_label))
+		put_label->label = label;
+}
+
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_current_flags(struct sljit_compiler *compiler, sljit_s32 current_flags)
 {
 	SLJIT_UNUSED_ARG(compiler);
@@ -619,6 +627,30 @@ static SLJIT_INLINE sljit_s32 get_arg_count(sljit_s32 arg_types)
 	return arg_count;
 }
 
+#if !(defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86)
+
+static SLJIT_INLINE sljit_uw compute_next_addr(struct sljit_label *label, struct sljit_jump *jump,
+	struct sljit_const *const_, struct sljit_put_label *put_label)
+{
+	sljit_uw result = ~(sljit_uw)0;
+
+	if (label)
+		result = label->size;
+
+	if (jump && jump->addr < result)
+		result = jump->addr;
+
+	if (const_ && const_->addr < result)
+		result = const_->addr;
+
+	if (put_label && put_label->addr < result)
+		result = put_label->addr;
+
+	return result;
+}
+
+#endif /* !SLJIT_CONFIG_X86 */
+
 static SLJIT_INLINE void set_emit_enter(struct sljit_compiler *compiler,
 	sljit_s32 options, sljit_s32 args, sljit_s32 scratches, sljit_s32 saveds,
 	sljit_s32 fscratches, sljit_s32 fsaveds, sljit_s32 local_size)
@@ -684,6 +716,19 @@ static SLJIT_INLINE void set_const(struct sljit_const *const_, struct sljit_comp
 	else
 		compiler->consts = const_;
 	compiler->last_const = const_;
+}
+
+static SLJIT_INLINE void set_put_label(struct sljit_put_label *put_label, struct sljit_compiler *compiler, sljit_uw offset)
+{
+	put_label->next = NULL;
+	put_label->label = NULL;
+	put_label->addr = compiler->size - offset;
+	put_label->flags = 0;
+	if (compiler->last_put_label)
+		compiler->last_put_label->next = put_label;
+	else
+		compiler->put_labels = put_label;
+	compiler->last_put_label = put_label;
 }
 
 #define ADDRESSING_DEPENDS_ON(exp, reg) \
@@ -1904,6 +1949,21 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_const(struct sljit_compil
 	CHECK_RETURN_OK;
 }
 
+static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_put_label(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw)
+{
+#if (defined SLJIT_ARGUMENT_CHECKS && SLJIT_ARGUMENT_CHECKS)
+	FUNCTION_CHECK_DST(dst, dstw, 0);
+#endif
+#if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
+	if (SLJIT_UNLIKELY(!!compiler->verbose)) {
+		fprintf(compiler->verbose, "  put_label ");
+		sljit_verbose_param(compiler, dst, dstw);
+		fprintf(compiler->verbose, "\n");
+	}
+#endif
+	CHECK_RETURN_OK;
+}
+
 #endif /* SLJIT_ARGUMENT_CHECKS || SLJIT_VERBOSE */
 
 #define SELECT_FOP1_OPERATION_WITH_CHECKS(compiler, op, dst, dstw, src, srcw) \
@@ -2580,6 +2640,14 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_const* sljit_emit_const(struct sljit_compi
 	return NULL;
 }
 
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_put_label* sljit_emit_put_label(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw)
+{
+	SLJIT_UNUSED_ARG(compiler);
+	SLJIT_UNUSED_ARG(dst);
+	SLJIT_UNUSED_ARG(dstw);
+	return NULL;
+}
+
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)
 {
 	SLJIT_UNUSED_ARG(addr);
@@ -2596,4 +2664,4 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_consta
 	SLJIT_UNREACHABLE();
 }
 
-#endif
+#endif /* !SLJIT_CONFIG_UNSUPPORTED */

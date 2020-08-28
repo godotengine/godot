@@ -43,8 +43,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file  LogAux.h
  *  @brief Common logging usage patterns for importer implementations
  */
+#pragma once
 #ifndef INCLUDED_AI_LOGAUX_H
 #define INCLUDED_AI_LOGAUX_H
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/TinyFormatter.h>
 #include <assimp/Exceptional.h>

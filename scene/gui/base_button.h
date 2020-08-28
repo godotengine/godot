@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,10 @@
 #define BASE_BUTTON_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ButtonGroup;
 
 class BaseButton : public Control {
-
 	GDCLASS(BaseButton, Control);
 
 public:
@@ -58,20 +54,22 @@ private:
 
 	ActionMode action_mode;
 	struct Status {
-
 		bool pressed;
 		bool hovering;
 		bool press_attempt;
 		bool pressing_inside;
 
 		bool disabled;
-		int pressing_button;
 
 	} status;
 
 	Ref<ButtonGroup> button_group;
 
 	void _unpress_group();
+	void _pressed();
+	void _toggled(bool p_pressed);
+
+	void on_action_event(Ref<InputEvent> p_event);
 
 protected:
 	virtual void pressed();
@@ -123,7 +121,7 @@ public:
 	void set_shortcut(const Ref<ShortCut> &p_shortcut);
 	Ref<ShortCut> get_shortcut() const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
@@ -136,8 +134,7 @@ VARIANT_ENUM_CAST(BaseButton::DrawMode)
 VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
-
-	GDCLASS(ButtonGroup, Resource)
+	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	Set<BaseButton *> buttons;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -72,27 +68,33 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	String placeholder_translated;
 	String secret_character;
 	float placeholder_alpha;
 	String ime_text;
 	Point2 ime_selection;
+
+	bool selecting_enabled;
 
 	bool context_menu_enabled;
 	PopupMenu *menu;
 
 	int cursor_pos;
 	int window_pos;
-	int max_length; // 0 for no maximum
+	int max_length; // 0 for no maximum.
 
 	int cached_width;
 	int cached_placeholder_width;
 
 	bool clear_button_enabled;
 
-	Ref<Texture> right_icon;
+	bool shortcut_keys_enabled;
+
+	bool virtual_keyboard_enabled = true;
+
+	Ref<Texture2D> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;
@@ -104,6 +106,8 @@ private:
 
 	struct TextOperation {
 		int cursor_pos;
+		int window_pos;
+		int cached_width;
 		String text;
 	};
 	List<TextOperation> undo_stack;
@@ -120,13 +124,19 @@ private:
 	void _clear_redo();
 	void _create_undo_state();
 
+	void _generate_context_menu();
+
 	Timer *caret_blink_timer;
 
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;
 
+	void update_cached_width();
+	void update_placeholder_width();
+
 	bool caret_blink_enabled;
+	bool caret_force_displayed;
 	bool draw_caret;
 	bool window_has_focus;
 
@@ -137,6 +147,7 @@ private:
 	void set_window_pos(int p_pos);
 
 	void set_cursor_at_pixel_pos(int p_x);
+	int get_cursor_pixel_pos();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -156,11 +167,11 @@ public:
 	void set_align(Align p_align);
 	Align get_align() const;
 
-	virtual Variant get_drag_data(const Point2 &p_point);
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
@@ -193,6 +204,9 @@ public:
 	float cursor_get_blink_speed() const;
 	void cursor_set_blink_speed(const float p_speed);
 
+	bool cursor_get_force_displayed() const;
+	void cursor_set_force_displayed(const bool p_enabled);
+
 	void copy_text();
 	void cut_text();
 	void paste_text();
@@ -208,7 +222,7 @@ public:
 	void set_secret_character(const String &p_string);
 	String get_secret_character() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_expand_to_text_length(bool p_enabled);
 	bool get_expand_to_text_length() const;
@@ -216,9 +230,19 @@ public:
 	void set_clear_button_enabled(bool p_enabled);
 	bool is_clear_button_enabled() const;
 
-	void set_right_icon(const Ref<Texture> &p_icon);
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
 
-	virtual bool is_text_field() const;
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled() const;
+
+	void set_selecting_enabled(bool p_enabled);
+	bool is_selecting_enabled() const;
+
+	void set_right_icon(const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_right_icon();
+
+	virtual bool is_text_field() const override;
 	LineEdit();
 	~LineEdit();
 };

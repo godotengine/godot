@@ -23,11 +23,11 @@ class btMinkowskiSumShape;
 #include "LinearMath/btIDebugDraw.h"
 
 #ifdef BT_USE_DOUBLE_PRECISION
-#define MAX_ITERATIONS 64
-#define MAX_EPSILON (SIMD_EPSILON * 10)
+#define MAX_CONVEX_CAST_ITERATIONS 64
+#define MAX_CONVEX_CAST_EPSILON (SIMD_EPSILON * 10)
 #else
-#define MAX_ITERATIONS 32
-#define MAX_EPSILON btScalar(0.0001)
+#define MAX_CONVEX_CAST_ITERATIONS 32
+#define MAX_CONVEX_CAST_EPSILON btScalar(0.0001)
 #endif
 ///Typically the conservative advancement reaches solution in a few iterations, clip it to 32 for degenerate cases.
 ///See discussion about this here http://continuousphysics.com/Bullet/phpBB2/viewtopic.php?t=565
@@ -58,8 +58,8 @@ public:
 			: m_fraction(btScalar(BT_LARGE_FLOAT)),
 			  m_debugDrawer(0),
 			  m_allowedPenetration(btScalar(0)),
-			  m_subSimplexCastMaxIterations(MAX_ITERATIONS),
-			  m_subSimplexCastEpsilon(MAX_EPSILON)
+			  m_subSimplexCastMaxIterations(MAX_CONVEX_CAST_ITERATIONS),
+			  m_subSimplexCastEpsilon(MAX_CONVEX_CAST_EPSILON)
 		{
 		}
 

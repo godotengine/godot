@@ -47,7 +47,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_POSTPROCESS_H_INC
 #define AI_POSTPROCESS_H_INC
 
-#include "types.h"
+#include <assimp/types.h>
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -316,6 +320,19 @@ enum aiPostProcessSteps
     */
     aiProcess_FixInfacingNormals = 0x2000,
 
+
+
+    // -------------------------------------------------------------------------
+    /** 
+     * This step generically populates aiBone->mArmature and aiBone->mNode generically
+     * The point of these is it saves you later having to calculate these elements
+     * This is useful when handling rest information or skin information
+     * If you have multiple armatures on your models we strongly recommend enabling this 
+     * Instead of writing your own multi-root, multi-armature lookups we have done the 
+     * hard work for you :)
+   */
+    aiProcess_PopulateArmatureData = 0x4000,
+
     // -------------------------------------------------------------------------
     /** <hr>This step splits meshes with more than one primitive type in
      *  homogeneous sub-meshes.
@@ -438,7 +455,7 @@ enum aiPostProcessSteps
     aiProcess_FindInstances = 0x100000,
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to reduce the number of meshes.
+    /** <hr>A post-processing step to reduce the number of meshes.
      *
      *  This will, in fact, reduce the number of draw calls.
      *
@@ -450,7 +467,7 @@ enum aiPostProcessSteps
 
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to optimize the scene hierarchy.
+    /** <hr>A post-processing step to optimize the scene hierarchy.
      *
      *  Nodes without animations, bones, lights or cameras assigned are
      *  collapsed and joined.
@@ -514,7 +531,7 @@ enum aiPostProcessSteps
 
     // -------------------------------------------------------------------------
     /** <hr>This step splits meshes with many bones into sub-meshes so that each
-     * su-bmesh has fewer or as many bones as a given limit.
+     * sub-mesh has fewer or as many bones as a given limit.
     */
     aiProcess_SplitByBoneCount  = 0x2000000,
 
@@ -533,6 +550,8 @@ enum aiPostProcessSteps
     */
     aiProcess_Debone  = 0x4000000,
 
+
+
     // -------------------------------------------------------------------------
     /** <hr>This step will perform a global scale of the model.
     *
@@ -541,7 +560,7 @@ enum aiPostProcessSteps
     *  global scaling from your importer settings like in FBX. Use the flag
     *  AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY from the global property table to configure this.
     *
-    *  Use <tt>#AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY</tt> to setup the global scaing factor.
+    *  Use <tt>#AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY</tt> to setup the global scaling factor.
     */
     aiProcess_GlobalScale = 0x8000000,
 
@@ -574,6 +593,11 @@ enum aiPostProcessSteps
      * This process gives sense back to aiProcess_JoinIdenticalVertices
      */
     aiProcess_DropNormals = 0x40000000,
+
+    // -------------------------------------------------------------------------
+    /**
+     */
+    aiProcess_GenBoundingBoxes = 0x80000000
 };
 
 

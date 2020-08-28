@@ -1,9 +1,11 @@
-// Names from https://en.wikipedia.org/wiki/List_of_colors (through https://raw.githubusercontent.com/SuperUserNameMan/color_to_name/616a7cddafefda91478b7bc26167de97fb5badb1/godot_version.gd), slightly edited and normalized
+// Names from https://en.wikipedia.org/wiki/X11_color_names
 #include "core/map.h"
 
 static Map<String, Color> _named_colors;
 static void _populate_named_colors() {
-	if (!_named_colors.empty()) return;
+	if (!_named_colors.empty()) {
+		return;
+	}
 	_named_colors.insert("aliceblue", Color(0.94, 0.97, 1.00));
 	_named_colors.insert("antiquewhite", Color(0.98, 0.92, 0.84));
 	_named_colors.insert("aqua", Color(0.00, 1.00, 1.00));
@@ -143,6 +145,7 @@ static void _populate_named_colors() {
 	_named_colors.insert("thistle", Color(0.85, 0.75, 0.85));
 	_named_colors.insert("tomato", Color(1.00, 0.39, 0.28));
 	_named_colors.insert("turquoise", Color(0.25, 0.88, 0.82));
+	_named_colors.insert("transparent", Color(1.00, 1.00, 1.00, 0.00));
 	_named_colors.insert("violet", Color(0.93, 0.51, 0.93));
 	_named_colors.insert("wheat", Color(0.96, 0.87, 0.70));
 	_named_colors.insert("white", Color(1.00, 1.00, 1.00));

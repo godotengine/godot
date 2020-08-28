@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,6 @@
 #include "core/typedefs.h"
 #include "core/vector.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 template <class T>
 class CharProxy {
 	friend class CharString;
@@ -55,8 +51,9 @@ class CharProxy {
 
 public:
 	_FORCE_INLINE_ operator T() const {
-		if (unlikely(_index == _cowdata.size()))
+		if (unlikely(_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(_index);
 	}
@@ -75,7 +72,6 @@ public:
 };
 
 class CharString {
-
 	CowData<char> _cowdata;
 	static const char _null;
 
@@ -88,8 +84,9 @@ public:
 	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -117,18 +114,16 @@ protected:
 typedef wchar_t CharType;
 
 struct StrRange {
-
 	const CharType *c_str;
 	int len;
 
-	StrRange(const CharType *p_c_str = NULL, int p_len = 0) {
+	StrRange(const CharType *p_c_str = nullptr, int p_len = 0) {
 		c_str = p_c_str;
 		len = p_len;
 	}
 };
 
 class String {
-
 	CowData<CharType> _cowdata;
 	static const CharType _null;
 
@@ -137,6 +132,7 @@ class String {
 	void copy_from(const CharType &p_char);
 	void copy_from_unchecked(const CharType *p_char, const int p_length);
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
+	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 
 public:
 	enum {
@@ -157,8 +153,9 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const CharType &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -201,15 +198,14 @@ public:
 	}
 
 	/* complex helpers */
-	String substr(int p_from, int p_chars) const;
+	String substr(int p_from, int p_chars = -1) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
 	int find_char(const CharType &p_char, int p_from = 0) const; ///< return <0 if failed
-	int find_last(const String &p_str) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
-	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = NULL) const; ///< return <0 if failed
+	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
 	bool begins_with(const String &p_string) const;
@@ -226,6 +222,7 @@ public:
 	String replace(const String &p_key, const String &p_with) const;
 	String replace(const char *p_key, const char *p_with) const;
 	String replacen(const String &p_key, const String &p_with) const;
+	String repeat(int p_count) const;
 	String insert(int p_at_pos, const String &p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
@@ -245,20 +242,19 @@ public:
 	static String md5(const uint8_t *p_md5);
 	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
 	bool is_numeric() const;
-	double to_double() const;
-	float to_float() const;
-	int hex_to_int(bool p_with_prefix = true) const;
-	int to_int() const;
+	double to_float() const;
 
-	int64_t hex_to_int64(bool p_with_prefix = true) const;
-	int64_t to_int64() const;
-	static int to_int(const char *p_str, int p_len = -1);
-	static double to_double(const char *p_str);
-	static double to_double(const CharType *p_str, const CharType **r_end = NULL);
-	static int64_t to_int(const CharType *p_str, int p_len = -1);
+	int64_t hex_to_int(bool p_with_prefix = true) const;
+	int64_t bin_to_int(bool p_with_prefix = true) const;
+	int64_t to_int() const;
+	static int64_t to_int(const char *p_str, int p_len = -1);
+	static double to_float(const char *p_str);
+	static double to_float(const CharType *p_str, const CharType **r_end = nullptr);
+	static int64_t to_int(const CharType *p_str, int p_len = -1, bool p_clamp = false);
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;
 
+	String get_with_code_lines() const;
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter, int p_slice) const;
 	String get_slicec(CharType p_splitter, int p_slice) const;
@@ -277,6 +273,9 @@ public:
 	static CharType char_lowercase(CharType p_char);
 	String to_upper() const;
 	String to_lower() const;
+
+	int count(const String &p_string, int p_from = 0, int p_to = 0) const;
+	int countn(const String &p_string, int p_from = 0, int p_to = 0) const;
 
 	String left(int p_pos) const;
 	String right(int p_pos) const;
@@ -304,8 +303,10 @@ public:
 	uint32_t hash() const; /* hash the string */
 	uint64_t hash64() const; /* hash the string */
 	String md5_text() const;
+	String sha1_text() const;
 	String sha256_text() const;
 	Vector<uint8_t> md5_buffer() const;
+	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
 	_FORCE_INLINE_ bool empty() const { return length() == 0; }
@@ -318,7 +319,7 @@ public:
 	String path_to_file(const String &p_path) const;
 	String get_base_dir() const;
 	String get_file() const;
-	static String humanize_size(size_t p_size);
+	static String humanize_size(uint64_t p_size);
 	String simplify_path() const;
 
 	String xml_escape(bool p_escape_quotes = false) const;
@@ -333,6 +334,8 @@ public:
 
 	String percent_encode() const;
 	String percent_decode() const;
+
+	String property_name_encode() const;
 
 	bool is_valid_identifier() const;
 	bool is_valid_integer() const;
@@ -365,70 +368,69 @@ String operator+(const char *p_chr, const String &p_str);
 String operator+(CharType p_chr, const String &p_str);
 
 String itos(int64_t p_val);
+String uitos(uint64_t p_val);
 String rtos(double p_val);
 String rtoss(double p_val); //scientific version
 
 struct NoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.nocasecmp_to(p_b) < 0;
 	}
 };
 
 struct NaturalNoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.naturalnocasecmp_to(p_b) < 0;
 	}
 };
 
 template <typename L, typename R>
 _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
-
 	while (true) {
-
-		if (*l_ptr == 0 && *r_ptr == 0)
+		if (*l_ptr == 0 && *r_ptr == 0) {
 			return false;
-		else if (*l_ptr == 0)
+		} else if (*l_ptr == 0) {
 			return true;
-		else if (*r_ptr == 0)
+		} else if (*r_ptr == 0) {
 			return false;
-		else if (*l_ptr < *r_ptr)
+		} else if (*l_ptr < *r_ptr) {
 			return true;
-		else if (*l_ptr > *r_ptr)
+		} else if (*l_ptr > *r_ptr) {
 			return false;
+		}
 
 		l_ptr++;
 		r_ptr++;
 	}
-
-	CRASH_COND(true); // unreachable
 }
 
 /* end of namespace */
 
-//tool translate
+// Tool translate (TTR and variants) for the editor UI,
+// and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
-
-//gets parsed
-String TTR(const String &);
-//use for c strings
-#define TTRC(m_value) m_value
-//use to avoid parsing (for use later with C strings)
+// Gets parsed.
+String TTR(const String &p_text, const String &p_context = "");
+String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
+String DTR(const String &p_text, const String &p_context = "");
+String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
+// Use for C strings.
+#define TTRC(m_value) (m_value)
+// Use to avoid parsing (for use later with C strings).
 #define TTRGET(m_value) TTR(m_value)
 
 #else
-
-#define TTR(m_val) (String())
-#define TTRCDEF(m_value) (m_value)
+#define TTR(m_value) (String())
+#define TTRN(m_value) (String())
+#define DTR(m_value) (String())
+#define DTRN(m_value) (String())
 #define TTRC(m_value) (m_value)
-
+#define TTRGET(m_value) (m_value)
 #endif
 
-//tool or regular translate
-String RTR(const String &);
+// Runtime translate for the public node API.
+String RTR(const String &p_text, const String &p_context = "");
+String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 
 bool is_symbol(CharType c);
 bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);

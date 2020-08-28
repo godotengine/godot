@@ -52,7 +52,9 @@
 #define FSE_STATIC_ASSERT(c) DEBUG_STATIC_ASSERT(c)   /* use only *after* variable declarations */
 
 /* check and forward error code */
+#ifndef CHECK_F
 #define CHECK_F(f) { size_t const e = f; if (FSE_isError(e)) return e; }
+#endif
 
 
 /* **************************************************************

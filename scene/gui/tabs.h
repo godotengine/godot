@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Tabs : public Control {
-
 	GDCLASS(Tabs, Control);
 
 public:
@@ -56,9 +55,9 @@ public:
 
 private:
 	struct Tab {
-
 		String text;
-		Ref<Texture> icon;
+		String xl_text;
+		Ref<Texture2D> icon;
 		int ofs_cache;
 		bool disabled;
 		int size_cache;
@@ -66,7 +65,7 @@ private:
 		int x_cache;
 		int x_size_cache;
 
-		Ref<Texture> right_button;
+		Ref<Texture2D> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
 	};
@@ -89,7 +88,7 @@ private:
 	bool cb_pressing;
 	CloseButtonDisplayPolicy cb_displaypolicy;
 
-	int hover; // hovered tab
+	int hover; // Hovered tab.
 	int min_width;
 	bool scrolling_enabled;
 	bool drag_to_rearrange_enabled;
@@ -101,30 +100,32 @@ private:
 	void _update_hover();
 	void _update_cache();
 
+	void _on_mouse_exited();
+
 protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Variant get_drag_data(const Point2 &p_point);
-	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	void drop_data(const Point2 &p_point, const Variant &p_data);
+	Variant get_drag_data(const Point2 &p_point) override;
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
-	void add_tab(const String &p_str = "", const Ref<Texture> &p_icon = Ref<Texture>());
+	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
-	Ref<Texture> get_tab_icon(int p_tab) const;
+	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool get_tab_disabled(int p_tab) const;
 
-	void set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button);
-	Ref<Texture> get_tab_right_button(int p_tab) const;
+	void set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button);
+	Ref<Texture2D> get_tab_right_button(int p_tab) const;
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
@@ -161,7 +162,7 @@ public:
 	void set_min_width(int p_width);
 
 	Rect2 get_tab_rect(int p_tab) const;
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 	Tabs();
 };

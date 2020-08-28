@@ -38,11 +38,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-#ifndef INCLUDED_EXCEPTIONAL_H
-#define INCLUDED_EXCEPTIONAL_H
+#pragma once
+#ifndef AI_INCLUDED_EXCEPTIONAL_H
+#define AI_INCLUDED_EXCEPTIONAL_H
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <stdexcept>
 #include <assimp/DefaultIOStream.h>
+
 using std::runtime_error;
 
 #ifdef _MSC_VER
@@ -53,17 +59,14 @@ using std::runtime_error;
 /** FOR IMPORTER PLUGINS ONLY: Simple exception class to be thrown if an
  *  unrecoverable error occurs while importing. Loading APIs return
  *  NULL instead of a valid aiScene then.  */
-class DeadlyImportError
-    : public runtime_error
-{
+class DeadlyImportError : public runtime_error {
 public:
     /** Constructor with arguments */
     explicit DeadlyImportError( const std::string& errorText)
-        : runtime_error(errorText)
-    {
+    : runtime_error(errorText) {
+        // empty
     }
 
-private:
 };
 
 typedef DeadlyImportError DeadlyExportError;
@@ -84,7 +87,7 @@ struct ExceptionSwallower   {
 template <typename T>
 struct ExceptionSwallower<T*>   {
     T* operator ()() const {
-        return NULL;
+        return nullptr;
     }
 };
 
@@ -122,4 +125,4 @@ struct ExceptionSwallower<void> {
     }\
 }
 
-#endif // INCLUDED_EXCEPTIONAL_H
+#endif // AI_INCLUDED_EXCEPTIONAL_H

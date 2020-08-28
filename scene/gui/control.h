@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,21 +33,17 @@
 
 #include "core/math/transform_2d.h"
 #include "core/rid.h"
-#include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
+#include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Viewport;
 class Label;
 class Panel;
 
 class Control : public CanvasItem {
-
 	GDCLASS(Control, CanvasItem);
 	OBJ_CATEGORY("GUI Nodes");
 
@@ -135,17 +131,16 @@ public:
 
 private:
 	struct CComparator {
-
 		bool operator()(const Control *p_a, const Control *p_b) const {
-			if (p_a->get_canvas_layer() == p_b->get_canvas_layer())
+			if (p_a->get_canvas_layer() == p_b->get_canvas_layer()) {
 				return p_b->is_greater_than(p_a);
-			else
-				return p_a->get_canvas_layer() < p_b->get_canvas_layer();
+			}
+
+			return p_a->get_canvas_layer() < p_b->get_canvas_layer();
 		}
 	};
 
 	struct Data {
-
 		Point2 pos_cache;
 		Size2 size_cache;
 		Size2 minimum_size_cache;
@@ -171,8 +166,6 @@ private:
 		float expand;
 		Point2 custom_minimum_size;
 
-		bool pass_on_modal_close_click;
-
 		MouseFilter mouse_filter;
 
 		bool clip_contents;
@@ -182,29 +175,24 @@ private:
 
 		Control *parent;
 		ObjectID drag_owner;
-		bool modal_exclusive;
-		uint64_t modal_frame; //frame used to put something as modal
 		Ref<Theme> theme;
 		Control *theme_owner;
+		Window *theme_owner_window;
 		String tooltip;
 		CursorShape default_cursor;
 
-		List<Control *>::Element *MI; //modal item
-		List<Control *>::Element *SI;
 		List<Control *>::Element *RI;
 
 		CanvasItem *parent_canvas_item;
-
-		ObjectID modal_prev_focus_owner;
 
 		NodePath focus_neighbour[4];
 		NodePath focus_next;
 		NodePath focus_prev;
 
-		HashMap<StringName, Ref<Texture> > icon_override;
-		HashMap<StringName, Ref<Shader> > shader_override;
-		HashMap<StringName, Ref<StyleBox> > style_override;
-		HashMap<StringName, Ref<Font> > font_override;
+		HashMap<StringName, Ref<Texture2D>> icon_override;
+		HashMap<StringName, Ref<Shader>> shader_override;
+		HashMap<StringName, Ref<StyleBox>> style_override;
+		HashMap<StringName, Ref<Font>> font_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
 
@@ -217,8 +205,10 @@ private:
 	Control *_get_focus_neighbour(Margin p_margin, int p_count = 0);
 
 	void _set_anchor(Margin p_margin, float p_anchor);
+	void _set_position(const Point2 &p_point);
+	void _set_global_position(const Point2 &p_point);
+	void _set_size(const Size2 &p_size);
 
-	void _propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign = true);
 	void _theme_changed();
 
 	void _change_notify_margins();
@@ -227,8 +217,8 @@ private:
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
-	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
+	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
 
 	void _size_changed();
 	String _get_tooltip() const;
@@ -240,14 +230,33 @@ private:
 	Transform2D _get_internal_transform() const;
 
 	friend class Viewport;
-	void _modal_stack_remove();
-	void _modal_set_prev_focus_owner(ObjectID p_prev);
 
 	void _update_minimum_size_cache();
+	friend class Window;
+	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
+
+	template <class T>
+	_FORCE_INLINE_ static bool _find_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, T &, T (Theme::*get_func)(const StringName &, const StringName &) const, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type);
+
+	_FORCE_INLINE_ static bool _has_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type);
+
+	static Ref<Texture2D> get_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<Shader> get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static Color get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+
+	static bool has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static bool has_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 
 protected:
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
 	//virtual void _window_gui_input(InputEvent p_event);
 
@@ -272,35 +281,36 @@ public:
 		NOTIFICATION_FOCUS_ENTER = 43,
 		NOTIFICATION_FOCUS_EXIT = 44,
 		NOTIFICATION_THEME_CHANGED = 45,
-		NOTIFICATION_MODAL_CLOSE = 46,
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
 
 	};
 
 	/* EDITOR */
-	virtual Dictionary _edit_get_state() const;
-	virtual void _edit_set_state(const Dictionary &p_state);
+#ifdef TOOLS_ENABLED
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_position(const Point2 &p_position);
-	virtual Point2 _edit_get_position() const;
+	virtual void _edit_set_position(const Point2 &p_position) override;
+	virtual Point2 _edit_get_position() const override;
 
-	virtual void _edit_set_scale(const Size2 &p_scale);
-	virtual Size2 _edit_get_scale() const;
+	virtual void _edit_set_scale(const Size2 &p_scale) override;
+	virtual Size2 _edit_get_scale() const override;
 
-	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 
-	virtual void _edit_set_rotation(float p_rotation);
-	virtual float _edit_get_rotation() const;
-	virtual bool _edit_use_rotation() const;
+	virtual void _edit_set_rotation(float p_rotation) override;
+	virtual float _edit_get_rotation() const override;
+	virtual bool _edit_use_rotation() const override;
 
-	virtual void _edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 _edit_get_pivot() const;
-	virtual bool _edit_use_pivot() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
+	virtual Point2 _edit_get_pivot() const override;
+	virtual bool _edit_use_pivot() const override;
 
-	virtual Size2 _edit_get_minimum_size() const;
+	virtual Size2 _edit_get_minimum_size() const override;
+#endif
 
 	void accept_event();
 
@@ -318,14 +328,11 @@ public:
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
 
-	bool is_window_modal_on_top() const;
-	uint64_t get_modal_frame() const; //frame in which this was made modal
-
 	Control *get_parent_control() const;
 
 	/* POSITIONING */
 
-	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margin = true);
+	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins = true);
 	void set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 	void set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode = PRESET_MODE_MINSIZE, int p_margin = 0);
 
@@ -343,18 +350,20 @@ public:
 	Point2 get_begin() const;
 	Point2 get_end() const;
 
-	void set_position(const Point2 &p_point);
-	void set_global_position(const Point2 &p_point);
+	void set_position(const Point2 &p_point, bool p_keep_margins = false);
+	void set_global_position(const Point2 &p_point, bool p_keep_margins = false);
 	Point2 get_position() const;
 	Point2 get_global_position() const;
+	Point2 get_screen_position() const;
 
-	void set_size(const Size2 &p_size);
+	void set_size(const Size2 &p_size, bool p_keep_margins = false);
 	Size2 get_size() const;
 
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;
+	Rect2 get_screen_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
-	Rect2 get_anchorable_rect() const;
+	Rect2 get_anchorable_rect() const override;
 
 	void set_rotation(float p_radians);
 	void set_rotation_degrees(float p_degrees);
@@ -372,8 +381,6 @@ public:
 
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
-
-	void show_modal(bool p_exclusive = false);
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
@@ -413,38 +420,35 @@ public:
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 
-	void set_pass_on_modal_close_click(bool p_pass_on);
-	bool pass_on_modal_close_click() const;
-
 	/* SKINNING */
 
-	void add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon);
-	void add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
-	void add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
-	void add_font_override(const StringName &p_name, const Ref<Font> &p_font);
-	void add_color_override(const StringName &p_name, const Color &p_color);
-	void add_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon);
+	void add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
+	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
+	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_color_override(const StringName &p_name, const Color &p_color);
+	void add_theme_constant_override(const StringName &p_name, int p_constant);
 
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Color get_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	int get_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Color get_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
-	bool has_icon_override(const StringName &p_name) const;
-	bool has_shader_override(const StringName &p_name) const;
-	bool has_stylebox_override(const StringName &p_name) const;
-	bool has_font_override(const StringName &p_name) const;
-	bool has_color_override(const StringName &p_name) const;
-	bool has_constant_override(const StringName &p_name) const;
+	bool has_theme_icon_override(const StringName &p_name) const;
+	bool has_theme_shader_override(const StringName &p_name) const;
+	bool has_theme_stylebox_override(const StringName &p_name) const;
+	bool has_theme_font_override(const StringName &p_name) const;
+	bool has_theme_color_override(const StringName &p_name) const;
+	bool has_theme_constant_override(const StringName &p_name) const;
 
-	bool has_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	bool has_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
+	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	/* TOOLTIP */
 
@@ -458,7 +462,7 @@ public:
 	CursorShape get_default_cursor_shape() const;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
-	virtual Transform2D get_transform() const;
+	virtual Transform2D get_transform() const override;
 
 	bool is_toplevel_control() const;
 
@@ -482,7 +486,8 @@ public:
 	void set_disable_visibility_clip(bool p_ignore);
 	bool is_visibility_clip_disabled() const;
 
-	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+	virtual String get_configuration_warning() const override;
 
 	Control();
 	~Control();

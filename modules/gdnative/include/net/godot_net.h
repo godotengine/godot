@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,6 @@ extern "C" {
 #define GODOT_NET_API_MINOR 1
 
 typedef struct {
-
 	godot_gdnative_api_version version; /* version of our API */
 	godot_object *data; /* User reference */
 
@@ -111,37 +110,11 @@ typedef struct {
 /* Binds a MultiplayerPeerGDNative to the provided interface */
 void GDAPI godot_net_bind_multiplayer_peer(godot_object *p_obj, const godot_net_multiplayer_peer *);
 
-typedef struct {
-	godot_gdnative_api_version version; /* version of our API */
-
-	godot_object *data; /* User reference */
-
-	/* This is PacketPeer */
-	godot_error (*get_packet)(void *, const uint8_t **, int *);
-	godot_error (*put_packet)(void *, const uint8_t *, int);
-	godot_int (*get_available_packet_count)(const void *);
-	godot_int (*get_max_packet_size)(const void *);
-
-	/* This is WebRTCPeer */
-	void (*set_write_mode)(void *, godot_int);
-	godot_int (*get_write_mode)(const void *);
-	bool (*was_string_packet)(const void *);
-	godot_int (*get_connection_state)(const void *);
-
-	godot_error (*create_offer)(void *);
-	godot_error (*set_remote_description)(void *, const char *, const char *);
-	godot_error (*set_local_description)(void *, const char *, const char *);
-	godot_error (*add_ice_candidate)(void *, const char *, int, const char *);
-	godot_error (*poll)(void *);
-
-	void *next; /* For extension? */
-} godot_net_webrtc_peer;
-
-/* Binds a PacketPeerGDNative to the provided interface */
-void GDAPI godot_net_bind_webrtc_peer(godot_object *p_obj, const godot_net_webrtc_peer *);
-
 #ifdef __cplusplus
 }
 #endif
+
+// WebRTC Bindings
+#include "net/godot_webrtc.h"
 
 #endif /* GODOT_NATIVENET_H */

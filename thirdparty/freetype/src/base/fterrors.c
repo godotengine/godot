@@ -4,7 +4,7 @@
  *
  *   FreeType API for error code handling.
  *
- * Copyright (C) 2018-2019 by
+ * Copyright (C) 2018-2020 by
  * Armin Hasitzka, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -17,6 +17,7 @@
 
 
 #include <ft2build.h>
+#include FT_INTERNAL_DEBUG_H
 #include FT_ERRORS_H
 
 

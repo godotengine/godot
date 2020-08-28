@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 #include "servers/audio_server.h"
 
 void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float sampling_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float dmin = base->range_min / (sampling_rate / 2.0);
@@ -42,7 +41,6 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 	float increment = 2.f * Math_PI * (base->rate / sampling_rate);
 
 	for (int i = 0; i < p_frame_count; i++) {
-
 		phase += increment;
 
 		while (phase >= Math_PI * 2.f) {
@@ -91,54 +89,46 @@ Ref<AudioEffectInstance> AudioEffectPhaser::instance() {
 }
 
 void AudioEffectPhaser::set_range_min_hz(float p_hz) {
-
 	range_min = p_hz;
 }
 
 float AudioEffectPhaser::get_range_min_hz() const {
-
 	return range_min;
 }
 
 void AudioEffectPhaser::set_range_max_hz(float p_hz) {
-
 	range_max = p_hz;
 }
-float AudioEffectPhaser::get_range_max_hz() const {
 
+float AudioEffectPhaser::get_range_max_hz() const {
 	return range_max;
 }
 
 void AudioEffectPhaser::set_rate_hz(float p_hz) {
-
 	rate = p_hz;
 }
-float AudioEffectPhaser::get_rate_hz() const {
 
+float AudioEffectPhaser::get_rate_hz() const {
 	return rate;
 }
 
 void AudioEffectPhaser::set_feedback(float p_fbk) {
-
 	feedback = p_fbk;
 }
-float AudioEffectPhaser::get_feedback() const {
 
+float AudioEffectPhaser::get_feedback() const {
 	return feedback;
 }
 
 void AudioEffectPhaser::set_depth(float p_depth) {
-
 	depth = p_depth;
 }
 
 float AudioEffectPhaser::get_depth() const {
-
 	return depth;
 }
 
 void AudioEffectPhaser::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_range_min_hz", "hz"), &AudioEffectPhaser::set_range_min_hz);
 	ClassDB::bind_method(D_METHOD("get_range_min_hz"), &AudioEffectPhaser::get_range_min_hz);
 
@@ -154,11 +144,11 @@ void AudioEffectPhaser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &AudioEffectPhaser::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &AudioEffectPhaser::get_depth);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_min_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_min_hz", "get_range_min_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "range_max_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_max_hz", "get_range_max_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rate_hz", PROPERTY_HINT_RANGE, "0.01,20"), "set_rate_hz", "get_rate_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "feedback", PROPERTY_HINT_RANGE, "0.1,0.9,0.1"), "set_feedback", "get_feedback");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_min_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_min_hz", "get_range_min_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_max_hz", PROPERTY_HINT_RANGE, "10,10000"), "set_range_max_hz", "get_range_max_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rate_hz", PROPERTY_HINT_RANGE, "0.01,20"), "set_rate_hz", "get_rate_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback", PROPERTY_HINT_RANGE, "0.1,0.9,0.1"), "set_feedback", "get_feedback");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_depth", "get_depth");
 }
 
 AudioEffectPhaser::AudioEffectPhaser() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,27 +29,40 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "webrtc_peer.h"
+#include "core/project_settings.h"
+#include "webrtc_data_channel.h"
+#include "webrtc_peer_connection.h"
 
 #ifdef JAVASCRIPT_ENABLED
 #include "emscripten.h"
-#include "webrtc_peer_js.h"
+#include "webrtc_peer_connection_js.h"
 #endif
 #ifdef WEBRTC_GDNATIVE_ENABLED
-#include "webrtc_peer_gdnative.h"
+#include "webrtc_data_channel_gdnative.h"
+#include "webrtc_peer_connection_gdnative.h"
 #endif
+#include "webrtc_multiplayer.h"
 
 void register_webrtc_types() {
+#define _SET_HINT(NAME, _VAL_, _MAX_) \
+	GLOBAL_DEF(NAME, _VAL_);          \
+	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+
+	_SET_HINT(WRTC_IN_BUF, 64, 4096);
+
 #ifdef JAVASCRIPT_ENABLED
-	WebRTCPeerJS::make_default();
+	WebRTCPeerConnectionJS::make_default();
 #elif defined(WEBRTC_GDNATIVE_ENABLED)
-	WebRTCPeerGDNative::make_default();
+	WebRTCPeerConnectionGDNative::make_default();
 #endif
 
-	ClassDB::register_custom_instance_class<WebRTCPeer>();
+	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
 #ifdef WEBRTC_GDNATIVE_ENABLED
-	ClassDB::register_class<WebRTCPeerGDNative>();
+	ClassDB::register_class<WebRTCPeerConnectionGDNative>();
+	ClassDB::register_class<WebRTCDataChannelGDNative>();
 #endif
+	ClassDB::register_virtual_class<WebRTCDataChannel>();
+	ClassDB::register_class<WebRTCMultiplayer>();
 }
 
 void unregister_webrtc_types() {}

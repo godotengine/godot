@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,6 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-
 	static AudioDriver *singleton;
 	uint64_t _last_mix_time;
 	uint64_t _last_mix_frames;
@@ -81,9 +80,6 @@ public:
 		SPEAKER_SURROUND_71,
 	};
 
-	static const int DEFAULT_MIX_RATE = 44100;
-	static const int DEFAULT_OUTPUT_LATENCY = 15;
-
 	static AudioDriver *get_singleton();
 	void set_singleton();
 
@@ -104,7 +100,7 @@ public:
 	virtual Error capture_stop() { return FAILED; }
 	virtual void capture_set_device(const String &p_name) {}
 	virtual String capture_get_device() { return "Default"; }
-	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PoolStringArray
+	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PackedStringArray
 
 	virtual float get_latency() { return 0; }
 
@@ -125,11 +121,13 @@ public:
 };
 
 class AudioDriverManager {
-
 	enum {
 
 		MAX_DRIVERS = 10
 	};
+
+	static const int DEFAULT_MIX_RATE = 44100;
+	static const int DEFAULT_OUTPUT_LATENCY = 15;
 
 	static AudioDriver *drivers[MAX_DRIVERS];
 	static int driver_count;
@@ -146,10 +144,10 @@ public:
 class AudioBusLayout;
 
 class AudioServer : public Object {
+	GDCLASS(AudioServer, Object);
 
-	GDCLASS(AudioServer, Object)
 public:
-	//re-expose this her, as AudioDriver is not exposed to script
+	//re-expose this here, as AudioDriver is not exposed to script
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_31,
@@ -180,8 +178,9 @@ private:
 	int channel_count;
 	int to_mix;
 
-	struct Bus {
+	float global_rate_scale;
 
+	struct Bus {
 		StringName name;
 		bool solo;
 		bool mute;
@@ -195,7 +194,7 @@ private:
 			bool active;
 			AudioFrame peak_volume;
 			Vector<AudioFrame> buffer;
-			Vector<Ref<AudioEffectInstance> > effect_instances;
+			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio;
 			Channel() {
 				last_mix_with_audio = 0;
@@ -221,7 +220,7 @@ private:
 		int index_cache;
 	};
 
-	Vector<Vector<AudioFrame> > temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 
@@ -229,35 +228,11 @@ private:
 
 	static AudioServer *singleton;
 
-	// TODO create an audiodata pool to optimize memory
-
-	Map<void *, uint32_t> audio_data;
-	size_t audio_data_total_mem;
-	size_t audio_data_max_mem;
-
-	Mutex *audio_data_lock;
-
-	float output_latency;
-	uint64_t output_latency_ticks;
-
 	void init_channels_and_buffers();
 
 	void _mix_step();
 
-#if 0
-	struct AudioInBlock {
-
-		Ref<AudioStreamSample> audio_stream;
-		int current_position;
-		bool loops;
-	};
-
-	Map<StringName, AudioInBlock *> audio_in_block_map;
-	Vector<AudioInBlock *> audio_in_blocks;
-#endif
-
 	struct CallbackItem {
-
 		AudioCallback callback;
 		void *userdata;
 
@@ -278,10 +253,14 @@ protected:
 public:
 	_FORCE_INLINE_ int get_channel_count() const {
 		switch (get_speaker_mode()) {
-			case SPEAKER_MODE_STEREO: return 1;
-			case SPEAKER_SURROUND_31: return 2;
-			case SPEAKER_SURROUND_51: return 3;
-			case SPEAKER_SURROUND_71: return 4;
+			case SPEAKER_MODE_STEREO:
+				return 1;
+			case SPEAKER_SURROUND_31:
+				return 2;
+			case SPEAKER_SURROUND_51:
+				return 3;
+			case SPEAKER_SURROUND_71:
+				return 4;
 		}
 		ERR_FAIL_V(1);
 	}
@@ -338,6 +317,9 @@ public:
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
 
+	void set_global_rate_scale(float p_scale);
+	float get_global_rate_scale() const;
+
 	virtual void init();
 	virtual void finish();
 	virtual void update();
@@ -358,12 +340,6 @@ public:
 	virtual double get_output_latency() const;
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
-
-	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = NULL);
-	void audio_data_free(void *p_data);
-
-	size_t audio_data_get_total_memory_usage() const;
-	size_t audio_data_get_max_memory_usage() const;
 
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);
@@ -389,13 +365,11 @@ public:
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
-
-	GDCLASS(AudioBusLayout, Resource)
+	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;

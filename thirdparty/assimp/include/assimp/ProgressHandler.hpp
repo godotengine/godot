@@ -47,9 +47,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_PROGRESSHANDLER_H_INC
 #define AI_PROGRESSHANDLER_H_INC
 
-#include "types.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
-namespace Assimp    {
+#include <assimp/types.h>
+
+namespace Assimp {
 
 // ------------------------------------------------------------------------------------
 /** @brief CPP-API: Abstract interface for custom progress report receivers.

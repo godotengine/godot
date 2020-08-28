@@ -1,0 +1,17 @@
+<Project>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition=" '$(GodotSdkImportsMicrosoftNetSdk)' == 'true' " />
+
+  <PropertyGroup>
+    <EnableGodotProjectTypeGuid Condition=" '$(EnableGodotProjectTypeGuid)' == '' ">true</EnableGodotProjectTypeGuid>
+    <ProjectTypeGuids Condition=" '$(EnableGodotProjectTypeGuid)' == 'true' ">$(GodotProjectTypeGuid);$(DefaultProjectTypeGuid)</ProjectTypeGuids>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+    Define constant to determine whether the real_t type in Godot is double precision or not.
+    By default this is false, like the official Godot builds. If someone is using a custom
+    Godot build where real_t is double, they can override the GodotRealTIsDouble property.
+    -->
+    <DefineConstants Condition=" '$(GodotRealTIsDouble)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+</Project>

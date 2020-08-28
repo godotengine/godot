@@ -2,7 +2,13 @@
  *  Debugging routines
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -86,8 +113,13 @@ void mbedtls_debug_print_msg( const mbedtls_ssl_context *ssl, int level,
     char str[DEBUG_BUF_SIZE];
     int ret;
 
-    if( NULL == ssl || NULL == ssl->conf || NULL == ssl->conf->f_dbg || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     va_start( argp, format );
 #if defined(_WIN32)
@@ -121,8 +153,13 @@ void mbedtls_debug_print_ret( const mbedtls_ssl_context *ssl, int level,
 {
     char str[DEBUG_BUF_SIZE];
 
-    if( ssl->conf == NULL || ssl->conf->f_dbg == NULL || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     /*
      * With non-blocking I/O and examples that just retry immediately,
@@ -146,8 +183,13 @@ void mbedtls_debug_print_buf( const mbedtls_ssl_context *ssl, int level,
     char txt[17];
     size_t i, idx = 0;
 
-    if( ssl->conf == NULL || ssl->conf->f_dbg == NULL || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     mbedtls_snprintf( str + idx, sizeof( str ) - idx, "dumping '%s' (%u bytes)\n",
               text, (unsigned int) len );
@@ -199,8 +241,13 @@ void mbedtls_debug_print_ecp( const mbedtls_ssl_context *ssl, int level,
 {
     char str[DEBUG_BUF_SIZE];
 
-    if( ssl->conf == NULL || ssl->conf->f_dbg == NULL || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     mbedtls_snprintf( str, sizeof( str ), "%s(X)", text );
     mbedtls_debug_print_mpi( ssl, level, file, line, str, &X->X );
@@ -219,8 +266,14 @@ void mbedtls_debug_print_mpi( const mbedtls_ssl_context *ssl, int level,
     int j, k, zeros = 1;
     size_t i, n, idx = 0;
 
-    if( ssl->conf == NULL || ssl->conf->f_dbg == NULL || X == NULL || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        NULL == X                ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     for( n = X->n - 1; n > 0; n-- )
         if( X->p[n] != 0 )
@@ -345,8 +398,14 @@ void mbedtls_debug_print_crt( const mbedtls_ssl_context *ssl, int level,
     char str[DEBUG_BUF_SIZE];
     int i = 0;
 
-    if( ssl->conf == NULL || ssl->conf->f_dbg == NULL || crt == NULL || level > debug_threshold )
+    if( NULL == ssl              ||
+        NULL == ssl->conf        ||
+        NULL == ssl->conf->f_dbg ||
+        NULL == crt              ||
+        level > debug_threshold )
+    {
         return;
+    }
 
     while( crt != NULL )
     {

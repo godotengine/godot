@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  audio_stream_generator.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "audio_stream_generator.h"
 
 void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
@@ -5,21 +35,18 @@ void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
 }
 
 float AudioStreamGenerator::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 void AudioStreamGenerator::set_buffer_length(float p_seconds) {
-
 	buffer_len = p_seconds;
 }
-float AudioStreamGenerator::get_buffer_length() const {
 
+float AudioStreamGenerator::get_buffer_length() const {
 	return buffer_len;
 }
 
 Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
-
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instance();
 	playback->generator = this;
@@ -28,8 +55,8 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
 	playback->buffer.clear();
 	return playback;
 }
-String AudioStreamGenerator::get_stream_name() const {
 
+String AudioStreamGenerator::get_stream_name() const {
 	return "UserFeed";
 }
 
@@ -44,8 +71,8 @@ void AudioStreamGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffer_length", "seconds"), &AudioStreamGenerator::set_buffer_length);
 	ClassDB::bind_method(D_METHOD("get_buffer_length"), &AudioStreamGenerator::get_buffer_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1"), "set_mix_rate", "get_mix_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1"), "set_mix_rate", "get_mix_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
 }
 
 AudioStreamGenerator::AudioStreamGenerator() {
@@ -69,23 +96,22 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 bool AudioStreamGeneratorPlayback::can_push_buffer(int p_frames) const {
 	return buffer.space_left() >= p_frames;
 }
-bool AudioStreamGeneratorPlayback::push_buffer(const PoolVector2Array &p_frames) {
 
+bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frames) {
 	int to_write = p_frames.size();
 	if (buffer.space_left() < to_write) {
 		return false;
 	}
 
-	PoolVector2Array::Read r = p_frames.read();
+	const Vector2 *r = p_frames.ptr();
 	if (sizeof(real_t) == 4) {
 		//write directly
-		buffer.write((const AudioFrame *)r.ptr(), to_write);
+		buffer.write((const AudioFrame *)r, to_write);
 	} else {
 		//convert from double
 		AudioFrame buf[2048];
 		int ofs = 0;
 		while (to_write) {
-
 			int w = MIN(to_write, 2048);
 			for (int i = 0; i < w; i++) {
 				buf[i] = r[i + ofs];
@@ -113,7 +139,6 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 }
 
 void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -132,12 +157,12 @@ void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	mixed += p_frames / generator->get_mix_rate();
 }
+
 float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {
 	return generator->get_mix_rate();
 }
 
 void AudioStreamGeneratorPlayback::start(float p_from_pos) {
-
 	if (mixed == 0.0) {
 		_begin_resample();
 	}
@@ -149,8 +174,8 @@ void AudioStreamGeneratorPlayback::start(float p_from_pos) {
 void AudioStreamGeneratorPlayback::stop() {
 	active = false;
 }
-bool AudioStreamGeneratorPlayback::is_playing() const {
 
+bool AudioStreamGeneratorPlayback::is_playing() const {
 	return active; //always playing, can't be stopped
 }
 
@@ -161,6 +186,7 @@ int AudioStreamGeneratorPlayback::get_loop_count() const {
 float AudioStreamGeneratorPlayback::get_playback_position() const {
 	return mixed;
 }
+
 void AudioStreamGeneratorPlayback::seek(float p_time) {
 	//no seek possible
 }
@@ -175,7 +201,7 @@ void AudioStreamGeneratorPlayback::_bind_methods() {
 }
 
 AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {
-	generator = NULL;
+	generator = nullptr;
 	skips = 0;
 	active = false;
 	mixed = 0;

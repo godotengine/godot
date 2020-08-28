@@ -263,7 +263,10 @@ struct btMatrixX
 	{
 		{
 			BT_PROFILE("storage=0");
-			btSetZero(&m_storage[0], m_storage.size());
+			if (m_storage.size())
+			{
+				btSetZero(&m_storage[0], m_storage.size());
+			}
 			//memset(&m_storage[0],0,sizeof(T)*m_storage.size());
 			//for (int i=0;i<m_storage.size();i++)
 			//			m_storage[i]=0;
@@ -281,7 +284,7 @@ struct btMatrixX
 		}
 	}
 
-	void printMatrix(const char* msg)
+	void printMatrix(const char* msg) const
 	{
 		printf("%s ---------------------\n", msg);
 		for (int i = 0; i < rows(); i++)
@@ -335,24 +338,22 @@ struct btMatrixX
 		btMatrixX res(rows(), other.cols());
 		res.setZero();
 		//		BT_PROFILE("btMatrixX mul");
-		for (int j = 0; j < res.cols(); ++j)
+		for (int i = 0; i < rows(); ++i)
 		{
 			{
-				for (int i = 0; i < res.rows(); ++i)
+				for (int j = 0; j < other.cols(); ++j)
 				{
 					T dotProd = 0;
-					//					T dotProd2=0;
-					//int waste=0,waste2=0;
-
 					{
-						//						bool useOtherCol = true;
 						{
-							for (int v = 0; v < rows(); v++)
+							int c = cols();
+
+							for (int k = 0; k < c; k++)
 							{
-								T w = (*this)(i, v);
-								if (other(v, j) != 0.f)
+								T w = (*this)(i, k);
+								if (other(k, j) != 0.f)
 								{
-									dotProd += w * other(v, j);
+									dotProd += w * other(k, j);
 								}
 							}
 						}

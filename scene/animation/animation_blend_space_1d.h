@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
 
 	enum {
 		MAX_BLEND_POINTS = 64
@@ -63,14 +63,14 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	StringName blend_position;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-	virtual Variant get_parameter_default_value(const StringName &p_parameter) const;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
+	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, float p_position);
@@ -93,10 +93,10 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
-	float process(float p_time, bool p_seek);
-	String get_caption() const;
+	float process(float p_time, bool p_seek) override;
+	String get_caption() const override;
 
-	Ref<AnimationNode> get_child_by_name(const StringName &p_name);
+	Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
 
 	AnimationNodeBlendSpace1D();
 	~AnimationNodeBlendSpace1D();

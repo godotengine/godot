@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #include "audio_effect_limiter.h"
 
 void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float threshdb = base->threshold;
 	float ceiling = Math::db2linear(base->ceiling);
 	float ceildb = base->ceiling;
@@ -42,7 +41,6 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 	float scmult = Math::abs((ceildb - sc) / (peakdb - sc));
 
 	for (int i = 0; i < p_frame_count; i++) {
-
 		float spl0 = p_src_frames[i].l;
 		float spl1 = p_src_frames[i].r;
 		spl0 = spl0 * makeup;
@@ -78,44 +76,38 @@ Ref<AudioEffectInstance> AudioEffectLimiter::instance() {
 }
 
 void AudioEffectLimiter::set_threshold_db(float p_threshold) {
-
 	threshold = p_threshold;
 }
 
 float AudioEffectLimiter::get_threshold_db() const {
-
 	return threshold;
 }
 
 void AudioEffectLimiter::set_ceiling_db(float p_ceiling) {
-
 	ceiling = p_ceiling;
 }
-float AudioEffectLimiter::get_ceiling_db() const {
 
+float AudioEffectLimiter::get_ceiling_db() const {
 	return ceiling;
 }
 
 void AudioEffectLimiter::set_soft_clip_db(float p_soft_clip) {
-
 	soft_clip = p_soft_clip;
 }
-float AudioEffectLimiter::get_soft_clip_db() const {
 
+float AudioEffectLimiter::get_soft_clip_db() const {
 	return soft_clip;
 }
 
 void AudioEffectLimiter::set_soft_clip_ratio(float p_soft_clip) {
-
 	soft_clip_ratio = p_soft_clip;
 }
-float AudioEffectLimiter::get_soft_clip_ratio() const {
 
+float AudioEffectLimiter::get_soft_clip_ratio() const {
 	return soft_clip_ratio;
 }
 
 void AudioEffectLimiter::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_ceiling_db", "ceiling"), &AudioEffectLimiter::set_ceiling_db);
 	ClassDB::bind_method(D_METHOD("get_ceiling_db"), &AudioEffectLimiter::get_ceiling_db);
 
@@ -128,10 +120,10 @@ void AudioEffectLimiter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_soft_clip_ratio", "soft_clip"), &AudioEffectLimiter::set_soft_clip_ratio);
 	ClassDB::bind_method(D_METHOD("get_soft_clip_ratio"), &AudioEffectLimiter::get_soft_clip_ratio);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ceiling_db", PROPERTY_HINT_RANGE, "-20,-0.1,0.1"), "set_ceiling_db", "get_ceiling_db");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "threshold_db", PROPERTY_HINT_RANGE, "-30,0,0.1"), "set_threshold_db", "get_threshold_db");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "soft_clip_db", PROPERTY_HINT_RANGE, "0,6,0.1"), "set_soft_clip_db", "get_soft_clip_db");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "soft_clip_ratio", PROPERTY_HINT_RANGE, "3,20,0.1"), "set_soft_clip_ratio", "get_soft_clip_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-20,-0.1,0.1"), "set_ceiling_db", "get_ceiling_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold_db", PROPERTY_HINT_RANGE, "-30,0,0.1"), "set_threshold_db", "get_threshold_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "soft_clip_db", PROPERTY_HINT_RANGE, "0,6,0.1"), "set_soft_clip_db", "get_soft_clip_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "soft_clip_ratio", PROPERTY_HINT_RANGE, "3,20,0.1"), "set_soft_clip_ratio", "get_soft_clip_ratio");
 }
 
 AudioEffectLimiter::AudioEffectLimiter() {

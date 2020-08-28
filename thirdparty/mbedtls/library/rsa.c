@@ -2,7 +2,13 @@
  *  The RSA public-key cryptosystem
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -249,6 +276,9 @@ int mbedtls_rsa_complete( mbedtls_rsa_context *ctx )
 {
     int ret = 0;
     int have_N, have_P, have_Q, have_D, have_E;
+#if !defined(MBEDTLS_RSA_NO_CRT)
+    int have_DP, have_DQ, have_QP;
+#endif
     int n_missing, pq_missing, d_missing, is_pub, is_priv;
 
     RSA_VALIDATE_RET( ctx != NULL );
@@ -258,6 +288,12 @@ int mbedtls_rsa_complete( mbedtls_rsa_context *ctx )
     have_Q = ( mbedtls_mpi_cmp_int( &ctx->Q, 0 ) != 0 );
     have_D = ( mbedtls_mpi_cmp_int( &ctx->D, 0 ) != 0 );
     have_E = ( mbedtls_mpi_cmp_int( &ctx->E, 0 ) != 0 );
+
+#if !defined(MBEDTLS_RSA_NO_CRT)
+    have_DP = ( mbedtls_mpi_cmp_int( &ctx->DP, 0 ) != 0 );
+    have_DQ = ( mbedtls_mpi_cmp_int( &ctx->DQ, 0 ) != 0 );
+    have_QP = ( mbedtls_mpi_cmp_int( &ctx->QP, 0 ) != 0 );
+#endif
 
     /*
      * Check whether provided parameters are enough
@@ -324,7 +360,7 @@ int mbedtls_rsa_complete( mbedtls_rsa_context *ctx )
      */
 
 #if !defined(MBEDTLS_RSA_NO_CRT)
-    if( is_priv )
+    if( is_priv && ! ( have_DP && have_DQ && have_QP ) )
     {
         ret = mbedtls_rsa_deduce_crt( &ctx->P,  &ctx->Q,  &ctx->D,
                                       &ctx->DP, &ctx->DQ, &ctx->QP );

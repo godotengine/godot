@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,39 +34,41 @@
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/gui/tool_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
-
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
-	ToolButton *button_delete;
+	Button *button_create;
+	Button *button_edit;
+	Button *button_delete;
 
 	struct Vertex {
-		Vertex();
-		Vertex(int p_vertex);
-		Vertex(int p_polygon, int p_vertex);
+		Vertex() {}
+		Vertex(int p_vertex) :
+				vertex(p_vertex) {}
+		Vertex(int p_polygon, int p_vertex) :
+				polygon(p_polygon),
+				vertex(p_vertex) {}
 
 		bool operator==(const Vertex &p_vertex) const;
 		bool operator!=(const Vertex &p_vertex) const;
 
 		bool valid() const;
 
-		int polygon;
-		int vertex;
+		int polygon = -1;
+		int vertex = -1;
 	};
 
 	struct PosVertex : public Vertex {
-		PosVertex();
-		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos);
-		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos);
+		PosVertex() {}
+		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
+				Vertex(p_vertex.polygon, p_vertex.vertex),
+				pos(p_pos) {}
+		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
+				Vertex(p_polygon, p_vertex),
+				pos(p_pos) {}
 
 		Vector2 pos;
 	};
@@ -147,7 +149,6 @@ public:
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
 	AbstractPolygon2DEditor *polygon_editor;
@@ -155,14 +156,14 @@ class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	String klass;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return polygon_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	bool has_main_screen() const { return false; }
-	virtual String get_name() const { return klass; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override { return klass; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
 	~AbstractPolygon2DEditorPlugin();

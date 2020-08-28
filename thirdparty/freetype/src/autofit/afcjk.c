@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for CJK writing system (body).
  *
- * Copyright (C) 2006-2019 by
+ * Copyright (C) 2006-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -806,7 +806,7 @@
   {
     AF_AxisHints  axis          = &hints->axis[dim];
     AF_Segment    segments      = axis->segments;
-    AF_Segment    segment_limit = segments + axis->num_segments;
+    AF_Segment    segment_limit = FT_OFFSET( segments, axis->num_segments );
     FT_Error      error;
     AF_Segment    seg;
 
@@ -1184,6 +1184,8 @@
 
 
         seg = edge->first;
+        if ( !seg )
+          goto Skip_Loop;
 
         do
         {
@@ -1239,13 +1241,14 @@
               edge2->flags |= AF_EDGE_SERIF;
             }
             else
-              edge->link  = edge2;
+              edge->link = edge2;
           }
 
           seg = seg->edge_next;
 
         } while ( seg != edge->first );
 
+      Skip_Loop:
         /* set the round/straight flags */
         edge->flags = AF_EDGE_NORMAL;
 

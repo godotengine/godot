@@ -41,10 +41,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /** @file Declares a helper class, "StandardShapes" which generates
- *  vertices for standard shapes, such as cylnders, cones, spheres ..
+ *  vertices for standard shapes, such as cylinders, cones, spheres ..
  */
+#pragma once
 #ifndef AI_STANDARD_SHAPES_H_INC
 #define AI_STANDARD_SHAPES_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/vector3.h>
 #include <vector>

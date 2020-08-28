@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,8 @@
 #define API_SOLUTION_NAME "GodotSharp"
 #define CORE_API_ASSEMBLY_NAME "GodotSharp"
 #define EDITOR_API_ASSEMBLY_NAME "GodotSharpEditor"
-#define EDITOR_TOOLS_ASSEMBLY_NAME "GodotSharpTools"
+#define TOOLS_ASM_NAME "GodotTools"
+#define TOOLS_PROJECT_EDITOR_ASM_NAME "GodotTools.ProjectEditor"
 
 #define BINDINGS_CLASS_NATIVECALLS "NativeCalls"
 #define BINDINGS_CLASS_NATIVECALLS_EDITOR "EditorNativeCalls"

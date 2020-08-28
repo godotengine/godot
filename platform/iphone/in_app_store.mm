@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,8 +39,10 @@ extern "C" {
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
+static NSArray *latestProducts;
 
 @interface SKProduct (LocalizedPrice)
+
 @property(nonatomic, readonly) NSString *localizedPrice;
 @end
 
@@ -57,6 +59,7 @@ NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
 	[numberFormatter release];
 	return formattedString;
 }
+
 @end
 
 InAppStore *InAppStore::instance = NULL;
@@ -80,20 +83,20 @@ void InAppStore::_bind_methods() {
 @implementation ProductsDelegate
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
-
 	NSArray *products = response.products;
+	latestProducts = products;
+
 	Dictionary ret;
 	ret["type"] = "product_info";
 	ret["result"] = "ok";
-	PoolStringArray titles;
-	PoolStringArray descriptions;
-	PoolRealArray prices;
-	PoolStringArray ids;
-	PoolStringArray localized_prices;
-	PoolStringArray currency_codes;
+	PackedStringArray titles;
+	PackedStringArray descriptions;
+	PackedFloat32Array prices;
+	PackedStringArray ids;
+	PackedStringArray localized_prices;
+	PackedStringArray currency_codes;
 
-	for (int i = 0; i < [products count]; i++) {
-
+	for (NSUInteger i = 0; i < [products count]; i++) {
 		SKProduct *product = [products objectAtIndex:i];
 
 		const char *str = [product.localizedTitle UTF8String];
@@ -113,10 +116,9 @@ void InAppStore::_bind_methods() {
 	ret["localized_prices"] = localized_prices;
 	ret["currency_codes"] = currency_codes;
 
-	PoolStringArray invalid_ids;
+	PackedStringArray invalid_ids;
 
 	for (NSString *ipid in response.invalidProductIdentifiers) {
-
 		invalid_ids.push_back(String::utf8([ipid UTF8String]));
 	};
 	ret["invalid_ids"] = invalid_ids;
@@ -128,12 +130,10 @@ void InAppStore::_bind_methods() {
 
 @end
 
-Error InAppStore::request_product_info(Variant p_params) {
+Error InAppStore::request_product_info(Dictionary p_params) {
+	ERR_FAIL_COND_V(!p_params.has("product_ids"), ERR_INVALID_PARAMETER);
 
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
-
-	PoolStringArray pids = params["product_ids"];
+	PackedStringArray pids = p_params["product_ids"];
 	printf("************ request product info! %i\n", pids.size());
 
 	NSMutableArray *array = [[[NSMutableArray alloc] initWithCapacity:pids.size()] autorelease];
@@ -155,7 +155,6 @@ Error InAppStore::request_product_info(Variant p_params) {
 };
 
 Error InAppStore::restore_purchases() {
-
 	printf("restoring purchases!\n");
 	[[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
 
@@ -169,10 +168,8 @@ Error InAppStore::restore_purchases() {
 @implementation TransObserver
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
-
 	printf("transactions updated!\n");
 	for (SKPaymentTransaction *transaction in transactions) {
-
 		switch (transaction.transactionState) {
 			case SKPaymentTransactionStatePurchased: {
 				printf("status purchased!\n");
@@ -189,11 +186,9 @@ Error InAppStore::restore_purchases() {
 				int sdk_version = 6;
 
 				if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-
 					NSURL *receiptFileURL = nil;
 					NSBundle *bundle = [NSBundle mainBundle];
 					if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
-
 						// Get the transaction receipt file path location in the app bundle.
 						receiptFileURL = [bundle appStoreReceiptURL];
 
@@ -206,16 +201,16 @@ Error InAppStore::restore_purchases() {
 						// which is still available in iOS 7.
 
 						// Use SKPaymentTransaction's transactionReceipt.
-						receipt = transaction.transactionReceipt;
+						receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 					}
 
 				} else {
-					receipt = transaction.transactionReceipt;
+					receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 				}
 
 				NSString *receipt_to_send = nil;
 				if (receipt != nil) {
-					receipt_to_send = [receipt description];
+					receipt_to_send = [receipt base64EncodedStringWithOptions:0];
 				}
 				Dictionary receipt_ret;
 				receipt_ret["receipt"] = String::utf8(receipt_to_send != nil ? [receipt_to_send UTF8String] : "");
@@ -262,18 +257,32 @@ Error InAppStore::restore_purchases() {
 
 @end
 
-Error InAppStore::purchase(Variant p_params) {
-
+Error InAppStore::purchase(Dictionary p_params) {
 	ERR_FAIL_COND_V(![SKPaymentQueue canMakePayments], ERR_UNAVAILABLE);
 	if (![SKPaymentQueue canMakePayments])
 		return ERR_UNAVAILABLE;
 
 	printf("purchasing!\n");
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_params.has("product_id"), ERR_INVALID_PARAMETER);
 
-	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
-	SKPayment *payment = [SKPayment paymentWithProductIdentifier:pid];
+	NSString *pid = [[[NSString alloc] initWithUTF8String:String(p_params["product_id"]).utf8().get_data()] autorelease];
+
+	SKProduct *product = nil;
+
+	if (latestProducts) {
+		for (SKProduct *storedProduct in latestProducts) {
+			if ([storedProduct.productIdentifier isEqualToString:pid]) {
+				product = storedProduct;
+				break;
+			}
+		}
+	}
+
+	if (!product) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	SKPayment *payment = [SKPayment paymentWithProduct:product];
 	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
 	[defq addPayment:payment];
 	printf("purchase sent!\n");
@@ -286,7 +295,6 @@ int InAppStore::get_pending_event_count() {
 };
 
 Variant InAppStore::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
@@ -294,12 +302,10 @@ Variant InAppStore::pop_pending_event() {
 };
 
 void InAppStore::_post_event(Variant p_event) {
-
 	pending_events.push_back(p_event);
 };
 
 void InAppStore::_record_purchase(String product_id) {
-
 	String skey = "purchased/" + product_id;
 	NSString *key = [[[NSString alloc] initWithUTF8String:skey.utf8().get_data()] autorelease];
 	[[NSUserDefaults standardUserDefaults] setBool:YES forKey:key];
@@ -307,7 +313,6 @@ void InAppStore::_record_purchase(String product_id) {
 };
 
 InAppStore *InAppStore::get_singleton() {
-
 	return instance;
 };
 
@@ -334,6 +339,6 @@ void InAppStore::set_auto_finish_transaction(bool b) {
 	auto_finish_transactions = b;
 }
 
-InAppStore::~InAppStore(){};
+InAppStore::~InAppStore() {}
 
 #endif

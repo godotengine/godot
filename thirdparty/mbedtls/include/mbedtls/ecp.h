@@ -16,7 +16,13 @@
 
 /*
  *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -30,11 +36,38 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
+ *
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 
 #ifndef MBEDTLS_ECP_H
 #define MBEDTLS_ECP_H
+
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 #include "bignum.h"
 
@@ -189,6 +222,68 @@ typedef struct mbedtls_ecp_group
 }
 mbedtls_ecp_group;
 
+/**
+ * \name SECTION: Module settings
+ *
+ * The configuration options you can set for this module are in this section.
+ * Either change them in config.h, or define them using the compiler command line.
+ * \{
+ */
+
+#if !defined(MBEDTLS_ECP_MAX_BITS)
+/**
+ * The maximum size of the groups, that is, of \c N and \c P.
+ */
+#define MBEDTLS_ECP_MAX_BITS     521   /**< The maximum size of groups, in bits. */
+#endif
+
+#define MBEDTLS_ECP_MAX_BYTES    ( ( MBEDTLS_ECP_MAX_BITS + 7 ) / 8 )
+#define MBEDTLS_ECP_MAX_PT_LEN   ( 2 * MBEDTLS_ECP_MAX_BYTES + 1 )
+
+#if !defined(MBEDTLS_ECP_WINDOW_SIZE)
+/*
+ * Maximum "window" size used for point multiplication.
+ * Default: 6.
+ * Minimum value: 2. Maximum value: 7.
+ *
+ * Result is an array of at most ( 1 << ( MBEDTLS_ECP_WINDOW_SIZE - 1 ) )
+ * points used for point multiplication. This value is directly tied to EC
+ * peak memory usage, so decreasing it by one should roughly cut memory usage
+ * by two (if large curves are in use).
+ *
+ * Reduction in size may reduce speed, but larger curves are impacted first.
+ * Sample performances (in ECDHE handshakes/s, with FIXED_POINT_OPTIM = 1):
+ *      w-size:     6       5       4       3       2
+ *      521       145     141     135     120      97
+ *      384       214     209     198     177     146
+ *      256       320     320     303     262     226
+ *      224       475     475     453     398     342
+ *      192       640     640     633     587     476
+ */
+#define MBEDTLS_ECP_WINDOW_SIZE    6   /**< The maximum window size used. */
+#endif /* MBEDTLS_ECP_WINDOW_SIZE */
+
+#if !defined(MBEDTLS_ECP_FIXED_POINT_OPTIM)
+/*
+ * Trade memory for speed on fixed-point multiplication.
+ *
+ * This speeds up repeated multiplication of the generator (that is, the
+ * multiplication in ECDSA signatures, and half of the multiplications in
+ * ECDSA verification and ECDHE) by a factor roughly 3 to 4.
+ *
+ * The cost is increasing EC peak memory usage by a factor roughly 2.
+ *
+ * Change this value to 0 to reduce peak memory usage.
+ */
+#define MBEDTLS_ECP_FIXED_POINT_OPTIM  1   /**< Enable fixed-point speed-up. */
+#endif /* MBEDTLS_ECP_FIXED_POINT_OPTIM */
+
+/* \} name SECTION: Module settings */
+
+#else  /* MBEDTLS_ECP_ALT */
+#include "ecp_alt.h"
+#endif /* MBEDTLS_ECP_ALT */
+
 #if defined(MBEDTLS_ECP_RESTARTABLE)
 
 /**
@@ -252,68 +347,6 @@ int mbedtls_ecp_check_budget( const mbedtls_ecp_group *grp,
 typedef void mbedtls_ecp_restart_ctx;
 
 #endif /* MBEDTLS_ECP_RESTARTABLE */
-
-/**
- * \name SECTION: Module settings
- *
- * The configuration options you can set for this module are in this section.
- * Either change them in config.h, or define them using the compiler command line.
- * \{
- */
-
-#if !defined(MBEDTLS_ECP_MAX_BITS)
-/**
- * The maximum size of the groups, that is, of \c N and \c P.
- */
-#define MBEDTLS_ECP_MAX_BITS     521   /**< The maximum size of groups, in bits. */
-#endif
-
-#define MBEDTLS_ECP_MAX_BYTES    ( ( MBEDTLS_ECP_MAX_BITS + 7 ) / 8 )
-#define MBEDTLS_ECP_MAX_PT_LEN   ( 2 * MBEDTLS_ECP_MAX_BYTES + 1 )
-
-#if !defined(MBEDTLS_ECP_WINDOW_SIZE)
-/*
- * Maximum "window" size used for point multiplication.
- * Default: 6.
- * Minimum value: 2. Maximum value: 7.
- *
- * Result is an array of at most ( 1 << ( MBEDTLS_ECP_WINDOW_SIZE - 1 ) )
- * points used for point multiplication. This value is directly tied to EC
- * peak memory usage, so decreasing it by one should roughly cut memory usage
- * by two (if large curves are in use).
- *
- * Reduction in size may reduce speed, but larger curves are impacted first.
- * Sample performances (in ECDHE handshakes/s, with FIXED_POINT_OPTIM = 1):
- *      w-size:     6       5       4       3       2
- *      521       145     141     135     120      97
- *      384       214     209     198     177     146
- *      256       320     320     303     262     226
- *      224       475     475     453     398     342
- *      192       640     640     633     587     476
- */
-#define MBEDTLS_ECP_WINDOW_SIZE    6   /**< The maximum window size used. */
-#endif /* MBEDTLS_ECP_WINDOW_SIZE */
-
-#if !defined(MBEDTLS_ECP_FIXED_POINT_OPTIM)
-/*
- * Trade memory for speed on fixed-point multiplication.
- *
- * This speeds up repeated multiplication of the generator (that is, the
- * multiplication in ECDSA signatures, and half of the multiplications in
- * ECDSA verification and ECDHE) by a factor roughly 3 to 4.
- *
- * The cost is increasing EC peak memory usage by a factor roughly 2.
- *
- * Change this value to 0 to reduce peak memory usage.
- */
-#define MBEDTLS_ECP_FIXED_POINT_OPTIM  1   /**< Enable fixed-point speed-up. */
-#endif /* MBEDTLS_ECP_FIXED_POINT_OPTIM */
-
-/* \} name SECTION: Module settings */
-
-#else  /* MBEDTLS_ECP_ALT */
-#include "ecp_alt.h"
-#endif /* MBEDTLS_ECP_ALT */
 
 /**
  * \brief    The ECP key-pair structure.
@@ -476,7 +509,7 @@ void mbedtls_ecp_point_init( mbedtls_ecp_point *pt );
  *
  * \note            After this function is called, domain parameters
  *                  for various ECP groups can be loaded through the
- *                  mbedtls_ecp_load() or mbedtls_ecp_tls_read_group()
+ *                  mbedtls_ecp_group_load() or mbedtls_ecp_tls_read_group()
  *                  functions.
  */
 void mbedtls_ecp_group_init( mbedtls_ecp_group *grp );
@@ -807,6 +840,9 @@ int mbedtls_ecp_tls_write_group( const mbedtls_ecp_group *grp,
  *                  intermediate results to prevent potential timing attacks
  *                  targeting these results. We recommend always providing
  *                  a non-NULL \p f_rng. The overhead is negligible.
+ *                  Note: unless #MBEDTLS_ECP_NO_INTERNAL_RNG is defined, when
+ *                  \p f_rng is NULL, an internal RNG (seeded from the value
+ *                  of \p m) will be used instead.
  *
  * \param grp       The ECP group to use.
  *                  This must be initialized and have group parameters

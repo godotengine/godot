@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,9 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
 
-class TileMap : public Node2D {
+class CollisionObject2D;
 
+class TileMap : public Node2D {
 	GDCLASS(TileMap, Node2D);
 
 public:
@@ -74,11 +75,12 @@ private:
 	Mode mode;
 	Transform2D custom_transform;
 	HalfOffset half_offset;
+	bool use_parent;
+	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
 
 	union PosKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -89,6 +91,13 @@ private:
 		bool operator<(const PosKey &p_k) const { return (y == p_k.y) ? x < p_k.x : y < p_k.y; }
 
 		bool operator==(const PosKey &p_k) const { return (y == p_k.y && x == p_k.x); }
+
+		PosKey to_quadrant(const int &p_quadrant_size) const {
+			// rounding down, instead of simply rounding towards zero (truncating)
+			return PosKey(
+					x > 0 ? x / p_quadrant_size : (x - (p_quadrant_size - 1)) / p_quadrant_size,
+					y > 0 ? y / p_quadrant_size : (y - (p_quadrant_size - 1)) / p_quadrant_size);
+		}
 
 		PosKey(int16_t p_x, int16_t p_y) {
 			x = p_x;
@@ -101,7 +110,6 @@ private:
 	};
 
 	union Cell {
-
 		struct {
 			int32_t id : 24;
 			bool flip_h : 1;
@@ -119,15 +127,15 @@ private:
 	List<PosKey> dirty_bitmask;
 
 	struct Quadrant {
-
 		Vector2 pos;
 		List<RID> canvas_items;
 		RID body;
+		uint32_t shape_owner_id;
 
 		SelfList<Quadrant> dirty_list;
 
 		struct NavPoly {
-			int id;
+			RID region;
 			Transform2D xform;
 		};
 
@@ -145,6 +153,7 @@ private:
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			body = q.body;
+			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			navpoly_ids = q.navpoly_ids;
 			occluder_instances = q.occluder_instances;
@@ -154,6 +163,7 @@ private:
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			body = q.body;
+			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			occluder_instances = q.occluder_instances;
 			navpoly_ids = q.navpoly_ids;
@@ -173,7 +183,9 @@ private:
 	Rect2 used_size_cache;
 	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
-	bool y_sort_mode;
+	bool use_y_sort;
+	bool compatibility_mode;
+	bool centered_textures;
 	bool clip_uv;
 	float fp_adjust;
 	float friction;
@@ -187,6 +199,8 @@ private:
 	int occluder_light_mask;
 
 	void _fix_cell_transform(Transform2D &xform, const Cell &p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+
+	void _add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata);
 
 	Map<PosKey, Quadrant>::Element *_create_quadrant(const PosKey &p_qk);
 	void _erase_quadrant(Map<PosKey, Quadrant>::Element *Q);
@@ -202,8 +216,8 @@ private:
 
 	_FORCE_INLINE_ int _get_quadrant_size() const;
 
-	void _set_tile_data(const PoolVector<int> &p_data);
-	PoolVector<int> _get_tile_data() const;
+	void _set_tile_data(const Vector<int> &p_data);
+	Vector<int> _get_tile_data() const;
 
 	void _set_old_cell_size(int p_size) { set_cell_size(Size2(p_size, p_size)); }
 	int _get_old_cell_size() const { return cell_size.x; }
@@ -218,14 +232,17 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _validate_property(PropertyInfo &property) const override;
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	enum {
 		INVALID_CELL = -1
 	};
 
-	virtual Rect2 _edit_get_rect() const;
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+#endif
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
@@ -271,6 +288,9 @@ public:
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;
 
+	void set_collision_use_parent(bool p_use_parent);
+	bool get_collision_use_parent() const;
+
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;
 
@@ -295,24 +315,32 @@ public:
 	Vector2 map_to_world(const Vector2 &p_pos, bool p_ignore_ofs = false) const;
 	Vector2 world_to_map(const Vector2 &p_pos) const;
 
-	void set_y_sort_mode(bool p_enable);
-	bool is_y_sort_mode_enabled() const;
+	void set_y_sort_enabled(bool p_enable);
+	bool is_y_sort_enabled() const;
 
-	Array get_used_cells() const;
-	Array get_used_cells_by_id(int p_id) const;
+	void set_compatibility_mode(bool p_enable);
+	bool is_compatibility_mode_enabled() const;
+
+	void set_centered_textures(bool p_enable);
+	bool is_centered_textures_enabled() const;
+
+	TypedArray<Vector2i> get_used_cells() const;
+	TypedArray<Vector2i> get_used_cells_by_index(int p_index) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
-	virtual void set_light_mask(int p_light_mask);
+	virtual void set_light_mask(int p_light_mask) override;
 
-	virtual void set_material(const Ref<Material> &p_material);
+	virtual void set_material(const Ref<Material> &p_material) override;
 
-	virtual void set_use_parent_material(bool p_use_parent_material);
+	virtual void set_use_parent_material(bool p_use_parent_material) override;
 
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
+
+	String get_configuration_warning() const override;
 
 	void fix_invalid_tiles();
 	void clear();

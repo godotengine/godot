@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,8 @@ class CollisionShape2DEditor : public Control {
 	void _get_current_shape_type();
 
 protected:
+	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:
@@ -88,14 +90,14 @@ class CollisionShape2DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { return collision_shape_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return collision_shape_2d_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { collision_shape_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const { return "CollisionShape2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_obj);
-	virtual bool handles(Object *p_obj) const;
-	virtual void make_visible(bool visible);
+	virtual String get_name() const override { return "CollisionShape2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_obj) override;
+	virtual bool handles(Object *p_obj) const override;
+	virtual void make_visible(bool visible) override;
 
 	CollisionShape2DEditorPlugin(EditorNode *p_editor);
 	~CollisionShape2DEditorPlugin();

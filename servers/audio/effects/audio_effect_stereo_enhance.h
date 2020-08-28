@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 class AudioEffectStereoEnhance;
 
 class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectStereoEnhanceInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectStereoEnhanceInstance, AudioEffectInstance);
 	friend class AudioEffectStereoEnhance;
 	Ref<AudioEffectStereoEnhance> base;
 
@@ -50,13 +50,13 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 	unsigned int ringbuff_mask;
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 
 	~AudioEffectStereoEnhanceInstance();
 };
 
 class AudioEffectStereoEnhance : public AudioEffect {
-	GDCLASS(AudioEffectStereoEnhance, AudioEffect)
+	GDCLASS(AudioEffectStereoEnhance, AudioEffect);
 
 	friend class AudioEffectStereoEnhanceInstance;
 	float volume_db;
@@ -69,7 +69,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	void set_pan_pullout(float p_amount);
 	float get_pan_pullout() const;

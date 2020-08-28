@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,15 +42,15 @@ public:
 	};
 
 private:
-	Mode mode;
+	Mode mode = MODE_MAX;
 	Vector<uint8_t> key;
-	bool writing;
-	FileAccess *file;
+	bool writing = false;
+	FileAccess *file = nullptr;
 	size_t base;
 	size_t length;
 	Vector<uint8_t> data;
-	mutable int pos;
-	mutable bool eofed;
+	mutable int pos = 0;
+	mutable bool eofed = false;
 
 public:
 	Error open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode);
@@ -59,6 +59,9 @@ public:
 	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
+
+	virtual String get_path() const; /// returns the path for the current open file
+	virtual String get_path_absolute() const; /// returns the absolute path for the current open file
 
 	virtual void seek(size_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
@@ -82,7 +85,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	FileAccessEncrypted();
+	FileAccessEncrypted() {}
 	~FileAccessEncrypted();
 };
 

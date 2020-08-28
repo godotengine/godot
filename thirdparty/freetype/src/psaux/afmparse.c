@@ -4,7 +4,7 @@
  *
  *   AFM parser (body).
  *
- * Copyright (C) 2006-2019 by
+ * Copyright (C) 2006-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -953,7 +953,8 @@
         error = afm_parse_kern_data( parser );
         if ( error )
           goto Fail;
-        /* fall through since we only support kern data */
+        /* we only support kern data, so ... */
+        /* fall through                      */
 
       case AFM_TOKEN_ENDFONTMETRICS:
         return FT_Err_Ok;

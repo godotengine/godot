@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StringName" version="4.0">
+	<brief_description>
+		An optimized string type for unique names.
+	</brief_description>
+	<description>
+		[StringName]s are immutable strings designed for general-purpose represention of unique names. [StringName] ensures that only one instance of a given name exists (so two [StringName]s with the same value are the same object). Comparing them is much faster than with regular [String]s, because only the pointers are compared, not the whole strings.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="StringName">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+				Creates a new [StringName] from the given [String].
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

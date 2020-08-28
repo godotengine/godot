@@ -48,6 +48,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_ASSIMP_HPP_INC
 #define AI_ASSIMP_HPP_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #ifndef __cplusplus
 #   error This header requires C++ to be used. Use assimp.h for plain C.
 #endif // __cplusplus

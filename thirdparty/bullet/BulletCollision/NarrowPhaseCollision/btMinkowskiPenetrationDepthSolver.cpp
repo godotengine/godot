@@ -65,7 +65,7 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 	btScalar minProj = btScalar(BT_LARGE_FLOAT);
 	btVector3 minNorm(btScalar(0.), btScalar(0.), btScalar(0.));
 	btVector3 minA, minB;
-	btVector3 seperatingAxisInA, seperatingAxisInB;
+	btVector3 separatingAxisInA, separatingAxisInB;
 	btVector3 pInA, qInB, pWorld, qWorld, w;
 
 #ifndef __SPU__
@@ -75,8 +75,8 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 
 	btVector3 supportVerticesABatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
 	btVector3 supportVerticesBBatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
-	btVector3 seperatingAxisInABatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
-	btVector3 seperatingAxisInBBatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
+	btVector3 separatingAxisInABatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
+	btVector3 separatingAxisInBBatch[NUM_UNITSPHERE_POINTS + MAX_PREFERRED_PENETRATION_DIRECTIONS * 2];
 	int i;
 
 	int numSampleDirections = NUM_UNITSPHERE_POINTS;
@@ -84,8 +84,8 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 	for (i = 0; i < numSampleDirections; i++)
 	{
 		btVector3 norm = getPenetrationDirections()[i];
-		seperatingAxisInABatch[i] = (-norm) * transA.getBasis();
-		seperatingAxisInBBatch[i] = norm * transB.getBasis();
+		separatingAxisInABatch[i] = (-norm) * transA.getBasis();
+		separatingAxisInBBatch[i] = norm * transB.getBasis();
 	}
 
 	{
@@ -98,8 +98,8 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 				convexA->getPreferredPenetrationDirection(i, norm);
 				norm = transA.getBasis() * norm;
 				getPenetrationDirections()[numSampleDirections] = norm;
-				seperatingAxisInABatch[numSampleDirections] = (-norm) * transA.getBasis();
-				seperatingAxisInBBatch[numSampleDirections] = norm * transB.getBasis();
+				separatingAxisInABatch[numSampleDirections] = (-norm) * transA.getBasis();
+				separatingAxisInBBatch[numSampleDirections] = norm * transB.getBasis();
 				numSampleDirections++;
 			}
 		}
@@ -115,15 +115,15 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 				convexB->getPreferredPenetrationDirection(i, norm);
 				norm = transB.getBasis() * norm;
 				getPenetrationDirections()[numSampleDirections] = norm;
-				seperatingAxisInABatch[numSampleDirections] = (-norm) * transA.getBasis();
-				seperatingAxisInBBatch[numSampleDirections] = norm * transB.getBasis();
+				separatingAxisInABatch[numSampleDirections] = (-norm) * transA.getBasis();
+				separatingAxisInBBatch[numSampleDirections] = norm * transB.getBasis();
 				numSampleDirections++;
 			}
 		}
 	}
 
-	convexA->batchedUnitVectorGetSupportingVertexWithoutMargin(seperatingAxisInABatch, supportVerticesABatch, numSampleDirections);
-	convexB->batchedUnitVectorGetSupportingVertexWithoutMargin(seperatingAxisInBBatch, supportVerticesBBatch, numSampleDirections);
+	convexA->batchedUnitVectorGetSupportingVertexWithoutMargin(separatingAxisInABatch, supportVerticesABatch, numSampleDirections);
+	convexB->batchedUnitVectorGetSupportingVertexWithoutMargin(separatingAxisInBBatch, supportVerticesBBatch, numSampleDirections);
 
 	for (i = 0; i < numSampleDirections; i++)
 	{
@@ -134,8 +134,8 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 		}
 		if (norm.length2() > 0.01)
 		{
-			seperatingAxisInA = seperatingAxisInABatch[i];
-			seperatingAxisInB = seperatingAxisInBBatch[i];
+			separatingAxisInA = separatingAxisInABatch[i];
+			separatingAxisInB = separatingAxisInBBatch[i];
 
 			pInA = supportVerticesABatch[i];
 			qInB = supportVerticesBBatch[i];
@@ -199,10 +199,10 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 	for (int i = 0; i < numSampleDirections; i++)
 	{
 		const btVector3& norm = getPenetrationDirections()[i];
-		seperatingAxisInA = (-norm) * transA.getBasis();
-		seperatingAxisInB = norm * transB.getBasis();
-		pInA = convexA->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInA);
-		qInB = convexB->localGetSupportVertexWithoutMarginNonVirtual(seperatingAxisInB);
+		separatingAxisInA = (-norm) * transA.getBasis();
+		separatingAxisInB = norm * transB.getBasis();
+		pInA = convexA->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInA);
+		qInB = convexB->localGetSupportVertexWithoutMarginNonVirtual(separatingAxisInB);
 		pWorld = transA(pInA);
 		qWorld = transB(qInB);
 		w = qWorld - pWorld;
@@ -259,7 +259,7 @@ bool btMinkowskiPenetrationDepthSolver::calcPenDepth(btSimplexSolverInterface& s
 	input.m_maximumDistanceSquared = btScalar(BT_LARGE_FLOAT);  //minProj;
 
 	btIntermediateResult res;
-	gjkdet.setCachedSeperatingAxis(-minNorm);
+	gjkdet.setCachedSeparatingAxis(-minNorm);
 	gjkdet.getClosestPoints(input, res, debugDraw);
 
 	btScalar correctedMinNorm = minProj - res.m_depth;

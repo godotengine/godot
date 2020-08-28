@@ -44,15 +44,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file Defines the StreamReader class which reads data from
  *  a binary stream with a well-defined endianness.
  */
-
+#pragma once
 #ifndef AI_STREAMREADER_H_INCLUDED
 #define AI_STREAMREADER_H_INCLUDED
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/IOStream.hpp>
 #include <assimp/Defines.h>
+#include <assimp/ByteSwapper.h>
+#include <assimp/Exceptional.h>
 
-#include "ByteSwapper.h"
-#include "Exceptional.h"
 #include <memory>
 
 namespace Assimp {

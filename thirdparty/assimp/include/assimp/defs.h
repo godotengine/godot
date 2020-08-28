@@ -5,8 +5,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -49,6 +47,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 #ifndef AI_DEFINES_H_INC
 #define AI_DEFINES_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include <assimp/config.h>
 
@@ -122,19 +124,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * OPTIMIZEANIMS
  * OPTIMIZEGRAPH
  * GENENTITYMESHES
- * FIXTEXTUREPATHS */
+ * FIXTEXTUREPATHS
+ * GENBOUNDINGBOXES */
 //////////////////////////////////////////////////////////////////////////
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #   undef ASSIMP_API
-
     //////////////////////////////////////////////////////////////////////////
     /* Define 'ASSIMP_BUILD_DLL_EXPORT' to build a DLL of the library */
     //////////////////////////////////////////////////////////////////////////
 #   ifdef ASSIMP_BUILD_DLL_EXPORT
 #       define ASSIMP_API __declspec(dllexport)
 #       define ASSIMP_API_WINONLY __declspec(dllexport)
-#       pragma warning (disable : 4251)
 
     //////////////////////////////////////////////////////////////////////////
     /* Define 'ASSIMP_DLL' before including Assimp to link to ASSIMP in
@@ -147,7 +148,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #       define ASSIMP_API
 #       define ASSIMP_API_WINONLY
 #   endif
+#elif defined(SWIG)
 
+    /* Do nothing, the relevant defines are all in AssimpSwigPort.i */
+
+#else
+#   define ASSIMP_API __attribute__ ((visibility("default")))
+#   define ASSIMP_API_WINONLY
+#endif
+
+#ifdef _MSC_VER
+#   ifdef ASSIMP_BUILD_DLL_EXPORT
+#       pragma warning (disable : 4251)
+#   endif
     /* Force the compiler to inline a function, if possible
      */
 #   define AI_FORCE_INLINE __forceinline
@@ -155,17 +168,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     /* Tells the compiler that a function never returns. Used in code analysis
      * to skip dead paths (e.g. after an assertion evaluated to false). */
 #   define AI_WONT_RETURN __declspec(noreturn)
-
 #elif defined(SWIG)
 
     /* Do nothing, the relevant defines are all in AssimpSwigPort.i */
 
 #else
-
 #   define AI_WONT_RETURN
-
-#   define ASSIMP_API __attribute__ ((visibility("default")))
-#   define ASSIMP_API_WINONLY
 #   define AI_FORCE_INLINE inline
 #endif // (defined _MSC_VER)
 
@@ -214,10 +222,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #if (defined(__BORLANDC__) || defined (__BCPLUSPLUS__))
-#error Currently, Borland is unsupported. Feel free to port Assimp.
-
-// "W8059 Packgröße der Struktur geändert"
-
+#   error Currently, Borland is unsupported. Feel free to port Assimp.
 #endif
 
 
@@ -243,10 +248,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     typedef double ai_real;
     typedef signed long long int ai_int;
     typedef unsigned long long int ai_uint;
+#ifndef ASSIMP_AI_REAL_TEXT_PRECISION
+#define ASSIMP_AI_REAL_TEXT_PRECISION 16
+#endif // ASSIMP_AI_REAL_TEXT_PRECISION
 #else // ASSIMP_DOUBLE_PRECISION
     typedef float ai_real;
     typedef signed int ai_int;
     typedef unsigned int ai_uint;
+#ifndef ASSIMP_AI_REAL_TEXT_PRECISION
+#define ASSIMP_AI_REAL_TEXT_PRECISION 8
+#endif // ASSIMP_AI_REAL_TEXT_PRECISION
 #endif // ASSIMP_DOUBLE_PRECISION
 
     //////////////////////////////////////////////////////////////////////////
@@ -267,6 +278,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AI_DEG_TO_RAD(x) ((x)*(ai_real)0.0174532925)
 #define AI_RAD_TO_DEG(x) ((x)*(ai_real)57.2957795)
 
+/* Numerical limits */
+static const ai_real ai_epsilon = (ai_real) 0.00001;
+
 /* Support for big-endian builds */
 #if defined(__BYTE_ORDER__)
 #   if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
@@ -284,20 +298,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 
-/* To avoid running out of memory
- * This can be adjusted for specific use cases
- * It's NOT a total limit, just a limit for individual allocations
+/**
+ *  To avoid running out of memory
+ *  This can be adjusted for specific use cases
+ *  It's NOT a total limit, just a limit for individual allocations
  */
 #define AI_MAX_ALLOC(type) ((256U * 1024 * 1024) / sizeof(type))
 
 #ifndef _MSC_VER
 #  define AI_NO_EXCEPT noexcept
 #else
-#  if (_MSC_VER == 1915 )
+#  if (_MSC_VER >= 1915 )
 #    define AI_NO_EXCEPT noexcept
 #  else
 #    define AI_NO_EXCEPT
 #  endif
+#endif // _MSC_VER
+
+/**
+ *  Helper macro to set a pointer to NULL in debug builds
+ */
+#if (defined ASSIMP_BUILD_DEBUG)
+#   define AI_DEBUG_INVALIDATE_PTR(x) x = NULL;
+#else
+#   define AI_DEBUG_INVALIDATE_PTR(x)
 #endif
 
 #endif // !! AI_DEFINES_H_INC

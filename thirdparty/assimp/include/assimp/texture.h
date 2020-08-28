@@ -5,8 +5,6 @@ Open Asset Import Library (assimp)
 
 Copyright (c) 2006-2019, assimp team
 
-
-
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -53,12 +51,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_TEXTURE_H_INC
 #define AI_TEXTURE_H_INC
 
-#include "types.h"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
+#include <assimp/types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 // --------------------------------------------------------------------------------
 
@@ -79,7 +80,6 @@ extern "C" {
 #   define AI_MAKE_EMBEDDED_TEXNAME(_n_) AI_EMBEDDED_TEXNAME_PREFIX # _n_
 #endif
 
-
 #include "./Compiler/pushpack1.h"
 
 // --------------------------------------------------------------------------------
@@ -87,8 +87,7 @@ extern "C" {
 *
 *  Used by aiTexture.
 */
-struct aiTexel
-{
+struct aiTexel {
     unsigned char b,g,r,a;
 
 #ifdef __cplusplus

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGPrimitive3D" inherits="CSGShape3D" version="4.0">
+	<brief_description>
+		Base class for CSG primitives.
+	</brief_description>
+	<description>
+		Parent class for various CSG primitives. It contains code and functionality that is common between them. It cannot be used directly. Instead use one of the various classes that inherit from it.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="invert_faces" type="bool" setter="set_invert_faces" getter="is_inverting_faces" default="false">
+			Invert the faces of the mesh.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

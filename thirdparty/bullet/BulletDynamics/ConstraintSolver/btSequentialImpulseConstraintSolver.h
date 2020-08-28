@@ -29,10 +29,29 @@ class btCollisionObject;
 
 typedef btScalar (*btSingleConstraintRowSolver)(btSolverBody&, btSolverBody&, const btSolverConstraint&);
 
+struct btSolverAnalyticsData
+{
+	btSolverAnalyticsData()
+	{
+		m_numSolverCalls = 0;
+		m_numIterationsUsed = -1;
+		m_remainingLeastSquaresResidual = -1;
+		m_islandId = -2;
+	}
+	int m_islandId;
+	int m_numBodies;
+	int m_numContactManifolds;
+	int m_numSolverCalls;
+	int m_numIterationsUsed;
+	double m_remainingLeastSquaresResidual;
+};
+
 ///The btSequentialImpulseConstraintSolver is a fast SIMD implementation of the Projected Gauss Seidel (iterative LCP) method.
 ATTRIBUTE_ALIGNED16(class)
 btSequentialImpulseConstraintSolver : public btConstraintSolver
 {
+	
+
 protected:
 	btAlignedObjectArray<btSolverBody> m_tmpSolverBodyPool;
 	btConstraintArray m_tmpSolverContactConstraintPool;
@@ -64,26 +83,26 @@ protected:
 	btScalar m_leastSquaresResidual;
 
 	void setupFrictionConstraint(btSolverConstraint & solverConstraint, const btVector3& normalAxis, int solverBodyIdA, int solverBodyIdB,
-								 btManifoldPoint& cp, const btVector3& rel_pos1, const btVector3& rel_pos2,
-								 btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation,
-								 const btContactSolverInfo& infoGlobal,
-								 btScalar desiredVelocity = 0., btScalar cfmSlip = 0.);
+		btManifoldPoint& cp, const btVector3& rel_pos1, const btVector3& rel_pos2,
+		btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation,
+		const btContactSolverInfo& infoGlobal,
+		btScalar desiredVelocity = 0., btScalar cfmSlip = 0.);
 
 	void setupTorsionalFrictionConstraint(btSolverConstraint & solverConstraint, const btVector3& normalAxis, int solverBodyIdA, int solverBodyIdB,
-										  btManifoldPoint& cp, btScalar combinedTorsionalFriction, const btVector3& rel_pos1, const btVector3& rel_pos2,
-										  btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation,
-										  btScalar desiredVelocity = 0., btScalar cfmSlip = 0.);
+		btManifoldPoint& cp, btScalar combinedTorsionalFriction, const btVector3& rel_pos1, const btVector3& rel_pos2,
+		btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation,
+		btScalar desiredVelocity = 0., btScalar cfmSlip = 0.);
 
 	btSolverConstraint& addFrictionConstraint(const btVector3& normalAxis, int solverBodyIdA, int solverBodyIdB, int frictionIndex, btManifoldPoint& cp, const btVector3& rel_pos1, const btVector3& rel_pos2, btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation, const btContactSolverInfo& infoGlobal, btScalar desiredVelocity = 0., btScalar cfmSlip = 0.);
 	btSolverConstraint& addTorsionalFrictionConstraint(const btVector3& normalAxis, int solverBodyIdA, int solverBodyIdB, int frictionIndex, btManifoldPoint& cp, btScalar torsionalFriction, const btVector3& rel_pos1, const btVector3& rel_pos2, btCollisionObject* colObj0, btCollisionObject* colObj1, btScalar relaxation, btScalar desiredVelocity = 0, btScalar cfmSlip = 0.f);
 
 	void setupContactConstraint(btSolverConstraint & solverConstraint, int solverBodyIdA, int solverBodyIdB, btManifoldPoint& cp,
-								const btContactSolverInfo& infoGlobal, btScalar& relaxation, const btVector3& rel_pos1, const btVector3& rel_pos2);
+		const btContactSolverInfo& infoGlobal, btScalar& relaxation, const btVector3& rel_pos1, const btVector3& rel_pos2);
 
 	static void applyAnisotropicFriction(btCollisionObject * colObj, btVector3 & frictionDirection, int frictionMode);
 
 	void setFrictionConstraintImpulse(btSolverConstraint & solverConstraint, int solverBodyIdA, int solverBodyIdB,
-									  btManifoldPoint& cp, const btContactSolverInfo& infoGlobal);
+		btManifoldPoint& cp, const btContactSolverInfo& infoGlobal);
 
 	///m_btSeed2 is used for re-arranging the constraint rows. improves convergence/quality of friction
 	unsigned long m_btSeed2;
@@ -179,6 +198,8 @@ public:
 		m_resolveSingleConstraintRowLowerLimit = rowSolver;
 	}
 
+
+
 	///Various implementations of solving a single constraint row using a generic equality constraint, using scalar reference, SSE2 or SSE4
 	btSingleConstraintRowSolver getScalarConstraintRowSolverGeneric();
 	btSingleConstraintRowSolver getSSE2ConstraintRowSolverGeneric();
@@ -188,6 +209,7 @@ public:
 	btSingleConstraintRowSolver getScalarConstraintRowSolverLowerLimit();
 	btSingleConstraintRowSolver getSSE2ConstraintRowSolverLowerLimit();
 	btSingleConstraintRowSolver getSSE4_1ConstraintRowSolverLowerLimit();
+	btSolverAnalyticsData m_analyticsData;
 };
 
 #endif  //BT_SEQUENTIAL_IMPULSE_CONSTRAINT_SOLVER_H

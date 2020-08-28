@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTreeTimer" inherits="Reference" category="Core" version="3.2">
+<class name="SceneTreeTimer" inherits="Reference" version="4.0">
 	<brief_description>
 		One-shot timer.
 	</brief_description>
@@ -8,9 +8,9 @@
 		As opposed to [Timer], it does not require the instantiation of a node. Commonly used to create a one-shot delay timer as in the following example:
 		[codeblock]
 		func some_function():
-			print("start")
-			yield(get_tree().create_timer(1.0), "timeout")
-			print("end")
+		    print("Timer started.")
+		    yield(get_tree().create_timer(1.0), "timeout")
+		    print("Timer ended.")
 		[/codeblock]
 	</description>
 	<tutorials>

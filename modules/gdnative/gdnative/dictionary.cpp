@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_dictionary) == sizeof(Dictionary), "Dictionary size mismatch");
+
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest) {
 	Dictionary *dest = (Dictionary *)r_dest;
 	memnew_placement(dest, Dictionary);
@@ -53,6 +55,15 @@ void GDAPI godot_dictionary_new_copy(godot_dictionary *r_dest, const godot_dicti
 void GDAPI godot_dictionary_destroy(godot_dictionary *p_self) {
 	Dictionary *self = (Dictionary *)p_self;
 	self->~Dictionary();
+}
+
+godot_dictionary GDAPI godot_dictionary_duplicate(const godot_dictionary *p_self, const godot_bool p_deep) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	godot_dictionary res;
+	Dictionary *val = (Dictionary *)&res;
+	memnew_placement(val, Dictionary);
+	*val = self->duplicate(p_deep);
+	return res;
 }
 
 godot_int GDAPI godot_dictionary_size(const godot_dictionary *p_self) {

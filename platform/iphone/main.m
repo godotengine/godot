@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,20 +32,25 @@
 
 #import <UIKit/UIKit.h>
 #include <stdio.h>
+#include <vulkan/vulkan.h>
 
 int gargc;
 char **gargv;
 
 int main(int argc, char *argv[]) {
+#if defined(VULKAN_ENABLED)
+	//MoltenVK - enable full component swizzling support
+	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
+#endif
+
 	printf("*********** main.m\n");
 	gargc = argc;
 	gargv = argv;
 
-	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	AppDelegate *app = [AppDelegate alloc];
 	printf("running app main\n");
-	UIApplicationMain(argc, argv, nil, @"AppDelegate");
-	printf("main done, pool release\n");
-	[pool release];
+	@autoreleasepool {
+		UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+	}
+	printf("main done\n");
 	return 0;
 }

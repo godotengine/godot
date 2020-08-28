@@ -2,7 +2,13 @@
  *  RFC 1321 compliant MD5 implementation
  *
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -15,6 +21,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -136,19 +163,22 @@ int mbedtls_internal_md5_process( mbedtls_md5_context *ctx,
     GET_UINT32_LE( X[14], data, 56 );
     GET_UINT32_LE( X[15], data, 60 );
 
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+#define S(x,n)                                                          \
+    ( ( (x) << (n) ) | ( ( (x) & 0xFFFFFFFF) >> ( 32 - (n) ) ) )
 
-#define P(a,b,c,d,k,s,t)                                \
-{                                                       \
-    a += F(b,c,d) + X[k] + t; a = S(a,s) + b;           \
-}
+#define P(a,b,c,d,k,s,t)                                        \
+    do                                                          \
+    {                                                           \
+        (a) += F((b),(c),(d)) + X[(k)] + (t);                   \
+        (a) = S((a),(s)) + (b);                                 \
+    } while( 0 )
 
     A = ctx->state[0];
     B = ctx->state[1];
     C = ctx->state[2];
     D = ctx->state[3];
 
-#define F(x,y,z) (z ^ (x & (y ^ z)))
+#define F(x,y,z) ((z) ^ ((x) & ((y) ^ (z))))
 
     P( A, B, C, D,  0,  7, 0xD76AA478 );
     P( D, A, B, C,  1, 12, 0xE8C7B756 );
@@ -169,7 +199,7 @@ int mbedtls_internal_md5_process( mbedtls_md5_context *ctx,
 
 #undef F
 
-#define F(x,y,z) (y ^ (z & (x ^ y)))
+#define F(x,y,z) ((y) ^ ((z) & ((x) ^ (y))))
 
     P( A, B, C, D,  1,  5, 0xF61E2562 );
     P( D, A, B, C,  6,  9, 0xC040B340 );
@@ -190,7 +220,7 @@ int mbedtls_internal_md5_process( mbedtls_md5_context *ctx,
 
 #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
+#define F(x,y,z) ((x) ^ (y) ^ (z))
 
     P( A, B, C, D,  5,  4, 0xFFFA3942 );
     P( D, A, B, C,  8, 11, 0x8771F681 );
@@ -211,7 +241,7 @@ int mbedtls_internal_md5_process( mbedtls_md5_context *ctx,
 
 #undef F
 
-#define F(x,y,z) (y ^ (x | ~z))
+#define F(x,y,z) ((y) ^ ((x) | ~(z)))
 
     P( A, B, C, D,  0,  6, 0xF4292244 );
     P( D, A, B, C,  7, 10, 0x432AFF97 );

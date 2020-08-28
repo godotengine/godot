@@ -325,6 +325,7 @@ const char* btPersistentManifold::serialize(const class btPersistentManifold* ma
 	{
 		const btManifoldPoint& pt = manifold->getContactPoint(i);
 		dataOut->m_pointCacheAppliedImpulse[i] = pt.m_appliedImpulse;
+		dataOut->m_pointCachePrevRHS[i] = pt.m_prevRHS;
 		dataOut->m_pointCacheAppliedImpulseLateral1[i] = pt.m_appliedImpulseLateral1;
 		dataOut->m_pointCacheAppliedImpulseLateral2[i] = pt.m_appliedImpulseLateral2;
 		pt.m_localPointA.serialize(dataOut->m_pointCacheLocalPointA[i]);
@@ -371,6 +372,7 @@ void btPersistentManifold::deSerialize(const struct btPersistentManifoldDoubleDa
 		btManifoldPoint& pt = m_pointCache[i];
 
 		pt.m_appliedImpulse = manifoldDataPtr->m_pointCacheAppliedImpulse[i];
+		pt.m_prevRHS = manifoldDataPtr->m_pointCachePrevRHS[i];
 		pt.m_appliedImpulseLateral1 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral1[i];
 		pt.m_appliedImpulseLateral2 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral2[i];
 		pt.m_localPointA.deSerializeDouble(manifoldDataPtr->m_pointCacheLocalPointA[i]);
@@ -416,6 +418,7 @@ void btPersistentManifold::deSerialize(const struct btPersistentManifoldFloatDat
 		btManifoldPoint& pt = m_pointCache[i];
 
 		pt.m_appliedImpulse = manifoldDataPtr->m_pointCacheAppliedImpulse[i];
+		pt.m_prevRHS = manifoldDataPtr->m_pointCachePrevRHS[i];
 		pt.m_appliedImpulseLateral1 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral1[i];
 		pt.m_appliedImpulseLateral2 = manifoldDataPtr->m_pointCacheAppliedImpulseLateral2[i];
 		pt.m_localPointA.deSerialize(manifoldDataPtr->m_pointCacheLocalPointA[i]);

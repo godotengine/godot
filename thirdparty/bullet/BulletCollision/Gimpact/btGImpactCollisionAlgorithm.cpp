@@ -18,7 +18,7 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 /*
-Author: Francisco Len Nßjera
+Author: Francisco Leon Najera
 Concave-Concave Collision
 
 */
@@ -590,14 +590,16 @@ void btGImpactCollisionAlgorithm::gimpact_vs_shape(const btCollisionObjectWrappe
 		}
 
 		btCollisionObjectWrapper ob0(body0Wrap, colshape0, body0Wrap->getCollisionObject(), body0Wrap->getWorldTransform(), m_part0, m_triface0);
-		const btCollisionObjectWrapper* prevObj0 = m_resultOut->getBody0Wrap();
+		const btCollisionObjectWrapper* prevObj;
 
 		if (m_resultOut->getBody0Wrap()->getCollisionObject() == ob0.getCollisionObject())
 		{
+			prevObj = m_resultOut->getBody0Wrap();
 			m_resultOut->setBody0Wrap(&ob0);
 		}
 		else
 		{
+			prevObj = m_resultOut->getBody1Wrap();
 			m_resultOut->setBody1Wrap(&ob0);
 		}
 
@@ -610,7 +612,15 @@ void btGImpactCollisionAlgorithm::gimpact_vs_shape(const btCollisionObjectWrappe
 		{
 			shape_vs_shape_collision(&ob0, body1Wrap, colshape0, shape1);
 		}
-		m_resultOut->setBody0Wrap(prevObj0);
+
+		if (m_resultOut->getBody0Wrap()->getCollisionObject() == ob0.getCollisionObject())
+		{
+			m_resultOut->setBody0Wrap(prevObj);
+		}
+		else
+		{
+			m_resultOut->setBody1Wrap(prevObj);
+		}
 	}
 
 	shape0->unlockChildShapes();

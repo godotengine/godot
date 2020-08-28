@@ -4,7 +4,7 @@
  *
  *   TrueType-specific tables loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -352,12 +352,12 @@
       goto Exit;
 
     {
-      FT_Short*  cur   = face->cvt;
-      FT_Short*  limit = cur + face->cvt_size;
+      FT_Int32*  cur   = face->cvt;
+      FT_Int32*  limit = cur + face->cvt_size;
 
 
       for ( ; cur < limit; cur++ )
-        *cur = FT_GET_SHORT();
+        *cur = FT_GET_SHORT() * 64;
     }
 
     FT_FRAME_EXIT();
@@ -633,7 +633,7 @@
     FT_UInt   nn;
     FT_Byte*  result      = NULL;
     FT_ULong  record_size = face->hdmx_record_size;
-    FT_Byte*  record      = face->hdmx_table + 8;
+    FT_Byte*  record      = FT_OFFSET( face->hdmx_table, 8 );
 
 
     for ( nn = 0; nn < face->hdmx_record_count; nn++ )

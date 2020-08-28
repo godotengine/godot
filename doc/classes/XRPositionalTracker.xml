@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRPositionalTracker" inherits="Object" version="4.0">
+	<brief_description>
+		A tracked object.
+	</brief_description>
+	<description>
+		An instance of this object represents a device that is tracked, such as a controller or anchor point. HMDs aren't represented here as they are handled internally.
+		As controllers are turned on and the AR/VR interface detects them, instances of this object are automatically added to this list of active tracking objects accessible through the [XRServer].
+		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDNative-based interfaces can interact with them.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_hand" qualifiers="const">
+			<return type="int" enum="XRPositionalTracker.TrackerHand">
+			</return>
+			<description>
+				Returns the hand holding this tracker, if known. See [enum TrackerHand] constants.
+			</description>
+		</method>
+		<method name="get_joy_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				If this is a controller that is being tracked, the controller will also be represented by a joystick entry with this ID.
+			</description>
+		</method>
+		<method name="get_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<description>
+				Returns the mesh related to a controller or anchor point if one is available.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<description>
+				Returns the controller or anchor point's name if available.
+			</description>
+		</method>
+		<method name="get_orientation" qualifiers="const">
+			<return type="Basis">
+			</return>
+			<description>
+				Returns the controller's orientation matrix.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the world-space controller position.
+			</description>
+		</method>
+		<method name="get_tracker_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the internal tracker ID. This uniquely identifies the tracker per tracker type and matches the ID you need to specify for nodes such as the [XRController3D] and [XRAnchor3D] nodes.
+			</description>
+		</method>
+		<method name="get_tracks_orientation" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this device tracks orientation.
+			</description>
+		</method>
+		<method name="get_tracks_position" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this device tracks position.
+			</description>
+		</method>
+		<method name="get_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="adjust_by_reference_frame" type="bool">
+			</argument>
+			<description>
+				Returns the transform combining this device's orientation and position.
+			</description>
+		</method>
+		<method name="get_type" qualifiers="const">
+			<return type="int" enum="XRServer.TrackerType">
+			</return>
+			<description>
+				Returns the tracker's type.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
+			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="TRACKER_HAND_UNKNOWN" value="0" enum="TrackerHand">
+			The hand this tracker is held in is unknown or not applicable.
+		</constant>
+		<constant name="TRACKER_LEFT_HAND" value="1" enum="TrackerHand">
+			This tracker is the left hand controller.
+		</constant>
+		<constant name="TRACKER_RIGHT_HAND" value="2" enum="TrackerHand">
+			This tracker is the right hand controller.
+		</constant>
+	</constants>
+</class>

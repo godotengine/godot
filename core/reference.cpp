@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,27 +33,18 @@
 #include "core/script_language.h"
 
 bool Reference::init_ref() {
-
 	if (reference()) {
-
-		// this may fail in the scenario of two threads assigning the pointer for the FIRST TIME
-		// at the same time, which is never likely to happen (would be crazy to do)
-		// so don't do it.
-
-		if (refcount_init.get() > 0) {
-			refcount_init.unref();
+		if (!is_referenced() && refcount_init.unref()) {
 			unreference(); // first referencing is already 1, so compensate for the ref above
 		}
 
 		return true;
 	} else {
-
 		return false;
 	}
 }
 
 void Reference::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("init_ref"), &Reference::init_ref);
 	ClassDB::bind_method(D_METHOD("reference"), &Reference::reference);
 	ClassDB::bind_method(D_METHOD("unreference"), &Reference::unreference);
@@ -64,13 +55,14 @@ int Reference::reference_get_count() const {
 }
 
 bool Reference::reference() {
-	bool success = refcount.ref();
+	uint32_t rc_val = refcount.refval();
+	bool success = rc_val != 0;
 
-	if (success && refcount.get() <= 2 /* higher is not relevant */) {
+	if (success && rc_val <= 2 /* higher is not relevant */) {
 		if (get_script_instance()) {
 			get_script_instance()->refcount_incremented();
 		}
-		if (instance_binding_count > 0) {
+		if (instance_binding_count > 0 && !ScriptServer::are_languages_finished()) {
 			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
 				if (_script_instance_bindings[i]) {
 					ScriptServer::get_language(i)->refcount_incremented_instance_binding(this);
@@ -83,15 +75,15 @@ bool Reference::reference() {
 }
 
 bool Reference::unreference() {
+	uint32_t rc_val = refcount.unrefval();
+	bool die = rc_val == 0;
 
-	bool die = refcount.unref();
-
-	if (refcount.get() <= 1 /* higher is not relevant */) {
+	if (rc_val <= 1 /* higher is not relevant */) {
 		if (get_script_instance()) {
 			bool script_ret = get_script_instance()->refcount_decremented();
 			die = die && script_ret;
 		}
-		if (instance_binding_count > 0) {
+		if (instance_binding_count > 0 && !ScriptServer::are_languages_finished()) {
 			for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
 				if (_script_instance_bindings[i]) {
 					bool script_ret = ScriptServer::get_language(i)->refcount_decremented_instance_binding(this);
@@ -104,26 +96,23 @@ bool Reference::unreference() {
 	return die;
 }
 
-Reference::Reference() {
-
+Reference::Reference() :
+		Object(true) {
 	refcount.init();
 	refcount_init.init();
 }
 
-Reference::~Reference() {
-}
-
 Variant WeakRef::get_ref() const {
-
-	if (ref == 0)
+	if (ref.is_null()) {
 		return Variant();
+	}
 
 	Object *obj = ObjectDB::get_instance(ref);
-	if (!obj)
+	if (!obj) {
 		return Variant();
+	}
 	Reference *r = cast_to<Reference>(obj);
 	if (r) {
-
 		return REF(r);
 	}
 
@@ -131,19 +120,13 @@ Variant WeakRef::get_ref() const {
 }
 
 void WeakRef::set_obj(Object *p_object) {
-	ref = p_object ? p_object->get_instance_id() : 0;
+	ref = p_object ? p_object->get_instance_id() : ObjectID();
 }
 
 void WeakRef::set_ref(const REF &p_ref) {
-
-	ref = p_ref.is_valid() ? p_ref->get_instance_id() : 0;
-}
-
-WeakRef::WeakRef() :
-		ref(0) {
+	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
 }
 
 void WeakRef::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
 }

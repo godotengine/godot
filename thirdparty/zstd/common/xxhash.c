@@ -53,7 +53,8 @@
 #  if defined(__GNUC__) && ( defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) )
 #    define XXH_FORCE_MEMORY_ACCESS 2
 #  elif (defined(__INTEL_COMPILER) && !defined(WIN32)) || \
-  (defined(__GNUC__) && ( defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) ))
+  (defined(__GNUC__) && ( defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) )) || \
+  defined(__ICCARM__)
 #    define XXH_FORCE_MEMORY_ACCESS 1
 #  endif
 #endif
@@ -120,7 +121,7 @@ static void* XXH_memcpy(void* dest, const void* src, size_t size) { return memcp
 #  define INLINE_KEYWORD
 #endif
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__ICCARM__)
 #  define FORCE_INLINE_ATTR __attribute__((always_inline))
 #elif defined(_MSC_VER)
 #  define FORCE_INLINE_ATTR __forceinline
@@ -206,7 +207,12 @@ static U64 XXH_read64(const void* memPtr)
 #  define XXH_rotl32(x,r) _rotl(x,r)
 #  define XXH_rotl64(x,r) _rotl64(x,r)
 #else
+#if defined(__ICCARM__)
+#  include <intrinsics.h>
+#  define XXH_rotl32(x,r) __ROR(x,(32 - r))
+#else
 #  define XXH_rotl32(x,r) ((x << r) | (x >> (32 - r)))
+#endif
 #  define XXH_rotl64(x,r) ((x << r) | (x >> (64 - r)))
 #endif
 

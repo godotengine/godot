@@ -109,9 +109,9 @@ FT_BEGIN_HEADER
   /* There are a set of defaults and each font has their own.   */
   typedef struct  bdf_property_t_
   {
-    char*  name;         /* Name of the property.   */
-    int    format;       /* Format of the property. */
-    int    builtin;      /* A builtin property.     */
+    const char*  name;         /* Name of the property.   */
+    int          format;       /* Format of the property. */
+    int          builtin;      /* A builtin property.     */
     union
     {
       char*          atom;

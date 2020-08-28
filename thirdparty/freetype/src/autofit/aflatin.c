@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -149,7 +149,11 @@
       af_shaper_buf_destroy( face, shaper_buf );
 
       if ( !glyph_index )
+      {
+        FT_TRACE5(( "standard character missing;"
+                    " using fallback stem widths\n" ));
         goto Exit;
+      }
 
       FT_TRACE5(( "standard character: U+%04lX (glyph index %d)\n",
                   ch, glyph_index ));
@@ -312,7 +316,7 @@
   /* Find all blue zones.  Flat segments give the reference points, */
   /* round segments the overshoot positions.                        */
 
-  static void
+  static int
   af_latin_metrics_init_blues( AF_LatinMetrics  metrics,
                                FT_Face          face )
   {
@@ -981,10 +985,11 @@
 
     af_shaper_buf_destroy( face, shaper_buf );
 
-    /* we finally check whether blue zones are ordered; */
-    /* `ref' and `shoot' values of two blue zones must not overlap */
     if ( axis->blue_count )
     {
+      /* we finally check whether blue zones are ordered;            */
+      /* `ref' and `shoot' values of two blue zones must not overlap */
+
       FT_UInt       i;
       AF_LatinBlue  blue_sorted[AF_BLUE_STRINGSET_MAX_LEN + 2];
 
@@ -1033,11 +1038,34 @@
                       *a ));
         }
       }
+
+      FT_TRACE5(( "\n" ));
+
+      return 0;
     }
+    else
+    {
+      /* disable hinting for the current style if there are no blue zones */
 
-    FT_TRACE5(( "\n" ));
+      AF_FaceGlobals  globals = metrics->root.globals;
+      FT_UShort*      gstyles = globals->glyph_styles;
 
-    return;
+      FT_Long  i;
+
+
+      FT_TRACE5(( "no blue zones found:"
+                  " hinting disabled for this style\n" ));
+
+      for ( i = 0; i < globals->glyph_count; i++ )
+      {
+        if ( ( gstyles[i] & AF_STYLE_MASK ) == sc->style )
+          gstyles[i] = AF_STYLE_NONE_DFLT;
+      }
+
+      FT_TRACE5(( "\n" ));
+
+      return 1;
+    }
   }
 
 
@@ -1116,6 +1144,8 @@
   af_latin_metrics_init( AF_LatinMetrics  metrics,
                          FT_Face          face )
   {
+    FT_Error  error = FT_Err_Ok;
+
     FT_CharMap  oldmap = face->charmap;
 
 
@@ -1124,12 +1154,18 @@
     if ( !FT_Select_Charmap( face, FT_ENCODING_UNICODE ) )
     {
       af_latin_metrics_init_widths( metrics, face );
-      af_latin_metrics_init_blues( metrics, face );
+      if ( af_latin_metrics_init_blues( metrics, face ) )
+      {
+        /* use internal error code to indicate missing blue zones */
+        error = -1;
+        goto Exit;
+      }
       af_latin_metrics_check_digits( metrics, face );
     }
 
+  Exit:
     FT_Set_Charmap( face, oldmap );
-    return FT_Err_Ok;
+    return error;
   }
 
 
@@ -1443,13 +1479,13 @@
                     nn,
                     blue->ref.org,
                     blue->ref.fit / 64.0,
-                    blue->flags & AF_LATIN_BLUE_ACTIVE ? ""
-                                                       : " (inactive)",
+                    ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
+                                                           : " (inactive)",
                     nn,
                     blue->shoot.org,
                     blue->shoot.fit / 64.0,
-                    blue->flags & AF_LATIN_BLUE_ACTIVE ? ""
-                                                       : " (inactive)" ));
+                    ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
+                                                           : " (inactive)" ));
       }
 #endif
     }
@@ -1874,7 +1910,7 @@
     /* sense -- this is used to better detect and ignore serifs   */
     {
       AF_Segment  segments     = axis->segments;
-      AF_Segment  segments_end = segments + axis->num_segments;
+      AF_Segment  segments_end = FT_OFFSET( segments, axis->num_segments );
 
 
       for ( segment = segments; segment < segments_end; segment++ )
@@ -2278,7 +2314,7 @@
      */
     {
       AF_Edge  edges      = axis->edges;
-      AF_Edge  edge_limit = edges + axis->num_edges;
+      AF_Edge  edge_limit = FT_OFFSET( edges, axis->num_edges );
       AF_Edge  edge;
 
 

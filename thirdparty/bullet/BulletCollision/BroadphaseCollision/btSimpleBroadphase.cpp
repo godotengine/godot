@@ -123,10 +123,10 @@ protected:
 
 void btSimpleBroadphase::destroyProxy(btBroadphaseProxy* proxyOrg, btDispatcher* dispatcher)
 {
+	m_pairCache->removeOverlappingPairsContainingProxy(proxyOrg, dispatcher);
+
 	btSimpleBroadphaseProxy* proxy0 = static_cast<btSimpleBroadphaseProxy*>(proxyOrg);
 	freeHandle(proxy0);
-
-	m_pairCache->removeOverlappingPairsContainingProxy(proxyOrg, dispatcher);
 
 	//validate();
 }

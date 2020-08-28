@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -605,6 +605,15 @@ for(;;)
       if (cb->had_recurse) return FALSE;
       break;
 
+      /* A script run might have to backtrack if the iterated item can match
+      characters from more than one script. So give up unless repeating an
+      explicit character. */
+
+      case OP_SCRIPT_RUN:
+      if (base_list[0] != OP_CHAR && base_list[0] != OP_CHARI)
+        return FALSE;
+      break;
+
       /* Atomic sub-patterns and assertions can always auto-possessify their
       last iterator. However, if the group was entered as a result of checking
       a previous iterator, this is not possible. */
@@ -614,8 +623,14 @@ for(;;)
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
       case OP_ONCE:
-
       return !entered_a_group;
+
+      /* Non-atomic assertions - don't possessify last iterator. This needs
+      more thought. */
+
+      case OP_ASSERT_NA:
+      case OP_ASSERTBACK_NA:
+      return FALSE;
       }
 
     /* Skip over the bracket and inspect what comes next. */
@@ -1043,7 +1058,7 @@ for(;;)
       if (chr > 255) break;
       class_bitset = (uint8_t *)
         ((list_ptr == list ? code : base_end) - list_ptr[2]);
-      if ((class_bitset[chr >> 3] & (1 << (chr & 7))) != 0) return FALSE;
+      if ((class_bitset[chr >> 3] & (1u << (chr & 7))) != 0) return FALSE;
       break;
 
 #ifdef SUPPORT_WIDE_CHARS

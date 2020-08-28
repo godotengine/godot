@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,23 +38,22 @@
 #include <thread>
 
 class ThreadUWP : public Thread {
-
 	std::thread thread;
 
 	static Thread *create_func_uwp(ThreadCreateCallback p_callback, void *, const Settings &);
 	static ID get_thread_id_func_uwp();
 	static void wait_to_finish_func_uwp(Thread *p_thread);
 
-	ThreadUWP();
+	ThreadUWP() {}
 
 public:
 	virtual ID get_id() const;
 
 	static void make_default();
 
-	~ThreadUWP();
+	~ThreadUWP() {}
 };
 
-#endif
+#endif // UWP_ENABLED
 
-#endif
+#endif // THREAD_UWP_H

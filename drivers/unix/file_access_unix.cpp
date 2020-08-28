@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <errno.h>
+
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
 #endif
@@ -54,39 +56,44 @@
 #define S_ISREG(m) ((m)&S_IFREG)
 #endif
 
-void FileAccessUnix::check_errors() const {
+#ifndef NO_FCNTL
+#include <fcntl.h>
+#else
+#include <sys/ioctl.h>
+#endif
 
-	ERR_FAIL_COND(!f);
+void FileAccessUnix::check_errors() const {
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (feof(f)) {
-
 		last_error = ERR_FILE_EOF;
 	}
 }
 
 Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
-
-	if (f)
+	if (f) {
 		fclose(f);
-	f = NULL;
+	}
+	f = nullptr;
 
 	path_src = p_path;
 	path = fix_path(p_path);
 	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
-	ERR_FAIL_COND_V(f, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
 
-	if (p_mode_flags == READ)
+	if (p_mode_flags == READ) {
 		mode_string = "rb";
-	else if (p_mode_flags == WRITE)
+	} else if (p_mode_flags == WRITE) {
 		mode_string = "wb";
-	else if (p_mode_flags == READ_WRITE)
+	} else if (p_mode_flags == READ_WRITE) {
 		mode_string = "rb+";
-	else if (p_mode_flags == WRITE_READ)
+	} else if (p_mode_flags == WRITE_READ) {
 		mode_string = "wb+";
-	else
+	} else {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	/* pretty much every implementation that uses fopen as primary
 	   backend (unix-compatible mostly) supports utf8 encoding */
@@ -111,23 +118,43 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	f = fopen(path.utf8().get_data(), mode_string);
 
-	if (f == NULL) {
-		last_error = ERR_FILE_CANT_OPEN;
-		return ERR_FILE_CANT_OPEN;
-	} else {
-		last_error = OK;
-		flags = p_mode_flags;
-		return OK;
+	if (f == nullptr) {
+		switch (errno) {
+			case ENOENT: {
+				last_error = ERR_FILE_NOT_FOUND;
+			} break;
+			default: {
+				last_error = ERR_FILE_CANT_OPEN;
+			} break;
+		}
+		return last_error;
 	}
+
+	// Set close on exec to avoid leaking it to subprocesses.
+	int fd = fileno(f);
+
+	if (fd != -1) {
+#if defined(NO_FCNTL)
+		unsigned long par = 0;
+		ioctl(fd, FIOCLEX, &par);
+#else
+		int opts = fcntl(fd, F_GETFD);
+		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
+#endif
+	}
+
+	last_error = OK;
+	flags = p_mode_flags;
+	return OK;
 }
 
 void FileAccessUnix::close() {
-
-	if (!f)
+	if (!f) {
 		return;
+	}
 
 	fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	if (close_notification_func) {
 		close_notification_func(path, flags);
@@ -146,40 +173,36 @@ void FileAccessUnix::close() {
 }
 
 bool FileAccessUnix::is_open() const {
-
-	return (f != NULL);
+	return (f != nullptr);
 }
 
 String FileAccessUnix::get_path() const {
-
 	return path_src;
 }
 
 String FileAccessUnix::get_path_absolute() const {
-
 	return path;
 }
 
 void FileAccessUnix::seek(size_t p_position) {
-
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
-	if (fseek(f, p_position, SEEK_SET))
+	if (fseek(f, p_position, SEEK_SET)) {
 		check_errors();
+	}
 }
 
 void FileAccessUnix::seek_end(int64_t p_position) {
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
-	ERR_FAIL_COND(!f);
-
-	if (fseek(f, p_position, SEEK_END))
+	if (fseek(f, p_position, SEEK_END)) {
 		check_errors();
+	}
 }
 
 size_t FileAccessUnix::get_position() const {
-
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
 	if (pos < 0) {
@@ -190,8 +213,7 @@ size_t FileAccessUnix::get_position() const {
 }
 
 size_t FileAccessUnix::get_len() const {
-
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
 	ERR_FAIL_COND_V(pos < 0, 0);
@@ -204,13 +226,11 @@ size_t FileAccessUnix::get_len() const {
 }
 
 bool FileAccessUnix::eof_reached() const {
-
 	return last_error == ERR_FILE_EOF;
 }
 
 uint8_t FileAccessUnix::get_8() const {
-
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
@@ -220,50 +240,48 @@ uint8_t FileAccessUnix::get_8() const {
 }
 
 int FileAccessUnix::get_buffer(uint8_t *p_dst, int p_length) const {
-
-	ERR_FAIL_COND_V(!f, -1);
+	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
 };
 
 Error FileAccessUnix::get_error() const {
-
 	return last_error;
 }
 
 void FileAccessUnix::flush() {
-
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	fflush(f);
 }
 
 void FileAccessUnix::store_8(uint8_t p_dest) {
-
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
 }
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND(!p_src);
 	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 
 bool FileAccessUnix::file_exists(const String &p_path) {
-
 	int err;
 	struct stat st;
 	String filename = fix_path(p_path);
 
 	// Does the name exist at all?
 	err = stat(filename.utf8().get_data(), &st);
-	if (err)
+	if (err) {
 		return false;
+	}
 
 #ifdef UNIX_ENABLED
 	// See if we have access to the file
-	if (access(filename.utf8().get_data(), F_OK))
+	if (access(filename.utf8().get_data(), F_OK)) {
 		return false;
+	}
 #else
 	if (_access(filename.utf8().get_data(), 4) == -1)
 		return false;
@@ -280,7 +298,6 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 }
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
-
 	String file = fix_path(p_file);
 	struct stat flags;
 	int err = stat(file.utf8().get_data(), &flags);
@@ -288,13 +305,11 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	if (!err) {
 		return flags.st_mtime;
 	} else {
-		ERR_EXPLAIN("Failed to get modified time for: " + p_file);
-		ERR_FAIL_V(0);
+		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + p_file + ".");
 	};
 }
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
-
 	String file = fix_path(p_file);
 	struct stat flags;
 	int err = stat(file.utf8().get_data(), &flags);
@@ -302,13 +317,11 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	if (!err) {
 		return flags.st_mode & 0x7FF; //only permissions
 	} else {
-		ERR_EXPLAIN("Failed to get unix permissions for: " + p_file);
-		ERR_FAIL_V(0);
+		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
 	};
 }
 
 Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
-
 	String file = fix_path(p_file);
 
 	int err = chmod(file.utf8().get_data(), p_permissions);
@@ -320,20 +333,12 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 }
 
 FileAccess *FileAccessUnix::create_libc() {
-
 	return memnew(FileAccessUnix);
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = NULL;
-
-FileAccessUnix::FileAccessUnix() :
-		f(NULL),
-		flags(0),
-		last_error(OK) {
-}
+CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {
-
 	close();
 }
 

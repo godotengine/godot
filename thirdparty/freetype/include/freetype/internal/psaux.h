@@ -5,7 +5,7 @@
  *   Auxiliary functions and data structures related to PostScript fonts
  *   (specification).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -96,10 +96,10 @@ FT_BEGIN_HEADER
     (*done)( PS_Table  table );
 
     FT_Error
-    (*add)( PS_Table  table,
-            FT_Int    idx,
-            void*     object,
-            FT_UInt   length );
+    (*add)( PS_Table     table,
+            FT_Int       idx,
+            const void*  object,
+            FT_UInt      length );
 
     void
     (*release)( PS_Table  table );

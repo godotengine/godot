@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,8 +67,6 @@ godot_string GDAPI godot_plane_as_string(const godot_plane *p_self);
 godot_plane GDAPI godot_plane_normalized(const godot_plane *p_self);
 
 godot_vector3 GDAPI godot_plane_center(const godot_plane *p_self);
-
-godot_vector3 GDAPI godot_plane_get_any_point(const godot_plane *p_self);
 
 godot_bool GDAPI godot_plane_is_point_over(const godot_plane *p_self, const godot_vector3 *p_point);
 

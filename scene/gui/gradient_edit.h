@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +36,7 @@
 #include "scene/resources/default_theme/theme_data.h"
 #include "scene/resources/gradient.h"
 
-#define POINT_WIDTH (8 * EDSCALE)
-
 class GradientEdit : public Control {
-
 	GDCLASS(GradientEdit, Control);
 
 	PopupPanel *popup;
@@ -67,7 +64,7 @@ public:
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	GradientEdit();
 	virtual ~GradientEdit();

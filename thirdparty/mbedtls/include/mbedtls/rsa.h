@@ -11,7 +11,13 @@
  */
 /*
  *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -24,6 +30,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
@@ -150,13 +177,13 @@ mbedtls_rsa_context;
  * \note           The choice of padding mode is strictly enforced for private key
  *                 operations, since there might be security concerns in
  *                 mixing padding modes. For public key operations it is
- *                 a default value, which can be overriden by calling specific
+ *                 a default value, which can be overridden by calling specific
  *                 \c rsa_rsaes_xxx or \c rsa_rsassa_xxx functions.
  *
  * \note           The hash selected in \p hash_id is always used for OEAP
  *                 encryption. For PSS signatures, it is always used for
- *                 making signatures, but can be overriden for verifying them.
- *                 If set to #MBEDTLS_MD_NONE, it is always overriden.
+ *                 making signatures, but can be overridden for verifying them.
+ *                 If set to #MBEDTLS_MD_NONE, it is always overridden.
  *
  * \param ctx      The RSA context to initialize. This must not be \c NULL.
  * \param padding  The padding mode to use. This must be either
@@ -904,7 +931,8 @@ int mbedtls_rsa_rsaes_oaep_decrypt( mbedtls_rsa_context *ctx,
  *                 the size of the hash corresponding to \p md_alg.
  * \param sig      The buffer to hold the signature. This must be a writable
  *                 buffer of length \c ctx->len Bytes. For example, \c 256 Bytes
- *                 for an 2048-bit RSA modulus.
+ *                 for an 2048-bit RSA modulus. A buffer length of
+ *                 #MBEDTLS_MPI_MAX_SIZE is always safe.
  *
  * \return         \c 0 if the signing operation was successful.
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
@@ -951,7 +979,8 @@ int mbedtls_rsa_pkcs1_sign( mbedtls_rsa_context *ctx,
  *                 the size of the hash corresponding to \p md_alg.
  * \param sig      The buffer to hold the signature. This must be a writable
  *                 buffer of length \c ctx->len Bytes. For example, \c 256 Bytes
- *                 for an 2048-bit RSA modulus.
+ *                 for an 2048-bit RSA modulus. A buffer length of
+ *                 #MBEDTLS_MPI_MAX_SIZE is always safe.
  *
  * \return         \c 0 if the signing operation was successful.
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
@@ -1012,7 +1041,8 @@ int mbedtls_rsa_rsassa_pkcs1_v15_sign( mbedtls_rsa_context *ctx,
  *                 the size of the hash corresponding to \p md_alg.
  * \param sig      The buffer to hold the signature. This must be a writable
  *                 buffer of length \c ctx->len Bytes. For example, \c 256 Bytes
- *                 for an 2048-bit RSA modulus.
+ *                 for an 2048-bit RSA modulus. A buffer length of
+ *                 #MBEDTLS_MPI_MAX_SIZE is always safe.
  *
  * \return         \c 0 if the signing operation was successful.
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
@@ -1252,6 +1282,8 @@ int mbedtls_rsa_copy( mbedtls_rsa_context *dst, const mbedtls_rsa_context *src )
  */
 void mbedtls_rsa_free( mbedtls_rsa_context *ctx );
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief          The RSA checkup routine.
  *
@@ -1259,6 +1291,8 @@ void mbedtls_rsa_free( mbedtls_rsa_context *ctx );
  * \return         \c 1 on failure.
  */
 int mbedtls_rsa_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

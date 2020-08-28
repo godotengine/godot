@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,30 @@
 #define EDITOR_SCENE_IMPORTER_GLTF_H
 
 #include "editor/import/resource_importer_scene.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 
 class AnimationPlayer;
+class BoneAttachment3D;
+class MeshInstance3D;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
-
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
+
+	typedef int GLTFAccessorIndex;
+	typedef int GLTFAnimationIndex;
+	typedef int GLTFBufferIndex;
+	typedef int GLTFBufferViewIndex;
+	typedef int GLTFCameraIndex;
+	typedef int GLTFImageIndex;
+	typedef int GLTFMaterialIndex;
+	typedef int GLTFMeshIndex;
+	typedef int GLTFLightIndex;
+	typedef int GLTFNodeIndex;
+	typedef int GLTFSkeletonIndex;
+	typedef int GLTFSkinIndex;
+	typedef int GLTFTextureIndex;
 
 	enum {
 		ARRAY_BUFFER = 34962,
@@ -61,8 +77,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	};
 
-	String _get_component_type_name(uint32_t p_component);
-	int _get_component_type_size(int component_type);
+	String _get_component_type_name(const uint32_t p_component);
+	int _get_component_type_size(const int component_type);
 
 	enum GLTFType {
 		TYPE_SCALAR,
@@ -74,127 +90,122 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		TYPE_MAT4,
 	};
 
-	String _get_type_name(GLTFType p_component);
+	String _get_type_name(const GLTFType p_component);
 
 	struct GLTFNode {
 		//matrices need to be transformed to this
-		int parent;
+		GLTFNodeIndex parent = -1;
+		int height = -1;
 
 		Transform xform;
 		String name;
-		//Node *godot_node;
-		//int godot_bone_index;
 
-		int mesh;
-		int camera;
-		int skin;
-		//int skeleton_skin;
-		//int child_of_skeleton; // put as children of skeleton
-		//Vector<int> skeleton_children; //skeleton put as children of this
+		GLTFMeshIndex mesh = -1;
+		GLTFCameraIndex camera = -1;
+		GLTFSkinIndex skin = -1;
 
-		struct Joint {
-			int skin;
-			int bone;
-			int godot_bone_index;
+		GLTFSkeletonIndex skeleton = -1;
+		bool joint = false;
 
-			Joint() {
-				skin = -1;
-				bone = -1;
-				godot_bone_index = -1;
-			}
-		};
-
-		Vector<Joint> joints;
-
-		//keep them for animation
 		Vector3 translation;
 		Quat rotation;
-		Vector3 scale;
+		Vector3 scale = Vector3(1, 1, 1);
 
 		Vector<int> children;
-		Vector<Node *> godot_nodes;
 
-		GLTFNode() :
-				parent(-1),
-				mesh(-1),
-				camera(-1),
-				skin(-1),
-				//skeleton_skin(-1),
-				//child_of_skeleton(-1),
-				scale(Vector3(1, 1, 1)) {
-		}
+		GLTFNodeIndex fake_joint_parent = -1;
+
+		GLTFLightIndex light = -1;
+
+		GLTFNode() {}
 	};
 
 	struct GLTFBufferView {
-
-		int buffer;
-		int byte_offset;
-		int byte_length;
-		int byte_stride;
-		bool indices;
+		GLTFBufferIndex buffer = -1;
+		int byte_offset = 0;
+		int byte_length = 0;
+		int byte_stride = 0;
+		bool indices = false;
 		//matrices need to be transformed to this
 
-		GLTFBufferView() :
-				buffer(0),
-				byte_offset(0),
-				byte_length(0),
-				byte_stride(0),
-				indices(false) {
-		}
+		GLTFBufferView() {}
 	};
 
 	struct GLTFAccessor {
-
-		int buffer_view;
-		int byte_offset;
-		int component_type;
-		bool normalized;
-		int count;
+		GLTFBufferViewIndex buffer_view = 0;
+		int byte_offset = 0;
+		int component_type = 0;
+		bool normalized = false;
+		int count = 0;
 		GLTFType type;
-		float min;
-		float max;
-		int sparse_count;
-		int sparse_indices_buffer_view;
-		int sparse_indices_byte_offset;
-		int sparse_indices_component_type;
-		int sparse_values_buffer_view;
-		int sparse_values_byte_offset;
+		float min = 0;
+		float max = 0;
+		int sparse_count = 0;
+		int sparse_indices_buffer_view = 0;
+		int sparse_indices_byte_offset = 0;
+		int sparse_indices_component_type = 0;
+		int sparse_values_buffer_view = 0;
+		int sparse_values_byte_offset = 0;
 
-		//matrices need to be transformed to this
-
-		GLTFAccessor() {
-			buffer_view = 0;
-			byte_offset = 0;
-			component_type = 0;
-			normalized = false;
-			count = 0;
-			min = 0;
-			max = 0;
-			sparse_count = 0;
-			sparse_indices_byte_offset = 0;
-			sparse_values_byte_offset = 0;
-		}
+		GLTFAccessor() {}
 	};
 	struct GLTFTexture {
-		int src_image;
+		GLTFImageIndex src_image;
+	};
+
+	struct GLTFSkeleton {
+		// The *synthesized* skeletons joints
+		Vector<GLTFNodeIndex> joints;
+
+		// The roots of the skeleton. If there are multiple, each root must have the same parent
+		// (ie roots are siblings)
+		Vector<GLTFNodeIndex> roots;
+
+		// The created Skeleton for the scene
+		Skeleton3D *godot_skeleton = nullptr;
+
+		// Set of unique bone names for the skeleton
+		Set<String> unique_names;
+
+		GLTFSkeleton() {}
 	};
 
 	struct GLTFSkin {
-
 		String name;
-		struct Bone {
-			Transform inverse_bind;
-			int node;
-		};
 
-		int skeleton;
-		Vector<Bone> bones;
+		// The "skeleton" property defined in the gltf spec. -1 = Scene Root
+		GLTFNodeIndex skin_root = -1;
 
-		//matrices need to be transformed to this
+		Vector<GLTFNodeIndex> joints_original;
+		Vector<Transform> inverse_binds;
 
-		GLTFSkin() {
-			skeleton = -1;
-		}
+		// Note: joints + non_joints should form a complete subtree, or subtrees with a common parent
+
+		// All nodes that are skins that are caught in-between the original joints
+		// (inclusive of joints_original)
+		Vector<GLTFNodeIndex> joints;
+
+		// All Nodes that are caught in-between skin joint nodes, and are not defined
+		// as joints by any skin
+		Vector<GLTFNodeIndex> non_joints;
+
+		// The roots of the skin. In the case of multiple roots, their parent *must*
+		// be the same (the roots must be siblings)
+		Vector<GLTFNodeIndex> roots;
+
+		// The GLTF Skeleton this Skin points to (after we determine skeletons)
+		GLTFSkeletonIndex skeleton = -1;
+
+		// A mapping from the joint indices (in the order of joints_original) to the
+		// Godot Skeleton's bone_indices
+		Map<int, int> joint_i_to_bone_i;
+		Map<int, StringName> joint_i_to_name;
+
+		// The Actual Skin that will be created as a mapping between the IBM's of this skin
+		// to the generated skeleton for the mesh instances.
+		Ref<Skin> godot_skin;
+
+		GLTFSkin() {}
 	};
 
 	struct GLTFMesh {
@@ -203,21 +214,27 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFCamera {
+		bool perspective = true;
+		float fov_size = 64;
+		float zfar = 500;
+		float znear = 0.1;
 
-		bool perspective;
-		float fov_size;
-		float zfar;
-		float znear;
+		GLTFCamera() {}
+	};
 
-		GLTFCamera() {
-			perspective = true;
-			fov_size = 65;
-			zfar = 500;
-			znear = 0.1;
-		}
+	struct GLTFLight {
+		Color color = Color(1.0f, 1.0f, 1.0f);
+		float intensity = 1.0f;
+		String type = "";
+		float range = Math_INF;
+		float inner_cone_angle = 0.0f;
+		float outer_cone_angle = Math_PI / 4.0;
+
+		GLTFLight() {}
 	};
 
 	struct GLTFAnimation {
+		bool loop = false;
 
 		enum Interpolation {
 			INTERP_LINEAR,
@@ -234,11 +251,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		};
 
 		struct Track {
-
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
-			Vector<Channel<float> > weight_tracks;
+			Vector<Channel<float>> weight_tracks;
 		};
 
 		String name;
@@ -247,36 +263,40 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFState {
-
 		Dictionary json;
 		int major_version;
 		int minor_version;
 		Vector<uint8_t> glb_data;
 
+		bool use_named_skin_binds;
+
 		Vector<GLTFNode *> nodes;
-		Vector<Vector<uint8_t> > buffers;
+		Vector<Vector<uint8_t>> buffers;
 		Vector<GLTFBufferView> buffer_views;
 		Vector<GLTFAccessor> accessors;
 
 		Vector<GLTFMesh> meshes; //meshes are loaded directly, no reason not to.
-		Vector<Ref<Material> > materials;
+		Vector<Ref<Material>> materials;
 
 		String scene_name;
 		Vector<int> root_nodes;
 
 		Vector<GLTFTexture> textures;
-		Vector<Ref<Texture> > images;
+		Vector<Ref<Texture2D>> images;
 
 		Vector<GLTFSkin> skins;
 		Vector<GLTFCamera> cameras;
+		Vector<GLTFLight> lights;
 
 		Set<String> unique_names;
 
+		Vector<GLTFSkeleton> skeletons;
 		Vector<GLTFAnimation> animations;
 
-		Map<int, Vector<int> > skeleton_nodes;
+		Map<GLTFNodeIndex, Node *> scene_nodes;
 
-		//Map<int, Vector<int> > skin_users; //cache skin users
+		// EditorSceneImporter::ImportFlags
+		uint32_t import_flags;
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -285,37 +305,38 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
+	String _sanitize_scene_name(const String &name);
 	String _gen_unique_name(GLTFState &state, const String &p_name);
 
-	Ref<Texture> _get_texture(GLTFState &state, int p_texture);
+	String _sanitize_bone_name(const String &name);
+	String _gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name);
+
+	Ref<Texture2D> _get_texture(GLTFState &state, const GLTFTextureIndex p_texture);
 
 	Error _parse_json(const String &p_path, GLTFState &state);
 	Error _parse_glb(const String &p_path, GLTFState &state);
 
 	Error _parse_scenes(GLTFState &state);
 	Error _parse_nodes(GLTFState &state);
+
+	void _compute_node_heights(GLTFState &state);
+
 	Error _parse_buffers(GLTFState &state, const String &p_base_path);
 	Error _parse_buffer_views(GLTFState &state);
 	GLTFType _get_type_from_str(const String &p_string);
 	Error _parse_accessors(GLTFState &state);
-	Error _decode_buffer_view(GLTFState &state, int p_buffer_view, double *dst, int skip_every, int skip_bytes, int element_size, int count, GLTFType type, int component_count, int component_type, int component_size, bool normalized, int byte_offset, bool for_vertex);
-	Vector<double> _decode_accessor(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<float> _decode_accessor_as_floats(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<int> _decode_accessor_as_ints(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<Vector2> _decode_accessor_as_vec2(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<Vector3> _decode_accessor_as_vec3(GLTFState &state, int p_accessor, bool p_for_vertex);
-	PoolVector<Color> _decode_accessor_as_color(GLTFState &state, int p_accessor, bool p_for_vertex);
-	Vector<Quat> _decode_accessor_as_quat(GLTFState &state, int p_accessor, bool p_for_vertex);
-	Vector<Transform2D> _decode_accessor_as_xform2d(GLTFState &state, int p_accessor, bool p_for_vertex);
-	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, int p_accessor, bool p_for_vertex);
-	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, int p_accessor, bool p_for_vertex);
+	Error _decode_buffer_view(GLTFState &state, double *dst, const GLTFBufferViewIndex p_buffer_view, const int skip_every, const int skip_bytes, const int element_size, const int count, const GLTFType type, const int component_count, const int component_type, const int component_size, const bool normalized, const int byte_offset, const bool for_vertex);
 
-	void _reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
-	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
-	void _generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons);
-	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons);
-
-	Spatial *_generate_scene(GLTFState &state, int p_bake_fps);
+	Vector<double> _decode_accessor(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<float> _decode_accessor_as_floats(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<int> _decode_accessor_as_ints(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Vector2> _decode_accessor_as_vec2(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Vector3> _decode_accessor_as_vec3(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Color> _decode_accessor_as_color(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Quat> _decode_accessor_as_quat(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Transform2D> _decode_accessor_as_xform2d(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
+	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex);
 
 	Error _parse_meshes(GLTFState &state);
 	Error _parse_images(GLTFState &state, const String &p_base_path);
@@ -323,22 +344,53 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _parse_materials(GLTFState &state);
 
+	GLTFNodeIndex _find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset);
+
+	bool _capture_nodes_in_skin(GLTFState &state, GLTFSkin &skin, const GLTFNodeIndex node_index);
+	void _capture_nodes_for_multirooted_skin(GLTFState &state, GLTFSkin &skin);
+	Error _expand_skin(GLTFState &state, GLTFSkin &skin);
+	Error _verify_skin(GLTFState &state, GLTFSkin &skin);
 	Error _parse_skins(GLTFState &state);
 
-	Error _parse_cameras(GLTFState &state);
+	Error _determine_skeletons(GLTFState &state);
+	Error _reparent_non_joint_skeleton_subtrees(GLTFState &state, GLTFSkeleton &skeleton, const Vector<GLTFNodeIndex> &non_joints);
+	Error _reparent_to_fake_joint(GLTFState &state, GLTFSkeleton &skeleton, const GLTFNodeIndex node_index);
+	Error _determine_skeleton_roots(GLTFState &state, const GLTFSkeletonIndex skel_i);
 
+	Error _create_skeletons(GLTFState &state);
+	Error _map_skin_joints_indices_to_skeleton_bone_indices(GLTFState &state);
+
+	Error _create_skins(GLTFState &state);
+	bool _skins_are_same(const Ref<Skin> &skin_a, const Ref<Skin> &skin_b);
+	void _remove_duplicate_skins(GLTFState &state);
+
+	Error _parse_cameras(GLTFState &state);
+	Error _parse_lights(GLTFState &state);
 	Error _parse_animations(GLTFState &state);
+
+	BoneAttachment3D *_generate_bone_attachment(GLTFState &state, Skeleton3D *skeleton, const GLTFNodeIndex node_index);
+	MeshInstance3D *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Camera3D *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Light3D *_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Node3D *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+
+	void _generate_scene_node(GLTFState &state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index);
+	Node3D *_generate_scene(GLTFState &state, const int p_bake_fps);
+
+	void _process_mesh_instances(GLTFState &state, Node3D *scene_root);
 
 	void _assign_scene_names(GLTFState &state);
 
 	template <class T>
-	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp);
+	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp);
+
+	void _import_animation(GLTFState &state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps);
 
 public:
-	virtual uint32_t get_import_flags() const;
-	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = NULL, Error *r_err = NULL);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = nullptr, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) override;
 
 	EditorSceneImporterGLTF();
 };

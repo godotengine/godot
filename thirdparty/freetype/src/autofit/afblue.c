@@ -7,7 +7,7 @@
  *
  *   Auto-fitter data for blue strings (body).
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -296,6 +296,10 @@
     '\0',
     '\xE0', '\xB4', '\x9F', ' ', '\xE0', '\xB4', '\xA0', ' ', '\xE0', '\xB4', '\xA7', ' ', '\xE0', '\xB4', '\xB6', ' ', '\xE0', '\xB4', '\x98', ' ', '\xE0', '\xB4', '\x9A', ' ', '\xE0', '\xB4', '\xA5', ' ', '\xE0', '\xB4', '\xB2',  /* ട ഠ ധ ശ ഘ ച ഥ ല */
     '\0',
+    '\xE1', '\xA0', '\xB3', ' ', '\xE1', '\xA0', '\xB4', ' ', '\xE1', '\xA0', '\xB6', ' ', '\xE1', '\xA0', '\xBD', ' ', '\xE1', '\xA1', '\x82', ' ', '\xE1', '\xA1', '\x8A', ' ', '\xE2', '\x80', '\x8D', '\xE1', '\xA1', '\xA1', '\xE2', '\x80', '\x8D', ' ', '\xE2', '\x80', '\x8D', '\xE1', '\xA1', '\xB3', '\xE2', '\x80', '\x8D',  /* ᠳ ᠴ ᠶ ᠽ ᡂ ᡊ ‍ᡡ‍ ‍ᡳ‍ */
+    '\0',
+    '\xE1', '\xA1', '\x83',  /* ᡃ */
+    '\0',
     '\xE1', '\x80', '\x81', ' ', '\xE1', '\x80', '\x82', ' ', '\xE1', '\x80', '\x84', ' ', '\xE1', '\x80', '\x92', ' ', '\xE1', '\x80', '\x9D', ' ', '\xE1', '\x81', '\xA5', ' ', '\xE1', '\x81', '\x8A', ' ', '\xE1', '\x81', '\x8B',  /* ခ ဂ င ဒ ဝ ၥ ၊ ။ */
     '\0',
     '\xE1', '\x80', '\x84', ' ', '\xE1', '\x80', '\x8E', ' ', '\xE1', '\x80', '\x92', ' ', '\xE1', '\x80', '\x95', ' ', '\xE1', '\x80', '\x97', ' ', '\xE1', '\x80', '\x9D', ' ', '\xE1', '\x81', '\x8A', ' ', '\xE1', '\x81', '\x8B',  /* င ဎ ဒ ပ ဗ ဝ ၊ ။ */
@@ -335,6 +339,12 @@
     '\xF0', '\x90', '\x92', '\x86', ' ', '\xF0', '\x90', '\x92', '\x89', ' ', '\xF0', '\x90', '\x92', '\x90', ' ', '\xF0', '\x90', '\x92', '\x92', ' ', '\xF0', '\x90', '\x92', '\x98', ' ', '\xF0', '\x90', '\x92', '\x9B', ' ', '\xF0', '\x90', '\x92', '\xA0', ' ', '\xF0', '\x90', '\x92', '\xA3',  /* 𐒆 𐒉 𐒐 𐒒 𐒘 𐒛 𐒠 𐒣 */
     '\0',
     '\xF0', '\x90', '\x92', '\x80', ' ', '\xF0', '\x90', '\x92', '\x82', ' ', '\xF0', '\x90', '\x92', '\x86', ' ', '\xF0', '\x90', '\x92', '\x88', ' ', '\xF0', '\x90', '\x92', '\x8A', ' ', '\xF0', '\x90', '\x92', '\x92', ' ', '\xF0', '\x90', '\x92', '\xA0', ' ', '\xF0', '\x90', '\x92', '\xA9',  /* 𐒀 𐒂 𐒆 𐒈 𐒊 𐒒 𐒠 𐒩 */
+    '\0',
+    '\xF0', '\x90', '\xB4', '\x83', ' ', '\xF0', '\x90', '\xB4', '\x80', ' ', '\xF0', '\x90', '\xB4', '\x86', ' ', '\xF0', '\x90', '\xB4', '\x96', ' ', '\xF0', '\x90', '\xB4', '\x95',  /* 𐴃 𐴀 𐴆 𐴖 𐴕 */
+    '\0',
+    '\xF0', '\x90', '\xB4', '\x94', ' ', '\xF0', '\x90', '\xB4', '\x96', ' ', '\xF0', '\x90', '\xB4', '\x95', ' ', '\xF0', '\x90', '\xB4', '\x91', ' ', '\xF0', '\x90', '\xB4', '\x90',  /* 𐴔 𐴖 𐴕 𐴑 𐴐 */
+    '\0',
+    '\xD9', '\x80',  /* ـ */
     '\0',
     '\xEA', '\xA2', '\x9C', ' ', '\xEA', '\xA2', '\x9E', ' ', '\xEA', '\xA2', '\xB3', ' ', '\xEA', '\xA2', '\x82', ' ', '\xEA', '\xA2', '\x96', ' ', '\xEA', '\xA2', '\x92', ' ', '\xEA', '\xA2', '\x9D', ' ', '\xEA', '\xA2', '\x9B',  /* ꢜ ꢞ ꢳ ꢂ ꢖ ꢒ ꢝ ꢛ */
     '\0',
@@ -649,6 +659,9 @@
     { AF_BLUE_STRING_MALAYALAM_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_MALAYALAM_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,              0                          },
+    { AF_BLUE_STRING_MONGOLIAN_TOP_BASE,    AF_BLUE_PROPERTY_LATIN_TOP },
+    { AF_BLUE_STRING_MONGOLIAN_BOTTOM_BASE, 0                          },
+    { AF_BLUE_STRING_MAX,                   0                          },
     { AF_BLUE_STRING_MYANMAR_TOP,       AF_BLUE_PROPERTY_LATIN_TOP      |
                                         AF_BLUE_PROPERTY_LATIN_X_HEIGHT   },
     { AF_BLUE_STRING_MYANMAR_BOTTOM,    0                                 },
@@ -680,6 +693,10 @@
     { AF_BLUE_STRING_OSMANYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_OSMANYA_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,            0                          },
+    { AF_BLUE_STRING_ROHINGYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     },
+    { AF_BLUE_STRING_ROHINGYA_BOTTOM, 0                              },
+    { AF_BLUE_STRING_ROHINGYA_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL },
+    { AF_BLUE_STRING_MAX,             0                              },
     { AF_BLUE_STRING_SAURASHTRA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP },
     { AF_BLUE_STRING_SAURASHTRA_BOTTOM, 0                          },
     { AF_BLUE_STRING_MAX,               0                          },

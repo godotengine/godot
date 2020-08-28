@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,15 +42,15 @@ protected:
 
 	enum bmp_compression_s {
 		BI_RGB = 0x00,
-		BI_RLE8 = 0x01,
-		BI_RLE4 = 0x02,
+		BI_RLE8 = 0x01, // compressed
+		BI_RLE4 = 0x02, // compressed
 		BI_BITFIELDS = 0x03,
 		BI_JPEG = 0x04,
 		BI_PNG = 0x05,
 		BI_ALPHABITFIELDS = 0x06,
 		BI_CMYK = 0x0b,
-		BI_CMYKRLE8 = 0x0c,
-		BI_CMYKRLE4 = 0x0d
+		BI_CMYKRLE8 = 0x0c, // compressed
+		BI_CMYKRLE4 = 0x0d // compressed
 	};
 
 	struct bmp_header_s {

@@ -308,7 +308,7 @@ If there is an error, the function will return an error code, which can be teste
 *******************************************/
 /* FSE buffer bounds */
 #define FSE_NCOUNTBOUND 512
-#define FSE_BLOCKBOUND(size) (size + (size>>7))
+#define FSE_BLOCKBOUND(size) (size + (size>>7) + 4 /* fse states */ + sizeof(size_t) /* bitContainer */)
 #define FSE_COMPRESSBOUND(size) (FSE_NCOUNTBOUND + FSE_BLOCKBOUND(size))   /* Macro version, useful for static allocation */
 
 /* It is possible to statically allocate FSE CTable/DTable as a table of FSE_CTable/FSE_DTable using below macros */

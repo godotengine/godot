@@ -26,8 +26,14 @@
 	<string>$signature</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false />
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	$docs_in_place
+	<key>UIFileSharingEnabled</key>
+	$docs_sharing
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		$required_device_capabilities
@@ -36,6 +42,8 @@
 	<string>$camera_usage_description</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>$photolibrary_usage_description</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>$microphone_usage_description</string>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UIStatusBarHidden</key>
@@ -49,5 +57,6 @@
 		$interface_orientations
 	</array>
 	$additional_plist_content
+	$plist_launch_screen_name
 </dict>
 </plist>

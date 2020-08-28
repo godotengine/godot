@@ -49,7 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AI_VECTOR3D_INL_INC
 
 #ifdef __cplusplus
-#include "vector3.h"
+#include <assimp/vector3.h>
 
 #include <cmath>
 

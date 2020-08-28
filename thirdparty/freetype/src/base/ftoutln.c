@@ -4,7 +4,7 @@
  *
  *   FreeType outline management (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -46,8 +46,7 @@
                         void*                    user )
   {
 #undef  SCALED
-#define SCALED( x )  ( ( (x) < 0 ? -( -(x) << shift )             \
-                                 :  (  (x) << shift ) ) - delta )
+#define SCALED( x )  ( (x) * ( 1L << shift ) - delta )
 
     FT_Vector   v_last;
     FT_Vector   v_control;
@@ -621,6 +620,16 @@
 
     params->source = (void*)outline;
 
+    /* preset clip_box for direct mode */
+    if ( params->flags & FT_RASTER_FLAG_DIRECT    &&
+         !( params->flags & FT_RASTER_FLAG_CLIP ) )
+    {
+      params->clip_box.xMin = cbox.xMin >> 6;
+      params->clip_box.yMin = cbox.yMin >> 6;
+      params->clip_box.xMax = ( cbox.xMax + 63 ) >> 6;
+      params->clip_box.yMax = ( cbox.yMax + 63 ) >> 6;
+    }
+
     error = FT_ERR( Cannot_Render_Glyph );
     while ( renderer )
     {
@@ -702,7 +711,7 @@
     FT_Vector*  limit;
 
 
-    if ( !outline || !matrix )
+    if ( !outline || !matrix || !outline->points )
       return;
 
     vec   = outline->points;

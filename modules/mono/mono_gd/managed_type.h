@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,18 +36,15 @@
 #include "gd_mono_header.h"
 
 struct ManagedType {
-	int type_encoding;
-	GDMonoClass *type_class;
+	int type_encoding = 0;
+	GDMonoClass *type_class = nullptr;
 
 	static ManagedType from_class(GDMonoClass *p_class);
 	static ManagedType from_class(MonoClass *p_mono_class);
 	static ManagedType from_type(MonoType *p_mono_type);
 	static ManagedType from_reftype(MonoReflectionType *p_mono_reftype);
 
-	ManagedType() :
-			type_encoding(0),
-			type_class(NULL) {
-	}
+	ManagedType() {}
 
 	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
 			type_encoding(p_type_encoding),

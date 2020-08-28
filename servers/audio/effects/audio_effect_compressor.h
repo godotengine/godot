@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 class AudioEffectCompressor;
 
 class AudioEffectCompressorInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectCompressorInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectCompressorInstance, AudioEffectInstance);
 	friend class AudioEffectCompressor;
 	Ref<AudioEffectCompressor> base;
 
@@ -45,11 +45,11 @@ class AudioEffectCompressorInstance : public AudioEffectInstance {
 
 public:
 	void set_current_channel(int p_channel) { current_channel = p_channel; }
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectCompressor : public AudioEffect {
-	GDCLASS(AudioEffectCompressor, AudioEffect)
+	GDCLASS(AudioEffectCompressor, AudioEffect);
 
 	friend class AudioEffectCompressorInstance;
 	float threshold;
@@ -61,11 +61,11 @@ class AudioEffectCompressor : public AudioEffect {
 	StringName sidechain;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	void set_threshold(float p_threshold);
 	float get_threshold() const;

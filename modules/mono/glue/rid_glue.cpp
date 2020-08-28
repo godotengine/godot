@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,17 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "rid_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/object.h"
 #include "core/resource.h"
+#include "core/rid.h"
+
+#include "../mono_gd/gd_mono_marshal.h"
 
 RID *godot_icall_RID_Ctor(Object *p_from) {
 	Resource *res_from = Object::cast_to<Resource>(p_from);
 
-	if (res_from)
+	if (res_from) {
 		return memnew(RID(res_from->get_rid()));
+	}
 
 	return memnew(RID);
 }

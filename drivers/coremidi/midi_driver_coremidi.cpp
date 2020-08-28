@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,31 +39,29 @@
 
 void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con) {
 	MIDIPacket *packet = const_cast<MIDIPacket *>(packet_list->packet);
-	for (int i = 0; i < packet_list->numPackets; i++) {
+	for (UInt32 i = 0; i < packet_list->numPackets; i++) {
 		receive_input_packet(packet->timeStamp, packet->data, packet->length);
 		packet = MIDIPacketNext(packet);
 	}
 }
 
 Error MIDIDriverCoreMidi::open() {
-
-	CFStringRef name = CFStringCreateWithCString(NULL, "Godot", kCFStringEncodingASCII);
-	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
+	CFStringRef name = CFStringCreateWithCString(nullptr, "Godot", kCFStringEncodingASCII);
+	OSStatus result = MIDIClientCreate(name, nullptr, nullptr, &client);
 	CFRelease(name);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIClientCreate failed, code: " + itos(result));
+		ERR_PRINT("MIDIClientCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
 	result = MIDIInputPortCreate(client, CFSTR("Godot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIInputPortCreate failed, code: " + itos(result));
+		ERR_PRINT("MIDIInputPortCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
 	int sources = MIDIGetNumberOfSources();
 	for (int i = 0; i < sources; i++) {
-
 		MIDIEndpointRef source = MIDIGetSource(i);
 		if (source) {
 			MIDIPortConnectSource(port_in, source, (void *)this);
@@ -75,7 +73,6 @@ Error MIDIDriverCoreMidi::open() {
 }
 
 void MIDIDriverCoreMidi::close() {
-
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];
 		MIDIPortDisconnectSource(port_in, source);
@@ -93,13 +90,12 @@ void MIDIDriverCoreMidi::close() {
 	}
 }
 
-PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
-
-	PoolStringArray list;
+PackedStringArray MIDIDriverCoreMidi::get_connected_inputs() {
+	PackedStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];
-		CFStringRef ref = NULL;
+		CFStringRef ref = nullptr;
 		char name[256];
 
 		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);
@@ -112,9 +108,7 @@ PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 	return list;
 }
 
-MIDIDriverCoreMidi::MIDIDriverCoreMidi() :
-		client(0) {
-}
+MIDIDriverCoreMidi::MIDIDriverCoreMidi() {}
 
 MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
 	close();

@@ -362,12 +362,8 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
   VP8LMetadata* const hdr = &dec->hdr_;
   uint32_t* huffman_image = NULL;
   HTreeGroup* htree_groups = NULL;
-  // When reading htrees, some might be unused, as the format allows it.
-  // We will still read them but put them in this htree_group_bogus.
-  HTreeGroup htree_group_bogus;
   HuffmanCode* huffman_tables = NULL;
-  HuffmanCode* huffman_tables_bogus = NULL;
-  HuffmanCode* next = NULL;
+  HuffmanCode* huffman_table = NULL;
   int num_htree_groups = 1;
   int num_htree_groups_max = 1;
   int max_alphabet_size = 0;
@@ -418,12 +414,6 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
         if (*mapped_group == -1) *mapped_group = num_htree_groups++;
         huffman_image[i] = *mapped_group;
       }
-      huffman_tables_bogus = (HuffmanCode*)WebPSafeMalloc(
-          table_size, sizeof(*huffman_tables_bogus));
-      if (huffman_tables_bogus == NULL) {
-        dec->status_ = VP8_STATUS_OUT_OF_MEMORY;
-        goto Error;
-      }
     } else {
       num_htree_groups = num_htree_groups_max;
     }
@@ -453,63 +443,71 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
     goto Error;
   }
 
-  next = huffman_tables;
+  huffman_table = huffman_tables;
   for (i = 0; i < num_htree_groups_max; ++i) {
-    // If the index "i" is unused in the Huffman image, read the coefficients
-    // but store them to a bogus htree_group.
-    const int is_bogus = (mapping != NULL && mapping[i] == -1);
-    HTreeGroup* const htree_group =
-        is_bogus ? &htree_group_bogus :
-        &htree_groups[(mapping == NULL) ? i : mapping[i]];
-    HuffmanCode** const htrees = htree_group->htrees;
-    HuffmanCode* huffman_tables_i = is_bogus ? huffman_tables_bogus : next;
-    int size;
-    int total_size = 0;
-    int is_trivial_literal = 1;
-    int max_bits = 0;
-    for (j = 0; j < HUFFMAN_CODES_PER_META_CODE; ++j) {
-      int alphabet_size = kAlphabetSize[j];
-      htrees[j] = huffman_tables_i;
-      if (j == 0 && color_cache_bits > 0) {
-        alphabet_size += 1 << color_cache_bits;
-      }
-      size =
-          ReadHuffmanCode(alphabet_size, dec, code_lengths, huffman_tables_i);
-      if (size == 0) {
-        goto Error;
-      }
-      if (is_trivial_literal && kLiteralMap[j] == 1) {
-        is_trivial_literal = (huffman_tables_i->bits == 0);
-      }
-      total_size += huffman_tables_i->bits;
-      huffman_tables_i += size;
-      if (j <= ALPHA) {
-        int local_max_bits = code_lengths[0];
-        int k;
-        for (k = 1; k < alphabet_size; ++k) {
-          if (code_lengths[k] > local_max_bits) {
-            local_max_bits = code_lengths[k];
-          }
+    // If the index "i" is unused in the Huffman image, just make sure the
+    // coefficients are valid but do not store them.
+    if (mapping != NULL && mapping[i] == -1) {
+      for (j = 0; j < HUFFMAN_CODES_PER_META_CODE; ++j) {
+        int alphabet_size = kAlphabetSize[j];
+        if (j == 0 && color_cache_bits > 0) {
+          alphabet_size += (1 << color_cache_bits);
         }
-        max_bits += local_max_bits;
+        // Passing in NULL so that nothing gets filled.
+        if (!ReadHuffmanCode(alphabet_size, dec, code_lengths, NULL)) {
+          goto Error;
+        }
       }
-    }
-    if (!is_bogus) next = huffman_tables_i;
-    htree_group->is_trivial_literal = is_trivial_literal;
-    htree_group->is_trivial_code = 0;
-    if (is_trivial_literal) {
-      const int red = htrees[RED][0].value;
-      const int blue = htrees[BLUE][0].value;
-      const int alpha = htrees[ALPHA][0].value;
-      htree_group->literal_arb = ((uint32_t)alpha << 24) | (red << 16) | blue;
-      if (total_size == 0 && htrees[GREEN][0].value < NUM_LITERAL_CODES) {
-        htree_group->is_trivial_code = 1;
-        htree_group->literal_arb |= htrees[GREEN][0].value << 8;
+    } else {
+      HTreeGroup* const htree_group =
+          &htree_groups[(mapping == NULL) ? i : mapping[i]];
+      HuffmanCode** const htrees = htree_group->htrees;
+      int size;
+      int total_size = 0;
+      int is_trivial_literal = 1;
+      int max_bits = 0;
+      for (j = 0; j < HUFFMAN_CODES_PER_META_CODE; ++j) {
+        int alphabet_size = kAlphabetSize[j];
+        htrees[j] = huffman_table;
+        if (j == 0 && color_cache_bits > 0) {
+          alphabet_size += (1 << color_cache_bits);
+        }
+        size = ReadHuffmanCode(alphabet_size, dec, code_lengths, huffman_table);
+        if (size == 0) {
+          goto Error;
+        }
+        if (is_trivial_literal && kLiteralMap[j] == 1) {
+          is_trivial_literal = (huffman_table->bits == 0);
+        }
+        total_size += huffman_table->bits;
+        huffman_table += size;
+        if (j <= ALPHA) {
+          int local_max_bits = code_lengths[0];
+          int k;
+          for (k = 1; k < alphabet_size; ++k) {
+            if (code_lengths[k] > local_max_bits) {
+              local_max_bits = code_lengths[k];
+            }
+          }
+          max_bits += local_max_bits;
+        }
       }
+      htree_group->is_trivial_literal = is_trivial_literal;
+      htree_group->is_trivial_code = 0;
+      if (is_trivial_literal) {
+        const int red = htrees[RED][0].value;
+        const int blue = htrees[BLUE][0].value;
+        const int alpha = htrees[ALPHA][0].value;
+        htree_group->literal_arb = ((uint32_t)alpha << 24) | (red << 16) | blue;
+        if (total_size == 0 && htrees[GREEN][0].value < NUM_LITERAL_CODES) {
+          htree_group->is_trivial_code = 1;
+          htree_group->literal_arb |= htrees[GREEN][0].value << 8;
+        }
+      }
+      htree_group->use_packed_table =
+          !htree_group->is_trivial_code && (max_bits < HUFFMAN_PACKED_BITS);
+      if (htree_group->use_packed_table) BuildPackedTable(htree_group);
     }
-    htree_group->use_packed_table =
-        !htree_group->is_trivial_code && (max_bits < HUFFMAN_PACKED_BITS);
-    if (htree_group->use_packed_table) BuildPackedTable(htree_group);
   }
   ok = 1;
 
@@ -521,7 +519,6 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
 
  Error:
   WebPSafeFree(code_lengths);
-  WebPSafeFree(huffman_tables_bogus);
   WebPSafeFree(mapping);
   if (!ok) {
     WebPSafeFree(huffman_image);
@@ -757,11 +754,11 @@ static WEBP_INLINE HTreeGroup* GetHtreeGroupForPos(VP8LMetadata* const hdr,
 
 typedef void (*ProcessRowsFunc)(VP8LDecoder* const dec, int row);
 
-static void ApplyInverseTransforms(VP8LDecoder* const dec, int num_rows,
+static void ApplyInverseTransforms(VP8LDecoder* const dec,
+                                   int start_row, int num_rows,
                                    const uint32_t* const rows) {
   int n = dec->next_transform_;
   const int cache_pixs = dec->width_ * num_rows;
-  const int start_row = dec->last_row_;
   const int end_row = start_row + num_rows;
   const uint32_t* rows_in = rows;
   uint32_t* const rows_out = dec->argb_cache_;
@@ -792,8 +789,7 @@ static void ProcessRows(VP8LDecoder* const dec, int row) {
     VP8Io* const io = dec->io_;
     uint8_t* rows_data = (uint8_t*)dec->argb_cache_;
     const int in_stride = io->width * sizeof(uint32_t);  // in unit of RGBA
-
-    ApplyInverseTransforms(dec, num_rows, rows);
+    ApplyInverseTransforms(dec, dec->last_row_, num_rows, rows);
     if (!SetCropWindow(io, dec->last_row_, row, &rows_data, in_stride)) {
       // Nothing to output (this time).
     } else {
@@ -1196,6 +1192,7 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
       VP8LFillBitWindow(br);
       dist_code = GetCopyDistance(dist_symbol, br);
       dist = PlaneCodeToDistance(width, dist_code);
+
       if (VP8LIsEndOfStream(br)) break;
       if (src - data < (ptrdiff_t)dist || src_end - src < (ptrdiff_t)length) {
         goto Error;
@@ -1556,7 +1553,7 @@ static void ExtractAlphaRows(VP8LDecoder* const dec, int last_row) {
     const int cache_pixs = width * num_rows_to_process;
     uint8_t* const dst = output + width * cur_row;
     const uint32_t* const src = dec->argb_cache_;
-    ApplyInverseTransforms(dec, num_rows_to_process, in);
+    ApplyInverseTransforms(dec, cur_row, num_rows_to_process, in);
     WebPExtractGreen(src, dst, cache_pixs);
     AlphaApplyFilter(alph_dec,
                      cur_row, cur_row + num_rows_to_process, dst, width);

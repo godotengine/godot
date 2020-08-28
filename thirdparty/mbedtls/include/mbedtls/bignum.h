@@ -5,7 +5,13 @@
  */
 /*
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -18,6 +24,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -46,7 +73,12 @@
 #define MBEDTLS_ERR_MPI_NOT_ACCEPTABLE                    -0x000E  /**< The input arguments are not acceptable. */
 #define MBEDTLS_ERR_MPI_ALLOC_FAILED                      -0x0010  /**< Memory allocation failed. */
 
-#define MBEDTLS_MPI_CHK(f) do { if( ( ret = f ) != 0 ) goto cleanup; } while( 0 )
+#define MBEDTLS_MPI_CHK(f)       \
+    do                           \
+    {                            \
+        if( ( ret = (f) ) != 0 ) \
+            goto cleanup;        \
+    } while( 0 )
 
 /*
  * Maximum size MPIs are allowed to grow to in number of limbs.
@@ -179,7 +211,7 @@ extern "C" {
  */
 typedef struct mbedtls_mpi
 {
-    int s;              /*!<  integer sign      */
+    int s;              /*!<  Sign: -1 if the mpi is negative, 1 otherwise */
     size_t n;           /*!<  total # of limbs  */
     mbedtls_mpi_uint *p;          /*!<  pointer to limbs  */
 }
@@ -553,6 +585,24 @@ int mbedtls_mpi_cmp_abs( const mbedtls_mpi *X, const mbedtls_mpi *Y );
  * \return         \c 0 if \p X is equal to \p Y.
  */
 int mbedtls_mpi_cmp_mpi( const mbedtls_mpi *X, const mbedtls_mpi *Y );
+
+/**
+ * \brief          Check if an MPI is less than the other in constant time.
+ *
+ * \param X        The left-hand MPI. This must point to an initialized MPI
+ *                 with the same allocated length as Y.
+ * \param Y        The right-hand MPI. This must point to an initialized MPI
+ *                 with the same allocated length as X.
+ * \param ret      The result of the comparison:
+ *                 \c 1 if \p X is less than \p Y.
+ *                 \c 0 if \p X is greater than or equal to \p Y.
+ *
+ * \return         0 on success.
+ * \return         MBEDTLS_ERR_MPI_BAD_INPUT_DATA if the allocated length of
+ *                 the two input MPIs is not the same.
+ */
+int mbedtls_mpi_lt_mpi_ct( const mbedtls_mpi *X, const mbedtls_mpi *Y,
+        unsigned *ret );
 
 /**
  * \brief          Compare an MPI with an integer.
@@ -943,12 +993,16 @@ int mbedtls_mpi_gen_prime( mbedtls_mpi *X, size_t nbits, int flags,
                    int (*f_rng)(void *, unsigned char *, size_t),
                    void *p_rng );
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief          Checkup routine
  *
  * \return         0 if successful, or 1 if the test failed
  */
 int mbedtls_mpi_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

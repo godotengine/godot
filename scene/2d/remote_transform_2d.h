@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class RemoteTransform2D : public Node2D {
-
 	GDCLASS(RemoteTransform2D, Node2D);
 
 	NodePath remote_node;
@@ -69,7 +68,9 @@ public:
 	void set_update_scale(const bool p_update);
 	bool get_update_scale() const;
 
-	virtual String get_configuration_warning() const;
+	void force_update_cache();
+
+	virtual String get_configuration_warning() const override;
 
 	RemoteTransform2D();
 };

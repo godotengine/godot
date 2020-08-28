@@ -9,7 +9,13 @@
  */
 /*
  *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -22,6 +28,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -139,7 +166,7 @@
  *
  * System has time.h, time(), and an implementation for
  * mbedtls_platform_gmtime_r() (see below).
- * The time needs to be correct (not necesarily very accurate, but at least
+ * The time needs to be correct (not necessarily very accurate, but at least
  * the date should be correct). This is used to verify the validity period of
  * X.509 certificates.
  *
@@ -276,27 +303,51 @@
  * For example, when a function accepts as input a pointer to a buffer that may
  * contain untrusted data, and its documentation mentions that this pointer
  * must not be NULL:
- * - the pointer is checked to be non-NULL only if this option is enabled
- * - the content of the buffer is always validated
+ * - The pointer is checked to be non-NULL only if this option is enabled.
+ * - The content of the buffer is always validated.
  *
  * When this flag is defined, if a library function receives a parameter that
- * is invalid, it will:
- * - invoke the macro MBEDTLS_PARAM_FAILED() which by default expands to a
- *   call to the function mbedtls_param_failed()
- * - immediately return (with a specific error code unless the function
- *   returns void and can't communicate an error).
+ * is invalid:
+ * 1. The function will invoke the macro MBEDTLS_PARAM_FAILED().
+ * 2. If MBEDTLS_PARAM_FAILED() did not terminate the program, the function
+ *   will immediately return. If the function returns an Mbed TLS error code,
+ *   the error code in this case is MBEDTLS_ERR_xxx_BAD_INPUT_DATA.
  *
- * When defining this flag, you also need to:
- * - either provide a definition of the function mbedtls_param_failed() in
- *   your application (see platform_util.h for its prototype) as the library
- *   calls that function, but does not provide a default definition for it,
- * - or provide a different definition of the macro MBEDTLS_PARAM_FAILED()
- *   below if the above mechanism is not flexible enough to suit your needs.
- *   See the documentation of this macro later in this file.
+ * When defining this flag, you also need to arrange a definition for
+ * MBEDTLS_PARAM_FAILED(). You can do this by any of the following methods:
+ * - By default, the library defines MBEDTLS_PARAM_FAILED() to call a
+ *   function mbedtls_param_failed(), but the library does not define this
+ *   function. If you do not make any other arrangements, you must provide
+ *   the function mbedtls_param_failed() in your application.
+ *   See `platform_util.h` for its prototype.
+ * - If you enable the macro #MBEDTLS_CHECK_PARAMS_ASSERT, then the
+ *   library defines #MBEDTLS_PARAM_FAILED(\c cond) to be `assert(cond)`.
+ *   You can still supply an alternative definition of
+ *   MBEDTLS_PARAM_FAILED(), which may call `assert`.
+ * - If you define a macro MBEDTLS_PARAM_FAILED() before including `config.h`
+ *   or you uncomment the definition of MBEDTLS_PARAM_FAILED() in `config.h`,
+ *   the library will call the macro that you defined and will not supply
+ *   its own version. Note that if MBEDTLS_PARAM_FAILED() calls `assert`,
+ *   you need to enable #MBEDTLS_CHECK_PARAMS_ASSERT so that library source
+ *   files include `<assert.h>`.
  *
  * Uncomment to enable validation of application-controlled parameters.
  */
 //#define MBEDTLS_CHECK_PARAMS
+
+/**
+ * \def MBEDTLS_CHECK_PARAMS_ASSERT
+ *
+ * Allow MBEDTLS_PARAM_FAILED() to call `assert`, and make it default to
+ * `assert`. This macro is only used if #MBEDTLS_CHECK_PARAMS is defined.
+ *
+ * If this macro is not defined, then MBEDTLS_PARAM_FAILED() defaults to
+ * calling a function mbedtls_param_failed(). See the documentation of
+ * #MBEDTLS_CHECK_PARAMS for details.
+ *
+ * Uncomment to allow MBEDTLS_PARAM_FAILED() to call `assert`.
+ */
+//#define MBEDTLS_CHECK_PARAMS_ASSERT
 
 /* \} name SECTION: System support */
 
@@ -401,7 +452,7 @@
  * \note Because of a signature change, the core AES encryption and decryption routines are
  *       currently named mbedtls_aes_internal_encrypt and mbedtls_aes_internal_decrypt,
  *       respectively. When setting up alternative implementations, these functions should
- *       be overriden, but the wrapper functions mbedtls_aes_decrypt and mbedtls_aes_encrypt
+ *       be overridden, but the wrapper functions mbedtls_aes_decrypt and mbedtls_aes_encrypt
  *       must stay untouched.
  *
  * \note If you use the AES_xxx_ALT macros, then is is recommended to also set
@@ -415,6 +466,16 @@
  *            constitutes a security risk. If possible, we recommend avoiding
  *            dependencies on them, and considering stronger message digests
  *            and ciphers instead.
+ *
+ * \warning   If both MBEDTLS_ECDSA_SIGN_ALT and MBEDTLS_ECDSA_DETERMINISTIC are
+ *            enabled, then the deterministic ECDH signature functions pass the
+ *            the static HMAC-DRBG as RNG to mbedtls_ecdsa_sign(). Therefore
+ *            alternative implementations should use the RNG only for generating
+ *            the ephemeral key and nothing else. If this is not possible, then
+ *            MBEDTLS_ECDSA_DETERMINISTIC should be disabled and an alternative
+ *            implementation should be provided for mbedtls_ecdsa_sign_det_ext()
+ *            (and for mbedtls_ecdsa_sign_det() too if backward compatibility is
+ *            desirable).
  *
  */
 //#define MBEDTLS_MD2_PROCESS_ALT
@@ -655,6 +716,13 @@
 #define MBEDTLS_CIPHER_PADDING_ZEROS_AND_LEN
 #define MBEDTLS_CIPHER_PADDING_ZEROS
 
+/** \def MBEDTLS_CTR_DRBG_USE_128_BIT_KEY
+ *
+ * Uncomment this macro to use a 128-bit key in the CTR_DRBG module.
+ * By default, CTR_DRBG uses a 256-bit key.
+ */
+//#define MBEDTLS_CTR_DRBG_USE_128_BIT_KEY
+
 /**
  * \def MBEDTLS_ENABLE_WEAK_CIPHERSUITES
  *
@@ -685,6 +753,26 @@
  * Uncomment this macro to remove RC4 ciphersuites by default.
  */
 #define MBEDTLS_REMOVE_ARC4_CIPHERSUITES
+
+/**
+ * \def MBEDTLS_REMOVE_3DES_CIPHERSUITES
+ *
+ * Remove 3DES ciphersuites by default in SSL / TLS.
+ * This flag removes the ciphersuites based on 3DES from the default list as
+ * returned by mbedtls_ssl_list_ciphersuites(). However, it is still possible
+ * to enable (some of) them with mbedtls_ssl_conf_ciphersuites() by including
+ * them explicitly.
+ *
+ * A man-in-the-browser attacker can recover authentication tokens sent through
+ * a TLS connection using a 3DES based cipher suite (see "On the Practical
+ * (In-)Security of 64-bit Block Ciphers" by Karthikeyan Bhargavan and Gaëtan
+ * Leurent, see https://sweet32.info/SWEET32_CCS16.pdf). If this attack falls
+ * in your threat model or you are unsure, then you should keep this option
+ * enabled to remove 3DES based cipher suites.
+ *
+ * Comment this macro to keep 3DES in the default ciphersuite list.
+ */
+#define MBEDTLS_REMOVE_3DES_CIPHERSUITES
 
 /**
  * \def MBEDTLS_ECP_DP_SECP192R1_ENABLED
@@ -718,6 +806,28 @@
  * Comment this macro to disable NIST curves optimisation.
  */
 #define MBEDTLS_ECP_NIST_OPTIM
+
+/**
+ * \def MBEDTLS_ECP_NO_INTERNAL_RNG
+ *
+ * When this option is disabled, mbedtls_ecp_mul() will make use of an
+ * internal RNG when called with a NULL \c f_rng argument, in order to protect
+ * against some side-channel attacks.
+ *
+ * This protection introduces a dependency of the ECP module on one of the
+ * DRBG or SHA modules (HMAC-DRBG, CTR-DRBG, SHA-512 or SHA-256.) For very
+ * constrained applications that don't require this protection (for example,
+ * because you're only doing signature verification, so not manipulating any
+ * secret, or because local/physical side-channel attacks are outside your
+ * threat model), it might be desirable to get rid of that dependency.
+ *
+ * \warning Enabling this option makes some uses of ECP vulnerable to some
+ * side-channel attacks. Only enable it if you know that's not a problem for
+ * your use case.
+ *
+ * Uncomment this macro to disable some counter-measures in ECP.
+ */
+//#define MBEDTLS_ECP_NO_INTERNAL_RNG
 
 /**
  * \def MBEDTLS_ECP_RESTARTABLE
@@ -1538,7 +1648,7 @@
  * \def MBEDTLS_SSL_SESSION_TICKETS
  *
  * Enable support for RFC 5077 session tickets in SSL.
- * Client-side, provides full support for session tickets (maintainance of a
+ * Client-side, provides full support for session tickets (maintenance of a
  * session store remains the responsibility of the application, though).
  * Server-side, you also need to provide callbacks for writing and parsing
  * tickets, including authenticated encryption and key management. Example
@@ -1704,7 +1814,7 @@
  *
  * \warning TLS-level compression MAY REDUCE SECURITY! See for example the
  * CRIME attack. Before enabling this option, you should examine with care if
- * CRIME or similar exploits may be a applicable to your use case.
+ * CRIME or similar exploits may be applicable to your use case.
  *
  * \note Currently compression can't be used with DTLS.
  *
@@ -2095,7 +2205,11 @@
  *
  * Enable the CTR_DRBG AES-based random generator.
  * The CTR_DRBG generator uses AES-256 by default.
- * To use AES-128 instead, enable MBEDTLS_CTR_DRBG_USE_128_BIT_KEY below.
+ * To use AES-128 instead, enable \c MBEDTLS_CTR_DRBG_USE_128_BIT_KEY above.
+ *
+ * \note To achieve a 256-bit security strength with CTR_DRBG,
+ *       you must use AES-256 *and* use sufficient entropy.
+ *       See ctr_drbg.h for more details.
  *
  * Module:  library/ctr_drbg.c
  * Caller:
@@ -2989,7 +3103,6 @@
 //#define MBEDTLS_CTR_DRBG_MAX_INPUT                256 /**< Maximum number of additional input bytes */
 //#define MBEDTLS_CTR_DRBG_MAX_REQUEST             1024 /**< Maximum number of requested bytes per call */
 //#define MBEDTLS_CTR_DRBG_MAX_SEED_INPUT           384 /**< Maximum size of (re)seed buffer */
-//#define MBEDTLS_CTR_DRBG_USE_128_BIT_KEY              /**< Use 128-bit key for CTR_DRBG - may reduce security (see ctr_drbg.h) */
 
 /* HMAC_DRBG options */
 //#define MBEDTLS_HMAC_DRBG_RESEED_INTERVAL   10000 /**< Interval before reseed is performed by default */
@@ -3018,7 +3131,7 @@
 //#define MBEDTLS_PLATFORM_STD_TIME            time /**< Default time to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */
 //#define MBEDTLS_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_PRINTF        printf /**< Default printf to use, can be undefined */
-/* Note: your snprintf must correclty zero-terminate the buffer! */
+/* Note: your snprintf must correctly zero-terminate the buffer! */
 //#define MBEDTLS_PLATFORM_STD_SNPRINTF    snprintf /**< Default snprintf to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT_SUCCESS       0 /**< Default exit value to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT_FAILURE       1 /**< Default exit value to use, can be undefined */
@@ -3035,20 +3148,23 @@
 //#define MBEDTLS_PLATFORM_TIME_TYPE_MACRO       time_t /**< Default time macro to use, can be undefined. MBEDTLS_HAVE_TIME must be enabled */
 //#define MBEDTLS_PLATFORM_FPRINTF_MACRO      fprintf /**< Default fprintf macro to use, can be undefined */
 //#define MBEDTLS_PLATFORM_PRINTF_MACRO        printf /**< Default printf macro to use, can be undefined */
-/* Note: your snprintf must correclty zero-terminate the buffer! */
+/* Note: your snprintf must correctly zero-terminate the buffer! */
 //#define MBEDTLS_PLATFORM_SNPRINTF_MACRO    snprintf /**< Default snprintf macro to use, can be undefined */
 //#define MBEDTLS_PLATFORM_NV_SEED_READ_MACRO   mbedtls_platform_std_nv_seed_read /**< Default nv_seed_read function to use, can be undefined */
 //#define MBEDTLS_PLATFORM_NV_SEED_WRITE_MACRO  mbedtls_platform_std_nv_seed_write /**< Default nv_seed_write function to use, can be undefined */
 
 /**
  * \brief       This macro is invoked by the library when an invalid parameter
- *              is detected that is only checked with MBEDTLS_CHECK_PARAMS
+ *              is detected that is only checked with #MBEDTLS_CHECK_PARAMS
  *              (see the documentation of that option for context).
  *
- *              When you leave this undefined here, a default definition is
- *              provided that invokes the function mbedtls_param_failed(),
- *              which is declared in platform_util.h for the benefit of the
- *              library, but that you need to define in your application.
+ *              When you leave this undefined here, the library provides
+ *              a default definition. If the macro #MBEDTLS_CHECK_PARAMS_ASSERT
+ *              is defined, the default definition is `assert(cond)`,
+ *              otherwise the default definition calls a function
+ *              mbedtls_param_failed(). This function is declared in
+ *              `platform_util.h` for the benefit of the library, but
+ *              you need to define in your application.
  *
  *              When you define this here, this replaces the default
  *              definition in platform_util.h (which no longer declares the
@@ -3057,6 +3173,9 @@
  *              particular, that all the necessary declarations are visible
  *              from within the library - you can ensure that by providing
  *              them in this file next to the macro definition).
+ *              If you define this macro to call `assert`, also define
+ *              #MBEDTLS_CHECK_PARAMS_ASSERT so that library source files
+ *              include `<assert.h>`.
  *
  *              Note that you may define this macro to expand to nothing, in
  *              which case you don't have to worry about declarations or

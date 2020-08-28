@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,16 +32,11 @@
 
 #include "core/math/math_funcs.h"
 
-#define _PLANE_EQ_DOT_EPSILON 0.999
-#define _PLANE_EQ_D_EPSILON 0.0001
-
 void Plane::set_normal(const Vector3 &p_normal) {
-
 	normal = p_normal;
 }
 
 void Plane::normalize() {
-
 	real_t l = normal.length();
 	if (l == 0) {
 		*this = Plane(0, 0, 0, 0);
@@ -52,27 +47,21 @@ void Plane::normalize() {
 }
 
 Plane Plane::normalized() const {
-
 	Plane p = *this;
 	p.normalize();
 	return p;
 }
 
-Vector3 Plane::get_any_point() const {
-
-	return get_normal() * d;
-}
-
 Vector3 Plane::get_any_perpendicular_normal() const {
-
 	static const Vector3 p1 = Vector3(1, 0, 0);
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
 
-	if (ABS(normal.dot(p1)) > 0.99) // if too similar to p1
+	if (ABS(normal.dot(p1)) > 0.99) { // if too similar to p1
 		p = p2; // use p2
-	else
+	} else {
 		p = p1; // use p1
+	}
 
 	p -= normal * normal.dot(p);
 	p.normalize();
@@ -83,7 +72,6 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 /* intersections */
 
 bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r_result) const {
-
 	const Plane &p_plane0 = *this;
 	Vector3 normal0 = p_plane0.normal;
 	Vector3 normal1 = p_plane1.normal;
@@ -91,8 +79,9 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 
 	real_t denom = vec3_cross(normal0, normal1).dot(normal2);
 
-	if (ABS(denom) <= CMP_EPSILON)
+	if (Math::is_zero_approx(denom)) {
 		return false;
+	}
 
 	if (r_result) {
 		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.d) +
@@ -105,13 +94,11 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 }
 
 bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *p_intersection) const {
-
 	Vector3 segment = p_dir;
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
-
 		return false;
 	}
 
@@ -130,13 +117,11 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 }
 
 bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 *p_intersection) const {
-
 	Vector3 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
 	if (Math::is_zero_approx(den)) {
-
 		return false;
 	}
 
@@ -144,7 +129,6 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	//printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
-
 		return false;
 	}
 
@@ -156,12 +140,14 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 
 /* misc */
 
-bool Plane::is_almost_like(const Plane &p_plane) const {
+bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
+	return (normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d)) || (normal.is_equal_approx(-p_plane.normal) && Math::is_equal_approx(d, -p_plane.d));
+}
 
-	return (normal.dot(p_plane.normal) > _PLANE_EQ_DOT_EPSILON && Math::absd(d - p_plane.d) < _PLANE_EQ_D_EPSILON);
+bool Plane::is_equal_approx(const Plane &p_plane) const {
+	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
 }
 
 Plane::operator String() const {
-
 	return normal.operator String() + ", " + rtos(d);
 }

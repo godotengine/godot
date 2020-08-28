@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,11 @@
 #include "core/io/resource_importer.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/shape.h"
+#include "scene/resources/shape_3d.h"
 
 class Material;
 
 class EditorSceneImporter : public Reference {
-
 	GDCLASS(EditorSceneImporter, Reference);
 
 protected:
@@ -59,20 +58,20 @@ public:
 		IMPORT_GENERATE_TANGENT_ARRAYS = 256,
 		IMPORT_FAIL_ON_MISSING_DEPENDENCIES = 512,
 		IMPORT_MATERIALS_IN_INSTANCES = 1024,
-		IMPORT_USE_COMPRESSION = 2048
+		IMPORT_USE_COMPRESSION = 2048,
+		IMPORT_USE_NAMED_SKIN_BINDS = 4096,
 
 	};
 
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
 
 	EditorSceneImporter() {}
 };
 
 class EditorScenePostImport : public Reference {
-
 	GDCLASS(EditorScenePostImport, Reference);
 
 	String source_folder;
@@ -85,14 +84,14 @@ public:
 	String get_source_folder() const;
 	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
-	virtual void init(const String &p_scene_folder, const String &p_scene_path);
+	virtual void init(const String &p_source_folder, const String &p_source_file);
 	EditorScenePostImport();
 };
 
 class ResourceImporterScene : public ResourceImporter {
-	GDCLASS(ResourceImporterScene, ResourceImporter)
+	GDCLASS(ResourceImporterScene, ResourceImporter);
 
-	Set<Ref<EditorSceneImporter> > importers;
+	Set<Ref<EditorSceneImporter>> importers;
 
 	static ResourceImporterScene *singleton;
 
@@ -124,36 +123,36 @@ class ResourceImporterScene : public ResourceImporter {
 public:
 	static ResourceImporterScene *get_singleton() { return singleton; }
 
-	const Set<Ref<EditorSceneImporter> > &get_importers() const { return importers; }
+	const Set<Ref<EditorSceneImporter>> &get_importers() const { return importers; }
 
 	void add_importer(Ref<EditorSceneImporter> p_importer) { importers.insert(p_importer); }
 	void remove_importer(Ref<EditorSceneImporter> p_importer) { importers.erase(p_importer); }
 
-	virtual String get_importer_name() const;
-	virtual String get_visible_name() const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_save_extension() const;
-	virtual String get_resource_type() const;
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
 
-	virtual int get_preset_count() const;
-	virtual String get_preset_name(int p_idx) const;
+	virtual int get_preset_count() const override;
+	virtual String get_preset_name(int p_idx) const override;
 
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
-	virtual int get_import_order() const { return 100; } //after everything
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
+	virtual int get_import_order() const override { return 100; } //after everything
 
 	void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
 
-	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes);
+	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
 
-	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode);
+	Node *_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape3D>>> &collision_map, LightBakeMode p_light_bake_mode);
 
 	void _create_clips(Node *scene, const Array &p_clips, bool p_bake_all);
 	void _filter_anim_tracks(Ref<Animation> anim, Set<String> &keep);
 	void _filter_tracks(Node *scene, const String &p_text);
 	void _optimize_animations(Node *scene, float p_max_lin_error, float p_max_ang_error, float p_max_angle);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	Node *import_scene_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
 	Ref<Animation> import_animation_from_other_importer(EditorSceneImporter *p_exception, const String &p_path, uint32_t p_flags, int p_bake_fps);
@@ -165,10 +164,10 @@ class EditorSceneImporterESCN : public EditorSceneImporter {
 	GDCLASS(EditorSceneImporterESCN, EditorSceneImporter);
 
 public:
-	virtual uint32_t get_import_flags() const;
-	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL);
-	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps);
+	virtual uint32_t get_import_flags() const override;
+	virtual void get_extensions(List<String> *r_extensions) const override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) override;
 };
 
 #endif // RESOURCEIMPORTERSCENE_H

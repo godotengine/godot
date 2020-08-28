@@ -35,9 +35,6 @@
 #error "Must implement count leading zeroes"
 #endif
 
-#define RLDI(dst, src, sh, mb, type) \
-	(HI(30) | S(src) | A(dst) | ((type) << 2) | (((sh) & 0x1f) << 11) | (((sh) & 0x20) >> 4) | (((mb) & 0x1f) << 6) | ((mb) & 0x20))
-
 #define PUSH_RLDICR(reg, shift) \
 	push_inst(compiler, RLDI(reg, reg, 63 - shift, shift, 1))
 

@@ -5,7 +5,13 @@
  */
 /*
  *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -18,6 +24,27 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
@@ -123,6 +150,7 @@
 #define MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS                 -0x6500  /**< The asynchronous operation is not completed yet. */
 #define MBEDTLS_ERR_SSL_EARLY_MESSAGE                     -0x6480  /**< Internal-only message signaling that a message arrived early. */
 #define MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS                -0x7000  /**< A cryptographic operation is in progress. Try again later. */
+#define MBEDTLS_ERR_SSL_BAD_CONFIG                        -0x5E80  /**< Invalid value in SSL config */
 
 /*
  * Various constants
@@ -137,6 +165,9 @@
 #define MBEDTLS_SSL_TRANSPORT_DATAGRAM          1   /*!< DTLS     */
 
 #define MBEDTLS_SSL_MAX_HOST_NAME_LEN           255 /*!< Maximum host name defined in RFC 1035 */
+#define MBEDTLS_SSL_MAX_ALPN_NAME_LEN           255 /*!< Maximum size in bytes of a protocol name in alpn ext., RFC 7301 */
+
+#define MBEDTLS_SSL_MAX_ALPN_LIST_LEN           65535 /*!< Maximum size in bytes of list in alpn ext., RFC 7301          */
 
 /* RFC 6066 section 4, see also mfl_code_to_length in ssl_tls.c
  * NONE must be zero so that memset()ing structure to zero works */
@@ -2033,7 +2064,7 @@ void mbedtls_ssl_conf_ca_chain( mbedtls_ssl_config *conf,
  *                 provision more than one cert/key pair (eg one ECDSA, one
  *                 RSA with SHA-256, one RSA with SHA-1). An adequate
  *                 certificate will be selected according to the client's
- *                 advertised capabilities. In case mutliple certificates are
+ *                 advertised capabilities. In case multiple certificates are
  *                 adequate, preference is given to the one set by the first
  *                 call to this function, then second, etc.
  *
@@ -2532,21 +2563,27 @@ void mbedtls_ssl_conf_cert_req_ca_list( mbedtls_ssl_config *conf,
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
 /**
- * \brief          Set the maximum fragment length to emit and/or negotiate
- *                 (Default: the smaller of MBEDTLS_SSL_IN_CONTENT_LEN and
- *                 MBEDTLS_SSL_OUT_CONTENT_LEN, usually 2^14 bytes)
+ * \brief          Set the maximum fragment length to emit and/or negotiate.
+ *                 (Typical: the smaller of #MBEDTLS_SSL_IN_CONTENT_LEN and
+ *                 #MBEDTLS_SSL_OUT_CONTENT_LEN, usually `2^14` bytes)
  *                 (Server: set maximum fragment length to emit,
- *                 usually negotiated by the client during handshake
+ *                 usually negotiated by the client during handshake)
  *                 (Client: set maximum fragment length to emit *and*
  *                 negotiate with the server during handshake)
+ *                 (Default: #MBEDTLS_SSL_MAX_FRAG_LEN_NONE)
  *
- * \note           With TLS, this currently only affects ApplicationData (sent
- *                 with \c mbedtls_ssl_read()), not handshake messages.
- *                 With DTLS, this affects both ApplicationData and handshake.
+ * \note           On the client side, the maximum fragment length extension
+ *                 *will not* be used, unless the maximum fragment length has
+ *                 been set via this function to a value different than
+ *                 #MBEDTLS_SSL_MAX_FRAG_LEN_NONE.
  *
  * \note           This sets the maximum length for a record's payload,
  *                 excluding record overhead that will be added to it, see
  *                 \c mbedtls_ssl_get_record_expansion().
+ *
+ * \note           With TLS, this currently only affects ApplicationData (sent
+ *                 with \c mbedtls_ssl_read()), not handshake messages.
+ *                 With DTLS, this affects both ApplicationData and handshake.
  *
  * \note           For DTLS, it is also possible to set a limit for the total
  *                 size of daragrams passed to the transport layer, including
@@ -3200,7 +3237,7 @@ void mbedtls_ssl_free( mbedtls_ssl_context *ssl );
  *                 mbedtls_ssl_config_defaults() or mbedtls_ssl_config_free().
  *
  * \note           You need to call mbedtls_ssl_config_defaults() unless you
- *                 manually set all of the relevent fields yourself.
+ *                 manually set all of the relevant fields yourself.
  *
  * \param conf     SSL configuration context
  */

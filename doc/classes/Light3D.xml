@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Light3D" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+		Provides a base class for different kinds of light nodes.
+	</brief_description>
+	<description>
+		Light3D is the [i]abstract[/i] base class for light nodes. As it can't be instanced, it shouldn't be used directly. Other types of light nodes inherit from it. Light3D contains the common variables and parameters used for lighting.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="Light3D.Param">
+			</argument>
+			<description>
+				Returns the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="Light3D.Param">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+				Sets the value of the specified [enum Light3D.Param] parameter.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
+			If [code]true[/code], the light only appears in the editor and will not be visible at runtime.
+		</member>
+		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0">
+			The light's angular size in degrees. Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code].
+		</member>
+		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="1">
+			The light's bake mode. See [enum BakeMode].
+		</member>
+		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
+			The light's color. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
+		</member>
+		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
+			The light will affect objects in the selected layers.
+		</member>
+		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
+		</member>
+		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
+			Secondary multiplier used with indirect light (light bounces). Used with [GIProbe].
+		</member>
+		<member name="light_negative" type="bool" setter="set_negative" getter="is_negative" default="false">
+			If [code]true[/code], the light's effect is reversed, darkening areas and casting bright shadows.
+		</member>
+		<member name="light_projector" type="Texture2D" setter="set_projector" getter="get_projector">
+			[Texture2D] projected by light. [member shadow_enabled] must be on for the projector to work. Light projectors make the light appear as if it is shining through a colored but transparent object, almost like light shining through stained glass.
+		</member>
+		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0">
+			The size of the light in Godot units. Only available for [OmniLight3D]s and [SpotLight3D]s. Increasing this value will make the light fade out slower and shadows appear blurrier. This can be used to simulate area lights to an extent.
+		</member>
+		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="0.5">
+			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
+		</member>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" default="0.1">
+			Used to adjust shadow appearance. Too small a value results in self-shadowing ("shadow acne"), while too large a value causes shadows to separate from casters ("peter-panning"). Adjust as needed.
+		</member>
+		<member name="shadow_blur" type="float" setter="set_param" getter="get_param" default="1.0">
+			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low-resolution shadow maps. A high value can impact performance, make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
+		</member>
+		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color( 0, 0, 0, 1 )">
+			The color of shadows cast by this light.
+		</member>
+		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
+			If [code]true[/code], the light will cast shadows.
+		</member>
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="2.0">
+			Offsets the lookup into the shadow map by the object's normal. This can be used to reduce self-shadowing artifacts without using [member shadow_bias]. In practice, this value should be tweaked along with [member shadow_bias] to reduce artifacts as much as possible.
+		</member>
+		<member name="shadow_reverse_cull_face" type="bool" setter="set_shadow_reverse_cull_face" getter="get_shadow_reverse_cull_face" default="false">
+			If [code]true[/code], reverses the backface culling of the mesh. This can be useful when you have a flat mesh that has a light behind it. If you need to cast a shadow on both sides of the mesh, set the mesh to use double-sided shadows with [constant GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED].
+		</member>
+		<member name="shadow_transmittance_bias" type="float" setter="set_param" getter="get_param" default="0.05">
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_ENERGY" value="0" enum="Param">
+			Constant for accessing [member light_energy].
+		</constant>
+		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
+			Constant for accessing [member light_indirect_energy].
+		</constant>
+		<constant name="PARAM_SPECULAR" value="2" enum="Param">
+			Constant for accessing [member light_specular].
+		</constant>
+		<constant name="PARAM_RANGE" value="3" enum="Param">
+			Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
+		</constant>
+		<constant name="PARAM_SIZE" value="4" enum="Param">
+			Constant for accessing [member light_size].
+		</constant>
+		<constant name="PARAM_ATTENUATION" value="5" enum="Param">
+			Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
+		</constant>
+		<constant name="PARAM_SPOT_ANGLE" value="6" enum="Param">
+			Constant for accessing [member SpotLight3D.spot_angle].
+		</constant>
+		<constant name="PARAM_SPOT_ATTENUATION" value="7" enum="Param">
+			Constant for accessing [member SpotLight3D.spot_angle_attenuation].
+		</constant>
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="8" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_max_distance].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_1].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_2].
+		</constant>
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_split_3].
+		</constant>
+		<constant name="PARAM_SHADOW_FADE_START" value="12" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_fade_start].
+		</constant>
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="13" enum="Param">
+			Constant for accessing [member shadow_normal_bias].
+		</constant>
+		<constant name="PARAM_SHADOW_BIAS" value="14" enum="Param">
+			Constant for accessing [member shadow_bias].
+		</constant>
+		<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="15" enum="Param">
+			Constant for accessing [member DirectionalLight3D.directional_shadow_pancake_size].
+		</constant>
+		<constant name="PARAM_SHADOW_BLUR" value="16" enum="Param">
+			Constant for accessing [member shadow_blur].
+		</constant>
+		<constant name="PARAM_TRANSMITTANCE_BIAS" value="17" enum="Param">
+			Constant for accessing [member shadow_transmittance_bias].
+		</constant>
+		<constant name="PARAM_MAX" value="18" enum="Param">
+			Represents the size of the [enum Param] enum.
+		</constant>
+		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
+			Light is ignored when baking.
+			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking.
+		</constant>
+		<constant name="BAKE_DYNAMIC" value="1" enum="BakeMode">
+		</constant>
+		<constant name="BAKE_STATIC" value="2" enum="BakeMode">
+		</constant>
+	</constants>
+</class>

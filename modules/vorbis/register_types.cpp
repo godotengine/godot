@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,19 +30,8 @@
 
 #include "register_types.h"
 
-#include "audio_stream_ogg_vorbis.h"
+// Dummy module as libvorbis is needed by other modules (theora ...)
 
-static Ref<ResourceFormatLoaderAudioStreamOGGVorbis> vorbis_stream_loader;
+void register_vorbis_types() {}
 
-void register_vorbis_types() {
-
-	vorbis_stream_loader.instance();
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
-	ClassDB::register_class<AudioStreamOGGVorbis>();
-}
-
-void unregister_vorbis_types() {
-
-	ResourceLoader::remove_resource_format_loader(vorbis_stream_loader);
-	vorbis_stream_loader.unref();
-}
+void unregister_vorbis_types() {}

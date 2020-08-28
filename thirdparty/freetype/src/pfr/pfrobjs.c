@@ -4,7 +4,7 @@
  *
  *   FreeType PFR object methods (body).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -378,7 +378,7 @@
       outline->flags &= ~FT_OUTLINE_OWNER;
       outline->flags |= FT_OUTLINE_REVERSE_FILL;
 
-      if ( size && pfrsize->metrics.y_ppem < 24 )
+      if ( pfrsize->metrics.y_ppem < 24 )
         outline->flags |= FT_OUTLINE_HIGH_PRECISION;
 
       /* compute the advance vector */

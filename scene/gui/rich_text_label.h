@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef RICH_TEXT_LABEL_H
 #define RICH_TEXT_LABEL_H
 
+#include "rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 
 class RichTextLabel : public Control {
-
 	GDCLASS(RichTextLabel, Control);
 
 public:
@@ -67,7 +67,13 @@ public:
 		ITEM_INDENT,
 		ITEM_LIST,
 		ITEM_TABLE,
-		ITEM_META
+		ITEM_FADE,
+		ITEM_SHAKE,
+		ITEM_WAVE,
+		ITEM_TORNADO,
+		ITEM_RAINBOW,
+		ITEM_META,
+		ITEM_CUSTOMFX
 	};
 
 protected:
@@ -77,7 +83,6 @@ private:
 	struct Item;
 
 	struct Line {
-
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
@@ -91,13 +96,12 @@ private:
 		int maximum_width;
 
 		Line() {
-			from = NULL;
+			from = nullptr;
 			char_count = 0;
 		}
 	};
 
 	struct Item {
-
 		int index;
 		Item *parent;
 		ItemType type;
@@ -113,15 +117,16 @@ private:
 		}
 
 		Item() {
-			parent = NULL;
-			E = NULL;
+			parent = nullptr;
+			E = nullptr;
 			line = 0;
+			index = 0;
+			type = ITEM_FRAME;
 		}
 		virtual ~Item() { _clear_children(); }
 	};
 
 	struct ItemFrame : public Item {
-
 		int parent_line;
 		bool cell;
 		Vector<Line> lines;
@@ -130,77 +135,67 @@ private:
 
 		ItemFrame() {
 			type = ITEM_FRAME;
-			parent_frame = NULL;
+			parent_frame = nullptr;
 			cell = false;
 			parent_line = 0;
 		}
 	};
 
 	struct ItemText : public Item {
-
 		String text;
 		ItemText() { type = ITEM_TEXT; }
 	};
 
 	struct ItemImage : public Item {
-
-		Ref<Texture> image;
+		Ref<Texture2D> image;
+		Size2 size;
+		Color color;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
 	struct ItemFont : public Item {
-
 		Ref<Font> font;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
 	struct ItemColor : public Item {
-
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
 	};
 
 	struct ItemUnderline : public Item {
-
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
 	struct ItemStrikethrough : public Item {
-
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
 	};
 
 	struct ItemMeta : public Item {
-
 		Variant meta;
 		ItemMeta() { type = ITEM_META; }
 	};
 
 	struct ItemAlign : public Item {
-
 		Align align;
 		ItemAlign() { type = ITEM_ALIGN; }
 	};
 
 	struct ItemIndent : public Item {
-
 		int level;
 		ItemIndent() { type = ITEM_INDENT; }
 	};
 
 	struct ItemList : public Item {
-
 		ListType list_type;
 		ItemList() { type = ITEM_LIST; }
 	};
 
 	struct ItemNewline : public Item {
-
 		ItemNewline() { type = ITEM_NEWLINE; }
 	};
 
 	struct ItemTable : public Item {
-
 		struct Column {
 			bool expand;
 			int expand_ratio;
@@ -212,6 +207,103 @@ private:
 		Vector<Column> columns;
 		int total_width;
 		ItemTable() { type = ITEM_TABLE; }
+	};
+
+	struct ItemFade : public Item {
+		int starting_index;
+		int length;
+
+		ItemFade() { type = ITEM_FADE; }
+	};
+
+	struct ItemFX : public Item {
+		float elapsed_time;
+
+		ItemFX() {
+			elapsed_time = 0.0f;
+		}
+	};
+
+	struct ItemShake : public ItemFX {
+		int strength;
+		float rate;
+		uint64_t _current_rng;
+		uint64_t _previous_rng;
+
+		ItemShake() {
+			strength = 0;
+			rate = 0.0f;
+			_current_rng = 0;
+			type = ITEM_SHAKE;
+		}
+
+		void reroll_random() {
+			_previous_rng = _current_rng;
+			_current_rng = Math::rand();
+		}
+
+		uint64_t offset_random(int index) {
+			return (_current_rng >> (index % 64)) |
+				   (_current_rng << (64 - (index % 64)));
+		}
+
+		uint64_t offset_previous_random(int index) {
+			return (_previous_rng >> (index % 64)) |
+				   (_previous_rng << (64 - (index % 64)));
+		}
+	};
+
+	struct ItemWave : public ItemFX {
+		float frequency;
+		float amplitude;
+
+		ItemWave() {
+			frequency = 1.0f;
+			amplitude = 1.0f;
+			type = ITEM_WAVE;
+		}
+	};
+
+	struct ItemTornado : public ItemFX {
+		float radius;
+		float frequency;
+
+		ItemTornado() {
+			radius = 1.0f;
+			frequency = 1.0f;
+			type = ITEM_TORNADO;
+		}
+	};
+
+	struct ItemRainbow : public ItemFX {
+		float saturation;
+		float value;
+		float frequency;
+
+		ItemRainbow() {
+			saturation = 0.8f;
+			value = 0.8f;
+			frequency = 1.0f;
+			type = ITEM_RAINBOW;
+		}
+	};
+
+	struct ItemCustomFX : public ItemFX {
+		Ref<CharFXTransform> char_fx_transform;
+		Ref<RichTextEffect> custom_effect;
+
+		ItemCustomFX() {
+			type = ITEM_CUSTOMFX;
+
+			char_fx_transform.instance();
+		}
+
+		virtual ~ItemCustomFX() {
+			_clear_children();
+
+			char_fx_transform.unref();
+			custom_effect.unref();
+		}
 	};
 
 	ItemFrame *main;
@@ -239,6 +331,8 @@ private:
 	ItemMeta *meta_hovering;
 	Variant current_meta;
 
+	Vector<Ref<RichTextEffect>> custom_effects;
+
 	void _invalidate_current_line(ItemFrame *p_frame);
 	void _validate_line_caches(ItemFrame *p_frame);
 
@@ -246,7 +340,6 @@ private:
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
 
 	struct ProcessState {
-
 		int line_width;
 	};
 
@@ -258,7 +351,6 @@ private:
 	};
 
 	struct Selection {
-
 		Item *click;
 		int click_char;
 
@@ -276,8 +368,8 @@ private:
 	int visible_characters;
 	float percent_visible;
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	Ref<Font> _find_font(Item *p_item);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
@@ -285,9 +377,15 @@ private:
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
+	bool _find_layout_subitem(Item *from, Item *to);
+	bool _find_by_type(Item *p_item, ItemType p_type);
+	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
+
+	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
 
 	void _update_scroll();
+	void _update_fx(ItemFrame *p_frame, float p_delta_time);
 	void _scroll_changed(double);
 
 	void _gui_input(Ref<InputEvent> p_event);
@@ -295,6 +393,8 @@ private:
 	Item *_get_prev_item(Item *p_item, bool p_free = false);
 
 	Rect2 _get_text_rect();
+	Ref<RichTextEffect> _get_custom_effect_by_code(String p_bbcode_identifier);
+	virtual Dictionary parse_expressions_for_values(Vector<String> p_expressions);
 
 	bool use_bbcode;
 	String bbcode;
@@ -303,16 +403,23 @@ private:
 
 	int fixed_width;
 
+	bool fit_content_height;
+
 protected:
 	void _notification(int p_what);
 
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture> &p_image);
+	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0));
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
+	void push_normal();
+	void push_bold();
+	void push_bold_italics();
+	void push_italics();
+	void push_mono();
 	void push_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
@@ -321,6 +428,12 @@ public:
 	void push_list(ListType p_list);
 	void push_meta(const Variant &p_meta);
 	void push_table(int p_columns);
+	void push_fade(int p_start_index, int p_length);
+	void push_shake(int p_strength, float p_rate);
+	void push_wave(float p_frequency, float p_amplitude);
+	void push_tornado(float p_frequency, float p_radius);
+	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	int get_current_table_column() const;
 	void push_cell();
@@ -345,17 +458,20 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_fit_content_height(bool p_enabled);
+	bool is_fit_content_height_enabled() const;
+
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	int get_content_height();
+	int get_content_height() const;
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
@@ -379,8 +495,13 @@ public:
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;
 
+	void set_effects(const Vector<Variant> &effects);
+	Vector<Variant> get_effects();
+
+	void install_effect(const Variant effect);
+
 	void set_fixed_size_to_width(int p_width);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel();
 	~RichTextLabel();

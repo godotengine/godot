@@ -12,7 +12,13 @@
  */
 /*
  *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
- *  SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
+ *
+ *  This file is provided under the Apache License 2.0, or the
+ *  GNU General Public License v2.0 or later.
+ *
+ *  **********
+ *  Apache License 2.0:
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License.
@@ -26,11 +32,38 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
+ *  **********
+ *
+ *  **********
+ *  GNU General Public License v2.0 or later:
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *  **********
+ *
  *  This file is part of Mbed TLS (https://tls.mbed.org)
  */
 
 #ifndef MBEDTLS_ECDSA_H
 #define MBEDTLS_ECDSA_H
+
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 #include "ecp.h"
 #include "md.h"
@@ -169,6 +202,19 @@ int mbedtls_ecdsa_sign( mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi *s,
  *                  (SECG): SEC1 Elliptic Curve Cryptography</em>, section
  *                  4.1.3, step 5.
  *
+ * \warning         Since the output of the internal RNG is always the same for
+ *                  the same key and message, this limits the efficiency of
+ *                  blinding and leaks information through side channels. For
+ *                  secure behavior use mbedtls_ecdsa_sign_det_ext() instead.
+ *
+ *                  (Optimally the blinding is a random value that is different
+ *                  on every execution. In this case the blinding is still
+ *                  random from the attackers perspective, but is the same on
+ *                  each execution. This means that this blinding does not
+ *                  prevent attackers from recovering secrets by combining
+ *                  several measurement traces, but may prevent some attacks
+ *                  that exploit relationships between secret data.)
+ *
  * \see             ecp.h
  *
  * \param grp       The context for the elliptic curve to use.
@@ -194,6 +240,52 @@ int mbedtls_ecdsa_sign_det( mbedtls_ecp_group *grp, mbedtls_mpi *r,
                             mbedtls_mpi *s, const mbedtls_mpi *d,
                             const unsigned char *buf, size_t blen,
                             mbedtls_md_type_t md_alg );
+/**
+ * \brief           This function computes the ECDSA signature of a
+ *                  previously-hashed message, deterministic version.
+ *
+ *                  For more information, see <em>RFC-6979: Deterministic
+ *                  Usage of the Digital Signature Algorithm (DSA) and Elliptic
+ *                  Curve Digital Signature Algorithm (ECDSA)</em>.
+ *
+ * \note            If the bitlength of the message hash is larger than the
+ *                  bitlength of the group order, then the hash is truncated as
+ *                  defined in <em>Standards for Efficient Cryptography Group
+ *                  (SECG): SEC1 Elliptic Curve Cryptography</em>, section
+ *                  4.1.3, step 5.
+ *
+ * \see             ecp.h
+ *
+ * \param grp           The context for the elliptic curve to use.
+ *                      This must be initialized and have group parameters
+ *                      set, for example through mbedtls_ecp_group_load().
+ * \param r             The MPI context in which to store the first part
+ *                      the signature. This must be initialized.
+ * \param s             The MPI context in which to store the second part
+ *                      the signature. This must be initialized.
+ * \param d             The private signing key. This must be initialized
+ *                      and setup, for example through mbedtls_ecp_gen_privkey().
+ * \param buf           The hashed content to be signed. This must be a readable
+ *                      buffer of length \p blen Bytes. It may be \c NULL if
+ *                      \p blen is zero.
+ * \param blen          The length of \p buf in Bytes.
+ * \param md_alg        The hash algorithm used to hash the original data.
+ * \param f_rng_blind   The RNG function used for blinding. This must not be
+ *                      \c NULL.
+ * \param p_rng_blind   The RNG context to be passed to \p f_rng. This may be
+ *                      \c NULL if \p f_rng doesn't need a context parameter.
+ *
+ * \return          \c 0 on success.
+ * \return          An \c MBEDTLS_ERR_ECP_XXX or \c MBEDTLS_MPI_XXX
+ *                  error code on failure.
+ */
+int mbedtls_ecdsa_sign_det_ext( mbedtls_ecp_group *grp, mbedtls_mpi *r,
+                                mbedtls_mpi *s, const mbedtls_mpi *d,
+                                const unsigned char *buf, size_t blen,
+                                mbedtls_md_type_t md_alg,
+                                int (*f_rng_blind)(void *, unsigned char *,
+                                                   size_t),
+                                void *p_rng_blind );
 #endif /* MBEDTLS_ECDSA_DETERMINISTIC */
 
 /**

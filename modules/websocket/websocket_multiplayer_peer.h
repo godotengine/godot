@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,11 +37,10 @@
 #include "websocket_peer.h"
 
 class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {
-
 	GDCLASS(WebSocketMultiplayerPeer, NetworkedMultiplayerPeer);
 
 private:
-	PoolVector<uint8_t> _make_pkt(uint32_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
+	Vector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
 	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
 	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
 
@@ -63,7 +62,7 @@ protected:
 	};
 
 	List<Packet> _incoming_packets;
-	Map<int, Ref<WebSocketPeer> > _peer_map;
+	Map<int, Ref<WebSocketPeer>> _peer_map;
 	Packet _current_packet;
 
 	bool _is_multiplayer;
@@ -80,23 +79,21 @@ protected:
 
 public:
 	/* NetworkedMultiplayerPeer */
-	void set_transfer_mode(TransferMode p_mode);
-	TransferMode get_transfer_mode() const;
-	void set_target_peer(int p_peer_id);
-	int get_packet_peer() const;
-	int get_unique_id() const;
-	virtual bool is_server() const = 0;
-	void set_refuse_new_connections(bool p_enable);
-	bool is_refusing_new_connections() const;
-	virtual ConnectionStatus get_connection_status() const = 0;
+	void set_transfer_mode(TransferMode p_mode) override;
+	TransferMode get_transfer_mode() const override;
+	void set_target_peer(int p_target_peer) override;
+	int get_packet_peer() const override;
+	int get_unique_id() const override;
+	void set_refuse_new_connections(bool p_enable) override;
+	bool is_refusing_new_connections() const override;
 
 	/* PacketPeer */
-	virtual int get_available_packet_count() const;
-	virtual int get_max_packet_size() const = 0;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	/* WebSocketPeer */
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const = 0;
 
 	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "constraint_2d_sw.h"
 
 class AreaPair2DSW : public Constraint2DSW {
-
 	Body2DSW *body;
 	Area2DSW *area;
 	int body_shape;
@@ -52,7 +51,6 @@ public:
 };
 
 class Area2Pair2DSW : public Constraint2DSW {
-
 	Area2DSW *area_a;
 	Area2DSW *area_b;
 	int shape_a;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,42 +37,40 @@
 #include "emws_peer.h"
 #include "emws_server.h"
 #else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
+#include "wsl_client.h"
+#include "wsl_server.h"
+#endif
+#ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_server.h"
+#include "editor/editor_node.h"
+#include "editor_debugger_server_websocket.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+static void _editor_init_callback() {
+	EditorDebuggerServer::register_protocol_handler("ws://", EditorDebuggerServerWebSocket::create);
+}
 #endif
 
 void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
-
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
-
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
-
 #ifdef JAVASCRIPT_ENABLED
 	EMWSPeer::make_default();
 	EMWSClient::make_default();
 	EMWSServer::make_default();
 #else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
+	WSLPeer::make_default();
+	WSLClient::make_default();
+	WSLServer::make_default();
 #endif
 
 	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
 	ClassDB::register_custom_instance_class<WebSocketServer>();
 	ClassDB::register_custom_instance_class<WebSocketClient>();
 	ClassDB::register_custom_instance_class<WebSocketPeer>();
+
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(&_editor_init_callback);
+#endif
 }
 
 void unregister_websocket_types() {}

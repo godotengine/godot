@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,55 +36,56 @@
 #include "core/project_settings.h"
 
 String DirAccess::_get_root_path() const {
-
 	switch (_access_type) {
-
-		case ACCESS_RESOURCES: return ProjectSettings::get_singleton()->get_resource_path();
-		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
-		default: return "";
+		case ACCESS_RESOURCES:
+			return ProjectSettings::get_singleton()->get_resource_path();
+		case ACCESS_USERDATA:
+			return OS::get_singleton()->get_user_data_dir();
+		default:
+			return "";
 	}
-
-	return "";
 }
+
 String DirAccess::_get_root_string() const {
-
 	switch (_access_type) {
-
-		case ACCESS_RESOURCES: return "res://";
-		case ACCESS_USERDATA: return "user://";
-		default: return "";
+		case ACCESS_RESOURCES:
+			return "res://";
+		case ACCESS_USERDATA:
+			return "user://";
+		default:
+			return "";
 	}
-
-	return "";
 }
 
 int DirAccess::get_current_drive() {
-
 	String path = get_current_dir().to_lower();
 	for (int i = 0; i < get_drive_count(); i++) {
 		String d = get_drive(i).to_lower();
-		if (path.begins_with(d))
+		if (path.begins_with(d)) {
 			return i;
+		}
 	}
 
 	return 0;
 }
 
-static Error _erase_recursive(DirAccess *da) {
+bool DirAccess::drives_are_shortcuts() {
+	return false;
+}
 
+static Error _erase_recursive(DirAccess *da) {
 	List<String> dirs;
 	List<String> files;
 
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (n != String()) {
-
 		if (n != "." && n != "..") {
-
-			if (da->current_is_dir())
+			if (da->current_is_dir()) {
 				dirs.push_back(n);
-			else
+			} else {
 				files.push_back(n);
+			}
 		}
 
 		n = da->get_next();
@@ -93,10 +94,8 @@ static Error _erase_recursive(DirAccess *da) {
 	da->list_dir_end();
 
 	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
-
 		Error err = da->change_dir(E->get());
 		if (err == OK) {
-
 			err = _erase_recursive(da);
 			if (err) {
 				da->change_dir("..");
@@ -116,7 +115,6 @@ static Error _erase_recursive(DirAccess *da) {
 	}
 
 	for (List<String>::Element *E = files.front(); E; E = E->next()) {
-
 		Error err = da->remove(da->get_current_dir().plus_file(E->get()));
 		if (err) {
 			return err;
@@ -127,15 +125,13 @@ static Error _erase_recursive(DirAccess *da) {
 }
 
 Error DirAccess::erase_contents_recursive() {
-
 	return _erase_recursive(this);
 }
 
 Error DirAccess::make_dir_recursive(String p_dir) {
-
 	if (p_dir.length() < 1) {
 		return OK;
-	};
+	}
 
 	String full_dir;
 
@@ -153,13 +149,13 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	String base;
 
-	if (full_dir.begins_with("res://"))
+	if (full_dir.begins_with("res://")) {
 		base = "res://";
-	else if (full_dir.begins_with("user://"))
+	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
-	else if (full_dir.begins_with("/"))
+	} else if (full_dir.begins_with("/")) {
 		base = "/";
-	else if (full_dir.find(":/") != -1) {
+	} else if (full_dir.find(":/") != -1) {
 		base = full_dir.substr(0, full_dir.find(":/") + 2);
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -171,11 +167,9 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	String curpath = base;
 	for (int i = 0; i < subdirs.size(); i++) {
-
 		curpath = curpath.plus_file(subdirs[i]);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
-
 			ERR_FAIL_V(err);
 		}
 	}
@@ -183,69 +177,49 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	return OK;
 }
 
-String DirAccess::get_next(bool *p_is_dir) {
-
-	String next = get_next();
-	if (p_is_dir)
-		*p_is_dir = current_is_dir();
-	return next;
-}
-
 String DirAccess::fix_path(String p_path) const {
-
 	switch (_access_type) {
-
 		case ACCESS_RESOURCES: {
-
 			if (ProjectSettings::get_singleton()) {
 				if (p_path.begins_with("res://")) {
-
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (resource_path != "") {
-
 						return p_path.replace_first("res:/", resource_path);
-					};
+					}
 					return p_path.replace_first("res://", "");
 				}
 			}
 
 		} break;
 		case ACCESS_USERDATA: {
-
 			if (p_path.begins_with("user://")) {
-
 				String data_dir = OS::get_singleton()->get_user_data_dir();
 				if (data_dir != "") {
-
 					return p_path.replace_first("user:/", data_dir);
-				};
+				}
 				return p_path.replace_first("user://", "");
 			}
 
 		} break;
 		case ACCESS_FILESYSTEM: {
-
 			return p_path;
 		} break;
-		case ACCESS_MAX: break; // Can't happen, but silences warning
+		case ACCESS_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return p_path;
 }
 
-DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { 0, 0, 0 };
+DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { nullptr, nullptr, nullptr };
 
 DirAccess *DirAccess::create_for_path(const String &p_path) {
-
-	DirAccess *da = NULL;
+	DirAccess *da = nullptr;
 	if (p_path.begins_with("res://")) {
-
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
-
 		da = create(ACCESS_USERDATA);
 	} else {
-
 		da = create(ACCESS_FILESYSTEM);
 	}
 
@@ -253,36 +227,35 @@ DirAccess *DirAccess::create_for_path(const String &p_path) {
 }
 
 DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
-
 	DirAccess *da = create_for_path(p_path);
 
-	ERR_FAIL_COND_V(!da, NULL);
+	ERR_FAIL_COND_V_MSG(!da, nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
+	}
 	if (err != OK) {
 		memdelete(da);
-		return NULL;
+		return nullptr;
 	}
 
 	return da;
 }
 
 DirAccess *DirAccess::create(AccessType p_access) {
-
-	DirAccess *da = create_func[p_access] ? create_func[p_access]() : NULL;
+	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
 	}
 
 	return da;
-};
+}
 
 String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
-
 	DirAccess *d = DirAccess::create(p_access);
-	if (!d)
+	if (!d) {
 		return p_path;
+	}
 
 	d->change_dir(p_path);
 	String full = d->get_current_dir();
@@ -291,22 +264,20 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 }
 
 Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
-
 	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
 
 	if (err) {
-		ERR_PRINTS("Failed to open " + p_from);
+		ERR_PRINT("Failed to open " + p_from);
 		return err;
 	}
 
 	FileAccess *fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
 	if (err) {
-
 		fsrc->close();
 		memdelete(fsrc);
-		ERR_PRINTS("Failed to open " + p_to);
+		ERR_PRINT("Failed to open " + p_to);
 		return err;
 	}
 
@@ -315,7 +286,6 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 	fsrc->seek(0);
 	err = OK;
 	while (size--) {
-
 		if (fsrc->get_error() != OK) {
 			err = fsrc->get_error();
 			break;
@@ -332,8 +302,9 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 		fdst->close();
 		err = FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
-		if (err == ERR_UNAVAILABLE)
+		if (err == ERR_UNAVAILABLE) {
 			err = OK;
+		}
 	}
 
 	memdelete(fsrc);
@@ -367,18 +338,16 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 	list_dir_begin();
 	String n = get_next();
 	while (n != String()) {
-
 		if (n != "." && n != "..") {
-
-			if (current_is_dir())
+			if (current_is_dir()) {
 				dirs.push_back(n);
-			else {
-				String rel_path = n;
+			} else {
+				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;
@@ -396,39 +365,36 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);
-			ERR_FAIL_COND_V(err, err);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + target_dir + "'.");
 		}
 
 		Error err = change_dir(E->get());
-		ERR_FAIL_COND_V(err, err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + E->get() + "'.");
+
 		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags);
 		if (err) {
 			change_dir("..");
-			ERR_PRINT("Failed to copy recursively");
-			return err;
+			ERR_FAIL_V_MSG(err, "Failed to copy recursively.");
 		}
 		err = change_dir("..");
-		if (err) {
-			ERR_PRINT("Failed to go back");
-			return err;
-		}
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to go back.");
 	}
 
 	return OK;
 }
 
 Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
-	ERR_FAIL_COND_V(!dir_exists(p_from), ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
 	DirAccess *target_da = DirAccess::create_for_path(p_to);
-	ERR_FAIL_COND_V(!target_da, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(!target_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_to + "'.");
 
 	if (!target_da->dir_exists(p_to)) {
 		Error err = target_da->make_dir_recursive(p_to);
 		if (err) {
 			memdelete(target_da);
 		}
-		ERR_FAIL_COND_V(err, err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + p_to + "'.");
 	}
 
 	if (!p_to.ends_with("/")) {
@@ -443,17 +409,8 @@ Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
 }
 
 bool DirAccess::exists(String p_dir) {
-
 	DirAccess *da = DirAccess::create_for_path(p_dir);
 	bool valid = da->change_dir(p_dir) == OK;
 	memdelete(da);
 	return valid;
-}
-
-DirAccess::DirAccess() {
-
-	_access_type = ACCESS_FILESYSTEM;
-}
-
-DirAccess::~DirAccess() {
 }

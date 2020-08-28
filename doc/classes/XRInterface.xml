@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRInterface" inherits="Reference" version="4.0">
+	<brief_description>
+		Base class for an AR/VR interface implementation.
+	</brief_description>
+	<description>
+		This class needs to be implemented to make an AR or VR platform available to Godot and these should be implemented as C++ modules or GDNative modules (note that for GDNative the subclass XRScriptInterface should be used). Part of the interface is exposed to GDScript so you can detect, enable and configure an AR or VR platform.
+		Interfaces should be written in such a way that simply enabling them will give us a working setup. You can query the available interfaces through [XRServer].
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_camera_feed_id">
+			<return type="int">
+			</return>
+			<description>
+				If this is an AR interface that requires displaying a camera feed as the background, this method returns the feed ID in the [CameraServer] for this interface.
+			</description>
+		</method>
+		<method name="get_capabilities" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns a combination of [enum Capabilities] flags providing information about the capabilities of this interface.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<description>
+				Returns the name of this interface (OpenVR, OpenHMD, ARKit, etc).
+			</description>
+		</method>
+		<method name="get_render_targetsize">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
+			</description>
+		</method>
+		<method name="get_tracking_status" qualifiers="const">
+			<return type="int" enum="XRInterface.Tracking_status">
+			</return>
+			<description>
+				If supported, returns the status of our tracking. This will allow you to provide feedback to the user whether there are issues with positional tracking.
+			</description>
+		</method>
+		<method name="initialize">
+			<return type="bool">
+			</return>
+			<description>
+				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
+				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence.
+				[b]Note:[/b] You must enable the AR/VR mode on the main viewport for any device that uses the main output of Godot, such as for mobile VR.
+				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively, you can add a separate viewport node to your scene and enable AR/VR on that viewport. It will be used to output to the HMD, leaving you free to do anything you like in the main window, such as using a separate camera as a spectator camera or rendering something completely different.
+				While currently not used, you can activate additional interfaces. You may wish to do this if you want to track controllers from other platforms. However, at this point in time only one interface can render to an HMD.
+			</description>
+		</method>
+		<method name="is_stereo">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the current output of this interface is in stereo.
+			</description>
+		</method>
+		<method name="uninitialize">
+			<return type="void">
+			</return>
+			<description>
+				Turns the interface off.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="ar_is_anchor_detection_enabled" type="bool" setter="set_anchor_detection_is_enabled" getter="get_anchor_detection_is_enabled" default="false">
+			On an AR interface, [code]true[/code] if anchor detection is enabled.
+		</member>
+		<member name="interface_is_initialized" type="bool" setter="set_is_initialized" getter="is_initialized" default="false">
+			[code]true[/code] if this interface been initialized.
+		</member>
+		<member name="interface_is_primary" type="bool" setter="set_is_primary" getter="is_primary" default="false">
+			[code]true[/code] if this is the primary interface.
+		</member>
+	</members>
+	<constants>
+		<constant name="XR_NONE" value="0" enum="Capabilities">
+			No XR capabilities.
+		</constant>
+		<constant name="XR_MONO" value="1" enum="Capabilities">
+			This interface can work with normal rendering output (non-HMD based AR).
+		</constant>
+		<constant name="XR_STEREO" value="2" enum="Capabilities">
+			This interface supports stereoscopic rendering.
+		</constant>
+		<constant name="XR_AR" value="4" enum="Capabilities">
+			This interface supports AR (video background and real world tracking).
+		</constant>
+		<constant name="XR_EXTERNAL" value="8" enum="Capabilities">
+			This interface outputs to an external device. If the main viewport is used, the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of [method get_render_targetsize]). Using a separate viewport node frees up the main viewport for other purposes.
+		</constant>
+		<constant name="EYE_MONO" value="0" enum="Eyes">
+			Mono output, this is mostly used internally when retrieving positioning information for our camera node or when stereo scopic rendering is not supported.
+		</constant>
+		<constant name="EYE_LEFT" value="1" enum="Eyes">
+			Left eye output, this is mostly used internally when rendering the image for the left eye and obtaining positioning and projection information.
+		</constant>
+		<constant name="EYE_RIGHT" value="2" enum="Eyes">
+			Right eye output, this is mostly used internally when rendering the image for the right eye and obtaining positioning and projection information.
+		</constant>
+		<constant name="XR_NORMAL_TRACKING" value="0" enum="Tracking_status">
+			Tracking is behaving as expected.
+		</constant>
+		<constant name="XR_EXCESSIVE_MOTION" value="1" enum="Tracking_status">
+			Tracking is hindered by excessive motion (the player is moving faster than tracking can keep up).
+		</constant>
+		<constant name="XR_INSUFFICIENT_FEATURES" value="2" enum="Tracking_status">
+			Tracking is hindered by insufficient features, it's too dark (for camera-based tracking), player is blocked, etc.
+		</constant>
+		<constant name="XR_UNKNOWN_TRACKING" value="3" enum="Tracking_status">
+			We don't know the status of the tracking or this interface does not provide feedback.
+		</constant>
+		<constant name="XR_NOT_TRACKING" value="4" enum="Tracking_status">
+			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
+		</constant>
+	</constants>
+</class>
