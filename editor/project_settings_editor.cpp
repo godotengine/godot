@@ -333,6 +333,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		header->add_child(search_bar);
 
 		search_box = memnew(LineEdit);
+		search_box->set_placeholder(TTR("Search"));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		search_bar->add_child(search_box);
 
