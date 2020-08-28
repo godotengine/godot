@@ -309,7 +309,7 @@ void AudioEffectChorus::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dry", "amount"), &AudioEffectChorus::set_dry);
 	ClassDB::bind_method(D_METHOD("get_dry"), &AudioEffectChorus::get_dry);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "voice_count", PROPERTY_HINT_RANGE, "1,4,1"), "set_voice_count", "get_voice_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "voice_count", PROPERTY_HINT_RANGE, "1,4,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_voice_count", "get_voice_count");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dry", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dry", "get_dry");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
 
