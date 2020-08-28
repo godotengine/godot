@@ -29,8 +29,14 @@
 /*************************************************************************/
 
 #include "shader_language.h"
+
+#include "core/engine.h"
+#include "core/io/resource_loader.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "scene/resources/shader.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering/shader_language.h"
 #include "servers/rendering_server.h"
 
 static bool _is_text_char(CharType c) {
@@ -216,6 +222,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"REPEAT_ENABLE",
 	"REPEAT_DISABLE",
 	"SHADER_TYPE",
+	"IMPORT_SHADER",
 	"CURSOR",
 	"ERROR",
 	"EOF",
@@ -330,6 +337,9 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_REPEAT_ENABLE, "repeat_enable" },
 	{ TK_REPEAT_DISABLE, "repeat_disable" },
 	{ TK_SHADER_TYPE, "shader_type" },
+	{ TK_IMPORT, "import" },
+	{ TK_QUOTE, "\"" },
+
 	{ TK_ERROR, nullptr }
 };
 
@@ -449,8 +459,13 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 				return _make_token(TK_OP_NOT);
 
 			} break;
-			//case '"' //string - no strings in shader
-			//case '\'' //string - no strings in shader
+			case '"': {
+				int end_quote = code.find_char('"', char_idx);
+				String quoted = code.substr(char_idx, end_quote - char_idx);
+				char_idx = end_quote + 1;
+				char_idx++;
+				return _make_token(TK_QUOTE, quoted);
+			}
 			case '{':
 				return _make_token(TK_CURLY_BRACKET_OPEN);
 			case '}':
@@ -5838,8 +5853,83 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	int instance_index = 0;
 	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
+	Set<String> includes;
+	int include_depth = 0;
+
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
+			case TK_IMPORT: {
+				tk = _get_token();
+
+				if (tk.type != TK_QUOTE) {
+					_set_error("Expected quote.");
+					return ERR_PARSE_ERROR;
+				}
+
+				String path = tk.text;
+
+				if (path.empty()) {
+					_set_error("Invalid path");
+					return ERR_PARSE_ERROR;
+				}
+
+				RES res = ResourceLoader::load(path);
+				if (res.is_null()) {
+					_set_error("Shader include load failed");
+					return ERR_PARSE_ERROR;
+				}
+
+				String replacement = String("import \"") + tk.text + String("\"");
+				String empty;
+				for (int i = 0; i < replacement.size(); i++) {
+					empty += " ";
+				}
+				code = code.replace_first(replacement, empty);
+
+				tk = _get_token();
+				if (tk.type != TK_SEMICOLON) {
+					_set_error("Expected semicolon.");
+					return ERR_PARSE_ERROR;
+				}
+
+				Ref<Shader> shader = res;
+				if (shader.is_null()) {
+					_set_error("Shader include resource type is wrong");
+					return ERR_PARSE_ERROR;
+				}
+
+				String included = shader->get_code();
+				if (included.empty()) {
+					_set_error("Shader include not found");
+					return ERR_PARSE_ERROR;
+				}
+
+				int type_end = included.find(";");
+				if (type_end == -1) {
+					_set_error("Shader include shader_type not found");
+					return ERR_PARSE_ERROR;
+				}
+
+				const String real_path = shader->get_path();
+				if (includes.has(real_path)) {
+					//Already included, skip.
+					return ERR_PARSE_ERROR;
+				}
+
+				//Mark as included
+				includes.insert(real_path);
+
+				include_depth++;
+				if (include_depth > 25) {
+					_set_error("Shader max include depth exceeded");
+					return ERR_PARSE_ERROR;
+				}
+
+				//Remove "shader_type xyz;" prefix from included files
+				included = included.substr(type_end + 1, included.length());
+
+				code = code.insert(char_idx, included);
+			} break;
 			case TK_RENDER_MODE: {
 				while (true) {
 					StringName mode;

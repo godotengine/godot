@@ -471,6 +471,24 @@ void ShaderEditor::apply_shaders() {
 			shader->set_code(editor_code);
 			shader->set_edited(true);
 		}
+		refresh_shader_dependencies();
+	}
+}
+
+void ShaderEditor::refresh_shader_dependencies() {
+	//We could use the arguments to find exactly what shaders we should update that depend on the argument shader.
+	//For now go through cached shaders, which are usually(?) all shaders that are currently used in editor
+	//Best solution would be to create a dependency graph about all #includes and use it
+
+	List<RES> cached;
+	ResourceCache::get_cached_resources(&cached);
+
+	for (int i = 0; i < cached.size(); i++) {
+		Shader *shader = Object::cast_to<Shader>(*cached[i]);
+		if (shader) {
+			// Workaround to refreshing code
+			shader->set_code(shader->get_code());
+		}
 	}
 }
 
