@@ -307,17 +307,6 @@ int BaseButton::get_button_mask() const {
 	return button_mask;
 }
 
-void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
-	enabled_focus_mode = p_mode;
-	if (!status.disabled) {
-		set_focus_mode(p_mode);
-	}
-}
-
-Control::FocusMode BaseButton::get_enabled_focus_mode() const {
-	return enabled_focus_mode;
-}
-
 void BaseButton::set_keep_pressed_outside(bool p_on) {
 	keep_pressed_outside = p_on;
 }
@@ -388,8 +377,6 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
-	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
-	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
 
@@ -412,7 +399,6 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
@@ -437,7 +423,6 @@ BaseButton::BaseButton() {
 	status.pressing_inside = false;
 	status.disabled = false;
 	set_focus_mode(FOCUS_ALL);
-	enabled_focus_mode = FOCUS_ALL;
 	action_mode = ACTION_MODE_BUTTON_RELEASE;
 	button_mask = BUTTON_MASK_LEFT;
 }
