@@ -988,7 +988,8 @@ bool PlayerController::can_accept_new_inputs() const {
 }
 
 DollController::DollController(NetworkedController *p_node) :
-		Controller(p_node) {
+		Controller(p_node),
+		network_tracer(10) {
 }
 
 DollController::~DollController() {
@@ -1014,7 +1015,7 @@ void DollController::process(real_t p_delta) {
 }
 
 uint64_t DollController::get_current_input_id() const {
-	return epoch;
+	return current_epoch;
 }
 
 void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
@@ -1027,14 +1028,98 @@ void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
 }
 
 uint64_t DollController::next_epoch(real_t p_delta) {
-	if (interpolator.epochs_count() < 2) {
-		// At least we need 2 epochs to process this.
-		return UINT64_MAX;
+	// This function regulates the epoch ID to process.
+	// The epoch is not simply increased by one because we need to make sure
+	// to make the client apply the nearest server state while giving some room
+	// for the subsequent information to arrive.
+
+	// Step 1, Wait that we have at least two epochs.
+	if (unlikely(current_epoch == UINT64_MAX)) {
+		// Interpolator is not yet started.
+		if (interpolator.known_epochs_count() < 2) {
+			// Not ready yet.
+			return UINT64_MAX;
+		}
+
+#ifdef DEBUG_ENABLED
+		// At this point we have 2 epoch, something is always returned at this
+		// point.
+		CRASH_COND(interpolator.get_youngest_epoch() == UINT64_MAX);
+#endif
+
+		// Start epoch interpolation.
+		current_epoch = interpolator.get_youngest_epoch();
 	}
 
-	epoch += 1;
+	// At this point the interpolation is started and the function must
+	// return the best epoch id which we have to apply the state.
 
-	return epoch;
+	// Step 2. Make sure we have something to interpolate with.
+	const uint64_t oldest_epoch = interpolator.get_oldest_epoch();
+	if (unlikely(oldest_epoch == UINT64_MAX || oldest_epoch <= current_epoch)) {
+		network_tracer.notify_missing_packet();
+		// Nothing to interpolate with.
+		return current_epoch;
+	}
+	network_tracer.notify_packet_arrived();
+
+#ifdef DEBUG_ENABLED
+	// This can't happen because the current_epoch is advances only if it's
+	// possible to do so.
+	CRASH_COND(oldest_epoch < current_epoch);
+#endif
+
+	const uint64_t delta_epoch = oldest_epoch - current_epoch;
+
+	// TODO make this customizable
+	const uint64_t min_virtual_delay = 2;
+	const uint64_t max_virtual_delay = 60;
+	const real_t speed_factor = 0.2;
+	const real_t max_missing_epochs = 5.0;
+	const real_t max_additional_delay = 1.0;
+
+	// Step 3. The `ideal_virtual_delay` is used to introduce a buffering so
+	// to give room to the subsequent information to arrive.
+	// The server changes the send rate in a smooth way, so most likely we need
+	// to wait the previous time window. However, the internet connection
+	// oscilate from time to time, so the `additional_delay` is used to
+	// introduce a small (and variable) delay to absorb it.
+	const uint64_t additional_delay = MAX(MIN(real_t(network_tracer.get_missing_packets()) / max_missing_epochs, 1.0) * max_additional_delay, min_virtual_delay);
+
+	const uint64_t ideal_virtual_delay = MIN(
+			interpolator.epochs_between_last_time_window() + additional_delay,
+			max_virtual_delay);
+
+	if (unlikely(delta_epoch > max_virtual_delay)) {
+		// This client seems too much behind at this point. Teleport forward.
+		current_epoch = interpolator.get_oldest_epoch() - max_virtual_delay;
+		advancing_epoch = 0.0;
+	}
+
+	if (delta_epoch > ideal_virtual_delay) {
+		advancing_epoch += (real_t(delta_epoch - ideal_virtual_delay) / real_t(max_virtual_delay - ideal_virtual_delay)) * speed_factor;
+	} else {
+		advancing_epoch -= (real_t(ideal_virtual_delay - delta_epoch) / real_t(ideal_virtual_delay)) * speed_factor;
+	}
+
+	advancing_epoch += 1.0;
+
+	if (advancing_epoch > 0.0) {
+		// Advance the epoch by the the integral amount.
+		current_epoch += uint64_t(advancing_epoch);
+
+		// Keep the floating point part.
+		advancing_epoch -= uint64_t(advancing_epoch);
+	}
+
+	if (unlikely(oldest_epoch <= current_epoch)) {
+		// Clamp to oldest_epoch.
+		current_epoch = oldest_epoch;
+	}
+
+	print_line("TW: " + itos(interpolator.epochs_between_last_time_window()) + " - Ideal virtual delay: " + itos(ideal_virtual_delay) + " - Delta epoch: " + itos(delta_epoch) + " - Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
+
+	return current_epoch;
 }
 
 NoNetController::NoNetController(NetworkedController *p_node) :

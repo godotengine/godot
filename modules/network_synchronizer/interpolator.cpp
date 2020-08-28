@@ -95,7 +95,7 @@ void Interpolator::terminate_init() {
 	init_phase = false;
 }
 
-uint32_t Interpolator::epochs_count() const {
+uint32_t Interpolator::known_epochs_count() const {
 	return epochs.size();
 }
 
@@ -122,7 +122,7 @@ void Interpolator::begin_write(uint64_t p_epoch) {
 			epochs.push_back(UINT64_MAX);
 			buffer.push_back(Vector<Variant>());
 			// Sort the epochs.
-			for (int i = epochs.size() - 1; i >= int(write_position); i -= 1) {
+			for (int i = epochs.size() - 2; i >= int(write_position); i -= 1) {
 				epochs[uint32_t(i) + 1] = epochs[uint32_t(i)];
 				buffer[uint32_t(i) + 1] = buffer[uint32_t(i)];
 			}
@@ -379,4 +379,26 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
 
 uint64_t Interpolator::get_last_pop_epoch() const {
 	return last_pop_epoch;
+}
+
+uint64_t Interpolator::get_youngest_epoch() const {
+	if (epochs.size() <= 0) {
+		return UINT64_MAX;
+	}
+	return epochs[0];
+}
+
+uint64_t Interpolator::get_oldest_epoch() const {
+	if (epochs.size() <= 0) {
+		return UINT64_MAX;
+	}
+	return epochs[epochs.size() - 1];
+}
+
+uint64_t Interpolator::epochs_between_last_time_window() const {
+	if (epochs.size() <= 1) {
+		return 0;
+	}
+
+	return epochs[1] - epochs[0];
 }

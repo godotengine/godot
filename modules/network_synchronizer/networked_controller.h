@@ -345,7 +345,10 @@ struct PlayerController : public Controller {
 /// for the server to stop the data streaming.
 struct DollController : public Controller {
 	Interpolator interpolator;
-	uint64_t epoch = 0;
+	uint64_t current_epoch = UINT64_MAX;
+	real_t advancing_epoch = 0.0;
+
+	NetworkTracer network_tracer;
 
 	DollController(NetworkedController *p_node);
 	~DollController();

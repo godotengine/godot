@@ -32,7 +32,8 @@
 	@author AndreaCatania
 */
 
-#include <vector>
+#include "core/local_vector.h"
+#include "core/math/math_defs.h"
 
 #ifndef NET_UTILITIES_H
 #define NET_UTILITIES_H
@@ -50,7 +51,7 @@
 /// Traces the arrived vs missing packets and estimates the connection loss.
 class NetworkTracer {
 	int id;
-	std::vector<bool> flags;
+	LocalVector<bool> flags;
 
 public:
 	NetworkTracer(int p_packets_to_track);
