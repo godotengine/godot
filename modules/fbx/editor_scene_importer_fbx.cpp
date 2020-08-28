@@ -743,7 +743,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 					print_verbose("Creating animation player");
 					state.animation_player = memnew(AnimationPlayer);
 					state.root->add_child(state.animation_player);
-					state.animation_player->set_owner(state.root);
+					state.animation_player->set_owner(state.root_owner);
 				}
 
 				Ref<Animation> animation;
@@ -815,7 +815,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 						String target_name = ImportUtils::FBXNodeToName(target->Name());
 
 						const Assimp::FBX::PropertyTable &properties = curve_node->Props();
-						bool got_x, got_y, got_z;
+						bool got_x = false, got_y = false, got_z = false;
 						float offset_x = Assimp::FBX::PropertyGet<float>(properties, "d|X", got_x);
 						float offset_y = Assimp::FBX::PropertyGet<float>(properties, "d|Y", got_y);
 						float offset_z = Assimp::FBX::PropertyGet<float>(properties, "d|Z", got_z);

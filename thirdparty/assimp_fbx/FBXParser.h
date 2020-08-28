@@ -103,9 +103,9 @@ public:
 	}
 
 private:
-	const Token &key_token;
+	const Token key_token;
 	TokenList tokens;
-	std::unique_ptr<Scope> compound;
+	std::shared_ptr<Scope> compound = nullptr;
 };
 
 /** FBX data entity that consists of a 'scope', a collection
@@ -126,7 +126,7 @@ public:
 
 	const Element *operator[](const std::string &index) const {
 		ElementMap::const_iterator it = elements.find(index);
-		return it == elements.end() ? NULL : (*it).second;
+		return it == elements.end() ? nullptr : (*it).second;
 	}
 
 	const Element *FindElementCaseInsensitive(const std::string &elementName) const {
@@ -178,9 +178,9 @@ private:
 private:
 	const TokenList &tokens;
 
-	TokenPtr last, current;
+	TokenPtr last = nullptr, current = nullptr;
 	TokenList::const_iterator cursor;
-	std::unique_ptr<Scope> root;
+	std::shared_ptr<Scope> root = nullptr;
 
 	const bool is_binary;
 };
@@ -215,12 +215,15 @@ bool HasElement(const Scope &sc, const std::string &index);
 
 // extract a required element from a scope, abort if the element cannot be found
 const Element &GetRequiredElement(const Scope &sc, const std::string &index, const Element *element = nullptr);
+const Scope *GetRequiredScope(const Element *el); // New in 2020. (less likely to destroy application)
 const Element *GetOptionalElement(const Scope &sc, const std::string &index, const Element *element = nullptr);
 // extract required compound scope
 const Scope &GetRequiredScope(const Element &el);
 // get token at a particular index
 const Token &GetRequiredToken(const Element &el, unsigned int index);
+TokenPtr GetRequiredToken(const Element *el, unsigned int index); // New 2020
 
+// ------------------------------------------------------------------------------------------------
 // read a 4x4 matrix from an array of 16 floats
 Transform ReadMatrix(const Element &element);
 

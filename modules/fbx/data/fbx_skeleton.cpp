@@ -49,7 +49,7 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 			} else {
 				// root node must never be a skeleton to prevent cyclic skeletons from being allowed (skeleton in a skeleton)
 				fbx_node->godot_node->add_child(skeleton);
-				skeleton->set_owner(state.root);
+				skeleton->set_owner(state.root_owner);
 				skeleton->set_name("Skeleton");
 				print_verbose("created armature skeleton for root");
 			}

@@ -337,6 +337,7 @@ int ParseTokenAsInt(const Token &t, const char *&err_out) {
 		return 0;
 	}
 
+	// binary files are simple to parse
 	if (t.IsBinary()) {
 		const char *data = t.begin();
 		if (data[0] != 'I') {
@@ -348,6 +349,9 @@ int ParseTokenAsInt(const Token &t, const char *&err_out) {
 		AI_SWAP4(ival);
 		return static_cast<int>(ival);
 	}
+
+
+	// ASCII files are unsafe.
 
 	const size_t length = static_cast<size_t>(t.end() - t.begin());
 	if (length == 0) {
@@ -1149,6 +1153,38 @@ const Scope &GetRequiredScope(const Element &el) {
 	}
 
 	return *s;
+}
+
+// ------------------------------------------------------------------------------------------------
+// extract required compound scope
+const Scope *GetRequiredScope(const Element *el) {
+	if(el) {
+		const Scope *s = el->Compound();
+		if (s) {
+			return s;
+		}
+
+		ERR_FAIL_V_MSG(nullptr,"expected compound scope " + String(el->KeyToken().StringContents().c_str()));
+	}
+
+	ERR_FAIL_V_MSG(nullptr, "Invalid element supplied to parser");
+}
+
+
+// ------------------------------------------------------------------------------------------------
+// get token at a particular index
+TokenPtr GetRequiredToken(const Element *el, unsigned int index) {
+	if(el) {
+		const TokenList& x = el->Tokens();
+
+		if (index >= x.size()) {
+			ERR_FAIL_V_MSG(nullptr,"missing token at index: " + itos(index) + " " + String(el->KeyToken().StringContents().c_str()));
+		}
+
+		return x[index];
+	}
+
+	return nullptr;
 }
 
 // ------------------------------------------------------------------------------------------------

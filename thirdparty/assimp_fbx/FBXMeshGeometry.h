@@ -114,7 +114,8 @@ public:
 
 	enum class ReferenceType {
 		direct = 0,
-		index_to_direct = 1
+		index = 1,
+		index_to_direct = 2
 	};
 
 	template <class T>
@@ -125,6 +126,11 @@ public:
 		/// The meaning of the indices depends from the `MapType`.
 		/// If `ref_type` is `direct` this map is hollow.
 		std::vector<int> index;
+
+		String debug_info() const
+		{
+			return "indexes: " + itos(index.size()) + " data: " +itos(data.size());
+		}
 	};
 
 	struct Edge {
@@ -170,7 +176,7 @@ private:
 
 	template <class T>
 	MappingData<T> resolve_vertex_data_array(
-			const Scope &source,
+			const Scope *source,
 			const std::string &MappingInformationType,
 			const std::string &ReferenceInformationType,
 			const std::string &dataElementName);

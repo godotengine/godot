@@ -55,14 +55,15 @@ namespace FBX {
 
 // ------------------------------------------------------------------------------------------------
 Token::Token(const char *p_sbegin, const char *p_send, TokenType p_type, unsigned int p_line, unsigned int p_column) :
-#ifdef DEBUG
-		contents(sbegin, static_cast<size_t>(send - sbegin)),
-#endif
 		sbegin(p_sbegin),
 		send(p_send),
 		type(p_type),
 		line(p_line),
-		column(p_column) {
+		column(p_column)
+{
+#ifdef DEBUG_ENABLED
+	contents = std::string(sbegin, static_cast<size_t>(send - sbegin));
+#endif
 }
 
 // ------------------------------------------------------------------------------------------------

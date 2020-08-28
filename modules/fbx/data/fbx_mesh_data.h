@@ -303,8 +303,8 @@ private:
 	HashMap<int, R> extract_per_vertex_data(
 			int p_vertex_count,
 			const std::vector<Assimp::FBX::MeshGeometry::Edge> &p_edges,
-			const std::vector<int> &p_face_indices,
-			const Assimp::FBX::MeshGeometry::MappingData<T> &p_fbx_data,
+			const std::vector<int> &p_mesh_indices,
+			const Assimp::FBX::MeshGeometry::MappingData<T> &p_mapping_data,
 			R (*collector_function)(const Vector<VertexData<T> > *p_vertex_data, R p_fall_back),
 			R p_fall_back) const;
 

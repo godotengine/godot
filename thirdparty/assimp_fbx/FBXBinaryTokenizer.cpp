@@ -96,20 +96,16 @@ namespace FBX {
 //}
 // ------------------------------------------------------------------------------------------------
 Token::Token(const char *sbegin, const char *send, TokenType type, size_t offset) :
-#ifdef DEBUG
-		contents(sbegin, static_cast<size_t>(send - sbegin)),
-#endif
 		sbegin(sbegin),
 		send(send),
 		type(type),
 		line(offset),
 		column(BINARY_MARKER) {
-	//ai_assert(sbegin);
-	//ai_assert(send);
-
-	// binary tokens may have zero length because they are sometimes dummies
-	// inserted by TokenizeBinary()
-	//ai_assert(send >= sbegin);
+#ifdef DEBUG_ENABLED
+        contents = std::string(sbegin, static_cast<size_t>(send - sbegin));
+#endif
+		// calc length
+		// measure from sBegin to sEnd and validate?
 }
 
 namespace {
@@ -410,8 +406,6 @@ bool ReadScope(TokenList &output_tokens, const char *input, const char *&cursor,
 // ------------------------------------------------------------------------------------------------
 // TODO: Test FBX Binary files newer than the 7500 version to check if the 64 bits address behaviour is consistent
 void TokenizeBinary(TokenList &output_tokens, const char *input, size_t length) {
-	//ai_assert(input);
-	//ASSIMP_LOG_DEBUG("Tokenizing binary FBX file");
 
 	if (length < 0x1b) {
 		//TokenizeError("file is too short",0);

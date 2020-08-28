@@ -92,14 +92,11 @@ const Skin *Geometry::DeformerSkin() const {
 // ------------------------------------------------------------------------------------------------
 MeshGeometry::MeshGeometry(uint64_t id, const Element &element, const std::string &name, const Document &doc) :
 		Geometry(id, element, name, doc) {
-	const Scope *sc = element.Compound();
-	if (!sc) {
-		DOMError("failed to read Geometry object (class: Mesh), no data scope found");
-	}
+	print_verbose("mesh name: " + String(name.c_str()) );
 
-	if (!HasElement(*sc, "Vertices")) {
-		return; // this happened!
-	}
+	const Scope *sc = element.Compound();
+	ERR_FAIL_COND_MSG(sc == nullptr, "failed to read geometry, prevented crash");
+	ERR_FAIL_COND_MSG(!HasElement(*sc, "Vertices"), "Detected mesh with no vertexes, didn't populate the mesh");
 
 	// must have Mesh elements:
 	const Element &Vertices = GetRequiredElement(*sc, "Vertices", &element);
@@ -110,83 +107,89 @@ MeshGeometry::MeshGeometry(uint64_t id, const Element &element, const std::strin
 		ParseVectorDataArray(m_edges, element_edges);
 	}
 
-	// optional Mesh elements:
-	const ElementCollection &Layer = sc->GetCollection("Layer");
-
 	// read mesh data into arrays
-	// todo: later we can actually store arrays for these :)
-	// and not vector3
 	ParseVectorDataArray(m_vertices, Vertices);
 	ParseVectorDataArray(m_face_indices, PolygonVertexIndex);
 
-	if (m_vertices.empty()) {
-		print_error("encountered mesh with no vertices");
-	}
+	ERR_FAIL_COND_MSG(m_vertices.empty(), "mesh with no vertexes in FBX file, did you mean to delete it?");
+	ERR_FAIL_COND_MSG(m_face_indices.empty(), "mesh has no faces, was this intended?");
 
-	if (m_face_indices.empty()) {
-		print_error("encountered mesh with no faces");
-	}
+	// Retrieve layer elements, for all of the mesh
+	const ElementCollection &Layer = sc->GetCollection("Layer");
+
+	// Store all layers
+	std::vector<std::tuple<int, std::string>> valid_layers;
 
 	// now read the sub mesh information from the geometry (normals, uvs, etc)
 	for (ElementMap::const_iterator it = Layer.first; it != Layer.second; ++it) {
-		//const TokenList &tokens = (*it).second->Tokens();
-		const Scope &layer = GetRequiredScope(*(*it).second);
-		const ElementCollection &LayerElement = layer.GetCollection("LayerElement");
+		const Scope *layer = GetRequiredScope(it->second);
+		const ElementCollection &LayerElement = layer->GetCollection("LayerElement");
 		for (ElementMap::const_iterator eit = LayerElement.first; eit != LayerElement.second; ++eit) {
-			std::string layer_name = (*eit).first;
-			Element *element_layer = (*eit).second;
+			std::string layer_name = eit->first;
+			Element *element_layer = eit->second;
 			const Scope &layer_element = GetRequiredScope(*element_layer);
+
+			// Actual usable 'type' LayerElementUV, LayerElementNormal, etc
 			const Element &Type = GetRequiredElement(layer_element, "Type");
 			const Element &TypedIndex = GetRequiredElement(layer_element, "TypedIndex");
 			const std::string &type = ParseTokenAsString(GetRequiredToken(Type, 0));
 			const int typedIndex = ParseTokenAsInt(GetRequiredToken(TypedIndex, 0));
 
-			// get object / mesh directly from the FBX by the element ID.
-			const Scope &top = GetRequiredScope(element);
+			// we only need the layer name and the typed index.
+			valid_layers.push_back(std::tuple<int, std::string>(typedIndex, type));
+		}
+	}
 
-			// Get collection of elements from the NormalLayerMap
-			// this must contain our proper elements.
-			const ElementCollection candidates = top.GetCollection(type);
+	// get object / mesh directly from the FBX by the element ID.
+	const Scope &top = GetRequiredScope(element);
 
-			/* typedef std::vector< Scope* > ScopeList;
-			 * typedef std::fbx_unordered_multimap< std::string, Element* > ElementMap;
-			 * typedef std::pair<ElementMap::const_iterator,ElementMap::const_iterator> ElementCollection;
-			 */
+	// iterate over all layers for the mesh (uvs, normals, smoothing groups, colors, etc)
+	for( size_t x = 0; x < valid_layers.size(); x++) {
+		const int layer_id = std::get<0>(valid_layers[x]);
+		const std::string &layer_type_name = std::get<1>(valid_layers[x]);
 
-			for (ElementMap::const_iterator cand_iter = candidates.first; cand_iter != candidates.second; ++cand_iter) {
-				std::string val = (*cand_iter).first;
-				//Element *element = (*canditer).second;
+		// Get collection of elements from the XLayerMap (example: LayerElementUV)
+		// this must contain our proper elements.
 
-				const Scope &layer_scope = GetRequiredScope(*(*cand_iter).second);
-				const Token &layer_token = GetRequiredToken(*(*cand_iter).second, 0);
-				const int index = ParseTokenAsInt(layer_token);
-				if (index == typedIndex) {
-					const std::string &MappingInformationType = ParseTokenAsString(GetRequiredToken(
-							GetRequiredElement(layer_scope, "MappingInformationType"), 0));
+		// This is stupid, because it means we select them ALL not just the one we want.
+		// but it's fine we can match by id.
+		GetRequiredElement(top, layer_type_name);
+		const ElementCollection &candidates = top.GetCollection(layer_type_name);
 
-					const std::string &ReferenceInformationType = ParseTokenAsString(GetRequiredToken(
-							GetRequiredElement(layer_scope, "ReferenceInformationType"), 0));
+		ElementMap::const_iterator iter;
+		for( iter = candidates.first; iter != candidates.second; ++iter)
+		{
+			const Scope *layer_scope = GetRequiredScope(iter->second);
+			TokenPtr layer_token = GetRequiredToken(iter->second, 0);
+			const int index = ParseTokenAsInt(*layer_token);
 
-					// Not required:
-					// LayerElementTangent
-					// LayerElementBinormal - perpendicular to tangent.
-					if (type == "LayerElementUV") {
-						if (index == 0) {
-							m_uv_0 = resolve_vertex_data_array<Vector2>(layer_scope, MappingInformationType, ReferenceInformationType, "UV");
-						} else if (index == 1) {
-							m_uv_1 = resolve_vertex_data_array<Vector2>(layer_scope, MappingInformationType, ReferenceInformationType, "UV");
-						}
-					} else if (type == "LayerElementMaterial") {
-						m_material_allocation_ids = resolve_vertex_data_array<int>(layer_scope, MappingInformationType, ReferenceInformationType, "Materials");
-					} else if (type == "LayerElementNormal") {
-						m_normals = resolve_vertex_data_array<Vector3>(layer_scope, MappingInformationType, ReferenceInformationType, "Normals");
-					} else if (type == "LayerElementColor") {
-						m_colors = resolve_vertex_data_array<Color>(layer_scope, MappingInformationType, ReferenceInformationType, "Colors");
+			ERR_FAIL_COND_MSG(layer_scope == nullptr, "prevented crash, layer scope is invalid");
+
+			if (index == layer_id) {
+				const std::string &MappingInformationType = ParseTokenAsString(GetRequiredToken(
+						GetRequiredElement(*layer_scope, "MappingInformationType"), 0));
+
+				const std::string &ReferenceInformationType = ParseTokenAsString(GetRequiredToken(
+						GetRequiredElement(*layer_scope, "ReferenceInformationType"), 0));
+
+				if (layer_type_name == "LayerElementUV") {
+					if (index == 0) {
+						m_uv_0 = resolve_vertex_data_array<Vector2>(layer_scope, MappingInformationType, ReferenceInformationType, "UV");
+					} else if (index == 1) {
+						m_uv_1 = resolve_vertex_data_array<Vector2>(layer_scope, MappingInformationType, ReferenceInformationType, "UV");
 					}
+				} else if (layer_type_name == "LayerElementMaterial") {
+					m_material_allocation_ids = resolve_vertex_data_array<int>(layer_scope, MappingInformationType, ReferenceInformationType, "Materials");
+				} else if (layer_type_name == "LayerElementNormal") {
+					m_normals = resolve_vertex_data_array<Vector3>(layer_scope, MappingInformationType, ReferenceInformationType, "Normals");
+				} else if (layer_type_name == "LayerElementColor") {
+					m_colors = resolve_vertex_data_array<Color>(layer_scope, MappingInformationType, ReferenceInformationType, "Colors");
 				}
 			}
 		}
 	}
+
+	print_verbose("Mesh statistics \nuv_0: " + m_uv_0.debug_info() + "\nuv_1: " + m_uv_1.debug_info() + "\nvertices: " + itos(m_vertices.size()) );
 
 	// Compose the edge of the mesh.
 	// You can see how the edges are stored into the FBX here: https://gist.github.com/AndreaCatania/da81840f5aa3b2feedf189e26c5a87e6
@@ -196,7 +199,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const Element &element, const std::strin
 		int polygon_vertex_1;
 		if (polygon_vertex_0 < 0) {
 			// The polygon_vertex_0 points to the end of a polygon, so it's
-			// connected with the begining of polygon in the edge list.
+			// connected with the beginning of polygon in the edge list.
 
 			// Fist invert the vertex.
 			polygon_vertex_0 = ~polygon_vertex_0;
@@ -268,12 +271,12 @@ const MeshGeometry::MappingData<Vector3> &MeshGeometry::get_normals() const {
 }
 
 const MeshGeometry::MappingData<Vector2> &MeshGeometry::get_uv_0() const {
-	print_verbose("uv 0 size: " + itos(m_uv_0.data.size()));
+	print_verbose("get uv_0 " + m_uv_0.debug_info() );
 	return m_uv_0;
 }
 
 const MeshGeometry::MappingData<Vector2> &MeshGeometry::get_uv_1() const {
-	print_verbose("uv 1 size: " + itos(m_uv_1.data.size()));
+	print_verbose("get uv_1 " + m_uv_1.debug_info() );
 	return m_uv_1;
 }
 
@@ -301,10 +304,12 @@ MeshGeometry::Edge MeshGeometry::get_edge(const std::vector<Edge> &p_map, int p_
 
 template <class T>
 MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
-		const Scope &source,
+		const Scope *source,
 		const std::string &MappingInformationType,
 		const std::string &ReferenceInformationType,
 		const std::string &dataElementName) {
+
+	ERR_FAIL_COND_V_MSG(source == nullptr, MappingData<T>(), "Invalid scope operator preventing memory corruption");
 
 	// UVIndex, MaterialIndex, NormalIndex, etc..
 	std::string indexDataElementName = dataElementName + "Index";
@@ -312,15 +317,16 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 
 	ReferenceType l_ref_type = ReferenceType::direct;
 
-	// purposefully merging legacy to IndexToDirect
-	if (ReferenceInformationType == "IndexToDirect" || ReferenceInformationType == "Index") {
-		// set non legacy index to direct mapping
+	// Read the reference type into the enumeration
+	if (ReferenceInformationType == "IndexToDirect") {
 		l_ref_type = ReferenceType::index_to_direct;
-
-		// override invalid files - should not happen but if it does we're safe.
-		if (!HasElement(source, indexDataElementName)) {
-			l_ref_type = ReferenceType::direct;
-		}
+	} else if (ReferenceInformationType == "Index") {
+		// set non legacy index to direct mapping
+		l_ref_type = ReferenceType::index;
+	} else if(ReferenceInformationType == "Direct") {
+		l_ref_type = ReferenceType::direct;
+	} else {
+		ERR_FAIL_V_MSG(MappingData<T>(), "invalid reference type has the FBX format changed?");
 	}
 
 	MapType l_map_type = MapType::none;
@@ -347,10 +353,10 @@ MeshGeometry::MappingData<T> MeshGeometry::resolve_vertex_data_array(
 	tempData.ref_type = l_ref_type;
 
 	// parse data into array
-	ParseVectorDataArray(tempData.data, GetRequiredElement(source, dataElementName));
+	ParseVectorDataArray(tempData.data, GetRequiredElement(*source, dataElementName));
 
 	// index array wont always exist
-	const Element *element = GetOptionalElement(source, indexDataElementName);
+	const Element *element = GetOptionalElement(*source, indexDataElementName);
 	if (element) {
 		ParseVectorDataArray(tempData.index, *element);
 	}

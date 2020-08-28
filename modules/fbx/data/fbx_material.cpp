@@ -351,9 +351,6 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 		}
 	}
 
-	// FBX culling normally is front only.
-	spatial_material->set_cull_mode(SpatialMaterial::CULL_FRONT);
-
 	// Set the material features.
 	for (int x = 0; x < material_info.features.size(); x++) {
 		if (spatial_material.is_null()) {
@@ -407,8 +404,8 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				} else if (extension == "TGA") {
 
 					// The stored file is a TGA.
-					image = Image::_tga_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
-					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded TGA image load fail.");
+					//image = Image::_tga_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
+					//ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded TGA image load fail.");
 
 				} else if (extension == "WEBP") {
 

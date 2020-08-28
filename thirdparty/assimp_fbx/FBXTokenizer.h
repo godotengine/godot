@@ -127,21 +127,21 @@ public:
 	}
 
 private:
-#ifdef DEBUG
+#ifdef DEBUG_ENABLED
 	// full string copy for the sole purpose that it nicely appears
 	// in msvc's debugger window.
-	const std::string contents;
+	std::string contents;
 #endif
 
-	const char *const sbegin;
-	const char *const send;
+	const char * sbegin = nullptr;
+	const char * send = nullptr;
 	const TokenType type;
 
 	union {
 		size_t line;
 		size_t offset;
 	};
-	const unsigned int column;
+	const unsigned int column = 0;
 };
 
 // Fixed leak by using shared_ptr for tokens

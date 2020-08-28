@@ -261,7 +261,21 @@ Video::Video(uint64_t id, const Element &element, const Document &doc, const std
 	const Scope &sc = GetRequiredScope(element);
 
 	const Element *const Type = sc["Type"];
-	const Element *const FileName = sc.FindElementCaseInsensitive("FileName"); //some files retain the information as "Filename", others "FileName", who knows
+	// File Version 7500 Crashes if this is not checked fully.
+	// As of writing this comment 7700 exists, in August 2020
+	Element * FileName = nullptr;
+	if(HasElement(sc, "Filename") )
+	{
+		FileName = (Element*) sc["Filename"];
+	}
+	else if(HasElement(sc, "FileName"))
+	{
+		FileName = (Element*) sc["FileName"];
+	}
+	else {
+		print_error("file has invalid video material returning...");
+		return;
+	}
 	const Element *const RelativeFilename = sc["RelativeFilename"];
 	const Element *const Content = sc["Content"];
 
