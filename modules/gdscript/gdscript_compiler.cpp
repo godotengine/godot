@@ -2609,15 +2609,26 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->_base = base.ptr();
 
 			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS && p_class->base_type.class_type != nullptr) {
-				if (!parsed_classes.has(p_script->_base)) {
-					if (parsing_classes.has(p_script->_base)) {
-						String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
-						_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
-						return ERR_PARSE_ERROR;
+				if (p_class->base_type.script_path == main_script->path) {
+					if (!parsed_classes.has(p_script->_base)) {
+						if (parsing_classes.has(p_script->_base)) {
+							String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
+							_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
+							return ERR_PARSE_ERROR;
+						}
+						Error err = _parse_class_level(p_script->_base, p_class->base_type.class_type, p_keep_state);
+						if (err) {
+							return err;
+						}
 					}
-					Error err = _parse_class_level(p_script->_base, p_class->base_type.class_type, p_keep_state);
+				} else {
+					Error err = OK;
+					base = GDScriptCache::get_full_script(p_class->base_type.script_path, err, main_script->path);
 					if (err) {
 						return err;
+					}
+					if (base.is_null() && !base->is_valid()) {
+						return ERR_COMPILATION_FAILED;
 					}
 				}
 			}
@@ -2696,11 +2707,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 				const GDScriptParser::ConstantNode *constant = member.constant;
 				StringName name = constant->identifier->name;
 
-				ERR_CONTINUE(constant->initializer->type != GDScriptParser::Node::LITERAL);
-
-				const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(constant->initializer);
-
-				p_script->constants.insert(name, literal->value);
+				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 
 				p_script->member_lines[name] = constant->start_line;

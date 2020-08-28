@@ -182,7 +182,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 				return ERR_PARSE_ERROR;
 			}
 
-			Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+			Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 			if (err != OK) {
 				push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", p_class->extends_path), p_class);
 				return err;
@@ -208,7 +208,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 						return ERR_PARSE_ERROR;
 					}
 
-					Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+					Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 					if (err != OK) {
 						push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 						return err;
@@ -227,7 +227,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 					return ERR_PARSE_ERROR;
 				}
 
-				Error err = parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 				if (err != OK) {
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 					return err;
@@ -302,6 +302,16 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 		return ERR_PARSE_ERROR;
 	}
 
+	// Check for cyclic inheritance.
+	const GDScriptParser::ClassNode *base_class = result.class_type;
+	while (base_class) {
+		if (base_class->fqcn == p_class->fqcn) {
+			push_error("Cyclic inheritance.", p_class);
+			return ERR_PARSE_ERROR;
+		}
+		base_class = base_class->base_type.class_type;
+	}
+
 	p_class->base_type = result;
 	class_type.native_type = result.native_type;
 	p_class->set_datatype(class_type);
@@ -309,7 +319,10 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 	if (p_recursive) {
 		for (int i = 0; i < p_class->members.size(); i++) {
 			if (p_class->members[i].type == GDScriptParser::ClassNode::Member::CLASS) {
-				resolve_inheritance(p_class->members[i].m_class, true);
+				Error err = resolve_inheritance(p_class->members[i].m_class, true);
+				if (err) {
+					return err;
+				}
 			}
 		}
 	}
@@ -2702,9 +2715,27 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			Ref<GDScript> gds = scr;
 			if (gds.is_valid()) {
 				result.kind = GDScriptParser::DataType::CLASS;
-				Ref<GDScriptParserRef> ref = get_parser_for(gds->get_path());
+				// This might be an inner class, so we want to get the parser for the root.
+				// But still get the inner class from that tree.
+				GDScript *current = gds.ptr();
+				List<StringName> class_chain;
+				while (current->_owner) {
+					// Push to front so it's in reverse.
+					class_chain.push_front(current->name);
+					current = current->_owner;
+				}
+
+				Ref<GDScriptParserRef> ref = get_parser_for(current->path);
 				ref->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
-				result.class_type = ref->get_parser()->head;
+
+				GDScriptParser::ClassNode *found = ref->get_parser()->head;
+
+				// It should be okay to assume this exists, since we have a complete script already.
+				for (const List<StringName>::Element *E = class_chain.front(); E; E = E->next()) {
+					found = found->get_member(E->get()).m_class;
+				}
+
+				result.class_type = found;
 				result.script_path = ref->get_parser()->script_path;
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
@@ -3236,6 +3267,9 @@ Error GDScriptAnalyzer::resolve_program() {
 	List<String> parser_keys;
 	depended_parsers.get_key_list(&parser_keys);
 	for (const List<String>::Element *E = parser_keys.front(); E != nullptr; E = E->next()) {
+		if (depended_parsers[E->get()].is_null()) {
+			return ERR_PARSE_ERROR;
+		}
 		depended_parsers[E->get()]->raise_status(GDScriptParserRef::FULLY_SOLVED);
 	}
 	depended_parsers.clear();
