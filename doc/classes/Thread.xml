@@ -15,7 +15,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the current [Thread]'s ID, uniquely identifying it among all threads.
+				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] is not running this returns an empty string.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
