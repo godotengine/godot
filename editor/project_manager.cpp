@@ -412,7 +412,7 @@ private:
 		_test_path();
 
 		if (p_text == "") {
-			set_message(TTR("It would be a good idea to name your project."), MESSAGE_WARNING);
+			set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
 		}
 	}
 
