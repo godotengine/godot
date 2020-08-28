@@ -478,8 +478,8 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-		A->apply_bias_impulse(c.rA, -jb);
-		B->apply_bias_impulse(c.rB, jb);
+		A->apply_bias_impulse(-jb, c.rA);
+		B->apply_bias_impulse(jb, c.rB);
 
 		real_t jn = -(c.bounce + vn) * c.mass_normal;
 		real_t jnOld = c.acc_normal_impulse;
