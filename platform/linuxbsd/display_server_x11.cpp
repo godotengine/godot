@@ -742,15 +742,31 @@ ObjectID DisplayServerX11::window_get_attached_instance_id(WindowID p_window) co
 }
 
 DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
-#warning This is an incorrect implementation, if windows overlap, it should return the topmost visible one or none if occluded by a foreign window
-
+	WindowID found_window = INVALID_WINDOW_ID;
+	WindowID parent_window = INVALID_WINDOW_ID;
+	unsigned int focus_order = 0;
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-		Rect2i win_rect = Rect2i(window_get_position(E->key()), window_get_size(E->key()));
+		const WindowData &wd = E->get();
+
+		// Discard windows with no focus.
+		if (wd.focus_order == 0) {
+			continue;
+		}
+
+		// Find topmost window which contains the given position.
+		WindowID window_id = E->key();
+		Rect2i win_rect = Rect2i(window_get_position(window_id), window_get_size(window_id));
 		if (win_rect.has_point(p_position)) {
-			return E->key();
+			// For siblings, pick the window which was focused last.
+			if ((parent_window != wd.transient_parent) || (wd.focus_order > focus_order)) {
+				found_window = window_id;
+				parent_window = wd.transient_parent;
+				focus_order = wd.focus_order;
+			}
 		}
 	}
-	return INVALID_WINDOW_ID;
+
+	return found_window;
 }
 
 void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
@@ -2588,6 +2604,10 @@ void DisplayServerX11::process_events() {
 
 				wd.focused = true;
 
+				// Keep track of focus order for overlapping windows.
+				static unsigned int focus_order = 0;
+				wd.focus_order = ++focus_order;
+
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 
 				if (mouse_mode_grab) {
@@ -2707,10 +2727,10 @@ void DisplayServerX11::process_events() {
 
 				mb->set_pressed((event.type == ButtonPress));
 
+				const WindowData &wd = windows[window_id];
+
 				if (event.type == ButtonPress) {
 					DEBUG_LOG_X11("[%u] ButtonPress window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
-
-					const WindowData &wd = windows[window_id];
 
 					// Ensure window focus on click.
 					// RevertToPointerRoot is used to make sure we don't lose all focus in case
@@ -2739,6 +2759,31 @@ void DisplayServerX11::process_events() {
 					}
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
+
+					if (!wd.focused) {
+						// Propagate the event to the focused window,
+						// because it's received only on the topmost window.
+						// Note: This is needed for drag & drop to work between windows,
+						// because the engine expects events to keep being processed
+						// on the same window dragging started.
+						for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+							const WindowData &wd_other = E->get();
+							WindowID window_id_other = E->key();
+							if (wd_other.focused) {
+								if (window_id_other != window_id) {
+									int x, y;
+									Window child;
+									XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
+
+									mb->set_window_id(window_id_other);
+									mb->set_position(Vector2(x, y));
+									mb->set_global_position(mb->get_position());
+									Input::get_singleton()->accumulate_input_event(mb);
+								}
+								break;
+							}
+						}
+					}
 				}
 
 				Input::get_singleton()->accumulate_input_event(mb);
@@ -2788,6 +2833,9 @@ void DisplayServerX11::process_events() {
 					break;
 				}
 
+				const WindowData &wd = windows[window_id];
+				bool focused = wd.focused;
+
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 					if (xi.relative_motion.x == 0 && xi.relative_motion.y == 0) {
 						break;
@@ -2796,7 +2844,7 @@ void DisplayServerX11::process_events() {
 					Point2i new_center = pos;
 					pos = last_mouse_pos + xi.relative_motion;
 					center = new_center;
-					do_mouse_warp = windows[window_id].focused; // warp the cursor if we're focused in
+					do_mouse_warp = focused; // warp the cursor if we're focused in
 				}
 
 				if (!last_mouse_pos_valid) {
@@ -2838,14 +2886,11 @@ void DisplayServerX11::process_events() {
 				}
 				mm->set_tilt(xi.tilt);
 
-				// Make the absolute position integral so it doesn't look _too_ weird :)
-				Point2i posi(pos);
-
 				_get_key_modifier_state(event.xmotion.state, mm);
 				mm->set_button_mask(mouse_get_button_state());
-				mm->set_position(posi);
-				mm->set_global_position(posi);
-				Input::get_singleton()->set_mouse_position(posi);
+				mm->set_position(pos);
+				mm->set_global_position(pos);
+				Input::get_singleton()->set_mouse_position(pos);
 				mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
 
 				mm->set_relative(rel);
@@ -2856,8 +2901,32 @@ void DisplayServerX11::process_events() {
 				// Don't propagate the motion event unless we have focus
 				// this is so that the relative motion doesn't get messed up
 				// after we regain focus.
-				if (windows[window_id].focused || !mouse_mode_grab) {
+				if (focused) {
 					Input::get_singleton()->accumulate_input_event(mm);
+				} else {
+					// Propagate the event to the focused window,
+					// because it's received only on the topmost window.
+					// Note: This is needed for drag & drop to work between windows,
+					// because the engine expects events to keep being processed
+					// on the same window dragging started.
+					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+						const WindowData &wd_other = E->get();
+						if (wd_other.focused) {
+							int x, y;
+							Window child;
+							XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xmotion.x, event.xmotion.y, &x, &y, &child);
+
+							Point2i pos_focused(x, y);
+
+							mm->set_window_id(E->key());
+							mm->set_position(pos_focused);
+							mm->set_global_position(pos_focused);
+							mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
+							Input::get_singleton()->accumulate_input_event(mm);
+
+							break;
+						}
+					}
 				}
 
 			} break;
