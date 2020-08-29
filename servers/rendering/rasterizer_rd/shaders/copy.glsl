@@ -116,7 +116,7 @@ void main() {
 	vec4 color = vec4(0.0);
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-		ivec2 base_pos = (pos + params.section.xy) << 1;
+		ivec2 base_pos = ((pos + params.section.xy) << 1) + ivec2(1);
 		ivec2 section_begin = params.section.xy << 1;
 		ivec2 section_end = section_begin + (params.section.zw << 1);
 
