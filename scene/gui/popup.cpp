@@ -126,6 +126,28 @@ Rect2i Popup::_popup_adjust_rect() const {
 		current.position.y = parent.position.y;
 	}
 
+	if (current.size.y > parent.size.y) {
+		current.size.y = parent.size.y;
+	}
+
+	if (current.size.x > parent.size.x) {
+		current.size.x = parent.size.x;
+	}
+
+	// Early out if max size not set.
+	Size2i max_size = get_max_size();
+	if (max_size <= Size2()) {
+		return current;
+	}
+
+	if (current.size.x > max_size.x) {
+		current.size.x = max_size.x;
+	}
+
+	if (current.size.y > max_size.y) {
+		current.size.y = max_size.y;
+	}
+
 	return current;
 }
 
