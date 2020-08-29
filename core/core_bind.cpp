@@ -223,6 +223,18 @@ String _OS::get_executable_path() const {
 	return OS::get_singleton()->get_executable_path();
 }
 
+String _OS::get_data_path() const {
+	return OS::get_singleton()->get_data_path();
+}
+
+String _OS::get_config_path() const {
+	return OS::get_singleton()->get_config_path();
+}
+
+String _OS::get_cache_path() const {
+	return OS::get_singleton()->get_cache_path();
+}
+
 Error _OS::shell_open(String p_uri) {
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
@@ -700,6 +712,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_count"), &_OS::get_processor_count);
 
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &_OS::get_executable_path);
+	ClassDB::bind_method(D_METHOD("get_data_path"), &_OS::get_data_path);
+	ClassDB::bind_method(D_METHOD("get_config_path"), &_OS::get_config_path);
+	ClassDB::bind_method(D_METHOD("get_cache_path"), &_OS::get_cache_path);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr"), &_OS::execute, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments"), &_OS::create_process);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &_OS::kill);

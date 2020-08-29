@@ -221,6 +221,27 @@
 				Returns the path to the current engine executable.
 			</description>
 		</method>
+		<method name="get_data_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the path to where the Godot templates and the application user data is stored per project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] for information on the default paths.
+			</description>
+		</method>
+		<method name="get_config_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the path where the configuration for Godot is stored and possibly other applications. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] for information on the default paths.
+			</description>
+		</method>
+		<method name="get_cache_path" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the path to where the cache is stored per project. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]File paths in Godot projects[/url] for information on the default paths.
+			</description>
+		</method>
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
