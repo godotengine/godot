@@ -41,9 +41,9 @@ class ProjectDialog;
 class ProjectList;
 
 enum FilterOption {
-	FILTER_NAME,
-	FILTER_PATH,
-	FILTER_EDIT_DATE,
+	NAME,
+	PATH,
+	EDIT_DATE,
 };
 
 class ProjectManager : public Control {
@@ -55,7 +55,6 @@ class ProjectManager : public Control {
 
 	LineEdit *search_box;
 	OptionButton *filter_option;
-	FilterOption _current_filter;
 
 	Button *run_btn;
 	Button *open_btn;

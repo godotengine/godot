@@ -1067,9 +1067,9 @@ struct ProjectListComparator {
 			return false;
 		}
 		switch (order_option) {
-			case FILTER_PATH:
+			case PATH:
 				return a.project_key < b.project_key;
-			case FILTER_EDIT_DATE:
+			case EDIT_DATE:
 				return a.last_edited > b.last_edited;
 			default:
 				return a.project_name < b.project_name;
@@ -1078,8 +1078,7 @@ struct ProjectListComparator {
 };
 
 ProjectList::ProjectList() {
-	_order_option = FILTER_EDIT_DATE;
-
+	_order_option = FilterOption::NAME;
 	_scroll_children = memnew(VBoxContainer);
 	_scroll_children->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(_scroll_children);
@@ -1239,8 +1238,6 @@ void ProjectList::load_projects() {
 		create_project_item_control(i);
 	}
 
-	sort_projects();
-
 	set_v_scroll(0);
 
 	update_icons_async();
@@ -1393,11 +1390,12 @@ void ProjectList::set_search_term(String p_search_term) {
 }
 
 void ProjectList::set_order_option(int p_option) {
-	if (_order_option != p_option) {
-		_order_option = (FilterOption)p_option;
-		EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)_order_option);
-		EditorSettings::get_singleton()->save();
-	}
+	FilterOption selected = (FilterOption)p_option;
+	EditorSettings::get_singleton()->set("project_manager/sorting_order", p_option);
+	EditorSettings::get_singleton()->save();
+	_order_option = selected;
+
+	sort_projects();
 }
 
 void ProjectList::sort_projects() {
@@ -1801,6 +1799,7 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
+
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
 		case NOTIFICATION_RESIZED: {
@@ -1809,6 +1808,10 @@ void ProjectManager::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
+			int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+			filter_option->select(default_sorting);
+			_project_list->set_order_option(default_sorting);
+
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available()) {
 				open_templates->popup_centered();
 			}
@@ -1950,7 +1953,6 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 }
 
 void ProjectManager::_load_recent_projects() {
-	_project_list->set_order_option(filter_option->get_selected());
 	_project_list->set_search_term(search_box->get_text().strip_edges());
 	_project_list->load_projects();
 
@@ -2305,13 +2307,8 @@ void ProjectManager::_scan_multiple_folders(PackedStringArray p_files) {
 }
 
 void ProjectManager::_on_order_option_changed(int p_idx) {
-	FilterOption selected = (FilterOption)(p_idx);
-	if (_current_filter != selected) {
-		_current_filter = selected;
-		if (is_inside_tree()) {
-			_project_list->set_order_option(p_idx);
-			_project_list->sort_projects();
-		}
+	if (is_inside_tree()) {
+		_project_list->set_order_option(p_idx);
 	}
 }
 
@@ -2445,14 +2442,10 @@ ProjectManager::ProjectManager() {
 		sort_label->set_text(TTR("Sort:"));
 		hb->add_child(sort_label);
 
-		_current_filter = FilterOption::FILTER_NAME;
-		int default_sorting = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
-
 		filter_option = memnew(OptionButton);
 		filter_option->set_clip_text(true);
 		filter_option->set_custom_minimum_size(Size2(150 * EDSCALE, 10 * EDSCALE));
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
-		filter_option->select(default_sorting);
 		hb->add_child(filter_option);
 
 		Vector<String> sort_filter_titles;
