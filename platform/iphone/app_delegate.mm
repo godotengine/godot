@@ -93,7 +93,11 @@ static ViewController *mainViewController = nil;
 	mainViewController = viewController;
 
 	// prevent to stop music in another background app
-	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+	if (GLOBAL_GET("audio/enable_audio_input")) {
+		[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
+	} else {
+		[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
+	}
 
 	return YES;
 };

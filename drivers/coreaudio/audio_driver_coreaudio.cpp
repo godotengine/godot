@@ -142,7 +142,7 @@ Error AudioDriverCoreAudio::init() {
 
 	unsigned int buffer_size = buffer_frames * channels;
 	samples_in.resize(buffer_size);
-	input_buf.resize(buffer_size);
+	input_buf.resize(buffer_size * 2);
 
 	print_verbose("CoreAudio: detected " + itos(channels) + " channels");
 	print_verbose("CoreAudio: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
