@@ -478,6 +478,9 @@
 		<member name="hide_on_state_item_selection" type="bool" setter="set_hide_on_state_item_selection" getter="is_hide_on_state_item_selection" default="false">
 			If [code]true[/code], hides the [PopupMenu] when a state item is selected.
 		</member>
+		<member name="max_height" type="float" setter="set_max_height" getter="get_max_height" default="0.0">
+			If non-zero, the [code]PopupMenu[/code] will be resized vertically to that maximum value, showing a scrollbar if the content doesn't fit.
+		</member>
 		<member name="submenu_popup_delay" type="float" setter="set_submenu_popup_delay" getter="get_submenu_popup_delay" default="0.3">
 			Sets the delay time in seconds for the submenu item to popup on mouse hovering. If the popup menu is added as a child of another (acting as a submenu), it will inherit the delay time of the parent menu item.
 		</member>
