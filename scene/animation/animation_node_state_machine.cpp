@@ -440,8 +440,9 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 			}
 
 			if (p_state_machine->transitions[i].from == current && auto_advance) {
-				if (considered_transition->get_priority() <= priority_best) {
-					priority_best = considered_transition->get_priority();
+				const int considered_transition_priority = considered_transition->get_priority();
+				if (considered_transition_priority <= priority_best) {
+					priority_best = considered_transition_priority;
 					auto_advance_to = i;
 				}
 			}
