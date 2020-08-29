@@ -19,7 +19,7 @@ namespace GodotTools.Export
     public class ExportPlugin : EditorExportPlugin
     {
         [Flags]
-        enum I18NCodesets
+        enum I18NCodesets : long
         {
             None = 0,
             CJK = 1,
