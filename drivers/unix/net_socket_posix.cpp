@@ -616,6 +616,37 @@ Error NetSocketPosix::sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP
 	return OK;
 }
 
+Error NetSocketPosix::getsockname(IP_Address &r_ip, uint16_t &r_port) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+
+	struct sockaddr_storage local;
+	socklen_t len = sizeof(struct sockaddr_storage);
+	int ret = ::getsockname(_sock, (struct sockaddr *)&local, &len);
+
+	if (ret != 0) {
+		NetError err = _get_socket_error();
+		if (err == ERR_NET_IN_PROGRESS) {
+			return ERR_BUSY;
+		}
+		return FAILED;
+	}
+
+	if (local.ss_family == AF_INET) {
+		struct sockaddr_in *sin_local = (struct sockaddr_in *)&local;
+		r_ip.set_ipv4((uint8_t *)&sin_local->sin_addr);
+		r_port = ntohs(sin_local->sin_port);
+	} else if (local.ss_family == AF_INET6) {
+		struct sockaddr_in6 *s6_local = (struct sockaddr_in6 *)&local;
+		r_ip.set_ipv6((uint8_t *)&s6_local->sin6_addr);
+		r_port = ntohs(s6_local->sin6_port);
+	} else {
+		// Unsupported socket family, should never happen.
+		ERR_FAIL_V(FAILED);
+	}
+
+	return OK;
+}
+
 Error NetSocketPosix::set_broadcasting_enabled(bool p_enabled) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 	// IPv6 has no broadcast support.

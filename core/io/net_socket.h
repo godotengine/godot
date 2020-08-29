@@ -63,6 +63,7 @@ public:
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
+	virtual Error getsockname(IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual Ref<NetSocket> accept(IP_Address &r_ip, uint16_t &r_port) = 0;
 
 	virtual bool is_open() const = 0;
