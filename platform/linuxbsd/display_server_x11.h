@@ -144,6 +144,8 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2i last_position_before_fs;
 		bool focused = false;
 		bool minimized = false;
+
+		unsigned int focus_order = 0;
 	};
 
 	Map<WindowID, WindowData> windows;
