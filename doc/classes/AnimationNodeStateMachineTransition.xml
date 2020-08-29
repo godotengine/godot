@@ -17,7 +17,7 @@
 			[/codeblock]
 		</member>
 		<member name="inverted_advance_condition" type="bool" setter="set_inverted_advance_condition" getter="is_inverted_advance_condition" default="false">
-		Inverts the result of the advance condition parameter before evaluating if the transition should be set to auto advance.	
+			Inverts the result of the advance condition parameter before evaluating if the transition should be set to auto advance.	
 		</member>
 		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance" default="false">
 			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].
