@@ -37,12 +37,12 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 public:
-	enum Align {
+	enum class Align {
 
-		ALIGN_LEFT,
-		ALIGN_CENTER,
-		ALIGN_RIGHT,
-		ALIGN_FILL
+		LEFT,
+		CENTER,
+		RIGHT,
+		FILL
 	};
 
 	enum VAlign {
@@ -54,7 +54,7 @@ public:
 	};
 
 private:
-	Align align = ALIGN_LEFT;
+	Align align = Align::LEFT;
 	VAlign valign = VALIGN_TOP;
 	String text;
 	String xl_text;
@@ -138,5 +138,12 @@ public:
 
 VARIANT_ENUM_CAST(Label::Align);
 VARIANT_ENUM_CAST(Label::VAlign);
+
+template <>
+Variant to_variant(Label::Align align) {
+	Variant ret = static_cast<int>(align);
+
+	return ret;
+}
 
 #endif

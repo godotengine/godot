@@ -797,7 +797,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					for (int i = 0; i < node->get_output_sequence_port_count(); i++) {
 						Label *text2 = memnew(Label);
 						text2->set_text(node->get_output_sequence_port_text(i));
-						text2->set_align(Label::ALIGN_RIGHT);
+						text2->set_align(Label::Align::RIGHT);
 						gnode->add_child(text2);
 						gnode->set_slot(slot_idx, false, 0, Color(), true, TYPE_SEQUENCE, mono_color, seq_port, seq_port);
 						slot_idx++;
@@ -918,7 +918,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 				if (i < mixed_seq_ports) {
 					Label *text2 = memnew(Label);
 					text2->set_text(node->get_output_sequence_port_text(i));
-					text2->set_align(Label::ALIGN_RIGHT);
+					text2->set_align(Label::Align::RIGHT);
 					hbc->add_child(text2);
 				}
 
@@ -4845,7 +4845,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	select_func_text = memnew(Label);
 	select_func_text->set_text(TTR("Select or create a function to edit its graph."));
-	select_func_text->set_align(Label::ALIGN_CENTER);
+	select_func_text->set_align(Label::Align::CENTER);
 	select_func_text->set_valign(Label::VALIGN_CENTER);
 	select_func_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(select_func_text);
@@ -4854,7 +4854,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	hint_text->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -100);
 	hint_text->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
 	hint_text->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
-	hint_text->set_align(Label::ALIGN_CENTER);
+	hint_text->set_align(Label::Align::CENTER);
 	hint_text->set_valign(Label::VALIGN_CENTER);
 	graph->add_child(hint_text);
 

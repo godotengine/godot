@@ -823,7 +823,7 @@ public:
 		iphb->add_child(install_browse);
 
 		msg = memnew(Label);
-		msg->set_align(Label::ALIGN_CENTER);
+		msg->set_align(Label::Align::CENTER);
 		vb->add_child(msg);
 
 		// rasterizer selection
@@ -878,7 +878,7 @@ public:
 		l->set_text(TTR("The renderer can be changed later, but scenes may need to be adjusted."));
 		// Add some extra spacing to separate it from the list above and the buttons below.
 		l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
-		l->set_align(Label::ALIGN_CENTER);
+		l->set_align(Label::Align::CENTER);
 		l->set_valign(Label::VALIGN_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
@@ -2531,7 +2531,7 @@ ProjectManager::ProjectManager() {
 		}
 		version_label->set_text("v" VERSION_FULL_BUILD "" + hash);
 		version_label->set_self_modulate(Color(1, 1, 1, 0.6));
-		version_label->set_align(Label::ALIGN_CENTER);
+		version_label->set_align(Label::Align::CENTER);
 		settings_hb->add_child(version_label);
 
 		language_btn = memnew(OptionButton);

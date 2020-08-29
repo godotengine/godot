@@ -472,7 +472,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_box_vbc->add_child(commit_button);
 
 	commit_status = memnew(Label);
-	commit_status->set_align(Label::ALIGN_CENTER);
+	commit_status->set_align(Label::Align::CENTER);
 	commit_box_vbc->add_child(commit_status);
 
 	version_control_dock = memnew(PanelContainer);
@@ -496,7 +496,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_file_name = memnew(Label);
 	diff_file_name->set_text(TTR("No file diff is active"));
 	diff_file_name->set_h_size_flags(Label::SIZE_EXPAND_FILL);
-	diff_file_name->set_align(Label::ALIGN_RIGHT);
+	diff_file_name->set_align(Label::Align::RIGHT);
 	diff_hbc->add_child(diff_file_name);
 
 	diff_refresh_button = memnew(Button);

@@ -1747,7 +1747,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label = memnew(Label);
 	status_bar->add_child(warning_count_label);
 	warning_count_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	warning_count_label->set_align(Label::ALIGN_RIGHT);
+	warning_count_label->set_align(Label::Align::RIGHT);
 	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
 	warning_count_label->set_tooltip(TTR("Warnings"));

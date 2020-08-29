@@ -97,7 +97,7 @@ struct VariantCaster<const T &> {
 			return m_enum(*reinterpret_cast<const int *>(p_ptr));            \
 		}                                                                    \
 		_FORCE_INLINE_ static void encode(m_enum p_val, const void *p_ptr) { \
-			*(int *)p_ptr = p_val;                                           \
+			*(int *)p_ptr = static_cast<int>(p_val);                         \
 		}                                                                    \
 	};
 

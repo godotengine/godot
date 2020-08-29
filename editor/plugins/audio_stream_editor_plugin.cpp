@@ -233,7 +233,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	_stop_button->connect("pressed", callable_mp(this, &AudioStreamEditor::_stop));
 
 	_current_label = memnew(Label);
-	_current_label->set_align(Label::ALIGN_RIGHT);
+	_current_label->set_align(Label::Align::RIGHT);
 	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));
