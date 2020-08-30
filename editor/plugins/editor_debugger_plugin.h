@@ -39,7 +39,7 @@ class EditorDebuggerPlugin : public Control {
 	GDCLASS(EditorDebuggerPlugin, Control);
 
 private:
-	ScriptEditorDebugger *debugger;
+	ScriptEditorDebugger *debugger = nullptr;
 
 	void _breaked(bool p_really_did, bool p_can_debug);
 	void _started();
