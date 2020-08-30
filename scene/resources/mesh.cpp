@@ -467,6 +467,11 @@ Size2i Mesh::get_lightmap_size_hint() const {
 }
 
 void Mesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("surface_get_primitive_type", "surf_idx"), &Mesh::surface_get_primitive_type);
+	ClassDB::bind_method(D_METHOD("surface_get_format", "surf_idx"), &Mesh::surface_get_format);
+	ClassDB::bind_method(D_METHOD("surface_get_array_index_len", "surf_idx"), &Mesh::surface_get_array_index_len);
+	ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &Mesh::surface_get_array_len);
+
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
@@ -1516,10 +1521,6 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "compress_flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(ARRAY_COMPRESS_DEFAULT));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
 	ClassDB::bind_method(D_METHOD("surface_update_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_region);
-	ClassDB::bind_method(D_METHOD("surface_get_array_len", "surf_idx"), &ArrayMesh::surface_get_array_len);
-	ClassDB::bind_method(D_METHOD("surface_get_array_index_len", "surf_idx"), &ArrayMesh::surface_get_array_index_len);
-	ClassDB::bind_method(D_METHOD("surface_get_format", "surf_idx"), &ArrayMesh::surface_get_format);
-	ClassDB::bind_method(D_METHOD("surface_get_primitive_type", "surf_idx"), &ArrayMesh::surface_get_primitive_type);
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
