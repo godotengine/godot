@@ -120,7 +120,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				if (idx == 0) {
 					capsule->set_radius(parameter);
 				} else if (idx == 1) {
-					capsule->set_height(parameter * 2 - capsule->get_radius() * 2);
+					capsule->set_height(parameter * 2);
 				}
 
 				canvas_item_editor->update_viewport();
@@ -440,8 +440,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			float radius = shape->get_radius();
 			float height = shape->get_height() / 2;
 
-			handles.write[0] = Point2(radius, height);
-			handles.write[1] = Point2(0, height + radius);
+			handles.write[0] = Point2(radius, 0);
+			handles.write[1] = Point2(0, height);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);

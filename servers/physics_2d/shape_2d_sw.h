@@ -361,10 +361,10 @@ public:
 	_FORCE_INLINE_ void project_range(const Vector2 &p_normal, const Transform2D &p_transform, real_t &r_min, real_t &r_max) const {
 		// no matter the angle, the box is mirrored anyway
 		Vector2 n = p_transform.basis_xform_inv(p_normal).normalized();
-		real_t h = (n.y > 0) ? height : -height;
+		real_t h = height * 0.5 - radius;
 
 		n *= radius;
-		n.y += h * 0.5;
+		n.y += (n.y > 0) ? h : -h;
 
 		r_max = p_normal.dot(p_transform.xform(n));
 		r_min = p_normal.dot(p_transform.xform(-n));
