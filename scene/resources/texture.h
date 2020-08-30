@@ -632,11 +632,12 @@ class AnimatedTexture : public Texture2D {
 	//use readers writers lock for this, since its far more times read than written to
 	RWLock *rw_lock;
 
-private:
+public:
 	enum {
 		MAX_FRAMES = 256
 	};
 
+private:
 	RID proxy_ph;
 	RID proxy;
 
