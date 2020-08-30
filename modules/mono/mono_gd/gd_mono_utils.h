@@ -44,7 +44,8 @@
 	if (unlikely(m_exc != nullptr)) {                  \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
 		GD_UNREACHABLE();                              \
-	}
+	} else                                             \
+		((void)0)
 
 namespace GDMonoUtils {
 
@@ -162,20 +163,24 @@ StringName get_native_godot_class_name(GDMonoClass *p_class);
 
 #define GD_MONO_BEGIN_RUNTIME_INVOKE                                              \
 	int &_runtime_invoke_count_ref = GDMonoUtils::get_runtime_invoke_count_ref(); \
-	_runtime_invoke_count_ref += 1;
+	_runtime_invoke_count_ref += 1;                                               \
+	((void)0)
 
-#define GD_MONO_END_RUNTIME_INVOKE \
-	_runtime_invoke_count_ref -= 1;
+#define GD_MONO_END_RUNTIME_INVOKE  \
+	_runtime_invoke_count_ref -= 1; \
+	((void)0)
 
 #define GD_MONO_SCOPE_THREAD_ATTACH                                   \
 	GDMonoUtils::ScopeThreadAttach __gdmono__scope__thread__attach__; \
-	(void)__gdmono__scope__thread__attach__;
+	(void)__gdmono__scope__thread__attach__;                          \
+	((void)0)
 
 #ifdef DEBUG_ENABLED
-#define GD_MONO_ASSERT_THREAD_ATTACHED \
-	{ CRASH_COND(!GDMonoUtils::is_thread_attached()); }
+#define GD_MONO_ASSERT_THREAD_ATTACHED              \
+	CRASH_COND(!GDMonoUtils::is_thread_attached()); \
+	((void)0)
 #else
-#define GD_MONO_ASSERT_THREAD_ATTACHED
+#define GD_MONO_ASSERT_THREAD_ATTACHED ((void)0)
 #endif
 
 #endif // GD_MONOUTILS_H
