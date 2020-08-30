@@ -1,0 +1,7 @@
+Class <unnamed> :
+|   Variable a : Variant
+|   |   = (obj IS atype)
+
+|   Variable b : Variant
+|   |   = (NOT(obj IS atype))
+

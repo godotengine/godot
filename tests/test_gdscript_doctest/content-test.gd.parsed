@@ -1,0 +1,7 @@
+Class <unnamed> :
+|   Variable a : Variant
+|   |   = (element IN arr)
+
+|   Variable b : Variant
+|   |   = (NOT(element IN arr))
+

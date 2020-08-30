@@ -1345,6 +1345,7 @@ public:
 		void print_while(WhileNode *p_while);
 
 	public:
+		String get_tree_string(const GDScriptParser &p_parser);
 		void print_tree(const GDScriptParser &p_parser);
 	};
 #endif // DEBUG_ENABLED

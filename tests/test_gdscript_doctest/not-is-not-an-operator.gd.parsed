@@ -1,0 +1,4 @@
+02:17: Expected end of statement after variable declaration, found "not" instead.
+Class <unnamed> :
+|   Variable a : Variant
+|   |   = element

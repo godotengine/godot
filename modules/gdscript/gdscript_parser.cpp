@@ -3840,8 +3840,8 @@ void GDScriptParser::TreePrinter::print_while(WhileNode *p_while) {
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
-	ERR_FAIL_COND_MSG(p_parser.get_tree() == nullptr, "Parse the code before printing the parse tree.");
+String GDScriptParser::TreePrinter::get_tree_string(const GDScriptParser &p_parser) {
+	ERR_FAIL_COND_V_MSG(p_parser.get_tree() == nullptr, "", "Parse the code before printing the parse tree.");
 
 	if (p_parser.is_tool()) {
 		push_line("@tool");
@@ -3852,8 +3852,13 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 		push_line("\")");
 	}
 	print_class(p_parser.get_tree());
+	return printed;
+}
 
-	print_line(printed);
+void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
+	ERR_FAIL_COND_MSG(p_parser.get_tree() == nullptr, "Parse the code before printing the parse tree.");
+
+	print_line(get_tree_string(p_parser));
 }
 
 #endif // DEBUG_ENABLED
