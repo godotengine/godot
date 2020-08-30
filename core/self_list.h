@@ -109,7 +109,7 @@ public:
 			_first = NULL;
 			_last = NULL;
 		}
-		_FORCE_INLINE_ ~List() { ERR_FAIL_COND(_first != NULL); }
+		_FORCE_INLINE_ ~List() { }
 	};
 
 private:
