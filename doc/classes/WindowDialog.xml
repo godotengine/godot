@@ -41,7 +41,7 @@
 			The vertical offset of the close button.
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
-			The style for both the content background of the [WindowDialog] and the title bar.
+			The style for both the content background of the [WindowDialog] and the title bar. The title bar is created with a top border and an expand margin using the [code]panel[/code] stylebox.
 		</theme_item>
 		<theme_item name="scaleborder_size" type="int" default="4">
 			The thickness of the border that can be dragged when scaling the window (if [member resizable] is enabled).
