@@ -3120,7 +3120,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 
 	for (List<Instance *>::Element *E = p_gi_probe->scenario->directional_lights.front(); E; E = E->next()) {
 
-		if (!VSG::storage->light_get_use_gi(E->get()->base))
+		if (VSG::storage->light_get_bake_mode(E->get()->base) == VS::LightBakeMode::LIGHT_BAKE_DISABLED)
 			continue;
 
 		InstanceGIProbeData::LightCache lc;
@@ -3143,7 +3143,7 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 
 	for (Set<Instance *>::Element *E = probe_data->lights.front(); E; E = E->next()) {
 
-		if (!VSG::storage->light_get_use_gi(E->get()->base))
+		if (VSG::storage->light_get_bake_mode(E->get()->base) == VS::LightBakeMode::LIGHT_BAKE_DISABLED)
 			continue;
 
 		InstanceGIProbeData::LightCache lc;
