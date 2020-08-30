@@ -43,6 +43,16 @@
 
 namespace GodotSharpExport {
 
+MonoAssemblyName *new_mono_assembly_name() {
+	// Mono has no public API to create an empty MonoAssemblyName and the struct is private.
+	// As such the only way to create it is with a stub name and then clear it.
+
+	MonoAssemblyName *aname = mono_assembly_name_new("stub");
+	CRASH_COND(aname == nullptr);
+	mono_assembly_name_free(aname); // Frees the string fields, not the struct
+	return aname;
+}
+
 struct AssemblyRefInfo {
 	String name;
 	uint16_t major;
@@ -67,7 +77,7 @@ AssemblyRefInfo get_assemblyref_name(MonoImage *p_image, int index) {
 	};
 }
 
-Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_assembly_dependencies) {
+Error get_assembly_dependencies(GDMonoAssembly *p_assembly, MonoAssemblyName *reusable_aname, const Vector<String> &p_search_dirs, Dictionary &r_assembly_dependencies) {
 	MonoImage *image = p_assembly->get_image();
 
 	for (int i = 0; i < mono_image_get_table_rows(image, MONO_TABLE_ASSEMBLYREF); i++) {
@@ -78,26 +88,16 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 		if (r_assembly_dependencies.has(ref_name))
 			continue;
 
+		mono_assembly_get_assemblyref(image, i, reusable_aname);
+
 		GDMonoAssembly *ref_assembly = NULL;
-
-		{
-			MonoAssemblyName *ref_aname = mono_assembly_name_new("A"); // We can't allocate an empty MonoAssemblyName, hence "A"
-			CRASH_COND(ref_aname == nullptr);
-			SCOPE_EXIT {
-				mono_assembly_name_free(ref_aname);
-				mono_free(ref_aname);
-			};
-
-			mono_assembly_get_assemblyref(image, i, ref_aname);
-
-			if (!GDMono::get_singleton()->load_assembly(ref_name, ref_aname, &ref_assembly, /* refonly: */ true, p_search_dirs)) {
-				ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
-			}
-
-			r_assembly_dependencies[ref_name] = ref_assembly->get_path();
+		if (!GDMono::get_singleton()->load_assembly(ref_name, reusable_aname, &ref_assembly, /* refonly: */ true, p_search_dirs)) {
+			ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 		}
 
-		Error err = get_assembly_dependencies(ref_assembly, p_search_dirs, r_assembly_dependencies);
+		r_assembly_dependencies[ref_name] = ref_assembly->get_path();
+
+		Error err = get_assembly_dependencies(ref_assembly, reusable_aname, p_search_dirs, r_assembly_dependencies);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load one of the dependencies for the assembly: '" + ref_name + "'.");
 	}
 
@@ -129,7 +129,10 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 
 		ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + assembly_name + "'.");
 
-		Error err = get_assembly_dependencies(assembly, search_dirs, r_assembly_dependencies);
+		MonoAssemblyName *reusable_aname = new_mono_assembly_name();
+		SCOPE_EXIT { mono_free(reusable_aname); };
+
+		Error err = get_assembly_dependencies(assembly, reusable_aname, search_dirs, r_assembly_dependencies);
 		if (err != OK)
 			return err;
 	}
