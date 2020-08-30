@@ -46,7 +46,7 @@
 #define GD_UNREACHABLE() \
 	CRASH_NOW();         \
 	do {                 \
-	} while (true);
+	} while (true)
 #endif
 
 namespace gdmono {
