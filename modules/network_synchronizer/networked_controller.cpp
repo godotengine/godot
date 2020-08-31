@@ -197,7 +197,7 @@ real_t NetworkedController::get_doll_sync_update_rate() const {
 	return doll_sync_update_rate;
 }
 
-uint64_t NetworkedController::get_current_input_id() const {
+uint32_t NetworkedController::get_current_input_id() const {
 	return controller->get_current_input_id();
 }
 
@@ -328,10 +328,9 @@ void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 #warning TODO emit a signal.
 }
 
-void NetworkedController::_rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_doll_send_epoch(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
-
-	static_cast<DollController *>(controller)->receive_epoch(p_epoch, p_data);
+	static_cast<DollController *>(controller)->receive_epoch(p_data);
 }
 
 void NetworkedController::player_set_has_new_input(bool p_has) {
@@ -430,7 +429,7 @@ void ServerController::update_peers() {
 void ServerController::process(real_t p_delta) {
 	fetch_next_input();
 
-	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
+	if (unlikely(current_input_buffer_id == UINT32_MAX)) {
 		// Skip this until the first input arrive.
 		return;
 	}
@@ -448,15 +447,15 @@ bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSna
 	return p_snap_a.id < p_snap_b.id;
 }
 
-uint64_t ServerController::last_known_input() const {
+uint32_t ServerController::last_known_input() const {
 	if (snapshots.size() > 0) {
 		return snapshots.back().id;
 	} else {
-		return UINT64_MAX;
+		return UINT32_MAX;
 	}
 }
 
-uint64_t ServerController::get_current_input_id() const {
+uint32_t ServerController::get_current_input_id() const {
 	return current_input_buffer_id;
 }
 
@@ -477,7 +476,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	const uint32_t first_input_id = decode_uint32(p_data.ptr() + ofs);
 	ofs += 4;
 
-	uint64_t inserted_input_count = 0;
+	uint32_t inserted_input_count = 0;
 
 	// Contains the entire packet and in turn it will be seek to specific location
 	// so I will not need to copy chunk of the packet data.
@@ -503,10 +502,10 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 
 		// The input is valid, populate the buffer.
 		for (int sub = 0; sub <= duplication; sub += 1) {
-			const uint64_t input_id = first_input_id + inserted_input_count;
+			const uint32_t input_id = first_input_id + inserted_input_count;
 			inserted_input_count += 1;
 
-			if (current_input_buffer_id != UINT64_MAX && current_input_buffer_id >= input_id)
+			if (current_input_buffer_id != UINT32_MAX && current_input_buffer_id >= input_id)
 				continue;
 
 			FrameSnapshotSkinny rfs;
@@ -547,7 +546,7 @@ bool ServerController::fetch_next_input() {
 	bool is_new_input = true;
 	bool is_packet_missing = false;
 
-	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
+	if (unlikely(current_input_buffer_id == UINT32_MAX)) {
 		// As initial packet, anything is good.
 		if (snapshots.empty() == false) {
 			// First input arrived.
@@ -565,7 +564,7 @@ bool ServerController::fetch_next_input() {
 		// Search the next packet, the cycle is used to make sure to not stop
 		// with older packets arrived too late.
 
-		const uint64_t next_input_id = current_input_buffer_id + 1;
+		const uint32_t next_input_id = current_input_buffer_id + 1;
 
 		if (unlikely(snapshots.empty() == true)) {
 			// The input buffer is empty!
@@ -625,7 +624,7 @@ bool ServerController::fetch_next_input() {
 				ghost_input_count += 1;
 
 				const int size = MIN(ghost_input_count, snapshots.size());
-				const uint64_t ghost_packet_id = next_input_id + ghost_input_count;
+				const uint32_t ghost_packet_id = next_input_id + ghost_input_count;
 
 				bool recovered = false;
 				FrameSnapshotSkinny pi;
@@ -704,6 +703,7 @@ void ServerController::doll_sync(real_t p_delta) {
 
 		if (epoch_state_collected == false) {
 			epoch_state_data.begin_write();
+			epoch_state_data.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
 			node->call("collect_epoch_data", &epoch_state_data);
 			epoch_state_data.dry();
 			epoch_state_collected = true;
@@ -713,13 +713,11 @@ void ServerController::doll_sync(real_t p_delta) {
 			node->rpc_id(
 					peers[i].peer,
 					"_rpc_doll_send_epoch",
-					epoch,
 					epoch_state_data.get_buffer().get_bytes());
 		} else {
 			node->rpc_unreliable_id(
 					peers[i].peer,
 					"_rpc_doll_send_epoch",
-					epoch,
 					epoch_state_data.get_buffer().get_bytes());
 		}
 	}
@@ -795,7 +793,7 @@ uint32_t ServerController::find_peer(int p_peer) const {
 
 PlayerController::PlayerController(NetworkedController *p_node) :
 		Controller(p_node),
-		current_input_id(UINT64_MAX),
+		current_input_id(UINT32_MAX),
 		input_buffers_counter(0),
 		time_bank(0.0),
 		tick_additional_speed(0.0) {
@@ -841,7 +839,7 @@ int PlayerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_pe
 	return sub_ticks;
 }
 
-int PlayerController::notify_input_checked(uint64_t p_input_id) {
+int PlayerController::notify_input_checked(uint32_t p_input_id) {
 	// Remove inputs.
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
 		frames_snapshot.pop_front();
@@ -851,23 +849,23 @@ int PlayerController::notify_input_checked(uint64_t p_input_id) {
 	return frames_snapshot.size();
 }
 
-uint64_t PlayerController::last_known_input() const {
+uint32_t PlayerController::last_known_input() const {
 	return get_stored_input_id(-1);
 }
 
-uint64_t PlayerController::get_stored_input_id(int p_i) const {
+uint32_t PlayerController::get_stored_input_id(int p_i) const {
 	if (p_i < 0) {
 		if (frames_snapshot.empty() == false) {
 			return frames_snapshot.back().id;
 		} else {
-			return UINT64_MAX;
+			return UINT32_MAX;
 		}
 	} else {
 		const size_t i = p_i;
 		if (i < frames_snapshot.size()) {
 			return frames_snapshot[i].id;
 		} else {
-			return UINT64_MAX;
+			return UINT32_MAX;
 		}
 	}
 }
@@ -884,7 +882,7 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	}
 }
 
-uint64_t PlayerController::get_current_input_id() const {
+uint32_t PlayerController::get_current_input_id() const {
 	return current_input_id;
 }
 
@@ -892,11 +890,11 @@ real_t PlayerController::get_pretended_delta(real_t p_iteration_per_seconds) con
 	return 1.0 / (p_iteration_per_seconds + tick_additional_speed);
 }
 
-void PlayerController::store_input_buffer(uint64_t p_id) {
+void PlayerController::store_input_buffer(uint32_t p_id) {
 	FrameSnapshot inputs;
 	inputs.id = p_id;
 	inputs.inputs_buffer = node->get_inputs_buffer().get_buffer();
-	inputs.similarity = UINT64_MAX;
+	inputs.similarity = UINT32_MAX;
 	frames_snapshot.push_back(inputs);
 }
 
@@ -918,11 +916,11 @@ void PlayerController::send_frame_input_buffer_to_server() {
 
 	// Let's store the ID of the first snapshot.
 	MAKE_ROOM(4);
-	const uint64_t first_input_id = frames_snapshot[frames_snapshot.size() - inputs_count].id;
+	const uint32_t first_input_id = frames_snapshot[frames_snapshot.size() - inputs_count].id;
 	ofs += encode_uint32(first_input_id, cached_packet_data.data() + ofs);
 
-	uint64_t previous_input_id = UINT64_MAX;
-	uint64_t previous_input_similarity = UINT64_MAX;
+	uint32_t previous_input_id = UINT32_MAX;
+	uint32_t previous_input_similarity = UINT32_MAX;
 	int previous_buffer_size = 0;
 	uint8_t duplication_count = 0;
 
@@ -932,7 +930,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	for (size_t i = frames_snapshot.size() - inputs_count; i < frames_snapshot.size(); i += 1) {
 		bool is_similar = false;
 
-		if (previous_input_id == UINT64_MAX) {
+		if (previous_input_id == UINT32_MAX) {
 			// This happens for the first input of the packet.
 			// Just write it.
 			is_similar = false;
@@ -941,7 +939,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			is_similar = false;
 		} else {
 			if (frames_snapshot[i].similarity != previous_input_id) {
-				if (frames_snapshot[i].similarity == UINT64_MAX) {
+				if (frames_snapshot[i].similarity == UINT32_MAX) {
 					// This input was never compared, let's do it now.
 					DataBuffer pir_B(frames_snapshot[i].inputs_buffer);
 
@@ -977,7 +975,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			// This input is different from the previous one, so let's
 			// finalize the previous and start another one.
 
-			if (previous_input_id != UINT64_MAX) {
+			if (previous_input_id != UINT32_MAX) {
 				// We can finally finalize the previous input
 				cached_packet_data[ofs - previous_buffer_size - 1] = duplication_count;
 			}
@@ -1046,9 +1044,9 @@ void DollController::ready() {
 }
 
 void DollController::process(real_t p_delta) {
-	const uint64_t frame_epoch = next_epoch(p_delta);
+	const uint32_t frame_epoch = next_epoch(p_delta);
 
-	if (unlikely(frame_epoch == UINT64_MAX)) {
+	if (unlikely(frame_epoch == UINT32_MAX)) {
 		// Nothing to do.
 		return;
 	}
@@ -1056,37 +1054,38 @@ void DollController::process(real_t p_delta) {
 	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch));
 }
 
-uint64_t DollController::get_current_input_id() const {
+uint32_t DollController::get_current_input_id() const {
 	return current_epoch;
 }
 
-void DollController::receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data) {
+void DollController::receive_epoch(Vector<uint8_t> p_data) {
 	DataBuffer buffer(p_data);
 	buffer.begin_read();
+	const uint32_t epoch = buffer.read_int(DataBuffer::COMPRESSION_LEVEL_1);
 
-	interpolator.begin_write(p_epoch);
+	interpolator.begin_write(epoch);
 	node->call("parse_epoch_data", &interpolator, &buffer);
 	interpolator.end_write();
 }
 
-uint64_t DollController::next_epoch(real_t p_delta) {
+uint32_t DollController::next_epoch(real_t p_delta) {
 	// This function regulates the epoch ID to process.
 	// The epoch is not simply increased by one because we need to make sure
 	// to make the client apply the nearest server state while giving some room
 	// for the subsequent information to arrive.
 
 	// Step 1, Wait that we have at least two epochs.
-	if (unlikely(current_epoch == UINT64_MAX)) {
+	if (unlikely(current_epoch == UINT32_MAX)) {
 		// Interpolator is not yet started.
 		if (interpolator.known_epochs_count() < 2) {
 			// Not ready yet.
-			return UINT64_MAX;
+			return UINT32_MAX;
 		}
 
 #ifdef DEBUG_ENABLED
 		// At this point we have 2 epoch, something is always returned at this
 		// point.
-		CRASH_COND(interpolator.get_youngest_epoch() == UINT64_MAX);
+		CRASH_COND(interpolator.get_youngest_epoch() == UINT32_MAX);
 #endif
 
 		// Start epoch interpolation.
@@ -1097,8 +1096,8 @@ uint64_t DollController::next_epoch(real_t p_delta) {
 	// return the best epoch id which we have to apply the state.
 
 	// Step 2. Make sure we have something to interpolate with.
-	const uint64_t oldest_epoch = interpolator.get_oldest_epoch();
-	if (unlikely(oldest_epoch == UINT64_MAX || oldest_epoch <= current_epoch)) {
+	const uint32_t oldest_epoch = interpolator.get_oldest_epoch();
+	if (unlikely(oldest_epoch == UINT32_MAX || oldest_epoch <= current_epoch)) {
 		network_tracer.notify_missing_packet();
 		// Nothing to interpolate with.
 		return current_epoch;
@@ -1111,25 +1110,27 @@ uint64_t DollController::next_epoch(real_t p_delta) {
 	CRASH_COND(oldest_epoch < current_epoch);
 #endif
 
-	const uint64_t delta_epoch = oldest_epoch - current_epoch;
+	const uint32_t delta_epoch = oldest_epoch - current_epoch;
 
 	// TODO make this customizable
-	const uint64_t min_virtual_delay = 2;
-	const uint64_t max_virtual_delay = 60;
+	//const uint32_t min_virtual_delay = 2;
+	const uint32_t max_virtual_delay = 60;
 	const real_t speed_factor = 0.2;
-	const real_t max_missing_epochs = 5.0;
-	const real_t max_additional_delay = 1.0;
+	//const real_t max_missing_epochs = 5.0;
+	//const real_t max_additional_delay = 1.0;
 
+	// TODO improve this algorithm in order to make it more smooth.
 	// Step 3. The `ideal_virtual_delay` is used to introduce a buffering so
 	// to give room to the subsequent information to arrive.
 	// The server changes the send rate in a smooth way, so most likely we need
 	// to wait the previous time window. However, the internet connection
 	// oscilate from time to time, so the `additional_delay` is used to
 	// introduce a small (and variable) delay to absorb it.
-	const uint64_t additional_delay = MAX(MIN(real_t(network_tracer.get_missing_packets()) / max_missing_epochs, 1.0) * max_additional_delay, min_virtual_delay);
+	//const uint32_t additional_delay = MAX(MIN(real_t(network_tracer.get_missing_packets()) / max_missing_epochs, 1.0) * max_additional_delay, min_virtual_delay);
 
-	const uint64_t ideal_virtual_delay = MIN(
-			interpolator.epochs_between_last_time_window() + additional_delay,
+	const uint32_t ideal_virtual_delay = MIN(
+			interpolator.epochs_between_last_time_window() * 2.0,
+			//interpolator.epochs_between_last_time_window() + additional_delay,
 			max_virtual_delay);
 
 	if (unlikely(delta_epoch > max_virtual_delay)) {
@@ -1148,10 +1149,10 @@ uint64_t DollController::next_epoch(real_t p_delta) {
 
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
-		current_epoch += uint64_t(advancing_epoch);
+		current_epoch += uint32_t(advancing_epoch);
 
 		// Keep the floating point part.
-		advancing_epoch -= uint64_t(advancing_epoch);
+		advancing_epoch -= uint32_t(advancing_epoch);
 	}
 
 	if (unlikely(oldest_epoch <= current_epoch)) {
@@ -1178,6 +1179,6 @@ void NoNetController::process(real_t p_delta) {
 	frame_id += 1;
 }
 
-uint64_t NoNetController::get_current_input_id() const {
+uint32_t NoNetController::get_current_input_id() const {
 	return frame_id;
 }

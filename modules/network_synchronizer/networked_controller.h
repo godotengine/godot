@@ -135,7 +135,9 @@ private:
 	/// Update rate (in seconds) used by the server to estabish when to update
 	/// the dolls. Is possible to scale down this rate, for a particular peer,
 	/// using the function: set_peer_update_rate_factor(peer, factor);
-	real_t doll_sync_update_rate = 0.16;
+	/// Current default is 20Hz with a physics frame of 60Hz
+	//real_t doll_sync_update_rate = 0.05;
+	real_t doll_sync_update_rate = 0.25;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
@@ -179,7 +181,7 @@ public:
 	void set_doll_sync_update_rate(real_t p_rate);
 	real_t get_doll_sync_update_rate() const;
 
-	uint64_t get_current_input_id() const;
+	uint32_t get_current_input_id() const;
 
 	const DataBuffer &get_inputs_buffer() const {
 		return inputs_buffer;
@@ -227,7 +229,7 @@ public:
 
 	/* On puppet rpc functions. */
 	void _rpc_doll_notify_connection_status(bool p_open);
-	void _rpc_doll_send_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
+	void _rpc_doll_send_epoch(Vector<uint8_t> p_data);
 
 	void process(real_t p_delta);
 
@@ -239,14 +241,14 @@ private:
 };
 
 struct FrameSnapshotSkinny {
-	uint64_t id;
+	uint32_t id;
 	BitArray inputs_buffer;
 };
 
 struct FrameSnapshot {
-	uint64_t id;
+	uint32_t id;
 	BitArray inputs_buffer;
-	uint64_t similarity;
+	uint32_t similarity;
 };
 
 struct Controller {
@@ -258,7 +260,7 @@ struct Controller {
 	virtual ~Controller() {}
 
 	virtual void ready() {}
-	virtual uint64_t get_current_input_id() const = 0;
+	virtual uint32_t get_current_input_id() const = 0;
 };
 
 struct ServerController : public Controller {
@@ -269,7 +271,7 @@ struct ServerController : public Controller {
 		real_t update_rate_factor = 1.0;
 	};
 
-	uint64_t current_input_buffer_id = UINT64_MAX;
+	uint32_t current_input_buffer_id = UINT32_MAX;
 	uint32_t ghost_input_count = 0;
 	real_t optimal_snapshots_size = 0.0;
 	real_t client_tick_additional_speed = 0.0;
@@ -280,7 +282,7 @@ struct ServerController : public Controller {
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;
 	DataBuffer epoch_state_data;
-	uint64_t epoch = 0;
+	uint32_t epoch = 0;
 	bool is_epoch_important = false;
 
 	ServerController(
@@ -289,8 +291,8 @@ struct ServerController : public Controller {
 
 	void update_peers();
 	void process(real_t p_delta);
-	uint64_t last_known_input() const;
-	virtual uint64_t get_current_input_id() const override;
+	uint32_t last_known_input() const;
+	virtual uint32_t get_current_input_id() const override;
 
 	void receive_inputs(Vector<uint8_t> p_data);
 	int get_inputs_count() const;
@@ -318,8 +320,8 @@ struct ServerController : public Controller {
 };
 
 struct PlayerController : public Controller {
-	uint64_t current_input_id;
-	uint64_t input_buffers_counter;
+	uint32_t current_input_id;
+	uint32_t input_buffers_counter;
 	real_t time_bank;
 	real_t tick_additional_speed;
 
@@ -330,15 +332,15 @@ struct PlayerController : public Controller {
 
 	void process(real_t p_delta);
 	int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
-	int notify_input_checked(uint64_t p_input_id);
-	uint64_t last_known_input() const;
-	uint64_t get_stored_input_id(int p_i) const;
-	virtual uint64_t get_current_input_id() const override;
+	int notify_input_checked(uint32_t p_input_id);
+	uint32_t last_known_input() const;
+	uint32_t get_stored_input_id(int p_i) const;
+	virtual uint32_t get_current_input_id() const override;
 
 	bool process_instant(int p_i, real_t p_delta);
 	real_t get_pretended_delta(real_t p_iteration_per_second) const;
 
-	void store_input_buffer(uint64_t p_id);
+	void store_input_buffer(uint32_t p_id);
 
 	/// Sends an unreliable packet to the server, containing a packed array of
 	/// frame snapshots.
@@ -359,7 +361,7 @@ struct PlayerController : public Controller {
 /// for the server to stop the data streaming.
 struct DollController : public Controller {
 	Interpolator interpolator;
-	uint64_t current_epoch = UINT64_MAX;
+	uint32_t current_epoch = UINT32_MAX;
 	real_t advancing_epoch = 0.0;
 
 	NetworkTracer network_tracer;
@@ -370,23 +372,23 @@ struct DollController : public Controller {
 	virtual void ready() override;
 	void process(real_t p_delta);
 	// TODO consider make this non virtual
-	virtual uint64_t get_current_input_id() const override;
+	virtual uint32_t get_current_input_id() const override;
 
-	void receive_epoch(uint64_t p_epoch, Vector<uint8_t> p_data);
+	void receive_epoch(Vector<uint8_t> p_data);
 
-	uint64_t next_epoch(real_t p_delta);
+	uint32_t next_epoch(real_t p_delta);
 };
 
 /// This controller is used when the game instance is not a peer of any kind.
 /// This controller keeps the workflow as usual so it's possible to use the
 /// `NetworkedController` even without network.
 struct NoNetController : public Controller {
-	uint64_t frame_id;
+	uint32_t frame_id;
 
 	NoNetController(NetworkedController *p_node);
 
 	void process(real_t p_delta);
-	virtual uint64_t get_current_input_id() const override;
+	virtual uint32_t get_current_input_id() const override;
 };
 
 #endif
