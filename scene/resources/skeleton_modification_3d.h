@@ -198,22 +198,13 @@ private:
 	enum CCDIK_Axes {
 		AXIS_X,
 		AXIS_Y,
-		AXIS_Z,
-		AXIS_CUSTOM
-	};
-
-	enum CCDIK_JOINT_ROTATE_MODES {
-		ROTATE_MODE_FROM_TIP,
-		ROTATE_MODE_FROM_JOINT,
-		ROTATE_MODE_FREE
+		AXIS_Z
 	};
 
 	struct CCDIK_Joint_Data {
 		String bone_name = "";
 		int bone_idx = -1;
 		int ccdik_axis = 0;
-		Vector3 ccdik_axis_vector = Vector3(1, 0, 0);
-		int rotate_mode = 0;
 
 		bool enable_constraint = false;
 		float constraint_angle_min = 0;
@@ -260,10 +251,6 @@ public:
 	void ccdik_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
 	int ccdik_joint_get_ccdik_axis(int p_joint_idx) const;
 	void ccdik_joint_set_ccdik_axis(int p_joint_idx, int p_axis);
-	Vector3 ccdik_joint_get_ccdik_axis_vector(int p_joint_idx) const;
-	void ccdik_joint_set_ccdik_axis_vector(int p_joint_idx, Vector3 p_axis);
-	int ccdik_joint_get_rotate_mode(int p_joint_idx) const;
-	void ccdik_joint_set_rotate_mode(int p_joint_idx, int p_mode);
 	bool ccdik_joint_get_enable_constraint(int p_joint_idx) const;
 	void ccdik_joint_set_enable_constraint(int p_joint_idx, bool p_enable);
 	float ccdik_joint_get_constraint_angle_min(int p_joint_idx) const;
