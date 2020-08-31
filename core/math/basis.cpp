@@ -390,7 +390,7 @@ void Basis::rotate_to_align(Vector3 start_direction, Vector3 end_direction) {
 		float dot = start_direction.dot(end_direction);
 		dot = CLAMP(dot, -1.0, 1.0);
 		float angle_rads = Math::acos(dot);
-		this->set_axis_angle(axis, angle_rads);
+		set_axis_angle(axis, angle_rads);
 	}
 }
 
