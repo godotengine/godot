@@ -586,6 +586,14 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 		return n_class;
 	}
 
+	if (match(GDScriptTokenizer::Token::EXTENDS)) {
+		if (n_class->extends_used) {
+			push_error(R"(Cannot use "extends" more than once in the same class.)");
+		}
+		parse_extends();
+		end_statement("superclass");
+	}
+
 	parse_class_body();
 
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Missing unindent at the end of the class body.)");
