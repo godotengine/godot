@@ -288,6 +288,7 @@
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
+			[b]Note:[/b] Trying to alter the [RichTextLabel]'s text with [method set_text] will reset this to [code]false[/code]. Use instead [method set_bbcode] or [method append_bbcode] to preserve BBCode formatting.
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
