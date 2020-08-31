@@ -196,7 +196,18 @@
 				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
-		<method name="rotated" qualifiers="const">
+		<method name="rotate_to_align">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="start_direction" type="Vector3">
+			</argument>
+			<argument index="1" name="end_direction" type="Vector3">
+			</argument>
+			<description>
+				Sets the rotation of the Basis by first rotating to face the [code]start_direction[/code], and then rotating to face the [code]end_direction[/code].
+			</description>
+		</method>
+		<method name="rotated">
 			<return type="Basis">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
