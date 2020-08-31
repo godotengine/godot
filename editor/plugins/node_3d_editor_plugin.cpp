@@ -1133,6 +1133,18 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 
 			case BUTTON_RIGHT: {
+				if (b->is_pressed()) {
+					if (b->get_control()) {
+						_edit.mode = TRANSFORM_CONTEXT;
+					}
+					if (_edit.mode == TRANSFORM_CONTEXT) {
+						_edit.mode = TRANSFORM_NONE;
+						editor->get_scene_tree_dock()->get_tree_editor()->emit_signal("rmb_pressed",
+								get_global_transform_with_canvas().xform(b->get_position()));
+						break;
+					}
+				}
+
 				NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
 
 				if (b->is_pressed() && _edit.gizmo.is_valid()) {
