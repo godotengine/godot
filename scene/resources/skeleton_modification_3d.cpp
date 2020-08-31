@@ -615,10 +615,6 @@ bool SkeletonModification3DCCDIK::_set(const StringName &p_path, const Variant &
 			ccdik_joint_set_bone_index(which, p_value);
 		} else if (what == "ccdik_axis") {
 			ccdik_joint_set_ccdik_axis(which, p_value);
-		} else if (what == "ccdik_axis_custom") {
-			ccdik_joint_set_ccdik_axis_vector(which, p_value);
-		} else if (what == "rotate_mode") {
-			ccdik_joint_set_rotate_mode(which, p_value);
 		} else if (what == "enable_joint_constraint") {
 			ccdik_joint_set_enable_constraint(which, p_value);
 		} else if (what == "joint_constraint_angle_min") {
@@ -647,10 +643,6 @@ bool SkeletonModification3DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 			r_ret = ccdik_joint_get_bone_index(which);
 		} else if (what == "ccdik_axis") {
 			r_ret = ccdik_joint_get_ccdik_axis(which);
-		} else if (what == "ccdik_axis_custom") {
-			r_ret = ccdik_joint_get_ccdik_axis_vector(which);
-		} else if (what == "rotate_mode") {
-			r_ret = ccdik_joint_get_rotate_mode(which);
 		} else if (what == "enable_joint_constraint") {
 			r_ret = ccdik_joint_get_enable_constraint(which);
 		} else if (what == "joint_constraint_angle_min") {
@@ -673,13 +665,7 @@ void SkeletonModification3DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "ccdik_axis",
-				PROPERTY_HINT_ENUM, "X Axis, Y Axis, Z Axis, Custom Axis", PROPERTY_USAGE_DEFAULT));
-		if (ccdik_data_chain[i].ccdik_axis >= AXIS_CUSTOM) {
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, base_string + "ccdik_axis_custom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		}
-
-		p_list->push_back(PropertyInfo(Variant::INT, base_string + "rotate_mode",
-				PROPERTY_HINT_ENUM, "From Tip, From Joint, Free", PROPERTY_USAGE_DEFAULT));
+				PROPERTY_HINT_ENUM, "X Axis, Y Axis, Z Axis", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "enable_joint_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		if (ccdik_data_chain[i].enable_constraint) {
@@ -747,51 +733,45 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 				"CCDIK joint: bone index for joint" + itos(p_joint_idx) + " not found. Cannot execute modification!")) {
 		return;
 	}
-	if (_print_execution_error(ccdik_data.ccdik_axis_vector.length_squared() == 0,
-				"CCDIK joint: axis vector for joint" + itos(p_joint_idx) + " is not set. Cannot execute modification!")) {
-		return;
-	}
 
 	Transform bone_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->get_bone_global_pose(ccdik_data.bone_idx));
 	Transform tip_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(tip->get_global_transform()));
 	Transform target_trans = stack->skeleton->global_pose_to_local_pose(ccdik_data.bone_idx, stack->skeleton->world_transform_to_global_pose(target->get_global_transform()));
 
-	if (tip_trans.origin.distance_to(target_trans.origin) <= 0.1) {
+	if (tip_trans.origin.distance_to(target_trans.origin) <= 0.01) {
 		return;
 	}
 
-	if (ccdik_data.rotate_mode == ROTATE_MODE_FROM_TIP) {
-		Plane rotation_plane = Plane(bone_trans.origin, ccdik_data.ccdik_axis_vector);
-		Vector3 bone_to_tip = rotation_plane.project(bone_trans.origin).direction_to(rotation_plane.project(tip_trans.origin));
-		Vector3 bone_to_target = rotation_plane.project(bone_trans.origin).direction_to(rotation_plane.project(target_trans.origin));
-		bone_trans.basis.rotate_to_align(bone_to_tip, bone_to_target);
-
-		if (ccdik_data.enable_constraint) {
-			Vector3 rotation_axis;
-			float rotation_angle;
-			bone_trans.basis.get_axis_angle(rotation_axis, rotation_angle);
-
-			rotation_angle = clamp_angle(rotation_angle, ccdik_data.constraint_angle_min, ccdik_data.constraint_angle_max, ccdik_data.constraint_angles_invert);
-			bone_trans.basis.set_axis_angle(rotation_axis, rotation_angle);
-		}
-	} else if (ccdik_data.rotate_mode == ROTATE_MODE_FROM_JOINT) {
-		Plane rotation_plane = Plane(bone_trans.origin, ccdik_data.ccdik_axis_vector);
-		Vector3 bone_to_target = rotation_plane.project(target_trans.origin);
-
-		bone_trans.basis = bone_trans.looking_at(bone_to_target, Vector3(0, 1, 0)).basis;
-		bone_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(ccdik_data.bone_idx, bone_trans.basis);
-
-		if (ccdik_data.enable_constraint) {
-			Vector3 rotation_axis;
-			float rotation_angle;
-			bone_trans.basis.get_axis_angle(rotation_axis, rotation_angle);
-
-			rotation_angle = clamp_angle(rotation_angle, ccdik_data.constraint_angle_min, ccdik_data.constraint_angle_max, ccdik_data.constraint_angles_invert);
-			bone_trans.basis.set_axis_angle(rotation_axis, rotation_angle);
-		}
+	// Inspired (and very loosely based on) by the CCDIK algorithm made by Zalo on GitHub (https://github.com/zalo/MathUtilities)
+	// Convert the 3D position to a 2D position so we can use Atan2 (via the angle function)
+	// to know how much rotation we need on the given axis to place the tip at the target.
+	Vector2 tip_pos_2d;
+	Vector2 target_pos_2d;
+	if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_X) {
+		tip_pos_2d = Vector2(tip_trans.origin.y, tip_trans.origin.z);
+		target_pos_2d = Vector2(target_trans.origin.y, target_trans.origin.z);
+		bone_trans.basis.rotate_local(Vector3(1, 0, 0), target_pos_2d.angle() - tip_pos_2d.angle());
+	} else if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_Y) {
+		tip_pos_2d = Vector2(tip_trans.origin.z, tip_trans.origin.x);
+		target_pos_2d = Vector2(target_trans.origin.z, target_trans.origin.x);
+		bone_trans.basis.rotate_local(Vector3(0, 1, 0), target_pos_2d.angle() - tip_pos_2d.angle());
+	} else if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_Z) {
+		tip_pos_2d = Vector2(tip_trans.origin.x, tip_trans.origin.y);
+		target_pos_2d = Vector2(target_trans.origin.x, target_trans.origin.y);
+		bone_trans.basis.rotate_local(Vector3(0, 0, 1), target_pos_2d.angle() - tip_pos_2d.angle());
 	} else {
-		bone_trans.basis = bone_trans.looking_at(target_trans.origin, Vector3(0, 1, 0)).basis;
-		bone_trans.basis = stack->skeleton->global_pose_z_forward_to_bone_forward(ccdik_data.bone_idx, bone_trans.basis);
+		// Should never happen, but...
+		ERR_FAIL_MSG("CCDIK joint: Unknown axis vector passed for joint" + itos(p_joint_idx) + ". Cannot execute modification!");
+	}
+
+	// TODO: probably needs to be redone so it works with the code above...
+	if (ccdik_data.enable_constraint) {
+		Vector3 rotation_axis;
+		float rotation_angle;
+		bone_trans.basis.get_axis_angle(rotation_axis, rotation_angle);
+
+		rotation_angle = clamp_angle(rotation_angle, ccdik_data.constraint_angle_min, ccdik_data.constraint_angle_max, ccdik_data.constraint_angles_invert);
+		bone_trans.basis.set_axis_angle(rotation_axis, rotation_angle);
 	}
 
 	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, bone_trans, stack->strength, true);
@@ -926,38 +906,8 @@ int SkeletonModification3DCCDIK::ccdik_joint_get_ccdik_axis(int p_joint_idx) con
 void SkeletonModification3DCCDIK::ccdik_joint_set_ccdik_axis(int p_joint_idx, int p_axis) {
 	ERR_FAIL_INDEX(p_joint_idx, ccdik_data_chain.size());
 	ERR_FAIL_COND_MSG(p_axis < 0, "CCDIK axis is out of range: The axis mode is too low!");
-	ERR_FAIL_COND_MSG(p_axis > AXIS_CUSTOM, "CCDIK axis is out of range: The axis mode is too high!");
 	ccdik_data_chain.write[p_joint_idx].ccdik_axis = p_axis;
-
-	if (p_axis == AXIS_X) {
-		ccdik_joint_set_ccdik_axis_vector(p_joint_idx, Vector3(1, 0, 0));
-	} else if (p_axis == AXIS_Y) {
-		ccdik_joint_set_ccdik_axis_vector(p_joint_idx, Vector3(0, 1, 0));
-	} else if (p_axis == AXIS_Z) {
-		ccdik_joint_set_ccdik_axis_vector(p_joint_idx, Vector3(0, 0, 1));
-	}
 	_change_notify();
-}
-
-Vector3 SkeletonModification3DCCDIK::ccdik_joint_get_ccdik_axis_vector(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V(p_joint_idx, ccdik_data_chain.size(), Vector3());
-	return ccdik_data_chain[p_joint_idx].ccdik_axis_vector;
-}
-
-void SkeletonModification3DCCDIK::ccdik_joint_set_ccdik_axis_vector(int p_joint_idx, Vector3 p_axis) {
-	ERR_FAIL_INDEX(p_joint_idx, ccdik_data_chain.size());
-	ccdik_data_chain.write[p_joint_idx].ccdik_axis_vector = p_axis;
-}
-
-int SkeletonModification3DCCDIK::ccdik_joint_get_rotate_mode(int p_joint_idx) const {
-	ERR_FAIL_INDEX_V(p_joint_idx, ccdik_data_chain.size(), -1);
-	return ccdik_data_chain[p_joint_idx].rotate_mode;
-}
-
-void SkeletonModification3DCCDIK::ccdik_joint_set_rotate_mode(int p_joint_idx, int p_mode) {
-	ERR_FAIL_INDEX(p_joint_idx, ccdik_data_chain.size());
-	ERR_FAIL_COND_MSG(p_mode < 0 || p_mode > ROTATE_MODE_FREE, "Cannot assign unknown joint rotate mode!");
-	ccdik_data_chain.write[p_joint_idx].rotate_mode = p_mode;
 }
 
 bool SkeletonModification3DCCDIK::ccdik_joint_get_enable_constraint(int p_joint_idx) const {
