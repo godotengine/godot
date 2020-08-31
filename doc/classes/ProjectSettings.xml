@@ -1158,6 +1158,16 @@
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
+		<member name="rendering/volumetric_fog/directional_shadow_shrink" type="int" setter="" getter="" default="512">
+		</member>
+		<member name="rendering/volumetric_fog/positional_shadow_shrink" type="int" setter="" getter="" default="512">
+		</member>
+		<member name="rendering/volumetric_fog/use_filter" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="rendering/volumetric_fog/volume_depth" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="rendering/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
+		</member>
 		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
 		</member>
