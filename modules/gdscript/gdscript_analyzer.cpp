@@ -2289,6 +2289,30 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		return;
 	}
 
+	// Try singletons.
+	// Do this before globals because this might be a singleton loading another one before it's compiled.
+	if (ProjectSettings::get_singleton()->has_autoload(name)) {
+		const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(name);
+		if (autoload.is_singleton) {
+			// Singleton exists, so it's at least a Node.
+			GDScriptParser::DataType result;
+			result.kind = GDScriptParser::DataType::NATIVE;
+			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			if (autoload.path.to_lower().ends_with(GDScriptLanguage::get_singleton()->get_extension())) {
+				Ref<GDScriptParserRef> parser = get_parser_for(autoload.path);
+				if (parser.is_valid()) {
+					Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+					if (err == OK) {
+						result = type_from_metatype(parser->get_parser()->head->get_datatype());
+					}
+				}
+			}
+			result.is_constant = true;
+			p_identifier->set_datatype(result);
+			return;
+		}
+	}
+
 	if (GDScriptLanguage::get_singleton()->get_global_map().has(name)) {
 		int idx = GDScriptLanguage::get_singleton()->get_global_map()[name];
 		Variant constant = GDScriptLanguage::get_singleton()->get_global_array()[idx];
