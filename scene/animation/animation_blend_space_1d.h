@@ -70,7 +70,7 @@ public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
-	virtual void get_child_nodes(List<ChildNode> *r_child_nodes) override;
+	virtual int get_child_nodes(List<ChildNode> *r_child_nodes) override;
 
 	void add_blend_point(const Ref<AnimationRootNode> &p_node, float p_position, int p_at_index = -1);
 	void set_blend_point_position(int p_point, float p_position);
