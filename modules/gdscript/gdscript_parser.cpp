@@ -1941,8 +1941,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_self(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	if (!current_function || current_function->is_static) {
-		push_error(R"(Cannot use "self" outside a non-static function.)");
+	if (current_function && current_function->is_static) {
+		push_error(R"(Cannot use "self" inside a static function.)");
 	}
 	SelfNode *self = alloc_node<SelfNode>();
 	self->current_class = current_class;
