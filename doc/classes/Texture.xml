@@ -72,7 +72,7 @@
 			<return type="Image">
 			</return>
 			<description>
-				Returns an [Image] with the data from this [Texture]. [Image]s can be accessed and manipulated directly.
+				Returns an [Image] that is a copy of data from this [Texture]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
