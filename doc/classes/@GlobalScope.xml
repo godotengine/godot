@@ -341,16 +341,16 @@
 			Right Direction key.
 		</constant>
 		<constant name="KEY_BACK" value="16777280" enum="KeyList">
-			Back key.
+			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
 		<constant name="KEY_FORWARD" value="16777281" enum="KeyList">
-			Forward key.
+			Media forward key.
 		</constant>
 		<constant name="KEY_STOP" value="16777282" enum="KeyList">
-			Stop key.
+			Media stop key.
 		</constant>
 		<constant name="KEY_REFRESH" value="16777283" enum="KeyList">
-			Refresh key.
+			Media refresh key.
 		</constant>
 		<constant name="KEY_VOLUMEDOWN" value="16777284" enum="KeyList">
 			Volume down key.

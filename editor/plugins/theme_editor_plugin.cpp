@@ -634,7 +634,7 @@ ThemeEditor::ThemeEditor() {
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	add_child(scroll);
 	scroll->set_enable_v_scroll(true);
-	scroll->set_enable_h_scroll(false);
+	scroll->set_enable_h_scroll(true);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	MarginContainer *root_container = memnew(MarginContainer);

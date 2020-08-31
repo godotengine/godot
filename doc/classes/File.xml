@@ -451,16 +451,16 @@
 	</members>
 	<constants>
 		<constant name="READ" value="1" enum="ModeFlags">
-			Opens the file for read operations.
+			Opens the file for read operations. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
 		</constant>
 		<constant name="READ_WRITE" value="3" enum="ModeFlags">
-			Opens the file for read and write operations. Does not truncate the file.
+			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
+			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=http://fastlz.org/]FastLZ[/url] compression method.

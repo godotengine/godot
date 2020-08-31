@@ -896,6 +896,9 @@ void ResourceLoader::load_translation_remaps() {
 
 void ResourceLoader::clear_translation_remaps() {
 	translation_remaps.clear();
+	while (remapped_list.first() != nullptr) {
+		remapped_list.remove(remapped_list.first());
+	}
 }
 
 void ResourceLoader::load_path_remaps() {
