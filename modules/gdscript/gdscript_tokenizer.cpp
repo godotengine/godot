@@ -621,7 +621,19 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	}
 
 	// Allow '_' to be used in a number, for readability.
+	bool previous_was_underscore = false;
 	while (digit_check_func(_peek()) || _peek() == '_') {
+		if (_peek() == '_') {
+			if (previous_was_underscore) {
+				Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = true;
+		}
 		_advance();
 	}
 
@@ -672,7 +684,27 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 				_advance();
 			}
 			// Consume exponent digits.
+			if (!_is_digit(_peek())) {
+				Token error = make_error(R"(Expected exponent value after "e".)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = false;
 			while (_is_digit(_peek()) || _peek() == '_') {
+				if (_peek() == '_') {
+					if (previous_was_underscore) {
+						Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+						error.start_column = column;
+						error.leftmost_column = column;
+						error.end_column = column + 1;
+						error.rightmost_column = column + 1;
+						push_error(error);
+					}
+					previous_was_underscore = true;
+				}
 				_advance();
 			}
 		}
