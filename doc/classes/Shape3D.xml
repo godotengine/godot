@@ -7,7 +7,7 @@
 		Base class for all 3D shape resources. Nodes that inherit from this can be used as shapes for a [PhysicsBody3D] or [Area3D] objects.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
 	</methods>
