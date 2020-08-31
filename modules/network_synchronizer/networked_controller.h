@@ -132,15 +132,16 @@ private:
 	/// To prevent introducing virtual lag.
 	int server_input_storage_size = 30;
 
+	/// Update rate (in seconds) used by the server to estabish when to update
+	/// the dolls. Is possible to scale down this rate, for a particular peer,
+	/// using the function: set_peer_update_rate_factor(peer, factor);
+	real_t doll_sync_update_rate = 0.16;
+
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
 	DataBuffer inputs_buffer;
 
 	SceneSynchronizer *scene_synchronizer = nullptr;
-
-	LocalVector<int> active_doll_peers;
-	// Disabled peers is used to stop information propagation to a particular peer.
-	LocalVector<int> disabled_doll_peers;
 
 	bool packet_missing = false;
 	bool has_player_new_input = false;
@@ -175,6 +176,9 @@ public:
 	void set_server_input_storage_size(int p_size);
 	int get_server_input_storage_size() const;
 
+	void set_doll_sync_update_rate(real_t p_rate);
+	real_t get_doll_sync_update_rate() const;
+
 	uint64_t get_current_input_id() const;
 
 	const DataBuffer &get_inputs_buffer() const {
@@ -187,11 +191,10 @@ public:
 
 	void mark_epoch_as_important();
 
+	void set_peer_update_rate_factor(int p_peer, real_t p_factor);
 	void set_doll_peer_active(int p_peer_id, bool p_active);
-	const LocalVector<int> &get_active_doll_peers() const;
 
 	void _on_peer_connection_change(int p_peer_id);
-	void update_active_doll_peers();
 
 	bool process_instant(int p_i, real_t p_delta);
 
@@ -259,6 +262,13 @@ struct Controller {
 };
 
 struct ServerController : public Controller {
+	struct Peer {
+		int peer = 0;
+		bool active = true;
+		real_t update_timer = 0.0;
+		real_t update_rate_factor = 1.0;
+	};
+
 	uint64_t current_input_buffer_id = UINT64_MAX;
 	uint32_t ghost_input_count = 0;
 	real_t optimal_snapshots_size = 0.0;
@@ -268,6 +278,7 @@ struct ServerController : public Controller {
 	std::deque<FrameSnapshotSkinny> snapshots;
 
 	/// Used to sync the dolls.
+	LocalVector<Peer> peers;
 	DataBuffer epoch_state_data;
 	uint64_t epoch = 0;
 	bool is_epoch_important = false;
@@ -276,6 +287,7 @@ struct ServerController : public Controller {
 			NetworkedController *p_node,
 			int p_traced_frames);
 
+	void update_peers();
 	void process(real_t p_delta);
 	uint64_t last_known_input() const;
 	virtual uint64_t get_current_input_id() const override;
@@ -301,6 +313,8 @@ struct ServerController : public Controller {
 	/// size moderate to the needs.
 	void calculates_player_tick_rate(real_t p_delta);
 	void adjust_player_tick_rate(real_t p_delta);
+
+	uint32_t find_peer(int p_peer) const;
 };
 
 struct PlayerController : public Controller {

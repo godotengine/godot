@@ -46,7 +46,7 @@ void Interpolator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pop_epoch", "epoch"), &Interpolator::pop_epoch);
 	ClassDB::bind_method(D_METHOD("get_last_pop_epoch"), &Interpolator::get_last_pop_epoch);
 
-	// used to do the tests.
+	// TODO used to do the tests.
 	//ClassDB::bind_method(D_METHOD("terminate_init"), &Interpolator::terminate_init);
 	//ClassDB::bind_method(D_METHOD("begin_write", "epoch"), &Interpolator::begin_write);
 	//ClassDB::bind_method(D_METHOD("end_write"), &Interpolator::end_write);
@@ -400,5 +400,5 @@ uint64_t Interpolator::epochs_between_last_time_window() const {
 		return 0;
 	}
 
-	return epochs[1] - epochs[0];
+	return epochs[epochs.size() - 1] - epochs[epochs.size() - 2];
 }

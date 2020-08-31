@@ -73,9 +73,14 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &NetworkedController::set_server_input_storage_size);
 	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &NetworkedController::get_server_input_storage_size);
 
+	ClassDB::bind_method(D_METHOD("set_doll_sync_update_rate", "rate"), &NetworkedController::set_doll_sync_update_rate);
+	ClassDB::bind_method(D_METHOD("get_doll_sync_update_rate"), &NetworkedController::get_doll_sync_update_rate);
+
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
 	ClassDB::bind_method(D_METHOD("mark_epoch_as_important"), &NetworkedController::mark_epoch_as_important);
+
+	ClassDB::bind_method(D_METHOD("set_peer_update_rate_factor", "peer", "factor"), &NetworkedController::set_peer_update_rate_factor);
 
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &NetworkedController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
@@ -107,6 +112,7 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_sync_update_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_sync_update_rate", "get_doll_sync_update_rate");
 
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_opened"));
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
@@ -183,6 +189,14 @@ int NetworkedController::get_server_input_storage_size() const {
 	return server_input_storage_size;
 }
 
+void NetworkedController::set_doll_sync_update_rate(real_t p_rate) {
+	doll_sync_update_rate = MAX(p_rate, 0.001);
+}
+
+real_t NetworkedController::get_doll_sync_update_rate() const {
+	return doll_sync_update_rate;
+}
+
 uint64_t NetworkedController::get_current_input_id() const {
 	return controller->get_current_input_id();
 }
@@ -192,45 +206,33 @@ void NetworkedController::mark_epoch_as_important() {
 	static_cast<ServerController *>(controller)->is_epoch_important = true;
 }
 
+void NetworkedController::set_peer_update_rate_factor(int p_peer, real_t p_factor) {
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function can be called only on server.");
+	ServerController *server_controller = static_cast<ServerController *>(controller);
+	const uint32_t pos = server_controller->find_peer(p_peer);
+	ERR_FAIL_COND_MSG(pos == UINT32_MAX, "The peer is not found.");
+	server_controller->peers[pos].update_rate_factor = CLAMP(p_factor, 1.0, 0.001);
+}
+
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(is_server_controller() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
 
-	const int index = disabled_doll_peers.find(p_peer_id);
-	if (p_active) {
-		if (index >= 0) {
-			disabled_doll_peers.remove(index);
-			update_active_doll_peers();
-			rpc_id(p_peer_id, "_rpc_doll_notify_connection_status", true);
-		}
-	} else {
-		if (index == -1) {
-			disabled_doll_peers.push_back(p_peer_id);
-			update_active_doll_peers();
-			rpc_id(p_peer_id, "_rpc_doll_notify_connection_status", false);
-		}
+	ServerController *server_controller = static_cast<ServerController *>(controller);
+	const uint32_t pos = server_controller->find_peer(p_peer_id);
+	ERR_FAIL_COND_MSG(pos == UINT32_MAX, "The peer is not found.");
+	if (server_controller->peers[pos].active == p_active) {
+		// Nothing to do.
+		return;
 	}
-}
 
-const LocalVector<int> &NetworkedController::get_active_doll_peers() const {
-	return active_doll_peers;
+	server_controller->peers[pos].active = p_active;
+	rpc_id(p_peer_id, "_rpc_doll_notify_connection_status", p_active);
 }
 
 void NetworkedController::_on_peer_connection_change(int p_peer_id) {
-	update_active_doll_peers();
-}
-
-void NetworkedController::update_active_doll_peers() {
-	// Unreachable
-	CRASH_COND(get_tree()->is_network_server() == false);
-	active_doll_peers.clear();
-	const Vector<int> peers = get_tree()->get_network_connected_peers();
-	for (int i = 0; i < peers.size(); i += 1) {
-		const int peer_id = peers[i];
-		if (peer_id != get_network_master() && disabled_doll_peers.find(peer_id) == -1) {
-			active_doll_peers.push_back(peer_id);
-		}
-	}
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function is only supposed to be called on servel. This is a bug.");
+	static_cast<ServerController *>(controller)->update_peers();
 }
 
 bool NetworkedController::process_instant(int p_i, real_t p_delta) {
@@ -319,6 +321,8 @@ void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data
 }
 
 void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
+	// TODO consider change this to `notify_sync_paused` so the connection "restart" is just automatic
+	// when a new state is send.
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
 #warning TODO emit a signal.
@@ -364,7 +368,7 @@ void NetworkedController::_notification(int p_what) {
 				controller = memnew(ServerController(this, get_network_traced_frames()));
 				get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
 				get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
-				update_active_doll_peers();
+				static_cast<ServerController *>(controller)->update_peers();
 			} else if (is_network_master()) {
 				controller_type = CONTROLLER_TYPE_PLAYER;
 				controller = memnew(PlayerController(this));
@@ -406,6 +410,21 @@ ServerController::ServerController(
 		int p_traced_frames) :
 		Controller(p_node),
 		network_tracer(p_traced_frames) {
+}
+
+void ServerController::update_peers() {
+	// Unreachable because this is the server controller.
+	CRASH_COND(node->get_tree()->is_network_server() == false);
+	const Vector<int> peer_ids = node->get_tree()->get_network_connected_peers();
+	for (int i = 0; i < peer_ids.size(); i += 1) {
+		const int peer_id = peer_ids[i];
+		if (peer_id != node->get_network_master()) {
+			if (find_peer(peer_id) == UINT32_MAX) {
+				// Unknown
+				peers.push_back({ peer_id });
+			}
+		}
+	}
 }
 
 void ServerController::process(real_t p_delta) {
@@ -663,28 +682,42 @@ bool ServerController::fetch_next_input() {
 }
 
 void ServerController::doll_sync(real_t p_delta) {
-	// Epoch advances anyway.
+	// Advance the epoch.
 	epoch += 1;
 
-	// TODO this should not happen each frame.
-	// TODO consider to also use is_epoch_important to estabish if report the packet.
-	epoch_state_data.begin_write();
-	node->call("collect_epoch_data", &epoch_state_data);
-	epoch_state_data.dry();
+	bool epoch_state_collected = false;
 
-	// Sent the collected data.
-	const LocalVector<int> &peers = node->get_active_doll_peers();
+	// Process each peer and send the data if needed.
 	for (uint32_t i = 0; i < peers.size(); i += 1) {
+		peers[i].update_timer += p_delta;
+		if (peers[i].active == false ||
+				(is_epoch_important == false &&
+						peers[i].update_timer < (node->get_doll_sync_update_rate() / peers[i].update_rate_factor))) {
+			// This peer doesn't need the data.
+			continue;
+		}
+
+		// Resets the timer.
+		peers[i].update_timer -= node->get_doll_sync_update_rate() / peers[i].update_rate_factor;
+		// Needed because is possible to force send the state update.
+		peers[i].update_timer = MAX(0.0, peers[i].update_timer);
+
+		if (epoch_state_collected == false) {
+			epoch_state_data.begin_write();
+			node->call("collect_epoch_data", &epoch_state_data);
+			epoch_state_data.dry();
+			epoch_state_collected = true;
+		}
+
 		if (is_epoch_important) {
 			node->rpc_id(
-					peers[i],
+					peers[i].peer,
 					"_rpc_doll_send_epoch",
 					epoch,
 					epoch_state_data.get_buffer().get_bytes());
 		} else {
-#warning TODO make sure that this peer really need this data.
 			node->rpc_unreliable_id(
-					peers[i],
+					peers[i].peer,
 					"_rpc_doll_send_epoch",
 					epoch,
 					epoch_state_data.get_buffer().get_bytes());
@@ -749,6 +782,15 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 				"_rpc_send_tick_additional_speed",
 				packet_data);
 	}
+}
+
+uint32_t ServerController::find_peer(int p_peer) const {
+	for (uint32_t i = 0; i < peers.size(); i += 1) {
+		if (peers[i].peer == p_peer) {
+			return i;
+		}
+	}
+	return UINT32_MAX;
 }
 
 PlayerController::PlayerController(NetworkedController *p_node) :
