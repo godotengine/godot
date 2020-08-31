@@ -62,6 +62,24 @@
 				Returns the amount of surfaces that the [Mesh] holds.
 			</description>
 		</method>
+		<method name="surface_get_array_index_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the length in indices of the index array in the requested surface.
+			</description>
+		</method>
+		<method name="surface_get_array_len" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the length in vertices of the vertex array in the requested surface.
+			</description>
+		</method>
 		<method name="surface_get_arrays" qualifiers="const">
 			<return type="Array">
 			</return>
@@ -80,6 +98,15 @@
 				Returns the blend shape arrays for the requested surface.
 			</description>
 		</method>
+		<method name="surface_get_format" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the format mask of the requested surface.
+			</description>
+		</method>
 		<method name="surface_get_material" qualifiers="const">
 			<return type="Material">
 			</return>
@@ -87,6 +114,15 @@
 			</argument>
 			<description>
 				Returns a [Material] in a given surface. Surface is rendered using this material.
+			</description>
+		</method>
+		<method name="surface_get_primitive_type" qualifiers="const">
+			<return type="int" enum="Mesh.PrimitiveType">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<description>
+				Returns the primitive type of the requested surface.
 			</description>
 		</method>
 		<method name="surface_set_material">
