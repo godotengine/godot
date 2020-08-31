@@ -73,14 +73,17 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &NetworkedController::set_server_input_storage_size);
 	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &NetworkedController::get_server_input_storage_size);
 
-	ClassDB::bind_method(D_METHOD("set_doll_sync_update_rate", "rate"), &NetworkedController::set_doll_sync_update_rate);
-	ClassDB::bind_method(D_METHOD("get_doll_sync_update_rate"), &NetworkedController::get_doll_sync_update_rate);
+	ClassDB::bind_method(D_METHOD("set_doll_state_collect_rate", "rate"), &NetworkedController::set_doll_state_collect_rate);
+	ClassDB::bind_method(D_METHOD("get_doll_state_collect_rate"), &NetworkedController::get_doll_state_collect_rate);
+
+	ClassDB::bind_method(D_METHOD("set_doll_state_sync_rate", "rate"), &NetworkedController::set_doll_state_sync_rate);
+	ClassDB::bind_method(D_METHOD("get_doll_state_sync_rate"), &NetworkedController::get_doll_state_sync_rate);
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
 	ClassDB::bind_method(D_METHOD("mark_epoch_as_important"), &NetworkedController::mark_epoch_as_important);
 
-	ClassDB::bind_method(D_METHOD("set_peer_update_rate_factor", "peer", "factor"), &NetworkedController::set_peer_update_rate_factor);
+	ClassDB::bind_method(D_METHOD("set_doll_collect_rate_factor", "peer", "factor"), &NetworkedController::set_doll_collect_rate_factor);
 
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &NetworkedController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
@@ -89,6 +92,7 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &NetworkedController::_rpc_doll_notify_connection_status);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch"), &NetworkedController::_rpc_doll_send_epoch);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch_batch"), &NetworkedController::_rpc_doll_send_epoch_batch);
 
 	ClassDB::bind_method(D_METHOD("is_server_controller"), &NetworkedController::is_server_controller);
 	ClassDB::bind_method(D_METHOD("is_player_controller"), &NetworkedController::is_player_controller);
@@ -112,7 +116,8 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_sync_update_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_sync_update_rate", "get_doll_sync_update_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_collect_rate", "get_doll_state_collect_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_sync_rate", "get_doll_state_sync_rate");
 
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_opened"));
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
@@ -123,6 +128,7 @@ NetworkedController::NetworkedController() {
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_doll_send_epoch_batch", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 void NetworkedController::set_player_input_storage_size(int p_size) {
@@ -189,12 +195,20 @@ int NetworkedController::get_server_input_storage_size() const {
 	return server_input_storage_size;
 }
 
-void NetworkedController::set_doll_sync_update_rate(real_t p_rate) {
-	doll_sync_update_rate = MAX(p_rate, 0.001);
+void NetworkedController::set_doll_state_collect_rate(real_t p_rate) {
+	doll_state_collect_rate = MAX(p_rate, 0.001);
 }
 
-real_t NetworkedController::get_doll_sync_update_rate() const {
-	return doll_sync_update_rate;
+real_t NetworkedController::get_doll_state_collect_rate() const {
+	return doll_state_collect_rate;
+}
+
+void NetworkedController::set_doll_state_sync_rate(real_t p_rate) {
+	doll_state_sync_rate = MAX(p_rate, 0.001);
+}
+
+real_t NetworkedController::get_doll_state_sync_rate() const {
+	return doll_state_sync_rate;
 }
 
 uint32_t NetworkedController::get_current_input_id() const {
@@ -206,7 +220,7 @@ void NetworkedController::mark_epoch_as_important() {
 	static_cast<ServerController *>(controller)->is_epoch_important = true;
 }
 
-void NetworkedController::set_peer_update_rate_factor(int p_peer, real_t p_factor) {
+void NetworkedController::set_doll_collect_rate_factor(int p_peer, real_t p_factor) {
 	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function can be called only on server.");
 	ServerController *server_controller = static_cast<ServerController *>(controller);
 	const uint32_t pos = server_controller->find_peer(p_peer);
@@ -227,6 +241,8 @@ void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	}
 
 	server_controller->peers[pos].active = p_active;
+	server_controller->peers[pos].collect_timer = 0.0;
+	server_controller->peers[pos].sync_timer = 0.0;
 	rpc_id(p_peer_id, "_rpc_doll_notify_connection_status", p_active);
 }
 
@@ -331,6 +347,24 @@ void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 void NetworkedController::_rpc_doll_send_epoch(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 	static_cast<DollController *>(controller)->receive_epoch(p_data);
+}
+
+void NetworkedController::_rpc_doll_send_epoch_batch(Vector<uint8_t> p_data) {
+	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call.");
+	ERR_FAIL_COND_MSG(p_data.size() <= 0, "It's not supposed to receive a 0 size data.");
+
+	int buffer_start_position = 0;
+	while (buffer_start_position < p_data.size()) {
+		const int buffer_size = p_data[buffer_start_position];
+		const Vector<uint8_t> buffer = p_data.subarray(
+				buffer_start_position + 1,
+				buffer_start_position + 1 + buffer_size - 1);
+
+		ERR_FAIL_COND(buffer.size() <= 0);
+
+		static_cast<DollController *>(controller)->receive_epoch(buffer);
+		buffer_start_position += 1 + buffer_size;
+	}
 }
 
 void NetworkedController::player_set_has_new_input(bool p_has) {
@@ -684,41 +718,76 @@ void ServerController::doll_sync(real_t p_delta) {
 	// Advance the epoch.
 	epoch += 1;
 
+	// TODO Done in this way each doll per each controller may want to collect a state.
+	// this is not optmial.
+	// What about a more global solution where the data are collected for all peers
+	// and later is decided if a peer needs it or not?
+	// So the function collect_epoch_data is just called at a fixed rate and not randomly.
+
 	bool epoch_state_collected = false;
 
 	// Process each peer and send the data if needed.
 	for (uint32_t i = 0; i < peers.size(); i += 1) {
-		peers[i].update_timer += p_delta;
-		if (peers[i].active == false ||
-				(is_epoch_important == false &&
-						peers[i].update_timer < (node->get_doll_sync_update_rate() / peers[i].update_rate_factor))) {
-			// This peer doesn't need the data.
+		if (peers[i].active == false) {
+			// Nothing to do on this peer.
 			continue;
 		}
+		peers[i].collect_timer += p_delta;
+		if (
+				is_epoch_important ||
+				peers[i].collect_timer >= (node->get_doll_state_collect_rate() / peers[i].update_rate_factor)) {
+			// Resets the timer.
+			peers[i].collect_timer -= node->get_doll_state_collect_rate() / peers[i].update_rate_factor;
+			// Needed because is possible to force send the state update.
+			peers[i].collect_timer = MAX(0.0, peers[i].collect_timer);
 
-		// Resets the timer.
-		peers[i].update_timer -= node->get_doll_sync_update_rate() / peers[i].update_rate_factor;
-		// Needed because is possible to force send the state update.
-		peers[i].update_timer = MAX(0.0, peers[i].update_timer);
+			if (epoch_state_collected == false) {
+				epoch_state_data.begin_write();
+				epoch_state_data.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
+				node->call("collect_epoch_data", &epoch_state_data);
+				epoch_state_data.dry();
+				epoch_state_collected = true;
+			}
 
-		if (epoch_state_collected == false) {
-			epoch_state_data.begin_write();
-			epoch_state_data.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
-			node->call("collect_epoch_data", &epoch_state_data);
-			epoch_state_data.dry();
-			epoch_state_collected = true;
+			if (is_epoch_important) {
+				node->rpc_id(
+						peers[i].peer,
+						"_rpc_doll_send_epoch",
+						epoch_state_data.get_buffer().get_bytes());
+			} else {
+				// Store this into epoch batch.
+				// TODO count buffer size.
+				peers[i].epoch_batch.push_back(epoch_state_data.get_buffer().get_bytes());
+			}
 		}
 
-		if (is_epoch_important) {
-			node->rpc_id(
-					peers[i].peer,
-					"_rpc_doll_send_epoch",
-					epoch_state_data.get_buffer().get_bytes());
-		} else {
+#ifdef DEBUG_ENABLED
+		// This can't happens thanks to the below check.
+		CRASH_COND(peers[i].epoch_batch.size() > 8);
+#endif
+		peers[i].sync_timer += p_delta;
+		if (
+				peers[i].epoch_batch.size() != 0 && // Has something.
+				(
+						is_epoch_important || // The current state is important, so flush also the old one.
+						peers[i].sync_timer >= node->get_doll_state_sync_rate())) {
+			peers[i].sync_timer -= node->get_doll_state_sync_rate();
+
+			// Prepare the batch
+			Vector<uint8_t> data;
+			// TODO Resize the array here.
+			for (uint32_t x = 0; x < peers[i].epoch_batch.size(); x += 1) {
+				ERR_CONTINUE_MSG(peers[i].epoch_batch[x].size() > 256, "It's not allowed to send more then 256 bytes per status. This status is dropped.");
+				data.push_back(peers[i].epoch_batch[x].size());
+				data.append_array(peers[i].epoch_batch[x]);
+			}
+			peers[i].epoch_batch.clear();
+
+			// Send the data
 			node->rpc_unreliable_id(
 					peers[i].peer,
-					"_rpc_doll_send_epoch",
-					epoch_state_data.get_buffer().get_bytes());
+					"_rpc_doll_send_epoch_batch",
+					data);
 		}
 	}
 	is_epoch_important = false;

@@ -132,12 +132,19 @@ private:
 	/// To prevent introducing virtual lag.
 	int server_input_storage_size = 30;
 
-	/// Update rate (in seconds) used by the server to estabish when to update
-	/// the dolls. Is possible to scale down this rate, for a particular peer,
-	/// using the function: set_peer_update_rate_factor(peer, factor);
+	/// Collect rate (in seconds) used by the server to estabish when to collect
+	/// the controller state for a particular peer.
+	/// It's possible to scale down this rate, for a particular peer,
+	/// using the function: set_doll_collect_rate_factor(peer, factor);
 	/// Current default is 20Hz with a physics frame of 60Hz
-	//real_t doll_sync_update_rate = 0.05;
-	real_t doll_sync_update_rate = 0.25;
+	///
+	/// The collected state is not immediatelly sent to the clients, rather it's
+	/// delayed so to be sent in batch each X seconds. The states marked as
+	/// important are sent immediatelly.
+	real_t doll_state_collect_rate = 0.05;
+
+	/// Sync rate used to delay state sent, in seconds. Default 200ms.
+	real_t doll_state_sync_rate = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
@@ -178,8 +185,11 @@ public:
 	void set_server_input_storage_size(int p_size);
 	int get_server_input_storage_size() const;
 
-	void set_doll_sync_update_rate(real_t p_rate);
-	real_t get_doll_sync_update_rate() const;
+	void set_doll_state_collect_rate(real_t p_rate);
+	real_t get_doll_state_collect_rate() const;
+
+	void set_doll_state_sync_rate(real_t p_rate);
+	real_t get_doll_state_sync_rate() const;
 
 	uint32_t get_current_input_id() const;
 
@@ -193,7 +203,7 @@ public:
 
 	void mark_epoch_as_important();
 
-	void set_peer_update_rate_factor(int p_peer, real_t p_factor);
+	void set_doll_collect_rate_factor(int p_peer, real_t p_factor);
 	void set_doll_peer_active(int p_peer_id, bool p_active);
 
 	void _on_peer_connection_change(int p_peer_id);
@@ -230,6 +240,7 @@ public:
 	/* On puppet rpc functions. */
 	void _rpc_doll_notify_connection_status(bool p_open);
 	void _rpc_doll_send_epoch(Vector<uint8_t> p_data);
+	void _rpc_doll_send_epoch_batch(Vector<uint8_t> p_data);
 
 	void process(real_t p_delta);
 
@@ -267,8 +278,10 @@ struct ServerController : public Controller {
 	struct Peer {
 		int peer = 0;
 		bool active = true;
-		real_t update_timer = 0.0;
 		real_t update_rate_factor = 1.0;
+		real_t collect_timer = 0.0;
+		real_t sync_timer = 0.0;
+		LocalVector<Vector<uint8_t>> epoch_batch;
 	};
 
 	uint32_t current_input_buffer_id = UINT32_MAX;
