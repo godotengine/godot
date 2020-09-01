@@ -389,7 +389,7 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, 
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_high_quality, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
 	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 
 	CopyMode copy_mode = p_first_pass && p_auto_exposure.is_valid() ? COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : COPY_MODE_GAUSSIAN_GLOW;
@@ -420,7 +420,7 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_texture, 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_auto_exposure), 1);
 	}
 
-	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL | (p_first_pass ? COPY_FLAG_GLOW_FIRST_PASS : 0);
+	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL | (p_first_pass ? COPY_FLAG_GLOW_FIRST_PASS : 0) | (p_high_quality ? COPY_FLAG_HIGH_QUALITY_GLOW : 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);

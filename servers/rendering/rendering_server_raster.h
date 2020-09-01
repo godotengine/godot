@@ -557,6 +557,7 @@ public:
 
 	BIND11(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	BIND1(environment_glow_set_use_bicubic_upscale, bool)
+	BIND1(environment_glow_set_use_high_quality, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
