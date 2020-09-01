@@ -753,6 +753,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			}
 
 			if (is_epoch_important) {
+				force_dispatch_batch = true;
 				node->rpc_id(
 						peers[i].peer,
 						"_rpc_doll_send_epoch",
@@ -791,7 +792,6 @@ void ServerController::doll_sync(real_t p_delta) {
 		if (
 				peers[i].epoch_batch.size() != 0 && // Has something.
 				(
-						is_epoch_important || // The current state is important, so flush also the old one.
 						force_dispatch_batch ||
 						peers[i].sync_timer >= node->get_doll_state_sync_rate())) {
 			peers[i].sync_timer -= node->get_doll_state_sync_rate();
@@ -1143,7 +1143,8 @@ void DollController::process(real_t p_delta) {
 		return;
 	}
 
-	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch));
+	const real_t fractional_part = advancing_epoch;
+	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch, fractional_part));
 }
 
 uint32_t DollController::get_current_input_id() const {

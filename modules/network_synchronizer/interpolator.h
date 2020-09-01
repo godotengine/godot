@@ -88,7 +88,7 @@ public:
 	void epoch_insert(int p_var_id, Variant p_value);
 	void end_write();
 
-	Vector<Variant> pop_epoch(uint64_t p_epoch);
+	Vector<Variant> pop_epoch(uint64_t p_epoch, real_t p_fraction);
 	uint64_t get_last_pop_epoch() const; // TODO do I need this? Remove if not.
 	uint64_t get_youngest_epoch() const;
 	uint64_t get_oldest_epoch() const;

@@ -193,7 +193,7 @@ Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
 	}
 }
 
-Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
+Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 	ERR_FAIL_COND_V_MSG(init_phase, Vector<Variant>(), "You can't pop data if the interpolator is not fully initialized.");
 	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Vector<Variant>(), "You can't pop data while writing the epoch");
 
@@ -259,7 +259,7 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
 				}
 			}
 		}
-	} else if (unlikely(epochs[position] == p_epoch)) {
+	} else if (unlikely(epochs[position] == p_epoch && p_fraction <= CMP_EPSILON)) {
 		// Precise data.
 		data = buffer[position];
 	} else if (unlikely(position == 0)) {
@@ -313,7 +313,7 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
 					ptr[i] = variables[i].default_value;
 					break;
 				case FALLBACK_INTERPOLATE: {
-					const real_t delta = real_t(p_epoch - epochs[position - 1]) / real_t(epochs[position] - epochs[position - 1]);
+					const real_t delta = (double(p_epoch - epochs[position - 1]) + p_fraction) / double(epochs[position] - epochs[position - 1]);
 					ptr[i] = interpolate(
 							buffer[position - 1][i],
 							buffer[position][i],
@@ -338,7 +338,7 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch) {
 						cache_object = o;
 					}
 
-					const real_t delta = real_t(p_epoch - epochs[position - 1]) / real_t(epochs[position] - epochs[position - 1]);
+					const real_t delta = (double(p_epoch - epochs[position - 1]) + p_fraction) / double(epochs[position] - epochs[position - 1]);
 
 					ptr[i] = cache_object->call(
 							variables[i].custom_interpolator_function,
