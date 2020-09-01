@@ -2951,6 +2951,10 @@ void RasterizerSceneRD::environment_glow_set_use_bicubic_upscale(bool p_enable) 
 	glow_bicubic_upscale = p_enable;
 }
 
+void RasterizerSceneRD::environment_glow_set_use_high_quality(bool p_enable) {
+	glow_high_quality = p_enable;
+}
+
 void RasterizerSceneRD::environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -5265,9 +5269,9 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 				if (env->auto_exposure && rb->luminance.current.is_valid()) {
 					luminance_texture = rb->luminance.current;
 				}
-				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
 			} else {
-				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength);
+				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
 			}
 		}
 	}
@@ -8310,6 +8314,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount");
 	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
+	glow_high_quality = GLOBAL_GET("rendering/quality/glow/use_high_quality");
 	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");

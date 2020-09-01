@@ -1039,6 +1039,9 @@
 		<member name="rendering/quality/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/glow/use_high_quality" type="bool" setter="" getter="" default="false">
+			Takes more samples during downsample pass of glow. This ensures that single pixels are captured by glow which makes the glow look smoother and more stable during movement. However, it is very expensive and makes the glow post process take twice as long.
+		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports). If set to "2D Without Sampling" or "3D Without Effects", sample buffers will not be allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/code] will not be available in shaders and post-processing effects will not be available in the [Environment].
 		</member>
