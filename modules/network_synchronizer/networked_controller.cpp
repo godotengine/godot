@@ -732,6 +732,9 @@ void ServerController::doll_sync(real_t p_delta) {
 			// Nothing to do on this peer.
 			continue;
 		}
+
+		bool force_dispatch_batch = false;
+
 		peers[i].collect_timer += p_delta;
 		if (
 				is_epoch_important ||
@@ -757,7 +760,26 @@ void ServerController::doll_sync(real_t p_delta) {
 			} else {
 				// Store this into epoch batch.
 				// TODO count buffer size.
-				peers[i].epoch_batch.push_back(epoch_state_data.get_buffer().get_bytes());
+				if (unlikely(
+							// If the packet is more than 255 it can't be sent
+							// into a batch.
+							epoch_state_data.get_buffer().get_bytes().size() > UINT8_MAX ||
+							// If added this into the batch would cause the IP
+							// fragmentation. So just send the data in two different
+							// packets.
+							peers[i].batch_size + epoch_state_data.get_buffer().get_bytes().size() + 1 >= 1350)) {
+					if (epoch_state_data.get_buffer().get_bytes().size() > UINT8_MAX) {
+						ERR_PRINT("The status update is too big, try to staty under 255 byte per update, so the batch system can be used.");
+					}
+					force_dispatch_batch = true;
+					node->rpc_unreliable_id(
+							peers[i].peer,
+							"_rpc_doll_send_epoch",
+							epoch_state_data.get_buffer().get_bytes());
+				} else {
+					peers[i].batch_size += 1 + epoch_state_data.get_buffer().get_bytes().size();
+					peers[i].epoch_batch.push_back(epoch_state_data.get_buffer().get_bytes());
+				}
 			}
 		}
 
@@ -770,6 +792,7 @@ void ServerController::doll_sync(real_t p_delta) {
 				peers[i].epoch_batch.size() != 0 && // Has something.
 				(
 						is_epoch_important || // The current state is important, so flush also the old one.
+						force_dispatch_batch ||
 						peers[i].sync_timer >= node->get_doll_state_sync_rate())) {
 			peers[i].sync_timer -= node->get_doll_state_sync_rate();
 

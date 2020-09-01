@@ -282,6 +282,7 @@ struct ServerController : public Controller {
 		real_t collect_timer = 0.0;
 		real_t sync_timer = 0.0;
 		LocalVector<Vector<uint8_t>> epoch_batch;
+		uint32_t batch_size = 0;
 	};
 
 	uint32_t current_input_buffer_id = UINT32_MAX;
