@@ -18,13 +18,21 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Constructs a color from an HTML hexadecimal color string in ARGB or RGB format. See also [method @GDScript.ColorN].
+				Constructs a color from an HTML hexadecimal color string in RGB or RGBA format. See also [method @GDScript.ColorN].
 				[codeblock]
 				# Each of the following creates the same color RGBA(178, 217, 10, 255).
-				var c1 = Color("#ffb2d90a") # ARGB format with "#".
-				var c2 = Color("ffb2d90a") # ARGB format.
 				var c3 = Color("#b2d90a") # RGB format with "#".
 				var c4 = Color("b2d90a") # RGB format.
+				var c1 = Color("#b2d90aff") # RGBA format with "#".
+				var c2 = Color("b2d90aff") # RGBA format.
+				[/codeblock]
+				You can also use the "web color" short-hand form by only using 3 or 4 digits.
+				[codeblock]
+				# Each of the following creates the same color RGBA(17, 34, 51, 255).
+				var c3 = Color("#123") # RGB format with "#".
+				var c4 = Color("123") # RGB format.
+				var c1 = Color("#123f") # RGBA format with "#".
+				var c2 = Color("123f") # RGBA format.
 				[/codeblock]
 			</description>
 		</method>
@@ -243,11 +251,11 @@
 			<argument index="0" name="with_alpha" type="bool" default="true">
 			</argument>
 			<description>
-				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
-				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string.
+				Returns the color's HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
+				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
 				[codeblock]
 				var c = Color(1, 1, 1, 0.5)
-				var s1 = c.to_html() # Returns "7fffffff"
+				var s1 = c.to_html() # Returns "ffffff7f"
 				var s2 = c.to_html(false) # Returns "ffffff"
 				[/codeblock]
 			</description>
