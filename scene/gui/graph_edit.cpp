@@ -39,11 +39,6 @@
 #include "editor/editor_scale.h"
 #endif
 
-#define ZOOM_SCALE 1.2
-
-#define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
-#define MAX_ZOOM (1 * ZOOM_SCALE * ZOOM_SCALE * ZOOM_SCALE)
-
 bool GraphEditFilter::has_point(const Point2 &p_point) const {
 	return ge->_filter_input(p_point);
 }
@@ -1086,18 +1081,42 @@ void GraphEdit::clear_connections() {
 	connections_layer->update();
 }
 
+void GraphEdit::set_zoom_scale(float p_zoom_scale) {
+	zoom_scale = p_zoom_scale;
+}
+
+float GraphEdit::get_zoom_scale() const {
+	return zoom_scale;
+}
+
+void GraphEdit::set_max_zoom(float p_max_zoom) {
+	max_zoom = p_max_zoom;
+}
+
+float GraphEdit::get_max_zoom() const {
+	return max_zoom;
+}
+
+void GraphEdit::set_min_zoom(float p_min_zoom) {
+	min_zoom = p_min_zoom;
+}
+
+float GraphEdit::get_min_zoom() const {
+	return min_zoom;
+}
+
 void GraphEdit::set_zoom(float p_zoom) {
 	set_zoom_custom(p_zoom, get_size() / 2);
 }
 
 void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
-	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
+	p_zoom = CLAMP(p_zoom, min_zoom, max_zoom);
 	if (zoom == p_zoom) {
 		return;
 	}
 
-	zoom_minus->set_disabled(zoom == MIN_ZOOM);
-	zoom_plus->set_disabled(zoom == MAX_ZOOM);
+	zoom_minus->set_disabled(zoom == min_zoom);
+	zoom_plus->set_disabled(zoom == max_zoom);
 
 	Vector2 sbofs = (Vector2(h_scroll->get_value(), v_scroll->get_value()) + p_center) / zoom;
 
@@ -1160,7 +1179,7 @@ Array GraphEdit::_get_connection_list() const {
 }
 
 void GraphEdit::_zoom_minus() {
-	set_zoom(zoom / ZOOM_SCALE);
+	set_zoom(zoom / zoom_scale);
 }
 
 void GraphEdit::_zoom_reset() {
@@ -1168,7 +1187,7 @@ void GraphEdit::_zoom_reset() {
 }
 
 void GraphEdit::_zoom_plus() {
-	set_zoom(zoom * ZOOM_SCALE);
+	set_zoom(zoom * zoom_scale);
 }
 
 void GraphEdit::add_valid_connection_type(int p_type, int p_with_type) {
@@ -1244,6 +1263,12 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_valid_connection_type", "from_type", "to_type"), &GraphEdit::remove_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_valid_connection_type", "from_type", "to_type"), &GraphEdit::is_valid_connection_type);
 
+	ClassDB::bind_method(D_METHOD("set_zoom_scale", "p_zoom_scale"), &GraphEdit::set_zoom_scale);
+	ClassDB::bind_method(D_METHOD("get_zoom_scale"), &GraphEdit::get_zoom_scale);
+	ClassDB::bind_method(D_METHOD("set_max_zoom", "p_max_zoom"), &GraphEdit::set_max_zoom);
+	ClassDB::bind_method(D_METHOD("get_max_zoom"), &GraphEdit::get_max_zoom);
+	ClassDB::bind_method(D_METHOD("set_min_zoom", "p_min_zoom"), &GraphEdit::set_min_zoom);
+	ClassDB::bind_method(D_METHOD("get_min_zoom"), &GraphEdit::get_min_zoom);
 	ClassDB::bind_method(D_METHOD("set_zoom", "p_zoom"), &GraphEdit::set_zoom);
 	ClassDB::bind_method(D_METHOD("get_zoom"), &GraphEdit::get_zoom);
 
@@ -1267,6 +1292,9 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset"), "set_scroll_ofs", "get_scroll_ofs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snap_distance"), "set_snap", "get_snap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_snap"), "set_use_snap", "is_using_snap");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_scale"), "set_zoom_scale", "get_zoom_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_zoom"), "set_max_zoom", "get_max_zoom");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_zoom"), "set_min_zoom", "get_min_zoom");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom"), "set_zoom", "get_zoom");
 
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot")));
@@ -1329,7 +1357,10 @@ GraphEdit::GraphEdit() {
 	h_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &GraphEdit::_scroll_moved));
 
-	zoom = 1;
+	zoom_scale = 1.2f;
+	min_zoom = (((1 / zoom_scale) / zoom_scale) / zoom_scale);
+	max_zoom = (1 * zoom_scale * zoom_scale * zoom_scale);
+	zoom = 1.f;
 
 	zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);

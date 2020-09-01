@@ -100,6 +100,9 @@ private:
 	bool just_selected;
 	Vector2 drag_accum;
 
+	float zoom_scale;
+	float max_zoom;
+	float min_zoom;
 	float zoom;
 
 	bool box_selecting;
@@ -191,6 +194,12 @@ public:
 	void remove_valid_connection_type(int p_type, int p_with_type);
 	bool is_valid_connection_type(int p_type, int p_with_type) const;
 
+	void set_max_zoom(float p_max_zoom);
+	float get_max_zoom() const;
+	void set_min_zoom(float p_min_zoom);
+	float get_min_zoom() const;
+	void set_zoom_scale(float p_zoom_scale);
+	float get_zoom_scale() const;
 	void set_zoom(float p_zoom);
 	void set_zoom_custom(float p_zoom, const Vector2 &p_center);
 	float get_zoom() const;
