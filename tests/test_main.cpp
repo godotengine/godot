@@ -86,8 +86,9 @@ int test_main(int argc, char *argv[]) {
 
 	// Clean arguments of "--test" from the args.
 	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6) != 0) {
-			test_args.push_back(String(argv[x]));
+		String arg = String(argv[x]);
+		if (arg != "--test") {
+			test_args.push_back(arg);
 		}
 	}
 	// Convert Godot command line arguments back to standard arguments.
