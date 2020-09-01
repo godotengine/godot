@@ -56,6 +56,8 @@ class Area2PairSW : public ConstraintSW {
 	int shape_a;
 	int shape_b;
 	bool colliding;
+	bool area_a_monitorable;
+	bool area_b_monitorable;
 
 public:
 	bool setup(real_t p_step);
