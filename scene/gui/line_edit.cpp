@@ -1263,12 +1263,7 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 void LineEdit::set_text(String p_text) {
 
 	clear_internal();
-
-	if (p_text.length() > max_length) {
-		append_at_cursor(p_text.substr(0, max_length));
-	} else {
-		append_at_cursor(p_text);
-	}
+	append_at_cursor(p_text);
 
 	if (expand_to_text_length) {
 		minimum_size_changed();
