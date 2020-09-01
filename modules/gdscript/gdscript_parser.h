@@ -1285,6 +1285,7 @@ private:
 	ExpressionNode *parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
