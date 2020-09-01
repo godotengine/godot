@@ -522,6 +522,10 @@ void CSGShape::_notification(int p_what) {
 		if (parent) {
 			parent->_make_dirty();
 		}
+
+		if (root_collision_instance.is_valid()) {
+			PhysicsServer::get_singleton()->body_set_state(root_collision_instance, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+		}
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
