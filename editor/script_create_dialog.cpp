@@ -722,6 +722,15 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 
 	get_ok()->set_disabled(!script_ok);
+
+	Callable entered_call = callable_mp(this, &ScriptCreateDialog::_path_entered);
+	if (script_ok) {
+		if (!file_path->is_connected("text_entered", entered_call)) {
+			file_path->connect("text_entered", entered_call);
+		}
+	} else if (file_path->is_connected("text_entered", entered_call)) {
+		file_path->disconnect("text_entered", entered_call);
+	}
 }
 
 void ScriptCreateDialog::_bind_methods() {
@@ -849,7 +858,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb->connect("sort_children", callable_mp(this, &ScriptCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
 	file_path->connect("text_changed", callable_mp(this, &ScriptCreateDialog::_path_changed));
-	file_path->connect("text_entered", callable_mp(this, &ScriptCreateDialog::_path_entered));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	path_button = memnew(Button);
