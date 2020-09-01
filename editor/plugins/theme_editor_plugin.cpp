@@ -206,8 +206,8 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	file->store_line("; [value] examples:");
 	file->store_line("; ");
 	file->store_line("; Type.item = 6 ; numeric constant. ");
-	file->store_line("; Type.item = #FF00FF ; HTML color ");
-	file->store_line("; Type.item = #55FF00FF ; HTML color with alpha 55.");
+	file->store_line("; Type.item = #FF00FF ; HTML color (magenta).");
+	file->store_line("; Type.item = #FF00FF55 ; HTML color (magenta with alpha 0x55).");
 	file->store_line("; Type.item = icon(image.png) ; icon in a png file (relative to theme file).");
 	file->store_line("; Type.item = font(font.xres) ; font in a resource (relative to theme file).");
 	file->store_line("; Type.item = sbox(stylebox.xres) ; stylebox in a resource (relative to theme file).");
