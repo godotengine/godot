@@ -1267,6 +1267,7 @@ void GDScriptAnalyzer::resolve_pararameter(GDScriptParser::ParameterNode *p_para
 		reduce_expression(p_parameter->default_value);
 		result = p_parameter->default_value->get_datatype();
 		result.type_source = GDScriptParser::DataType::INFERRED;
+		result.is_constant = false;
 	}
 
 	if (p_parameter->datatype_specifier != nullptr) {
