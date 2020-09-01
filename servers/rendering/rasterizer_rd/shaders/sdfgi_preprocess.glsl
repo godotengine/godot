@@ -338,7 +338,7 @@ void main() {
 			continue; //was not initialized yet, ignore
 		}
 
-		float q_dist = distance(posf, vec3(p.xyz));
+		float q_dist = distance(posf, vec3(q.xyz));
 		if (p.w == 0 || q_dist < p_dist) {
 			p = q; //just replace because current is unused
 			p_dist = q_dist;
