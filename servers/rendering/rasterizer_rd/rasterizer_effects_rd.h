@@ -81,7 +81,8 @@ class RasterizerEffectsRD {
 		COPY_FLAG_GLOW_FIRST_PASS = (1 << 4),
 		COPY_FLAG_FLIP_Y = (1 << 5),
 		COPY_FLAG_FORCE_LUMINANCE = (1 << 6),
-		COPY_FLAG_ALL_SOURCE = (1 << 7)
+		COPY_FLAG_ALL_SOURCE = (1 << 7),
+		COPY_FLAG_HIGH_QUALITY_GLOW = (1 << 8)
 	};
 
 	struct CopyPushConstant {
@@ -586,7 +587,7 @@ public:
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst = false);
-	void gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
+	void gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
