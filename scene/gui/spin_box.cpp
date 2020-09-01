@@ -122,8 +122,6 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 		switch (mb->get_button_index()) {
 			case MouseButton::LEFT: {
-				line_edit->grab_focus();
-
 				set_value(get_value() + (up ? get_step() : -get_step()));
 
 				range_click_timer->set_wait_time(0.6);
@@ -134,20 +132,15 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				drag.capture_pos = mb->get_position();
 			} break;
 			case MouseButton::RIGHT: {
-				line_edit->grab_focus();
 				set_value((up ? get_max() : get_min()));
 			} break;
 			case MouseButton::WHEEL_UP: {
-				if (line_edit->has_focus()) {
-					set_value(get_value() + get_step() * mb->get_factor());
-					accept_event();
-				}
+				set_value(get_value() + get_step() * mb->get_factor());
+				accept_event();
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (line_edit->has_focus()) {
-					set_value(get_value() - get_step() * mb->get_factor());
-					accept_event();
-				}
+				set_value(get_value() - get_step() * mb->get_factor());
+				accept_event();
 			} break;
 			default:
 				break;
@@ -215,10 +208,8 @@ void SpinBox::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
 		_value_changed(0);
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		_release_mouse();
-	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		_value_changed(0);
+
+		line_edit->set_focus_mode(get_focus_mode());
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		call_deferred(SNAME("minimum_size_changed"));
 		get_line_edit()->call_deferred(SNAME("minimum_size_changed"));
