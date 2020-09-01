@@ -353,18 +353,7 @@ void NetworkedController::_rpc_doll_send_epoch_batch(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call.");
 	ERR_FAIL_COND_MSG(p_data.size() <= 0, "It's not supposed to receive a 0 size data.");
 
-	int buffer_start_position = 0;
-	while (buffer_start_position < p_data.size()) {
-		const int buffer_size = p_data[buffer_start_position];
-		const Vector<uint8_t> buffer = p_data.subarray(
-				buffer_start_position + 1,
-				buffer_start_position + 1 + buffer_size - 1);
-
-		ERR_FAIL_COND(buffer.size() <= 0);
-
-		static_cast<DollController *>(controller)->receive_epoch(buffer);
-		buffer_start_position += 1 + buffer_size;
-	}
+	static_cast<DollController *>(controller)->receive_batch(p_data);
 }
 
 void NetworkedController::player_set_has_new_input(bool p_has) {
@@ -771,6 +760,8 @@ void ServerController::doll_sync(real_t p_delta) {
 							peers[i].batch_size + epoch_state_data.get_buffer().get_bytes().size() + 1 >= 1350)) {
 					if (epoch_state_data.get_buffer().get_bytes().size() > UINT8_MAX) {
 						ERR_PRINT("The status update is too big, try to staty under 255 byte per update, so the batch system can be used.");
+					} else {
+						WARN_PRINT("The amount of data collected per batch is more than 1350 bytes. Please make sure the `doll_sync_timer_rate` is not so big, so the batch can be correctly created. Batch size: " + itos(peers[i].batch_size) + " - Epochs into the batch: " + itos(peers[i].epoch_batch.size()));
 					}
 					force_dispatch_batch = true;
 					node->rpc_unreliable_id(
@@ -805,6 +796,7 @@ void ServerController::doll_sync(real_t p_delta) {
 				data.append_array(peers[i].epoch_batch[x]);
 			}
 			peers[i].epoch_batch.clear();
+			peers[i].batch_size = 0;
 
 			// Send the data
 			node->rpc_unreliable_id(
@@ -1151,7 +1143,57 @@ uint32_t DollController::get_current_input_id() const {
 	return current_epoch;
 }
 
-void DollController::receive_epoch(Vector<uint8_t> p_data) {
+void DollController::receive_batch(Vector<uint8_t> p_data) {
+	const uint32_t previous_oldest_epoch = interpolator.get_oldest_epoch();
+
+	uint32_t batch_young_epoch = UINT32_MAX;
+	uint32_t batch_old_epoch = 0;
+
+	int buffer_start_position = 0;
+	while (buffer_start_position < p_data.size()) {
+		const int buffer_size = p_data[buffer_start_position];
+		const Vector<uint8_t> buffer = p_data.subarray(
+				buffer_start_position + 1,
+				buffer_start_position + 1 + buffer_size - 1);
+
+		ERR_FAIL_COND(buffer.size() <= 0);
+
+		const uint32_t epoch = receive_epoch(buffer);
+		buffer_start_position += 1 + buffer_size;
+
+		batch_young_epoch = MIN(epoch, batch_young_epoch);
+		batch_old_epoch = MAX(epoch, batch_old_epoch);
+	}
+
+	// Establish the interpolation speed
+	ERR_FAIL_COND_MSG(batch_young_epoch == UINT32_MAX, "The received batch doesn't contains any epoch, this is a bug.");
+
+	const uint32_t batch_epoch_span = batch_old_epoch - batch_young_epoch;
+
+	if (current_epoch == UINT32_MAX || previous_oldest_epoch == UINT32_MAX) {
+		// Nothing more to do.
+		return;
+	}
+
+	const uint32_t recover_batches = 4; // TODO better name
+	const real_t ideal_epochs_left = 2;
+	const real_t speed_factor = 0.2; // 20%
+
+	const uint32_t left_epochs = previous_oldest_epoch - current_epoch;
+
+	//previous_left_epochs - left_epochs;
+
+	// When negative we need slow down, otherwise a speed up.
+	const int balance = left_epochs - ideal_epochs_left - missing_epochs;
+
+	additional_speed = CLAMP(real_t(balance) / real_t(batch_epoch_span * recover_batches), -1.0, 1.0) * speed_factor;
+
+	print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs));
+	missing_epochs = 0;
+	previous_left_epochs = left_epochs;
+}
+
+uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
 	DataBuffer buffer(p_data);
 	buffer.begin_read();
 	const uint32_t epoch = buffer.read_int(DataBuffer::COMPRESSION_LEVEL_1);
@@ -1159,9 +1201,12 @@ void DollController::receive_epoch(Vector<uint8_t> p_data) {
 	interpolator.begin_write(epoch);
 	node->call("parse_epoch_data", &interpolator, &buffer);
 	interpolator.end_write();
+
+	return epoch;
 }
 
 uint32_t DollController::next_epoch(real_t p_delta) {
+	// TODO re-describe.
 	// This function regulates the epoch ID to process.
 	// The epoch is not simply increased by one because we need to make sure
 	// to make the client apply the nearest server state while giving some room
@@ -1192,6 +1237,7 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	const uint32_t oldest_epoch = interpolator.get_oldest_epoch();
 	if (unlikely(oldest_epoch == UINT32_MAX || oldest_epoch <= current_epoch)) {
 		network_tracer.notify_missing_packet();
+		missing_epochs += 1;
 		// Nothing to interpolate with.
 		return current_epoch;
 	}
@@ -1203,57 +1249,19 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	CRASH_COND(oldest_epoch < current_epoch);
 #endif
 
-	const uint32_t delta_epoch = oldest_epoch - current_epoch;
-
-	// TODO make this customizable
-	//const uint32_t min_virtual_delay = 2;
-	const uint32_t max_virtual_delay = 60;
-	const real_t speed_factor = 0.2;
-	//const real_t max_missing_epochs = 5.0;
-	//const real_t max_additional_delay = 1.0;
-
-	// TODO improve this algorithm in order to make it more smooth.
-	// Step 3. The `ideal_virtual_delay` is used to introduce a buffering so
-	// to give room to the subsequent information to arrive.
-	// The server changes the send rate in a smooth way, so most likely we need
-	// to wait the previous time window. However, the internet connection
-	// oscilate from time to time, so the `additional_delay` is used to
-	// introduce a small (and variable) delay to absorb it.
-	//const uint32_t additional_delay = MAX(MIN(real_t(network_tracer.get_missing_packets()) / max_missing_epochs, 1.0) * max_additional_delay, min_virtual_delay);
-
-	const uint32_t ideal_virtual_delay = MIN(
-			interpolator.epochs_between_last_time_window() * 2.0,
-			//interpolator.epochs_between_last_time_window() + additional_delay,
-			max_virtual_delay);
-
-	if (unlikely(delta_epoch > max_virtual_delay)) {
-		// This client seems too much behind at this point. Teleport forward.
-		current_epoch = interpolator.get_oldest_epoch() - max_virtual_delay;
-		advancing_epoch = 0.0;
-	}
-
-	if (delta_epoch > ideal_virtual_delay) {
-		advancing_epoch += (real_t(delta_epoch - ideal_virtual_delay) / real_t(max_virtual_delay - ideal_virtual_delay)) * speed_factor;
-	} else {
-		advancing_epoch -= (real_t(ideal_virtual_delay - delta_epoch) / real_t(ideal_virtual_delay)) * speed_factor;
-	}
-
-	advancing_epoch += 1.0;
+	advancing_epoch += 1.0 + additional_speed;
 
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
 		current_epoch += uint32_t(advancing_epoch);
+		// Clamp to the oldest epoch.
+		current_epoch = MIN(current_epoch, oldest_epoch);
 
 		// Keep the floating point part.
 		advancing_epoch -= uint32_t(advancing_epoch);
 	}
 
-	if (unlikely(oldest_epoch <= current_epoch)) {
-		// Clamp to oldest_epoch.
-		current_epoch = oldest_epoch;
-	}
-
-	print_line("TW: " + itos(interpolator.epochs_between_last_time_window()) + " - Ideal virtual delay: " + itos(ideal_virtual_delay) + " - Delta epoch: " + itos(delta_epoch) + " - Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
+	print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
 
 	return current_epoch;
 }

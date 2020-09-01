@@ -375,8 +375,11 @@ struct PlayerController : public Controller {
 /// for the server to stop the data streaming.
 struct DollController : public Controller {
 	Interpolator interpolator;
+	real_t additional_speed = 0.0;
+	uint32_t previous_left_epochs = 0;
 	uint32_t current_epoch = UINT32_MAX;
 	real_t advancing_epoch = 0.0;
+	uint32_t missing_epochs = 0;
 
 	NetworkTracer network_tracer;
 
@@ -388,7 +391,8 @@ struct DollController : public Controller {
 	// TODO consider make this non virtual
 	virtual uint32_t get_current_input_id() const override;
 
-	void receive_epoch(Vector<uint8_t> p_data);
+	void receive_batch(Vector<uint8_t> p_data);
+	uint32_t receive_epoch(Vector<uint8_t> p_data);
 
 	uint32_t next_epoch(real_t p_delta);
 };

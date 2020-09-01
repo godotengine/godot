@@ -62,13 +62,13 @@ private:
 	LocalVector<VariableInfo> variables;
 
 	/// Epoch ids, sorted from youngest to oldest.
-	LocalVector<uint64_t> epochs;
+	LocalVector<uint32_t> epochs;
 	/// Epoch data.
 	LocalVector<Vector<Variant>> buffer;
 
 	bool init_phase = true;
 	uint32_t write_position = UINT32_MAX;
-	uint64_t last_pop_epoch = 0;
+	uint32_t last_pop_epoch = 0;
 
 	static void _bind_methods();
 
@@ -84,17 +84,17 @@ public:
 
 	/// Returns the epochs stored.
 	uint32_t known_epochs_count() const;
-	void begin_write(uint64_t p_epoch);
+	void begin_write(uint32_t p_epoch);
 	void epoch_insert(int p_var_id, Variant p_value);
 	void end_write();
 
-	Vector<Variant> pop_epoch(uint64_t p_epoch, real_t p_fraction);
-	uint64_t get_last_pop_epoch() const; // TODO do I need this? Remove if not.
-	uint64_t get_youngest_epoch() const;
-	uint64_t get_oldest_epoch() const;
+	Vector<Variant> pop_epoch(uint32_t p_epoch, real_t p_fraction);
+	uint32_t get_last_pop_epoch() const; // TODO do I need this? Remove if not.
+	uint32_t get_youngest_epoch() const;
+	uint32_t get_oldest_epoch() const;
 
 	/// Returns the epochs count between the two last received time window.
-	uint64_t epochs_between_last_time_window() const;
+	uint32_t epochs_between_last_time_window() const;
 };
 
 VARIANT_ENUM_CAST(Interpolator::Fallback);

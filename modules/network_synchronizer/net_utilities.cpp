@@ -77,3 +77,34 @@ int NetworkTracer::get_missing_packets() const {
 	}
 	return l;
 }
+
+template <class T>
+Averager<T>::Averager(int p_size, T p_default) {
+	reset(p_size, p_default);
+}
+
+template <class T>
+void Averager<T>::reset(int p_size, T p_default) {
+	data.resize(p_size);
+	for (uint32_t i = 0; i < data.size(); i += 1) {
+		data[i] = p_default;
+	}
+	index = 0;
+}
+
+template <class T>
+void Averager<T>::push(T p_value) {
+	data[index] = p_value;
+	index = (index + 1) % data.size();
+}
+
+template <class T>
+T Averager<T>::average() const {
+	CRASH_COND(data.size() == 0);
+
+	T a = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		a += data[i];
+	}
+	return a / T(data.size());
+}

@@ -99,7 +99,7 @@ uint32_t Interpolator::known_epochs_count() const {
 	return epochs.size();
 }
 
-void Interpolator::begin_write(uint64_t p_epoch) {
+void Interpolator::begin_write(uint32_t p_epoch) {
 	ERR_FAIL_COND_MSG(write_position != UINT32_MAX, "You can't call this function twice.");
 	ERR_FAIL_COND_MSG(init_phase, "You cannot write data while the buffer is not fully initialized, call `terminate_init`.");
 
@@ -119,7 +119,7 @@ void Interpolator::begin_write(uint64_t p_epoch) {
 			return;
 		} else {
 			// Make room.
-			epochs.push_back(UINT64_MAX);
+			epochs.push_back(UINT32_MAX);
 			buffer.push_back(Vector<Variant>());
 			// Sort the epochs.
 			for (int i = epochs.size() - 2; i >= int(write_position); i -= 1) {
@@ -193,14 +193,16 @@ Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
 	}
 }
 
-Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
+Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	ERR_FAIL_COND_V_MSG(init_phase, Vector<Variant>(), "You can't pop data if the interpolator is not fully initialized.");
 	ERR_FAIL_COND_V_MSG(write_position != UINT32_MAX, Vector<Variant>(), "You can't pop data while writing the epoch");
+
+	double epoch = double(p_epoch) + double(p_fraction);
 
 	// Search the epoch.
 	uint32_t position = UINT32_MAX;
 	for (uint32_t i = 0; i < epochs.size(); i += 1) {
-		if (epochs[i] >= p_epoch) {
+		if (static_cast<double>(epochs[i]) >= epoch) {
 			position = i;
 			break;
 		}
@@ -259,9 +261,10 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 				}
 			}
 		}
-	} else if (unlikely(epochs[position] == p_epoch && p_fraction <= CMP_EPSILON)) {
+	} else if (unlikely(ABS(epochs[position] - epoch) <= CMP_EPSILON)) {
 		// Precise data.
 		data = buffer[position];
+		print_line("Precise data interpolation.");
 	} else if (unlikely(position == 0)) {
 		// No old data.
 		data.resize(variables.size());
@@ -313,7 +316,8 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 					ptr[i] = variables[i].default_value;
 					break;
 				case FALLBACK_INTERPOLATE: {
-					const real_t delta = (double(p_epoch - epochs[position - 1]) + p_fraction) / double(epochs[position] - epochs[position - 1]);
+					const real_t delta = (epoch - double(epochs[position - 1])) / double(epochs[position] - epochs[position - 1]);
+					print_line(rtos(delta));
 					ptr[i] = interpolate(
 							buffer[position - 1][i],
 							buffer[position][i],
@@ -338,7 +342,8 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 						cache_object = o;
 					}
 
-					const real_t delta = (double(p_epoch - epochs[position - 1]) + p_fraction) / double(epochs[position] - epochs[position - 1]);
+					const real_t delta = (epoch - double(epochs[position - 1])) / double(epochs[position] - epochs[position - 1]);
+					print_line("Interpolator" + rtos(delta));
 
 					ptr[i] = cache_object->call(
 							variables[i].custom_interpolator_function,
@@ -357,14 +362,17 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 		}
 	}
 
-	if (unlikely(position == UINT32_MAX && buffer.size() > 1)) {
-		// Remove all the elements but last. This happens when the p_epoch is
-		// bigger than the one already stored into the queue.
-		epochs[0] = epochs[buffer.size() - 1];
-		buffer[0] = buffer[buffer.size() - 1];
-		epochs.resize(1);
-		buffer.resize(1);
+	if (unlikely(position == UINT32_MAX)) {
+		if (buffer.size() > 1) {
+			// Remove all the elements but last. This happens when the p_epoch is
+			// bigger than the one already stored into the queue.
+			epochs[0] = epochs[buffer.size() - 1];
+			buffer[0] = buffer[buffer.size() - 1];
+			epochs.resize(1);
+			buffer.resize(1);
+		}
 	} else if (position >= 2) {
+		// TODO improve this by performing first the shifting then the resizing.
 		// Remove the old elements, but leave the one used to interpolate.
 		for (uint32_t i = 0; i < position - 1; i += 1) {
 			epochs.remove(0);
@@ -372,30 +380,31 @@ Vector<Variant> Interpolator::pop_epoch(uint64_t p_epoch, real_t p_fraction) {
 		}
 	}
 
+	// TODO this is no more valid since I'm using the fractional part.
 	last_pop_epoch = MAX(p_epoch, last_pop_epoch);
 
 	return data;
 }
 
-uint64_t Interpolator::get_last_pop_epoch() const {
+uint32_t Interpolator::get_last_pop_epoch() const {
 	return last_pop_epoch;
 }
 
-uint64_t Interpolator::get_youngest_epoch() const {
+uint32_t Interpolator::get_youngest_epoch() const {
 	if (epochs.size() <= 0) {
-		return UINT64_MAX;
+		return UINT32_MAX;
 	}
 	return epochs[0];
 }
 
-uint64_t Interpolator::get_oldest_epoch() const {
+uint32_t Interpolator::get_oldest_epoch() const {
 	if (epochs.size() <= 0) {
-		return UINT64_MAX;
+		return UINT32_MAX;
 	}
 	return epochs[epochs.size() - 1];
 }
 
-uint64_t Interpolator::epochs_between_last_time_window() const {
+uint32_t Interpolator::epochs_between_last_time_window() const {
 	if (epochs.size() <= 1) {
 		return 0;
 	}

@@ -172,7 +172,7 @@ public:
 	};
 
 	struct Snapshot {
-		uint64_t input_id;
+		uint32_t input_id;
 		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
 
 		operator String() const;

@@ -66,4 +66,17 @@ public:
 	int get_missing_packets() const;
 };
 
+template <class T>
+class Averager {
+	LocalVector<T> data;
+	uint32_t index = 0;
+
+public:
+	Averager(int p_size, T p_default);
+	void reset(int p_size, T p_default);
+
+	void push(T p_value);
+	T average() const;
+};
+
 #endif
