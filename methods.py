@@ -185,7 +185,7 @@ def write_modules(module_list):
                 unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 unregister_cpp += "\tunregister_" + name + "_types();\n"
                 unregister_cpp += "#endif\n"
-        except IOError:
+        except OSError:
             pass
 
     modules_cpp = """// register_module_types.gen.cpp
@@ -522,7 +522,7 @@ def generate_cpp_hint_file(filename):
         try:
             with open(filename, "w") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
-        except IOError:
+        except OSError:
             print("Could not write cpp.hint file.")
 
 
