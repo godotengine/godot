@@ -55,7 +55,7 @@ def run_in_subprocess(builder_function):
         finally:
             try:
                 os.remove(json_path)
-            except (OSError, IOError) as e:
+            except OSError as e:
                 # Do not fail the entire build if it cannot delete a temporary file
                 print(
                     "WARNING: Could not delete temporary file: path=%r; [%s] %s" % (json_path, e.__class__.__name__, e)
