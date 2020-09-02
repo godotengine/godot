@@ -920,7 +920,8 @@ VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
 static const char *type_string[VisualShader::TYPE_MAX] = {
 	"vertex",
 	"fragment",
-	"light"
+	"light",
+	"compute"
 };
 bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -1415,7 +1416,7 @@ void VisualShader::_update_shader() const {
 		global_code += "render_mode " + render_mode + ";\n\n";
 	}
 
-	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light" };
+	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "compute" };
 
 	String global_expressions;
 	Set<String> used_uniform_names;
@@ -1720,22 +1721,20 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SAMPLER, "texture", "TEXTURE" },
 
-	// Particles, Vertex
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "VELOCITY" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "restart", "float(RESTART ? 1.0 : 0.0)" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "active", "float(ACTIVE ? 1.0 : 0.0)" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
-
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
-
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
+	// Particles, Compute
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "VELOCITY" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "restart", "float(RESTART ? 1.0 : 0.0)" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "active", "float(ACTIVE ? 1.0 : 0.0)" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
 	// Sky, Fragment
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "at_cubemap_pass", "AT_CUBEMAP_PASS" },
@@ -2292,13 +2291,13 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	// Canvas Item, Light
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "light", "LIGHT.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "light_alpha", "LIGHT.a" },
-	// Particles, Vertex
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "VELOCITY" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
+	// Particles, Compute
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "VELOCITY" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COMPUTE, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	// Sky, Fragment
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "ALPHA" },
