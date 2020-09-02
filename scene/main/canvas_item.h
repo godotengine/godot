@@ -345,7 +345,7 @@ public:
 	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
 	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
 
-	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
+	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, float p_autowrap_width = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
 
 	void draw_set_transform(const Point2 &p_offset, float p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));

@@ -925,11 +925,38 @@ void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Tex
 	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid, normal_map_rid, specular_map_rid, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
 }
 
-void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w) {
+void CanvasItem::draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate, int p_clip_w, float p_autowrap_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
-
 	ERR_FAIL_COND(p_font.is_null());
-	p_font->draw(canvas_item, p_pos, p_text, p_modulate, p_clip_w);
+
+	if (p_autowrap_width <= 0.0) {
+		p_font->draw(canvas_item, p_pos, p_text, p_modulate, p_clip_w);
+		return;
+	}
+
+	float h = p_font->get_height();
+	float line_w = 0;
+	float space_w = p_font->get_char_size(' ').width;
+	Vector<String> words = p_text.split(" ");
+	String line;
+	Point2 pos = p_pos;
+	for (int j = 0; j < words.size(); j++) {
+		line_w += p_font->get_string_size(words[j]).x;
+		if (line_w > p_autowrap_width) {
+			p_font->draw(canvas_item, pos, line, p_modulate, p_clip_w);
+			line = "";
+			h += p_font->get_height();
+			pos.y = h;
+			line_w = p_font->get_string_size(words[j]).x;
+		} else {
+			line_w += space_w;
+		}
+		line += words[j];
+		if (j != words.size() - 1) {
+			line += ' ';
+		}
+	}
+	p_font->draw(canvas_item, pos, line, p_modulate, p_clip_w);
 }
 
 float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next, const Color &p_modulate) {
@@ -1169,7 +1196,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture", "width", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()), DEFVAL(1.0), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
 	ClassDB::bind_method(D_METHOD("draw_polygon", "points", "colors", "uvs", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_colored_polygon, DEFVAL(PackedVector2Array()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
-	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w", "autowrap_width"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(-1), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map", "specular_map", "specular_shininess", "transform", "modulate", "texture_filter", "texture_repeat"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture", "normal_map", "specular_map", "specular_shininess", "texture_filter", "texture_repeat"), &CanvasItem::draw_multimesh, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(Color(1, 1, 1, 1)), DEFVAL(TEXTURE_FILTER_PARENT_NODE), DEFVAL(TEXTURE_REPEAT_PARENT_NODE));
