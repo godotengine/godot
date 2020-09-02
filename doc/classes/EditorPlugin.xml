@@ -7,7 +7,7 @@
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. See also [EditorScript] to add functions to the editor.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
+		<link title="Editor plugins tutorial index">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_autoload_singleton">
@@ -74,6 +74,15 @@
 				When given node or resource is selected, the base type will be instanced (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
+			</description>
+		</method>
+		<method name="add_debugger_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
 			</description>
 		</method>
 		<method name="add_export_plugin">
@@ -422,6 +431,15 @@
 			</argument>
 			<description>
 				Removes a custom type added by [method add_custom_type].
+			</description>
+		</method>
+		<method name="remove_debugger_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Removes the debugger plugin with given script fromm the Debugger.
 			</description>
 		</method>
 		<method name="remove_export_plugin">

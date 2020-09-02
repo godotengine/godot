@@ -36,6 +36,7 @@
 #include "editor_properties_array_dict.h"
 #include "editor_scale.h"
 #include "scene/main/window.h"
+#include "scene/resources/dynamic_font.h"
 
 ///////////////////// NULL /////////////////////////
 
@@ -2947,11 +2948,9 @@ void EditorPropertyResource::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {
-		if (is_visible_in_tree()) {
-			if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-				dropping = true;
-				assign->update();
-			}
+		if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
+			dropping = true;
+			assign->update();
 		}
 	}
 
@@ -3016,6 +3015,8 @@ bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const
 			allowed_types.append("Texture2D");
 		} else if (at == "ShaderMaterial") {
 			allowed_types.append("Shader");
+		} else if (at == "Font") {
+			allowed_types.append("DynamicFontData");
 		}
 	}
 
@@ -3111,6 +3112,13 @@ void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &
 					Ref<ShaderMaterial> mat = memnew(ShaderMaterial);
 					mat->set_shader(res);
 					res = mat;
+					break;
+				}
+
+				if (at == "Font" && ClassDB::is_parent_class(res->get_class(), "DynamicFontData")) {
+					Ref<DynamicFont> font = memnew(DynamicFont);
+					font->set_font_data(res);
+					res = font;
 					break;
 				}
 			}

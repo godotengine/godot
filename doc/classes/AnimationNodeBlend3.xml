@@ -11,7 +11,7 @@
 		- A +blend animation to blend with when the blend amount is in the [code][0.0, 1.0][/code] range
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 	</methods>

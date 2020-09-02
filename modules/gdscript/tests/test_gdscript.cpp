@@ -35,9 +35,8 @@
 #include "core/os/os.h"
 #include "core/string_builder.h"
 
-#include "modules/modules_enabled.gen.h"
-#ifdef MODULE_GDSCRIPT_ENABLED
-
+#include "modules/gdscript/gdscript_analyzer.h"
+#include "modules/gdscript/gdscript_compiler.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "modules/gdscript/gdscript_tokenizer.h"
 
@@ -122,21 +121,79 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	printer.print_tree(parser);
 }
 
-MainLoop *test(TestType p_type) {
+static void test_compiler(const String &p_code, const String &p_script_path, const Vector<String> &p_lines) {
+	GDScriptParser parser;
+	Error err = parser.parse(p_code, p_script_path, false);
+
+	if (err != OK) {
+		print_line("Error in parser:");
+		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
+		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
+			const GDScriptParser::ParserError &error = E->get();
+			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+		}
+		return;
+	}
+
+	GDScriptAnalyzer analyzer(&parser);
+	err = analyzer.analyze();
+
+	if (err != OK) {
+		print_line("Error in analyzer:");
+		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
+		for (const List<GDScriptParser::ParserError>::Element *E = errors.front(); E != nullptr; E = E->next()) {
+			const GDScriptParser::ParserError &error = E->get();
+			print_line(vformat("%02d:%02d: %s", error.line, error.column, error.message));
+		}
+		return;
+	}
+
+	GDScriptCompiler compiler;
+	Ref<GDScript> script;
+	script.instance();
+	script->set_path(p_script_path);
+
+	err = compiler.compile(&parser, script.ptr(), false);
+
+	if (err) {
+		print_line("Error in compiler:");
+		print_line(vformat("%02d:%02d: %s", compiler.get_error_line(), compiler.get_error_column(), compiler.get_error()));
+		return;
+	}
+
+	for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
+		const GDScriptFunction *func = E->value();
+
+		String signature = "Disassembling " + func->get_name().operator String() + "(";
+		for (int i = 0; i < func->get_argument_count(); i++) {
+			if (i > 0) {
+				signature += ", ";
+			}
+			signature += func->get_argument_name(i);
+		}
+		print_line(signature + ")");
+
+		func->disassemble(p_lines);
+		print_line("");
+		print_line("");
+	}
+}
+
+void test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		return nullptr;
+		return;
 	}
 
 	String test = cmdlargs.back()->get();
 	if (!test.ends_with(".gd")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
-		return nullptr;
+		return;
 	}
 
 	FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
+	ERR_FAIL_COND_MSG(!fa, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -164,24 +221,11 @@ MainLoop *test(TestType p_type) {
 			test_parser(code, test, lines);
 			break;
 		case TEST_COMPILER:
+			test_compiler(code, test, lines);
+			break;
 		case TEST_BYTECODE:
 			print_line("Not implemented.");
 	}
-
-	return nullptr;
 }
 
 } // namespace TestGDScript
-
-#else
-
-namespace TestGDScript {
-
-MainLoop *test(TestType p_type) {
-	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
-	return nullptr;
-}
-
-} // namespace TestGDScript
-
-#endif

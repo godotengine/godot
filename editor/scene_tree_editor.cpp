@@ -258,27 +258,35 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		int num_connections = p_node->get_persistent_signal_connection_count();
 		int num_groups = p_node->get_persistent_group_count();
 
+		String msg_temp;
+		if (num_connections >= 1) {
+			Array arr;
+			arr.push_back(num_connections);
+			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
+			msg_temp += " ";
+		}
+		if (num_groups >= 1) {
+			Array arr;
+			arr.push_back(num_groups);
+			msg_temp += TTRN("Node is in one group.", "Node is in {num} groups.", num_groups).format(arr, "{num}");
+		}
+		if (num_connections >= 1 || num_groups >= 1) {
+			msg_temp += "\n" + TTR("Click to show signals dock.");
+		}
+
+		Ref<Texture2D> icon_temp;
+		auto signal_temp = BUTTON_SIGNALS;
 		if (num_connections >= 1 && num_groups >= 1) {
-			item->add_button(
-					0,
-					get_theme_icon("SignalsAndGroups", "EditorIcons"),
-					BUTTON_SIGNALS,
-					false,
-					vformat(TTR("Node has %s connection(s) and %s group(s).\nClick to show signals dock."), num_connections, num_groups));
+			icon_temp = get_theme_icon("SignalsAndGroups", "EditorIcons");
 		} else if (num_connections >= 1) {
-			item->add_button(
-					0,
-					get_theme_icon("Signals", "EditorIcons"),
-					BUTTON_SIGNALS,
-					false,
-					vformat(TTR("Node has %s connection(s).\nClick to show signals dock."), num_connections));
+			icon_temp = get_theme_icon("Signals", "EditorIcons");
 		} else if (num_groups >= 1) {
-			item->add_button(
-					0,
-					get_theme_icon("Groups", "EditorIcons"),
-					BUTTON_GROUPS,
-					false,
-					vformat(TTR("Node is in %s group(s).\nClick to show groups dock."), num_groups));
+			icon_temp = get_theme_icon("Groups", "EditorIcons");
+			signal_temp = BUTTON_GROUPS;
+		}
+
+		if (num_connections >= 1 || num_groups >= 1) {
+			item->add_button(0, icon_temp, signal_temp, false, msg_temp);
 		}
 	}
 

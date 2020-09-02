@@ -86,6 +86,7 @@ public:
 
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
+	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
 
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
 
@@ -676,6 +677,8 @@ public:
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
+
+	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) = 0;
 
 	/* GLOBAL VARIABLES */
 

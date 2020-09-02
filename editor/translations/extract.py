@@ -33,6 +33,7 @@ matches.sort()
 
 unique_str = []
 unique_loc = {}
+ctx_group = {}  # Store msgctx, msg, and locations.
 main_po = """
 # LANGUAGE translation of the Godot Engine editor.
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
@@ -52,6 +53,34 @@ msgstr ""
 """
 
 
+def _write_message(msgctx, msg, msg_plural, location):
+    global main_po
+    main_po += "\n#: " + location + "\n"
+    if msgctx != "":
+        main_po += 'msgctxt "' + msgctx + '"\n'
+    main_po += 'msgid "' + msg + '"\n'
+    if msg_plural != "":
+        main_po += 'msgid_plural "' + msg_plural + '"\n'
+        main_po += 'msgstr[0] ""\n'
+        main_po += 'msgstr[1] ""\n'
+    else:
+        main_po += 'msgstr ""\n'
+
+
+def _add_additional_location(msgctx, msg, location):
+    global main_po
+    # Add additional location to previous occurrence
+    msg_pos = -1
+    if msgctx != "":
+        msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
+    else:
+        msg_pos = main_po.find('\nmsgid "' + msg + '"')
+
+    if msg_pos == -1:
+        print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
+    main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
+
+
 def process_file(f, fname):
 
     global main_po, unique_str, unique_loc
@@ -60,10 +89,11 @@ def process_file(f, fname):
     lc = 1
     while l:
 
-        patterns = ['RTR("', 'TTR("', 'TTRC("']
+        patterns = ['RTR("', 'TTR("', 'TTRC("', 'TTRN("', 'RTRN("']
         idx = 0
         pos = 0
         while pos >= 0:
+            # Loop until a pattern is found. If not, next line.
             pos = l.find(patterns[idx], pos)
             if pos == -1:
                 if idx < len(patterns) - 1:
@@ -72,29 +102,64 @@ def process_file(f, fname):
                 continue
             pos += len(patterns[idx])
 
+            # Read msg until "
             msg = ""
             while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
                 msg += l[pos]
                 pos += 1
 
+            # Read plural.
+            msg_plural = ""
+            if patterns[idx] in ['TTRN("', 'RTRN("']:
+                pos = l.find('"', pos + 1)
+                pos += 1
+                while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
+                    msg_plural += l[pos]
+                    pos += 1
+
+            # Read context.
+            msgctx = ""
+            pos += 1
+            read_ctx = False
+            while pos < len(l):
+                if l[pos] == ")":
+                    break
+                elif l[pos] == '"':
+                    read_ctx = True
+                    break
+                pos += 1
+
+            pos += 1
+            if read_ctx:
+                while pos < len(l) and (l[pos] != '"' or l[pos - 1] == "\\"):
+                    msgctx += l[pos]
+                    pos += 1
+
+            # File location.
             location = os.path.relpath(fname).replace("\\", "/")
             if line_nb:
                 location += ":" + str(lc)
 
-            if not msg in unique_str:
-                main_po += "\n#: " + location + "\n"
-                main_po += 'msgid "' + msg + '"\n'
-                main_po += 'msgstr ""\n'
-                unique_str.append(msg)
-                unique_loc[msg] = [location]
-            elif not location in unique_loc[msg]:
-                # Add additional location to previous occurrence too
-                msg_pos = main_po.find('\nmsgid "' + msg + '"')
-                if msg_pos == -1:
-                    print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
-                main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
-                unique_loc[msg].append(location)
-
+            if msgctx != "":
+                # If it's a new context or a new message within an existing context, then write new msgid.
+                # Else add location to existing msgid.
+                if not msgctx in ctx_group:
+                    _write_message(msgctx, msg, msg_plural, location)
+                    ctx_group[msgctx] = {msg: [location]}
+                elif not msg in ctx_group[msgctx]:
+                    _write_message(msgctx, msg, msg_plural, location)
+                    ctx_group[msgctx][msg] = [location]
+                elif not location in ctx_group[msgctx][msg]:
+                    _add_additional_location(msgctx, msg, location)
+                    ctx_group[msgctx][msg].append(location)
+            else:
+                if not msg in unique_str:
+                    _write_message(msgctx, msg, msg_plural, location)
+                    unique_str.append(msg)
+                    unique_loc[msg] = [location]
+                elif not location in unique_loc[msg]:
+                    _add_additional_location(msgctx, msg, location)
+                    unique_loc[msg].append(location)
         l = f.readline()
         lc += 1
 
@@ -102,7 +167,7 @@ def process_file(f, fname):
 print("Updating the editor.pot template...")
 
 for fname in matches:
-    with open(fname, "r") as f:
+    with open(fname, "r", encoding="utf8") as f:
         process_file(f, fname)
 
 with open("editor.pot", "w") as f:

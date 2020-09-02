@@ -880,6 +880,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
+	ClassDB::add_compatibility_class("Viewport", "SubViewport");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");

@@ -50,7 +50,7 @@
 		Modifications to a container will modify all references to it. A [Mutex] should be created to lock it if multi-threaded access is desired.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/development/cpp/variant_class.html</link>
+		<link title="Variant class">https://docs.godotengine.org/en/latest/development/cpp/variant_class.html</link>
 	</tutorials>
 	<methods>
 	</methods>

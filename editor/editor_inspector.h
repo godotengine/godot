@@ -231,6 +231,9 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable;
 
+	Timer *dropping_unfold_timer;
+	bool dropping;
+
 	void _test_unfold();
 
 protected:
@@ -291,6 +294,7 @@ class EditorInspector : public ScrollContainer {
 	bool deletable_properties;
 
 	float refresh_countdown;
+	float refresh_interval_cache;
 	bool update_tree_pending;
 	StringName _prop_edited;
 	StringName property_selected;

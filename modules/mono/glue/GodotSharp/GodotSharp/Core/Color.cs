@@ -565,6 +565,9 @@ namespace Godot
                 rgba = rgba.Substring(1);
             }
 
+            // If enabled, use 1 hex digit per channel instead of 2.
+            // Other sizes aren't in the HTML/CSS spec but we could add them if desired.
+            bool isShorthand = rgba.Length < 5;
             bool alpha;
 
             if (rgba.Length == 8)
@@ -575,46 +578,59 @@ namespace Godot
             {
                 alpha = false;
             }
+            else if (rgba.Length == 4)
+            {
+                alpha = true;
+            }
+            else if (rgba.Length == 3)
+            {
+                alpha = false;
+            }
             else
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Length is " + rgba.Length + " but a length of 6 or 8 is expected: " + rgba);
             }
 
-            if (alpha)
+            a = 1.0f;
+            if (isShorthand)
             {
-                a = ParseCol8(rgba, 6) / 255f;
-
-                if (a < 0)
+                r = ParseCol4(rgba, 0) / 15f;
+                g = ParseCol4(rgba, 1) / 15f;
+                b = ParseCol4(rgba, 2) / 15f;
+                if (alpha)
                 {
-                    throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
+                    a = ParseCol4(rgba, 3) / 15f;
                 }
             }
             else
             {
-                a = 1.0f;
+                r = ParseCol8(rgba, 0) / 255f;
+                g = ParseCol8(rgba, 2) / 255f;
+                b = ParseCol8(rgba, 4) / 255f;
+                if (alpha)
+                {
+                    a = ParseCol8(rgba, 6) / 255f;
+                }
             }
-
-            int from = alpha ? 2 : 0;
-
-            r = ParseCol8(rgba, 0) / 255f;
 
             if (r < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Red part is not valid hexadecimal: " + rgba);
             }
 
-            g = ParseCol8(rgba, 2) / 255f;
-
             if (g < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Green part is not valid hexadecimal: " + rgba);
             }
 
-            b = ParseCol8(rgba, 4) / 255f;
-
             if (b < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
+            }
+
+            if (a < 0)
+            {
+                throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
             }
         }
 
@@ -751,45 +767,28 @@ namespace Godot
             value = max;
         }
 
+        private static int ParseCol4(string str, int ofs)
+        {
+            char character = str[ofs];
+
+            if (character >= '0' && character <= '9')
+            {
+                return character - '0';
+            }
+            else if (character >= 'a' && character <= 'f')
+            {
+                return character + (10 - 'a');
+            }
+            else if (character >= 'A' && character <= 'F')
+            {
+                return character + (10 - 'A');
+            }
+            return -1;
+        }
+
         private static int ParseCol8(string str, int ofs)
         {
-            int ig = 0;
-
-            for (int i = 0; i < 2; i++)
-            {
-                int c = str[i + ofs];
-                int v;
-
-                if (c >= '0' && c <= '9')
-                {
-                    v = c - '0';
-                }
-                else if (c >= 'a' && c <= 'f')
-                {
-                    v = c - 'a';
-                    v += 10;
-                }
-                else if (c >= 'A' && c <= 'F')
-                {
-                    v = c - 'A';
-                    v += 10;
-                }
-                else
-                {
-                    return -1;
-                }
-
-                if (i == 0)
-                {
-                    ig += v * 16;
-                }
-                else
-                {
-                    ig += v;
-                }
-            }
-
-            return ig;
+            return ParseCol4(str, ofs) * 16 + ParseCol4(str, ofs + 1);
         }
 
         private String ToHex32(float val)
@@ -828,44 +827,22 @@ namespace Godot
 
             if (color[0] == '#')
             {
-                color = color.Substring(1, color.Length - 1);
+                color = color.Substring(1);
             }
 
-            bool alpha;
-
-            switch (color.Length)
+            // Check if the amount of hex digits is valid.
+            int len = color.Length;
+            if (!(len == 3 || len == 4 || len == 6 || len == 8))
             {
-                case 8:
-                    alpha = true;
-                    break;
-                case 6:
-                    alpha = false;
-                    break;
-                default:
-                    return false;
+                return false;
             }
 
-            if (alpha)
-            {
-                if (ParseCol8(color, 0) < 0)
+            // Check if each hex digit is valid.
+            for (int i = 0; i < len; i++) {
+                if (ParseCol4(color, i) == -1)
                 {
                     return false;
                 }
-            }
-
-            int from = alpha ? 2 : 0;
-
-            if (ParseCol8(color, from + 0) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 2) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 4) < 0)
-            {
-                return false;
             }
 
             return true;

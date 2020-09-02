@@ -1174,6 +1174,47 @@ void EditorInspectorSection::_notification(int p_what) {
 		if (arrow.is_valid()) {
 			draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 		}
+
+		if (dropping && !vbox->is_visible_in_tree()) {
+			Color accent_color = get_theme_color("accent_color", "Editor");
+			draw_rect(Rect2(Point2(), get_size()), accent_color, false);
+		}
+	}
+
+	if (p_what == NOTIFICATION_DRAG_BEGIN) {
+		Dictionary dd = get_viewport()->gui_get_drag_data();
+
+		// Only allow dropping if the section contains properties which can take the dragged data.
+		bool children_can_drop = false;
+		for (int child_idx = 0; child_idx < vbox->get_child_count(); child_idx++) {
+			Control *editor_property = Object::cast_to<Control>(vbox->get_child(child_idx));
+
+			// Test can_drop_data and can_drop_data_fw, since can_drop_data only works if set up with forwarding or if script attached.
+			if (editor_property && (editor_property->can_drop_data(Point2(), dd) || editor_property->call("can_drop_data_fw", Point2(), dd, this))) {
+				children_can_drop = true;
+				break;
+			}
+		}
+
+		dropping = children_can_drop;
+		update();
+	}
+
+	if (p_what == NOTIFICATION_DRAG_END) {
+		dropping = false;
+		update();
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_ENTER) {
+		if (dropping) {
+			dropping_unfold_timer->start();
+		}
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_EXIT) {
+		if (dropping) {
+			dropping_unfold_timer->stop();
+		}
 	}
 }
 
@@ -1236,14 +1277,11 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		_test_unfold();
-
-		bool unfold = !object->editor_is_section_unfolded(section);
-		object->editor_set_section_unfold(section, unfold);
-		if (unfold) {
-			vbox->show();
+		bool should_unfold = !object->editor_is_section_unfolded(section);
+		if (should_unfold) {
+			unfold();
 		} else {
-			vbox->hide();
+			fold();
 		}
 	}
 }
@@ -1291,6 +1329,13 @@ EditorInspectorSection::EditorInspectorSection() {
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
+
+	dropping = false;
+	dropping_unfold_timer = memnew(Timer);
+	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->set_one_shot(true);
+	add_child(dropping_unfold_timer);
+	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
@@ -1924,7 +1969,7 @@ void EditorInspector::refresh() {
 	if (refresh_countdown > 0 || changing) {
 		return;
 	}
-	refresh_countdown = EditorSettings::get_singleton()->get("docks/property_editor/auto_refresh_interval");
+	refresh_countdown = refresh_interval_cache;
 }
 
 Object *EditorInspector::get_edited_object() {
@@ -2287,6 +2332,8 @@ void EditorInspector::_node_removed(Node *p_node) {
 void EditorInspector::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
+		refresh_interval_cache = EDITOR_GET("docks/property_editor/auto_refresh_interval");
+		refresh_countdown = refresh_interval_cache;
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -2322,6 +2369,9 @@ void EditorInspector::_notification(int p_what) {
 					}
 				}
 			}
+		} else {
+			// Restart countdown if <= 0
+			refresh_countdown = refresh_interval_cache;
 		}
 
 		changing++;
@@ -2353,6 +2403,9 @@ void EditorInspector::_notification(int p_what) {
 		} else if (is_inside_tree()) {
 			add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		}
+
+		refresh_interval_cache = EDITOR_GET("docks/property_editor/auto_refresh_interval");
+		refresh_countdown = refresh_interval_cache;
 
 		update_tree();
 	}
@@ -2517,6 +2570,7 @@ EditorInspector::EditorInspector() {
 	update_all_pending = false;
 	update_tree_pending = false;
 	refresh_countdown = 0;
+	refresh_interval_cache = 0;
 	read_only = false;
 	search_box = nullptr;
 	keying = false;

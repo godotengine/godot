@@ -603,10 +603,8 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 		if (!source_path.empty()) {
 			MutexLock lock(GDScriptCache::singleton->lock);
-			Ref<GDScript> self(this);
 			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
-				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = self;
-				self->unreference();
+				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;
 			}
 		}
 	}

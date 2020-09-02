@@ -14,6 +14,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_FLIP_Y (1 << 5)
 #define FLAG_FORCE_LUMINANCE (1 << 6)
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
+#define FLAG_HIGH_QUALITY_GLOW (1 << 8)
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	ivec4 section;
@@ -116,17 +117,42 @@ void main() {
 	vec4 color = vec4(0.0);
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-		ivec2 base_pos = (pos + params.section.xy) << 1;
+		ivec2 base_pos = ((pos + params.section.xy) << 1) + ivec2(1);
 		ivec2 section_begin = params.section.xy << 1;
 		ivec2 section_end = section_begin + (params.section.zw << 1);
 
-		GLOW_ADD(ivec2(0, 0), 0.174938);
-		GLOW_ADD(ivec2(1, 0), 0.165569);
-		GLOW_ADD(ivec2(2, 0), 0.140367);
-		GLOW_ADD(ivec2(3, 0), 0.106595);
-		GLOW_ADD(ivec2(-1, 0), 0.165569);
-		GLOW_ADD(ivec2(-2, 0), 0.140367);
-		GLOW_ADD(ivec2(-3, 0), 0.106595);
+		if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
+			//Sample from two lines to capture single pixel features
+			GLOW_ADD(ivec2(0, 0), 0.152781);
+			GLOW_ADD(ivec2(1, 0), 0.144599);
+			GLOW_ADD(ivec2(2, 0), 0.122589);
+			GLOW_ADD(ivec2(3, 0), 0.093095);
+			GLOW_ADD(ivec2(4, 0), 0.063327);
+			GLOW_ADD(ivec2(-1, 0), 0.144599);
+			GLOW_ADD(ivec2(-2, 0), 0.122589);
+			GLOW_ADD(ivec2(-3, 0), 0.093095);
+			GLOW_ADD(ivec2(-4, 0), 0.063327);
+
+			GLOW_ADD(ivec2(0, 1), 0.152781);
+			GLOW_ADD(ivec2(1, 1), 0.144599);
+			GLOW_ADD(ivec2(2, 1), 0.122589);
+			GLOW_ADD(ivec2(3, 1), 0.093095);
+			GLOW_ADD(ivec2(4, 1), 0.063327);
+			GLOW_ADD(ivec2(-1, 1), 0.144599);
+			GLOW_ADD(ivec2(-2, 1), 0.122589);
+			GLOW_ADD(ivec2(-3, 1), 0.093095);
+			GLOW_ADD(ivec2(-4, 1), 0.063327);
+			color *= 0.5;
+		} else {
+			GLOW_ADD(ivec2(0, 0), 0.174938);
+			GLOW_ADD(ivec2(1, 0), 0.165569);
+			GLOW_ADD(ivec2(2, 0), 0.140367);
+			GLOW_ADD(ivec2(3, 0), 0.106595);
+			GLOW_ADD(ivec2(-1, 0), 0.165569);
+			GLOW_ADD(ivec2(-2, 0), 0.140367);
+			GLOW_ADD(ivec2(-3, 0), 0.106595);
+		}
+
 		color *= params.glow_strength;
 	} else {
 		ivec2 base_pos = pos + params.section.xy;
