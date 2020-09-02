@@ -1620,7 +1620,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 
 	if (loop && p_loop_wrap) {
 		// loop
-		if (!reverse){
+		if (!reverse) {
 			// no reverse
 			if (idx >= 0) {
 				if (idx < len - 1) {
