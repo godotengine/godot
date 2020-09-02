@@ -238,7 +238,7 @@ void SectionedInspector::update_category_list() {
 			continue;
 		}
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize())) {
+		if (!filter.empty() && pi.name.findn(filter) == -1 && pi.name.replace("/", " ").capitalize().findn(filter) == -1) {
 			continue;
 		}
 
