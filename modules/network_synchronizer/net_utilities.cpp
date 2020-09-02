@@ -34,6 +34,7 @@
 
 #include "net_utilities.h"
 
+#include "core/os/os.h"
 #include "core/typedefs.h"
 
 NetworkTracer::NetworkTracer(int p_packets_to_track) :
@@ -79,23 +80,54 @@ int NetworkTracer::get_missing_packets() const {
 }
 
 template <class T>
-Averager<T>::Averager(int p_size, T p_default) {
+Averager<T>::Averager(uint32_t p_size, T p_default) {
 	reset(p_size, p_default);
 }
 
 template <class T>
-void Averager<T>::reset(int p_size, T p_default) {
+void Averager<T>::reset(uint32_t p_size, T p_default) {
 	data.resize(p_size);
+	time.resize(p_size);
+
 	for (uint32_t i = 0; i < data.size(); i += 1) {
 		data[i] = p_default;
+		time[i] = 0;
 	}
+
 	index = 0;
 }
 
 template <class T>
 void Averager<T>::push(T p_value) {
+	const uint32_t now = OS::get_singleton()->get_ticks_msec();
+
 	data[index] = p_value;
+	time[index] = double(now - previous_insert_time) / 1000.0;
+
+	previous_insert_time = now;
 	index = (index + 1) % data.size();
+}
+
+template <class T>
+T Averager<T>::max() const {
+	CRASH_COND(data.size() == 0);
+
+	T a = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		a = MAX(a, data[i]);
+	}
+	return a;
+}
+
+template <class T>
+T Averager<T>::min() const {
+	CRASH_COND(data.size() == 0);
+
+	T a = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		a = MIN(a, data[i]);
+	}
+	return a;
 }
 
 template <class T>
@@ -108,3 +140,27 @@ T Averager<T>::average() const {
 	}
 	return a / T(data.size());
 }
+
+template <class T>
+real_t Averager<T>::average_derivative() const {
+	CRASH_COND(data.size() == 0);
+
+	// Step 1. Find the older and the youngest point.
+	const uint32_t youngest = (index == 0 ? data.size() : index) - 1;
+	const uint32_t oldest = index;
+
+	// Step 2. Calculates the average derivative.
+	real_t total_derivative = 0.0;
+	for (uint32_t i = oldest; i != youngest; i = (i + 1) % time.size()) {
+		if (time[i] <= CMP_EPSILON) {
+			continue;
+		}
+
+		total_derivative += real_t(data[(i + 1) % data.size()] - data[i]) / time[i];
+	}
+
+	return total_derivative / real_t(data.size());
+}
+
+// Embarrassing ...
+template class Averager<int>;

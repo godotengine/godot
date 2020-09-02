@@ -1113,7 +1113,7 @@ bool PlayerController::can_accept_new_inputs() const {
 
 DollController::DollController(NetworkedController *p_node) :
 		Controller(p_node),
-		network_tracer(10) {
+		averager(10, 0) {
 }
 
 DollController::~DollController() {
@@ -1168,29 +1168,45 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	// Establish the interpolation speed
 	ERR_FAIL_COND_MSG(batch_young_epoch == UINT32_MAX, "The received batch doesn't contains any epoch, this is a bug.");
 
-	const uint32_t batch_epoch_span = batch_old_epoch - batch_young_epoch;
+	const real_t batch_epoch_span = batch_old_epoch - batch_young_epoch;
 
 	if (current_epoch == UINT32_MAX || previous_oldest_epoch == UINT32_MAX) {
 		// Nothing more to do.
 		return;
 	}
 
-	const uint32_t recover_batches = 4; // TODO better name
-	const real_t ideal_epochs_left = 2;
-	const real_t speed_factor = 0.2; // 20%
+	// TODO make this parameters.
+	const int ideal_target_frame = 2;
+	const real_t doll_interpolation_speedup_factor = 4.0;
+	const real_t doll_interpolation_max_speedup = 0.2;
 
 	const uint32_t left_epochs = previous_oldest_epoch - current_epoch;
 
-	//previous_left_epochs - left_epochs;
+	const int balance = left_epochs - missing_epochs;
+	averager.push(balance);
 
-	// When negative we need slow down, otherwise a speed up.
-	const int balance = left_epochs - ideal_epochs_left - missing_epochs;
+	// Change the interpolation speed so to try preserve the received data,
+	// till the next batch arrives.
+	// The speed change is smooth because of the `averager`. It allows to keep
+	// track of the status for past batches. By taking the lowest balance value,
+	// from the `averager`, is possible to guess pessimisticaly:
+	// so in case the connection become worse the interpolation still looks good.
+	additional_speed = doll_interpolation_max_speedup * (real_t(averager.min() - ideal_target_frame) / (batch_epoch_span * doll_interpolation_speedup_factor));
+	additional_speed = CLAMP(additional_speed, -doll_interpolation_max_speedup, doll_interpolation_max_speedup);
 
-	additional_speed = CLAMP(real_t(balance) / real_t(batch_epoch_span * recover_batches), -1.0, 1.0) * speed_factor;
+	// TODO the issue with the above approach is that it can do something to
+	// fix the connection problems only when the epochs are missing so it's too
+	// late.
+	// A better solution must be researched, an idea could be vary the `idea_target_frame`
+	// depending how the internet goes.
+	// But a class, totally independent, to this controller should establish
+	// how good the connection is.
+	// In this way we stop relying on the amount of missing epochs, and
+	// hopefully increase the buffers size before something goes wrong.
 
-	print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs));
+	//print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Averager min: " + itos(averager.min()) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs) + " - Average derivative: " + rtos(averager.average_derivative()));
+
 	missing_epochs = 0;
-	previous_left_epochs = left_epochs;
 }
 
 uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
@@ -1236,12 +1252,10 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	// Step 2. Make sure we have something to interpolate with.
 	const uint32_t oldest_epoch = interpolator.get_oldest_epoch();
 	if (unlikely(oldest_epoch == UINT32_MAX || oldest_epoch <= current_epoch)) {
-		network_tracer.notify_missing_packet();
 		missing_epochs += 1;
 		// Nothing to interpolate with.
 		return current_epoch;
 	}
-	network_tracer.notify_packet_arrived();
 
 #ifdef DEBUG_ENABLED
 	// This can't happen because the current_epoch is advances only if it's
@@ -1249,7 +1263,14 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	CRASH_COND(oldest_epoch < current_epoch);
 #endif
 
-	advancing_epoch += 1.0 + additional_speed;
+	const uint64_t max_virtual_delay = 180; // TODO make this a parameter
+
+	if (unlikely((oldest_epoch - current_epoch) > max_virtual_delay)) {
+		// This client seems too much behind at this point. Teleport forward.
+		current_epoch = oldest_epoch - max_virtual_delay;
+	} else {
+		advancing_epoch += 1.0 + additional_speed;
+	}
 
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
@@ -1261,7 +1282,7 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 		advancing_epoch -= uint32_t(advancing_epoch);
 	}
 
-	print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
+	//print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
 
 	return current_epoch;
 }

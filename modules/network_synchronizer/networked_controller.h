@@ -376,12 +376,11 @@ struct PlayerController : public Controller {
 struct DollController : public Controller {
 	Interpolator interpolator;
 	real_t additional_speed = 0.0;
-	uint32_t previous_left_epochs = 0;
 	uint32_t current_epoch = UINT32_MAX;
 	real_t advancing_epoch = 0.0;
 	uint32_t missing_epochs = 0;
 
-	NetworkTracer network_tracer;
+	Averager<int> averager;
 
 	DollController(NetworkedController *p_node);
 	~DollController();

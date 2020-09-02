@@ -69,14 +69,28 @@ public:
 template <class T>
 class Averager {
 	LocalVector<T> data;
+	/// The time passed before this value was added, in seconds.
+	LocalVector<real_t> time;
 	uint32_t index = 0;
+	uint32_t previous_insert_time = 0;
 
 public:
-	Averager(int p_size, T p_default);
-	void reset(int p_size, T p_default);
+	Averager(uint32_t p_size, T p_default);
+	void reset(uint32_t p_size, T p_default);
 
 	void push(T p_value);
+
+	/// Maximum value.
+	T max() const;
+
+	/// Minumum value.
+	T min() const;
+
+	/// Median value.
 	T average() const;
+
+	/// Calculates the average derivative and retuns it.
+	real_t average_derivative() const;
 };
 
 #endif

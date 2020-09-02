@@ -264,7 +264,6 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 	} else if (unlikely(ABS(epochs[position] - epoch) <= CMP_EPSILON)) {
 		// Precise data.
 		data = buffer[position];
-		print_line("Precise data interpolation.");
 	} else if (unlikely(position == 0)) {
 		// No old data.
 		data.resize(variables.size());
@@ -317,7 +316,6 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 					break;
 				case FALLBACK_INTERPOLATE: {
 					const real_t delta = (epoch - double(epochs[position - 1])) / double(epochs[position] - epochs[position - 1]);
-					print_line(rtos(delta));
 					ptr[i] = interpolate(
 							buffer[position - 1][i],
 							buffer[position][i],
@@ -343,7 +341,6 @@ Vector<Variant> Interpolator::pop_epoch(uint32_t p_epoch, real_t p_fraction) {
 					}
 
 					const real_t delta = (epoch - double(epochs[position - 1])) / double(epochs[position] - epochs[position - 1]);
-					print_line("Interpolator" + rtos(delta));
 
 					ptr[i] = cache_object->call(
 							variables[i].custom_interpolator_function,
