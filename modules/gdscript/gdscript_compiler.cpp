@@ -1718,6 +1718,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 				GDScriptCodeGenerator::Address src_address = _parse_expression(codegen, error, field->initializer, false, true);
 				if (error) {
+					memdelete(codegen.generator);
 					return error;
 				}
 				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, _gdtype_from_datatype(field->get_datatype()));
@@ -1738,6 +1739,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 				const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
 				GDScriptCodeGenerator::Address src_addr = _parse_expression(codegen, error, parameter->default_value, true);
 				if (error) {
+					memdelete(codegen.generator);
 					return error;
 				}
 				GDScriptCodeGenerator::Address dst_addr = codegen.parameters[parameter->identifier->name];
@@ -1751,6 +1753,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 		Error err = _parse_block(codegen, p_func->body);
 		if (err) {
+			memdelete(codegen.generator);
 			return err;
 		}
 	}
@@ -1800,6 +1803,8 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 	p_script->member_functions[func_name] = gd_function;
 
+	memdelete(codegen.generator);
+
 	return OK;
 }
 
@@ -1837,6 +1842,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 
 	error = _parse_block(codegen, p_is_setter ? p_variable->setter : p_variable->getter);
 	if (error) {
+		memdelete(codegen.generator);
 		return error;
 	}
 
@@ -1870,6 +1876,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 #ifdef TOOLS_ENABLED
 	p_script->member_lines[func_name] = p_is_setter ? p_variable->setter->start_line : p_variable->getter->start_line;
 #endif
+	memdelete(codegen.generator);
 
 	return OK;
 }
