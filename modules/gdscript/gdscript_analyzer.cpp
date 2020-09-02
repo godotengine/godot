@@ -2077,18 +2077,32 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				push_error(vformat(R"(Cannot find constant "%s" on type "%s".)", name, base.to_string()), p_identifier);
 			}
 		} else {
-			Callable::CallError temp;
-			Variant dummy = Variant::construct(base.builtin_type, nullptr, 0, temp);
-			List<PropertyInfo> properties;
-			dummy.get_property_list(&properties);
-			for (const List<PropertyInfo>::Element *E = properties.front(); E != nullptr; E = E->next()) {
-				const PropertyInfo &prop = E->get();
-				if (prop.name == name) {
-					p_identifier->set_datatype(type_from_property(prop));
+			switch (base.builtin_type) {
+				case Variant::NIL: {
+					push_error(vformat(R"(Invalid get index "%s" on base Nil)", name), p_identifier);
 					return;
 				}
+				case Variant::DICTIONARY: {
+					GDScriptParser::DataType dummy;
+					dummy.kind = GDScriptParser::DataType::VARIANT;
+					p_identifier->set_datatype(dummy);
+					return;
+				}
+				default: {
+					Callable::CallError temp;
+					Variant dummy = Variant::construct(base.builtin_type, nullptr, 0, temp);
+					List<PropertyInfo> properties;
+					dummy.get_property_list(&properties);
+					for (const List<PropertyInfo>::Element *E = properties.front(); E != nullptr; E = E->next()) {
+						const PropertyInfo &prop = E->get();
+						if (prop.name == name) {
+							p_identifier->set_datatype(type_from_property(prop));
+							return;
+						}
+					}
+					push_error(vformat(R"(Cannot find property "%s" on base "%s".)", name, base.to_string()), p_identifier);
+				}
 			}
-			push_error(vformat(R"(Cannot find property "%s" on base "%s".)", name, base.to_string()), p_identifier);
 		}
 		return;
 	}
