@@ -719,6 +719,8 @@ public:
 	VS::InstanceType get_base_type(RID p_rid) const {
 		if (mesh_owner.owns(p_rid)) {
 			return VS::INSTANCE_MESH;
+		} else if (lightmap_capture_data_owner.owns(p_rid)) {
+			return VS::INSTANCE_LIGHTMAP_CAPTURE;
 		}
 
 		return VS::INSTANCE_NONE;
