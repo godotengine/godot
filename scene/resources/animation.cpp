@@ -1444,11 +1444,11 @@ int Animation::_find(const Vector<K> &p_keys, float p_time, bool reverse) const 
 	}
 
 	if (!reverse) {
-		if (keys[middle].time > p_time) {		
+		if (keys[middle].time > p_time) {
 			middle--;
 		}
 	} else {
-		if (keys[middle].time < p_time) {		
+		if (keys[middle].time < p_time) {
 			middle++;
 		}
 	}

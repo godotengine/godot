@@ -919,7 +919,7 @@ void AnimationTree::_process_graph(float p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									
+
 									a->transform_track_interpolate(i, 0, &loc[1], &rot[1], &scale[1], reverse);
 
 									t->loc += (loc[1] - loc[0]) * blend;
