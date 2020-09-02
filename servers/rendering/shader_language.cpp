@@ -6979,6 +6979,11 @@ bool ShaderLanguage::has_builtin(const Map<StringName, ShaderLanguage::FunctionI
 			return true;
 		}
 	}
+	if (p_functions.has("compute")) {
+		if (p_functions["compute"].built_ins.has(p_name)) {
+			return true;
+		}
+	}
 	return false;
 }
 
