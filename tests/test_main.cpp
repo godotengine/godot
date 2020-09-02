@@ -37,7 +37,6 @@
 #include "test_class_db.h"
 #include "test_color.h"
 #include "test_expression.h"
-#include "test_gdscript.h"
 #include "test_gradient.h"
 #include "test_gui.h"
 #include "test_math.h"
@@ -56,40 +55,63 @@
 #include "tests/test_macros.h"
 
 int test_main(int argc, char *argv[]) {
+	bool run_tests = true;
+
+	// Convert arguments to Godot's command-line.
+	List<String> args;
+
+	for (int i = 0; i < argc; i++) {
+		args.push_back(String::utf8(argv[i]));
+	}
+	OS::get_singleton()->set_cmdline("", args);
+
+	// Run custom test tools.
+	if (test_commands) {
+		for (Map<String, TestFunc>::Element *E = test_commands->front(); E; E = E->next()) {
+			if (args.find(E->key())) {
+				const TestFunc &test_func = E->get();
+				test_func();
+				run_tests = false;
+				break;
+			}
+		}
+		if (!run_tests) {
+			delete test_commands;
+			return 0;
+		}
+	}
 	// Doctest runner.
 	doctest::Context test_context;
-	List<String> valid_arguments;
+	List<String> test_args;
 
 	// Clean arguments of "--test" from the args.
-	int argument_count = 0;
 	for (int x = 0; x < argc; x++) {
 		if (strncmp(argv[x], "--test", 6) != 0) {
-			valid_arguments.push_back(String(argv[x]));
-			argument_count++;
+			test_args.push_back(String(argv[x]));
 		}
 	}
 	// Convert Godot command line arguments back to standard arguments.
-	char **args = new char *[valid_arguments.size()];
-	for (int x = 0; x < valid_arguments.size(); x++) {
+	char **doctest_args = new char *[test_args.size()];
+	for (int x = 0; x < test_args.size(); x++) {
 		// Operation to convert Godot string to non wchar string.
-		CharString cs = valid_arguments[x].utf8();
+		CharString cs = test_args[x].utf8();
 		const char *str = cs.get_data();
 		// Allocate the string copy.
-		args[x] = new char[strlen(str) + 1];
+		doctest_args[x] = new char[strlen(str) + 1];
 		// Copy this into memory.
-		std::memcpy(args[x], str, strlen(str) + 1);
+		memcpy(doctest_args[x], str, strlen(str) + 1);
 	}
 
-	test_context.applyCommandLine(valid_arguments.size(), args);
+	test_context.applyCommandLine(test_args.size(), doctest_args);
 
 	test_context.setOption("order-by", "name");
 	test_context.setOption("abort-after", 5);
 	test_context.setOption("no-breaks", true);
 
-	for (int x = 0; x < valid_arguments.size(); x++) {
-		delete[] args[x];
+	for (int x = 0; x < test_args.size(); x++) {
+		delete[] doctest_args[x];
 	}
-	delete[] args;
+	delete[] doctest_args;
 
 	return test_context.run();
 }

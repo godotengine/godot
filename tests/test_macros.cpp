@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_gdscript.h                                                      */
+/*  test_macros.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_GDSCRIPT_H
-#define TEST_GDSCRIPT_H
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "test_macros.h"
 
-#include "core/os/main_loop.h"
+Map<String, TestFunc> *test_commands = nullptr;
 
-namespace TestGDScript {
-
-enum TestType {
-	TEST_TOKENIZER,
-	TEST_PARSER,
-	TEST_COMPILER,
-	TEST_BYTECODE,
-};
-
-MainLoop *test(TestType p_type);
-} // namespace TestGDScript
-
-#endif // TEST_GDSCRIPT_H
+int register_test_command(String p_command, TestFunc p_function) {
+	if (!test_commands) {
+		test_commands = new Map<String, TestFunc>;
+	}
+	test_commands->insert(p_command, p_function);
+	return 0;
+}
