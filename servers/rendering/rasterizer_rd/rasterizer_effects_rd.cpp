@@ -1273,6 +1273,76 @@ void RasterizerEffectsRD::filter_shadow(RID p_shadow, RID p_backing_shadow, cons
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_source_rect.size.width, p_source_rect.size.height, 1, 8, 8, 1);
 	}
 }
+
+void RasterizerEffectsRD::sort_buffer(RID p_uniform_set, int p_size) {
+	Sort::PushConstant push_constant;
+	push_constant.total_elements = p_size;
+
+	bool done = true;
+
+	int numThreadGroups = ((p_size - 1) >> 9) + 1;
+
+	if (numThreadGroups > 1) {
+		done = false;
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sort.pipelines[SORT_MODE_BLOCK]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_uniform_set, 1);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(Sort::PushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, numThreadGroups, 1, 1);
+
+	int presorted = 512;
+
+	while (!done) {
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+		done = true;
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sort.pipelines[SORT_MODE_STEP]);
+
+		numThreadGroups = 0;
+
+		if (p_size > presorted) {
+			if (p_size > presorted * 2) {
+				done = false;
+			}
+
+			int pow2 = presorted;
+			while (pow2 < p_size) {
+				pow2 *= 2;
+			}
+			numThreadGroups = pow2 >> 9;
+		}
+
+		unsigned int nMergeSize = presorted * 2;
+
+		for (unsigned int nMergeSubSize = nMergeSize >> 1; nMergeSubSize > 256; nMergeSubSize = nMergeSubSize >> 1) {
+			push_constant.job_params[0] = nMergeSubSize;
+			if (nMergeSubSize == nMergeSize >> 1) {
+				push_constant.job_params[1] = (2 * nMergeSubSize - 1);
+				push_constant.job_params[2] = -1;
+			} else {
+				push_constant.job_params[1] = nMergeSubSize;
+				push_constant.job_params[2] = 1;
+			}
+			push_constant.job_params[3] = 0;
+
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(Sort::PushConstant));
+			RD::get_singleton()->compute_list_dispatch(compute_list, numThreadGroups, 1, 1);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sort.pipelines[SORT_MODE_INNER]);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(Sort::PushConstant));
+		RD::get_singleton()->compute_list_dispatch(compute_list, numThreadGroups, 1, 1);
+
+		presorted *= 2;
+	}
+
+	RD::get_singleton()->compute_list_end();
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 	{ // Initialize copy
 		Vector<String> copy_modes;
@@ -1615,6 +1685,21 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		for (int i = 0; i < SHADOW_REDUCE_MAX; i++) {
 			shadow_reduce.pipelines[i] = RD::get_singleton()->compute_pipeline_create(shadow_reduce.shader.version_get_shader(shadow_reduce.shader_version, i));
+		}
+	}
+
+	{
+		Vector<String> sort_modes;
+		sort_modes.push_back("\n#define MODE_SORT_BLOCK\n");
+		sort_modes.push_back("\n#define MODE_SORT_STEP\n");
+		sort_modes.push_back("\n#define MODE_SORT_INNER\n");
+
+		sort.shader.initialize(sort_modes);
+
+		sort.shader_version = sort.shader.version_create();
+
+		for (int i = 0; i < SORT_MODE_MAX; i++) {
+			sort.pipelines[i] = RD::get_singleton()->compute_pipeline_create(sort.shader.version_get_shader(sort.shader_version, i));
 		}
 	}
 
