@@ -856,7 +856,7 @@ Error SceneState::pack(Node *p_scene) {
 			base_scene_idx = _vm_get_variant(instance, variant_map);
 		}
 	}
-	//instanced, only direct sub-scnes are supported of course
+	//instanced, only direct sub-scenes are supported of course
 
 	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
 	if (err) {
