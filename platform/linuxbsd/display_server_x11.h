@@ -132,6 +132,9 @@ class DisplayServerX11 : public DisplayServer {
 
 		ObjectID instance_id;
 
+		bool menu_type = false;
+		bool no_focus = false;
+
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
@@ -277,6 +280,7 @@ public:
 	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
