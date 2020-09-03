@@ -311,44 +311,6 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 	return false;
 }
 
-String mono_to_utf8_string(MonoString *p_mono_string) {
-	MonoError error;
-	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
-
-	if (!mono_error_ok(&error)) {
-		ERR_PRINT(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
-		mono_error_cleanup(&error);
-		return String();
-	}
-
-	String ret = String::utf8(utf8);
-
-	mono_free(utf8);
-
-	return ret;
-}
-
-String mono_to_utf16_string(MonoString *p_mono_string) {
-	int len = mono_string_length(p_mono_string);
-	String ret;
-
-	if (len == 0) {
-		return ret;
-	}
-
-	ret.resize(len + 1);
-	ret.set(len, 0);
-
-	CharType *src = (CharType *)mono_string_chars(p_mono_string);
-	CharType *dst = ret.ptrw();
-
-	for (int i = 0; i < len; i++) {
-		dst[i] = src[i];
-	}
-
-	return ret;
-}
-
 MonoObject *variant_to_mono_object(const Variant *p_var) {
 	ManagedType type;
 

@@ -491,7 +491,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	int start_pos = p_position.character;
 	for (int c = p_position.character; c >= 0; c--) {
 		start_pos = c;
-		CharType ch = line[c];
+		char32_t ch = line[c];
 		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
 		if (!valid_char) {
 			break;
@@ -500,7 +500,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 
 	int end_pos = p_position.character;
 	for (int c = p_position.character; c < line.length(); c++) {
-		CharType ch = line[c];
+		char32_t ch = line[c];
 		bool valid_char = (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
 		if (!valid_char) {
 			break;
@@ -552,7 +552,7 @@ Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_positi
 		}
 
 		while (c >= 0) {
-			const CharType &character = line[c];
+			const char32_t &character = line[c];
 			if (character == ')') {
 				++bracket_stack;
 			} else if (character == '(') {

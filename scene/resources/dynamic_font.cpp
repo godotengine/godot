@@ -239,7 +239,7 @@ float DynamicFontAtSize::get_underline_thickness() const {
 	return underline_thickness;
 }
 
-const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFontAtSize::_find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFontAtSize::_find_char_with_font(char32_t p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 	const Character *chr = char_map.getptr(p_char);
 	ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(nullptr, nullptr)));
 
@@ -271,7 +271,7 @@ const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFon
 	return Pair<const Character *, DynamicFontAtSize *>(chr, const_cast<DynamicFontAtSize *>(this));
 }
 
-Size2 DynamicFontAtSize::get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
+Size2 DynamicFontAtSize::get_char_size(char32_t p_char, char32_t p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 	if (!valid) {
 		return Size2(1, 1);
 	}
@@ -297,7 +297,7 @@ String DynamicFontAtSize::get_available_chars() const {
 	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
 	while (gindex != 0) {
 		if (charcode != 0) {
-			chars += CharType(charcode);
+			chars += char32_t(charcode);
 		}
 		charcode = FT_Get_Next_Char(face, charcode, &gindex);
 	}
@@ -305,7 +305,7 @@ String DynamicFontAtSize::get_available_chars() const {
 	return chars;
 }
 
-float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only, bool p_outline) const {
+float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only, bool p_outline) const {
 	if (!valid) {
 		return 0;
 	}
@@ -560,7 +560,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 	return chr;
 }
 
-DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(CharType p_char) {
+DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(char32_t p_char) {
 	Character ret = Character::not_found();
 
 	if (FT_Load_Char(face, p_char, FT_LOAD_NO_BITMAP | (font->force_autohinter ? FT_LOAD_FORCE_AUTOHINT : 0)) != 0) {
@@ -596,7 +596,7 @@ cleanup_stroker:
 	return ret;
 }
 
-void DynamicFontAtSize::_update_char(CharType p_char) {
+void DynamicFontAtSize::_update_char(char32_t p_char) {
 	if (char_map.has(p_char)) {
 		return;
 	}
@@ -849,7 +849,7 @@ float DynamicFont::get_underline_thickness() const {
 	return data_at_size->get_underline_thickness();
 }
 
-Size2 DynamicFont::get_char_size(CharType p_char, CharType p_next) const {
+Size2 DynamicFont::get_char_size(char32_t p_char, char32_t p_next) const {
 	if (!data_at_size.is_valid()) {
 		return Size2(1, 1);
 	}
@@ -891,7 +891,7 @@ bool DynamicFont::has_outline() const {
 	return outline_cache_id.outline_size > 0;
 }
 
-float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, bool p_outline) const {
+float DynamicFont::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next, const Color &p_modulate, bool p_outline) const {
 	const Ref<DynamicFontAtSize> &font_at_size = p_outline && outline_cache_id.outline_size > 0 ? outline_data_at_size : data_at_size;
 
 	if (!font_at_size.is_valid()) {

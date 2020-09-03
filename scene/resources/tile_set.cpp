@@ -40,7 +40,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	if (slash == -1) {
 		return false;
 	}
-	int id = String::to_int(n.c_str(), slash);
+	int id = String::to_int(n.get_data(), slash);
 
 	if (!tile_map.has(id)) {
 		create_tile(id);
@@ -216,7 +216,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	if (slash == -1) {
 		return false;
 	}
-	int id = String::to_int(n.c_str(), slash);
+	int id = String::to_int(n.get_data(), slash);
 
 	ERR_FAIL_COND_V(!tile_map.has(id), false);
 

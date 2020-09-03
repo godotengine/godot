@@ -39,7 +39,6 @@
 #include "core/ucaps.h"
 #include "core/variant.h"
 
-#include <wchar.h>
 #include <cstdint>
 
 #ifndef NO_USE_STDLIB
@@ -62,9 +61,10 @@
 #define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
 
 const char CharString::_null = 0;
-const CharType String::_null = 0;
+const char16_t Char16String::_null = 0;
+const char32_t String::_null = 0;
 
-bool is_symbol(CharType c) {
+bool is_symbol(char32_t c) {
 	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
 }
 
@@ -96,7 +96,65 @@ bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end) {
 	}
 }
 
-/** STRING **/
+/*************************************************************************/
+/*  Char16String                                                         */
+/*************************************************************************/
+
+bool Char16String::operator<(const Char16String &p_right) const {
+	if (length() == 0) {
+		return p_right.length() != 0;
+	}
+
+	return is_str_less(get_data(), p_right.get_data());
+}
+
+Char16String &Char16String::operator+=(char16_t p_char) {
+	resize(size() ? size() + 1 : 2);
+	set(length(), 0);
+	set(length() - 1, p_char);
+
+	return *this;
+}
+
+Char16String &Char16String::operator=(const char16_t *p_cstr) {
+	copy_from(p_cstr);
+	return *this;
+}
+
+const char16_t *Char16String::get_data() const {
+	if (size()) {
+		return &operator[](0);
+	} else {
+		return u"";
+	}
+}
+
+void Char16String::copy_from(const char16_t *p_cstr) {
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	const char16_t *s = p_cstr;
+	for (; *s; s++) {
+	}
+	size_t len = s - p_cstr;
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	Error err = resize(++len); // include terminating null char
+
+	ERR_FAIL_COND_MSG(err != OK, "Failed to copy char16_t string.");
+
+	memcpy(ptrw(), p_cstr, len * sizeof(char16_t));
+}
+
+/*************************************************************************/
+/*  CharString                                                           */
+/*************************************************************************/
 
 bool CharString::operator<(const CharString &p_right) const {
 	if (length() == 0) {
@@ -114,17 +172,17 @@ CharString &CharString::operator+=(char p_char) {
 	return *this;
 }
 
+CharString &CharString::operator=(const char *p_cstr) {
+	copy_from(p_cstr);
+	return *this;
+}
+
 const char *CharString::get_data() const {
 	if (size()) {
 		return &operator[](0);
 	} else {
 		return "";
 	}
-}
-
-CharString &CharString::operator=(const char *p_cstr) {
-	copy_from(p_cstr);
-	return *this;
 }
 
 void CharString::copy_from(const char *p_cstr) {
@@ -147,7 +205,44 @@ void CharString::copy_from(const char *p_cstr) {
 	memcpy(ptrw(), p_cstr, len);
 }
 
+/*************************************************************************/
+/*  String                                                               */
+/*************************************************************************/
+
+//TODO: move to TextServer
+//kind of poor should be rewritten properly
+String String::word_wrap(int p_chars_per_line) const {
+	int from = 0;
+	int last_space = 0;
+	String ret;
+	for (int i = 0; i < length(); i++) {
+		if (i - from >= p_chars_per_line) {
+			if (last_space == -1) {
+				ret += substr(from, i - from + 1) + "\n";
+			} else {
+				ret += substr(from, last_space - from) + "\n";
+				i = last_space; //rewind
+			}
+			from = i + 1;
+			last_space = -1;
+		} else if (operator[](i) == ' ' || operator[](i) == '\t') {
+			last_space = i;
+		} else if (operator[](i) == '\n') {
+			ret += substr(from, i - from) + "\n";
+			from = i + 1;
+			last_space = -1;
+		}
+	}
+
+	if (from < length()) {
+		ret += substr(from, length());
+	}
+
+	return ret;
+}
+
 void String::copy_from(const char *p_cstr) {
+	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
 		resize(0);
 		return;
@@ -166,21 +261,100 @@ void String::copy_from(const char *p_cstr) {
 
 	resize(len + 1); // include 0
 
-	CharType *dst = this->ptrw();
+	char32_t *dst = this->ptrw();
 
 	for (int i = 0; i < len + 1; i++) {
 		dst[i] = p_cstr[i];
 	}
 }
 
-void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
+void String::copy_from(const char *p_cstr, const int p_clip_to) {
+	// copy Latin-1 encoded c-string directly
 	if (!p_cstr) {
 		resize(0);
 		return;
 	}
 
 	int len = 0;
-	const CharType *ptr = p_cstr;
+	const char *ptr = p_cstr;
+	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
+		len++;
+	}
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	resize(len + 1); // include 0
+
+	char32_t *dst = this->ptrw();
+
+	for (int i = 0; i < len; i++) {
+		dst[i] = p_cstr[i];
+	}
+	dst[len] = 0;
+}
+
+void String::copy_from(const wchar_t *p_cstr) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit, parse as UTF-16
+	parse_utf16((const char16_t *)p_cstr);
+#else
+	// wchar_t is 32-bit, copy directly
+	copy_from((const char32_t *)p_cstr);
+#endif
+}
+
+void String::copy_from(const wchar_t *p_cstr, const int p_clip_to) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit, parse as UTF-16
+	parse_utf16((const char16_t *)p_cstr, p_clip_to);
+#else
+	// wchar_t is 32-bit, copy directly
+	copy_from((const char32_t *)p_cstr, p_clip_to);
+#endif
+}
+
+void String::copy_from(const char32_t &p_char) {
+	resize(2);
+	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
+		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
+		set(0, 0xfffd);
+	} else {
+		set(0, p_char);
+	}
+	set(1, 0);
+}
+
+void String::copy_from(const char32_t *p_cstr) {
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	int len = 0;
+	const char32_t *ptr = p_cstr;
+	while (*(ptr++) != 0) {
+		len++;
+	}
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	copy_from_unchecked(p_cstr, len);
+}
+
+void String::copy_from(const char32_t *p_cstr, const int p_clip_to) {
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	int len = 0;
+	const char32_t *ptr = p_cstr;
 	while ((p_clip_to < 0 || len < p_clip_to) && *(ptr++) != 0) {
 		len++;
 	}
@@ -197,54 +371,60 @@ void String::copy_from(const CharType *p_cstr, const int p_clip_to) {
 // p_char != nullptr
 // p_length > 0
 // p_length <= p_char strlen
-void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
+void String::copy_from_unchecked(const char32_t *p_char, const int p_length) {
 	resize(p_length + 1);
 	set(p_length, 0);
 
-	CharType *dst = ptrw();
+	char32_t *dst = ptrw();
 
 	for (int i = 0; i < p_length; i++) {
-		dst[i] = p_char[i];
-	}
-}
-
-void String::copy_from(const CharType &p_char) {
-	resize(2);
-	set(0, p_char);
-	set(1, 0);
-}
-
-bool String::operator==(const String &p_str) const {
-	if (length() != p_str.length()) {
-		return false;
-	}
-	if (empty()) {
-		return true;
-	}
-
-	int l = length();
-
-	const CharType *src = c_str();
-	const CharType *dst = p_str.c_str();
-
-	/* Compare char by char */
-	for (int i = 0; i < l; i++) {
-		if (src[i] != dst[i]) {
-			return false;
+		if ((p_char[i] >= 0xd800 && p_char[i] <= 0xdfff) || (p_char[i] > 0x10ffff)) {
+			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char[i], 16) + ".");
+			dst[i] = 0xfffd;
+		} else {
+			dst[i] = p_char[i];
 		}
 	}
-
-	return true;
 }
 
-bool String::operator!=(const String &p_str) const {
-	return !(*this == p_str);
+void String::operator=(const char *p_str) {
+	copy_from(p_str);
+}
+
+void String::operator=(const char32_t *p_str) {
+	copy_from(p_str);
+}
+
+void String::operator=(const wchar_t *p_str) {
+	copy_from(p_str);
 }
 
 String String::operator+(const String &p_str) const {
 	String res = *this;
 	res += p_str;
 	return res;
+}
+
+String operator+(const char *p_chr, const String &p_str) {
+	String tmp = p_chr;
+	tmp += p_str;
+	return tmp;
+}
+
+String operator+(const wchar_t *p_chr, const String &p_str) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	String tmp = String::utf16((const char16_t *)p_chr);
+#else
+	// wchar_t is 32-bi
+	String tmp = (const char32_t *)p_chr;
+#endif
+	tmp += p_str;
+	return tmp;
+}
+
+String operator+(char32_t p_chr, const String &p_str) {
+	return (String::chr(p_chr) + p_str);
 }
 
 String &String::operator+=(const String &p_str) {
@@ -261,27 +441,14 @@ String &String::operator+=(const String &p_str) {
 
 	resize(length() + p_str.size());
 
-	const CharType *src = p_str.c_str();
-	CharType *dst = ptrw();
+	const char32_t *src = p_str.get_data();
+	char32_t *dst = ptrw();
 
 	set(length(), 0);
 
 	for (int i = 0; i < p_str.length(); i++) {
 		dst[from + i] = src[i];
 	}
-
-	return *this;
-}
-
-String &String::operator+=(const CharType *p_str) {
-	*this += String(p_str);
-	return *this;
-}
-
-String &String::operator+=(CharType p_char) {
-	resize(size() ? size() + 1 : 2);
-	set(length(), 0);
-	set(length() - 1, p_char);
 
 	return *this;
 }
@@ -301,7 +468,7 @@ String &String::operator+=(const char *p_str) {
 
 	resize(from + src_len + 1);
 
-	CharType *dst = ptrw();
+	char32_t *dst = ptrw();
 
 	set(length(), 0);
 
@@ -312,38 +479,37 @@ String &String::operator+=(const char *p_str) {
 	return *this;
 }
 
-void String::operator=(const char *p_str) {
-	copy_from(p_str);
+String &String::operator+=(const wchar_t *p_str) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	*this += String::utf16((const char16_t *)p_str);
+#else
+	// wchar_t is 32-bit
+	*this += String((const char32_t *)p_str);
+#endif
+	return *this;
 }
 
-void String::operator=(const CharType *p_str) {
-	copy_from(p_str);
+String &String::operator+=(const char32_t *p_str) {
+	*this += String(p_str);
+	return *this;
 }
 
-bool String::operator==(const StrRange &p_str_range) const {
-	int len = p_str_range.len;
-
-	if (length() != len) {
-		return false;
-	}
-	if (empty()) {
-		return true;
-	}
-
-	const CharType *c_str = p_str_range.c_str;
-	const CharType *dst = &operator[](0);
-
-	/* Compare char by char */
-	for (int i = 0; i < len; i++) {
-		if (c_str[i] != dst[i]) {
-			return false;
-		}
+String &String::operator+=(char32_t p_char) {
+	resize(size() ? size() + 1 : 2);
+	set(length(), 0);
+	if ((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff)) {
+		print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(p_char, 16) + ".");
+		set(length() - 1, 0xfffd);
+	} else {
+		set(length() - 1, p_char);
 	}
 
-	return true;
+	return *this;
 }
 
 bool String::operator==(const char *p_str) const {
+	// compare Latin-1 encoded c-string
 	int len = 0;
 	const char *aux = p_str;
 
@@ -360,11 +526,11 @@ bool String::operator==(const char *p_str) const {
 
 	int l = length();
 
-	const CharType *dst = c_str();
+	const char32_t *dst = get_data();
 
-	/* Compare char by char */
+	// Compare char by char
 	for (int i = 0; i < l; i++) {
-		if (p_str[i] != dst[i]) {
+		if ((char32_t)p_str[i] != dst[i]) {
 			return false;
 		}
 	}
@@ -372,9 +538,19 @@ bool String::operator==(const char *p_str) const {
 	return true;
 }
 
-bool String::operator==(const CharType *p_str) const {
+bool String::operator==(const wchar_t *p_str) const {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit, parse as UTF-16
+	return *this == String::utf16((const char16_t *)p_str);
+#else
+	// wchar_t is 32-bit, compare char by char
+	return *this == (const char32_t *)p_str;
+#endif
+}
+
+bool String::operator==(const char32_t *p_str) const {
 	int len = 0;
-	const CharType *aux = p_str;
+	const char32_t *aux = p_str;
 
 	while (*(aux++) != 0) {
 		len++;
@@ -389,7 +565,7 @@ bool String::operator==(const CharType *p_str) const {
 
 	int l = length();
 
-	const CharType *dst = c_str();
+	const char32_t *dst = get_data();
 
 	/* Compare char by char */
 	for (int i = 0; i < l; i++) {
@@ -401,23 +577,80 @@ bool String::operator==(const CharType *p_str) const {
 	return true;
 }
 
-bool String::operator!=(const char *p_str) const {
-	return (!(*this == p_str));
-}
-
-bool String::operator!=(const CharType *p_str) const {
-	return (!(*this == p_str));
-}
-
-bool String::operator<(const CharType *p_str) const {
-	if (empty() && p_str[0] == 0) {
+bool String::operator==(const String &p_str) const {
+	if (length() != p_str.length()) {
 		return false;
 	}
 	if (empty()) {
 		return true;
 	}
 
-	return is_str_less(c_str(), p_str);
+	int l = length();
+
+	const char32_t *src = get_data();
+	const char32_t *dst = p_str.get_data();
+
+	/* Compare char by char */
+	for (int i = 0; i < l; i++) {
+		if (src[i] != dst[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool String::operator==(const StrRange &p_str_range) const {
+	int len = p_str_range.len;
+
+	if (length() != len) {
+		return false;
+	}
+	if (empty()) {
+		return true;
+	}
+
+	const char32_t *c_str = p_str_range.c_str;
+	const char32_t *dst = &operator[](0);
+
+	/* Compare char by char */
+	for (int i = 0; i < len; i++) {
+		if (c_str[i] != dst[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool operator==(const char *p_chr, const String &p_str) {
+	return p_str == p_chr;
+}
+
+bool operator==(const wchar_t *p_chr, const String &p_str) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return p_str == String::utf16((const char16_t *)p_chr);
+#else
+	// wchar_t is 32-bi
+	return p_str == String((const char32_t *)p_chr);
+#endif
+}
+
+bool String::operator!=(const char *p_str) const {
+	return (!(*this == p_str));
+}
+
+bool String::operator!=(const wchar_t *p_str) const {
+	return (!(*this == p_str));
+}
+
+bool String::operator!=(const char32_t *p_str) const {
+	return (!(*this == p_str));
+}
+
+bool String::operator!=(const String &p_str) const {
+	return !((*this == p_str));
 }
 
 bool String::operator<=(const String &p_str) const {
@@ -431,12 +664,39 @@ bool String::operator<(const char *p_str) const {
 	if (empty()) {
 		return true;
 	}
+	return is_str_less(get_data(), p_str);
+}
 
-	return is_str_less(c_str(), p_str);
+bool String::operator<(const wchar_t *p_str) const {
+	if (empty() && p_str[0] == 0) {
+		return false;
+	}
+	if (empty()) {
+		return true;
+	}
+
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return is_str_less(get_data(), String::utf16((const char16_t *)p_str).get_data());
+#else
+	// wchar_t is 32-bit
+	return is_str_less(get_data(), (const char32_t *)p_str);
+#endif
+}
+
+bool String::operator<(const char32_t *p_str) const {
+	if (empty() && p_str[0] == 0) {
+		return false;
+	}
+	if (empty()) {
+		return true;
+	}
+
+	return is_str_less(get_data(), p_str);
 }
 
 bool String::operator<(const String &p_str) const {
-	return operator<(p_str.c_str());
+	return operator<(p_str.get_data());
 }
 
 signed char String::nocasecmp_to(const String &p_str) const {
@@ -450,8 +710,8 @@ signed char String::nocasecmp_to(const String &p_str) const {
 		return 1;
 	}
 
-	const CharType *that_str = p_str.c_str();
-	const CharType *this_str = c_str();
+	const char32_t *that_str = p_str.get_data();
+	const char32_t *this_str = get_data();
 
 	while (true) {
 		if (*that_str == 0 && *this_str == 0) {
@@ -482,8 +742,8 @@ signed char String::casecmp_to(const String &p_str) const {
 		return 1;
 	}
 
-	const CharType *that_str = p_str.c_str();
-	const CharType *this_str = c_str();
+	const char32_t *that_str = p_str.get_data();
+	const char32_t *this_str = get_data();
 
 	while (true) {
 		if (*that_str == 0 && *this_str == 0) {
@@ -504,8 +764,8 @@ signed char String::casecmp_to(const String &p_str) const {
 }
 
 signed char String::naturalnocasecmp_to(const String &p_str) const {
-	const CharType *this_str = c_str();
-	const CharType *that_str = p_str.c_str();
+	const char32_t *this_str = get_data();
+	const char32_t *that_str = p_str.get_data();
 
 	if (this_str && that_str) {
 		while (*this_str == '.' || *that_str == '.') {
@@ -571,6 +831,11 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 	return 0;
 }
 
+const char32_t *String::get_data() const {
+	static const char32_t zero = 0;
+	return size() ? &operator[](0) : &zero;
+}
+
 void String::erase(int p_pos, int p_chars) {
 	*this = left(p_pos) + substr(p_pos + p_chars, length() - ((p_pos + p_chars)));
 }
@@ -593,7 +858,7 @@ String String::capitalize() const {
 }
 
 String String::camelcase_to_underscore(bool lowercase) const {
-	const CharType *cstr = c_str();
+	const char32_t *cstr = get_data();
 	String new_string;
 	const char A = 'A', Z = 'Z';
 	const char a = 'a', z = 'z';
@@ -705,7 +970,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 	return ""; //no find!
 }
 
-String String::get_slicec(CharType p_splitter, int p_slice) const {
+String String::get_slicec(char32_t p_splitter, int p_slice) const {
 	if (empty()) {
 		return String();
 	}
@@ -714,7 +979,7 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 		return String();
 	}
 
-	const CharType *c = this->ptr();
+	const char32_t *c = this->ptr();
 	int i = 0;
 	int prev = 0;
 	int count = 0;
@@ -851,7 +1116,7 @@ Vector<float> String::split_floats(const String &p_splitter, bool p_allow_empty)
 			end = len;
 		}
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_float(&c_str()[from]));
+			ret.push_back(String::to_float(&get_data()[from]));
 		}
 
 		if (end == len) {
@@ -880,7 +1145,7 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters, bool p_
 		}
 
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_float(&c_str()[from]));
+			ret.push_back(String::to_float(&get_data()[from]));
 		}
 
 		if (end == len) {
@@ -904,7 +1169,7 @@ Vector<int> String::split_ints(const String &p_splitter, bool p_allow_empty) con
 			end = len;
 		}
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_int(&c_str()[from], end - from));
+			ret.push_back(String::to_int(&get_data()[from], end - from));
 		}
 
 		if (end == len) {
@@ -933,7 +1198,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 		}
 
 		if (p_allow_empty || (end > from)) {
-			ret.push_back(String::to_int(&c_str()[from], end - from));
+			ret.push_back(String::to_int(&get_data()[from], end - from));
 		}
 
 		if (end == len) {
@@ -946,7 +1211,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(Vector<String> parts) {
+String String::join(Vector<String> parts) const {
 	String ret;
 	for (int i = 0; i < parts.size(); ++i) {
 		if (i > 0) {
@@ -957,11 +1222,11 @@ String String::join(Vector<String> parts) {
 	return ret;
 }
 
-CharType String::char_uppercase(CharType p_char) {
+char32_t String::char_uppercase(char32_t p_char) {
 	return _find_upper(p_char);
 }
 
-CharType String::char_lowercase(CharType p_char) {
+char32_t String::char_lowercase(char32_t p_char) {
 	return _find_lower(p_char);
 }
 
@@ -969,8 +1234,8 @@ String String::to_upper() const {
 	String upper = *this;
 
 	for (int i = 0; i < upper.size(); i++) {
-		const CharType s = upper[i];
-		const CharType t = _find_upper(s);
+		const char32_t s = upper[i];
+		const char32_t t = _find_upper(s);
 		if (s != t) { // avoid copy on write
 			upper[i] = t;
 		}
@@ -983,8 +1248,8 @@ String String::to_lower() const {
 	String lower = *this;
 
 	for (int i = 0; i < lower.size(); i++) {
-		const CharType s = lower[i];
-		const CharType t = _find_lower(s);
+		const char32_t s = lower[i];
+		const char32_t t = _find_lower(s);
 		if (s != t) { // avoid copy on write
 			lower[i] = t;
 		}
@@ -993,40 +1258,22 @@ String String::to_lower() const {
 	return lower;
 }
 
-const CharType *String::c_str() const {
-	static const CharType zero = 0;
-
-	return size() ? &operator[](0) : &zero;
-}
-
-String String::md5(const uint8_t *p_md5) {
-	return String::hex_encode_buffer(p_md5, 16);
-}
-
-String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
-	static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-
-	String ret;
-	char v[2] = { 0, 0 };
-
-	for (int i = 0; i < p_len; i++) {
-		v[0] = hex[p_buffer[i] >> 4];
-		ret += v;
-		v[0] = hex[p_buffer[i] & 0xF];
-		ret += v;
-	}
-
-	return ret;
-}
-
-String String::chr(CharType p_char) {
-	CharType c[2] = { p_char, 0 };
+String String::chr(char32_t p_char) {
+	char32_t c[2] = { p_char, 0 };
 	return String(c);
 }
 
 String String::num(double p_num, int p_decimals) {
 	if (Math::is_nan(p_num)) {
 		return "nan";
+	}
+
+	if (Math::is_inf(p_num)) {
+		if (signbit(p_num)) {
+			return "-inf";
+		} else {
+			return "inf";
+		}
 	}
 #ifndef NO_USE_STDLIB
 
@@ -1106,7 +1353,7 @@ String String::num(double p_num, int p_decimals) {
 	/* decimal part */
 
 	if (p_decimals > 0 || (p_decimals == -1 && (int)p_num != p_num)) {
-		double dec = p_num - (float)((int)p_num);
+		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
 		if (p_decimals > MAX_DIGITS)
@@ -1125,7 +1372,7 @@ String String::num(double p_num, int p_decimals) {
 				if (digit == MAX_DIGITS) //no point in going to infinite
 					break;
 
-				if ((dec - (float)((int)dec)) < 1e-6)
+				if ((dec - (double)((int)dec)) < 1e-6)
 					break;
 			}
 
@@ -1159,7 +1406,7 @@ String String::num(double p_num, int p_decimals) {
 		s = "0";
 	else {
 		while (intn) {
-			CharType num = '0' + (intn % 10);
+			char32_t num = '0' + (intn % 10);
 			intn /= 10;
 			s = num + s;
 		}
@@ -1188,7 +1435,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	}
 	String s;
 	s.resize(chars + 1);
-	CharType *c = s.ptrw();
+	char32_t *c = s.ptrw();
 	c[chars] = 0;
 	n = p_num;
 	do {
@@ -1221,7 +1468,7 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 
 	String s;
 	s.resize(chars + 1);
-	CharType *c = s.ptrw();
+	char32_t *c = s.ptrw();
 	c[chars] = 0;
 	n = p_num;
 	do {
@@ -1240,6 +1487,18 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 }
 
 String String::num_real(double p_num) {
+	if (Math::is_nan(p_num)) {
+		return "nan";
+	}
+
+	if (Math::is_inf(p_num)) {
+		if (signbit(p_num)) {
+			return "-inf";
+		} else {
+			return "inf";
+		}
+	}
+
 	String s;
 	String sd;
 	/* integer part */
@@ -1251,7 +1510,7 @@ String String::num_real(double p_num) {
 	/* decimal part */
 
 	if ((int)p_num != p_num) {
-		double dec = p_num - (float)((int)p_num);
+		double dec = p_num - (double)((int)p_num);
 
 		int digit = 0;
 		int decimals = MAX_DIGITS;
@@ -1265,7 +1524,7 @@ String String::num_real(double p_num) {
 			dec_max = dec_max * 10 + 9;
 			digit++;
 
-			if ((dec - (float)((int)dec)) < 1e-6) {
+			if ((dec - (double)((int)dec)) < 1e-6) {
 				break;
 			}
 
@@ -1302,7 +1561,7 @@ String String::num_real(double p_num) {
 		s = "0";
 	} else {
 		while (intn) {
-			CharType num = '0' + (intn % 10);
+			char32_t num = '0' + (intn % 10);
 			intn /= 10;
 			s = num + s;
 		}
@@ -1318,6 +1577,14 @@ String String::num_real(double p_num) {
 String String::num_scientific(double p_num) {
 	if (Math::is_nan(p_num)) {
 		return "nan";
+	}
+
+	if (Math::is_inf(p_num)) {
+		if (signbit(p_num)) {
+			return "-inf";
+		} else {
+			return "inf";
+		}
 	}
 #ifndef NO_USE_STDLIB
 
@@ -1348,6 +1615,26 @@ String String::num_scientific(double p_num) {
 #endif
 }
 
+String String::md5(const uint8_t *p_md5) {
+	return String::hex_encode_buffer(p_md5, 16);
+}
+
+String String::hex_encode_buffer(const uint8_t *p_buffer, int p_len) {
+	static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+	String ret;
+	char v[2] = { 0, 0 };
+
+	for (int i = 0; i < p_len; i++) {
+		v[0] = hex[p_buffer[i] >> 4];
+		ret += v;
+		v[0] = hex[p_buffer[i] & 0xF];
+		ret += v;
+	}
+
+	return ret;
+}
+
 CharString String::ascii(bool p_allow_extended) const {
 	if (!length()) {
 		return CharString();
@@ -1357,7 +1644,13 @@ CharString String::ascii(bool p_allow_extended) const {
 	cs.resize(size());
 
 	for (int i = 0; i < size(); i++) {
-		cs[i] = operator[](i);
+		char32_t c = operator[](i);
+		if ((c <= 0x7f) || (c <= 0xff && p_allow_extended)) {
+			cs[i] = c;
+		} else {
+			print_error("Unicode parsing error: Cannot represent " + num_int64(c, 16) + " as ASCII/Latin-1 character.");
+			cs[i] = 0x20;
+		}
 	}
 
 	return cs;
@@ -1371,7 +1664,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 }
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
-#define _UNICERROR(m_err) print_line("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
+#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
 
 	if (!p_utf8) {
 		return true;
@@ -1384,9 +1677,9 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 	/* HANDLE BOM (Byte Order Mark) */
 	if (p_len < 0 || p_len >= 3) {
-		bool has_bom = uint8_t(p_utf8[0]) == 0xEF && uint8_t(p_utf8[1]) == 0xBB && uint8_t(p_utf8[2]) == 0xBF;
+		bool has_bom = uint8_t(p_utf8[0]) == 0xef && uint8_t(p_utf8[1]) == 0xbb && uint8_t(p_utf8[2]) == 0xbf;
 		if (has_bom) {
-			//just skip it
+			//8-bit encoding, byte order has no meaning in UTF-8, just skip it
 			if (p_len >= 0) {
 				p_len -= 3;
 			}
@@ -1405,24 +1698,19 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
 					skip = 0;
-				} else if ((c & 0xE0) == 0xC0) {
+				} else if ((c & 0xe0) == 0xc0) {
 					skip = 1;
-				} else if ((c & 0xF0) == 0xE0) {
+				} else if ((c & 0xf0) == 0xe0) {
 					skip = 2;
-				} else if ((c & 0xF8) == 0xF0) {
+				} else if ((c & 0xf8) == 0xf0) {
 					skip = 3;
-				} else if ((c & 0xFC) == 0xF8) {
-					skip = 4;
-				} else if ((c & 0xFE) == 0xFC) {
-					skip = 5;
 				} else {
-					_UNICERROR("invalid skip");
+					_UNICERROR("invalid skip at " + num_int64(cstr_size));
 					return true; //invalid utf8
 				}
 
-				if (skip == 1 && (c & 0x1E) == 0) {
-					//printf("overlong rejected\n");
-					_UNICERROR("overlong rejected");
+				if (skip == 1 && (c & 0x1e) == 0) {
+					_UNICERROR("overlong rejected at " + num_int64(cstr_size));
 					return true; //reject overlong
 				}
 
@@ -1448,7 +1736,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	resize(str_size + 1);
-	CharType *dst = ptrw();
+	char32_t *dst = ptrw();
 	dst[str_size] = 0;
 
 	while (cstr_size) {
@@ -1457,19 +1745,14 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		/* Determine the number of characters in sequence */
 		if ((*p_utf8 & 0x80) == 0) {
 			len = 1;
-		} else if ((*p_utf8 & 0xE0) == 0xC0) {
+		} else if ((*p_utf8 & 0xe0) == 0xc0) {
 			len = 2;
-		} else if ((*p_utf8 & 0xF0) == 0xE0) {
+		} else if ((*p_utf8 & 0xf0) == 0xe0) {
 			len = 3;
-		} else if ((*p_utf8 & 0xF8) == 0xF0) {
+		} else if ((*p_utf8 & 0xf8) == 0xf0) {
 			len = 4;
-		} else if ((*p_utf8 & 0xFC) == 0xF8) {
-			len = 5;
-		} else if ((*p_utf8 & 0xFE) == 0xFC) {
-			len = 6;
 		} else {
 			_UNICERROR("invalid len");
-
 			return true; //invalid UTF8
 		}
 
@@ -1479,7 +1762,6 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			//printf("overlong rejected\n");
 			_UNICERROR("no space left");
 			return true; //reject overlong
 		}
@@ -1491,24 +1773,23 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		if (len == 1) {
 			unichar = *p_utf8;
 		} else {
-			unichar = (0xFF >> (len + 1)) & *p_utf8;
+			unichar = (0xff >> (len + 1)) & *p_utf8;
 
 			for (int i = 1; i < len; i++) {
-				if ((p_utf8[i] & 0xC0) != 0x80) {
+				if ((p_utf8[i] & 0xc0) != 0x80) {
 					_UNICERROR("invalid utf8");
 					return true; //invalid utf8
 				}
-				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7F) >> (7 - len)) == 0) {
+				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7f) >> (7 - len)) == 0) {
 					_UNICERROR("invalid utf8 overlong");
 					return true; //no overlong
 				}
-				unichar = (unichar << 6) | (p_utf8[i] & 0x3F);
+				unichar = (unichar << 6) | (p_utf8[i] & 0x3f);
 			}
 		}
-
-		//printf("char %i, len %i\n",unichar,len);
-		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
-			unichar = ' '; //too long for windows
+		if (unichar >= 0xd800 && unichar <= 0xdfff) {
+			_UNICERROR("invalid code point");
+			return CharString();
 		}
 
 		*(dst++) = unichar;
@@ -1517,6 +1798,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	return false;
+#undef _UNICERROR
 }
 
 CharString String::utf8() const {
@@ -1525,7 +1807,7 @@ CharString String::utf8() const {
 		return CharString();
 	}
 
-	const CharType *d = &operator[](0);
+	const char32_t *d = &operator[](0);
 	int fl = 0;
 	for (int i = 0; i < l; i++) {
 		uint32_t c = d[i];
@@ -1535,13 +1817,15 @@ CharString String::utf8() const {
 			fl += 2;
 		} else if (c <= 0xffff) { // 16 bits
 			fl += 3;
-		} else if (c <= 0x001fffff) { // 21 bits
+		} else if (c <= 0x0010ffff) { // 21 bits
 			fl += 4;
-
-		} else if (c <= 0x03ffffff) { // 26 bits
-			fl += 5;
-		} else if (c <= 0x7fffffff) { // 31 bits
-			fl += 6;
+		} else {
+			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(c, 16) + ".");
+			return CharString();
+		}
+		if (c >= 0xd800 && c <= 0xdfff) {
+			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(c, 16) + ".");
+			return CharString();
 		}
 	}
 
@@ -1561,34 +1845,16 @@ CharString String::utf8() const {
 		if (c <= 0x7f) { // 7 bits.
 			APPEND_CHAR(c);
 		} else if (c <= 0x7ff) { // 11 bits
-
 			APPEND_CHAR(uint32_t(0xc0 | ((c >> 6) & 0x1f))); // Top 5 bits.
 			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
 		} else if (c <= 0xffff) { // 16 bits
-
 			APPEND_CHAR(uint32_t(0xe0 | ((c >> 12) & 0x0f))); // Top 4 bits.
 			APPEND_CHAR(uint32_t(0x80 | ((c >> 6) & 0x3f))); // Middle 6 bits.
 			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
-		} else if (c <= 0x001fffff) { // 21 bits
-
+		} else { // 21 bits
 			APPEND_CHAR(uint32_t(0xf0 | ((c >> 18) & 0x07))); // Top 3 bits.
 			APPEND_CHAR(uint32_t(0x80 | ((c >> 12) & 0x3f))); // Upper middle 6 bits.
 			APPEND_CHAR(uint32_t(0x80 | ((c >> 6) & 0x3f))); // Lower middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
-		} else if (c <= 0x03ffffff) { // 26 bits
-
-			APPEND_CHAR(uint32_t(0xf8 | ((c >> 24) & 0x03))); // Top 2 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 18) & 0x3f))); // Upper middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 12) & 0x3f))); // middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 6) & 0x3f))); // Lower middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
-		} else if (c <= 0x7fffffff) { // 31 bits
-
-			APPEND_CHAR(uint32_t(0xfc | ((c >> 30) & 0x01))); // Top 1 bit.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 24) & 0x3f))); // Upper upper middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 18) & 0x3f))); // Lower upper middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 12) & 0x3f))); // Upper lower middle 6 bits.
-			APPEND_CHAR(uint32_t(0x80 | ((c >> 6) & 0x3f))); // Lower lower middle 6 bits.
 			APPEND_CHAR(uint32_t(0x80 | (c & 0x3f))); // Bottom 6 bits.
 		}
 	}
@@ -1598,21 +1864,191 @@ CharString String::utf8() const {
 	return utf8s;
 }
 
-/*
-String::String(CharType p_char) {
+String String::utf16(const char16_t *p_utf16, int p_len) {
+	String ret;
+	ret.parse_utf16(p_utf16, p_len);
 
-	shared=nullptr;
-	copy_from(p_char);
+	return ret;
 }
 
+bool String::parse_utf16(const char16_t *p_utf16, int p_len) {
+#define _UNICERROR(m_err) print_error("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-16?");
 
-*/
+	if (!p_utf16) {
+		return true;
+	}
+
+	String aux;
+
+	int cstr_size = 0;
+	int str_size = 0;
+
+	/* HANDLE BOM (Byte Order Mark) */
+	bool byteswap = false; // assume correct endianness if no BOM found
+	if (p_len < 0 || p_len >= 1) {
+		bool has_bom = false;
+		if (uint16_t(p_utf16[0]) == 0xfeff) { // correct BOM, read as is
+			has_bom = true;
+			byteswap = false;
+		} else if (uint16_t(p_utf16[0]) == 0xfffe) { // backwards BOM, swap bytes
+			has_bom = true;
+			byteswap = true;
+		}
+		if (has_bom) {
+			if (p_len >= 0) {
+				p_len -= 1;
+			}
+			p_utf16 += 1;
+		}
+	}
+
+	{
+		const char16_t *ptrtmp = p_utf16;
+		const char16_t *ptrtmp_limit = &p_utf16[p_len];
+		int skip = 0;
+		while (ptrtmp != ptrtmp_limit && *ptrtmp) {
+			uint32_t c = (byteswap) ? BSWAP16(*ptrtmp) : *ptrtmp;
+			if (skip == 0) {
+				if ((c & 0xfffffc00) == 0xd800) {
+					skip = 1; // lead surrogate
+				} else if ((c & 0xfffffc00) == 0xdc00) {
+					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					return true; // invalid UTF16
+				} else {
+					skip = 0;
+				}
+				str_size++;
+			} else {
+				if ((c & 0xfffffc00) == 0xdc00) { // trail surrogate
+					--skip;
+				} else {
+					_UNICERROR("invalid utf16 surrogate at " + num_int64(cstr_size));
+					return true; // invalid UTF16
+				}
+			}
+
+			cstr_size++;
+			ptrtmp++;
+		}
+
+		if (skip) {
+			_UNICERROR("no space left");
+			return true; // not enough space
+		}
+	}
+
+	if (str_size == 0) {
+		clear();
+		return false;
+	}
+
+	resize(str_size + 1);
+	char32_t *dst = ptrw();
+	dst[str_size] = 0;
+
+	while (cstr_size) {
+		int len = 0;
+		uint32_t c = (byteswap) ? BSWAP16(*p_utf16) : *p_utf16;
+
+		if ((c & 0xfffffc00) == 0xd800) {
+			len = 2;
+		} else {
+			len = 1;
+		}
+
+		if (len > cstr_size) {
+			_UNICERROR("no space left");
+			return true; //not enough space
+		}
+
+		uint32_t unichar = 0;
+		if (len == 1) {
+			unichar = c;
+		} else {
+			uint32_t c2 = (byteswap) ? BSWAP16(p_utf16[1]) : p_utf16[1];
+			unichar = (c << 10UL) + c2 - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+		}
+
+		*(dst++) = unichar;
+		cstr_size -= len;
+		p_utf16 += len;
+	}
+
+	return false;
+#undef _UNICERROR
+}
+
+Char16String String::utf16() const {
+	int l = length();
+	if (!l) {
+		return Char16String();
+	}
+
+	const char32_t *d = &operator[](0);
+	int fl = 0;
+	for (int i = 0; i < l; i++) {
+		uint32_t c = d[i];
+		if (c <= 0xffff) { // 16 bits.
+			fl += 1;
+		} else if (c <= 0x10ffff) { // 32 bits.
+			fl += 2;
+		} else {
+			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(c, 16) + ".");
+			return Char16String();
+		}
+		if (c >= 0xd800 && c <= 0xdfff) {
+			print_error("Unicode parsing error: Invalid unicode codepoint " + num_int64(c, 16) + ".");
+			return Char16String();
+		}
+	}
+
+	Char16String utf16s;
+	if (fl == 0) {
+		return utf16s;
+	}
+
+	utf16s.resize(fl + 1);
+	uint16_t *cdst = (uint16_t *)utf16s.get_data();
+
+#define APPEND_CHAR(m_c) *(cdst++) = m_c
+
+	for (int i = 0; i < l; i++) {
+		uint32_t c = d[i];
+
+		if (c <= 0xffff) { // 16 bits.
+			APPEND_CHAR(c);
+		} else { // 32 bits.
+			APPEND_CHAR(uint32_t((c >> 10) + 0xd7c0)); // lead surrogate.
+			APPEND_CHAR(uint32_t((c & 0x3ff) | 0xdc00)); // trail surrogate.
+		}
+	}
+#undef APPEND_CHAR
+	*cdst = 0; //trailing zero
+
+	return utf16s;
+}
 
 String::String(const char *p_str) {
 	copy_from(p_str);
 }
 
-String::String(const CharType *p_str, int p_clip_to_len) {
+String::String(const wchar_t *p_str) {
+	copy_from(p_str);
+}
+
+String::String(const char32_t *p_str) {
+	copy_from(p_str);
+}
+
+String::String(const char *p_str, int p_clip_to_len) {
+	copy_from(p_str, p_clip_to_len);
+}
+
+String::String(const wchar_t *p_str, int p_clip_to_len) {
+	copy_from(p_str, p_clip_to_len);
+}
+
+String::String(const char32_t *p_str, int p_clip_to_len) {
 	copy_from(p_str, p_clip_to_len);
 }
 
@@ -1620,7 +2056,6 @@ String::String(const StrRange &p_range) {
 	if (!p_range.c_str) {
 		return;
 	}
-
 	copy_from(p_range.c_str, p_range.len);
 }
 
@@ -1629,7 +2064,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const CharType *s = ptr();
+	const char32_t *s = ptr();
 
 	int64_t sign = s[0] == '-' ? -1 : 1;
 
@@ -1647,7 +2082,7 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 	int64_t hex = 0;
 
 	while (*s) {
-		CharType c = LOWERCASE(*s);
+		char32_t c = LOWERCASE(*s);
 		int64_t n;
 		if (c >= '0' && c <= '9') {
 			n = c - '0';
@@ -1672,7 +2107,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 		return 0;
 	}
 
-	const CharType *s = ptr();
+	const char32_t *s = ptr();
 
 	int64_t sign = s[0] == '-' ? -1 : 1;
 
@@ -1690,7 +2125,7 @@ int64_t String::bin_to_int(bool p_with_prefix) const {
 	int64_t binary = 0;
 
 	while (*s) {
-		CharType c = LOWERCASE(*s);
+		char32_t c = LOWERCASE(*s);
 		int64_t n;
 		if (c == '0' || c == '1') {
 			n = c - '0';
@@ -1719,7 +2154,7 @@ int64_t String::to_int() const {
 	int64_t sign = 1;
 
 	for (int i = 0; i < to; i++) {
-		CharType c = operator[](i);
+		char32_t c = operator[](i);
 		if (c >= '0' && c <= '9') {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
@@ -1765,6 +2200,37 @@ int64_t String::to_int(const char *p_str, int p_len) {
 	return integer * sign;
 }
 
+int64_t String::to_int(const wchar_t *p_str, int p_len) {
+	int to = 0;
+	if (p_len >= 0) {
+		to = p_len;
+	} else {
+		while (p_str[to] != 0 && p_str[to] != '.') {
+			to++;
+		}
+	}
+
+	int64_t integer = 0;
+	int64_t sign = 1;
+
+	for (int i = 0; i < to; i++) {
+		wchar_t c = p_str[i];
+		if (c >= '0' && c <= '9') {
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			integer *= 10;
+			integer += c - '0';
+
+		} else if (c == '-' && integer == 0) {
+			sign = -sign;
+		} else if (c != ' ') {
+			break;
+		}
+	}
+
+	return integer * sign;
+}
+
 bool String::is_numeric() const {
 	if (length() == 0) {
 		return false;
@@ -1776,14 +2242,13 @@ bool String::is_numeric() const {
 	}
 	bool dot = false;
 	for (int i = s; i < length(); i++) {
-		CharType c = operator[](i);
+		char32_t c = operator[](i);
 		if (c == '.') {
 			if (dot) {
 				return false;
 			}
 			dot = true;
-		}
-		if (c < '0' || c > '9') {
+		} else if (c < '0' || c > '9') {
 			return false;
 		}
 	}
@@ -1945,11 +2410,11 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 			}
 			expSign = false;
 		}
-		if (!IS_DIGIT(CharType(*p))) {
+		if (!IS_DIGIT(char32_t(*p))) {
 			p = pExp;
 			goto done;
 		}
-		while (IS_DIGIT(CharType(*p))) {
+		while (IS_DIGIT(char32_t(*p))) {
 			exp = exp * 10 + (*p - '0');
 			p += 1;
 		}
@@ -2007,19 +2472,18 @@ done:
 #define READING_DONE 4
 
 double String::to_float(const char *p_str) {
-#ifndef NO_USE_STDLIB
 	return built_in_strtod<char>(p_str);
-//return atof(p_str); DOES NOT WORK ON ANDROID(??)
-#else
-	return built_in_strtod<char>(p_str);
-#endif
 }
 
-double String::to_float(const CharType *p_str, const CharType **r_end) {
-	return built_in_strtod<CharType>(p_str, (CharType **)r_end);
+double String::to_float(const char32_t *p_str, const char32_t **r_end) {
+	return built_in_strtod<char32_t>(p_str, (char32_t **)r_end);
 }
 
-int64_t String::to_int(const CharType *p_str, int p_len, bool p_clamp) {
+double String::to_float(const wchar_t *p_str, const wchar_t **r_end) {
+	return built_in_strtod<wchar_t>(p_str, (wchar_t **)r_end);
+}
+
+int64_t String::to_int(const char32_t *p_str, int p_len, bool p_clamp) {
 	if (p_len == 0 || !p_str[0]) {
 		return 0;
 	}
@@ -2029,11 +2493,11 @@ int64_t String::to_int(const CharType *p_str, int p_len, bool p_clamp) {
 	int64_t sign = 1;
 	int reading = READING_SIGN;
 
-	const CharType *str = p_str;
-	const CharType *limit = &p_str[p_len];
+	const char32_t *str = p_str;
+	const char32_t *limit = &p_str[p_len];
 
 	while (*str && reading != READING_DONE && str != limit) {
-		CharType c = *(str++);
+		char32_t c = *(str++);
 		switch (reading) {
 			case READING_SIGN: {
 				if (c >= '0' && c <= '9') {
@@ -2087,26 +2551,7 @@ double String::to_float() const {
 	if (empty()) {
 		return 0;
 	}
-#ifndef NO_USE_STDLIB
-	return built_in_strtod<CharType>(c_str());
-//return wcstod(c_str(),nullptr ); DOES NOT WORK ON ANDROID :(
-#else
-	return built_in_strtod<CharType>(c_str());
-#endif
-}
-
-bool operator==(const char *p_chr, const String &p_str) {
-	return p_str == p_chr;
-}
-
-String operator+(const char *p_chr, const String &p_str) {
-	String tmp = p_chr;
-	tmp += p_str;
-	return tmp;
-}
-
-String operator+(CharType p_chr, const String &p_str) {
-	return (String::chr(p_chr) + p_str);
+	return built_in_strtod<char32_t>(get_data());
 }
 
 uint32_t String::hash(const char *p_cstr) {
@@ -2129,7 +2574,7 @@ uint32_t String::hash(const char *p_cstr, int p_len) {
 	return hashv;
 }
 
-uint32_t String::hash(const CharType *p_cstr, int p_len) {
+uint32_t String::hash(const wchar_t *p_cstr, int p_len) {
 	uint32_t hashv = 5381;
 	for (int i = 0; i < p_len; i++) {
 		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
@@ -2138,7 +2583,27 @@ uint32_t String::hash(const CharType *p_cstr, int p_len) {
 	return hashv;
 }
 
-uint32_t String::hash(const CharType *p_cstr) {
+uint32_t String::hash(const wchar_t *p_cstr) {
+	uint32_t hashv = 5381;
+	uint32_t c;
+
+	while ((c = *p_cstr++)) {
+		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+	}
+
+	return hashv;
+}
+
+uint32_t String::hash(const char32_t *p_cstr, int p_len) {
+	uint32_t hashv = 5381;
+	for (int i = 0; i < p_len; i++) {
+		hashv = ((hashv << 5) + hashv) + p_cstr[i]; /* hash * 33 + c */
+	}
+
+	return hashv;
+}
+
+uint32_t String::hash(const char32_t *p_cstr) {
 	uint32_t hashv = 5381;
 	uint32_t c;
 
@@ -2152,7 +2617,7 @@ uint32_t String::hash(const CharType *p_cstr) {
 uint32_t String::hash() const {
 	/* simple djb2 hashing */
 
-	const CharType *chr = c_str();
+	const char32_t *chr = get_data();
 	uint32_t hashv = 5381;
 	uint32_t c;
 
@@ -2166,7 +2631,7 @@ uint32_t String::hash() const {
 uint64_t String::hash64() const {
 	/* simple djb2 hashing */
 
-	const CharType *chr = c_str();
+	const char32_t *chr = get_data();
 	uint64_t hashv = 5381;
 	uint64_t c;
 
@@ -2278,7 +2743,7 @@ String String::substr(int p_from, int p_chars) const {
 	}
 
 	String s = String();
-	s.copy_from_unchecked(&c_str()[p_from], p_chars);
+	s.copy_from_unchecked(&get_data()[p_from], p_chars);
 	return s;
 }
 
@@ -2295,8 +2760,8 @@ int String::find(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *src = c_str();
-	const CharType *str = p_str.c_str();
+	const char32_t *src = get_data();
+	const char32_t *str = p_str.get_data();
 
 	for (int i = p_from; i <= (len - src_len); i++) {
 		bool found = true;
@@ -2333,7 +2798,7 @@ int String::find(const char *p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *src = c_str();
+	const char32_t *src = get_data();
 
 	int src_len = 0;
 	while (p_str[src_len] != '\0') {
@@ -2341,7 +2806,7 @@ int String::find(const char *p_str, int p_from) const {
 	}
 
 	if (src_len == 1) {
-		const char needle = p_str[0];
+		const char32_t needle = p_str[0];
 
 		for (int i = p_from; i < len; i++) {
 			if (src[i] == needle) {
@@ -2360,7 +2825,7 @@ int String::find(const char *p_str, int p_from) const {
 					return -1;
 				}
 
-				if (src[read_pos] != p_str[j]) {
+				if (src[read_pos] != (char32_t)p_str[j]) {
 					found = false;
 					break;
 				}
@@ -2375,7 +2840,7 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::find_char(const CharType &p_char, int p_from) const {
+int String::find_char(const char32_t &p_char, int p_from) const {
 	return _cowdata.find(p_char, p_from);
 }
 
@@ -2396,7 +2861,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *src = c_str();
+	const char32_t *src = get_data();
 
 	for (int i = p_from; i < len; i++) {
 		bool found = true;
@@ -2405,7 +2870,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 			if (r_key) {
 				*r_key = k;
 			}
-			const CharType *cmp = keys[k].c_str();
+			const char32_t *cmp = keys[k].get_data();
 			int l = keys[k].length();
 
 			for (int j = 0; j < l; j++) {
@@ -2445,7 +2910,7 @@ int String::findn(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *srcd = c_str();
+	const char32_t *srcd = get_data();
 
 	for (int i = p_from; i <= (length() - src_len); i++) {
 		bool found = true;
@@ -2457,8 +2922,8 @@ int String::findn(const String &p_str, int p_from) const {
 				return -1;
 			}
 
-			CharType src = _find_lower(srcd[read_pos]);
-			CharType dst = _find_lower(p_str[j]);
+			char32_t src = _find_lower(srcd[read_pos]);
+			char32_t dst = _find_lower(p_str[j]);
 
 			if (src != dst) {
 				found = false;
@@ -2495,7 +2960,7 @@ int String::rfind(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *src = c_str();
+	const char32_t *src = get_data();
 
 	for (int i = p_from; i >= 0; i--) {
 		bool found = true;
@@ -2542,7 +3007,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 		return -1; // won't find anything!
 	}
 
-	const CharType *src = c_str();
+	const char32_t *src = get_data();
 
 	for (int i = p_from; i >= 0; i--) {
 		bool found = true;
@@ -2554,8 +3019,8 @@ int String::rfindn(const String &p_str, int p_from) const {
 				return -1;
 			}
 
-			CharType srcc = _find_lower(src[read_pos]);
-			CharType dstc = _find_lower(p_str[j]);
+			char32_t srcc = _find_lower(src[read_pos]);
+			char32_t dstc = _find_lower(p_str[j]);
 
 			if (srcc != dstc) {
 				found = false;
@@ -2589,8 +3054,8 @@ bool String::begins_with(const String &p_string) const {
 		return true;
 	}
 
-	const CharType *src = &p_string[0];
-	const CharType *str = &operator[](0);
+	const char32_t *src = &p_string[0];
+	const char32_t *str = &operator[](0);
 
 	int i = 0;
 	for (; i < l; i++) {
@@ -2609,11 +3074,11 @@ bool String::begins_with(const char *p_string) const {
 		return false;
 	}
 
-	const CharType *str = &operator[](0);
+	const char32_t *str = &operator[](0);
 	int i = 0;
 
 	while (*p_string && i < l) {
-		if (*p_string != str[i]) {
+		if ((char32_t)*p_string != str[i]) {
 			return false;
 		}
 		i++;
@@ -2657,7 +3122,7 @@ int String::_count(const String &p_string, int p_from, int p_to, bool p_case_ins
 		}
 		if (p_from == 0 && p_to == len) {
 			str = String();
-			str.copy_from_unchecked(&c_str()[0], len);
+			str.copy_from_unchecked(&get_data()[0], len);
 		} else {
 			str = substr(p_from, p_to - p_from);
 		}
@@ -2695,14 +3160,14 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 		return false;
 	}
 
-	const CharType *src = &operator[](0);
-	const CharType *tgt = &p_string[0];
+	const char32_t *src = &operator[](0);
+	const char32_t *tgt = &p_string[0];
 
 	for (; *src && *tgt; tgt++) {
 		bool match = false;
 		if (case_insensitive) {
-			CharType srcc = _find_lower(*src);
-			CharType tgtc = _find_lower(*tgt);
+			char32_t srcc = _find_lower(*src);
+			char32_t tgtc = _find_lower(*tgt);
 			match = srcc == tgtc;
 		} else {
 			match = *src == *tgt;
@@ -2748,8 +3213,8 @@ float String::similarity(const String &p_string) const {
 	int src_size = src_bigrams.size();
 	int tgt_size = tgt_bigrams.size();
 
-	float sum = src_size + tgt_size;
-	float inter = 0;
+	double sum = src_size + tgt_size;
+	double inter = 0;
 	for (int i = 0; i < src_size; i++) {
 		for (int j = 0; j < tgt_size; j++) {
 			if (src_bigrams[i] == tgt_bigrams[j]) {
@@ -2762,7 +3227,7 @@ float String::similarity(const String &p_string) const {
 	return (2.0f * inter) / sum;
 }
 
-static bool _wildcard_match(const CharType *p_pattern, const CharType *p_string, bool p_case_sensitive) {
+static bool _wildcard_match(const char32_t *p_pattern, const char32_t *p_string, bool p_case_sensitive) {
 	switch (*p_pattern) {
 		case '\0':
 			return !*p_string;
@@ -2781,14 +3246,14 @@ bool String::match(const String &p_wildcard) const {
 		return false;
 	}
 
-	return _wildcard_match(p_wildcard.c_str(), c_str(), true);
+	return _wildcard_match(p_wildcard.get_data(), get_data(), true);
 }
 
 bool String::matchn(const String &p_wildcard) const {
 	if (!p_wildcard.length() || !length()) {
 		return false;
 	}
-	return _wildcard_match(p_wildcard.c_str(), c_str(), false);
+	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
 String String::format(const Variant &values, String placeholder) const {
@@ -2938,9 +3403,10 @@ String String::repeat(int p_count) const {
 	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
 
 	String new_string;
-	const CharType *src = this->c_str();
+	const char32_t *src = this->get_data();
 
 	new_string.resize(length() * p_count + 1);
+	new_string[length() * p_count] = 0;
 
 	for (int i = 0; i < p_count; i++) {
 		for (int j = 0; j < length(); j++) {
@@ -2975,7 +3441,7 @@ String String::right(int p_pos) const {
 	return substr(p_pos, (length() - p_pos));
 }
 
-CharType String::ord_at(int p_idx) const {
+char32_t String::ord_at(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, length(), 0);
 	return operator[](p_idx);
 }
@@ -2989,7 +3455,7 @@ String String::dedent() const {
 	int indent_stop = -1;
 
 	for (int i = 0; i < length(); i++) {
-		CharType c = operator[](i);
+		char32_t c = operator[](i);
 		if (c == '\n') {
 			if (has_text) {
 				new_string += substr(indent_stop, i - indent_stop);
@@ -3218,7 +3684,7 @@ bool String::is_valid_identifier() const {
 		return false;
 	}
 
-	const wchar_t *str = &operator[](0);
+	const char32_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
 		if (i == 0) {
@@ -3237,36 +3703,14 @@ bool String::is_valid_identifier() const {
 	return true;
 }
 
-//kind of poor should be rewritten properly
-
-String String::word_wrap(int p_chars_per_line) const {
-	int from = 0;
-	int last_space = 0;
-	String ret;
-	for (int i = 0; i < length(); i++) {
-		if (i - from >= p_chars_per_line) {
-			if (last_space == -1) {
-				ret += substr(from, i - from + 1) + "\n";
-			} else {
-				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
-			}
-			from = i + 1;
-			last_space = -1;
-		} else if (operator[](i) == ' ' || operator[](i) == '\t') {
-			last_space = i;
-		} else if (operator[](i) == '\n') {
-			ret += substr(from, i - from) + "\n";
-			from = i + 1;
-			last_space = -1;
-		}
+bool String::is_valid_string() const {
+	int l = length();
+	const char32_t *src = get_data();
+	bool valid = true;
+	for (int i = 0; i < l; i++) {
+		valid = valid && (src[i] < 0xd800 || (src[i] > 0xdfff && src[i] <= 0x10ffff));
 	}
-
-	if (from < length()) {
-		ret += substr(from, length());
-	}
-
-	return ret;
+	return valid;
 }
 
 String String::http_escape() const {
@@ -3297,9 +3741,9 @@ String String::http_unescape() const {
 	String res;
 	for (int i = 0; i < length(); ++i) {
 		if (ord_at(i) == '%' && i + 2 < length()) {
-			CharType ord1 = ord_at(i + 1);
+			char32_t ord1 = ord_at(i + 1);
 			if ((ord1 >= '0' && ord1 <= '9') || (ord1 >= 'A' && ord1 <= 'Z')) {
-				CharType ord2 = ord_at(i + 2);
+				char32_t ord2 = ord_at(i + 2);
 				if ((ord2 >= '0' && ord2 <= '9') || (ord2 >= 'A' && ord2 <= 'Z')) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
@@ -3389,18 +3833,18 @@ for (int i=1;i<32;i++) {
 	return str;
 }
 
-static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src, int p_src_len, CharType *p_dst) {
+static _FORCE_INLINE_ int _xml_unescape(const char32_t *p_src, int p_src_len, char32_t *p_dst) {
 	int len = 0;
 	while (p_src_len) {
 		if (*p_src == '&') {
 			int eat = 0;
 
 			if (p_src_len >= 4 && p_src[1] == '#') {
-				CharType c = 0;
+				char32_t c = 0;
 
 				for (int i = 2; i < p_src_len; i++) {
 					eat = i + 1;
-					CharType ct = p_src[i];
+					char32_t ct = p_src[i];
 					if (ct == ';') {
 						break;
 					} else if (ct >= '0' && ct <= '9') {
@@ -3476,12 +3920,12 @@ static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src, int p_src_len, Ch
 String String::xml_unescape() const {
 	String str;
 	int l = length();
-	int len = _xml_unescape(c_str(), l, nullptr);
+	int len = _xml_unescape(get_data(), l, nullptr);
 	if (len == 0) {
 		return String();
 	}
 	str.resize(len + 1);
-	_xml_unescape(c_str(), l, str.ptrw());
+	_xml_unescape(get_data(), l, str.ptrw());
 	str[len] = 0;
 	return str;
 }
@@ -3602,7 +4046,7 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 	}
 
 	for (int i = from; i < len; i++) {
-		CharType c = operator[](i);
+		char32_t c = operator[](i);
 		if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
 			continue;
 		}
@@ -3917,7 +4361,7 @@ String String::percent_decode() const {
 String String::property_name_encode() const {
 	// Escape and quote strings with extended ASCII or further Unicode characters
 	// as well as '"', '=' or ' ' (32)
-	const CharType *cstr = c_str();
+	const char32_t *cstr = get_data();
 	for (int i = 0; cstr[i]; i++) {
 		if (cstr[i] == '=' || cstr[i] == '"' || cstr[i] < 33 || cstr[i] > 126) {
 			return "\"" + c_escape_multiline() + "\"";
@@ -3984,7 +4428,7 @@ String String::lpad(int min_length, const String &character) const {
 // In case of an error, the string returned is the error description and "error" is true.
 String String::sprintf(const Array &values, bool *error) const {
 	String formatted;
-	CharType *self = (CharType *)c_str();
+	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	int value_index = 0;
 	int min_chars = 0;
@@ -3997,7 +4441,7 @@ String String::sprintf(const Array &values, bool *error) const {
 	*error = true;
 
 	for (; *self; self++) {
-		const CharType c = *self;
+		const char32_t c = *self;
 
 		if (in_format) { // We have % - lets see what else we get.
 			switch (c) {
@@ -4134,9 +4578,11 @@ String String::sprintf(const Array &values, bool *error) const {
 					if (values[value_index].is_num()) {
 						int value = values[value_index];
 						if (value < 0) {
-							return "unsigned byte integer is lower than maximum";
-						} else if (value > 255) {
-							return "unsigned byte integer is greater than maximum";
+							return "unsigned integer is lower than minimum";
+						} else if (value >= 0xd800 && value <= 0xdfff) {
+							return "unsigned integer is invalid Unicode character";
+						} else if (value > 0x10ffff) {
+							return "unsigned integer is greater than maximum";
 						}
 						str = chr(values[value_index]);
 					} else if (values[value_index].get_type() == Variant::STRING) {

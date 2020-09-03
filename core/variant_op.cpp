@@ -4215,7 +4215,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			int split = csize / 2;
 
 			for (int i = 0; i < csize; i++) {
-				CharType chr = ' ';
+				char32_t chr = ' ';
 
 				if (i < split) {
 					if (i < sa.length()) {

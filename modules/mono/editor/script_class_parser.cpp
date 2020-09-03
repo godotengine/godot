@@ -151,7 +151,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 			case '"': {
 				bool verbatim = idx != 0 && code[idx - 1] == '@';
 
-				CharType begin_str = code[idx];
+				char32_t begin_str = code[idx];
 				idx++;
 				String tk_string = String();
 				while (true) {
@@ -170,13 +170,13 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 					} else if (code[idx] == '\\' && !verbatim) {
 						//escaped characters...
 						idx++;
-						CharType next = code[idx];
+						char32_t next = code[idx];
 						if (next == 0) {
 							error_str = "Unterminated String";
 							error = true;
 							return TK_ERROR;
 						}
-						CharType res = 0;
+						char32_t res = 0;
 
 						switch (next) {
 							case 'b':
@@ -234,7 +234,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 
 				if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
 					//a number
-					const CharType *rptr;
+					const char32_t *rptr;
 					double number = String::to_float(&code[idx], &rptr);
 					idx += (rptr - &code[idx]);
 					value = number;

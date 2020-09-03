@@ -42,7 +42,7 @@
 #include "editor/editor_settings.h"
 #endif
 #include "scene/main/window.h"
-static bool _is_text_char(CharType c) {
+static bool _is_text_char(char32_t c) {
 	return !is_symbol(c);
 }
 
@@ -582,7 +582,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				if (k->get_unicode() >= 32 && k->get_keycode() != KEY_DELETE) {
 					if (editable) {
 						selection_delete();
-						CharType ucodestr[2] = { (CharType)k->get_unicode(), 0 };
+						char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
 						int prev_len = text.length();
 						append_at_cursor(ucodestr);
 						if (text.length() != prev_len) {
@@ -807,8 +807,8 @@ void LineEdit::_notification(int p_what) {
 								break;
 							}
 
-							CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
-							CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
+							char32_t cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
+							char32_t next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 							int im_char_width = font->get_char_size(cchar, next).width;
 
 							if ((x_ofs + im_char_width) > ofs_max) {
@@ -830,8 +830,8 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 
-				CharType cchar = (pass && !text.empty()) ? secret_character[0] : t[char_ofs];
-				CharType next = (pass && !text.empty()) ? secret_character[0] : t[char_ofs + 1];
+				char32_t cchar = (pass && !text.empty()) ? secret_character[0] : t[char_ofs];
+				char32_t next = (pass && !text.empty()) ? secret_character[0] : t[char_ofs + 1];
 				int char_width = font->get_char_size(cchar, next).width;
 
 				// End of widget, break.
@@ -870,8 +870,8 @@ void LineEdit::_notification(int p_what) {
 							break;
 						}
 
-						CharType cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
-						CharType next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
+						char32_t cchar = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs];
+						char32_t next = (pass && !text.empty()) ? secret_character[0] : ime_text[ofs + 1];
 						int im_char_width = font->get_char_size(cchar, next).width;
 
 						if ((x_ofs + im_char_width) > ofs_max) {
