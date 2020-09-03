@@ -36,11 +36,14 @@ def make_editor_icons_action(target, source, env):
     s = StringIO()
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     s.write("#ifndef _EDITOR_ICONS_H\n")
-    s.write("#define _EDITOR_ICONS_H\n")
+    s.write("#define _EDITOR_ICONS_H\n\n")
+    s.write('#include "modules/modules_enabled.gen.h"\n\n')
     s.write("static const int editor_icons_count = {};\n".format(len(svg_icons)))
+    s.write("#ifdef MODULE_SVG_ENABLED\n")
     s.write("static const char *editor_icons_sources[] = {\n")
     s.write(icons_string.getvalue())
     s.write("};\n\n")
+    s.write("#endif\n")
     s.write("static const char *editor_icons_names[] = {\n")
 
     # this is used to store the indices of thumbnail icons
