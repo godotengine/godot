@@ -50,6 +50,7 @@ public:
 		TYPE_VERTEX,
 		TYPE_FRAGMENT,
 		TYPE_LIGHT,
+		TYPE_COMPUTE,
 		TYPE_MAX
 	};
 
