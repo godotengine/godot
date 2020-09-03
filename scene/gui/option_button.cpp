@@ -77,12 +77,25 @@ void OptionButton::_notification(int p_what) {
 
 			Size2 size = get_size();
 
-			Point2 ofs(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			Point2 ofs;
+			if (is_layout_rtl()) {
+				ofs = Point2(get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			} else {
+				ofs = Point2(size.width - arrow->get_width() - get_theme_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			}
 			arrow->draw(ci, ofs, clr);
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon("arrow")) {
-				_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+				if (is_layout_rtl()) {
+					_set_internal_margin(MARGIN_LEFT, Control::get_theme_icon("arrow")->get_width());
+					_set_internal_margin(MARGIN_RIGHT, 0.f);
+				} else {
+					_set_internal_margin(MARGIN_LEFT, 0.f);
+					_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+				}
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -326,10 +339,16 @@ OptionButton::OptionButton() {
 	current = -1;
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
-	set_action_mode(ACTION_MODE_BUTTON_PRESS);
-	if (has_theme_icon("arrow")) {
-		_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+	if (is_layout_rtl()) {
+		if (has_theme_icon("arrow")) {
+			_set_internal_margin(MARGIN_LEFT, Control::get_theme_icon("arrow")->get_width());
+		}
+	} else {
+		if (has_theme_icon("arrow")) {
+			_set_internal_margin(MARGIN_RIGHT, Control::get_theme_icon("arrow")->get_width());
+		}
 	}
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);
 	popup->hide();

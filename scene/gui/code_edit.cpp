@@ -241,7 +241,7 @@ void CodeEdit::_line_number_draw_callback(int p_line, int p_gutter, const Rect2 
 	if (number_color == Color(1, 1, 1)) {
 		number_color = line_number_color;
 	}
-	cache.font->draw(get_canvas_item(), Point2(p_region.position.x, yofs + cache.font->get_ascent()), fc, number_color);
+	cache.font->draw_string(get_canvas_item(), Point2(p_region.position.x, yofs + cache.font->get_ascent()), fc, HALIGN_LEFT, -1, cache.font_size, number_color);
 }
 
 /* Fold Gutter */

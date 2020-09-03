@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/center_container.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
@@ -61,12 +61,14 @@ void EditorLog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+		log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
 		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
+		Ref<Font> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
 			if (log != nullptr) {
 				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+				log->add_theme_font_size_override("normal_font_size", get_theme_font_size("output_source_size", "EditorFonts"));
 				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 			}
 		}

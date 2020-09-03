@@ -762,7 +762,7 @@ void TextEdit::_notification(int p_what) {
 
 			int cursor_wrap_index = get_cursor_wrap_index();
 
-			FontDrawer drawer(cache.font, Color(1, 1, 1));
+			//FontDrawer drawer(cache.font, Color(1, 1, 1));
 
 			int first_visible_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
@@ -1032,7 +1032,7 @@ void TextEdit::_notification(int p_what) {
 									}
 
 									int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-									cache.font->draw(ci, Point2(gutter_offset + ofs_x, yofs + cache.font->get_ascent()), text, get_line_gutter_item_color(line, g));
+									cache.font->draw_string(ci, Point2(gutter_offset + ofs_x, yofs + cache.font->get_ascent()), text, HALIGN_LEFT, -1, cache.font_size, get_line_gutter_item_color(line, g));
 								} break;
 								case GUTTER_TPYE_ICON: {
 									const Ref<Texture2D> icon = get_line_gutter_icon(line, g);
@@ -1186,7 +1186,7 @@ void TextEdit::_notification(int p_what) {
 								if (brace_open_mismatch) {
 									color = cache.brace_mismatch_color;
 								}
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
+								cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], cache.font_size, in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							}
 
 							if ((brace_close_match_line == line && brace_close_match_column == last_wrap_column + j) ||
@@ -1194,7 +1194,7 @@ void TextEdit::_notification(int p_what) {
 								if (brace_close_mismatch) {
 									color = cache.brace_mismatch_color;
 								}
-								drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
+								cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), '_', str[j + 1], cache.font_size, in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							}
 						}
 
@@ -1230,7 +1230,7 @@ void TextEdit::_notification(int p_what) {
 										RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 1)), color);
 									}
 
-									drawer.draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, color);
+									cache.font->draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, cache.font_size, color);
 
 									char_ofs += im_char_width;
 									ofs++;
@@ -1266,7 +1266,7 @@ void TextEdit::_notification(int p_what) {
 
 						if (str[j] >= 32) {
 							int yofs = ofs_y + (get_row_height() - cache.font->get_height()) / 2;
-							int w = drawer.draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], in_selection && override_selected_font_color ? cache.font_color_selected : color);
+							int w = cache.font->draw_char(ci, Point2i(char_ofs + char_margin + ofs_x, yofs + ascent), str[j], str[j + 1], cache.font_size, in_selection && override_selected_font_color ? cache.font_color_selected : color);
 							if (underlined) {
 								float line_width = cache.font->get_underline_thickness();
 #ifdef TOOLS_ENABLED
@@ -1326,7 +1326,7 @@ void TextEdit::_notification(int p_what) {
 									RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_ofs + char_margin, ofs_y + get_row_height()), Size2(im_char_width, 1)), color);
 								}
 
-								drawer.draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, color);
+								cache.font->draw_char(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + ascent), cchar, next, cache.font_size, color);
 
 								char_ofs += im_char_width;
 								ofs++;
@@ -1371,11 +1371,11 @@ void TextEdit::_notification(int p_what) {
 				int lines = MIN(completion_options_size, maxlines);
 				int w = 0;
 				int h = lines * get_row_height();
-				int nofs = cache.font->get_string_size(completion_base).width;
+				int nofs = cache.font->get_string_size(completion_base, cache.font_size).width;
 
 				if (completion_options_size < 50) {
 					for (int i = 0; i < completion_options_size; i++) {
-						int w2 = MIN(cache.font->get_string_size(completion_options[i].display).x, cmax_width);
+						int w2 = MIN(cache.font->get_string_size(completion_options[i].display, cache.font_size).x, cmax_width);
 						if (w2 > w) {
 							w = w2;
 						}
@@ -1452,7 +1452,7 @@ void TextEdit::_notification(int p_what) {
 						draw_rect(Rect2(Point2(completion_rect.position.x + completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)completion_options[l].default_value);
 					}
 
-					draw_string(cache.font, title_pos, completion_options[l].display, completion_options[l].font_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
+					draw_string(cache.font, title_pos, completion_options[l].display, HALIGN_LEFT, completion_rect.size.width - (icon_area_size.x + icon_hsep), cache.font_size, completion_options[l].font_color);
 				}
 
 				if (scrollw) {
@@ -1490,10 +1490,10 @@ void TextEdit::_notification(int p_what) {
 				int spacing = 0;
 				for (int i = 0; i < sc; i++) {
 					String l = completion_hint.get_slice("\n", i);
-					int len = font->get_string_size(l).x;
+					int len = font->get_string_size(l, cache.font_size).x;
 					max_w = MAX(len, max_w);
 					if (i == 0) {
-						offset = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF)))).x;
+						offset = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF))), cache.font_size).x;
 					} else {
 						spacing += cache.line_spacing;
 					}
@@ -1523,13 +1523,13 @@ void TextEdit::_notification(int p_what) {
 					String l = completion_hint.get_slice("\n", i);
 
 					if (l.find(String::chr(0xFFFF)) != -1) {
-						begin = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF)))).x;
-						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xFFFF)))).x;
+						begin = font->get_string_size(l.substr(0, l.find(String::chr(0xFFFF))), cache.font_size).x;
+						end = font->get_string_size(l.substr(0, l.rfind(String::chr(0xFFFF))), cache.font_size).x;
 					}
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font->get_height() * i + spacing);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, l.replace(String::chr(0xFFFF), ""), font_color);
+					draw_string(font, round_ofs, l.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, cache.font_size, font_color);
 					if (end > 0) {
 						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font->get_height() + font->get_height() * i + spacing - 1);
 						draw_line(b, b + Vector2(end - begin, 0), font_color);
@@ -2002,11 +2002,11 @@ Vector2i TextEdit::_get_cursor_pixel_pos() {
 	int ix = 0;
 	while (ix < rows2[0].size() && ix < cursor.column) {
 		if (cache.font != nullptr) {
-			x += cache.font->get_char_size(rows2[0].get(ix)).width;
+			x += cache.font->get_char_size(rows2[0].get(ix), cache.font_size).width;
 		}
 		ix++;
 	}
-	x += get_indent_level(cursor.line) * cache.font->get_char_size(' ').width;
+	x += get_indent_level(cursor.line) * cache.font->get_char_size(' ', cache.font_size).width;
 
 	return Vector2i(x, y);
 }
@@ -4146,7 +4146,7 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 	String word_str = "";
 	int cur_wrap_index = 0;
 
-	int tab_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
+	int tab_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ', cache.font_size).width;
 	if (tab_offset_px >= wrap_at) {
 		tab_offset_px = 0;
 	}
@@ -4475,7 +4475,7 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 		}
 		int px = get_column_x_offset(n_char, rows[wrap_index]);
 
-		int wrap_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
+		int wrap_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ', cache.font_size).width;
 		if (wrap_offset_px >= wrap_at) {
 			wrap_offset_px = 0;
 		}
@@ -4771,6 +4771,7 @@ void TextEdit::_update_caches() {
 	cache.completion_existing_color = get_theme_color("completion_existing_color");
 	cache.completion_font_color = get_theme_color("completion_font_color");
 	cache.font = get_theme_font("font");
+	cache.font_size = get_theme_font_size("font_size");
 	cache.caret_color = get_theme_color("caret_color");
 	cache.caret_background_color = get_theme_color("caret_background_color");
 	cache.font_color = get_theme_color("font_color");

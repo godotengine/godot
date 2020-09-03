@@ -38,7 +38,7 @@
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 
 void GotoLineDialog::popup_find_line(CodeEdit *p_edit) {
 	text_editor = p_edit;
@@ -731,6 +731,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
+		/*
 		Ref<DynamicFont> font = text_editor->get_theme_font("font");
 
 		if (font.is_valid()) {
@@ -742,6 +743,8 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 			_add_font_size((int)font_size - font->get_size());
 		}
+		*/
+		//TODO move size to draw functions
 		return;
 	}
 
@@ -764,27 +767,15 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_zoom_in() {
 	font_resize_val += MAX(EDSCALE, 1.0f);
-	_zoom_changed();
 }
 
 void CodeTextEditor::_zoom_out() {
 	font_resize_val -= MAX(EDSCALE, 1.0f);
-	_zoom_changed();
-}
-
-void CodeTextEditor::_zoom_changed() {
-	if (font_resize_timer->get_time_left() == 0) {
-		font_resize_timer->start();
-	}
 }
 
 void CodeTextEditor::_reset_zoom() {
-	Ref<DynamicFont> font = text_editor->get_theme_font("font"); // Reset source font size to default.
-
-	if (font.is_valid()) {
-		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
-		font->set_size(14);
-	}
+	font_resize_val = 1.0f;
+	//TODO MOVE size to draw functions
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -891,29 +882,6 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOp
 			break;
 	}
 	return tex;
-}
-
-void CodeTextEditor::_font_resize_timeout() {
-	if (_add_font_size(font_resize_val)) {
-		font_resize_val = 0;
-	}
-}
-
-bool CodeTextEditor::_add_font_size(int p_delta) {
-	Ref<DynamicFont> font = text_editor->get_theme_font("font");
-
-	if (font.is_valid()) {
-		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
-
-		if (new_size != font->get_size()) {
-			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
-			font->set_size(new_size);
-		}
-
-		return true;
-	} else {
-		return false;
-	}
 }
 
 void CodeTextEditor::update_editor_settings() {
@@ -1486,17 +1454,22 @@ void CodeTextEditor::goto_error() {
 
 void CodeTextEditor::_update_font() {
 	text_editor->add_theme_font_override("font", get_theme_font("source", "EditorFonts"));
+	text_editor->add_theme_font_size_override("font_size", get_theme_font_size("source_size", "EditorFonts"));
 
 	error->add_theme_font_override("font", get_theme_font("status_source", "EditorFonts"));
+	error->add_theme_font_size_override("font_size", get_theme_font_size("status_source_size", "EditorFonts"));
 	error->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
 	Ref<Font> status_bar_font = get_theme_font("status_source", "EditorFonts");
+	int status_bar_font_size = get_theme_font_size("status_source_size", "EditorFonts");
 	error->add_theme_font_override("font", status_bar_font);
+	error->add_theme_font_size_override("font_size", status_bar_font_size);
 	int count = status_bar->get_child_count();
 	for (int i = 0; i < count; i++) {
 		Control *n = Object::cast_to<Control>(status_bar->get_child(i));
 		if (n) {
 			n->add_theme_font_override("font", status_bar_font);
+			n->add_theme_font_size_override("font_size", status_bar_font_size);
 		}
 	}
 }
@@ -1547,7 +1520,11 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 }
 
 void CodeTextEditor::_toggle_scripts_pressed() {
-	toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+	if (is_layout_rtl()) {
+		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+	} else {
+		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->toggle_scripts_panel() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+	}
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
@@ -1668,7 +1645,11 @@ void CodeTextEditor::show_toggle_scripts_button() {
 }
 
 void CodeTextEditor::update_toggle_scripts_button() {
-	toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+	if (is_layout_rtl()) {
+		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Back", "EditorIcons") : get_theme_icon("Forward", "EditorIcons"));
+	} else {
+		toggle_scripts_button->set_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? get_theme_icon("Forward", "EditorIcons") : get_theme_icon("Back", "EditorIcons"));
+	}
 	toggle_scripts_button->set_tooltip(TTR("Toggle Scripts Panel") + " (" + ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text() + ")");
 }
 
@@ -1750,6 +1731,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label->set_tooltip(TTR("Warnings"));
 	warning_count_label->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor"));
 	warning_count_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	warning_count_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	warning_count_label->connect("gui_input", callable_mp(this, &CodeTextEditor::_warning_label_gui_input));
 
 	is_warnings_panel_opened = false;
@@ -1760,6 +1742,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
+	line_and_col_txt->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("status_source_size", "EditorFonts"));
 	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
@@ -1781,11 +1764,6 @@ CodeTextEditor::CodeTextEditor() {
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	font_resize_timer = memnew(Timer);
-	add_child(font_resize_timer);
-	font_resize_timer->set_one_shot(true);
-	font_resize_timer->set_wait_time(0.07);
-	font_resize_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_font_resize_timeout));
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::_on_settings_change));
 }

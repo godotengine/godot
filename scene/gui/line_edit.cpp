@@ -719,6 +719,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			Ref<Font> font = get_theme_font("font");
+			int font_size = get_theme_font_size("font_size");
 
 			style->draw(ci, Rect2(Point2(), size));
 
@@ -792,8 +793,10 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
-			FontDrawer drawer(font, Color(1, 1, 1));
+			//FontDrawer drawer(font, Color(1, 1, 1));
 			while (true) {
+				//TODO replace with TS
+
 				// End of string, break.
 				if (char_ofs >= t.length()) {
 					break;
@@ -822,7 +825,7 @@ void LineEdit::_notification(int p_what) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
 							}
 
-							drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
+							font->draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_size, font_color);
 
 							x_ofs += im_char_width;
 							ofs++;
@@ -846,7 +849,7 @@ void LineEdit::_notification(int p_what) {
 				}
 
 				int yofs = y_ofs + (caret_height - font->get_height()) / 2;
-				drawer.draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
+				font->draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, font_size, selected ? font_color_selected : font_color);
 
 				if (char_ofs == cursor_pos && draw_caret && !using_placeholder) {
 					if (ime_text.length() == 0) {
@@ -885,7 +888,7 @@ void LineEdit::_notification(int p_what) {
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
 						}
 
-						drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
+						font->draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_size, font_color);
 
 						x_ofs += im_char_width;
 						ofs++;
@@ -1427,6 +1430,7 @@ void LineEdit::clear_internal() {
 Size2 LineEdit::get_minimum_size() const {
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	Ref<Font> font = get_theme_font("font");
+	int font_size = get_theme_font_size("font_size");
 
 	Size2 min_size;
 
@@ -1436,7 +1440,7 @@ Size2 LineEdit::get_minimum_size() const {
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because cursor needs a bit more when at the end.
-		min_size.width = MAX(min_size.width, font->get_string_size(text).x + space_size);
+		min_size.width = MAX(min_size.width, font->get_string_size(text, font_size).x + space_size);
 	}
 
 	min_size.height = font->get_height();

@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor_scale.h"
+#include "scene/resources/text_line.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 	float h = p_h;
@@ -247,6 +248,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
+		int font_size = get_theme_font_size("font_size", "Label");
 		Color color = get_theme_color("font_color", "Label");
 		int hsep = get_theme_constant("hseparation", "ItemList");
 		int vsep = get_theme_constant("vseparation", "ItemList");
@@ -286,26 +288,27 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			String text;
 
-			int h = font->get_height();
-
 			if (node) {
 				int ofs = 0;
 
 				Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
-				h = MAX(h, icon->get_height());
+				text = node->get_name();
+				ofs += hsep;
+				ofs += icon->get_width();
+
+				TextLine text_buf = TextLine(text, font, font_size);
+				text_buf.set_width(limit - ofs - hsep);
+
+				int h = MAX(text_buf.get_size().y, icon->get_height());
 
 				draw_texture(icon, Point2(ofs, vofs + int(h - icon->get_height()) / 2));
 
 				margin = icon->get_width();
 
-				text = node->get_name();
-				ofs += hsep;
-				ofs += icon->get_width();
-
-				Vector2 string_pos = Point2(ofs, vofs + (h - font->get_height()) / 2 + font->get_ascent());
+				Vector2 string_pos = Point2(ofs, vofs + (h - text_buf.get_size().y) / 2 + text_buf.get_line_ascent());
 				string_pos = string_pos.floor();
-				draw_string(font, string_pos, text, color, limit - ofs - hsep);
+				text_buf.draw(get_canvas_item(), string_pos, color);
 
 				vofs += h + vsep;
 			}
@@ -327,7 +330,10 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			path = path.replace_first(base_path, "");
 
 			Color cc = color;
-			Rect2 rect = Rect2(margin, vofs, limit - margin - hsep, font->get_height() + vsep);
+			TextLine text_buf = TextLine(path, font, font_size);
+			text_buf.set_width(limit - margin - hsep);
+
+			Rect2 rect = Rect2(margin, vofs, limit - margin - hsep, text_buf.get_size().y + vsep);
 			if (i != track) {
 				cc.a *= 0.7;
 				uint32_t hash = path.hash();
@@ -338,7 +344,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				Color subcolor;
 				subcolor.set_hsv(h, 0.2, 0.8);
 				subcolor.a = 0.5;
-				draw_rect(Rect2(0, vofs + font->get_height() * 0.1, margin - hsep, font->get_height() * 0.8), subcolor);
+				draw_rect(Rect2(0, vofs + text_buf.get_size().y * 0.1, margin - hsep, text_buf.get_size().y * 0.8), subcolor);
 				subtrack_colors[i] = subcolor;
 
 				subtracks[i] = rect;
@@ -347,15 +353,17 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				ac.a = 0.5;
 				draw_rect(rect, ac);
 			}
-			draw_string(font, Point2(margin, vofs + font->get_ascent()), path, cc, limit - margin - hsep);
 
-			vofs += font->get_height() + vsep;
+			Vector2 string_pos = Point2(margin, vofs + text_buf.get_line_ascent());
+			text_buf.draw(get_canvas_item(), string_pos, cc);
+
+			vofs += text_buf.get_size().y + vsep;
 		}
 
 		Color accent = get_theme_color("accent_color", "Editor");
 
 		{ //guides
-			float min_left_scale = font->get_height() + vsep;
+			float min_left_scale = font->get_height(font_size) + vsep;
 
 			float scale = (min_left_scale * 2) * v_zoom;
 			float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
@@ -367,7 +375,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			bool first = true;
 			int prev_iv = 0;
-			for (int i = font->get_height(); i < get_size().height; i++) {
+			for (int i = font->get_height(font_size); i < get_size().height; i++) {
 				float ofs = get_size().height / 2 - i;
 				ofs *= v_zoom;
 				ofs += v_scroll;
@@ -382,7 +390,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					draw_line(Point2(limit, i), Point2(right_limit, i), lc);
 					Color c = color;
 					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), rtos(Math::stepify((iv + 1) * scale, step)), c);
+					draw_string(font, Point2(limit + 8, i - 2), TS->format_number(rtos(Math::stepify((iv + 1) * scale, step))), HALIGN_LEFT, -1, font_size, c);
 				}
 
 				first = false;
@@ -453,8 +461,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					ep.point_rect.size = bezier_icon->get_size();
 					if (selection.has(i)) {
 						draw_texture(selected_icon, ep.point_rect.position);
-						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height() - 4), TTR("Time:") + " " + rtos(Math::stepify(offset, 0.001)), accent);
-						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + rtos(Math::stepify(value, 0.001)), accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 4), TTR("Time:") + " " + TS->format_number(rtos(Math::stepify(offset, 0.001))), HALIGN_LEFT, -1, font_size, accent);
+						draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::stepify(value, 0.001))), HALIGN_LEFT, -1, font_size, accent);
 					} else {
 						draw_texture(bezier_icon, ep.point_rect.position);
 					}

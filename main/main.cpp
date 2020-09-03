@@ -124,6 +124,7 @@ static bool _start_success = false;
 
 // Drivers
 
+String text_driver = "";
 static int text_driver_idx = -1;
 static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
@@ -310,14 +311,7 @@ void Main::print_help(const char *p_binary) {
 
 	OS::get_singleton()->print("  --rendering-driver <driver>      Rendering driver (depends on display driver).\n");
 
-	OS::get_singleton()->print("  --text-driver <driver>           Text driver (Fonts, BiDi, shaping) [");
-	for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-		if (i > 0) {
-			OS::get_singleton()->print(", ");
-		}
-		OS::get_singleton()->print("'%s'", TextServerManager::get_interface_name(i).utf8().get_data());
-	}
-	OS::get_singleton()->print("].\n");
+	OS::get_singleton()->print("  --text-driver <driver>           Text driver (Fonts, BiDi, shaping)\n");
 
 	OS::get_singleton()->print("\n");
 
@@ -558,7 +552,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 
-	String text_driver = "";
 	String display_driver = "";
 	String audio_driver = "";
 	String tablet_driver = "";
@@ -667,32 +660,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--text-driver") {
 			if (I->next()) {
 				text_driver = I->next()->get();
-				bool found = false;
-				for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-					if (text_driver == TextServerManager::get_interface_name(i)) {
-						found = true;
-					}
-				}
-
-				if (!found) {
-					OS::get_singleton()->print("Unknown text driver '%s', aborting.\nValid options are ",
-							text_driver.utf8().get_data());
-
-					for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-						if (i == TextServerManager::get_interface_count() - 1) {
-							OS::get_singleton()->print(" and ");
-						} else if (i != 0) {
-							OS::get_singleton()->print(", ");
-						}
-
-						OS::get_singleton()->print("'%s'", TextServerManager::get_interface_name(i).utf8().get_data());
-					}
-
-					OS::get_singleton()->print(".\n");
-
-					goto error;
-				}
-
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing text driver argument, aborting.\n");
@@ -1208,11 +1175,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
-	GLOBAL_DEF("display/window/text_name", "");
-	if (text_driver == "") {
-		text_driver = GLOBAL_GET("display/window/text_name");
-	}
-
 	GLOBAL_DEF("rendering/quality/driver/driver_name", "Vulkan");
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name",
 			PropertyInfo(Variant::STRING,
@@ -1282,6 +1244,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
+	GLOBAL_DEF("display/window/force_right_to_left_layout_direction", false);
+
 	if (!force_lowdpi) {
 		OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", false);
 	}
@@ -1341,35 +1305,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 #endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
-	}
-
-	/* Determine text driver */
-
-	if (text_driver != "") {
-		/* Load user selected text server. */
-		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-			if (text_driver == TextServerManager::get_interface_name(i)) {
-				text_driver_idx = i;
-				break;
-			}
-		}
-	}
-
-	if (text_driver_idx < 0) {
-		/* If not selected, use one with the most features available. */
-		int max_features = 0;
-		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
-			uint32_t ftrs = TextServerManager::get_interface_features(i);
-			int features = 0;
-			while (ftrs) {
-				features += ftrs & 1;
-				ftrs >>= 1;
-			}
-			if (features >= max_features) {
-				max_features = features;
-				text_driver_idx = i;
-			}
-		}
 	}
 
 	/* Determine audio and video drivers */
@@ -1532,6 +1467,41 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (p_main_tid_override) {
 		Thread::_main_thread_id = p_main_tid_override;
 	}
+
+	/* Determine text driver */
+
+	GLOBAL_DEF("display/window/text_name", "");
+	if (text_driver == "") {
+		text_driver = GLOBAL_GET("display/window/text_name");
+	}
+
+	if (text_driver != "") {
+		/* Load user selected text server. */
+		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
+			if (text_driver == TextServerManager::get_interface_name(i)) {
+				text_driver_idx = i;
+				break;
+			}
+		}
+	}
+
+	if (text_driver_idx < 0) {
+		/* If not selected, use one with the most features available. */
+		int max_features = 0;
+		for (int i = 0; i < TextServerManager::get_interface_count(); i++) {
+			uint32_t ftrs = TextServerManager::get_interface_features(i);
+			int features = 0;
+			while (ftrs) {
+				features += ftrs & 1;
+				ftrs >>= 1;
+			}
+			if (features >= max_features) {
+				max_features = features;
+				text_driver_idx = i;
+			}
+		}
+	}
+	printf("Using %s text server...\n", TextServerManager::get_interface_name(text_driver_idx).utf8().get_data());
 
 	/* Initialize Text Server */
 

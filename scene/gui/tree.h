@@ -36,6 +36,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
+#include "scene/resources/text_line.h"
 
 class Tree;
 
@@ -67,6 +68,13 @@ private:
 		Rect2i icon_region;
 		String text;
 		String suffix;
+		Ref<TextLine> text_buf;
+		Dictionary opentype_features;
+		String language;
+		Control::StructuredTextParser st_parser = Control::STRUCTURED_TEXT_DEFAULT;
+		Array st_args;
+		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
+		bool dirty;
 		double min, max, step, val;
 		int icon_max_w;
 		bool expr;
@@ -108,6 +116,8 @@ private:
 		Vector<Button> buttons;
 
 		Cell() {
+			text_buf.instance();
+			dirty = true;
 			custom_draw_obj = ObjectID();
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
@@ -181,6 +191,22 @@ public:
 
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
+
+	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
+	Control::TextDirection get_text_direction(int p_column) const;
+
+	void set_opentype_feature(int p_column, const String &p_name, int p_value);
+	int get_opentype_feature(int p_column, const String &p_name) const;
+	void clear_opentype_features(int p_column);
+
+	void set_structured_text_bidi_override(int p_column, Control::StructuredTextParser p_parser);
+	Control::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
+
+	void set_structured_text_bidi_override_options(int p_column, Array p_args);
+	Array get_structured_text_bidi_override_options(int p_column) const;
+
+	void set_language(int p_column, const String &p_language);
+	String get_language(int p_column) const;
 
 	void set_suffix(int p_column, String p_suffix);
 	String get_suffix(int p_column) const;
@@ -348,7 +374,12 @@ private:
 		int min_width;
 		bool expand;
 		String title;
+		Ref<TextLine> text_buf;
+		Dictionary opentype_features;
+		String language;
+		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
 		ColumnInfo() {
+			text_buf.instance();
 			min_width = 1;
 			expand = true;
 		}
@@ -374,8 +405,12 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
+	void _update_all();
+	void update_column(int p_col);
+	void update_item_cell(TreeItem *p_item, int p_col);
+	void update_item_cache(TreeItem *p_item);
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
-	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
+	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);
@@ -400,6 +435,8 @@ private:
 	struct Cache {
 		Ref<Font> font;
 		Ref<Font> tb_font;
+		int font_size;
+		int tb_font_size;
 		Ref<StyleBox> bg;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
@@ -562,6 +599,16 @@ public:
 
 	void set_column_title(int p_column, const String &p_title);
 	String get_column_title(int p_column) const;
+
+	void set_column_title_direction(int p_column, Control::TextDirection p_text_direction);
+	Control::TextDirection get_column_title_direction(int p_column) const;
+
+	void set_column_title_opentype_feature(int p_column, const String &p_name, int p_value);
+	int get_column_title_opentype_feature(int p_column, const String &p_name) const;
+	void clear_column_title_opentype_features(int p_column);
+
+	void set_column_title_language(int p_column, const String &p_language);
+	String get_column_title_language(int p_column) const;
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;

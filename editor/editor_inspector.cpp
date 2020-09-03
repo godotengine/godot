@@ -41,7 +41,8 @@
 Size2 EditorProperty::get_minimum_size() const {
 	Size2 ms;
 	Ref<Font> font = get_theme_font("font", "Tree");
-	ms.height = font->get_height();
+	int font_size = get_theme_font_size("font_size", "Tree");
+	ms.height = font->get_height(font_size);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -108,7 +109,8 @@ void EditorProperty::_notification(int p_what) {
 		{
 			int child_room = size.width * (1.0 - split_ratio);
 			Ref<Font> font = get_theme_font("font", "Tree");
-			int height = font->get_height();
+			int font_size = get_theme_font_size("font_size", "Tree");
+			int height = font->get_height(font_size);
 			bool no_children = true;
 
 			//compute room needed
@@ -135,7 +137,11 @@ void EditorProperty::_notification(int p_what) {
 				rect = Rect2(size.width - 1, 0, 1, height);
 			} else {
 				text_size = MAX(0, size.width - (child_room + 4 * EDSCALE));
-				rect = Rect2(size.width - child_room, 0, child_room, height);
+				if (is_layout_rtl()) {
+					rect = Rect2(1, 0, child_room, height);
+				} else {
+					rect = Rect2(size.width - child_room, 0, child_room, height);
+				}
 			}
 
 			if (bottom_editor) {
@@ -154,6 +160,9 @@ void EditorProperty::_notification(int p_what) {
 				}
 
 				rect.size.x -= key->get_width() + get_theme_constant("hseparator", "Tree");
+				if (is_layout_rtl()) {
+					rect.position.x += key->get_width() + get_theme_constant("hseparator", "Tree");
+				}
 
 				if (no_children) {
 					text_size -= key->get_width() + 4 * EDSCALE;
@@ -166,6 +175,10 @@ void EditorProperty::_notification(int p_what) {
 				close = get_theme_icon("Close", "EditorIcons");
 
 				rect.size.x -= close->get_width() + get_theme_constant("hseparator", "Tree");
+
+				if (is_layout_rtl()) {
+					rect.position.x += close->get_width() + get_theme_constant("hseparator", "Tree");
+				}
 
 				if (no_children) {
 					text_size -= close->get_width() + 4 * EDSCALE;
@@ -200,7 +213,9 @@ void EditorProperty::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Font> font = get_theme_font("font", "Tree");
+		int font_size = get_theme_font_size("font_size", "Tree");
 		Color dark_color = get_theme_color("dark_color_2", "Editor");
+		bool rtl = is_layout_rtl();
 
 		Size2 size = get_size();
 		if (bottom_editor) {
@@ -249,7 +264,11 @@ void EditorProperty::_notification(int p_what) {
 				color2.b *= 1.2;
 			}
 			check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
-			draw_texture(checkbox, check_rect.position, color2);
+			if (rtl) {
+				draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
+			} else {
+				draw_texture(checkbox, check_rect.position, color2);
+			}
 			ofs += get_theme_constant("hseparator", "Tree") + checkbox->get_width() + get_theme_constant("hseparation", "CheckBox");
 			text_limit -= ofs;
 		} else {
@@ -267,14 +286,21 @@ void EditorProperty::_notification(int p_what) {
 				color2.g *= 1.2;
 				color2.b *= 1.2;
 			}
-
-			draw_texture(reload_icon, revert_rect.position, color2);
+			if (rtl) {
+				draw_texture(reload_icon, Vector2(size.width - revert_rect.position.x - reload_icon->get_width(), revert_rect.position.y), color2);
+			} else {
+				draw_texture(reload_icon, revert_rect.position, color2);
+			}
 		} else {
 			revert_rect = Rect2();
 		}
 
-		int v_ofs = (size.height - font->get_height()) / 2;
-		draw_string(font, Point2(ofs, v_ofs + font->get_ascent()), label, color, text_limit);
+		int v_ofs = (size.height - font->get_height(font_size)) / 2;
+		if (rtl) {
+			draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HALIGN_RIGHT, text_limit, font_size, color);
+		} else {
+			draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HALIGN_LEFT, text_limit, font_size, color);
+		}
 
 		if (keying) {
 			Ref<Texture2D> key;
@@ -294,7 +320,12 @@ void EditorProperty::_notification(int p_what) {
 				color2.b *= 1.2;
 			}
 			keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
-			draw_texture(key, keying_rect.position, color2);
+			if (rtl) {
+				draw_texture(key, Vector2(size.width - keying_rect.position.x - key->get_width(), keying_rect.position.y), color2);
+			} else {
+				draw_texture(key, keying_rect.position, color2);
+			}
+
 		} else {
 			keying_rect = Rect2();
 		}
@@ -313,7 +344,11 @@ void EditorProperty::_notification(int p_what) {
 				color2.b *= 1.2;
 			}
 			delete_rect = Rect2(ofs, ((size.height - close->get_height()) / 2), close->get_width(), close->get_height());
-			draw_texture(close, delete_rect.position, color2);
+			if (rtl) {
+				draw_texture(close, Vector2(size.width - delete_rect.position.x - close->get_width(), delete_rect.position.y), color2);
+			} else {
+				draw_texture(close, delete_rect.position, color2);
+			}
 		} else {
 			delete_rect = Rect2();
 		}
@@ -648,27 +683,31 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouse> me = p_event;
 
 	if (me.is_valid()) {
+		Vector2 mpos = me->get_position();
+		if (is_layout_rtl()) {
+			mpos.x = get_size().x - mpos.x;
+		}
 		bool button_left = me->get_button_mask() & BUTTON_MASK_LEFT;
 
-		bool new_keying_hover = keying_rect.has_point(me->get_position()) && !button_left;
+		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
 			keying_hover = new_keying_hover;
 			update();
 		}
 
-		bool new_delete_hover = delete_rect.has_point(me->get_position()) && !button_left;
+		bool new_delete_hover = delete_rect.has_point(mpos) && !button_left;
 		if (new_delete_hover != delete_hover) {
 			delete_hover = new_delete_hover;
 			update();
 		}
 
-		bool new_revert_hover = revert_rect.has_point(me->get_position()) && !button_left;
+		bool new_revert_hover = revert_rect.has_point(mpos) && !button_left;
 		if (new_revert_hover != revert_hover) {
 			revert_hover = new_revert_hover;
 			update();
 		}
 
-		bool new_check_hover = check_rect.has_point(me->get_position()) && !button_left;
+		bool new_check_hover = check_rect.has_point(mpos) && !button_left;
 		if (new_check_hover != check_hover) {
 			check_hover = new_check_hover;
 			update();
@@ -678,13 +717,18 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		Vector2 mpos = mb->get_position();
+		if (is_layout_rtl()) {
+			mpos.x = get_size().x - mpos.x;
+		}
+
 		if (!selected && selectable) {
 			selected = true;
 			emit_signal("selected", property, -1);
 			update();
 		}
 
-		if (keying_rect.has_point(mb->get_position())) {
+		if (keying_rect.has_point(mpos)) {
 			emit_signal("property_keyed", property, use_keying_next());
 
 			if (use_keying_next()) {
@@ -704,11 +748,11 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				call_deferred("update_property");
 			}
 		}
-		if (delete_rect.has_point(mb->get_position())) {
+		if (delete_rect.has_point(mpos)) {
 			emit_signal("property_deleted", property);
 		}
 
-		if (revert_rect.has_point(mb->get_position())) {
+		if (revert_rect.has_point(mpos)) {
 			Variant vorig;
 
 			Node *node = Object::cast_to<Node>(object);
@@ -744,7 +788,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 		}
-		if (check_rect.has_point(mb->get_position())) {
+		if (check_rect.has_point(mpos)) {
 			checked = !checked;
 			update();
 			emit_signal("property_checked", property, checked);
@@ -1024,10 +1068,11 @@ void EditorInspectorCategory::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		draw_rect(Rect2(Vector2(), get_size()), bg_color);
 		Ref<Font> font = get_theme_font("font", "Tree");
+		int font_size = get_theme_font_size("font_size", "Tree");
 
 		int hs = get_theme_constant("hseparation", "Tree");
 
-		int w = font->get_string_size(label).width;
+		int w = font->get_string_size(label, font_size).width;
 		if (icon.is_valid()) {
 			w += hs + icon->get_width();
 		}
@@ -1040,7 +1085,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 		}
 
 		Color color = get_theme_color("font_color", "Tree");
-		draw_string(font, Point2(ofs, font->get_ascent() + (get_size().height - font->get_height()) / 2).floor(), label, color, get_size().width);
+		draw_string(font, Point2(ofs, font->get_ascent(font_size) + (get_size().height - font->get_height(font_size)) / 2).floor(), label, HALIGN_LEFT, get_size().width, font_size, color);
 	}
 }
 
@@ -1069,10 +1114,11 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 
 Size2 EditorInspectorCategory::get_minimum_size() const {
 	Ref<Font> font = get_theme_font("font", "Tree");
+	int font_size = get_theme_font_size("font_size", "Tree");
 
 	Size2 ms;
 	ms.width = 1;
-	ms.height = font->get_height();
+	ms.height = font->get_height(font_size);
 	if (icon.is_valid()) {
 		ms.height = MAX(icon->get_height(), ms.height);
 	}
@@ -1105,19 +1151,24 @@ void EditorInspectorSection::_test_unfold() {
 void EditorInspectorSection::_notification(int p_what) {
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 		Ref<Font> font = get_theme_font("font", "Tree");
+		int font_size = get_theme_font_size("font_size", "Tree");
 		Ref<Texture2D> arrow;
 
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
 				arrow = get_theme_icon("arrow", "Tree");
 			} else {
-				arrow = get_theme_icon("arrow_collapsed", "Tree");
+				if (is_layout_rtl()) {
+					arrow = get_theme_icon("arrow_collapsed_mirrored", "Tree");
+				} else {
+					arrow = get_theme_icon("arrow_collapsed", "Tree");
+				}
 			}
 		}
 
 		Size2 size = get_size();
 		Point2 offset;
-		offset.y = font->get_height();
+		offset.y = font->get_height(font_size);
 		if (arrow.is_valid()) {
 			offset.y = MAX(offset.y, arrow->get_height());
 		}
@@ -1148,18 +1199,20 @@ void EditorInspectorSection::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Texture2D> arrow;
+		bool rtl = is_layout_rtl();
 
 		if (foldable) {
-			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_theme_icon("arrow", "Tree");
+			if (rtl) {
+				arrow = get_theme_icon("arrow_collapsed_mirrored", "Tree");
 			} else {
 				arrow = get_theme_icon("arrow_collapsed", "Tree");
 			}
 		}
 
 		Ref<Font> font = get_theme_font("font", "Tree");
+		int font_size = get_theme_font_size("font_size", "Tree");
 
-		int h = font->get_height();
+		int h = font->get_height(font_size);
 		if (arrow.is_valid()) {
 			h = MAX(h, arrow->get_height());
 		}
@@ -1169,10 +1222,15 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		const int arrow_margin = 3;
 		Color color = get_theme_color("font_color", "Tree");
-		draw_string(font, Point2(Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+		float text_width = get_size().width - Math::round((16 + arrow_margin) * EDSCALE);
+		draw_string(font, Point2(rtl ? 0 : Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent(font_size) + (h - font->get_height(font_size)) / 2).floor(), label, rtl ? HALIGN_RIGHT : HALIGN_LEFT, text_width, font_size, color);
 
 		if (arrow.is_valid()) {
-			draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
+			if (rtl) {
+				draw_texture(arrow, Point2(get_size().width - arrow->get_width() - Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
+			} else {
+				draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
+			}
 		}
 
 		if (dropping && !vbox->is_visible_in_tree()) {
@@ -1237,7 +1295,8 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 	}
 
 	Ref<Font> font = get_theme_font("font", "Tree");
-	ms.height += font->get_height() + get_theme_constant("vseparation", "Tree");
+	int font_size = get_theme_font_size("font_size", "Tree");
+	ms.height += font->get_height(font_size) + get_theme_constant("vseparation", "Tree");
 	ms.width += get_theme_constant("inspector_margin", "Editor");
 
 	return ms;
@@ -1273,7 +1332,8 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		Ref<Font> font = get_theme_font("font", "Tree");
-		if (mb->get_position().y > font->get_height()) { //clicked outside
+		int font_size = get_theme_font_size("font_size", "Tree");
+		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside
 			return;
 		}
 

@@ -279,6 +279,8 @@ void TileSetEditor::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			tileset_toolbar_buttons[TOOL_TILESET_ADD_TEXTURE]->set_icon(get_theme_icon("ToolAddNode", "EditorIcons"));
@@ -296,8 +298,13 @@ void TileSetEditor::_notification(int p_what) {
 			tools[BITMASK_CLEAR]->set_icon(get_theme_icon("Clear", "EditorIcons"));
 			tools[SHAPE_NEW_POLYGON]->set_icon(get_theme_icon("CollisionPolygon2D", "EditorIcons"));
 			tools[SHAPE_NEW_RECTANGLE]->set_icon(get_theme_icon("CollisionShape2D", "EditorIcons"));
-			tools[SELECT_PREVIOUS]->set_icon(get_theme_icon("ArrowLeft", "EditorIcons"));
-			tools[SELECT_NEXT]->set_icon(get_theme_icon("ArrowRight", "EditorIcons"));
+			if (is_layout_rtl()) {
+				tools[SELECT_PREVIOUS]->set_icon(get_theme_icon("ArrowLeft", "EditorIcons"));
+				tools[SELECT_NEXT]->set_icon(get_theme_icon("ArrowRight", "EditorIcons"));
+			} else {
+				tools[SELECT_PREVIOUS]->set_icon(get_theme_icon("ArrowRight", "EditorIcons"));
+				tools[SELECT_NEXT]->set_icon(get_theme_icon("ArrowLeft", "EditorIcons"));
+			}
 			tools[SHAPE_DELETE]->set_icon(get_theme_icon("Remove", "EditorIcons"));
 			tools[SHAPE_KEEP_INSIDE_TILE]->set_icon(get_theme_icon("Snap", "EditorIcons"));
 			tools[TOOL_GRID_SNAP]->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
@@ -1173,11 +1180,12 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 			}
 			String tile_id_name = String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id);
 			Ref<Font> font = get_theme_font("font", "Label");
-			region.set_size(font->get_string_size(tile_id_name));
+			int font_size = get_theme_font_size("font_size", "Label");
+			region.set_size(font->get_string_size(tile_id_name, font_size));
 			workspace_overlay->draw_rect(region, c);
 			region.position.y += region.size.y - 2;
 			c = Color(0.1, 0.1, 0.1);
-			workspace_overlay->draw_string(font, region.position, tile_id_name, c);
+			workspace_overlay->draw_string(font, region.position, tile_id_name, HALIGN_LEFT, -1, font_size, c);
 		}
 		delete tiles;
 	}

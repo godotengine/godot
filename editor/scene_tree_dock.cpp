@@ -1990,6 +1990,9 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 		if (ms.height < 4) {
 			ms.height = 40;
 		}
+		if (ct->is_layout_rtl()) {
+			ct->set_position(ct->get_position() - Vector2(ms.x, 0));
+		}
 		ct->set_size(ms);
 	}
 }

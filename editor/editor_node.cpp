@@ -125,6 +125,7 @@
 #include "editor/plugins/debugger_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
+#include "editor/plugins/font_editor_plugin.h"
 #include "editor/plugins/gi_probe_editor_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -140,6 +141,7 @@
 #include "editor/plugins/multimesh_editor_plugin.h"
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/ot_features_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/path_2d_editor_plugin.h"
 #include "editor/plugins/path_3d_editor_plugin.h"
@@ -336,7 +338,11 @@ void EditorNode::_update_scene_tabs() {
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// move add button to fixed position on the tabbar
 		if (scene_tab_add->get_parent() == scene_tabs) {
-			scene_tab_add->set_position(Point2(0, 0));
+			if (scene_tabs->is_layout_rtl()) {
+				scene_tab_add->set_position(Point2(tabbar_container->get_size().x - scene_tab_add->get_size().x, 0));
+			} else {
+				scene_tab_add->set_position(Point2(0, 0));
+			}
 			scene_tabs->remove_child(scene_tab_add);
 			tabbar_container->add_child(scene_tab_add);
 			tabbar_container->move_child(scene_tab_add, 1);
@@ -351,7 +357,11 @@ void EditorNode::_update_scene_tabs() {
 		if (scene_tabs->get_tab_count() != 0) {
 			last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
 		}
-		scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
+		if (scene_tabs->is_layout_rtl()) {
+			scene_tab_add->set_position(Point2(last_tab.get_position().x - scene_tab_add->get_size().x - 3, last_tab.get_position().y));
+		} else {
+			scene_tab_add->set_position(Point2(last_tab.get_position().x + last_tab.get_size().x + 3, last_tab.get_position().y));
+		}
 	}
 }
 
@@ -647,8 +657,13 @@ void EditorNode::_notification(int p_what) {
 			bottom_panel_raise->set_icon(gui_base->get_theme_icon("ExpandBottomDock", "EditorIcons"));
 
 			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
-			dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
-			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+			if (gui_base->is_layout_rtl()) {
+				dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
+				dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+			} else {
+				dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+				dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+			}
 
 			PopupMenu *p = help_menu->get_popup();
 			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_theme_icon("HelpSearch", "EditorIcons"));
@@ -5878,7 +5893,11 @@ EditorNode::EditorNode() {
 	HBoxContainer *dock_hb = memnew(HBoxContainer);
 	dock_tab_move_left = memnew(Button);
 	dock_tab_move_left->set_flat(true);
-	dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+	if (gui_base->is_layout_rtl()) {
+		dock_tab_move_left->set_icon(theme->get_icon("Forward", "EditorIcons"));
+	} else {
+		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+	}
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_left->connect("pressed", callable_mp(this, &EditorNode::_dock_move_left));
 	dock_hb->add_child(dock_tab_move_left);
@@ -5891,7 +5910,11 @@ EditorNode::EditorNode() {
 
 	dock_tab_move_right = memnew(Button);
 	dock_tab_move_right->set_flat(true);
-	dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+	if (gui_base->is_layout_rtl()) {
+		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
+	} else {
+		dock_tab_move_right->set_icon(theme->get_icon("Back", "EditorIcons"));
+	}
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
 	dock_tab_move_right->connect("pressed", callable_mp(this, &EditorNode::_dock_move_right));
 
@@ -6349,6 +6372,7 @@ EditorNode::EditorNode() {
 	video_driver->set_focus_mode(Control::FOCUS_NONE);
 	video_driver->connect("item_selected", callable_mp(this, &EditorNode::_video_driver_selected));
 	video_driver->add_theme_font_override("font", gui_base->get_theme_font("bold", "EditorFonts"));
+	video_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size("bold_size", "EditorFonts"));
 	// TODO re-enable when GLES2 is ported
 	video_driver->set_disabled(true);
 	right_menu_hb->add_child(video_driver);
@@ -6648,6 +6672,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GradientEditorPlugin(this)));
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CurveEditorPlugin(this)));
+	add_editor_plugin(memnew(FontEditorPlugin(this)));
+	add_editor_plugin(memnew(OpenTypeFeaturesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin(this)));
 	add_editor_plugin(memnew(Texture3DEditorPlugin(this)));

@@ -804,6 +804,7 @@ public:
 
 		project_path = memnew(LineEdit);
 		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		project_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 		pphb->add_child(project_path);
 
 		install_path_container = memnew(VBoxContainer);
@@ -818,6 +819,7 @@ public:
 
 		install_path = memnew(LineEdit);
 		install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		install_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 		iphb->add_child(install_path);
 
 		// status icon
@@ -956,7 +958,7 @@ public:
 			} break;
 			case NOTIFICATION_DRAW: {
 				if (hover) {
-					draw_style_box(get_theme_stylebox("hover", "Tree"), Rect2(Point2(), get_size() - Size2(10, 0) * EDSCALE));
+					draw_style_box(get_theme_stylebox("hover", "Tree"), Rect2(Point2(), get_size()));
 				}
 			} break;
 		}
@@ -1367,6 +1369,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	vb->add_child(ec);
 	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
 	title->add_theme_font_override("font", get_theme_font("title", "EditorFonts"));
+	title->add_theme_font_size_override("font_size", get_theme_font_size("title_size", "EditorFonts"));
 	title->add_theme_color_override("font_color", font_color);
 	title->set_clip_text(true);
 	vb->add_child(title);
@@ -1393,6 +1396,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	}
 
 	Label *fpath = memnew(Label(item.path));
+	fpath->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	path_hb->add_child(fpath);
 	fpath->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	fpath->set_modulate(Color(1, 1, 1, 0.5));
@@ -1723,12 +1727,16 @@ void ProjectList::erase_selected_projects() {
 void ProjectList::_panel_draw(Node *p_hb) {
 	Control *hb = Object::cast_to<Control>(p_hb);
 
-	hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x - 10, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
+	if (is_layout_rtl() && get_v_scrollbar()->is_visible_in_tree()) {
+		hb->draw_line(Point2(get_v_scrollbar()->get_minimum_size().x, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
+	} else {
+		hb->draw_line(Point2(0, hb->get_size().y + 1), Point2(hb->get_size().x, hb->get_size().y + 1), get_theme_color("guide_color", "Tree"));
+	}
 
 	String key = _projects[p_hb->get_index()].project_key;
 
 	if (_selected_project_keys.has(key)) {
-		hb->draw_style_box(get_theme_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size() - Size2(10, 0) * EDSCALE));
+		hb->draw_style_box(get_theme_stylebox("selected", "Tree"), Rect2(Point2(), hb->get_size()));
 	}
 }
 
@@ -1814,6 +1822,11 @@ void ProjectList::_bind_methods() {
 
 void ProjectManager::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
+			update();
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
@@ -2417,10 +2430,13 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
 	}
 
-	String cp;
-	cp += 0xA9;
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	if (TS->is_locale_right_to_left(TranslationServer::get_singleton()->get_tool_locale())) {
+		// For RTL languages, embed translated part of the title (using control characters) to ensure correct order.
+		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + String::chr(0x202B) + TTR("Project Manager") + String::chr(0x202C) + String::chr(0x200E) + " - " + String::chr(0xA9) + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	} else {
+		DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + String::chr(0xA9) + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
@@ -2552,9 +2568,10 @@ ProjectManager::ProjectManager() {
 
 	{
 		// Version info and language options
-		HBoxContainer *settings_hb = memnew(HBoxContainer);
+		settings_hb = memnew(HBoxContainer);
 		settings_hb->set_alignment(BoxContainer::ALIGN_END);
 		settings_hb->set_h_grow_direction(Control::GROW_DIRECTION_BEGIN);
+		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
 
 		Label *version_label = memnew(Label);
 		String hash = String(VERSION_HASH);
@@ -2598,7 +2615,6 @@ ProjectManager::ProjectManager() {
 
 		settings_hb->add_child(language_btn);
 		center_box->add_child(settings_hb);
-		settings_hb->set_anchors_and_margins_preset(Control::PRESET_TOP_RIGHT);
 	}
 
 	if (StreamPeerSSL::is_available()) {

@@ -29,15 +29,101 @@
 /*************************************************************************/
 
 #include "link_button.h"
+#include "core/string/translation.h"
+
+void LinkButton::_shape() {
+	Ref<Font> font = get_theme_font("font");
+	int font_size = get_theme_font_size("font_size");
+
+	text_buf->clear();
+	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
+		text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+	} else {
+		text_buf->set_direction((TextServer::Direction)text_direction);
+	}
+	TS->shaped_text_set_bidi_override(text_buf->get_rid(), structured_text_parser(st_parser, st_args, text));
+	text_buf->add_string(text, font, font_size, opentype_features, (language != "") ? language : TranslationServer::get_singleton()->get_tool_locale());
+}
 
 void LinkButton::set_text(const String &p_text) {
 	text = p_text;
-	update();
+	_shape();
 	minimum_size_changed();
+	update();
 }
 
 String LinkButton::get_text() const {
 	return text;
+}
+
+void LinkButton::set_structured_text_bidi_override(Control::StructuredTextParser p_parser) {
+	if (st_parser != p_parser) {
+		st_parser = p_parser;
+		_shape();
+		update();
+	}
+}
+
+Control::StructuredTextParser LinkButton::get_structured_text_bidi_override() const {
+	return st_parser;
+}
+
+void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
+	st_args = p_args;
+	_shape();
+	update();
+}
+
+Array LinkButton::get_structured_text_bidi_override_options() const {
+	return st_args;
+}
+
+void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
+	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
+	if (text_direction != p_text_direction) {
+		text_direction = p_text_direction;
+		_shape();
+		update();
+	}
+}
+
+Control::TextDirection LinkButton::get_text_direction() const {
+	return text_direction;
+}
+
+void LinkButton::clear_opentype_features() {
+	opentype_features.clear();
+	_shape();
+	update();
+}
+
+void LinkButton::set_opentype_feature(const String &p_name, int p_value) {
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!opentype_features.has(tag) || (int)opentype_features[tag] != p_value) {
+		opentype_features[tag] = p_value;
+		_shape();
+		update();
+	}
+}
+
+int LinkButton::get_opentype_feature(const String &p_name) const {
+	int32_t tag = TS->name_to_tag(p_name);
+	if (!opentype_features.has(tag)) {
+		return -1;
+	}
+	return opentype_features[tag];
+}
+
+void LinkButton::set_language(const String &p_language) {
+	if (language != p_language) {
+		language = p_language;
+		_shape();
+		update();
+	}
+}
+
+String LinkButton::get_language() const {
+	return language;
 }
 
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
@@ -50,11 +136,20 @@ LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 }
 
 Size2 LinkButton::get_minimum_size() const {
-	return get_theme_font("font")->get_string_size(text);
+	return text_buf->get_size();
 }
 
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			update();
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_shape();
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
@@ -94,38 +189,111 @@ void LinkButton::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			Ref<Font> font = get_theme_font("font");
+			int width = text_buf->get_line_width();
 
-			draw_string(font, Vector2(0, font->get_ascent()), text, color);
+			if (is_layout_rtl()) {
+				text_buf->draw(get_canvas_item(), Vector2(size.width - width, 0), color);
+			} else {
+				text_buf->draw(get_canvas_item(), Vector2(0, 0), color);
+			}
 
 			if (do_underline) {
-				int underline_spacing = get_theme_constant("underline_spacing") + font->get_underline_position();
-				int width = font->get_string_size(text).width;
-				int y = font->get_ascent() + underline_spacing;
+				int underline_spacing = get_theme_constant("underline_spacing") + text_buf->get_line_underline_position();
+				int y = text_buf->get_line_ascent() + underline_spacing;
 
-				draw_line(Vector2(0, y), Vector2(width, y), color, font->get_underline_thickness());
+				if (is_layout_rtl()) {
+					draw_line(Vector2(size.width - width, y), Vector2(size.width, y), color, text_buf->get_line_underline_thickness());
+				} else {
+					draw_line(Vector2(0, y), Vector2(width, y), color, text_buf->get_line_underline_thickness());
+				}
 			}
 
 		} break;
 	}
 }
 
+bool LinkButton::_set(const StringName &p_name, const Variant &p_value) {
+	String str = p_name;
+	if (str.begins_with("opentype_features/")) {
+		String name = str.get_slicec('/', 1);
+		int32_t tag = TS->name_to_tag(name);
+		double value = p_value;
+		if (value == -1) {
+			if (opentype_features.has(tag)) {
+				opentype_features.erase(tag);
+				_shape();
+				update();
+			}
+		} else {
+			if ((double)opentype_features[tag] != value) {
+				opentype_features[tag] = value;
+				_shape();
+				update();
+			}
+		}
+		_change_notify();
+		return true;
+	}
+
+	return false;
+}
+
+bool LinkButton::_get(const StringName &p_name, Variant &r_ret) const {
+	String str = p_name;
+	if (str.begins_with("opentype_features/")) {
+		String name = str.get_slicec('/', 1);
+		int32_t tag = TS->name_to_tag(name);
+		if (opentype_features.has(tag)) {
+			r_ret = opentype_features[tag];
+			return true;
+		} else {
+			r_ret = -1;
+			return true;
+		}
+	}
+	return false;
+}
+
+void LinkButton::_get_property_list(List<PropertyInfo> *p_list) const {
+	for (const Variant *ftr = opentype_features.next(nullptr); ftr != nullptr; ftr = opentype_features.next(ftr)) {
+		String name = TS->tag_to_name(*ftr);
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "opentype_features/" + name));
+	}
+	p_list->push_back(PropertyInfo(Variant::NIL, "opentype_features/_new", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+}
+
 void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LinkButton::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LinkButton::get_text);
-
+	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &LinkButton::set_text_direction);
+	ClassDB::bind_method(D_METHOD("get_text_direction"), &LinkButton::get_text_direction);
+	ClassDB::bind_method(D_METHOD("set_opentype_feature", "tag", "value"), &LinkButton::set_opentype_feature);
+	ClassDB::bind_method(D_METHOD("get_opentype_feature", "tag"), &LinkButton::get_opentype_feature);
+	ClassDB::bind_method(D_METHOD("clear_opentype_features"), &LinkButton::clear_opentype_features);
+	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
+	ClassDB::bind_method(D_METHOD("get_language"), &LinkButton::get_language);
 	ClassDB::bind_method(D_METHOD("set_underline_mode", "underline_mode"), &LinkButton::set_underline_mode);
 	ClassDB::bind_method(D_METHOD("get_underline_mode"), &LinkButton::get_underline_mode);
+	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LinkButton::set_structured_text_bidi_override);
+	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &LinkButton::get_structured_text_bidi_override);
+	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override_options", "args"), &LinkButton::set_structured_text_bidi_override_options);
+	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override_options"), &LinkButton::get_structured_text_bidi_override_options);
 
 	BIND_ENUM_CONSTANT(UNDERLINE_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(UNDERLINE_MODE_ON_HOVER);
 	BIND_ENUM_CONSTANT(UNDERLINE_MODE_NEVER);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,LTR,RTL,Inherited"), "set_text_direction", "get_text_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language"), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
+	ADD_GROUP("Structured Text", "structured_text_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
 }
 
 LinkButton::LinkButton() {
+	text_buf.instance();
 	underline_mode = UNDERLINE_MODE_ALWAYS;
 	set_default_cursor_shape(CURSOR_POINTING_HAND);
 }
