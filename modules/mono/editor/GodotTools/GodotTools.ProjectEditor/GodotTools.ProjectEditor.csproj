@@ -20,7 +20,7 @@
   <ItemGroup>
     <None Include="MSBuild.exe" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  <Target Name="CopyMSBuildStubWindows" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform(Windows))">
+  <Target Name="CopyMSBuildStubWindows" AfterTargets="Build" Condition=" '$(GodotPlatform)' == 'windows' Or ( '$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT' ) ">
     <PropertyGroup>
       <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
       <GodotOutputDataDir>$(GodotSourceRootPath)/bin/GodotSharp</GodotOutputDataDir>
