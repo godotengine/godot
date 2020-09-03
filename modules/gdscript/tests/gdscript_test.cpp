@@ -76,12 +76,9 @@ int GDScriptTestRunner::run_tests() {
 		GDScriptTest test = tests[i];
 		GDScriptTest::TestResult result = test.run_test();
 
-		// TODO: stringify Variant: https://github.com/godotengine/godot/pull/40945.
-		const char *current_test = test.get_source_file().utf8().get_data();
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
-
-		INFO(current_test);
-		CHECK_MESSAGE(result.passed, expected.utf8().get_data());
+		INFO(test.get_source_file());
+		CHECK_MESSAGE(result.passed, expected);
 
 		if (!result.passed) {
 			failed++;
@@ -199,6 +196,9 @@ GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_p
 
 void GDScriptTestRunner::handle_cmdline() {
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+	// TODO: this could likely be ported to use test commands:
+	// https://github.com/godotengine/godot/pull/41355
+	// Currently requires to startup the whole engine, which is slow.
 	String test_cmd = "--gdscript-test";
 	String gen_cmd = "--gdscript-generate-tests";
 
