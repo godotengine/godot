@@ -178,7 +178,7 @@ namespace GodotTools.ProjectEditor
             if (root.AreDefaultCompileItemsEnabled())
             {
                 var excluded = new List<string>();
-                result = GetAllFilesRecursive(Path.GetDirectoryName(projectPath), "*.cs").ToList();
+                result.AddRange(existingFiles);
 
                 foreach (var item in root.Items)
                 {
