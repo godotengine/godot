@@ -345,7 +345,7 @@ String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
 	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (shortcut->get_name().nocasecmp_to(tooltip) != 0) {
+		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;
 		}
 		tooltip = text;

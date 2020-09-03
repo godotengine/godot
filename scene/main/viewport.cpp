@@ -1509,7 +1509,7 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	Control *which = nullptr;
-	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
+	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.last_mouse_pos), &which);
 	tooltip = tooltip.strip_edges();
 	if (tooltip.length() == 0) {
 		return; // bye
