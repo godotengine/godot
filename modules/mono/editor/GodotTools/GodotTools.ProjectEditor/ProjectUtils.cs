@@ -287,10 +287,19 @@ namespace GodotTools.ProjectEditor
                 "ConsolePause"
             };
 
-            foreach (var config in new[] {"ExportDebug", "ExportRelease", "Debug"})
+            var configNames = new[]
+            {
+                "ExportDebug", "ExportRelease", "Debug",
+                "Tools", "Release" // Include old config names as well in case it's upgrading from 3.2.1 or older
+            };
+
+            foreach (var config in configNames)
             {
                 var group = root.PropertyGroups
-                    .First(g => g.Condition.Trim() == $"'$(Configuration)|$(Platform)' == '{config}|AnyCPU'");
+                    .FirstOrDefault(g => g.Condition.Trim() == $"'$(Configuration)|$(Platform)' == '{config}|AnyCPU'");
+
+                if (group == null)
+                    continue;
 
                 RemoveElements(group.Properties.Where(p => yabaiPropertiesForConfigs.Contains(p.Name)));
 
