@@ -10,7 +10,7 @@
 		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<methods>
-		<method name="make_convex_from_brothers">
+		<method name="make_convex_from_siblings">
 			<return type="void">
 			</return>
 			<description>
