@@ -68,6 +68,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	subdirectory_item->set_text(0, dname);
+	subdirectory_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
 	subdirectory_item->set_icon(0, get_theme_icon("Folder", "EditorIcons"));
 	subdirectory_item->set_icon_modulate(0, get_theme_color("folder_icon_modulate", "FileDialog"));
 	subdirectory_item->set_selectable(0, true);
@@ -136,6 +137,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			file_item->set_text(0, fi.name);
+			file_item->set_structured_text_bidi_override(0, STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
 			String file_metadata = lpath.plus_file(fi.name);
 			file_item->set_metadata(0, file_metadata);
@@ -320,6 +322,8 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 void FileSystemDock::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (initialized) {
 				return;
@@ -348,8 +352,13 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_clear_button_enabled(true);
 			file_list_button_sort->set_icon(get_theme_icon("Sort", ei));
 
-			button_hist_next->set_icon(get_theme_icon("Forward", ei));
-			button_hist_prev->set_icon(get_theme_icon("Back", ei));
+			if (is_layout_rtl()) {
+				button_hist_next->set_icon(get_theme_icon("Back", ei));
+				button_hist_prev->set_icon(get_theme_icon("Forward", ei));
+			} else {
+				button_hist_next->set_icon(get_theme_icon("Forward", ei));
+				button_hist_prev->set_icon(get_theme_icon("Back", ei));
+			}
 			file_list_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_list_rmb_option));
 			tree_popup->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
@@ -402,8 +411,13 @@ void FileSystemDock::_notification(int p_what) {
 			String ei = "EditorIcons";
 			button_reload->set_icon(get_theme_icon("Reload", ei));
 			button_toggle_display_mode->set_icon(get_theme_icon("Panels2", ei));
-			button_hist_next->set_icon(get_theme_icon("Forward", ei));
-			button_hist_prev->set_icon(get_theme_icon("Back", ei));
+			if (is_layout_rtl()) {
+				button_hist_next->set_icon(get_theme_icon("Back", ei));
+				button_hist_prev->set_icon(get_theme_icon("Forward", ei));
+			} else {
+				button_hist_next->set_icon(get_theme_icon("Forward", ei));
+				button_hist_prev->set_icon(get_theme_icon("Back", ei));
+			}
 			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
 				button_file_list_display_mode->set_icon(get_theme_icon("FileThumbnail", "EditorIcons"));
 			} else {
@@ -2693,6 +2707,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);
+	current_path->set_structured_text_bidi_override(Control::STRUCTURED_TEXT_FILE);
 	current_path->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_text(path);
 	toolbar_hbc->add_child(current_path);

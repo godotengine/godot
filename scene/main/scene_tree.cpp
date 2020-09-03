@@ -42,7 +42,7 @@
 #include "core/string/print_string.h"
 #include "node.h"
 #include "scene/debugger/scene_debugger.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"

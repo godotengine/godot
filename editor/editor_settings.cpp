@@ -262,13 +262,30 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		String host_lang = OS::get_singleton()->get_locale();
 		host_lang = TranslationServer::standardize_locale(host_lang);
 
-		// Some locales are not properly supported currently in Godot due to lack of font shaping
-		// (e.g. Arabic or Hindi), so even though we have work in progress translations for them,
-		// we skip them as they don't render properly. (GH-28577)
-		const Vector<String> locales_to_skip = String("ar,bn,fa,he,hi,ml,si,ta,te,ur").split(",");
+		// Skip locales if Text server lack required features.
+		Vector<String> locales_to_skip;
+		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT) || !TS->has_feature(TextServer::FEATURE_SHAPING)) {
+			locales_to_skip.push_back("ar"); // Arabic
+			locales_to_skip.push_back("fa"); // Persian
+			locales_to_skip.push_back("ur"); // Urdu
+		}
+		if (!TS->has_feature(TextServer::FEATURE_BIDI_LAYOUT)) {
+			locales_to_skip.push_back("he"); // Hebrew
+		}
+		if (!TS->has_feature(TextServer::FEATURE_SHAPING)) {
+			locales_to_skip.push_back("bn"); // Bengali
+			locales_to_skip.push_back("hi"); // Hindi
+			locales_to_skip.push_back("ml"); // Malayalam
+			locales_to_skip.push_back("si"); // Sinhala
+			locales_to_skip.push_back("ta"); // Tamil
+			locales_to_skip.push_back("te"); // Telugu
+		}
+
+		if (!locales_to_skip.empty()) {
+			WARN_PRINT("Some locales are not properly supported by selected Text Server and are disabled.");
+		}
 
 		String best;
-
 		EditorTranslationList *etl = _editor_translations;
 
 		while (etl->data) {
@@ -316,6 +333,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["interface/editor/main_font_size"] = PropertyInfo(Variant::INT, "interface/editor/main_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 	_initial_set("interface/editor/code_font_size", 14);
 	hints["interface/editor/code_font_size"] = PropertyInfo(Variant::INT, "interface/editor/code_font_size", PROPERTY_HINT_RANGE, "8,48,1", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/code_font_contextual_ligatures", 0);
+	hints["interface/editor/code_font_contextual_ligatures"] = PropertyInfo(Variant::INT, "interface/editor/code_font_contextual_ligatures", PROPERTY_HINT_ENUM, "Default,Disable contextual alternates (coding ligatures),Use custom OpenType feature set", PROPERTY_USAGE_DEFAULT);
+	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/font_antialiased", true);
 	_initial_set("interface/editor/font_hinting", 0);
 	hints["interface/editor/font_hinting"] = PropertyInfo(Variant::INT, "interface/editor/font_hinting", PROPERTY_HINT_ENUM, "Auto,None,Light,Normal", PROPERTY_USAGE_DEFAULT);

@@ -361,9 +361,16 @@ void GroupDialog::_delete_group_item(const String &p_name) {
 
 void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
-			add_button->set_icon(groups->get_theme_icon("Forward", "EditorIcons"));
-			remove_button->set_icon(groups->get_theme_icon("Back", "EditorIcons"));
+			if (is_layout_rtl()) {
+				add_button->set_icon(groups->get_theme_icon("Back", "EditorIcons"));
+				remove_button->set_icon(groups->get_theme_icon("Forward", "EditorIcons"));
+			} else {
+				add_button->set_icon(groups->get_theme_icon("Forward", "EditorIcons"));
+				remove_button->set_icon(groups->get_theme_icon("Back", "EditorIcons"));
+			}
 
 			add_filter->set_right_icon(groups->get_theme_icon("Search", "EditorIcons"));
 			add_filter->set_clear_button_enabled(true);

@@ -501,7 +501,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				List<String> names;
 				names.push_back("value:");
 				config_value_editors(1, 1, 50, names);
-				value_editor[0]->set_text(String::num(v));
+				value_editor[0]->set_text(TS->format_number(String::num(v)));
 			}
 
 		} break;
@@ -1389,6 +1389,7 @@ void CustomPropertyEditor::_draw_easing() {
 	bool flip = hint_text == "attenuation";
 
 	Ref<Font> f = easing_draw->get_theme_font("font", "Label");
+	int font_size = easing_draw->get_theme_font_size("font_size", "Label");
 	Color color = easing_draw->get_theme_color("font_color", "Label");
 
 	for (int i = 1; i <= points; i++) {
@@ -1406,7 +1407,7 @@ void CustomPropertyEditor::_draw_easing() {
 		prev = h;
 	}
 
-	f->draw(ci, Point2(10, 10 + f->get_ascent()), String::num(exp, 2), color);
+	f->draw_string(ci, Point2(10, 10 + f->get_ascent(font_size)), String::num(exp, 2), HALIGN_LEFT, -1, font_size, color);
 }
 
 void CustomPropertyEditor::_text_edit_changed() {
@@ -1432,7 +1433,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 	updating = true;
 	switch (type) {
 		case Variant::INT: {
-			String text = value_editor[0]->get_text();
+			String text = TS->parse_number(value_editor[0]->get_text());
 			Ref<Expression> expr;
 			expr.instance();
 			Error err = expr->parse(text);
@@ -1447,7 +1448,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		} break;
 		case Variant::FLOAT: {
 			if (hint != PROPERTY_HINT_EXP_EASING) {
-				String text = value_editor[0]->get_text();
+				String text = TS->parse_number(value_editor[0]->get_text());
 				v = _parse_real_expression(text);
 				emit_signal("variant_changed");
 			}

@@ -73,6 +73,7 @@ void AspectRatioContainer::set_alignment_vertical(AlignMode p_alignment_vertical
 void AspectRatioContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
+			bool rtl = is_layout_rtl();
 			Size2 size = get_size();
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
@@ -130,7 +131,11 @@ void AspectRatioContainer::_notification(int p_what) {
 				}
 				Vector2 offset = (size - child_size) * Vector2(align_x, align_y);
 
-				fit_child_in_rect(c, Rect2(offset, child_size));
+				if (rtl) {
+					fit_child_in_rect(c, Rect2(Vector2(size.x - offset.x - child_size.x, offset.y), child_size));
+				} else {
+					fit_child_in_rect(c, Rect2(offset, child_size));
+				}
 			}
 		} break;
 	}

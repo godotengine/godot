@@ -32,8 +32,9 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/os/keyboard.h"
+#include "core/string/translation.h"
 #include "scene/gui/control.h"
-#include "scene/resources/dynamic_font.h"
+#include "scene/resources/font.h"
 #include "scene/scene_string_names.h"
 
 void Window::set_title(const String &p_title) {
@@ -659,9 +660,8 @@ void Window::_update_viewport_size() {
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
-		if (DynamicFontAtSize::font_oversampling != font_oversampling) {
-			DynamicFontAtSize::font_oversampling = font_oversampling;
-			DynamicFont::update_oversampling();
+		if (TS->font_get_oversampling() != font_oversampling) {
+			TS->font_set_oversampling(font_oversampling);
 		}
 	}
 
@@ -1182,6 +1182,11 @@ Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_t
 	return Control::get_fonts(theme_owner, theme_owner_window, p_name, type);
 }
 
+int Window::get_theme_font_size(const StringName &p_name, const StringName &p_type) const {
+	StringName type = p_type ? p_type : get_class_name();
+	return Control::get_font_sizes(theme_owner, theme_owner_window, p_name, type);
+}
+
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_colors(theme_owner, theme_owner_window, p_name, type);
@@ -1210,6 +1215,11 @@ bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_ty
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_fonts(theme_owner, theme_owner_window, p_name, type);
+}
+
+bool Window::has_theme_font_size(const StringName &p_name, const StringName &p_type) const {
+	StringName type = p_type ? p_type : get_class_name();
+	return Control::has_font_sizes(theme_owner, theme_owner_window, p_name, type);
 }
 
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_type) const {
@@ -1264,6 +1274,40 @@ void Window::set_clamp_to_embedder(bool p_enable) {
 
 bool Window::is_clamped_to_embedder() const {
 	return clamp_to_embedder;
+}
+
+void Window::set_layout_direction(Window::LayoutDirection p_direction) {
+	ERR_FAIL_INDEX((int)p_direction, 4);
+
+	layout_dir = p_direction;
+	propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+}
+
+Window::LayoutDirection Window::get_layout_direction() const {
+	return layout_dir;
+}
+
+bool Window::is_layout_rtl() const {
+	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
+		Window *parent = Object::cast_to<Window>(get_parent());
+		if (parent) {
+			return parent->is_layout_rtl();
+		} else {
+			if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+				return true;
+			}
+			String locale = TranslationServer::get_singleton()->get_tool_locale();
+			return TS->is_locale_right_to_left(locale);
+		}
+	} else if (layout_dir == LAYOUT_DIRECTION_LOCALE) {
+		if (GLOBAL_GET("display/window/force_right_to_left_layout_direction")) {
+			return true;
+		}
+		String locale = TranslationServer::get_singleton()->get_tool_locale();
+		return TS->is_locale_right_to_left(locale);
+	} else {
+		return (layout_dir == LAYOUT_DIRECTION_RTL);
+	}
 }
 
 void Window::_bind_methods() {
@@ -1344,14 +1388,20 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "type"), &Window::get_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "type"), &Window::get_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_font", "name", "type"), &Window::get_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "type"), &Window::get_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "type"), &Window::get_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "type"), &Window::get_theme_constant, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "type"), &Window::has_theme_icon, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "type"), &Window::has_theme_stylebox, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_font", "name", "type"), &Window::has_theme_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "type"), &Window::has_theme_font_size, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "type"), &Window::has_theme_color, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "type"), &Window::has_theme_constant, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
+	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
+	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
@@ -1418,6 +1468,11 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_ASPECT_EXPAND);
+
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LOCALE);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_LTR);
+	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_RTL);
 }
 
 Window::Window() {

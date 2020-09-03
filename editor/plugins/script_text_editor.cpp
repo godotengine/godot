@@ -1697,6 +1697,8 @@ void ScriptTextEditor::_enable_code_editor() {
 	editor_box->add_child(warnings_panel);
 	warnings_panel->add_theme_font_override(
 			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+	warnings_panel->add_theme_font_size_override(
+			"normal_font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	warnings_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_warning_clicked));
 
 	add_child(context_menu);

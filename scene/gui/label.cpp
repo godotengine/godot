@@ -93,16 +93,17 @@ void Label::_notification(int p_what) {
 		Size2 size = get_size();
 		Ref<StyleBox> style = get_theme_stylebox("normal");
 		Ref<Font> font = get_theme_font("font");
+		int font_size = get_theme_font_size("font_size");
 		Color font_color = get_theme_color("font_color");
 		Color font_color_shadow = get_theme_color("font_color_shadow");
 		bool use_outline = get_theme_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_theme_constant("shadow_offset_x"), get_theme_constant("shadow_offset_y"));
 		int line_spacing = get_theme_constant("line_spacing");
-		Color font_outline_modulate = get_theme_color("font_outline_modulate");
+		//Color font_outline_modulate = get_theme_color("font_outline_modulate");
 
 		style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
-		RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
+		//RenderingServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(), font.is_valid() && font->is_distance_field_hint());
 
 		int font_h = font->get_height() + line_spacing;
 
@@ -155,7 +156,7 @@ void Label::_notification(int p_what) {
 
 		int line = 0;
 		int line_to = lines_skipped + (lines_visible > 0 ? lines_visible : 1);
-		FontDrawer drawer(font, font_outline_modulate);
+		//FontDrawer drawer(font, font_outline_modulate);
 		while (wc) {
 			/* handle lines not meant to be drawn quickly */
 			if (line >= line_to) {
@@ -242,11 +243,12 @@ void Label::_notification(int p_what) {
 								n = String::char_uppercase(n);
 							}
 
-							float move = drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow);
+							//TODO replace with TS
+							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_size, font_color_shadow);
 							if (use_outline) {
-								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow);
-								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
-								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_size, font_color_shadow);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_size, font_color_shadow);
+								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_size, font_color_shadow);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -262,7 +264,7 @@ void Label::_notification(int p_what) {
 							n = String::char_uppercase(n);
 						}
 
-						x_ofs += drawer.draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
+						x_ofs += font->draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_size, font_color);
 						chars_total++;
 					}
 				}

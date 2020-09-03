@@ -111,7 +111,7 @@
 			[Color] of the text's shadow effect.
 		</theme_item>
 		<theme_item name="font_outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			The tint of [Font]'s outline. See [member DynamicFont.outline_color].
+			The tint of [Font]'s outline.
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="3">
 			Vertical space between lines in multiline [Label].

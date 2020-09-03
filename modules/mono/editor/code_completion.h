@@ -46,6 +46,7 @@ enum class CompletionKind {
 	THEME_COLORS,
 	THEME_CONSTANTS,
 	THEME_FONTS,
+	THEME_FONT_SIZES,
 	THEME_STYLES
 };
 

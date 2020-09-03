@@ -103,19 +103,19 @@ static String _get_percent_txt(float p_value, float p_total) {
 		p_total = 0.00001;
 	}
 
-	return String::num((p_value / p_total) * 100, 1) + "%";
+	return TS->format_number(String::num((p_value / p_total) * 100, 1)) + TS->percent_sign();
 }
 
 String EditorProfiler::_get_time_as_text(const Metric &m, float p_time, int p_calls) {
 	const int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return rtos(p_time * 1000).pad_decimals(2) + " ms";
+		return TS->format_number(rtos(p_time * 1000).pad_decimals(2)) + " " + RTR("ms");
 	} else if (dmode == DISPLAY_AVERAGE_TIME) {
 		if (p_calls == 0) {
-			return "0.00 ms";
+			return TS->format_number("0.00") + " " + RTR("ms");
 		} else {
-			return rtos((p_time / p_calls) * 1000).pad_decimals(2) + " ms";
+			return TS->format_number(rtos((p_time / p_calls) * 1000).pad_decimals(2)) + " " + RTR("ms");
 		}
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return _get_percent_txt(p_time, m.frame_time);
@@ -423,7 +423,7 @@ void EditorProfiler::_clear_pressed() {
 }
 
 void EditorProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
 		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
 	}

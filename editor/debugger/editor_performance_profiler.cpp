@@ -82,10 +82,10 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 			return String::humanize_size(p_value);
 		}
 		case Performance::MONITOR_TYPE_TIME: {
-			return rtos(p_value * 1000).pad_decimals(2) + " ms";
+			return TS->format_number(rtos(p_value * 1000).pad_decimals(2)) + " " + RTR("ms");
 		}
 		default: {
-			return rtos(p_value);
+			return TS->format_number(rtos(p_value));
 		}
 	}
 }
@@ -111,6 +111,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 	Ref<StyleBox> graph_style_box = get_theme_stylebox("normal", "TextEdit");
 	Ref<Font> graph_font = get_theme_font("font", "TextEdit");
+	int font_size = get_theme_font_size("font_size", "TextEdit");
 
 	int columns = int(Math::ceil(Math::sqrt(float(active.size()))));
 	int rows = int(Math::ceil(float(active.size()) / float(columns)));
@@ -131,19 +132,19 @@ void EditorPerformanceProfiler::_monitor_draw() {
 		rect.size -= graph_style_box->get_minimum_size();
 		Color draw_color = get_theme_color("accent_color", "Editor");
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
-		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent()), current.item->get_text(0), draw_color, rect.size.x);
+		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HALIGN_LEFT, rect.size.x, font_size, draw_color);
 
 		draw_color.a = 0.9f;
-		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1)).width;
+		float value_position = rect.size.width - graph_font->get_string_size(current.item->get_text(1), font_size).width;
 		if (value_position < 0) {
 			value_position = 0;
 		}
-		monitor_draw->draw_string(graph_font, rect.position + Point2(value_position, graph_font->get_ascent()), current.item->get_text(1), draw_color, rect.size.x);
+		monitor_draw->draw_string(graph_font, rect.position + Point2(value_position, graph_font->get_ascent(font_size)), current.item->get_text(1), HALIGN_LEFT, rect.size.x, font_size, draw_color);
 
-		rect.position.y += graph_font->get_height();
-		rect.size.height -= graph_font->get_height();
+		rect.position.y += graph_font->get_height(font_size);
+		rect.size.height -= graph_font->get_height(font_size);
 
-		int line_count = rect.size.height / (graph_font->get_height() * 2);
+		int line_count = rect.size.height / (graph_font->get_height(font_size) * 2);
 		if (line_count > 5) {
 			line_count = 5;
 		}
@@ -151,12 +152,12 @@ void EditorPerformanceProfiler::_monitor_draw() {
 			Color horizontal_line_color;
 			horizontal_line_color.set_hsv(draw_color.get_h(), draw_color.get_s() * 0.5f, draw_color.get_v() * 0.5f, 0.3f);
 			monitor_draw->draw_line(rect.position, rect.position + Vector2(rect.size.width, 0), horizontal_line_color, Math::round(EDSCALE));
-			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent()), _create_label(current.max, current.type), horizontal_line_color, rect.size.width);
+			monitor_draw->draw_string(graph_font, rect.position + Vector2(0, graph_font->get_ascent(font_size)), _create_label(current.max, current.type), HALIGN_LEFT, rect.size.width, font_size, horizontal_line_color);
 
 			for (int j = 0; j < line_count; j++) {
 				Vector2 y_offset = Vector2(0, rect.size.height * (1.0f - float(j) / float(line_count)));
 				monitor_draw->draw_line(rect.position + y_offset, rect.position + Vector2(rect.size.width, 0) + y_offset, horizontal_line_color, Math::round(EDSCALE));
-				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent()) + y_offset, _create_label(current.max * float(j) / float(line_count), current.type), horizontal_line_color, rect.size.width);
+				monitor_draw->draw_string(graph_font, rect.position - Vector2(0, graph_font->get_descent(font_size)) + y_offset, _create_label(current.max * float(j) / float(line_count), current.type), HALIGN_LEFT, rect.size.width, font_size, horizontal_line_color);
 			}
 		}
 
@@ -182,7 +183,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				monitor_draw->draw_line(rect.position + Point2(from, 0), rect.position + Point2(from, rect.size.y), line_color, Math::round(EDSCALE));
 
 				String label = _create_label(e->get(), current.type);
-				Size2 size = graph_font->get_string_size(label);
+				Size2 size = graph_font->get_string_size(label, font_size);
 				Vector2 text_top_left_position = Vector2(from, h2) - (size + Vector2(MARKER_MARGIN, MARKER_MARGIN));
 				if (text_top_left_position.x < 0) {
 					text_top_left_position.x = from + MARKER_MARGIN;
@@ -190,7 +191,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 				if (text_top_left_position.y < 0) {
 					text_top_left_position.y = h2 + MARKER_MARGIN;
 				}
-				monitor_draw->draw_string(graph_font, rect.position + text_top_left_position + Point2(0, graph_font->get_ascent()), label, line_color, rect.size.x);
+				monitor_draw->draw_string(graph_font, rect.position + text_top_left_position + Point2(0, graph_font->get_ascent(font_size)), label, HALIGN_LEFT, rect.size.x, font_size, line_color);
 			}
 			prev = h2;
 			e = e->next();

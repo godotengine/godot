@@ -2792,6 +2792,24 @@ void DisplayServerWindows::_process_key_events() {
 			case WM_CHAR: {
 				// extended keys should only be processed as WM_KEYDOWN message.
 				if (!KeyMappingWindows::is_extended_key(ke.wParam) && ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR))) {
+					static char32_t prev_wc = 0;
+					char32_t unicode = ke.wParam;
+					if ((unicode & 0xfffffc00) == 0xd800) {
+						if (prev_wc != 0) {
+							ERR_PRINT("invalid utf16 surrogate input");
+						}
+						prev_wc = unicode;
+						break; // Skip surrogate.
+					} else if ((unicode & 0xfffffc00) == 0xdc00) {
+						if (prev_wc == 0) {
+							ERR_PRINT("invalid utf16 surrogate input");
+							break; // Skip invalid surrogate.
+						}
+						unicode = (prev_wc << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+						prev_wc = 0;
+					} else {
+						prev_wc = 0;
+					}
 					Ref<InputEventKey> k;
 					k.instance();
 
@@ -2803,7 +2821,7 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_pressed(true);
 					k->set_keycode(KeyMappingWindows::get_keysym(ke.wParam));
 					k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
-					k->set_unicode(ke.wParam);
+					k->set_unicode(unicode);
 					if (k->get_unicode() && gr_mem) {
 						k->set_alt(false);
 						k->set_control(false);
@@ -2840,7 +2858,25 @@ void DisplayServerWindows::_process_key_events() {
 				k->set_physical_keycode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
-					k->set_unicode(key_event_buffer[i + 1].wParam);
+					char32_t unicode = key_event_buffer[i + 1].wParam;
+					static char32_t prev_wck = 0;
+					if ((unicode & 0xfffffc00) == 0xd800) {
+						if (prev_wck != 0) {
+							ERR_PRINT("invalid utf16 surrogate input");
+						}
+						prev_wck = unicode;
+						break; // Skip surrogate.
+					} else if ((unicode & 0xfffffc00) == 0xdc00) {
+						if (prev_wck == 0) {
+							ERR_PRINT("invalid utf16 surrogate input");
+							break; // Skip invalid surrogate.
+						}
+						unicode = (prev_wck << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+						prev_wck = 0;
+					} else {
+						prev_wck = 0;
+					}
+					k->set_unicode(unicode);
 				}
 				if (k->get_unicode() && gr_mem) {
 					k->set_alt(false);

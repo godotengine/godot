@@ -559,6 +559,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	Ref<StyleBox> style_selected = get_theme_stylebox("state_machine_selectedframe", "GraphNode");
 
 	Ref<Font> font = get_theme_font("title_font", "GraphNode");
+	int font_size = get_theme_font_size("title_font_size", "GraphNode");
 	Color font_color = get_theme_color("title_color", "GraphNode");
 	Ref<Texture2D> play = get_theme_icon("Play", "EditorIcons");
 	Ref<Texture2D> auto_play = get_theme_icon("AutoPlay", "EditorIcons");
@@ -612,9 +613,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> sb = E->get() == selected_node ? style_selected : style;
 
 		Size2 s = sb->get_minimum_size();
-		int strsize = font->get_string_size(name).width;
+		int strsize = font->get_string_size(name, font_size).width;
 		s.width += strsize;
-		s.height += MAX(font->get_height(), play->get_height());
+		s.height += MAX(font->get_height(font_size), play->get_height());
 		s.width += sep + play->get_width();
 		if (needs_editor) {
 			s.width += sep + edit->get_width();
@@ -741,7 +742,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<AnimationNode> anode = state_machine->get_node(name);
 		bool needs_editor = AnimationTreeEditor::get_singleton()->can_edit(anode);
 		Ref<StyleBox> sb = name == selected_node ? style_selected : style;
-		int strsize = font->get_string_size(name).width;
+		int strsize = font->get_string_size(name, font_size).width;
 
 		NodeRect &nr = node_rects.write[i];
 
@@ -759,12 +760,12 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 
 		bool onstart = state_machine->get_start_node() == name;
 		if (onstart) {
-			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height() - 3 * EDSCALE + font->get_ascent()), TTR("Start"), font_color);
+			state_machine_draw->draw_string(font, offset + Vector2(0, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("Start"), HALIGN_LEFT, -1, font_size, font_color);
 		}
 
 		if (state_machine->get_end_node() == name) {
-			int endofs = nr.node.size.x - font->get_string_size(TTR("End")).x;
-			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height() - 3 * EDSCALE + font->get_ascent()), TTR("End"), font_color);
+			int endofs = nr.node.size.x - font->get_string_size(TTR("End"), font_size).x;
+			state_machine_draw->draw_string(font, offset + Vector2(endofs, -font->get_height(font_size) - 3 * EDSCALE + font->get_ascent(font_size)), TTR("End"), HALIGN_LEFT, -1, font_size, font_color);
 		}
 
 		offset.x += sb->get_offset().x;
@@ -781,10 +782,10 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 		offset.x += sep + play->get_width();
 
-		nr.name.position = offset + Vector2(0, (h - font->get_height()) / 2).floor();
-		nr.name.size = Vector2(strsize, font->get_height());
+		nr.name.position = offset + Vector2(0, (h - font->get_height(font_size)) / 2).floor();
+		nr.name.size = Vector2(strsize, font->get_height(font_size));
 
-		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent()), name, font_color);
+		state_machine_draw->draw_string(font, nr.name.position + Vector2(0, font->get_ascent(font_size)), name, HALIGN_LEFT, -1, font_size, font_color);
 		offset.x += strsize + sep;
 
 		if (needs_editor) {
@@ -880,7 +881,7 @@ void AnimationNodeStateMachineEditor::_update_graph() {
 }
 
 void AnimationNodeStateMachineEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		error_panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 		error_label->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 		panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));

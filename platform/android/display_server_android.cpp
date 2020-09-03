@@ -498,9 +498,28 @@ void DisplayServerAndroid::_set_key_modifier_state(Ref<InputEventWithModifiers> 
 }
 
 void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed) {
+	static char32_t prev_wc = 0;
+	char32_t unicode = p_unicode_char;
+	if ((p_unicode_char & 0xfffffc00) == 0xd800) {
+		if (prev_wc != 0) {
+			ERR_PRINT("invalid utf16 surrogate input");
+		}
+		prev_wc = unicode;
+		return; // Skip surrogate.
+	} else if ((unicode & 0xfffffc00) == 0xdc00) {
+		if (prev_wc == 0) {
+			ERR_PRINT("invalid utf16 surrogate input");
+			return; // Skip invalid surrogate.
+		}
+		unicode = (prev_wc << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+		prev_wc = 0;
+	} else {
+		prev_wc = 0;
+	}
+
 	Ref<InputEventKey> ev;
 	ev.instance();
-	int val = p_unicode_char;
+	int val = unicode;
 	int keycode = android_get_keysym(p_keycode);
 	int phy_keycode = android_get_keysym(p_scancode);
 

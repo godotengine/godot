@@ -168,7 +168,8 @@ void EditorHelp::_class_desc_resized() {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
 	Ref<Font> doc_code_font = get_theme_font("doc_source", "EditorFonts");
-	real_t char_width = doc_code_font->get_char_size('x').width;
+	int font_size = get_theme_font_size("doc_source_size", "EditorFonts");
+	real_t char_width = doc_code_font->get_char_size('x', 0, font_size).width;
 	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - char_width * 120 * EDSCALE) * 0.5;
 
 	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox("normal", "RichTextLabel")->duplicate();

@@ -74,6 +74,8 @@ class ProjectManager : public Control {
 	ConfirmationDialog *ask_update_settings;
 	ConfirmationDialog *open_templates;
 
+	HBoxContainer *settings_hb;
+
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;

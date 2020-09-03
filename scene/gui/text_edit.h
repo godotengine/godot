@@ -444,6 +444,7 @@ protected:
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
 		Ref<Font> font;
+		int font_size;
 		Color completion_background_color;
 		Color completion_selected_color;
 		Color completion_existing_color;

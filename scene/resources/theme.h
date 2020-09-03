@@ -47,6 +47,7 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Ref<Texture2D>>> icon_map;
 	HashMap<StringName, HashMap<StringName, Ref<StyleBox>>> style_map;
 	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
+	HashMap<StringName, HashMap<StringName, int>> font_size_map;
 	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
 	HashMap<StringName, HashMap<StringName, Color>> color_map;
 	HashMap<StringName, HashMap<StringName, int>> constant_map;
@@ -55,6 +56,7 @@ class Theme : public Resource {
 	Vector<String> _get_stylebox_list(const String &p_node_type) const;
 	Vector<String> _get_stylebox_types() const;
 	Vector<String> _get_font_list(const String &p_node_type) const;
+	Vector<String> _get_font_size_list(const String &p_node_type) const;
 	Vector<String> _get_color_list(const String &p_node_type) const;
 	Vector<String> _get_constant_list(const String &p_node_type) const;
 	Vector<String> _get_type_list(const String &p_node_type) const;
@@ -69,8 +71,10 @@ protected:
 	static Ref<Texture2D> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
+	static int default_font_size;
 
 	Ref<Font> default_theme_font;
+	int default_theme_font_size = -1;
 
 	static void _bind_methods();
 
@@ -84,9 +88,13 @@ public:
 	static void set_default_icon(const Ref<Texture2D> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);
 	static void set_default_font(const Ref<Font> &p_font);
+	static void set_default_font_size(int p_font_size);
 
 	void set_default_theme_font(const Ref<Font> &p_default_font);
 	Ref<Font> get_default_theme_font() const;
+
+	void set_default_theme_font_size(int p_font_size);
+	int get_default_theme_font_size() const;
 
 	void set_icon(const StringName &p_name, const StringName &p_node_type, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon(const StringName &p_name, const StringName &p_node_type) const;
@@ -112,6 +120,12 @@ public:
 	bool has_font(const StringName &p_name, const StringName &p_node_type) const;
 	void clear_font(const StringName &p_name, const StringName &p_node_type);
 	void get_font_list(StringName p_node_type, List<StringName> *p_list) const;
+
+	void set_font_size(const StringName &p_name, const StringName &p_node_type, int p_font_size);
+	int get_font_size(const StringName &p_name, const StringName &p_node_type) const;
+	bool has_font_size(const StringName &p_name, const StringName &p_node_type) const;
+	void clear_font_size(const StringName &p_name, const StringName &p_node_type);
+	void get_font_size_list(StringName p_node_type, List<StringName> *p_list) const;
 
 	void set_color(const StringName &p_name, const StringName &p_node_type, const Color &p_color);
 	Color get_color(const StringName &p_name, const StringName &p_node_type) const;

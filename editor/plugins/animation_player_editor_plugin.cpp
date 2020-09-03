@@ -105,6 +105,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("panel", "Panel"));
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			autoplay->set_icon(get_theme_icon("AutoPlay", "EditorIcons"));
 

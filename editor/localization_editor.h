@@ -58,6 +58,11 @@ class LocalizationEditor : public VBoxContainer {
 	Vector<TreeItem *> translation_filter_treeitems;
 	Vector<int> translation_locales_idxs_remap;
 
+	Label *ts_name;
+	Label *ts_data_status;
+	Label *ts_data_info;
+	Button *ts_install;
+
 	Tree *translation_pot_list;
 	EditorFileDialog *pot_file_open_dialog;
 	EditorFileDialog *pot_generate_dialog;
@@ -88,6 +93,8 @@ class LocalizationEditor : public VBoxContainer {
 	void _pot_generate_open();
 	void _pot_generate(const String &p_file);
 	void _update_pot_file_extensions();
+
+	void _install_ts_data();
 
 protected:
 	void _notification(int p_what);

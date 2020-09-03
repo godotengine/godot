@@ -114,9 +114,9 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return rtos(p_time) + "ms";
+		return TS->format_number(rtos(p_time)) + " " + RTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
-		return String::num(p_time * 100 / graph_limit, 2) + "%";
+		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
 	}
 
 	return "err";
@@ -423,8 +423,12 @@ void EditorVisualProfiler::_clear_pressed() {
 }
 
 void EditorVisualProfiler::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		if (is_layout_rtl()) {
+			activate->set_icon(get_theme_icon("PlayBackwards", "EditorIcons"));
+		} else {
+			activate->set_icon(get_theme_icon("Play", "EditorIcons"));
+		}
 		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
 	}
 }
@@ -434,6 +438,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		return;
 	}
 	Ref<Font> font = get_theme_font("font", "Label");
+	int font_size = get_theme_font_size("font_size", "Label");
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
@@ -457,7 +462,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str).x - 2, frame_y - 2), limit_str, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
 	if (graph_height_gpu > 0) {
@@ -468,11 +473,11 @@ void EditorVisualProfiler::_graph_tex_draw() {
 		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), Color(1, 1, 1, 0.3));
 
 		String limit_str = String::num(graph_limit, 2);
-		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str).x - 2, frame_y - 2), limit_str, Color(1, 1, 1, 0.6));
+		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, font_size).x - 2, frame_y - 2), limit_str, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.6));
 	}
 
-	graph->draw_string(font, Vector2(font->get_string_size("X").x, font->get_ascent() + 2), "CPU:", Color(1, 1, 1, 0.8));
-	graph->draw_string(font, Vector2(font->get_string_size("X").x + graph->get_size().width / 2, font->get_ascent() + 2), "GPU:", Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x, font->get_ascent(font_size) + 2), "CPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
+	graph->draw_string(font, Vector2(font->get_string_size("X", font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU:", HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 0.8));
 
 	/*
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {

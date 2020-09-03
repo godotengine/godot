@@ -34,6 +34,11 @@
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#include "main/main.h"
+#endif
+
 // ISO 639-1 language codes, with the addition of glibc locales with their
 // regional identifiers. This list must match the language names (in English)
 // of locale_names.
@@ -1212,6 +1217,22 @@ void TranslationServer::setup() {
 
 void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
 	tool_translation = p_translation;
+}
+
+Ref<Translation> TranslationServer::get_tool_translation() const {
+	return tool_translation;
+}
+
+String TranslationServer::get_tool_locale() {
+#ifdef TOOLS_ENABLED
+	if (TranslationServer::get_singleton()->get_tool_translation().is_valid() && (Engine::get_singleton()->is_editor_hint() || Main::is_project_manager())) {
+		return tool_translation->get_locale();
+	} else {
+#else
+	{
+#endif
+		return get_locale();
+	}
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message, const StringName &p_context) const {

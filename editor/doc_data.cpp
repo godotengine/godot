@@ -523,6 +523,14 @@ void DocData::generate(bool p_basic_types) {
 				c.theme_properties.push_back(pd);
 			}
 			l.clear();
+			Theme::get_default()->get_font_size_list(cname, &l);
+			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
+				PropertyDoc pd;
+				pd.name = E->get();
+				pd.type = "int";
+				c.theme_properties.push_back(pd);
+			}
+			l.clear();
 			Theme::get_default()->get_stylebox_list(cname, &l);
 			for (List<StringName>::Element *E = l.front(); E; E = E->next()) {
 				PropertyDoc pd;

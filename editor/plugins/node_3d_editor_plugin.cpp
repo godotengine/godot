@@ -138,7 +138,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	if (front) {
 		String axis_name = direction == 0 ? "X" : (direction == 1 ? "Y" : "Z");
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c);
-		draw_char(get_theme_font("rotation_control", "EditorFonts"), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", Color(0.3, 0.3, 0.3));
+		draw_char(get_theme_font("rotation_control", "EditorFonts"), p_axis.screen_point + Vector2i(-4, 5) * EDSCALE, axis_name, "", get_theme_font_size("rotation_control_size", "EditorFonts"), Color(0.3, 0.3, 0.3));
 	} else {
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * (0.55 + (0.2 * (1.0 + p_axis.z_axis))), c);
 	}
@@ -2593,7 +2593,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 	}
 }
 
-static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2D> icon, const Ref<Font> font, const String &text) {
+static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2D> icon, const Ref<Font> font, int font_size, const String &text) {
 	// Adjust bar size from control height
 	const Vector2 surface_size = surface.get_size();
 	const real_t h = surface_size.y / 2.0;
@@ -2613,7 +2613,7 @@ static void draw_indicator_bar(Control &surface, real_t fill, const Ref<Texture2
 	surface.draw_texture(icon, icon_pos);
 
 	// Draw text below the bar (for speed/zoom information).
-	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text);
+	surface.draw_string(font, Vector2(icon_pos.x, icon_pos.y + icon_size.y + 16 * EDSCALE), text, HALIGN_LEFT, -1.f, font_size);
 }
 
 void Node3DEditorViewport::_draw() {
@@ -2651,10 +2651,11 @@ void Node3DEditorViewport::_draw() {
 
 	if (message_time > 0) {
 		Ref<Font> font = get_theme_font("font", "Label");
+		int font_size = get_theme_font_size("font_size", "Label");
 		Point2 msgpos = Point2(5, get_size().y - 20);
-		font->draw(ci, msgpos + Point2(1, 1), message, Color(0, 0, 0, 0.8));
-		font->draw(ci, msgpos + Point2(-1, -1), message, Color(0, 0, 0, 0.8));
-		font->draw(ci, msgpos, message, Color(1, 1, 1, 1));
+		font->draw_string(ci, msgpos + Point2(1, 1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos + Point2(-1, -1), message, HALIGN_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		font->draw_string(ci, msgpos, message, HALIGN_LEFT, -1, font_size, Color(1, 1, 1, 1));
 	}
 
 	if (_edit.mode == TRANSFORM_ROTATE) {
@@ -2717,6 +2718,7 @@ void Node3DEditorViewport::_draw() {
 							1.0 - logscale_t,
 							get_theme_icon("ViewportSpeed", "EditorIcons"),
 							get_theme_font("font", "Label"),
+							get_theme_font_size("font_size", "Label"),
 							vformat("%s u/s", String::num(freelook_speed).pad_decimals(precision)));
 				}
 
@@ -2743,6 +2745,7 @@ void Node3DEditorViewport::_draw() {
 							logscale_t,
 							get_theme_icon("ViewportZoom", "EditorIcons"),
 							get_theme_font("font", "Label"),
+							get_theme_font_size("font_size", "Label"),
 							vformat("%s u", String::num(cursor.distance).pad_decimals(precision)));
 				}
 			}

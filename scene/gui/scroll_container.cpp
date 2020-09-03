@@ -213,6 +213,10 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 }
 
 void ScrollContainer::_update_scrollbar_position() {
+	if (!_updating_scrollbars) {
+		return;
+	}
+
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
@@ -228,6 +232,8 @@ void ScrollContainer::_update_scrollbar_position() {
 
 	h_scroll->raise();
 	v_scroll->raise();
+
+	_updating_scrollbars = false;
 }
 
 void ScrollContainer::_ensure_focused_visible(Control *p_control) {
@@ -249,13 +255,18 @@ void ScrollContainer::_ensure_focused_visible(Control *p_control) {
 
 		float diff = MAX(MIN(other_rect.position.y, global_rect.position.y), other_rect.position.y + other_rect.size.y - global_rect.size.y + bottom_margin);
 		set_v_scroll(get_v_scroll() + (diff - global_rect.position.y));
-		diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		if (is_layout_rtl()) {
+			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x);
+		} else {
+			diff = MAX(MIN(other_rect.position.x, global_rect.position.x), other_rect.position.x + other_rect.size.x - global_rect.size.x + right_margin);
+		}
 		set_h_scroll(get_h_scroll() + (diff - global_rect.position.x));
 	}
 }
 
 void ScrollContainer::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		_updating_scrollbars = true;
 		call_deferred("_update_scrollbar_position");
 	};
 
@@ -271,6 +282,7 @@ void ScrollContainer::_notification(int p_what) {
 		Ref<StyleBox> sb = get_theme_stylebox("bg");
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
+		bool rtl = is_layout_rtl();
 
 		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
 			size.y -= h_scroll->get_minimum_size().y;
@@ -313,6 +325,9 @@ void ScrollContainer::_notification(int p_what) {
 				}
 			}
 			r.position += ofs;
+			if (rtl && v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) {
+				r.position.x += v_scroll->get_minimum_size().x;
+			}
 			fit_child_in_rect(c, r);
 		}
 

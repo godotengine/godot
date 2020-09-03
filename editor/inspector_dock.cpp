@@ -332,13 +332,20 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			set_theme(editor->get_gui_base()->get_theme());
 			resource_new_button->set_icon(get_theme_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_theme_icon("Load", "EditorIcons"));
 			resource_save_button->set_icon(get_theme_icon("Save", "EditorIcons"));
-			backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
-			forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			if (is_layout_rtl()) {
+				backward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+				forward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+			} else {
+				backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+				forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			}
 			history_menu->set_icon(get_theme_icon("History", "EditorIcons"));
 			object_menu->set_icon(get_theme_icon("Tools", "EditorIcons"));
 			warning->set_icon(get_theme_icon("NodeWarning", "EditorIcons"));
@@ -524,7 +531,11 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	backward_button = memnew(Button);
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
-	backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	if (is_layout_rtl()) {
+		backward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	} else {
+		backward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	}
 	backward_button->set_flat(true);
 	backward_button->set_tooltip(TTR("Go to the previous edited object in history."));
 	backward_button->set_disabled(true);
@@ -533,7 +544,11 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
-	forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	if (is_layout_rtl()) {
+		forward_button->set_icon(get_theme_icon("Back", "EditorIcons"));
+	} else {
+		forward_button->set_icon(get_theme_icon("Forward", "EditorIcons"));
+	}
 	forward_button->set_flat(true);
 	forward_button->set_tooltip(TTR("Go to the next edited object in history."));
 	forward_button->set_disabled(true);

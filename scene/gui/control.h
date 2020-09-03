@@ -127,6 +127,30 @@ public:
 		PRESET_MODE_KEEP_SIZE
 	};
 
+	enum LayoutDirection {
+		LAYOUT_DIRECTION_INHERITED,
+		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_LTR,
+		LAYOUT_DIRECTION_RTL
+	};
+
+	enum TextDirection {
+		TEXT_DIRECTION_AUTO = TextServer::DIRECTION_AUTO,
+		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
+		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
+		TEXT_DIRECTION_INHERITED,
+	};
+
+	enum StructuredTextParser {
+		STRUCTURED_TEXT_DEFAULT,
+		STRUCTURED_TEXT_URI,
+		STRUCTURED_TEXT_FILE,
+		STRUCTURED_TEXT_EMAIL,
+		STRUCTURED_TEXT_LIST,
+		STRUCTURED_TEXT_NONE,
+		STRUCTURED_TEXT_CUSTOM
+	};
+
 private:
 	struct CComparator {
 		bool operator()(const Control *p_a, const Control *p_b) const {
@@ -152,6 +176,8 @@ private:
 		FocusMode focus_mode;
 		GrowDirection h_grow;
 		GrowDirection v_grow;
+
+		LayoutDirection layout_dir;
 
 		float rotation;
 		Vector2 scale;
@@ -189,6 +215,7 @@ private:
 		HashMap<StringName, Ref<Shader>> shader_override;
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
+		HashMap<StringName, int> font_size_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
 
@@ -240,6 +267,7 @@ private:
 	static Ref<Shader> get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
+	static int get_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static Color get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 
@@ -247,6 +275,7 @@ private:
 	static bool has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
+	static bool has_font_sizes(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 	static bool has_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_node_type = StringName());
 
@@ -255,6 +284,8 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 	//virtual void _window_gui_input(InputEvent p_event);
+
+	virtual Vector<Vector2i> structured_text_parser(StructuredTextParser p_node_type, const Array &p_args, const String p_text) const;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -278,6 +309,7 @@ public:
 		NOTIFICATION_THEME_CHANGED = 45,
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
+		NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49,
 
 	};
 
@@ -325,6 +357,10 @@ public:
 
 	Control *get_parent_control() const;
 
+	void set_layout_direction(LayoutDirection p_direction);
+	LayoutDirection get_layout_direction() const;
+	virtual bool is_layout_rtl() const;
+
 	/* POSITIONING */
 
 	void set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins = true);
@@ -359,6 +395,8 @@ public:
 	Rect2 get_screen_rect() const;
 	Rect2 get_window_rect() const; ///< use with care, as it blocks waiting for the visual server
 	Rect2 get_anchorable_rect() const override;
+
+	void set_rect(const Rect2 &p_rect); // Reset anchors to begin and set rect, for faster container children sorting.
 
 	void set_rotation(float p_radians);
 	void set_rotation_degrees(float p_degrees);
@@ -421,6 +459,7 @@ public:
 	void add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader);
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
+	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
 
@@ -428,6 +467,7 @@ public:
 	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	int get_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 
@@ -435,6 +475,7 @@ public:
 	bool has_theme_shader_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
 	bool has_theme_font_override(const StringName &p_name) const;
+	bool has_theme_font_size_override(const StringName &p_name) const;
 	bool has_theme_color_override(const StringName &p_name) const;
 	bool has_theme_constant_override(const StringName &p_name) const;
 
@@ -442,6 +483,7 @@ public:
 	bool has_theme_shader(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_font(const StringName &p_name, const StringName &p_node_type = StringName()) const;
+	bool has_theme_font_size(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_node_type = StringName()) const;
 
@@ -496,5 +538,8 @@ VARIANT_ENUM_CAST(Control::LayoutPresetMode);
 VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
+VARIANT_ENUM_CAST(Control::LayoutDirection);
+VARIANT_ENUM_CAST(Control::TextDirection);
+VARIANT_ENUM_CAST(Control::StructuredTextParser);
 
 #endif

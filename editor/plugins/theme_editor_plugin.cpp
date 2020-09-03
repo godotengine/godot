@@ -78,9 +78,12 @@ void ThemeEditor::_name_menu_about_to_show() {
 				Theme::get_default()->get_font_list(fromtype, &names);
 				break;
 			case 3:
-				Theme::get_default()->get_color_list(fromtype, &names);
+				Theme::get_default()->get_font_size_list(fromtype, &names);
 				break;
 			case 4:
+				Theme::get_default()->get_color_list(fromtype, &names);
+				break;
+			case 5:
 				Theme::get_default()->get_constant_list(fromtype, &names);
 				break;
 		}
@@ -88,6 +91,7 @@ void ThemeEditor::_name_menu_about_to_show() {
 		theme->get_icon_list(fromtype, &names);
 		theme->get_stylebox_list(fromtype, &names);
 		theme->get_font_list(fromtype, &names);
+		theme->get_font_size_list(fromtype, &names);
 		theme->get_color_list(fromtype, &names);
 		theme->get_constant_list(fromtype, &names);
 	}
@@ -120,6 +124,7 @@ struct _TECategory {
 
 	Set<RefItem<StyleBox>> stylebox_items;
 	Set<RefItem<Font>> font_items;
+	Set<Item<int>> font_size_items;
 	Set<RefItem<Texture2D>> icon_items;
 
 	Set<Item<Color>> color_items;
@@ -158,6 +163,15 @@ void ThemeEditor::_save_template_cbk(String fname) {
 			it.name = F->get();
 			it.item = Theme::get_default()->get_font(F->get(), E->key());
 			tc.font_items.insert(it);
+		}
+
+		List<StringName> font_size_list;
+		Theme::get_default()->get_font_size_list(E->key(), &font_list);
+		for (List<StringName>::Element *F = font_size_list.front(); F; F = F->next()) {
+			_TECategory::Item<int> it;
+			it.name = F->get();
+			it.item = Theme::get_default()->get_font_size(F->get(), E->key());
+			tc.font_size_items.insert(it);
 		}
 
 		List<StringName> icon_list;
@@ -284,6 +298,14 @@ void ThemeEditor::_save_template_cbk(String fname) {
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
 
+		if (tc.font_size_items.size()) {
+			file->store_line("\n; Font Size Items:\n");
+		}
+
+		for (Set<_TECategory::Item<int>>::Element *F = tc.font_size_items.front(); F; F = F->next()) {
+			file->store_line(E->key() + "." + F->get().name + " = default");
+		}
+
 		if (tc.icon_items.size()) {
 			file->store_line("\n; Icon Items:\n");
 		}
@@ -327,9 +349,12 @@ void ThemeEditor::_dialog_cbk() {
 					theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>());
 					break;
 				case 3:
-					theme->set_color(name_edit->get_text(), type_edit->get_text(), Color());
+					theme->set_font_size(name_edit->get_text(), type_edit->get_text(), -1);
 					break;
 				case 4:
+					theme->set_color(name_edit->get_text(), type_edit->get_text(), Color());
+					break;
+				case 5:
 					theme->set_constant(name_edit->get_text(), type_edit->get_text(), 0);
 					break;
 			}
@@ -362,6 +387,13 @@ void ThemeEditor::_dialog_cbk() {
 			}
 			{
 				names.clear();
+				Theme::get_default()->get_font_size_list(fromtype, &names);
+				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+					theme->set_font_size(E->get(), fromtype, Theme::get_default()->get_font_size(E->get(), fromtype));
+				}
+			}
+			{
+				names.clear();
 				Theme::get_default()->get_color_list(fromtype, &names);
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 					theme->set_color(E->get(), fromtype, Theme::get_default()->get_color(E->get(), fromtype));
@@ -387,9 +419,12 @@ void ThemeEditor::_dialog_cbk() {
 					theme->clear_font(name_edit->get_text(), type_edit->get_text());
 					break;
 				case 3:
-					theme->clear_color(name_edit->get_text(), type_edit->get_text());
+					theme->clear_font_size(name_edit->get_text(), type_edit->get_text());
 					break;
 				case 4:
+					theme->clear_color(name_edit->get_text(), type_edit->get_text());
+					break;
+				case 5:
 					theme->clear_constant(name_edit->get_text(), type_edit->get_text());
 					break;
 			}
@@ -418,6 +453,13 @@ void ThemeEditor::_dialog_cbk() {
 				Theme::get_default()->get_font_list(fromtype, &names);
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 					theme->clear_font(E->get(), fromtype);
+				}
+			}
+			{
+				names.clear();
+				Theme::get_default()->get_font_size_list(fromtype, &names);
+				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+					theme->clear_font_size(E->get(), fromtype);
 				}
 			}
 			{
@@ -484,6 +526,13 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 				for (List<StringName>::Element *E = fonts.front(); E; E = E->next()) {
 					theme->set_font(E->get(), type, Ref<Font>());
+				}
+
+				List<StringName> font_sizes;
+				base_theme->get_font_size_list(type, &font_sizes);
+
+				for (List<StringName>::Element *E = font_sizes.front(); E; E = E->next()) {
+					theme->set_font_size(E->get(), type, base_theme->get_font_size(E->get(), type));
 				}
 
 				List<StringName> colors;
@@ -860,6 +909,7 @@ ThemeEditor::ThemeEditor() {
 	type_select->add_item(TTR("Icon"));
 	type_select->add_item(TTR("Style"));
 	type_select->add_item(TTR("Font"));
+	type_select->add_item(TTR("Font Size"));
 	type_select->add_item(TTR("Color"));
 	type_select->add_item(TTR("Constant"));
 

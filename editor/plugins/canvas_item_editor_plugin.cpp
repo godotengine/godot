@@ -52,7 +52,6 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/resources/dynamic_font.h"
 #include "scene/resources/packed_scene.h"
 
 // Min and Max are power of two in order to play nicely with successive increment.
@@ -857,7 +856,11 @@ Vector2 CanvasItemEditor::_anchor_to_position(const Control *p_control, Vector2 
 	Transform2D parent_transform = p_control->get_transform().affine_inverse();
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
-	return parent_transform.xform(parent_rect.position + Vector2(parent_rect.size.x * anchor.x, parent_rect.size.y * anchor.y));
+	if (p_control->is_layout_rtl()) {
+		return parent_transform.xform(parent_rect.position + Vector2(parent_rect.size.x - parent_rect.size.x * anchor.x, parent_rect.size.y * anchor.y));
+	} else {
+		return parent_transform.xform(parent_rect.position + Vector2(parent_rect.size.x * anchor.x, parent_rect.size.y * anchor.y));
+	}
 }
 
 Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 position) {
@@ -866,7 +869,11 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
 
 	Vector2 output = Vector2();
-	output.x = (parent_rect.size.x == 0) ? 0.0 : (p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
+	if (p_control->is_layout_rtl()) {
+		output.x = (parent_rect.size.x == 0) ? 0.0 : (parent_rect.size.x - p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
+	} else {
+		output.x = (parent_rect.size.x == 0) ? 0.0 : (p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
+	}
 	output.y = (parent_rect.size.y == 0) ? 0.0 : (p_control->get_transform().xform(position).y - parent_rect.position.y) / parent_rect.size.y;
 	return output;
 }
@@ -1628,7 +1635,11 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 					for (int i = 0; i < 4; i++) {
 						anchor_pos[i] = (transform * control->get_global_transform_with_canvas()).xform(_anchor_to_position(control, anchor_pos[i]));
 						anchor_rects[i] = Rect2(anchor_pos[i], anchor_handle->get_size());
-						anchor_rects[i].position -= anchor_handle->get_size() * Vector2(float(i == 0 || i == 3), float(i <= 1));
+						if (control->is_layout_rtl()) {
+							anchor_rects[i].position -= anchor_handle->get_size() * Vector2(float(i == 1 || i == 2), float(i <= 1));
+						} else {
+							anchor_rects[i].position -= anchor_handle->get_size() * Vector2(float(i == 0 || i == 3), float(i <= 1));
+						}
 					}
 
 					DragType dragger[] = {
@@ -2771,7 +2782,8 @@ void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string
 	Color color = get_theme_color("font_color", "Editor");
 	color.a = 0.8;
 	Ref<Font> font = get_theme_font("font", "Label");
-	Size2 text_size = font->get_string_size(p_string);
+	int font_size = get_theme_font_size("font_size", "Label");
+	Size2 text_size = font->get_string_size(p_string, font_size);
 	switch (p_side) {
 		case MARGIN_LEFT:
 			p_position += Vector2(-text_size.x - 5, text_size.y / 2);
@@ -2786,18 +2798,18 @@ void CanvasItemEditor::_draw_text_at_position(Point2 p_position, String p_string
 			p_position += Vector2(-text_size.x / 2, text_size.y + 5);
 			break;
 	}
-	viewport->draw_string(font, p_position, p_string, color);
+	viewport->draw_string(font, p_position, p_string, HALIGN_LEFT, -1, font_size, color);
 }
 
 void CanvasItemEditor::_draw_margin_at_position(int p_value, Point2 p_position, Margin p_side) {
-	String str = vformat("%d px", p_value);
+	String str = TS->format_number(vformat("%d " + TTR("px"), p_value));
 	if (p_value != 0) {
 		_draw_text_at_position(p_position, str, p_side);
 	}
 }
 
 void CanvasItemEditor::_draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side) {
-	String str = vformat("%.1f %%", p_value * 100.0);
+	String str = TS->format_number(vformat("%.1f ", p_value * 100.0)) + TS->percent_sign();
 	if (p_value != 0) {
 		_draw_text_at_position(p_position, str, p_side);
 	}
@@ -2841,17 +2853,19 @@ void CanvasItemEditor::_draw_guides() {
 	Color text_color = get_theme_color("font_color", "Editor");
 	text_color.a = 0.5;
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE) {
-		String str = vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).x));
+		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).x)));
 		Ref<Font> font = get_theme_font("font", "Label");
-		Size2 text_size = font->get_string_size(str);
-		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, text_color);
+		int font_size = get_theme_font_size("font_size", "Label");
+		Size2 text_size = font->get_string_size(str, font_size);
+		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HALIGN_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(dragged_guide_pos.x, 0), Point2(dragged_guide_pos.x, viewport->get_size().y), guide_color, Math::round(EDSCALE));
 	}
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_H_GUIDE) {
-		String str = vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).y));
+		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).y)));
 		Ref<Font> font = get_theme_font("font", "Label");
-		Size2 text_size = font->get_string_size(str);
-		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, text_color);
+		int font_size = get_theme_font_size("font_size", "Label");
+		Size2 text_size = font->get_string_size(str, font_size);
+		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HALIGN_LEFT, -1, font_size, text_color);
 		viewport->draw_line(Point2(0, dragged_guide_pos.y), Point2(viewport->get_size().x, dragged_guide_pos.y), guide_color, Math::round(EDSCALE));
 	}
 }
@@ -2876,6 +2890,7 @@ void CanvasItemEditor::_draw_rulers() {
 	Color font_color = get_theme_color("font_color", "Editor");
 	font_color.a = 0.8;
 	Ref<Font> font = get_theme_font("rulers", "EditorFonts");
+	int font_size = get_theme_font_size("rulers_size", "EditorFonts");
 
 	// The rule transform
 	Transform2D ruler_transform = Transform2D();
@@ -2922,7 +2937,7 @@ void CanvasItemEditor::_draw_rulers() {
 		if (i % (major_subdivision * minor_subdivision) == 0) {
 			viewport->draw_line(Point2(position.x, 0), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
 			float val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(i, 0)).x;
-			viewport->draw_string(font, Point2(position.x + 2, font->get_height()), vformat(((int)val == val) ? "%d" : "%.1f", val), font_color);
+			viewport->draw_string(font, Point2(position.x + 2, font->get_height(font_size)), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HALIGN_LEFT, -1, font_size, font_color);
 		} else {
 			if (i % minor_subdivision == 0) {
 				viewport->draw_line(Point2(position.x, RULER_WIDTH * 0.33), Point2(position.x, RULER_WIDTH), graduation_color, Math::round(EDSCALE));
@@ -2940,9 +2955,9 @@ void CanvasItemEditor::_draw_rulers() {
 			viewport->draw_line(Point2(0, position.y), Point2(RULER_WIDTH, position.y), graduation_color, Math::round(EDSCALE));
 			float val = (ruler_transform * major_subdivide * minor_subdivide).xform(Point2(0, i)).y;
 
-			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_height(), position.y - 2));
+			Transform2D text_xform = Transform2D(-Math_PI / 2.0, Point2(font->get_height(font_size), position.y - 2));
 			viewport->draw_set_transform_matrix(viewport->get_transform() * text_xform);
-			viewport->draw_string(font, Point2(), vformat(((int)val == val) ? "%d" : "%.1f", val), font_color);
+			viewport->draw_string(font, Point2(), TS->format_number(vformat(((int)val == val) ? "%d" : "%.1f", val)), HALIGN_LEFT, -1, font_size, font_color);
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 
 		} else {
@@ -3054,17 +3069,18 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		}
 
 		Ref<Font> font = get_theme_font("bold", "EditorFonts");
+		int font_size = get_theme_font_size("bold_size", "EditorFonts");
 		Color font_color = get_theme_color("font_color", "Editor");
 		Color font_secondary_color = font_color;
 		font_secondary_color.a = 0.5;
-		float text_height = font->get_height();
+		float text_height = font->get_height(font_size);
 		const float text_width = 76;
 		const float angle_text_width = 54;
 
 		Point2 text_pos = (begin + end) / 2 - Vector2(text_width / 2, text_height / 2);
 		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
 		text_pos.y = CLAMP(text_pos.y, text_height * 1.5, viewport->get_rect().size.y - text_height * 1.5);
-		viewport->draw_string(font, text_pos, vformat("%.2f px", length_vector.length()), font_color);
+		viewport->draw_string(font, text_pos, TS->format_number(vformat("%.2f " + TTR("px"), length_vector.length())), HALIGN_LEFT, -1, font_size, font_color);
 
 		if (draw_secondary_lines) {
 			const float horizontal_angle_rad = atan2(length_vector.y, length_vector.x);
@@ -3074,16 +3090,16 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 			Point2 text_pos2 = text_pos;
 			text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
-			viewport->draw_string(font, text_pos2, vformat("%.2f px", length_vector.y), font_secondary_color);
+			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.2f " + TTR("px"), length_vector.y)), HALIGN_LEFT, -1, font_size, font_secondary_color);
 
 			Point2 v_angle_text_pos = Point2();
 			v_angle_text_pos.x = CLAMP(begin.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			v_angle_text_pos.y = begin.y < end.y ? MIN(text_pos2.y - 2 * text_height, begin.y - text_height * 0.5) : MAX(text_pos2.y + text_height * 3, begin.y + text_height * 1.5);
-			viewport->draw_string(font, v_angle_text_pos, vformat("%d deg", vertical_angle), font_secondary_color);
+			viewport->draw_string(font, v_angle_text_pos, TS->format_number(vformat("%d " + TTR("deg"), vertical_angle)), HALIGN_LEFT, -1, font_size, font_secondary_color);
 
 			text_pos2 = text_pos;
 			text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y - text_height / 2) : MAX(text_pos.y + text_height * 2, end.y - text_height / 2);
-			viewport->draw_string(font, text_pos2, vformat("%.2f px", length_vector.x), font_secondary_color);
+			viewport->draw_string(font, text_pos2, TS->format_number(vformat("%.2f " + TTR("px"), length_vector.x)), HALIGN_LEFT, -1, font_size, font_secondary_color);
 
 			Point2 h_angle_text_pos = Point2();
 			h_angle_text_pos.x = CLAMP(end.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
@@ -3100,7 +3116,7 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
 				}
 			}
-			viewport->draw_string(font, h_angle_text_pos, vformat("%d deg", horizontal_angle), font_secondary_color);
+			viewport->draw_string(font, h_angle_text_pos, TS->format_number(vformat("%d " + TTR("deg"), horizontal_angle)), HALIGN_LEFT, -1, font_size, font_secondary_color);
 
 			// Angle arcs
 			int arc_point_count = 8;
@@ -3137,17 +3153,17 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			text_pos.y = CLAMP(text_pos.y, text_height * 2.5, viewport->get_rect().size.y - text_height / 2);
 
 			if (draw_secondary_lines) {
-				viewport->draw_string(font, text_pos, vformat("%.2f units", (length_vector / grid_step).length()), font_color);
+				viewport->draw_string(font, text_pos, TS->format_number(vformat("%.2f " + TTR("units"), (length_vector / grid_step).length())), HALIGN_LEFT, -1, font_size, font_color);
 
 				Point2 text_pos2 = text_pos;
 				text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
-				viewport->draw_string(font, text_pos2, vformat("%d units", roundf(length_vector.y / grid_step.y)), font_secondary_color);
+				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.y / grid_step.y))), HALIGN_LEFT, -1, font_size, font_secondary_color);
 
 				text_pos2 = text_pos;
 				text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y + text_height / 2) : MAX(text_pos.y + text_height * 2, end.y + text_height / 2);
-				viewport->draw_string(font, text_pos2, vformat("%d units", roundf(length_vector.x / grid_step.x)), font_secondary_color);
+				viewport->draw_string(font, text_pos2, TS->format_number(vformat("%d " + TTR("units"), roundf(length_vector.x / grid_step.x))), HALIGN_LEFT, -1, font_size, font_secondary_color);
 			} else {
-				viewport->draw_string(font, text_pos, vformat("%d units", roundf((length_vector / grid_step).length())), font_color);
+				viewport->draw_string(font, text_pos, TS->format_number(vformat("%d " + TTR("units"), roundf((length_vector / grid_step).length()))), HALIGN_LEFT, -1, font_size, font_color);
 			}
 		}
 	} else {
@@ -3177,10 +3193,17 @@ void CanvasItemEditor::_draw_control_anchors(Control *control) {
 
 		// Draw the anchors handles
 		Rect2 anchor_rects[4];
-		anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
-		anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
-		anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
-		anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+		if (control->is_layout_rtl()) {
+			anchor_rects[0] = Rect2(anchors_pos[0] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+			anchor_rects[1] = Rect2(anchors_pos[1] - anchor_handle->get_size(), anchor_handle->get_size());
+			anchor_rects[2] = Rect2(anchors_pos[2] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+			anchor_rects[3] = Rect2(anchors_pos[3], -anchor_handle->get_size());
+		} else {
+			anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
+			anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+			anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
+			anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+		}
 
 		for (int i = 0; i < 4; i++) {
 			anchor_handle->draw_rect(ci, anchor_rects[i]);
@@ -3744,6 +3767,7 @@ void CanvasItemEditor::_draw_hover() {
 		String node_name = hovering_results[i].name;
 
 		Ref<Font> font = get_theme_font("font", "Label");
+		int font_size = get_theme_font_size("font_size", "Label");
 		Size2 node_name_size = font->get_string_size(node_name);
 		Size2 item_size = Size2(node_icon->get_size().x + 4 + node_name_size.x, MAX(node_icon->get_size().y, node_name_size.y - 3));
 
@@ -3761,7 +3785,7 @@ void CanvasItemEditor::_draw_hover() {
 		viewport->draw_texture(node_icon, pos, Color(1.0, 1.0, 1.0, 0.5));
 
 		// Draw name
-		viewport->draw_string(font, pos + Point2(node_icon->get_size().x + 4, item_size.y - 3), node_name, Color(1.0, 1.0, 1.0, 0.5));
+		viewport->draw_string(font, pos + Point2(node_icon->get_size().x + 4, item_size.y - 3), node_name, HALIGN_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 	}
 }
 
@@ -4342,8 +4366,13 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	// Move and resize the scrollbars, avoiding overlap.
-	v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
-	v_scroll->set_end(Point2(size.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
+	if (is_layout_rtl()) {
+		v_scroll->set_begin(Point2(0, (show_rulers) ? RULER_WIDTH : 0));
+		v_scroll->set_end(Point2(vmin.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
+	} else {
+		v_scroll->set_begin(Point2(size.width - vmin.width, (show_rulers) ? RULER_WIDTH : 0));
+		v_scroll->set_end(Point2(size.width, size.height - (h_scroll->is_visible() ? hmin.height : 0)));
+	}
 	h_scroll->set_begin(Point2((show_rulers) ? RULER_WIDTH : 0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - (v_scroll->is_visible() ? vmin.width : 0), size.height));
 
@@ -4540,9 +4569,9 @@ void CanvasItemEditor::_update_zoom_label() {
 	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
 		// Don't show a decimal when the zoom level is higher than 1000 %.
-		zoom_text = rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)) + " %";
+		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100))) + " " + TS->percent_sign();
 	} else {
-		zoom_text = rtos(Math::stepify((zoom / MAX(1, EDSCALE)) * 100, 0.1)) + " %";
+		zoom_text = TS->format_number(rtos(Math::stepify((zoom / MAX(1, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
 	}
 
 	zoom_reset->set_text(zoom_text);
@@ -5703,6 +5732,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
 	warning_child_of_container->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("warning_color", "Editor"));
 	warning_child_of_container->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
+	warning_child_of_container->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("main_size", "EditorFonts"));
 	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
@@ -5727,10 +5757,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_hb->add_child(zoom_reset);
-	Ref<DynamicFont> font = zoom_reset->get_theme_font("font")->duplicate(false);
-	font->set_outline_size(1);
-	font->set_outline_color(Color(0, 0, 0));
-	zoom_reset->add_theme_font_override("font", font);
+	zoom_reset->add_theme_constant_override("outline_size", 1);
+	zoom_reset->add_theme_color_override("font_outline_modulate", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));

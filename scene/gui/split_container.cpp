@@ -112,9 +112,16 @@ void SplitContainer::_resort() {
 		int sofs = middle_sep + sep;
 		fit_child_in_rect(second, Rect2(Point2(0, sofs), Size2(get_size().width, get_size().height - sofs)));
 	} else {
-		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
-		int sofs = middle_sep + sep;
-		fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		if (is_layout_rtl()) {
+			middle_sep = get_size().width - middle_sep - sep;
+			fit_child_in_rect(second, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			int sofs = middle_sep + sep;
+			fit_child_in_rect(first, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		} else {
+			fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(middle_sep, get_size().height)));
+			int sofs = middle_sep + sep;
+			fit_child_in_rect(second, Rect2(Point2(sofs, 0), Size2(get_size().width - sofs, get_size().height)));
+		}
 	}
 
 	update();
@@ -157,6 +164,10 @@ Size2 SplitContainer::get_minimum_size() const {
 
 void SplitContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_sort();
+		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			_resort();
 		} break;
@@ -247,7 +258,11 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
+		if (!vertical && is_layout_rtl()) {
+			split_offset = drag_ofs + (drag_from - (vertical ? mm->get_position().y : mm->get_position().x));
+		} else {
+			split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
+		}
 		should_clamp_split_offset = true;
 		queue_sort();
 		emit_signal("dragged", get_split_offset());

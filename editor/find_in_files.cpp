@@ -571,6 +571,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_search_text_label = memnew(Label);
 		_search_text_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
+		_search_text_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("source_size", "EditorFonts"));
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
@@ -599,6 +600,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 	_results_display = memnew(Tree);
 	_results_display->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("source", "EditorFonts"));
+	_results_display->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size("source_size", "EditorFonts"));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
@@ -755,10 +757,11 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	Result r = E->value();
 	String item_text = item->get_text(_with_replace ? 1 : 0);
 	Ref<Font> font = _results_display->get_theme_font("font");
+	int font_size = _results_display->get_theme_font_size("font_size");
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed)).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text()).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), font_size).x;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), font_size).x;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 

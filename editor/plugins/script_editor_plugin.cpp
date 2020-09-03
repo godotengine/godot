@@ -1485,12 +1485,19 @@ void ScriptEditor::_notification(int p_what) {
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 			[[fallthrough]];
 		}
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			help_search->set_icon(get_theme_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_theme_icon("Instance", "EditorIcons"));
 
-			script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
-			script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
+			if (is_layout_rtl()) {
+				script_forward->set_icon(get_theme_icon("Back", "EditorIcons"));
+				script_back->set_icon(get_theme_icon("Forward", "EditorIcons"));
+			} else {
+				script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
+				script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
+			}
 
 			members_overview_alphabeta_sort_button->set_icon(get_theme_icon("Sort", "EditorIcons"));
 

@@ -44,6 +44,7 @@ void BoxContainer::_resort() {
 	Size2i new_size = get_size();
 
 	int sep = get_theme_constant("separation"); //,vertical?"VBoxContainer":"HBoxContainer");
+	bool rtl = is_layout_rtl();
 
 	bool first = true;
 	int children_count = 0;
@@ -152,22 +153,53 @@ void BoxContainer::_resort() {
 
 	int ofs = 0;
 	if (!has_stretched) {
-		switch (align) {
-			case ALIGN_BEGIN:
-				break;
-			case ALIGN_CENTER:
-				ofs = stretch_diff / 2;
-				break;
-			case ALIGN_END:
-				ofs = stretch_diff;
-				break;
+		if (!vertical) {
+			switch (align) {
+				case ALIGN_BEGIN:
+					if (rtl) {
+						ofs = stretch_diff;
+					}
+					break;
+				case ALIGN_CENTER:
+					ofs = stretch_diff / 2;
+					break;
+				case ALIGN_END:
+					if (!rtl) {
+						ofs = stretch_diff;
+					}
+					break;
+			}
+		} else {
+			switch (align) {
+				case ALIGN_BEGIN:
+					break;
+				case ALIGN_CENTER:
+					ofs = stretch_diff / 2;
+					break;
+				case ALIGN_END:
+					ofs = stretch_diff;
+					break;
+			}
 		}
 	}
 
 	first = true;
 	int idx = 0;
 
-	for (int i = 0; i < get_child_count(); i++) {
+	int start;
+	int end;
+	int delta;
+	if (!rtl || vertical) {
+		start = 0;
+		end = get_child_count();
+		delta = +1;
+	} else {
+		start = get_child_count() - 1;
+		end = -1;
+		delta = -1;
+	}
+
+	for (int i = start; i != end; i += delta) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
@@ -264,6 +296,10 @@ void BoxContainer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			minimum_size_changed();
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_sort();
 		} break;
 	}
 }

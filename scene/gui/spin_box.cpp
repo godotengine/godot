@@ -40,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_value_changed(double) {
-	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
+	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
 	if (prefix != "") {
 		value = prefix + " " + value;
 	}
@@ -53,8 +53,10 @@ void SpinBox::_value_changed(double) {
 void SpinBox::_text_entered(const String &p_string) {
 	Ref<Expression> expr;
 	expr.instance();
+
+	String num = TS->parse_number(p_string);
 	// Ignore the prefix and suffix in the expression
-	Error err = expr->parse(p_string.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	Error err = expr->parse(num.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;
 	}
@@ -170,7 +172,8 @@ void SpinBox::_line_edit_focus_exit() {
 
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	int w = icon->get_width();
-	if (w != last_w) {
+	if ((w != last_w)) {
+		line_edit->set_margin(MARGIN_LEFT, 0);
 		line_edit->set_margin(MARGIN_RIGHT, -w);
 		last_w = w;
 	}
@@ -185,16 +188,24 @@ void SpinBox::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Size2i size = get_size();
 
-		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+		if (is_layout_rtl()) {
+			updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
+		} else {
+			updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+		}
 
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 		_adjust_width_for_icon(get_theme_icon("updown"));
 		_value_changed(0);
+	} else if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		call_deferred("minimum_size_changed");
 		get_line_edit()->call_deferred("minimum_size_changed");
+	} else if (p_what == NOTIFICATION_LAYOUT_DIRECTION_CHANGED || p_what == NOTIFICATION_TRANSLATION_CHANGED) {
+		update();
 	}
 }
 
@@ -263,6 +274,8 @@ SpinBox::SpinBox() {
 
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+	line_edit->set_align(LineEdit::ALIGN_LEFT);
+
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
