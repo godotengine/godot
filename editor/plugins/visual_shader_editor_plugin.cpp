@@ -803,6 +803,30 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
 			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
+
+		if (!visual_shader->is_initialized()) {
+			Shader::Mode shader_mode = Shader::MODE_SPATIAL;
+
+			ObjectID base = EditorNode::get_singleton()->get_editor_history()->get_path_object(0);
+			Object *base_obj = base.is_valid() ? ObjectDB::get_instance(base) : nullptr;
+			if (base_obj != nullptr) {
+				String prop_name = EditorNode::get_singleton()->get_inspector()->get_selected_path();
+				StringName class_name = base_obj->get_class_name();
+				if (prop_name == "process_material" && (class_name == "GPUParticles3D" || class_name == "GPUParticles2D")) {
+					shader_mode = Shader::MODE_PARTICLES;
+				} else if (class_name == "Environment") {
+					shader_mode = Shader::MODE_SKY;
+				} else {
+					CanvasItem *node2d = Object::cast_to<CanvasItem>(base_obj);
+					if (node2d != nullptr) {
+						shader_mode = Shader::MODE_CANVAS_ITEM;
+					}
+				}
+			}
+			visual_shader->set_mode(shader_mode);
+			visual_shader->set_initialized(true);
+		}
+
 #ifndef DISABLE_DEPRECATED
 		String version = VERSION_BRANCH;
 		if (visual_shader->get_version() != version) {

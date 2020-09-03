@@ -45,6 +45,7 @@ class VisualShader : public Shader {
 	friend class VisualShaderNodeVersionChecker;
 
 	String version = "";
+	bool initialized = false;
 
 public:
 	enum Type {
@@ -176,6 +177,9 @@ public:
 
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
+
+	bool is_initialized() const;
+	void set_initialized(bool p_enabled);
 
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 

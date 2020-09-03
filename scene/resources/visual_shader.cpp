@@ -1619,6 +1619,14 @@ void VisualShader::_input_type_changed(Type p_type, int p_id) {
 	}
 }
 
+bool VisualShader::is_initialized() const {
+	return initialized;
+}
+
+void VisualShader::set_initialized(bool p_enabled) {
+	initialized = p_enabled;
+}
+
 void VisualShader::rebuild() {
 	dirty.set();
 	_update_shader();
@@ -1654,10 +1662,14 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_graph_offset", "offset"), &VisualShader::set_graph_offset);
 	ClassDB::bind_method(D_METHOD("get_graph_offset"), &VisualShader::get_graph_offset);
 
+	ClassDB::bind_method(D_METHOD("set_initialized", "enabled"), &VisualShader::set_initialized);
+	ClassDB::bind_method(D_METHOD("is_initialized"), &VisualShader::is_initialized);
+
 	ClassDB::bind_method(D_METHOD("_update_shader"), &VisualShader::_update_shader);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "graph_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_graph_offset", "get_graph_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_version", "get_version");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "initialized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_initialized", "is_initialized");
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
