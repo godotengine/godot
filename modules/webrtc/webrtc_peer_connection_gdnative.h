@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WEBRTC_GDNATIVE_ENABLED
-
 #ifndef WEBRTC_PEER_CONNECTION_GDNATIVE_H
 #define WEBRTC_PEER_CONNECTION_GDNATIVE_H
+
+#ifdef WEBRTC_GDNATIVE_ENABLED
 
 #include "modules/gdnative/include/net/godot_net.h"
 #include "webrtc_peer_connection.h"
@@ -68,6 +68,6 @@ public:
 	~WebRTCPeerConnectionGDNative();
 };
 
-#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H
-
 #endif // WEBRTC_GDNATIVE_ENABLED
+
+#endif // WEBRTC_PEER_CONNECTION_GDNATIVE_H

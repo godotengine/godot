@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MINIZIP_ENABLED
-
 #ifndef FILE_ACCESS_ZIP_H
 #define FILE_ACCESS_ZIP_H
+
+#ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
 #include "core/map.h"
@@ -119,6 +119,6 @@ public:
 	~FileAccessZip();
 };
 
-#endif // FILE_ACCESS_ZIP_H
-
 #endif // MINIZIP_ENABLED
+
+#endif // FILE_ACCESS_ZIP_H

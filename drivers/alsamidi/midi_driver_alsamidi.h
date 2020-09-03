@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ALSAMIDI_ENABLED
-
 #ifndef MIDI_DRIVER_ALSAMIDI_H
 #define MIDI_DRIVER_ALSAMIDI_H
+
+#ifdef ALSAMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
 #include "core/os/mutex.h"
@@ -65,5 +65,6 @@ public:
 	virtual ~MIDIDriverALSAMidi();
 };
 
-#endif // MIDI_DRIVER_ALSAMIDI_H
 #endif // ALSAMIDI_ENABLED
+
+#endif // MIDI_DRIVER_ALSAMIDI_H
