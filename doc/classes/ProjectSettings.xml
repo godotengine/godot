@@ -447,19 +447,24 @@
 			Sets the window background to transparent when it starts.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
-			Force the window to be always on top.
+			Forces the main window to be always on top.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/borderless" type="bool" setter="" getter="" default="false">
-			Force the window to be borderless.
+			Forces the main window to be borderless.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the window to full screen when it starts.
+			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=https://docs.godotengine.org/en/latest/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			[b]Note:[/b] This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
 			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
+			[b]Note:[/b] This setting is ignored on iOS and Android.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
 			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
