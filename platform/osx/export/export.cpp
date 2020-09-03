@@ -387,7 +387,7 @@ Error EditorExportPlatformOSX::export_project(const String &p_path, bool p_debug
 		}
 	}
 
-	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".";
+	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
 
 	String pkg_name;
 	if (app_name != "")
