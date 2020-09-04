@@ -1141,6 +1141,16 @@ msgid "Gold Sponsors"
 msgstr "حامیان طلایی (درجه ۲)"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "اهداکنندگان نقره‌ای"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "اهداکنندگان برنزی"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "اسپانسر‌های کوچک"
 

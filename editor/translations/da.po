@@ -1189,6 +1189,16 @@ msgid "Gold Sponsors"
 msgstr "Guld Sponsorer"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Sølv Donorer"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronze Donorer"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Mini Sponsorer"
 

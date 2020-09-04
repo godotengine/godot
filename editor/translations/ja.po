@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1162,6 +1162,16 @@ msgstr "プラチナスポンサー"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "ゴールドスポンサー"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "シルバードナー"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "ブロンズドナー"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2751,11 +2761,11 @@ msgstr "バージョンコントロール"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr "バージョン管理のセットアップ"
+msgstr "バージョン管理をセットアップ"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr "バージョン管理の終了"
+msgstr "バージョン管理を終了"
 
 #: editor/editor_node.cpp
 msgid "Export..."
@@ -2894,11 +2904,11 @@ msgstr "スクリーンショットはEditor Data / Settingsフォルダに保�
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "フルスクリーンの有効化 / 無効化"
+msgstr "フルスクリーンを有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr "システムコンソールの有効化 / 無効化"
+msgstr "システムコンソールを有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -7011,11 +7021,11 @@ msgstr "右インデント"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "コメントの切り替え"
+msgstr "コメントアウト / 解除"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
-msgstr "行を折りたたむ / 展開する"
+msgstr "行を折りたたむ / 展開"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold All Lines"
@@ -7023,7 +7033,7 @@ msgstr "すべての行を折りたたむ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Unfold All Lines"
-msgstr "すべての行を展開する"
+msgstr "すべての行を展開"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Clone Down"
@@ -7035,7 +7045,7 @@ msgstr "シンボルを補完"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
-msgstr "選択範囲を評価する"
+msgstr "選択範囲を評価"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"

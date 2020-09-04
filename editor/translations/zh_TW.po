@@ -1145,6 +1145,16 @@ msgid "Gold Sponsors"
 msgstr "黃金贊助"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "白銀捐贈者"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "紅銅捐贈者"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "迷你贊助"
 

@@ -5,11 +5,12 @@
 # Marco Santos <enum.scima@gmail.com>, 2019.
 # Amado Wilkins <epicalert68@gmail.com>, 2019.
 # Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>, 2019.
+# Jethro Parker <lionbearjet@hotmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-12-21 08:37+0000\n"
-"Last-Translator: Bakainkorp <Ryan.Bautista86@myhunter.cuny.edu>\n"
+"PO-Revision-Date: 2020-08-14 03:56+0000\n"
+"Last-Translator: Jethro Parker <lionbearjet@hotmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
 "Language: fil\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -28,7 +29,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Nanghihingi ng string na may habang 1 (character)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -185,12 +186,12 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr ""
+msgstr "Ibahin ang haba ng Animation"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Ibahin ang ulit ng Animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -218,44 +219,44 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr ""
+msgstr "Haba ng animation (frames)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr ""
+msgstr "Haba ng animation (segundo)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr ""
+msgstr "Magdagdag ng Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr ""
+msgstr "Pagulit ng Animation"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Functions:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Mga clip ng tunog:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Mga clip ng Anim:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr ""
+msgstr "Ibahin ang landas ng Track"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "Ilipat sa on/off ang track na ito."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Baguhin ang Mode (Kung paano na-set ang property)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -1114,6 +1115,14 @@ msgid "Gold Sponsors"
 msgstr ""
 
 #: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Bronze Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr ""
 
@@ -1893,7 +1902,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Description"
-msgstr ""
+msgstr "Paglalarawan"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2816,11 +2825,11 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr ""
+msgstr "Komunidad"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr ""
+msgstr "Tungkol"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
