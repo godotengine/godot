@@ -48,7 +48,7 @@ namespace GodotTools
 
             var firstMatch = classes.FirstOrDefault(classDecl =>
                     classDecl.BaseCount != 0 && // If it doesn't inherit anything, it can't be a Godot.Object.
-                    classDecl.SearchName != searchName // Filter by the name we're looking for
+                    classDecl.SearchName == searchName // Filter by the name we're looking for
             );
 
             if (firstMatch == null)
