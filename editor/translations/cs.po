@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
-"Last-Translator: Daniel Kříž <Daniel.kriz@protonmail.com>\n"
+"PO-Revision-Date: 2020-08-16 03:50+0000\n"
+"Last-Translator: Zbyněk <zbynek.fiala@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -1154,6 +1154,16 @@ msgid "Gold Sponsors"
 msgstr "Zlatí sponzoři"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Stříbrní dárci"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronzoví dárci"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Malí sponzoři"
 
@@ -1622,7 +1632,7 @@ msgstr "Editor skriptů"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr "Otevřít knihovnu assetů"
+msgstr "Knihovna zdrojů (AssetLib)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"

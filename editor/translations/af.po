@@ -1186,6 +1186,16 @@ msgid "Gold Sponsors"
 msgstr "Goue Borge"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Silver Skenkers"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Brons Skenkers"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Mini Borge"
 

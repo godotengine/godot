@@ -55,12 +55,15 @@
 # Günther Bohn <ciscouser@gmx.de>, 2020.
 # Tom Wor <mail@tomwor.com>, 2020.
 # Bjarne Hiller <bjarne.hiller@gmail.com>, 2020.
+# Dirk Federmann <weblategodot@dirkfedermann.de>, 2020.
+# Helmut Hirtes <helmut.h@gmx.de>, 2020.
+# Michal695 <michalek.jedrzejak@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-05 16:58+0000\n"
-"Last-Translator: Bjarne Hiller <bjarne.hiller@gmail.com>\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
+"Last-Translator: Michal695 <michalek.jedrzejak@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -68,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -77,13 +80,13 @@ msgstr "Ungültiger Argument-Typ in convert(), TYPE_*-Konstanten benötigt."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Zeichenkette der Länge 1 erwartet (exakt ein Symbol)."
+msgstr "Zeichenkette der Länge 1 erwartet (exakt ein Zeichen)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Nicht genügend Bytes zum Dekodieren oder ungültiges Format."
+msgstr "Nicht genügend Bytes zur Dekodierung oder ungültiges Format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -1194,6 +1197,16 @@ msgid "Gold Sponsors"
 msgstr "Gold-Sponsoren"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Silber-Unterstützer"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronze-Unterstützer"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Mini-Sponsoren"
 
@@ -1660,11 +1673,11 @@ msgstr "3D-Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
-msgstr "Skripteditor"
+msgstr "Skript Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr "Nutzerinhaltesammlung"
+msgstr "Bestandsbibliothek"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -3011,7 +3024,7 @@ msgstr "Projekt abspielen."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "Starten"
+msgstr "Abspielen"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
@@ -3031,7 +3044,7 @@ msgstr "Spiele die bearbeitete Szene."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr "Szene starten"
+msgstr "Szene abspielen"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
@@ -3039,7 +3052,7 @@ msgstr "Spiele angepasste Szene"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr "Spiele angepasste Szene"
+msgstr "Angepasste Szene abspielen"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
@@ -3256,7 +3269,7 @@ msgstr "Gesamt"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Eigenanteil"
+msgstr "Selbst"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -5695,7 +5708,7 @@ msgstr "Pose kopieren"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr "Pose zurücksetzen"
+msgstr "Pose/Stellung löschen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
@@ -6833,7 +6846,7 @@ msgstr "Schiebe hoch"
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
-msgstr "Schiebe herunter"
+msgstr "Schiebe runter"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -6878,7 +6891,7 @@ msgstr "Vorwärts im Verlauf"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme"
-msgstr "Theme"
+msgstr "Designvorlagen (Thema)"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme..."
@@ -7110,7 +7123,7 @@ msgstr "Symbol vervollständigen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
-msgstr "Auswahl auswerten"
+msgstr "Springe zum vorigen Haltepunkt"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -9398,9 +9411,9 @@ msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
-"Gibt den Fresnelabfall abgeleitet aus dem Skalarprodukt aus "
-"Oberflächennormalenvektor und Kamerablickrichtung zurück (zugeordnete "
-"Eingänge müssen übergeben werden)."
+"Gibt den Abfall basierend auf dem Punktprodukt der Oberflächennormalen und "
+"der Blickrichtung der Kamera zurück (übergeben Sie die zugehörigen Eingaben "
+"an diese)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -10323,7 +10336,7 @@ msgstr "Umleitungen nach Lokalisierung:"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr "Lokalisierung"
+msgstr "Gebietsschema"
 
 #: editor/project_settings_editor.cpp
 msgid "Locales Filter"
@@ -10756,7 +10769,7 @@ msgstr "Unter-Ressourcen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
-msgstr "Leere Vererbung"
+msgstr "Löse Vererbung"
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -10845,7 +10858,7 @@ msgstr "Lokal"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
-msgstr "Vererbung wirklich leeren? (Lässt sich nicht rückgängig machen!)"
+msgstr "Vererbung wirklich lösen? (Lässt sich nicht rückgängig machen!)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visible"
@@ -11926,7 +11939,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr "Ausgewähltes löschen"
+msgstr "Auswahl löschen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
@@ -11942,7 +11955,7 @@ msgstr "Nodes trennen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Function"
-msgstr "Funktion bauen"
+msgstr "Funktion erstellen"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Refresh Graph"

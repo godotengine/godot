@@ -13,15 +13,15 @@
 # Rueben Stevens <supercell03@gmail.com>, 2017.
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
-# ssantos <ssantos@web.de>, 2018, 2019.
+# ssantos <ssantos@web.de>, 2018, 2019, 2020.
 # Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>, 2019.
 # Manuela Silva <mmsrs@sky.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-31 03:47+0000\n"
-"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
+"PO-Revision-Date: 2020-08-16 15:25+0000\n"
+"Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
@@ -1037,7 +1037,7 @@ msgstr "Proprietários de:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Remover arquivos selecionados do Projeto? (Sem desfazer)"
+msgstr "Remover ficheiros selecionados do Projeto? (Sem desfazer)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1045,7 +1045,7 @@ msgid ""
 "work.\n"
 "Remove them anyway? (no undo)"
 msgstr ""
-"Os arquivos a serem removidos são necessários para que outros recursos "
+"Os ficheiros a serem removidos são necessários para que outros recursos "
 "funcionem.\n"
 "Remover mesmo assim? (sem anular)"
 
@@ -1148,6 +1148,16 @@ msgstr "Patrocinadores Platinum"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Patrocinadores Gold"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Doadores Silver"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Doadores Bronze"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1403,11 +1413,11 @@ msgstr "Guardar este Modelo de Barramento para um ficheiro."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Carregar Padrão"
+msgstr "Carregar Predefinição"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Carregar o Modelo padrão de barramento."
+msgstr "Carregar o Modelo predefinido de barramento."
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
@@ -1551,7 +1561,7 @@ msgstr "Escolha"
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
-msgstr "Arquivo de Armazenamento:"
+msgstr "Armazenar o Ficheiro:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
@@ -1962,7 +1972,7 @@ msgstr "Sobrepõe:"
 
 #: editor/editor_help.cpp
 msgid "default:"
-msgstr "Padrão:"
+msgstr "predefinição:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -2273,7 +2283,7 @@ msgstr "Erro ao tentar guardar o Modelo!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "O Modelo do Editor padrão foi substituído."
+msgstr "O modelo do editor predefinido foi substituído."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2281,7 +2291,7 @@ msgstr "Nome do Modelo não encontrado!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr "Modelo padrão restaurado para as configurações base."
+msgstr "Modelo predefinido restaurado para as configurações base."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2582,7 +2592,7 @@ msgstr "Apagar Modelo"
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "Padrão"
+msgstr "Predefinição"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
@@ -2840,7 +2850,7 @@ msgid ""
 msgstr ""
 "Com esta opção ativa, alterações da cena no editor serão replicadas no jogo "
 "em execução.\n"
-"Quando usada num dispositivo remoto, é mais eficiente com um sistema de "
+"Quando usada num aparelho remoto, é mais eficiente com um sistema de "
 "ficheiros em rede."
 
 #: editor/editor_node.cpp
@@ -2856,7 +2866,7 @@ msgid ""
 msgstr ""
 "Com esta opção ativa, qualquer Script guardado será recarregado no jogo em "
 "execução.\n"
-"Quando usada num dispositivo remoto, é mais eficiente com um Sistema de "
+"Quando usada num aparelho remoto, é mais eficiente com um Sistema de "
 "Ficheiros em rede."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
@@ -3464,8 +3474,9 @@ msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
 msgstr ""
-"Não foram encontrados ligações para download para esta versão. Download "
-"direto está apenas disponível para os lançamentos oficiais."
+"Não foram encontrados ligações para descarregar para esta versão. "
+"Descarregamentos diretos estão disponíveis apenas para os lançamentos "
+"oficiais."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3981,11 +3992,11 @@ msgstr "%d Ficheiros"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "Definir como Padrão para '%s'"
+msgstr "Definir como Predefinição para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "Limpar Padrão para '%s'"
+msgstr "Limpar Predefinição para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -5658,7 +5669,7 @@ msgstr "Erro a instanciar cena de %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Default Type"
-msgstr "Mudar Tipo Padrão"
+msgstr "Mudar Predefinição de Tipo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -8577,7 +8588,7 @@ msgstr "Definir Nome do Uniform"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Input Default Port"
-msgstr "Definir Porta de Entrada Padrão"
+msgstr "Definir Porta de Entrada Predefinida"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node to Visual Shader"
@@ -9306,7 +9317,7 @@ msgid ""
 "constants."
 msgstr ""
 "Expressão personalizada em Linguagem Godot Shader, colocada sobre o shader "
-"resultante. Pode colocar várias definições de função e chamá-las depois nas "
+"resultante. Pode pôr várias definições de função e chamá-las depois nas "
 "Expressões. Também pode declarar variantes, uniformes e constantes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9965,11 +9976,11 @@ msgstr "Adicionar evento ação de entrada"
 
 #: editor/project_settings_editor.cpp
 msgid "All Devices"
-msgstr "Todos os Dispositivos"
+msgstr "Todos os Aparelhos"
 
 #: editor/project_settings_editor.cpp
 msgid "Device"
-msgstr "Dispositivo"
+msgstr "Aparelho"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Press a Key..."
@@ -10181,7 +10192,7 @@ msgstr "Zona morta"
 
 #: editor/project_settings_editor.cpp
 msgid "Device:"
-msgstr "Dispositivo:"
+msgstr "Aparelho:"
 
 #: editor/project_settings_editor.cpp
 msgid "Index:"
@@ -10425,11 +10436,11 @@ msgstr "No carácter %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "Recolocar Nó"
+msgstr "Repôr Nó"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "Recolocar localização (selecionar novo Parente):"
+msgstr "Repôr localização (selecionar novo Parente):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -10437,7 +10448,7 @@ msgstr "Manter transformação global"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "Recolocar"
+msgstr "Repôr"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -10562,7 +10573,7 @@ msgid ""
 "reverted to their default."
 msgstr ""
 "Desativar \"editable_instance\" irá reverter todas as propriedades do nó "
-"para os seus valores padrão."
+"para os seus valores predefinição."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -10570,7 +10581,8 @@ msgid ""
 "cause all properties of the node to be reverted to their default."
 msgstr ""
 "Ativar \"Carregar como Espaço Reservado\" vai desativar \"Filhos Editáveis\" "
-"e fazer com que todas as propriedades do nó revertam para valores padrão."
+"e fazer com que todas as propriedades do nó revertam para valores "
+"predefinidos."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -10680,7 +10692,7 @@ msgstr "Mudar tipo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Reparent to New Node"
-msgstr "Recolocar o Novo Nó"
+msgstr "Repôr o Novo Nó"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -11539,7 +11551,7 @@ msgstr "Mudar nome do argumento"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Default Value"
-msgstr "Definir Valor Padrão da Variável"
+msgstr "Definir Valor Predefinido da Variável"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Type"
@@ -11931,7 +11943,7 @@ msgstr "O pacote deve ter pelo menos um separador '.'."
 
 #: platform/android/export/export.cpp
 msgid "Select device from the list"
-msgstr "Selecionar dispositivo da lista"
+msgstr "Selecionar aparelho da lista"
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
@@ -12083,7 +12095,7 @@ msgstr "Executar no Navegador"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr "Executar HTML exportado no Navegador padrão do sistema."
+msgstr "Executar HTML exportado no navegador predefinido do sistema."
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
@@ -12107,7 +12119,7 @@ msgstr "Não consigo ler ficheiro de imagem do ecrã de inicialização:"
 
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
-msgstr "A usar imagem padrão de inicialização."
+msgstr "A usar imagem de inicialização predefinida."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -12333,7 +12345,7 @@ msgstr ""
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
-msgstr "Esta corrente de Bone2D deve terminar em um nó Skeleton2D."
+msgstr "Esta corrente de Bone2D deve terminar num nó Skeleton2D."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
@@ -12754,7 +12766,7 @@ msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"Ambiente Padrão especificado em Configuração do Projeto (Rendering -> "
+"Ambiente predefinido especificado em Configuração do Projeto (Rendering -> "
 "Environment -> Default Environment) não pode ser carregado."
 
 #: scene/main/viewport.cpp

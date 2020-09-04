@@ -1136,6 +1136,16 @@ msgid "Gold Sponsors"
 msgstr "गोल्ड प्रायोजक"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "रजत दाताओं"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "कांस्य दाताओं"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "मिनी प्रायोजक"
 
