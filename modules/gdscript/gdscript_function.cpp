@@ -1058,7 +1058,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							err_text = "Got a freed object as a result of the call.";
 							OPCODE_BREAK;
 						}
-						if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
 							err_text = R"(Trying to call an async function without "await".)";
 							OPCODE_BREAK;
 						}
