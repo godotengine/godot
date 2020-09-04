@@ -681,9 +681,13 @@ LIGHT_SHADER_CODE
 
 #ifndef USE_NO_SHADOWS
 
-// Produces cheap but low-quality white noise, nothing special
+// Produces cheap white noise, optmized for window-space
+// Comes from: https://www.shadertoy.com/view/4djSRW
+// Copyright: Dave Hoskins, MIT License
 float quick_hash(vec2 pos) {
-	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
+	vec3 p3 = fract(vec3(pos.xyx) * .1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
