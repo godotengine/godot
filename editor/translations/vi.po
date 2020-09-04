@@ -1149,6 +1149,16 @@ msgid "Gold Sponsors"
 msgstr "Nhà tài trợ Vàng"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Người ủng hộ Bạc"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Người ủng hộ Đồng"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Nhà tài trợ Nhỏ"
 

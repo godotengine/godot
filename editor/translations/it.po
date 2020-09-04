@@ -54,12 +54,13 @@
 # Lorenzo Asolan <brixiumx@gmail.com>, 2020.
 # Lorenzo Cerqua <lorenzocerqua@tutanota.com>, 2020.
 # Federico Manzella <ferdiu.manzella@gmail.com>, 2020.
+# Ziv D <wizdavid@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-05 16:58+0000\n"
-"Last-Translator: Lorenzo Cerqua <lorenzocerqua@tutanota.com>\n"
+"PO-Revision-Date: 2020-09-02 14:35+0000\n"
+"Last-Translator: Ziv D <wizdavid@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -67,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1188,6 +1189,16 @@ msgid "Gold Sponsors"
 msgstr "Sponsor oro"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Donatori argento"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donatori bronzo"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Sponsor mini"
 
@@ -1758,7 +1769,7 @@ msgstr "Nuovo"
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr "Importa"
+msgstr "Importare"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
@@ -4800,7 +4811,7 @@ msgstr "Modalità Gioco:"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimazioneAlbero"
+msgstr "AnimationTree"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -12058,7 +12069,7 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
-"Debug keystore non configurato correttamente nel preset di esportazione."
+"Release keystore non configurato correttamente nel preset di esportazione."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
@@ -12191,9 +12202,8 @@ msgid "Run in Browser"
 msgstr "Esegui nel Browser"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Run exported HTML in the system's default browser."
-msgstr "Esegui HTML esportato all'interno del browser di sistema predefinito."
+msgstr "Esegui il codice HTML esportato nel browser di sistema predefinito."
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
@@ -12216,9 +12226,8 @@ msgid "Could not read boot splash image file:"
 msgstr "Impossibile leggere il file immagine di avvio splash:"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Using default boot splash image."
-msgstr "Utilizzando l'immagine di splash di avvio predefinita."
+msgstr "Utilizzando l'immagine splash predefinita."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."

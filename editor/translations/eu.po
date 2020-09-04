@@ -1111,6 +1111,16 @@ msgid "Gold Sponsors"
 msgstr "Urrezko babesleak"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Zilarrezko emaileak"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Brontzezko emaileak"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Mini babesleak"
 

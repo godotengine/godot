@@ -1147,6 +1147,16 @@ msgid "Gold Sponsors"
 msgstr "Χρυσοί Χορυγοί"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Αργυροί Δωρητές"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Χάλκινοι Δωρητές"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Μικροί Χορηγοί"
 

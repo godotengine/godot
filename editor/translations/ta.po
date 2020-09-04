@@ -4,13 +4,14 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Senthil Kumar K <logickumar@gmail.com>, 2017.
-#
+# Survesh VRL <123survesh@gmail.com>, 2020.
+# Sridhar <sreeafmarketing@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:43+0100\n"
-"Last-Translator: Senthil Kumar K <logickumar@gmail.com>\n"
+"PO-Revision-Date: 2020-09-01 10:38+0000\n"
+"Last-Translator: Sridhar <sreeafmarketing@gmail.com>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ta/>\n"
 "Language: ta\n"
@@ -18,34 +19,37 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "தவறான வகை வாதம் மாற்று(), TYPE_ * மாறிலிகளைப் பயன்படுத்தவும்."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "நீளமுள்ள சொல் (ஒரு எழுத்து) எதிர்பார்க்கப்படுகிறது."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "டிகோடிங் போதுமான பைட்டுகள் இல்லை, அல்லது தவறான வடிவத்தில் உள்ளது."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "தவறான உள்ளீடு% i (அனுப்பப்படவில்லை) இல் வெளிப்பாட்டில்"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
+"சுயத்தை பயன்படுத்த முடியாது, ஏனெனில் உதாரணம்(instance) பூஜ்யமானது "
+"(நிறைவேற்றப்படவில்லை)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "ஆபரேட்டர்% s,% s மற்றும்% s க்கு தவறான செயல்பாடுகள் உள்ளது."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -1126,6 +1130,14 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Bronze Sponsors"
 msgstr ""
 
 #: editor/editor_about.cpp

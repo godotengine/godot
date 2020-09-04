@@ -17,12 +17,13 @@
 # Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020.
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
+# Andreas Westrell <andreas.westrell@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-15 02:42+0000\n"
-"Last-Translator: Jonas Robertsson <jonas.robertsson@posteo.net>\n"
+"PO-Revision-Date: 2020-08-18 02:54+0000\n"
+"Last-Translator: Andreas Westrell <andreas.westrell@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -1150,6 +1151,16 @@ msgid "Gold Sponsors"
 msgstr "Guldsponsorer"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Silverdonatorer"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronsdonatorer"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Minisponsorer"
 
@@ -1231,9 +1242,8 @@ msgid "Success!"
 msgstr "Klart!"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Package Contents:"
-msgstr "Innehåll:"
+msgstr "Packet Innehåll:"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
@@ -1256,9 +1266,8 @@ msgid "Rename Audio Bus"
 msgstr "Byt namn på Ljud-Buss"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Change Audio Bus Volume"
-msgstr "Växla Ljud-Buss Solo"
+msgstr "Växla Ljud-Buss Volum"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
@@ -1385,9 +1394,8 @@ msgid "Add Bus"
 msgstr "Lägg till Buss"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Spara Ljud-Buss Layout Som..."
+msgstr "Lägg till en ny Audio-Buss för detta layout"
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
