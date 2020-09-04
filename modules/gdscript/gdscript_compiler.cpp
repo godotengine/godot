@@ -1749,7 +1749,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 					return error;
 				}
 				GDScriptCodeGenerator::Address dst_addr = codegen.parameters[parameter->identifier->name];
-				codegen.generator->write_assign(dst_addr, src_addr);
+				codegen.generator->write_assign_default_parameter(dst_addr, src_addr);
 				if (src_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
