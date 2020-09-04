@@ -36,57 +36,11 @@
 #include "scene/3d/listener_3d.h"
 #include "scene/main/window.h"
 
-// Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
-// Speaker-Placement Correction Amplitude Panning (SPCAP)
-class Spcap {
-private:
-	struct Speaker {
-		Vector3 direction;
-		real_t effective_number_of_speakers = 0; // precalculated
-		mutable real_t squared_gain = 0; // temporary
-	};
+unsigned int AudioStreamPlayer3D::speaker_count = 0;
 
-	Vector<Speaker> speakers;
-
-public:
-	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
-		this->speakers.resize(speaker_count);
-		Speaker *w = this->speakers.ptrw();
-		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
-			w[speaker_num].direction = speaker_directions[speaker_num];
-			w[speaker_num].squared_gain = 0.0;
-			w[speaker_num].effective_number_of_speakers = 0.0;
-			for (unsigned int other_speaker_num = 0; other_speaker_num < speaker_count; other_speaker_num++) {
-				w[speaker_num].effective_number_of_speakers += 0.5 * (1.0 + w[speaker_num].direction.dot(w[other_speaker_num].direction));
-			}
-		}
-	}
-
-	unsigned int get_speaker_count() const {
-		return (unsigned int)this->speakers.size();
-	}
-
-	Vector3 get_speaker_direction(unsigned int index) const {
-		return this->speakers.ptr()[index].direction;
-	}
-
-	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
-		const Speaker *r = this->speakers.ptr();
-		real_t sum_squared_gains = 0.0;
-		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
-			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;
-			r[speaker_num].squared_gain = initial_gain * initial_gain;
-			sum_squared_gains += r[speaker_num].squared_gain;
-		}
-
-		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)this->speakers.size()); speaker_num++) {
-			volumes[speaker_num] = sqrtf(r[speaker_num].squared_gain / sum_squared_gains);
-		}
-	}
-};
-
-//TODO: hardcoded main speaker directions for 2, 3.1, 5.1 and 7.1 setups - these are simplified and could also be made configurable
-static const Vector3 speaker_directions[7] = {
+// Hardcoded main speaker directions for 2, 3.1, 5.1 and 7.1 setups
+// These are simplified and could also be made configurable
+Vector3 AudioStreamPlayer3D::speaker_directions[7] = {
 	Vector3(-1.0, 0.0, -1.0).normalized(), // front-left
 	Vector3(1.0, 0.0, -1.0).normalized(), // front-right
 	Vector3(0.0, 0.0, -1.0).normalized(), // center
@@ -96,26 +50,56 @@ static const Vector3 speaker_directions[7] = {
 	Vector3(1.0, 0.0, 0.0).normalized(), // side-right
 };
 
-void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
-	unsigned int speaker_count = 0; // only main speakers (no LFE)
+real_t AudioStreamPlayer3D::spcap_speaker_effects[7] = { 0 };
+
+// Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
+// Speaker-Placement Correction Amplitude Panning (SPCAP)
+void AudioStreamPlayer3D::_calculate_spcap_speaker_effects() {
+	for (unsigned int this_speaker = 0; this_speaker < speaker_count; this_speaker++) {
+		spcap_speaker_effects[this_speaker] = 0.0;
+		for (unsigned int other_speaker = 0; other_speaker < speaker_count; other_speaker++) {
+			real_t effect = speaker_directions[this_speaker].dot(speaker_directions[other_speaker]);
+			spcap_speaker_effects[this_speaker] += 0.5 * (1.0 + effect);
+		}
+	}
+}
+
+void AudioStreamPlayer3D::_calculate_spcap_volumes(const Vector3 &source_direction, real_t tightness, real_t volumes[7]) {
+	real_t squared_gains[7] = { 0 };
+	real_t sum_squared_gains = 0.0;
+	for (unsigned int speaker = 0; speaker < speaker_count; speaker++) {
+		real_t gain = 0.5 * powf(1.0 + speaker_directions[speaker].dot(source_direction), tightness) / spcap_speaker_effects[speaker];
+		squared_gains[speaker] = gain * gain;
+		sum_squared_gains += squared_gains[speaker];
+	}
+	for (unsigned int speaker = 0; speaker < speaker_count; speaker++) {
+		volumes[speaker] = sqrtf(squared_gains[speaker] / sum_squared_gains);
+	}
+}
+
+void AudioStreamPlayer3D::_calculate_output_volumes(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
+	unsigned int mode_speaker_count = 0;
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_MODE_STEREO:
-			speaker_count = 2;
+			mode_speaker_count = 2;
 			break;
 		case AudioServer::SPEAKER_SURROUND_31:
-			speaker_count = 3;
+			mode_speaker_count = 3;
 			break;
 		case AudioServer::SPEAKER_SURROUND_51:
-			speaker_count = 5;
+			mode_speaker_count = 5;
 			break;
 		case AudioServer::SPEAKER_SURROUND_71:
-			speaker_count = 7;
+			mode_speaker_count = 7;
 			break;
 	}
+	if (mode_speaker_count != speaker_count) {
+		speaker_count = mode_speaker_count;
+		_calculate_spcap_speaker_effects();
+	}
 
-	Spcap spcap(speaker_count, speaker_directions); //TODO: should only be created/recreated once the speaker mode / speaker positions changes
 	real_t volumes[7];
-	spcap.calculate(source_dir, tightness, speaker_count, volumes);
+	_calculate_spcap_volumes(source_dir, tightness, volumes);
 
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_SURROUND_71:
@@ -471,7 +455,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
 				//      speakers not facing the source) - this could be made distance dependent.
-				_calc_output_vol(local_pos.normalized(), 4.0, output);
+				_calculate_output_volumes(local_pos.normalized(), 4.0, output);
 
 				unsigned int cc = AudioServer::get_singleton()->get_channel_count();
 				for (unsigned int k = 0; k < cc; k++) {
