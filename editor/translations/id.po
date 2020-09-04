@@ -20,7 +20,7 @@
 # Alphin Albukhari <alphinalbukhari5@gmail.com>, 2019.
 # I Dewa Agung Adhinata <agungnata2003@gmail.com>, 2019.
 # herri siagian <herry.it.2007@gmail.com>, 2019.
-# MonsterGila <fikrirazor@outlook.co.id>, 2019.
+# MonsterGila <fikrirazor@outlook.co.id>, 2019, 2020.
 # Modeus Darksono <garuga17@gmail.com>, 2019.
 # Akhmad Zulfikar <azuldegratz@gmail.com>, 2020.
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
@@ -31,8 +31,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-06 04:41+0000\n"
-"Last-Translator: yusuf afandi <afandi.yusuf.04@gmail.com>\n"
+"PO-Revision-Date: 2020-08-12 08:00+0000\n"
+"Last-Translator: MonsterGila <fikrirazor@outlook.co.id>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -1158,6 +1158,16 @@ msgstr "Sponsor Platinum"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Sponsor Emas"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Donatur Perak"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donatur Perunggu"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -2435,10 +2445,13 @@ msgid "Reload Saved Scene"
 msgstr "Simpan Skena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Skena saat ini mempunyai perubahan yang belum tersimpan.\n"
+"Tetap muat ulang skena yang tersimpan? Aksi ini tidak dapat dibatalkan."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -10683,11 +10696,14 @@ msgid "Open Documentation"
 msgstr "Buka Dokumentasi"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Tidak dapat melampirkan skrip: tidak ada bahasa yang terdaftar.\n"
+"Ini mungkin karena editor ini dibuat dengan semua modul bahasa dinonaktifkan."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -12240,10 +12256,14 @@ msgstr ""
 "ciptakan resource shape untuknya!"
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Bentuk Polygon-based tidak dimaksudkan untuk digunakan atau diedit secara "
+"langsung melalui node CollisionShape2D. Silakan gunakan node "
+"CollisionPolygon2D sebagai gantinya."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12429,8 +12449,9 @@ msgid "Finishing Plot"
 msgstr "Menyelesaikan Pemetaan"
 
 #: scene/3d/baked_lightmap.cpp
+#, fuzzy
 msgid "Lighting Meshes: "
-msgstr ""
+msgstr "Lighting Meshes: "
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12485,8 +12506,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp
+#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
+msgstr "Tidak ada yang tampak karena tidak ada mesh yang ditetapkan."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""

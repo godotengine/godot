@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-06-15 01:48+0000\n"
+"PO-Revision-Date: 2020-09-04 06:51+0000\n"
 "Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -32,7 +32,7 @@ msgstr "Chybný argument convert(), použite TYPE_* konštanty."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "dĺžka očakávaného stringu 1 (písmeno)"
+msgstr "dĺžka očakávaného stringu 1 (písmeno)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -42,7 +42,7 @@ msgstr "Nedostatok bajtov na dekódovanie, alebo chybný formát."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Neplatný vstup %i (neprešlo) vo výraze"
+msgstr "Nesprávny vstup(input) %i (neschválený) v požiadavke"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -98,7 +98,7 @@ msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "zadarmo"
+msgstr "Voľný"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -118,7 +118,7 @@ msgstr "Hodnota:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Sem Vložte Kľúč"
+msgstr "Tu vložiť kľúč"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
@@ -130,7 +130,7 @@ msgstr "Zmazať označené kľúč(e)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Pridať Bezierov bod"
+msgstr "Pridať Bezier bod"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
@@ -191,7 +191,7 @@ msgstr "Zmeniť Dĺžku Animácie (Change Animation Length)"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Zmeniť opakovanie Animácie (Change Animation Loop)"
+msgstr "Zmeniť Opakovanie Animácie"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -256,7 +256,7 @@ msgstr "Zapnúť/Vypnúť tento track."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Update Mode (ako je nastavená táto možnosť)"
+msgstr "Update Mode (Tak ako je táto možnosť nastavená)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -517,7 +517,7 @@ msgstr "Zoskupte track-y pomocou node-u alebo ich zobrazte ako plain list."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap:"
-msgstr "Snap:"
+msgstr "Prichytiť:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -756,9 +756,8 @@ msgid "Method in target node must be specified."
 msgstr "Metóda v target node-e musí byť špecifikovaná."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method name must be a valid identifier."
-msgstr "Metóda v target node-e musí byť špecifikovaná."
+msgstr "Meno Metódy musí byť špecifikované."
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1134,6 +1133,16 @@ msgstr "Platinový Sponzori"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Zlatý Sponzori"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Strieborný Darcovia"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronzový Darcovia"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1886,7 +1895,7 @@ msgstr "Priečinky a Súbory:"
 #: editor/plugins/style_box_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
-msgstr "Ako to bude vyzerať:"
+msgstr "Predzobraziť:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
@@ -2782,9 +2791,9 @@ msgid ""
 msgstr ""
 "Keď bude povolená táto možnosť, export alebo deploy vyprodukujú menej \n"
 "súboru executable.\n"
-"Filesystém bude z projektu poskytovaný editorom v sieti. Na Androide, pre "
-"deploy budete potrebovať USB kábel \n"
-"rýchlejší výkon. Táto možnosť zrýchľuje proces testovania."
+"Filesystém bude z projektu poskytovaný editorom v sieti.\n"
+"Na Androide, predeploy budete potrebovať USB kábel pre rýchlejší výkon. Táto "
+"možnosť zrýchľuje proces testovania."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -3053,19 +3062,19 @@ msgstr "Importovať Šablóny Zo ZIP File-u"
 
 #: editor/editor_node.cpp
 msgid "Template Package"
-msgstr "Balíček Šablón"
+msgstr "Balík Šablón"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr "Exportovať Library"
+msgstr "Exportovať Knižnicu"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr "Spojiť Z Existujúcim"
+msgstr "Zlúčiť s existujúcim"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr "Otvoriť & Spustiť Script"
+msgstr "Otvoriť a vykonať skript"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
@@ -3105,7 +3114,7 @@ msgstr "Otvoriť predchádzajúci Editor"
 
 #: editor/editor_node.h
 msgid "Warning!"
-msgstr "Varovanie!"
+msgstr "Upozornenie!"
 
 #: editor/editor_path.cpp
 msgid "No sub-resources found."
@@ -3113,7 +3122,7 @@ msgstr "Nenašli sa žiadne \"sub-resources\"."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr "Vytváranie Zobrazenia \"Mesh-u\""
+msgstr "Vytváranie Predzobrazenia Mesh-u"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
@@ -4223,7 +4232,7 @@ msgstr "Vyberte a premiestnite body, vytvorte body z RMB."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr "Povoliť snap a show grid."
+msgstr "Povoliť prichytenie a zobraziť mriežku."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4253,118 +4262,117 @@ msgstr "Pridať Trojuholník"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Limits"
-msgstr ""
+msgstr "Zmeniť Limity BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Labels"
-msgstr ""
+msgstr "Zmeniť Label BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "Všetky vybrané"
+msgstr "Vymazať BlendSpace2D Bod"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Remove BlendSpace2D Triangle"
-msgstr ""
+msgstr "Vymazať BlendSpace2D Trojuholník"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr ""
+msgstr "BlendSpace2D nepatrí ku AnimationTree node."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr ""
+"Neexistujú žiadne trojuholníky, takže si nemôže zabrať miesto žiadny "
+"blending."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Toggle Auto Triangles"
-msgstr ""
+msgstr "Prepnúť Automatické Trojuholníky"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
-msgstr ""
+msgstr "Vytvoriť trojuholníky spájaním bodov."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Erase points and triangles."
-msgstr ""
+msgstr "Vymazať body a trojuholníky."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr ""
+msgstr "Vygenerovať blend trojuholníky Automaticky (nie manuálne)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
-msgstr ""
+msgstr "Blend:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Parameter Changed"
-msgstr ""
+msgstr "Parameter sa Zmenil"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filters"
-msgstr "Súbor:"
+msgstr "Upraviť Filtre"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr ""
+msgstr "Nemôžete pridať output node do blend tree."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Add Node to BlendTree"
-msgstr ""
+msgstr "Pridať Node do BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
-msgstr ""
+msgstr "Node sa pohol"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
-msgstr ""
+msgstr "Nepodarilo sa pripojiť, port sa možno používa alebo je neplatný."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Nodes Connected"
-msgstr ""
+msgstr "Node-y Spojené"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Nodes Disconnected"
-msgstr ""
+msgstr "Node-y Odpojené"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Animation"
-msgstr "Popis:"
+msgstr "Nastaviť Animáciu"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Všetky vybrané"
+msgstr "Zmazať Node"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Zmazať Node(y)"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
-msgstr ""
+msgstr "Zapnúť/Vypnúť Filter"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Change Filter"
-msgstr ""
+msgstr "Zmeniť Filter"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
+"Nieje nastavený Animačný Prehrávač, takže sa nepodarilo získať mená trackov."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
-msgstr ""
+msgstr "Cesta prehrávača je neplatná, takže sa nepodarilo získať mená trackov."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -4372,312 +4380,302 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"Animačný Prehrávač nemá žiadny platnú root node cestu, takže sa nepodarilo "
+"zistiť mená trackov."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Anim Clips"
-msgstr "Klipy Animácie:"
+msgstr "Klipy Animácie"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Zvukové Klipy:"
+msgstr "Zvukové Klipy"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Functions"
-msgstr "Funkcie:"
+msgstr "Funkcie"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Renamed"
-msgstr ""
+msgstr "Node Premenovaný"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node..."
-msgstr ""
+msgstr "Pridať Node..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filtered Tracks:"
-msgstr "Súbor:"
+msgstr "Upraviť Filtrované Tracky:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable Filtering"
-msgstr ""
+msgstr "Povoliť Filtrovanie"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr ""
+msgstr "Prepnúť Autoplay"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
-msgstr ""
+msgstr "Nové Meno Animácie:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Anim"
-msgstr ""
+msgstr "Nová Animácia"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Animation Name:"
-msgstr ""
+msgstr "Zmeniť Meno Animácie:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
-msgstr ""
+msgstr "Naozaj chcete vymazať Animáciu?"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr ""
+msgstr "Vymazať Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr ""
+msgstr "Meno animácie je Vadné!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
-msgstr ""
+msgstr "Toto meno Animácie už existuje!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Rename Animation"
-msgstr ""
+msgstr "Premenovať Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr ""
+msgstr "Blend sa Ďalej Zmenil"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
-msgstr ""
+msgstr "Zmeniť Blend Time"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Load Animation"
-msgstr ""
+msgstr "Načítať Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Duplicate Animation"
-msgstr ""
+msgstr "Duplikovať Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to copy!"
-msgstr ""
+msgstr "Žiadne animácie na skopírovanie!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation resource on clipboard!"
-msgstr ""
+msgstr "Žiadny zroj animácie v clipboard!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
-msgstr ""
+msgstr "Prilepená Animácia"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Paste Animation"
-msgstr ""
+msgstr "Prilepiť Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "No animation to edit!"
-msgstr ""
+msgstr "Žiadna animácia na úpravu!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
-msgstr ""
+msgstr "Spusťiť vybranú animáciu odzadu z aktuálnej pozície. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr ""
+msgstr "Spustiť vybranú animáciu odzadu z konca. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr ""
+msgstr "Zastaviť playback animácie. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
-msgstr ""
+msgstr "Spustiť vybranú animáciu od začiatku. (Shift+D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from current pos. (D)"
-msgstr ""
+msgstr "Spustiť vybranú animáciu z aktuálnej pozície. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "Pozícia Animácie (v sekundách)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "Zväčšiť playback animácie globálne pre node."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "Animačné Náradie"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
 msgstr "Animácie"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Transitions..."
-msgstr "Prechody"
+msgstr "Upraviť Prechody..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Open in Inspector"
-msgstr "Otvorit priečinok"
+msgstr "Otvorit v Inšpektor-ovi"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "Zobraziť list animácii v prehrávači."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "Autoplay pri Načítaní"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "Povoliť Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Onion Skinning Options"
-msgstr ""
+msgstr "Onion Skinning Možnosti"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Popis:"
+msgstr "Smery"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Past"
-msgstr "Vložiť"
+msgstr "Minulosť"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "Budúcnosť"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "Hĺbka"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "1 krok"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 kroky"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 kroky"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "Iba Odlišnosti"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "Force White Modulate"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "Zahŕňa Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
-msgstr ""
+msgstr "Pripnúť Prehrávač Animácie"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "Vytvoriť Novú Animáciu"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "Meno Animácie:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 msgid "Error!"
-msgstr ""
+msgstr "Chyba!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "Blend Times:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "Ďalej (Automatický Rad):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "Cross-Animation Blend Times"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Vložiť"
+msgstr "Premiestniť Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition exists!"
-msgstr "Prechody"
+msgstr "Prechod existuje!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "Prechody"
+msgstr "Pridať Prechod"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "Pridať Node"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "Koniec"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Okamžite"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Synchronizácia"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "Na Konci"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "Cestovať"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
+msgstr "Pre sub-prechod je potrebné začať a skončiť node-y."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
-msgstr ""
+msgstr "Nieje nastavený žiadny zdrojový playback ako cesta: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Removed"
-msgstr ""
+msgstr "Node Zmazaný"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "Prechody"
+msgstr "Prechod Vymazaný"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr ""
+msgstr "Nastaviť Začiatočný Node (Autoplay)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4685,363 +4683,356 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"Vybrať a premiestniť node-y.\n"
+"Pravím tlačítkom myši pridáte node-y.\n"
+"Shift+Lavé tlačíko myši vytvoriť pripojenie."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Create new nodes."
-msgstr "Vytvoriť adresár"
+msgstr "Vytvoriť Nové Node-y."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Connect nodes."
-msgstr ""
+msgstr "Spojiť Node-y."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Odstrániť výber"
+msgstr "Vymazať označený node alebo prechod."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
+"Prepnúť autoplay na tejto animácii pri štarte, reštarte alebo seek to zero."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "Nastaviť koniec animácie. Toto je užitočné pre sub-prechody."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "Prechody"
+msgstr "Prechody: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "Cesta k Node:"
+msgstr "Prehrať Mód:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr ""
+msgstr "AnimačnýStrom"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "Nové Meno:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Veľkosť:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade In (s):"
-msgstr ""
+msgstr "Miznutie do (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "Miznutie Von (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend"
-msgstr ""
+msgstr "Blend"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "Mix"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "Auto Reštart:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "Reštart (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "Náhodný Reštart (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "Štart!"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
-msgstr ""
+msgstr "Množstvo:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
-msgstr ""
+msgstr "Blend 0:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 1:"
-msgstr ""
+msgstr "Blend 1:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
+msgstr "Čas X-Miznutia (s):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
-msgstr ""
+msgstr "Aktuálny:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "Pridať Vstup"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "Čistý Auto-Advance"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "Nastaviť Auto-Advance"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "Zmazať Vstup"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "Animačný Strom je platný."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "Animačný Strom je neplatný."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "Animačný Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "OneShot Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Mix Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Blend2 Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Blend3 Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Blend4 Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "TimeScale Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "TimeSeek Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Prechodový Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "Importovať Animácie..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "Nastaviť Node Filtre"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "Filtre..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Contents:"
-msgstr "Konštanty:"
+msgstr "Obsah:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "View Files"
-msgstr "Súbor:"
+msgstr "Zobraziť Súbory"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "Chyba pripojenia, prosím skúste znovu."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "Nepodarilo sa pripojiť k host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "Žiadna odozva od host-a:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
-msgstr ""
+msgstr "Nepodarilo sa rozlúštiť hostove meno:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
-msgstr ""
+msgstr "Žiadosť zlyhala, spätný kód:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed."
-msgstr ""
+msgstr "Žiadosť zlyhala."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Cannot save response to:"
-msgstr "Nemôžete odstrániť:"
+msgstr "Nepodarilo sa uložiť odpoveď do:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Chyba písania."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
-msgstr ""
+msgstr "Žiadosť zlyhala, príliš veľa presmerovaní"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect loop."
-msgstr ""
+msgstr "Presmerovací loop."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, timeout"
-msgstr ""
+msgstr "Žiadosť zlyhala, čas vypršal"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Timeout."
-msgstr "Čas:"
+msgstr "Čas vypršal."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
-msgstr ""
+msgstr "Zlý download hash, za predpokladu že bolo narábané so súborom."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
-msgstr ""
+msgstr "Očakávané:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Got:"
-msgstr ""
+msgstr "Má:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed sha256 hash check"
-msgstr ""
+msgstr "Zlyhalo sha256 hash check"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr ""
+msgstr "Zlyhalo Sťahovanie Prostriedku:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
-msgstr ""
+msgstr "Sťahovanie (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading..."
-msgstr ""
+msgstr "Sťahovanie..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
-msgstr ""
+msgstr "Rieši sa..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
-msgstr ""
+msgstr "Pri vytváraní žiadosťi nastala chyba"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
-msgstr ""
+msgstr "Idle"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Inštalovať"
+msgstr "Inštalovať..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
-msgstr ""
+msgstr "Skúsiť znova"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr ""
+msgstr "Chyba Sťahovania"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr ""
+msgstr "Sťahovanie tohoto prostriedku už prebieha!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Nedávno Vylepšené"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Za Poslednú Dobu Najmenej Aktualizované"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Meno (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Meno (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licencia"
+msgstr "Licencia (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licencia"
+msgstr "Licencia (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
-msgstr ""
+msgstr "Prvý"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Previous"
-msgstr ""
+msgstr "Minulý"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
-msgstr ""
+msgstr "Ďalší"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Posledný"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
-msgstr ""
+msgstr "Všetky"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Žiadne výsledky pre \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
-msgstr ""
+msgstr "Import..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
-msgstr ""
+msgstr "Pluginy..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
-msgstr ""
+msgstr "Zoradiť:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
-msgstr ""
+msgstr "Kategória:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Site:"
@@ -5049,23 +5040,23 @@ msgstr "Stránka:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Support"
-msgstr ""
+msgstr "Podpora"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
-msgstr ""
+msgstr "Oficiálne"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr ""
+msgstr "Testovanie"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Loading..."
-msgstr ""
+msgstr "Načitávanie..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr ""
+msgstr "Prostriedky Súboru ZIP"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5073,216 +5064,215 @@ msgid ""
 "Save your scene (for images to be saved in the same dir), or pick a save "
 "path from the BakedLightmap properties."
 msgstr ""
+"Nedá sa určiť cesta pre uloženie lightmap obrázkov.\n"
+"Uložte svoju scénu (Aby sa obrázky na to isté miesto), alebo vyberte cestu "
+"na uloženie so BakedLightmap vlastností."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"Žiadne mesh-e na bake. Uistite sa že obsahujú UV2 channel a je na ňom 'Bake "
+"Light' vlajka."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
+"Nepodarilo sa vytvoriť lightmap obrázok, uistite sa že či je cesta "
+"zapisovateľná."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr ""
+msgstr "Bake Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview"
-msgstr ""
+msgstr "Predzobraziť"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Configure Snap"
-msgstr ""
+msgstr "Konfigurovať Prichytenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr ""
+msgstr "Odchýlka Mriežky:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
-msgstr ""
+msgstr "Krok Mriežky:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Primary Line Every:"
-msgstr ""
+msgstr "Všetky Primary Line:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "steps"
-msgstr ""
+msgstr "kroky"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Offset:"
-msgstr ""
+msgstr "Odchýlka Rotácie:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
-msgstr ""
+msgstr "Krok Rotácie:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Step:"
-msgstr "Zmeniť veľkosť výberu"
+msgstr "Krok Veľkosti:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Vertical Guide"
-msgstr "Popis:"
+msgstr "Presunúť Vertikálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Vertical Guide"
-msgstr "Popis:"
+msgstr "Vytvoriť Vertikálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
-msgstr "Všetky vybrané"
+msgstr "Vymazať Vertikálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Horizontal Guide"
-msgstr "Všetky vybrané"
+msgstr "Presunúť Horizontálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal Guide"
-msgstr "Popis:"
+msgstr "Vytvoriť Horizontálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Všetky vybrané"
+msgstr "Vymazať Horizontálny Návod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal and Vertical Guides"
-msgstr "Popis:"
+msgstr "Vytvoriť Horizontálne a Vertikálne Návody"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move pivot"
-msgstr "Všetky vybrané"
+msgstr "Presunúť pivot"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate CanvasItem"
-msgstr ""
+msgstr "Otočiť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move anchor"
-msgstr ""
+msgstr "Presunúť kovadlinu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize CanvasItem"
-msgstr ""
+msgstr "Zmeniť Veľkosť CanvasItem-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale CanvasItem"
-msgstr ""
+msgstr "Veľkosť CanvasItem-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
-msgstr ""
+msgstr "Presunúť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
+"Dieťa kontajnerov majú svoje kovadliny a okraje prepísané svojimi rodičmi."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Prenastaviť pre kovadliny a okraje hodnoty Control node-u."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
+"Pri aktivovaní, pohybovanim Control node-ov zmeníte ich kovadliny namiesto "
+"ich okrajov."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
-msgstr ""
+msgstr "Vľavo Hore"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Right"
-msgstr ""
+msgstr "Vpravo Hore"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Right"
-msgstr ""
+msgstr "Vpravo Dole"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Left"
-msgstr ""
+msgstr "Vľavo Dole"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Left"
-msgstr ""
+msgstr "Od Stredu Vľavo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Top"
-msgstr ""
+msgstr "Od Stredu Hore"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Right"
-msgstr ""
+msgstr "Od Stredu Vpravo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Bottom"
-msgstr ""
+msgstr "Od Stredu Dole"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "V Strede"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Lineárne"
+msgstr "Ľavá Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr ""
+msgstr "Horná Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Lineárne"
+msgstr "Pravá Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr ""
+msgstr "Dolná Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr ""
+msgstr "VerStredná Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr ""
+msgstr "HorStredná Šírka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
-msgstr ""
+msgstr "Plný Obdĺžnik"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Keep Ratio"
-msgstr ""
+msgstr "Udržovať Pomer"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
-msgstr ""
+msgstr "Iba Kovadliny"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors and Margins"
-msgstr ""
+msgstr "Zmeniť Kovadliny a Okraje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
-msgstr ""
+msgstr "Zmeniť Kovadliny"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5290,6 +5280,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
+"Prepísanie Hernej Kamery\n"
+"Prepísať hernú kameru s viewport kamerou editora."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5297,104 +5289,103 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
+"Prepísanie Hernej Kamery\n"
+"Nieje spustená žiadna herná inštancia."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Všetky vybrané"
+msgstr "Zamknúť Označené"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected"
-msgstr "Všetky vybrané"
+msgstr "Odomknúť Označené"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Odstrániť výber"
+msgstr "Pridať Označené do Skupiny"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected"
-msgstr "Odstrániť výber"
+msgstr "Odskupiť Označené"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
-msgstr ""
+msgstr "Prilepiť Pózu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Guides"
-msgstr "Všetky vybrané"
+msgstr "Zmazať Návody"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Vytvoriť Vlastnú Kosť(i) z Node-u(ou)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Všetky vybrané"
+msgstr "Zmazať Kosti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
-msgstr ""
+msgstr "Vytvoriť IK Reťaz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear IK Chain"
-msgstr ""
+msgstr "Zmazať IK Reťaz"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
+"Upozornenie: Dieťa kontajnera získa ich pozíciu a veľkosť iba podľa svojho "
+"rodiča."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr ""
+msgstr "Resetovať Priblíženie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr ""
+msgstr "Vybrať Režim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
-msgstr ""
+msgstr "Potiahnutím: Otáčenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move"
-msgstr ""
+msgstr "Alt+Potiahnutie: Pohyb"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."
 msgstr ""
+"Stačte 'v' pre Zmenu Pivot-a, 'Shift+v' pre hýbanie s Pivot-om (keď sa hýbe)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
-msgstr ""
+msgstr "Alt+RMB: Výber hĺbkového zoznamu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
-msgstr ""
+msgstr "Move Mode"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr ""
+msgstr "Rotačný Režim"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr ""
+msgstr "Zmena Veľkosti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5402,187 +5393,186 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
+"Zobraziť list všetkých objektov na kliknutej pozícii\n"
+"(rovnako ako Alt+RMB v výberovom režime)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
-msgstr ""
+msgstr "Kliknite pre zmenu rotačného pivota objektu."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
-msgstr ""
+msgstr "Pohyb Mód"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Ruler Mode"
-msgstr "Režim Interpolácie"
+msgstr "Pravítko"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
-msgstr ""
+msgstr "Prepnúť smart prichytenie."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
-msgstr ""
+msgstr "Použiť Smart Prichytenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
-msgstr ""
+msgstr "Prepnúť Prichytenie Mriežky."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr ""
+msgstr "Použiť Príchyt Mriežky"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
-msgstr ""
+msgstr "Možnosti Prichytávania"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Rotation Snap"
-msgstr ""
+msgstr "Použiť Prichytávanie Rotácie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Scale Snap"
-msgstr ""
+msgstr "Použiť Prichytávanie Veľkosti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
-msgstr ""
+msgstr "Prichytiť Relatívne"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Pixel Snap"
-msgstr ""
+msgstr "Použiť Pixelové Prichytenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
-msgstr ""
+msgstr "Smart Prichytávanie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Configure Snap..."
-msgstr ""
+msgstr "Konfigurovať Prichytávanie..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Parent"
-msgstr ""
+msgstr "Prichytiť na Rodiča"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Anchor"
-msgstr ""
+msgstr "Prichytiť na Kovadlinu Node-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Sides"
-msgstr ""
+msgstr "Prichitiť na strany Node-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Node Center"
-msgstr ""
+msgstr "Prichytiť na Stred Node-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Other Nodes"
-msgstr "Vložiť"
+msgstr "Prichytiť na Ostatné Node-y"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to Guides"
-msgstr ""
+msgstr "Prichytiť na Návody"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr ""
+msgstr "Zamknúť označený objekt na mieste (už sa s ním nebude dať hýbať)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr ""
+msgstr "Odomknúť označený objekt (dá sa s ním hýbať)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
-msgstr ""
+msgstr "Uistite sa že sa nedá označiť dieťa objektu."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
-msgstr ""
+msgstr "Aby ste označili dieťa objektu tak mu musíte obnoviť schopnosť."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton Options"
-msgstr "Všetky vybrané"
+msgstr "Nastavenia Kostry"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
-msgstr ""
+msgstr "Zobraziť Kosti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Vytvoriť Vlastnú Kosť(i) z Node-u(ou)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Custom Bones"
-msgstr ""
+msgstr "Zmazať Vlastné Kosti"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr ""
+msgstr "Zobrazenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Always Show Grid"
-msgstr ""
+msgstr "Vždy Zobraziť Mriežku"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Helpers"
-msgstr ""
+msgstr "Zobraziť Pomocníkov"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Rulers"
-msgstr ""
+msgstr "Zobraziť Pravítka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Guides"
-msgstr ""
+msgstr "Zobraziť Návody"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Origin"
-msgstr ""
+msgstr "Zobraziť Pôvod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr ""
+msgstr "Zobraziť Výrez"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Zobraziť Skupinu a Zamknúť Ikony"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
-msgstr ""
+msgstr "Výber Stredu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr ""
+msgstr "Výber Frame-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr ""
+msgstr "Predzobraziť Veľkosť Plátna"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr ""
+msgstr "Prekladová maska na vkladanie kľúčov."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr ""
+msgstr "Rotačná maska na vkladanie kľúčov."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "Veľkostná maska na vkladanie kľúčov."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
-msgstr ""
+msgstr "Vkladanie kľúčov (založené na maske)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5591,67 +5581,69 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"Automaticky vložiť kľúče keď sú objekty preložené, rotované alebo zväčšené "
+"(založené na maske).\n"
+"Kľúče sú pridané iba do existujúcich track-ov, nebudú vytvorené žiadne nové "
+"tracky.\n"
+"Prvý krát musia byť kľúče vložené manuálne."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Animácia Vložiť Kľúč"
+msgstr "Automaticky Vložiť Kľúč"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Dĺžka Času Animácie (v sekundách)"
+msgstr "Animačný Kľúč a Možnosti Pozície"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
-msgstr ""
+msgstr "Vložte Kľúč (Existujúce Tracky)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Copy Pose"
-msgstr ""
+msgstr "Kopírovať Pozíciu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Pose"
-msgstr ""
+msgstr "Zmazať Pozíciu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Multiply grid step by 2"
-msgstr ""
+msgstr "Zdvojnásobiť krok mriežky dvomi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Divide grid step by 2"
-msgstr ""
+msgstr "vydeliť krok mriežky dvomi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan View"
-msgstr ""
+msgstr "Zobrazenie Pan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
-msgstr ""
+msgstr "Pridať %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Pridávanie %s..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
-msgstr ""
+msgstr "Nie je možné vytvoriť inštanciu viacerých node-ov bez koreňa."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
-msgstr ""
+msgstr "Vytvoriť Node"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr ""
+msgstr "Chyba pri inštalácovaní scény z %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Default Type"
-msgstr "Zmeniť %s Typ"
+msgstr "Zmeniť Predvolený Typ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -5660,9 +5652,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon3D"
-msgstr "Vytvoriť adresár"
+msgstr "Vytvoriť Polygon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
@@ -6529,11 +6520,11 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Snap"
-msgstr ""
+msgstr "Prichytiť"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
-msgstr ""
+msgstr "Povoliť Prichytávanie"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid"
@@ -7356,7 +7347,7 @@ msgstr "Filter:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
-msgstr ""
+msgstr "Filmové Predzobrazenie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
@@ -7419,11 +7410,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
-msgstr ""
+msgstr "Prichytiť Node-y Na Zem"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr ""
+msgstr "Nepodarilo sa nájsť pevnú zem na prichytenie výberu."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7438,7 +7429,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr ""
+msgstr "Použiť Prichytávanie"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7492,7 +7483,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
-msgstr ""
+msgstr "Prichytiť Objekt na Zem"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
@@ -7541,19 +7532,19 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
-msgstr ""
+msgstr "Nastavenie Prichytenia"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translate Snap:"
-msgstr ""
+msgstr "Preložiť Preloženie:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr ""
+msgstr "Prichytenie Rotácie (v stupňoch.):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
-msgstr ""
+msgstr "Prichytenie Veľkosti (%):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Viewport Settings"
@@ -7610,7 +7601,7 @@ msgstr "Vytvoriť adresár"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Mesh2D Preview"
-msgstr ""
+msgstr "Predzobraziť Mash2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7619,7 +7610,7 @@ msgstr "Vytvoriť adresár"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Polygon2D Preview"
-msgstr ""
+msgstr "Predzobraziť Polygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7627,9 +7618,8 @@ msgid "Create CollisionPolygon2D"
 msgstr "Vytvoriť adresár"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "CollisionPolygon2D Preview"
-msgstr "Vytvoriť adresár"
+msgstr "Predzobraziť CollisionPolygon2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
@@ -7637,9 +7627,8 @@ msgid "Create LightOccluder2D"
 msgstr "Vytvoriť adresár"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "LightOccluder2D Preview"
-msgstr "Vytvoriť adresár"
+msgstr "Predzobraziť LightOccluder2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7701,7 +7690,7 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Update Preview"
-msgstr ""
+msgstr "Predzobraziť Vylepšenie"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Settings:"
@@ -7835,7 +7824,7 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
-msgstr ""
+msgstr "Režim Prichytenia:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: scene/resources/visual_shader.cpp
@@ -7844,11 +7833,11 @@ msgstr ""
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Pixel Snap"
-msgstr ""
+msgstr "Prichytenie Pixelov"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Grid Snap"
-msgstr ""
+msgstr "Prichytenie Mriežky"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Auto Slice"
@@ -8274,6 +8263,7 @@ msgstr ""
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
 msgstr ""
+"Povoliť prichytávanie a zobraziť mriežku (konfigurovatelné cez inšpektor)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
@@ -8322,11 +8312,12 @@ msgid "Delete selected Rect."
 msgstr "Všetky vybrané"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select current edited sub-tile.\n"
 "Click on another Tile to edit it."
-msgstr "Vytvoriť adresár"
+msgstr ""
+"Vybrať aktuálne upravený pod-nadpis.\n"
+"Kliknite na ďalší Nadpis aby ste ho upravili."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8334,13 +8325,16 @@ msgid "Delete polygon."
 msgstr "Všetky vybrané"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "LMB: Set bit on.\n"
 "RMB: Set bit off.\n"
 "Shift+LMB: Set wildcard bit.\n"
 "Click on another Tile to edit it."
-msgstr "Vytvoriť adresár"
+msgstr ""
+"LMB: Zapnúť bit.\n"
+"RMB: Vypnúť bit.\n"
+"Shift+LMB: Nastaviť wildcard bit.\n"
+"Kliknite na ďalší Nadpis pre úpravu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -8356,11 +8350,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select sub-tile to change its z index.\n"
 "Click on another Tile to edit it."
-msgstr "Vytvoriť adresár"
+msgstr ""
+"Vybrať podnadpis aby ste zmenili jeho index.\n"
+"Kliknite na ďalší Nadpis na úpravu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Region"
@@ -10488,14 +10483,12 @@ msgid "Make node as Root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Všetky vybrané"
+msgstr "Zmazať %d node-y a nejaké deti?"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes?"
-msgstr "Všetky vybrané"
+msgstr "Zmazať %d node-y?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete the root node \"%s\"?"
@@ -10506,9 +10499,8 @@ msgid "Delete node \"%s\" and its children?"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete node \"%s\"?"
-msgstr "Všetky vybrané"
+msgstr "Zmazať node \"%s\"?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10711,9 +10703,8 @@ msgid "Button Group"
 msgstr "Tlačidlo"
 
 #: editor/scene_tree_editor.cpp
-#, fuzzy
 msgid "(Connecting From)"
-msgstr "Pripojiť Signál: "
+msgstr "(Pripájanie z)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -10917,9 +10908,8 @@ msgid "Attach Node Script"
 msgstr "Popis:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Remote "
-msgstr "Všetky vybrané"
+msgstr "Diaľkový "
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -11312,7 +11302,7 @@ msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Snap View"
-msgstr ""
+msgstr "Prichytiť Zobrazenie"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clip Disabled"
@@ -12361,13 +12351,12 @@ msgid ""
 msgstr ""
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
-"Musíte nastaviť tvar objektu CollisionShape2D aby fungoval. Prosím, vytvorte "
-"preň tvarový objekt!"
+"Aby CollisionShape fungoval musíte nastaviť tvar. Prosím, vytvorte preň "
+"tvarový objekt."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -12625,9 +12614,8 @@ msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Nesprávna veľkosť písma."
+msgstr "Neplatný zdroj pre predzobrazenie."
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy

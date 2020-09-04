@@ -1123,6 +1123,16 @@ msgid "Gold Sponsors"
 msgstr "Zlatni sponzori"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Srebrni donatori"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Brončani donatori"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Mini sponzori"
 

@@ -47,8 +47,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-04 08:58+0000\n"
-"Last-Translator: marnicq van loon <marnicqvanloon@gmail.com>\n"
+"PO-Revision-Date: 2020-08-28 13:09+0000\n"
+"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -56,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1179,6 +1179,16 @@ msgstr "Platina Sponsors"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Gouden Sponsors"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Zilveren Donors"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronzen Donors"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -7361,7 +7371,7 @@ msgstr "Bekijk Omgeving"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "Bekijk Gizmos"
+msgstr "Toon Gizmos"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -7450,9 +7460,9 @@ msgid ""
 msgstr ""
 "Klik om te wisselen tussen zichtbaarheidsweergaven.\n"
 "\n"
-"Open oog: handvat is zichtbaar.\n"
-"Gesloten oog: handvat is verborgen.\n"
-"Half open oog: handvat is ook zichtbaar door ondoorzichtige oppervlaktes."
+"Open oog: Gizmo is zichtbaar.\n"
+"Gesloten oog: Gizmo is verborgen.\n"
+"Half open oog: Gizmo is ook zichtbaar door ondoorzichtige oppervlaktes."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7640,7 +7650,7 @@ msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Nameless gizmo"
-msgstr "Naamloos apparaat"
+msgstr "Naamloze gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -10596,9 +10606,8 @@ msgid "Make node as Root"
 msgstr "Knoop tot wortelknoop maken"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
-msgstr "Verwijder knoop \"%s\" en zijn kinderen?"
+msgstr "%d knopen en hun (eventuele) kinderen verwijderen?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"

@@ -1157,6 +1157,16 @@ msgid "Gold Sponsors"
 msgstr "Золоті спонсори"
 
 #: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Срібні донори"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Бронзові донори"
+
+#: editor/editor_about.cpp
 msgid "Mini Sponsors"
 msgstr "Міні-спонсори"
 

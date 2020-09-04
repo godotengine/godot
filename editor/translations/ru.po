@@ -85,12 +85,13 @@
 # kyanukovich <ianu0001@algonquinlive.com>, 2020.
 # Ron788 <ustinov200511@gmail.com>, 2020.
 # Daniel <dan.ef1999@gmail.com>, 2020.
+# NeoLan Qu <it.bulla@mail.ru>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-01 11:14+0000\n"
-"Last-Translator: Daniel <dan.ef1999@gmail.com>\n"
+"PO-Revision-Date: 2020-08-15 09:32+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -1216,6 +1217,16 @@ msgstr "Платиновые спонсоры"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Золотые спонсоры"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Серебряные доноры"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Бронзовые доноры"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -8952,7 +8963,7 @@ msgstr "Возвращает обратный гиперболический т�
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr "Вычисляет ближайшее целое число, большее или равное аргументу."
+msgstr "Находит ближайшее целое, которое больше или равно параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
@@ -8960,11 +8971,11 @@ msgstr "Удерживает значение в пределах двух др�
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr "Возвращает косинус аргумента."
+msgstr "Возвращает косинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "Возвращает гиперболический косинус аргумента."
+msgstr "Возвращает гиперболический косинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
@@ -8980,7 +8991,7 @@ msgstr "Экспонента с основанием 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr "Вычисляет ближайшее целое, меньшее или равное аргументу."
+msgstr "Находит ближайшее целое, меньшее или равное аргументу."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Computes the fractional part of the argument."
@@ -8988,7 +8999,7 @@ msgstr "Вычисляет дробную часть аргумента."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr "Возвращает обратный корень из аргумента."
+msgstr "Возвращает обратный квадратный корень из аргумента."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
@@ -9033,11 +9044,11 @@ msgstr "1.0 / скаляр"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer to the parameter."
-msgstr "Вычисляет ближайшее целое число."
+msgstr "Находит ближайшее к параметру целое число."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest even integer to the parameter."
-msgstr "Вычисляет ближайшее чётное число."
+msgstr "Находит ближайшее чётное число к параметру."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
