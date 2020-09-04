@@ -50,12 +50,13 @@
 # Vedat Günel <gunel15@itu.edu.tr>, 2020.
 # Ahmet Elgün <ahmetelgn@gmail.com>, 2020.
 # Efruz Yıldırır <efruzyildirir@gmail.com>, 2020.
+# Hazar <duurkak@yandex.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-06 04:41+0000\n"
-"Last-Translator: Efruz Yıldırır <efruzyildirir@gmail.com>\n"
+"PO-Revision-Date: 2020-08-20 15:20+0000\n"
+"Last-Translator: Hazar <duurkak@yandex.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1179,6 +1180,16 @@ msgstr "Platin Sponsorlar"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Altın Sponsorlar"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Gümüş Bağışçılar"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Bronz Bağışçılar"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -7431,6 +7442,11 @@ msgid ""
 "Closed eye: Gizmo is hidden.\n"
 "Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
+"Görünürlük ifadelerini değiştirmek için tıklayın.\n"
+"\n"
+"Açık göz: Gizmo görünür.\n"
+"Kapalı göz: Gizmo görünmez.\n"
+"Yarı-açık göz: Gizmo aynı zamanda saydam yüzeylerden görünür (\"x-ray\")."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -10516,9 +10532,8 @@ msgid "Instance Child Scene"
 msgstr "Çocuk Sahnesini Örnekle"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach Script"
-msgstr "Betik İliştir"
+msgstr "Betiği Ayır"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10555,7 +10570,6 @@ msgid "Make node as Root"
 msgstr "Düğümü Kök düğüm yap"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
 msgstr "\"%s\" düğümü ve alt düğümleri silinsin mi?"
 
@@ -10693,6 +10707,8 @@ msgid ""
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Bir yazı eklenemiyor: kayıtlı dil yok.\n"
+"Bu muhtemelen editor tüm dil modülleri kapalıyken kurulduğu için oldu."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10743,14 +10759,12 @@ msgstr ""
 "alınmış bir sahne oluşturur."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script to the selected node."
-msgstr "Seçili düğüm için yeni veya mevcut bir betik iliştir."
+msgstr "Seçili düğüme yeni veya mevcut bir betik iliştir."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Detach the script from the selected node."
-msgstr "Seçilen düğüm için betik temizle."
+msgstr "Seçilen düğümden betiği ayır."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
