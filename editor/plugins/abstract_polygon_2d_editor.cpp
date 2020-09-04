@@ -287,7 +287,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							pre_move_edit = vertices2;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 							vertices2.insert(edited_point.vertex, edited_point.pos);
-							selected_point = edited_point;
+							selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 							edge_point = PosVertex();
 
 							undo_redo->create_action(TTR("Insert Point"));
