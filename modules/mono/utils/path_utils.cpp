@@ -54,12 +54,16 @@ String cwd() {
 #ifdef WINDOWS_ENABLED
 	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	if (::GetCurrentDirectoryW(expected_size, buffer.ptrw()) == 0)
+	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0)
 		return ".";
 
-	return buffer.simplify_path();
+	String result;
+	if (result.parse_utf16(buffer.ptr())) {
+		return ".";
+	}
+	return result.simplify_path();
 #else
 	char buffer[PATH_MAX];
 	if (::getcwd(buffer, sizeof(buffer)) == nullptr) {
@@ -100,12 +104,18 @@ String realpath(const String &p_path) {
 		return p_path;
 	}
 
-	String buffer;
+	Char16String buffer;
 	buffer.resize((int)expected_size);
-	::GetFinalPathNameByHandleW(hFile, buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
+	::GetFinalPathNameByHandleW(hFile, (wchar_t *)buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
 
 	::CloseHandle(hFile);
-	return buffer.simplify_path();
+
+	String result;
+	if (result.parse_utf16(buffer.ptr())) {
+		return p_path;
+	}
+
+	return result.simplify_path();
 #elif UNIX_ENABLED
 	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
 
