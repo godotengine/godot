@@ -171,52 +171,53 @@ double OS_Unix::get_unix_time() const {
 
 OS::Date OS_Unix::get_date(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Date ret;
-	ret.year = 1900 + lt->tm_year;
+	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
 	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
-	ret.month = (Month)(lt->tm_mon + 1);
-	ret.day = lt->tm_mday;
-	ret.weekday = (Weekday)lt->tm_wday;
-	ret.dst = lt->tm_isdst;
+	ret.month = (Month)(lt.tm_mon + 1);
+	ret.day = lt.tm_mday;
+	ret.weekday = (Weekday)lt.tm_wday;
+	ret.dst = lt.tm_isdst;
 
 	return ret;
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Time ret;
-	ret.hour = lt->tm_hour;
-	ret.min = lt->tm_min;
-	ret.sec = lt->tm_sec;
+	ret.hour = lt.tm_hour;
+	ret.min = lt.tm_min;
+	ret.sec = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	time_t t = time(nullptr);
-	struct tm *lt = localtime(&t);
+	struct tm lt;
+	localtime_r(&t, &lt);
 	char name[16];
-	strftime(name, 16, "%Z", lt);
+	strftime(name, 16, "%Z", &lt);
 	name[15] = 0;
 	TimeZoneInfo ret;
 	ret.name = name;
 
 	char bias_buf[16];
-	strftime(bias_buf, 16, "%z", lt);
+	strftime(bias_buf, 16, "%z", &lt);
 	int bias;
 	bias_buf[15] = 0;
 	sscanf(bias_buf, "%d", &bias);
