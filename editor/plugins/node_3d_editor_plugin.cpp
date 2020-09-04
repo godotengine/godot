@@ -5184,6 +5184,7 @@ void Node3DEditor::_init_indicators() {
 
 			Ref<StandardMaterial3D> mat_hl = mat->duplicate();
 			mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+			mat_hl->set_cull_mode(BaseMaterial3D::CULL_DISABLED);
 			gizmo_color_hl[i] = mat_hl;
 
 			Vector3 ivec;
@@ -5287,19 +5288,18 @@ void Node3DEditor::_init_indicators() {
 				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
 				surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
-				Vector3 circle[5] = {
+				Vector3 circle[4] = {
+					ivec * 0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
 					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
 					ivec * -0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
 					ivec * -0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * 0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
 				};
 
 				for (int k = 0; k < 64; k++) {
 					Basis ma(ivec, Math_PI * 2 * float(k) / 64);
 					Basis mb(ivec, Math_PI * 2 * float(k + 1) / 64);
 
-					for (int j = 0; j < 4; j++) {
+					for (int j = 0; j < 3; j++) {
 						Vector3 points[4] = {
 							ma.xform(circle[j]),
 							mb.xform(circle[j]),
