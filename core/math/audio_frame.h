@@ -121,7 +121,7 @@ struct AudioFrame {
 		r = p_frame.r;
 	}
 
-	_ALWAYS_INLINE_ AudioFrame operator=(const AudioFrame &p_frame) {
+	_ALWAYS_INLINE_ AudioFrame &operator=(const AudioFrame &p_frame) {
 		l = p_frame.l;
 		r = p_frame.r;
 		return *this;
