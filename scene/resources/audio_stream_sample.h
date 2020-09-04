@@ -98,6 +98,198 @@ public:
 		LOOP_BACKWARD
 	};
 
+	struct WaveData {
+		int format_bits = 0;
+		int format_channels = 0;
+		AudioStreamSample::LoopMode loop = AudioStreamSample::LOOP_DISABLED;
+		uint16_t compression_code = 1;
+		bool format_found = false;
+		bool data_found = false;
+		int format_freq = 0;
+		int loop_begin = 0;
+		int loop_end = 0;
+		int frames = 0;
+
+		Vector<float> data;
+	};
+
+	static Error parse_wave_data_header(FileAccess *p_file) {
+		/* CHECK RIFF */
+		char riff[5];
+		riff[4] = 0;
+		p_file->get_buffer((uint8_t *)&riff, 4); //RIFF
+
+		if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
+
+			ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		}
+
+		/* GET FILESIZE */
+		p_file->get_32(); // filesize
+
+		/* CHECK WAVE */
+
+		char wave[4];
+
+		p_file->get_buffer((uint8_t *)&wave, 4); //RIFF
+
+		if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
+
+			ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Not a WAV file (no WAVE RIFF header).");
+		}
+
+		return OK;
+	}
+
+	static Error parse_wave_data_body(FileAccess *p_file, WaveData *p_wave_data) {
+
+		while (!p_file->eof_reached()) {
+
+			/* chunk */
+			char chunkID[4];
+			p_file->get_buffer((uint8_t *)&chunkID, 4); //RIFF
+
+			/* chunk size */
+			uint32_t chunksize = p_file->get_32();
+			uint32_t file_pos = p_file->get_position(); //save file pos, so we can skip to next chunk safely
+
+			if (p_file->eof_reached()) {
+
+				//ERR_PRINT("EOF REACH");
+				break;
+			}
+
+			if (chunkID[0] == 'f' && chunkID[1] == 'm' && chunkID[2] == 't' && chunkID[3] == ' ' && !p_wave_data->format_found) {
+				/* IS FORMAT CHUNK */
+
+				//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
+				//Consider revision for engine version 3.0
+				p_wave_data->compression_code = p_file->get_16();
+				if (p_wave_data->compression_code != 1 && p_wave_data->compression_code != 3) {
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not PCM). Save WAVE files as uncompressed PCM instead.");
+				}
+
+				p_wave_data->format_channels = p_file->get_16();
+				if (p_wave_data->format_channels != 1 && p_wave_data->format_channels != 2) {
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not stereo or mono).");
+				}
+
+				p_wave_data->format_freq = p_file->get_32(); //sampling rate
+
+				p_file->get_32(); // average bits/second (unused)
+				p_file->get_16(); // block align (unused)
+				p_wave_data->format_bits = p_file->get_16(); // bits per sample
+
+				if (p_wave_data->format_bits % 8 || p_wave_data->format_bits == 0) {
+					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Invalid amount of bits in the sample (should be one of 8, 16, 24 or 32).");
+				}
+
+				/* Don't need anything else, continue */
+				p_wave_data->format_found = true;
+			}
+
+			if (chunkID[0] == 'd' && chunkID[1] == 'a' && chunkID[2] == 't' && chunkID[3] == 'a' && !p_wave_data->data_found) {
+				/* IS DATA CHUNK */
+				p_wave_data->data_found = true;
+
+				if (!p_wave_data->format_found) {
+					ERR_PRINT("'data' chunk before 'format' chunk found.");
+					break;
+				}
+
+				p_wave_data->frames = chunksize;
+
+				if (p_wave_data->format_channels == 0) {
+					p_file->close();
+					ERR_FAIL_COND_V(p_wave_data->format_channels == 0, ERR_INVALID_DATA);
+				}
+				p_wave_data->frames /= p_wave_data->format_channels;
+				p_wave_data->frames /= (p_wave_data->format_bits >> 3);
+
+				/*print_line("chunksize: "+itos(chunksize));
+				print_line("channels: "+itos(format_channels));
+				print_line("bits: "+itos(format_bits));
+				*/
+
+				p_wave_data->data.resize(p_wave_data->frames * p_wave_data->format_channels);
+
+				if (p_wave_data->format_bits == 8) {
+					for (int i = 0; i < p_wave_data->frames * p_wave_data->format_channels; i++) {
+						// 8 bit samples are UNSIGNED
+
+						p_wave_data->data.write[i] = int8_t(p_file->get_8() - 128) / 128.f;
+					}
+				} else if (p_wave_data->format_bits == 32 && p_wave_data->compression_code == 3) {
+					for (int i = 0; i < p_wave_data->frames * p_wave_data->format_channels; i++) {
+						//32 bit IEEE Float
+
+						p_wave_data->data.write[i] = p_file->get_float();
+					}
+				} else if (p_wave_data->format_bits == 16) {
+					for (int i = 0; i < p_wave_data->frames * p_wave_data->format_channels; i++) {
+						//16 bit SIGNED
+
+						p_wave_data->data.write[i] = int16_t(p_file->get_16()) / 32768.f;
+					}
+				} else {
+					for (int i = 0; i < p_wave_data->frames * p_wave_data->format_channels; i++) {
+						//16+ bits samples are SIGNED
+						// if sample is > 16 bits, just read extra bytes
+
+						uint32_t s = 0;
+						for (int b = 0; b < (p_wave_data->format_bits >> 3); b++) {
+
+							s |= ((uint32_t)p_file->get_8()) << (b * 8);
+						}
+						s <<= (32 - p_wave_data->format_bits);
+
+						p_wave_data->data.write[i] = (int32_t(s) >> 16) / 32768.f;
+					}
+				}
+
+				if (p_file->eof_reached()) {
+					p_file->close();
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Premature end of file.");
+				}
+			}
+
+			if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
+				//loop point info!
+
+				/**
+				*	Consider exploring next document:
+				*		http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+				*	Especially on page:
+				*		16 - 17
+				*	Timestamp:
+				*		22:38 06.07.2017 GMT
+				**/
+
+				for (int i = 0; i < 10; i++)
+					p_file->get_32(); // i wish to know why should i do this... no doc!
+
+				// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
+				// Skip anything else because it's not supported, reserved for future uses or sampler specific
+				// from https://sites.google.com/site/musicgapi/technical-documents/wav-file-format#smpl (loop type values table)
+				int loop_type = p_file->get_32();
+				if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
+					if (loop_type == 0x00) {
+						p_wave_data->loop = AudioStreamSample::LOOP_FORWARD;
+					} else if (loop_type == 0x01) {
+						p_wave_data->loop = AudioStreamSample::LOOP_PING_PONG;
+					} else if (loop_type == 0x02) {
+						p_wave_data->loop = AudioStreamSample::LOOP_BACKWARD;
+					}
+					p_wave_data->loop_begin = p_file->get_32();
+					p_wave_data->loop_end = p_file->get_32();
+				}
+			}
+			p_file->seek(file_pos + chunksize);
+		}
+
+		return OK;
+	}
+
 private:
 	friend class AudioStreamPlaybackSample;
 
@@ -141,6 +333,7 @@ public:
 	void set_data(const PoolVector<uint8_t> &p_data);
 	PoolVector<uint8_t> get_data() const;
 
+	Error load(const String &p_path);
 	Error save_to_wav(const String &p_path);
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
