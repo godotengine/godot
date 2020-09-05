@@ -2398,7 +2398,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 
 		FunctionNode *pfunc = shader->functions[i].function;
 		if (arg_list == "") {
-			for (int j = 0; j < args.size(); j++) {
+			for (int j = 0; j < pfunc->arguments.size(); j++) {
 				if (j > 0) {
 					arg_list += ", ";
 				}
