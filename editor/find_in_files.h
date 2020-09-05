@@ -177,6 +177,8 @@ private:
 		int begin_trimmed;
 	};
 
+	void _update_font();
+
 	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
 	void update_replace_buttons();
 	String get_replace_text();

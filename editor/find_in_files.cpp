@@ -640,6 +640,8 @@ void FindInFilesPanel::stop_search() {
 void FindInFilesPanel::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_progress_bar->set_as_ratio(_finder->get_progress());
+	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_update_font();
 	}
 }
 
@@ -836,6 +838,12 @@ public:
 private:
 	Vector<char> _line_buffer;
 };
+
+void FindInFilesPanel::_update_font() {
+
+	_search_text_label->add_font_override("font", get_font("source", "EditorFonts"));
+	_results_display->add_font_override("font", get_font("source", "EditorFonts"));
+}
 
 void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text) {
 
