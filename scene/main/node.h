@@ -41,6 +41,9 @@
 
 class Viewport;
 class SceneState;
+class Tween;
+class PropertyTweener;
+
 class Node : public Object {
 	GDCLASS(Node, Object);
 	OBJ_CATEGORY("Nodes");
@@ -307,6 +310,8 @@ public:
 
 	void remove_and_skip();
 	int get_index() const;
+
+	Ref<Tween> create_tween();
 
 	void print_tree();
 	void print_tree_pretty();

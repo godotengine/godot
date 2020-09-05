@@ -407,6 +407,11 @@ void register_scene_types() {
 
 	ClassDB::register_class<AnimationPlayer>();
 	ClassDB::register_class<Tween>();
+	ClassDB::register_virtual_class<Tweener>();
+	ClassDB::register_class<PropertyTweener>();
+	ClassDB::register_class<IntervalTweener>();
+	ClassDB::register_class<CallbackTweener>();
+	ClassDB::register_class<MethodTweener>();
 
 	ClassDB::register_class<AnimationTree>();
 	ClassDB::register_class<AnimationNode>();

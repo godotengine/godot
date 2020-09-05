@@ -47,6 +47,7 @@ class Window;
 class Material;
 class Mesh;
 class SceneDebugger;
+class Tween;
 
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);
@@ -151,6 +152,7 @@ private:
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 	List<Ref<SceneTreeTimer>> timers;
+	List<Ref<Tween>> tweens;
 
 	///network///
 
@@ -171,6 +173,7 @@ private:
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
+	void process_tweens(float p_delta, bool p_physics_frame);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -318,6 +321,8 @@ public:
 	Error reload_current_scene();
 
 	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_always = true);
+	Ref<Tween> create_tween();
+	Array get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);

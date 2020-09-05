@@ -297,7 +297,7 @@ static real_t out_in(real_t t, real_t b, real_t c, real_t d) {
 }
 }; // namespace back
 
-Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] = {
+Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &linear::in, &linear::out, &linear::in_out, &linear::out_in },
 	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
 	{ &quint::in, &quint::out, &quint::in_out, &quint::out_in },
@@ -311,7 +311,7 @@ Tween::interpolater Tween::interpolaters[Tween::TRANS_COUNT][Tween::EASE_COUNT] 
 	{ &back::in, &back::out, &back::in_out, &back::out_in },
 };
 
-real_t Tween::_run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d) {
+real_t Tween::run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d) {
 
 	interpolater cb = interpolaters[p_trans_type][p_ease_type];
 	ERR_FAIL_COND_V(cb == NULL, b);

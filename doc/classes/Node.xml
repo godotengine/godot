@@ -182,6 +182,16 @@
 				Returns [code]true[/code] if the node can process while the scene tree is paused (see [member process_mode]). Always returns [code]true[/code] if the scene tree is not paused, and [code]false[/code] if the node is not in the tree.
 			</description>
 		</method>
+		<method name="create_tween">
+			<return type="Tween">
+			</return>
+			<description>
+				Creates a new [Tween] and binds it to this node. This is equivalent of doing:
+				[codeblock]
+				get_tree().create_tween().bind_node(self)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="duplicate" qualifiers="const">
 			<return type="Node">
 			</return>
