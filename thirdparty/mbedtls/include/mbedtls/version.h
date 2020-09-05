@@ -4,7 +4,7 @@
  * \brief Run-time version information
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -45,8 +45,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 /*
  * This set of compile-time defines and run-time variables can be used to
@@ -67,16 +65,16 @@
  */
 #define MBEDTLS_VERSION_MAJOR  2
 #define MBEDTLS_VERSION_MINOR  16
-#define MBEDTLS_VERSION_PATCH  7
+#define MBEDTLS_VERSION_PATCH  8
 
 /**
  * The single version number has the following structure:
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define MBEDTLS_VERSION_NUMBER         0x02100700
-#define MBEDTLS_VERSION_STRING         "2.16.7"
-#define MBEDTLS_VERSION_STRING_FULL    "mbed TLS 2.16.7"
+#define MBEDTLS_VERSION_NUMBER         0x02100800
+#define MBEDTLS_VERSION_STRING         "2.16.8"
+#define MBEDTLS_VERSION_STRING_FULL    "mbed TLS 2.16.8"
 
 #if defined(MBEDTLS_VERSION_C)
 

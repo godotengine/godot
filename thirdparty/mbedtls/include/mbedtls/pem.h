@@ -4,7 +4,7 @@
  * \brief Privacy Enhanced Mail (PEM) decoding
  */
 /*
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -45,8 +45,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 #ifndef MBEDTLS_PEM_H
 #define MBEDTLS_PEM_H
@@ -139,17 +137,27 @@ void mbedtls_pem_free( mbedtls_pem_context *ctx );
  * \brief           Write a buffer of PEM information from a DER encoded
  *                  buffer.
  *
- * \param header    header string to write
- * \param footer    footer string to write
- * \param der_data  DER data to write
- * \param der_len   length of the DER data
- * \param buf       buffer to write to
- * \param buf_len   length of output buffer
- * \param olen      total length written / required (if buf_len is not enough)
+ * \param header    The header string to write.
+ * \param footer    The footer string to write.
+ * \param der_data  The DER data to encode.
+ * \param der_len   The length of the DER data \p der_data in Bytes.
+ * \param buf       The buffer to write to.
+ * \param buf_len   The length of the output buffer \p buf in Bytes.
+ * \param olen      The address at which to store the total length written
+ *                  or required (if \p buf_len is not enough).
  *
- * \return          0 on success, or a specific PEM or BASE64 error code. On
- *                  MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL olen is the required
- *                  size.
+ * \note            You may pass \c NULL for \p buf and \c 0 for \p buf_len
+ *                  to request the length of the resulting PEM buffer in
+ *                  `*olen`.
+ *
+ * \note            This function may be called with overlapping \p der_data
+ *                  and \p buf buffers.
+ *
+ * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL if \p buf isn't large
+ *                  enough to hold the PEM buffer. In  this case, `*olen` holds
+ *                  the required minimum size of \p buf.
+ * \return          Another PEM or BASE64 error code on other kinds of failure.
  */
 int mbedtls_pem_write_buffer( const char *header, const char *footer,
                       const unsigned char *der_data, size_t der_len,
