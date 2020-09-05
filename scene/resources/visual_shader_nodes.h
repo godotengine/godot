@@ -39,7 +39,7 @@
 
 class VisualShaderNodeFloatConstant : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeFloatConstant, VisualShaderNode);
-	float constant;
+	float constant = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -69,7 +69,7 @@ public:
 
 class VisualShaderNodeIntConstant : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeIntConstant, VisualShaderNode);
-	int constant;
+	int constant = 0;
 
 protected:
 	static void _bind_methods();
@@ -99,7 +99,7 @@ public:
 
 class VisualShaderNodeBooleanConstant : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeBooleanConstant, VisualShaderNode);
-	bool constant;
+	bool constant = false;
 
 protected:
 	static void _bind_methods();
@@ -129,7 +129,7 @@ public:
 
 class VisualShaderNodeColorConstant : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeColorConstant, VisualShaderNode);
-	Color constant;
+	Color constant = Color(1, 1, 1, 1);
 
 protected:
 	static void _bind_methods();
@@ -240,8 +240,8 @@ public:
 	};
 
 private:
-	Source source;
-	TextureType texture_type;
+	Source source = SOURCE_TEXTURE;
+	TextureType texture_type = TYPE_DATA;
 
 protected:
 	static void _bind_methods();
@@ -294,7 +294,7 @@ public:
 	};
 
 protected:
-	Source source;
+	Source source = SOURCE_TEXTURE;
 
 	static void _bind_methods();
 
@@ -360,8 +360,8 @@ public:
 	};
 
 private:
-	Source source;
-	TextureType texture_type;
+	Source source = SOURCE_TEXTURE;
+	TextureType texture_type = TYPE_DATA;
 
 protected:
 	static void _bind_methods();
@@ -421,7 +421,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
@@ -463,7 +463,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
@@ -510,7 +510,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_ADD;
 
 	static void _bind_methods();
 
@@ -556,7 +556,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_SCREEN;
 
 	static void _bind_methods();
 
@@ -599,7 +599,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_AxB;
 
 	static void _bind_methods();
 
@@ -642,7 +642,7 @@ public:
 	};
 
 protected:
-	Operator op;
+	Operator op = OP_AxB;
 
 	static void _bind_methods();
 
@@ -713,7 +713,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SIGN;
 
 	static void _bind_methods();
 
@@ -756,7 +756,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SIGN;
 
 	static void _bind_methods();
 
@@ -830,7 +830,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_NORMALIZE;
 
 	static void _bind_methods();
 
@@ -871,7 +871,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_GRAYSCALE;
 
 	static void _bind_methods();
 
@@ -912,7 +912,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_INVERSE;
 
 	static void _bind_methods();
 
@@ -1067,7 +1067,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SUM;
 
 	static void _bind_methods();
 
@@ -1107,7 +1107,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_SUM;
 
 	static void _bind_methods();
 
@@ -1482,12 +1482,12 @@ public:
 	};
 
 private:
-	Hint hint;
-	float hint_range_min;
-	float hint_range_max;
-	float hint_range_step;
-	bool default_value_enabled;
-	float default_value;
+	Hint hint = HINT_NONE;
+	float hint_range_min = 0.0f;
+	float hint_range_max = 1.0f;
+	float hint_range_step = 0.1f;
+	bool default_value_enabled = false;
+	float default_value = 0.0f;
 
 protected:
 	static void _bind_methods();
@@ -1544,12 +1544,12 @@ public:
 	};
 
 private:
-	Hint hint;
-	int hint_range_min;
-	int hint_range_max;
-	int hint_range_step;
-	bool default_value_enabled;
-	int default_value;
+	Hint hint = HINT_NONE;
+	int hint_range_min = 0;
+	int hint_range_max = 100;
+	int hint_range_step = 1;
+	bool default_value_enabled = false;
+	int default_value = 0;
 
 protected:
 	static void _bind_methods();
@@ -1601,8 +1601,8 @@ class VisualShaderNodeBooleanUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeBooleanUniform, VisualShaderNodeUniform);
 
 private:
-	bool default_value_enabled;
-	bool default_value;
+	bool default_value_enabled = false;
+	bool default_value = false;
 
 protected:
 	static void _bind_methods();
@@ -1640,8 +1640,8 @@ class VisualShaderNodeColorUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeColorUniform, VisualShaderNodeUniform);
 
 private:
-	bool default_value_enabled;
-	Color default_value;
+	bool default_value_enabled = false;
+	Color default_value = Color(1.0, 1.0, 1.0, 1.0);
 
 protected:
 	static void _bind_methods();
@@ -1679,7 +1679,7 @@ class VisualShaderNodeVec3Uniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeVec3Uniform, VisualShaderNodeUniform);
 
 private:
-	bool default_value_enabled;
+	bool default_value_enabled = false;
 	Vector3 default_value;
 
 protected:
@@ -1718,8 +1718,8 @@ class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 	GDCLASS(VisualShaderNodeTransformUniform, VisualShaderNodeUniform);
 
 private:
-	bool default_value_enabled;
-	Transform default_value;
+	bool default_value_enabled = false;
+	Transform default_value = Transform(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
 protected:
 	static void _bind_methods();
@@ -1770,8 +1770,8 @@ public:
 	};
 
 protected:
-	TextureType texture_type;
-	ColorDefault color_default;
+	TextureType texture_type = TYPE_DATA;
+	ColorDefault color_default = COLOR_DEFAULT_WHITE;
 
 protected:
 	static void _bind_methods();
@@ -1973,7 +1973,7 @@ public:
 	};
 
 protected:
-	Function func;
+	Function func = FUNC_IS_INF;
 
 protected:
 	static void _bind_methods();
@@ -2032,9 +2032,9 @@ public:
 	};
 
 protected:
-	ComparisonType ctype;
-	Function func;
-	Condition condition;
+	ComparisonType ctype = CTYPE_SCALAR;
+	Function func = FUNC_EQUAL;
+	Condition condition = COND_ALL;
 
 protected:
 	static void _bind_methods();
@@ -2082,7 +2082,7 @@ public:
 	};
 
 protected:
-	Type type;
+	Type type = TYPE_SCALAR;
 
 protected:
 	static void _bind_methods();
