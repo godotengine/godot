@@ -1590,8 +1590,6 @@ void VisualShader::_bind_methods() {
 }
 
 VisualShader::VisualShader() {
-	shader_mode = Shader::MODE_SPATIAL;
-
 	for (int i = 0; i < TYPE_MAX; i++) {
 		Ref<VisualShaderNodeOutput> output;
 		output.instance();
@@ -1600,8 +1598,6 @@ VisualShader::VisualShader() {
 		graph[i].nodes[NODE_ID_OUTPUT].node = output;
 		graph[i].nodes[NODE_ID_OUTPUT].position = Vector2(400, 150);
 	}
-
-	dirty = true;
 }
 
 ///////////////////////////////////////////////////////////
@@ -2039,10 +2035,6 @@ void VisualShaderNodeInput::_bind_methods() {
 }
 
 VisualShaderNodeInput::VisualShaderNodeInput() {
-	input_name = "[None]";
-	// changed when set
-	shader_type = VisualShader::TYPE_MAX;
-	shader_mode = Shader::MODE_MAX;
 }
 
 ////////////// UniformRef
@@ -2234,8 +2226,6 @@ Vector<StringName> VisualShaderNodeUniformRef::get_editable_properties() const {
 }
 
 VisualShaderNodeUniformRef::VisualShaderNodeUniformRef() {
-	uniform_name = "[None]";
-	uniform_type = UniformType::UNIFORM_TYPE_FLOAT;
 }
 
 ////////////////////////////////////////////
@@ -2488,7 +2478,6 @@ Vector<StringName> VisualShaderNodeUniform::get_editable_properties() const {
 }
 
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
-	qualifier = QUAL_NONE;
 }
 
 ////////////// GroupBase
@@ -2962,11 +2951,6 @@ String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShade
 }
 
 VisualShaderNodeGroupBase::VisualShaderNodeGroupBase() {
-	size = Size2(0, 0);
-	inputs = "";
-	outputs = "";
-	editable = false;
-	simple_decl = false;
 }
 
 ////////////// Expression
@@ -3090,7 +3074,6 @@ void VisualShaderNodeExpression::_bind_methods() {
 }
 
 VisualShaderNodeExpression::VisualShaderNodeExpression() {
-	expression = "";
 	set_editable(true);
 }
 

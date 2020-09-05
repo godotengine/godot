@@ -87,7 +87,6 @@ void VisualShaderNodeFloatConstant::_bind_methods() {
 }
 
 VisualShaderNodeFloatConstant::VisualShaderNodeFloatConstant() {
-	constant = 0.0;
 }
 
 ////////////// Scalar(Int)
@@ -147,7 +146,6 @@ void VisualShaderNodeIntConstant::_bind_methods() {
 }
 
 VisualShaderNodeIntConstant::VisualShaderNodeIntConstant() {
-	constant = 0;
 }
 
 ////////////// Boolean
@@ -207,7 +205,6 @@ void VisualShaderNodeBooleanConstant::_bind_methods() {
 }
 
 VisualShaderNodeBooleanConstant::VisualShaderNodeBooleanConstant() {
-	constant = false;
 }
 
 ////////////// Color
@@ -271,7 +268,6 @@ void VisualShaderNodeColorConstant::_bind_methods() {
 }
 
 VisualShaderNodeColorConstant::VisualShaderNodeColorConstant() {
-	constant = Color(1, 1, 1, 1);
 }
 
 ////////////// Vector
@@ -777,8 +773,6 @@ void VisualShaderNodeTexture::_bind_methods() {
 }
 
 VisualShaderNodeTexture::VisualShaderNodeTexture() {
-	texture_type = TYPE_DATA;
-	source = SOURCE_TEXTURE;
 }
 
 ////////////// Sample3D
@@ -898,8 +892,6 @@ String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::
 }
 
 VisualShaderNodeSample3D::VisualShaderNodeSample3D() {
-	source = SOURCE_TEXTURE;
-	simple_decl = false;
 }
 
 ////////////// Texture2DArray
@@ -1143,9 +1135,6 @@ void VisualShaderNodeCubemap::_bind_methods() {
 }
 
 VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
-	texture_type = TYPE_DATA;
-	source = SOURCE_TEXTURE;
-	simple_decl = false;
 }
 
 ////////////// Float Op
@@ -1250,7 +1239,6 @@ void VisualShaderNodeFloatOp::_bind_methods() {
 }
 
 VisualShaderNodeFloatOp::VisualShaderNodeFloatOp() {
-	op = OP_ADD;
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 0.0);
 }
@@ -1345,7 +1333,6 @@ void VisualShaderNodeIntOp::_bind_methods() {
 }
 
 VisualShaderNodeIntOp::VisualShaderNodeIntOp() {
-	op = OP_ADD;
 	set_input_port_default_value(0, 0);
 	set_input_port_default_value(1, 0);
 }
@@ -1460,7 +1447,6 @@ void VisualShaderNodeVectorOp::_bind_methods() {
 }
 
 VisualShaderNodeVectorOp::VisualShaderNodeVectorOp() {
-	op = OP_ADD;
 	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, Vector3());
 }
@@ -1628,7 +1614,6 @@ void VisualShaderNodeColorOp::_bind_methods() {
 }
 
 VisualShaderNodeColorOp::VisualShaderNodeColorOp() {
-	op = OP_SCREEN;
 	set_input_port_default_value(0, Vector3());
 	set_input_port_default_value(1, Vector3());
 }
@@ -1703,7 +1688,6 @@ void VisualShaderNodeTransformMult::_bind_methods() {
 }
 
 VisualShaderNodeTransformMult::VisualShaderNodeTransformMult() {
-	op = OP_AxB;
 	set_input_port_default_value(0, Transform());
 	set_input_port_default_value(1, Transform());
 }
@@ -1778,7 +1762,6 @@ void VisualShaderNodeTransformVecMult::_bind_methods() {
 }
 
 VisualShaderNodeTransformVecMult::VisualShaderNodeTransformVecMult() {
-	op = OP_AxB;
 	set_input_port_default_value(0, Transform());
 	set_input_port_default_value(1, Vector3());
 }
@@ -1908,7 +1891,6 @@ void VisualShaderNodeFloatFunc::_bind_methods() {
 }
 
 VisualShaderNodeFloatFunc::VisualShaderNodeFloatFunc() {
-	func = FUNC_SIGN;
 	set_input_port_default_value(0, 0.0);
 }
 
@@ -2003,7 +1985,6 @@ void VisualShaderNodeIntFunc::_bind_methods() {
 }
 
 VisualShaderNodeIntFunc::VisualShaderNodeIntFunc() {
-	func = FUNC_SIGN;
 	set_input_port_default_value(0, 0);
 }
 
@@ -2169,7 +2150,6 @@ void VisualShaderNodeVectorFunc::_bind_methods() {
 }
 
 VisualShaderNodeVectorFunc::VisualShaderNodeVectorFunc() {
-	func = FUNC_NORMALIZE;
 	set_input_port_default_value(0, Vector3());
 }
 
@@ -2256,9 +2236,7 @@ void VisualShaderNodeColorFunc::_bind_methods() {
 }
 
 VisualShaderNodeColorFunc::VisualShaderNodeColorFunc() {
-	func = FUNC_GRAYSCALE;
 	set_input_port_default_value(0, Vector3());
-	simple_decl = false;
 }
 
 ////////////// Transform Func
@@ -2328,7 +2306,6 @@ void VisualShaderNodeTransformFunc::_bind_methods() {
 }
 
 VisualShaderNodeTransformFunc::VisualShaderNodeTransformFunc() {
-	func = FUNC_INVERSE;
 	set_input_port_default_value(0, Transform());
 }
 
@@ -2516,7 +2493,6 @@ void VisualShaderNodeScalarDerivativeFunc::_bind_methods() {
 }
 
 VisualShaderNodeScalarDerivativeFunc::VisualShaderNodeScalarDerivativeFunc() {
-	func = FUNC_SUM;
 	set_input_port_default_value(0, 0.0);
 }
 
@@ -2589,7 +2565,6 @@ void VisualShaderNodeVectorDerivativeFunc::_bind_methods() {
 }
 
 VisualShaderNodeVectorDerivativeFunc::VisualShaderNodeVectorDerivativeFunc() {
-	func = FUNC_SUM;
 	set_input_port_default_value(0, Vector3());
 }
 
@@ -3561,12 +3536,6 @@ Vector<StringName> VisualShaderNodeFloatUniform::get_editable_properties() const
 }
 
 VisualShaderNodeFloatUniform::VisualShaderNodeFloatUniform() {
-	hint = HINT_NONE;
-	hint_range_min = 0.0;
-	hint_range_max = 1.0;
-	hint_range_step = 0.1;
-	default_value_enabled = false;
-	default_value = 0.0;
 }
 
 ////////////// Integer Uniform
@@ -3726,12 +3695,6 @@ Vector<StringName> VisualShaderNodeIntUniform::get_editable_properties() const {
 }
 
 VisualShaderNodeIntUniform::VisualShaderNodeIntUniform() {
-	hint = HINT_NONE;
-	hint_range_min = 0;
-	hint_range_max = 100;
-	hint_range_step = 1;
-	default_value_enabled = false;
-	default_value = 0;
 }
 
 ////////////// Boolean Uniform
@@ -3824,8 +3787,6 @@ Vector<StringName> VisualShaderNodeBooleanUniform::get_editable_properties() con
 }
 
 VisualShaderNodeBooleanUniform::VisualShaderNodeBooleanUniform() {
-	default_value_enabled = false;
-	default_value = false;
 }
 
 ////////////// Color Uniform
@@ -3916,8 +3877,6 @@ Vector<StringName> VisualShaderNodeColorUniform::get_editable_properties() const
 }
 
 VisualShaderNodeColorUniform::VisualShaderNodeColorUniform() {
-	default_value_enabled = false;
-	default_value = Color(1.0, 1.0, 1.0, 1.0);
 }
 
 ////////////// Vector Uniform
@@ -4006,8 +3965,6 @@ Vector<StringName> VisualShaderNodeVec3Uniform::get_editable_properties() const 
 }
 
 VisualShaderNodeVec3Uniform::VisualShaderNodeVec3Uniform() {
-	default_value_enabled = false;
-	default_value = Vector3(0.0, 0.0, 0.0);
 }
 
 ////////////// Transform Uniform
@@ -4100,8 +4057,6 @@ Vector<StringName> VisualShaderNodeTransformUniform::get_editable_properties() c
 }
 
 VisualShaderNodeTransformUniform::VisualShaderNodeTransformUniform() {
-	default_value_enabled = false;
-	default_value = Transform(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 }
 
 ////////////// Texture Uniform
@@ -4271,9 +4226,6 @@ bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) co
 }
 
 VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
-	texture_type = TYPE_DATA;
-	color_default = COLOR_DEFAULT_WHITE;
-	simple_decl = false;
 }
 
 ////////////// Texture Uniform (Triplanar)
@@ -4583,7 +4535,6 @@ VisualShaderNodeIf::VisualShaderNodeIf() {
 	set_input_port_default_value(3, Vector3(0.0, 0.0, 0.0));
 	set_input_port_default_value(4, Vector3(0.0, 0.0, 0.0));
 	set_input_port_default_value(5, Vector3(0.0, 0.0, 0.0));
-	simple_decl = false;
 }
 
 ////////////// Switch
@@ -4645,7 +4596,6 @@ VisualShaderNodeSwitch::VisualShaderNodeSwitch() {
 	set_input_port_default_value(0, false);
 	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
 	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
-	simple_decl = false;
 }
 
 ////////////// Switch(scalar)
@@ -4836,7 +4786,6 @@ void VisualShaderNodeIs::_bind_methods() {
 }
 
 VisualShaderNodeIs::VisualShaderNodeIs() {
-	func = FUNC_IS_INF;
 	set_input_port_default_value(0, 0.0);
 }
 
@@ -5072,9 +5021,6 @@ void VisualShaderNodeCompare::_bind_methods() {
 }
 
 VisualShaderNodeCompare::VisualShaderNodeCompare() {
-	ctype = CTYPE_SCALAR;
-	func = FUNC_EQUAL;
-	condition = COND_ALL;
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, CMP_EPSILON);
@@ -5167,7 +5113,6 @@ void VisualShaderNodeMultiplyAdd::_bind_methods() {
 }
 
 VisualShaderNodeMultiplyAdd::VisualShaderNodeMultiplyAdd() {
-	type = TYPE_SCALAR;
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, 0.0);
