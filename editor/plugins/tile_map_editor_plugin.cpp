@@ -802,7 +802,6 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 		r.size = node->get_tileset()->autotile_get_size(p_cell);
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;
 	}
-	Size2 sc = p_xform.get_scale();
 	Size2 cell_size = node->get_cell_size();
 	bool centered_texture = node->is_centered_textures_enabled();
 	bool compatibility_mode_enabled = node->is_compatibility_mode_enabled();
@@ -838,12 +837,12 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 	}
 
 	if (p_flip_h) {
-		sc.x *= -1.0;
+		rect.size.x *= -1.0;
 		tile_ofs.x *= -1.0;
 	}
 
 	if (p_flip_v) {
-		sc.y *= -1.0;
+		rect.size.y *= -1.0;
 		tile_ofs.y *= -1.0;
 	}
 
