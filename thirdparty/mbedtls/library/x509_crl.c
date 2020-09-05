@@ -1,7 +1,7 @@
 /*
  *  X.509 Certidicate Revocation List (CRL) parsing
  *
- *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  *
  *  This file is provided under the Apache License 2.0, or the
@@ -42,8 +42,6 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  **********
- *
- *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 /*
  *  The ITU-T X.509 standard defines a certificate format for PKI.
@@ -285,13 +283,13 @@ static int x509_get_entries( unsigned char **p,
         size_t len2;
         const unsigned char *end2;
 
+        cur_entry->raw.tag = **p;
         if( ( ret = mbedtls_asn1_get_tag( p, end, &len2,
                 MBEDTLS_ASN1_SEQUENCE | MBEDTLS_ASN1_CONSTRUCTED ) ) != 0 )
         {
             return( ret );
         }
 
-        cur_entry->raw.tag = **p;
         cur_entry->raw.p = *p;
         cur_entry->raw.len = len2;
         end2 = *p + len2;
