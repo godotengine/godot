@@ -78,7 +78,7 @@ private:
 		List<Connection> connections;
 	} graph[TYPE_MAX];
 
-	Shader::Mode shader_mode;
+	Shader::Mode shader_mode = Shader::MODE_SPATIAL;
 	mutable String previous_code;
 
 	Array _get_node_connections(Type p_type) const;
@@ -95,7 +95,7 @@ private:
 
 	static RenderModeEnums render_mode_enums[];
 
-	volatile mutable bool dirty;
+	volatile mutable bool dirty = true;
 	void _queue_update();
 
 	union ConnectionKey {
@@ -188,7 +188,7 @@ class VisualShaderNode : public Resource {
 	int connected_output_count = 0;
 
 protected:
-	bool simple_decl;
+	bool simple_decl = false;
 	static void _bind_methods();
 
 public:
@@ -290,8 +290,8 @@ class VisualShaderNodeInput : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeInput, VisualShaderNode);
 
 	friend class VisualShader;
-	VisualShader::Type shader_type;
-	Shader::Mode shader_mode;
+	VisualShader::Type shader_type = VisualShader::TYPE_MAX;
+	Shader::Mode shader_mode = Shader::MODE_MAX;
 
 	struct Port {
 		Shader::Mode mode;
@@ -304,7 +304,7 @@ class VisualShaderNodeInput : public VisualShaderNode {
 	static const Port ports[];
 	static const Port preview_ports[];
 
-	String input_name;
+	String input_name = "[None]";
 
 protected:
 	static void _bind_methods();
@@ -388,8 +388,8 @@ public:
 	};
 
 private:
-	String uniform_name;
-	Qualifier qualifier;
+	String uniform_name = "";
+	Qualifier qualifier = QUAL_NONE;
 	bool global_code_generated = false;
 
 protected:
@@ -436,8 +436,8 @@ public:
 	};
 
 private:
-	String uniform_name;
-	UniformType uniform_type;
+	String uniform_name = "[None]";
+	UniformType uniform_type = UniformType::UNIFORM_TYPE_FLOAT;
 
 protected:
 	static void _bind_methods();
@@ -479,10 +479,10 @@ private:
 	void _apply_port_changes();
 
 protected:
-	Vector2 size;
-	String inputs;
-	String outputs;
-	bool editable;
+	Vector2 size = Size2(0, 0);
+	String inputs = "";
+	String outputs = "";
+	bool editable = false;
 
 	struct Port {
 		PortType type;
@@ -550,7 +550,7 @@ class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
 	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
 
 protected:
-	String expression;
+	String expression = "";
 
 	static void _bind_methods();
 
