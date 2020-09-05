@@ -2353,10 +2353,13 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 				err += ",";
 			}
 
-			if (p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && p_func->arguments[i + 1]->get_datatype() == TYPE_INT && static_cast<ConstantNode *>(p_func->arguments[i + 1])->values[0].sint < 0) {
-				err += "-";
+			String arg_name;
+			if (args[i] == TYPE_STRUCT) {
+				arg_name = args2[i];
+			} else {
+				arg_name = get_datatype_name(args[i]);
 			}
-			err += get_datatype_name(args[i]);
+			err += arg_name;
 		}
 		err += ")";
 		_set_error(err);
@@ -2380,6 +2383,9 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 		return false;
 	}
 
+	int last_arg_count = 0;
+	String arg_list = "";
+
 	for (int i = 0; i < shader->functions.size(); i++) {
 		if (name != shader->functions[i].name) {
 			continue;
@@ -2391,21 +2397,45 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 		}
 
 		FunctionNode *pfunc = shader->functions[i].function;
+		if (arg_list == "") {
+			for (int j = 0; j < args.size(); j++) {
+				if (j > 0) {
+					arg_list += ", ";
+				}
+				String func_arg_name;
+				if (pfunc->arguments[j].type == TYPE_STRUCT) {
+					func_arg_name = pfunc->arguments[j].type_str;
+				} else {
+					func_arg_name = get_datatype_name(pfunc->arguments[j].type);
+				}
+				arg_list += func_arg_name;
+			}
+		}
 
 		if (pfunc->arguments.size() != args.size()) {
+			last_arg_count = pfunc->arguments.size();
 			continue;
 		}
 
 		bool fail = false;
 
 		for (int j = 0; j < args.size(); j++) {
-			if (args[j] == TYPE_STRUCT && args2[j] != pfunc->arguments[j].type_str) {
-				fail = true;
-				break;
-			}
 			if (get_scalar_type(args[j]) == args[j] && p_func->arguments[j + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[j + 1]), pfunc->arguments[j].type)) {
 				//all good, but it needs implicit conversion later
-			} else if (args[j] != pfunc->arguments[j].type) {
+			} else if (args[j] != pfunc->arguments[j].type || (args[j] == TYPE_STRUCT && args2[j] != pfunc->arguments[j].type_str)) {
+				String func_arg_name;
+				if (pfunc->arguments[j].type == TYPE_STRUCT) {
+					func_arg_name = pfunc->arguments[j].type_str;
+				} else {
+					func_arg_name = get_datatype_name(pfunc->arguments[j].type);
+				}
+				String arg_name;
+				if (args[j] == TYPE_STRUCT) {
+					arg_name = args2[j];
+				} else {
+					arg_name = get_datatype_name(args[j]);
+				}
+				_set_error(vformat("Invalid argument for \"%s(%s)\" function: argument %s should be %s but is %s.", String(name), arg_list, j + 1, func_arg_name, arg_name));
 				fail = true;
 				break;
 			}
@@ -2439,6 +2469,12 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 
 			return true;
 		}
+	}
+
+	if (last_arg_count > args.size()) {
+		_set_error(vformat("Too few arguments for \"%s(%s)\" call. Expected at least %s but received %s.", String(name), arg_list, last_arg_count, args.size()));
+	} else if (last_arg_count < args.size()) {
+		_set_error(vformat("Too many arguments for \"%s(%s)\" call. Expected at most %s but received %s.", String(name), arg_list, last_arg_count, args.size()));
 	}
 
 	return false;
