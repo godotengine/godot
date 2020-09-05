@@ -1542,7 +1542,7 @@ public:
 	float environment_get_fog_height(RID p_env) const;
 	float environment_get_fog_height_density(RID p_env) const;
 
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth);
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable);
