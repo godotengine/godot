@@ -35,6 +35,7 @@
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "instance_placeholder.h"
+#include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
@@ -1683,6 +1684,13 @@ int Node::get_index() const {
 	return data.pos;
 }
 
+Ref<Tween> Node::create_tween() {
+	ERR_FAIL_COND_V_MSG(!data.tree, nullptr, "Can't create Tween when not inside scene tree.");
+	Ref<Tween> tween = get_tree()->create_tween();
+	tween->bind_node(this);
+	return tween;
+}
+
 void Node::remove_and_skip() {
 	ERR_FAIL_COND(!data.parent);
 
@@ -2552,6 +2560,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
+	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));

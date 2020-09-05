@@ -41,6 +41,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "node.h"
+#include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/font.h"
 #include "scene/resources/material.h"
@@ -412,6 +413,9 @@ bool SceneTree::physics_process(float p_time) {
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
+
+	process_tweens(p_time, true);
+
 	flush_transform_notifications();
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
@@ -478,6 +482,8 @@ bool SceneTree::process(float p_time) {
 		E = N;
 	}
 
+	process_tweens(p_time, false);
+
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
@@ -510,6 +516,32 @@ bool SceneTree::process(float p_time) {
 #endif
 
 	return _quit;
+}
+
+void SceneTree::process_tweens(float p_delta, bool p_physics) {
+	// This methods works similarly to how SceneTreeTimers are handled.
+	List<Ref<Tween>>::Element *L = tweens.back();
+
+	for (List<Ref<Tween>>::Element *E = tweens.front(); E;) {
+		List<Ref<Tween>>::Element *N = E->next();
+		// Don't process if paused or process mode doesn't match.
+		if ((paused && E->get()->should_pause()) || (p_physics == (E->get()->get_process_mode() == Tween::TWEEN_PROCESS_IDLE))) {
+			if (E == L) {
+				break;
+			}
+			E = N;
+			continue;
+		}
+
+		if (!E->get()->step(p_delta)) {
+			E->get()->set_valid(false);
+			tweens.erase(E);
+		}
+		if (E == L) {
+			break;
+		}
+		E = N;
+	}
 }
 
 void SceneTree::finalize() {
@@ -1091,6 +1123,27 @@ Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_al
 	return stt;
 }
 
+Ref<Tween> SceneTree::create_tween() {
+	Ref<Tween> tween;
+	tween.instance();
+	tween->set_valid(true);
+	tweens.push_back(tween);
+	return tween;
+}
+
+Array SceneTree::get_processed_tweens() {
+	Array ret;
+	ret.resize(tweens.size());
+
+	int i = 0;
+	for (List<Ref<Tween>>::Element *E = tweens.front(); E; E = E->next()) {
+		ret[i] = E->get();
+		i++;
+	}
+
+	return ret;
+}
+
 void SceneTree::_network_peer_connected(int p_id) {
 	emit_signal("network_peer_connected", p_id);
 }
@@ -1199,6 +1252,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always"), &SceneTree::create_timer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
+	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);
