@@ -119,7 +119,8 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the last element of the array. Throws an error and returns [code]null[/code] if the array is empty.
+				Returns the last element of the array. Prints an error and returns [code]null[/code] if the array is empty.
+				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
 		<method name="bsearch">
@@ -216,7 +217,8 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the first element of the array. Throws an error and returns [code]null[/code] if the array is empty.
+				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
+				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
 		<method name="has">
@@ -283,14 +285,14 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty.
+				Removes and returns the last element of the array. Returns [code]null[/code] if the array is empty, without printing an error message.
 			</description>
 		</method>
 		<method name="pop_front">
 			<return type="Variant">
 			</return>
 			<description>
-				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty.
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, wwithout printing an error message.
 			</description>
 		</method>
 		<method name="push_back">
@@ -317,7 +319,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Removes an element from the array by index.
+				Removes an element from the array by index. If the index does not exist in the array, nothing happens.
 			</description>
 		</method>
 		<method name="resize">
