@@ -183,26 +183,6 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 			default:
 				break;
 		}
-
-		int temp_mode = 0;
-
-		if (p_mode & TYPE_FLAGS_VERTEX) {
-			temp_mode |= 1;
-		}
-
-		if (p_mode & TYPE_FLAGS_FRAGMENT) {
-			temp_mode |= 2;
-		}
-
-		if (p_mode & TYPE_FLAGS_LIGHT) {
-			temp_mode |= 4;
-		}
-
-		if (p_mode & TYPE_FLAGS_COMPUTE) {
-			temp_mode |= 8;
-		}
-
-		p_mode = temp_mode;
 	}
 
 	return (p_mode == -1 || (p_mode & current_mode) != 0);
