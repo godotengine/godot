@@ -794,7 +794,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node) {
 			resolve_match_branch(static_cast<GDScriptParser::MatchBranchNode *>(p_node), nullptr);
 			break;
 		case GDScriptParser::Node::PARAMETER:
-			resolve_pararameter(static_cast<GDScriptParser::ParameterNode *>(p_node));
+			resolve_parameter(static_cast<GDScriptParser::ParameterNode *>(p_node));
 			break;
 		case GDScriptParser::Node::PATTERN:
 			resolve_match_pattern(static_cast<GDScriptParser::PatternNode *>(p_node), nullptr);
@@ -848,7 +848,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	parser->current_function = p_function;
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
-		resolve_pararameter(p_function->parameters[i]);
+		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, p_function->identifier->name, p_function->parameters[i]->identifier->name);
@@ -1264,14 +1264,18 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 	p_match_pattern->set_datatype(result);
 }
 
-void GDScriptAnalyzer::resolve_pararameter(GDScriptParser::ParameterNode *p_parameter) {
+void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parameter) {
 	GDScriptParser::DataType result;
 	result.kind = GDScriptParser::DataType::VARIANT;
 
 	if (p_parameter->default_value != nullptr) {
 		reduce_expression(p_parameter->default_value);
 		result = p_parameter->default_value->get_datatype();
-		result.type_source = GDScriptParser::DataType::INFERRED;
+		if (p_parameter->infer_datatype) {
+			result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		} else {
+			result.type_source = GDScriptParser::DataType::INFERRED;
+		}
 		result.is_constant = false;
 	}
 
@@ -2969,7 +2973,7 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		if (arg_type.is_variant()) {
 			// Argument can be anything, so this is unsafe.
 			mark_node_unsafe(p_call->arguments[i]);
-		} else if (!is_type_compatible(par_type, arg_type, true)) {
+		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
 			// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 			mark_node_unsafe(p_call);
 			if (!is_type_compatible(arg_type, par_type)) {
