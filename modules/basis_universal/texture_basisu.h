@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef BASIS_UNIVERSAL_TEXTURE_BASISU_H
+#define BASIS_UNIVERSAL_TEXTURE_BASISU_H
+
 #include "scene/resources/texture.h"
 
 #ifdef TOOLS_ENABLED
@@ -75,3 +78,5 @@ public:
 };
 
 #endif
+
+#endif // BASIS_UNIVERSAL_TEXTURE_BASISU_H
