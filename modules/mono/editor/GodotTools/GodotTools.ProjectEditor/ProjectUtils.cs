@@ -188,9 +188,10 @@ namespace GodotTools.ProjectEditor
                     if (item.ItemType != itemType)
                         continue;
 
-                    string normalizedExclude = item.Exclude.NormalizePath();
 
-                    var glob = MSBuildGlob.Parse(normalizedExclude);
+                    string normalizedRemove= item.Remove.NormalizePath();
+
+                    var glob = MSBuildGlob.Parse(normalizedRemove);
 
                     excluded.AddRange(result.Where(includedFile => glob.IsMatch(includedFile)));
                 }
