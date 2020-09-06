@@ -308,7 +308,7 @@ void CapsuleShapeBullet::setup(real_t p_height, real_t p_radius) {
 }
 
 btCollisionShape *CapsuleShapeBullet::internal_create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
-	return prepare(ShapeBullet::create_shape_capsule(radius * p_implicit_scale[0] + p_extra_edge, height * p_implicit_scale[1] + p_extra_edge));
+	return prepare(ShapeBullet::create_shape_capsule(radius * p_implicit_scale[0] + p_extra_edge, height * p_implicit_scale[1]));
 }
 
 /* Cylinder */
