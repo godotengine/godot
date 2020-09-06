@@ -85,6 +85,14 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool preview_showed;
 
+	enum TypeFlags {
+		TYPE_FLAGS_VERTEX = 1,
+		TYPE_FLAGS_FRAGMENT = 2,
+		TYPE_FLAGS_LIGHT = 4,
+		TYPE_FLAGS_COMPUTE = 8,
+		TYPE_FLAGS_VERTEX_FRAGMENT_LIGHT = TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT,
+	};
+
 	enum ToolsMenuOptions {
 		EXPAND_ALL,
 		COLLAPSE_ALL
