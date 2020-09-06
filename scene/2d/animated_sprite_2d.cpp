@@ -580,6 +580,10 @@ bool AnimatedSprite2D::is_flipped_v() const {
 	return vflip;
 }
 
+bool AnimatedSprite2D::is_playing_backwards() const {
+	return backwards;
+}
+
 void AnimatedSprite2D::_res_changed() {
 	set_frame(frame);
 	_change_notify("frame");
@@ -710,6 +714,8 @@ void AnimatedSprite2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &AnimatedSprite2D::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &AnimatedSprite2D::is_flipped_v);
+
+	ClassDB::bind_method(D_METHOD("is_playing_backwards"), &AnimatedSprite2D::is_playing_backwards);
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite2D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite2D::get_frame);
