@@ -563,7 +563,7 @@ public:
 
 	virtual RID particles_create() = 0;
 
-	virtual void particles_set_emitting(RID p_particles, bool p_emitting) = 0;
+	virtual void particles_set_emitting(RID p_particles, bool p_enable) = 0;
 	virtual bool particles_get_emitting(RID p_particles) = 0;
 	virtual void particles_set_amount(RID p_particles, int p_amount) = 0;
 	virtual void particles_set_lifetime(RID p_particles, float p_lifetime) = 0;
@@ -580,6 +580,18 @@ public:
 	virtual bool particles_is_inactive(RID p_particles) = 0;
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
+
+	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
+
+	enum ParticlesEmitFlags {
+		PARTICLES_EMIT_FLAG_POSITION = 1,
+		PARTICLES_EMIT_FLAG_ROTATION_SCALE = 2,
+		PARTICLES_EMIT_FLAG_VELOCITY = 4,
+		PARTICLES_EMIT_FLAG_COLOR = 8,
+		PARTICLES_EMIT_FLAG_CUSTOM = 16
+	};
+
+	virtual void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
 
 	enum ParticlesDrawOrder {
 		PARTICLES_DRAW_ORDER_INDEX,

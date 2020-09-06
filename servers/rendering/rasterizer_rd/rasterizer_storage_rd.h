@@ -249,6 +249,7 @@ private:
 
 	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 	RID default_rd_samplers[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+	RID default_rd_storage_buffer;
 
 	/* DECAL ATLAS */
 
@@ -482,6 +483,25 @@ private:
 		float emission_transform[16];
 	};
 
+	struct ParticleEmissionBufferData {
+	};
+
+	struct ParticleEmissionBuffer {
+		struct Data {
+			float xform[16];
+			float velocity[3];
+			uint32_t flags;
+			float color[4];
+			float custom[4];
+		};
+
+		int32_t particle_count;
+		int32_t particle_max;
+		uint32_t pad1;
+		uint32_t pad2;
+		Data data[1]; //its 2020 and empty arrays are still non standard in C++
+	};
+
 	struct Particles {
 		bool inactive;
 		float inactive_time;
@@ -515,6 +535,8 @@ private:
 		bool dirty = false;
 		Particles *update_list = nullptr;
 
+		RID sub_emitter;
+
 		float phase;
 		float prev_phase;
 		uint64_t prev_ticks;
@@ -530,7 +552,14 @@ private:
 
 		bool clear;
 
+		bool force_sub_emit = false;
+
 		Transform emission_transform;
+
+		Vector<uint8_t> emission_buffer_data;
+
+		ParticleEmissionBuffer *emission_buffer = nullptr;
+		RID emission_storage_buffer;
 
 		Particles() :
 				inactive(true),
@@ -562,6 +591,8 @@ private:
 	};
 
 	void _particles_process(Particles *p_particles, float p_delta);
+	void _particles_allocate_emission_buffer(Particles *particles);
+	void _particles_free_data(Particles *particles);
 
 	struct ParticlesShader {
 		struct PushConstant {
@@ -569,8 +600,11 @@ private:
 			uint32_t clear;
 			uint32_t total_particles;
 			uint32_t trail_size;
+
 			uint32_t use_fractional_delta;
-			uint32_t pad[3];
+			uint32_t sub_emitter_mode;
+			uint32_t can_emit;
+			uint32_t pad;
 		};
 
 		ParticlesShaderRD shader;
@@ -1650,6 +1684,8 @@ public:
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);
 	void particles_restart(RID p_particles);
+	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles);
 
 	void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order);
 
