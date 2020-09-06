@@ -23,6 +23,9 @@ namespace GodotTools.Core
 
         public static string NormalizePath(this string path)
         {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
             bool rooted = path.IsAbsolutePath();
 
             path = path.Replace('\\', '/');
