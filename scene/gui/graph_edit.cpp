@@ -227,7 +227,10 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 	move_child(connections_layer, first_not_comment);
 	top_layer->raise();
-	emit_signal("node_selected", p_gn);
+	
+	if (!gn->is_selected()) {
+		emit_signal("node_selected", p_gn);
+	}
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
