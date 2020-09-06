@@ -3119,51 +3119,46 @@ bool RasterizerStorageRD::particles_get_emitting(RID p_particles) {
 	return particles->emitting;
 }
 
+void RasterizerStorageRD::_particles_free_data(Particles *particles) {
+	if (!particles->particle_buffer.is_valid()) {
+		return;
+	}
+	RD::get_singleton()->free(particles->particle_buffer);
+	RD::get_singleton()->free(particles->frame_params_buffer);
+	RD::get_singleton()->free(particles->particle_instance_buffer);
+	particles->particles_transforms_buffer_uniform_set = RID();
+	particles->particle_buffer = RID();
+
+	if (particles->particles_sort_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->particles_sort_buffer);
+		particles->particles_sort_buffer = RID();
+	}
+
+	if (particles->emission_buffer != nullptr) {
+		particles->emission_buffer = nullptr;
+		particles->emission_buffer_data.clear();
+		RD::get_singleton()->free(particles->emission_storage_buffer);
+		particles->emission_storage_buffer = RID();
+	}
+}
+
 void RasterizerStorageRD::particles_set_amount(RID p_particles, int p_amount) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	particles->amount = p_amount;
-
-	if (particles->particle_buffer.is_valid()) {
-		RD::get_singleton()->free(particles->particle_buffer);
-		RD::get_singleton()->free(particles->frame_params_buffer);
-		RD::get_singleton()->free(particles->particle_instance_buffer);
-		particles->particles_transforms_buffer_uniform_set = RID();
-		particles->particle_buffer = RID();
-
-		if (particles->particles_sort_buffer.is_valid()) {
-			RD::get_singleton()->free(particles->particles_sort_buffer);
-			particles->particles_sort_buffer = RID();
-		}
+	if (particles->amount == p_amount) {
+		return;
 	}
+
+	_particles_free_data(particles);
+
+	particles->amount = p_amount;
 
 	if (particles->amount > 0) {
 		particles->particle_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleData) * p_amount);
 		particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * 1);
 		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (3 + 1 + 1) * p_amount);
 		//needs to clear it
-
-		{
-			Vector<RD::Uniform> uniforms;
-
-			{
-				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 0;
-				u.ids.push_back(particles->frame_params_buffer);
-				uniforms.push_back(u);
-			}
-			{
-				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-				u.binding = 1;
-				u.ids.push_back(particles->particle_buffer);
-				uniforms.push_back(u);
-			}
-
-			particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
-		}
 
 		{
 			Vector<RD::Uniform> uniforms;
@@ -3290,6 +3285,79 @@ void RasterizerStorageRD::particles_restart(RID p_particles) {
 	particles->restart_request = true;
 }
 
+void RasterizerStorageRD::_particles_allocate_emission_buffer(Particles *particles) {
+	ERR_FAIL_COND(particles->emission_buffer != nullptr);
+
+	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
+	zeromem(particles->emission_buffer_data.ptrw(), particles->emission_buffer_data.size());
+	particles->emission_buffer = (ParticleEmissionBuffer *)particles->emission_buffer_data.ptrw();
+	particles->emission_buffer->particle_max = particles->amount;
+
+	particles->emission_storage_buffer = RD::get_singleton()->storage_buffer_create(particles->emission_buffer_data.size(), particles->emission_buffer_data);
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free(particles->particles_material_uniform_set);
+		particles->particles_material_uniform_set = RID();
+	}
+}
+
+void RasterizerStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND(p_particles == p_subemitter_particles);
+
+	particles->sub_emitter = p_subemitter_particles;
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		RD::get_singleton()->free(particles->particles_material_uniform_set);
+		particles->particles_material_uniform_set = RID(); //clear and force to re create sub emitting
+	}
+}
+
+void RasterizerStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND(particles->amount == 0);
+
+	if (particles->emitting) {
+		particles->clear = true;
+		particles->emitting = false;
+	}
+
+	if (particles->emission_buffer == nullptr) {
+		_particles_allocate_emission_buffer(particles);
+	}
+
+	if (particles->inactive) {
+		//in case it was inactive, make active again
+		particles->inactive = false;
+		particles->inactive_time = 0;
+	}
+
+	int32_t idx = particles->emission_buffer->particle_count;
+	if (idx < particles->emission_buffer->particle_max) {
+		store_transform(p_transform, particles->emission_buffer->data[idx].xform);
+
+		particles->emission_buffer->data[idx].velocity[0] = p_velocity.x;
+		particles->emission_buffer->data[idx].velocity[1] = p_velocity.y;
+		particles->emission_buffer->data[idx].velocity[2] = p_velocity.z;
+
+		particles->emission_buffer->data[idx].custom[0] = p_custom.r;
+		particles->emission_buffer->data[idx].custom[1] = p_custom.g;
+		particles->emission_buffer->data[idx].custom[2] = p_custom.b;
+		particles->emission_buffer->data[idx].custom[3] = p_custom.a;
+
+		particles->emission_buffer->data[idx].color[0] = p_color.r;
+		particles->emission_buffer->data[idx].color[1] = p_color.g;
+		particles->emission_buffer->data[idx].color[2] = p_color.b;
+		particles->emission_buffer->data[idx].color[3] = p_color.a;
+
+		particles->emission_buffer->data[idx].flags = p_emit_flags;
+		particles->emission_buffer->particle_count++;
+	}
+}
+
 void RasterizerStorageRD::particles_request_process(RID p_particles) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
@@ -3375,6 +3443,54 @@ RID RasterizerStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pas
 }
 
 void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_delta) {
+	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(p_particles->frame_params_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 1;
+			u.ids.push_back(p_particles->particle_buffer);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 2;
+			if (p_particles->emission_storage_buffer.is_valid()) {
+				u.ids.push_back(p_particles->emission_storage_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 3;
+			Particles *sub_emitter = particles_owner.getornull(p_particles->sub_emitter);
+			if (sub_emitter) {
+				if (sub_emitter->emission_buffer == nullptr) { //no emission buffer, allocate emission buffer
+					_particles_allocate_emission_buffer(sub_emitter);
+				}
+				u.ids.push_back(sub_emitter->emission_storage_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+
+		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
+	}
+
 	float new_phase = Math::fmod((float)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, (float)1.0);
 
 	ParticlesFrameParams &frame_params = p_particles->frame_params;
@@ -3416,6 +3532,36 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 	push_constant.lifetime = p_particles->lifetime;
 	push_constant.trail_size = 1;
 	push_constant.use_fractional_delta = p_particles->fractional_delta;
+	push_constant.sub_emitter_mode = !p_particles->emitting && p_particles->emission_buffer && (p_particles->emission_buffer->particle_count > 0 || p_particles->force_sub_emit);
+
+	p_particles->force_sub_emit = false; //reset
+
+	Particles *sub_emitter = particles_owner.getornull(p_particles->sub_emitter);
+
+	if (sub_emitter && sub_emitter->emission_storage_buffer.is_valid()) {
+		//	print_line("updating subemitter buffer");
+		int32_t zero[4] = { 0, sub_emitter->amount, 0, 0 };
+		RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero, true);
+		push_constant.can_emit = true;
+
+		if (sub_emitter->emitting) {
+			sub_emitter->emitting = false;
+			sub_emitter->clear = true; //will need to clear if it was emitting, sorry
+		}
+		//make sure the sub emitter processes particles too
+		sub_emitter->inactive = false;
+		sub_emitter->inactive_time = 0;
+
+		sub_emitter->force_sub_emit = true;
+
+	} else {
+		push_constant.can_emit = false;
+	}
+
+	if (p_particles->emission_buffer && p_particles->emission_buffer->particle_count) {
+		RD::get_singleton()->buffer_update(p_particles->emission_storage_buffer, 0, sizeof(uint32_t) * 4 + sizeof(ParticleEmissionBuffer::Data) * p_particles->emission_buffer->particle_count, p_particles->emission_buffer, true);
+		p_particles->emission_buffer->particle_count = 0;
+	}
 
 	p_particles->clear = false;
 
@@ -3616,9 +3762,6 @@ void RasterizerStorageRD::update_particles() {
 
 			RD::get_singleton()->compute_list_end();
 		}
-
-		particle_update_list = particles->update_list;
-		particles->update_list = nullptr;
 
 		particles->instance_dependency.instance_notify_changed(true, false); //make sure shadows are updated
 	}
@@ -6519,6 +6662,11 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		light->instance_dependency.instance_notify_deleted(p_rid);
 		light_owner.free(p_rid);
 
+	} else if (particles_owner.owns(p_rid)) {
+		Particles *particles = particles_owner.getornull(p_rid);
+		_particles_free_data(particles);
+		particles->instance_dependency.instance_notify_deleted(p_rid);
+		particles_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -7013,6 +7161,17 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		//actions.renames["GRAVITY"] = "current_gravity";
 		actions.renames["EMISSION_TRANSFORM"] = "FRAME.emission_transform";
 		actions.renames["RANDOM_SEED"] = "FRAME.random_seed";
+		actions.renames["FLAG_EMIT_POSITION"] = "EMISSION_FLAG_HAS_POSITION";
+		actions.renames["FLAG_EMIT_ROT_SCALE"] = "EMISSION_FLAG_HAS_ROTATION_SCALE";
+		actions.renames["FLAG_EMIT_VELOCITY"] = "EMISSION_FLAG_HAS_VELOCITY";
+		actions.renames["FLAG_EMIT_COLOR"] = "EMISSION_FLAG_HAS_COLOR";
+		actions.renames["FLAG_EMIT_CUSTOM"] = "EMISSION_FLAG_HAS_CUSTOM";
+		actions.renames["RESTART_POSITION"] = "restart_position";
+		actions.renames["RESTART_ROT_SCALE"] = "restart_rotation_scale";
+		actions.renames["RESTART_VELOCITY"] = "restart_velocity";
+		actions.renames["RESTART_COLOR"] = "restart_color";
+		actions.renames["RESTART_CUSTOM"] = "restart_custom";
+		actions.renames["emit_particle"] = "emit_particle";
 
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
@@ -7075,6 +7234,8 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		particles_shader.base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 0);
 	}
 
+	default_rd_storage_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4);
+
 	{
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n#define MODE_FILL_INSTANCES\n");
@@ -7114,6 +7275,8 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
 	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
+
+	RD::get_singleton()->free(default_rd_storage_buffer);
 
 	if (decal_atlas.textures.size()) {
 		ERR_PRINT("Decal Atlas: " + itos(decal_atlas.textures.size()) + " textures were not removed from the atlas.");

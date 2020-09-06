@@ -360,11 +360,14 @@ public:
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
 
+	FUNC6(particles_emit, RID, const Transform &, const Vector3 &, const Color &, const Color &, uint32_t)
+
 	FUNC2(particles_set_draw_order, RID, RS::ParticlesDrawOrder)
 
 	FUNC2(particles_set_draw_passes, RID, int)
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
 	FUNC2(particles_set_emission_transform, RID, const Transform &)
+	FUNC2(particles_set_subemitter, RID, RID)
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
 

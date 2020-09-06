@@ -34,6 +34,17 @@
 #ifndef PARTICLES_MATERIAL_H
 #define PARTICLES_MATERIAL_H
 
+/*
+ TODO:
+-Path following
+*Manual emission
+-Sub Emitters
+-Attractors
+-Emitter positions deformable by bones
+-Collision
+-Proper trails
+*/
+
 class ParticlesMaterial : public Material {
 	GDCLASS(ParticlesMaterial, Material);
 
@@ -71,6 +82,14 @@ public:
 		EMISSION_SHAPE_MAX
 	};
 
+	enum SubEmitterMode {
+		SUB_EMITTER_DISABLED,
+		SUB_EMITTER_CONSTANT,
+		SUB_EMITTER_AT_END,
+		SUB_EMITTER_AT_COLLISION,
+		SUB_EMITTER_MAX
+	};
+
 private:
 	union MaterialKey {
 		struct {
@@ -78,10 +97,9 @@ private:
 			uint32_t texture_color : 1;
 			uint32_t flags : 4;
 			uint32_t emission_shape : 2;
-			uint32_t trail_size_texture : 1;
-			uint32_t trail_color_texture : 1;
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
+			uint32_t sub_emitter : 2;
 		};
 
 		uint32_t key;
@@ -116,9 +134,8 @@ private:
 
 		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
 		mk.emission_shape = emission_shape;
-		mk.trail_color_texture = trail_color_modifier.is_valid() ? 1 : 0;
-		mk.trail_size_texture = trail_size_modifier.is_valid() ? 1 : 0;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
+		mk.sub_emitter = sub_emitter_mode;
 
 		return mk;
 	}
@@ -178,13 +195,13 @@ private:
 		StringName emission_texture_normal;
 		StringName emission_texture_color;
 
-		StringName trail_divisor;
-		StringName trail_size_modifier;
-		StringName trail_color_modifier;
-
 		StringName gravity;
 
 		StringName lifetime_randomness;
+
+		StringName sub_emitter_frequency;
+		StringName sub_emitter_amount_at_end;
+		StringName sub_emitter_keep_velocity;
 	};
 
 	static ShaderNames *shader_names;
@@ -218,15 +235,14 @@ private:
 
 	bool anim_loop;
 
-	int trail_divisor;
-
-	Ref<CurveTexture> trail_size_modifier;
-	Ref<GradientTexture> trail_color_modifier;
-
 	Vector3 gravity;
 
 	float lifetime_randomness;
 
+	SubEmitterMode sub_emitter_mode;
+	float sub_emitter_frequency;
+	int sub_emitter_amount_at_end;
+	bool sub_emitter_keep_velocity;
 	//do not save emission points here
 
 protected:
@@ -277,15 +293,6 @@ public:
 	Ref<Texture2D> get_emission_color_texture() const;
 	int get_emission_point_count() const;
 
-	void set_trail_divisor(int p_divisor);
-	int get_trail_divisor() const;
-
-	void set_trail_size_modifier(const Ref<CurveTexture> &p_trail_size_modifier);
-	Ref<CurveTexture> get_trail_size_modifier() const;
-
-	void set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier);
-	Ref<GradientTexture> get_trail_color_modifier() const;
-
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
@@ -295,6 +302,18 @@ public:
 	static void init_shaders();
 	static void finish_shaders();
 	static void flush_changes();
+
+	void set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode);
+	SubEmitterMode get_sub_emitter_mode() const;
+
+	void set_sub_emitter_frequency(float p_frequency);
+	float get_sub_emitter_frequency() const;
+
+	void set_sub_emitter_amount_at_end(int p_amount);
+	int get_sub_emitter_amount_at_end() const;
+
+	void set_sub_emitter_keep_velocity(bool p_enable);
+	bool get_sub_emitter_keep_velocity() const;
 
 	RID get_shader_rid() const;
 
@@ -307,5 +326,6 @@ public:
 VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
 VARIANT_ENUM_CAST(ParticlesMaterial::Flags)
 VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
 
 #endif // PARTICLES_MATERIAL_H

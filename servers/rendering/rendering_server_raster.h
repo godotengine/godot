@@ -442,6 +442,8 @@ public:
 	BIND1R(bool, particles_is_inactive, RID)
 	BIND1(particles_request_process, RID)
 	BIND1(particles_restart, RID)
+	BIND6(particles_emit, RID, const Transform &, const Vector3 &, const Color &, const Color &, uint32_t)
+	BIND2(particles_set_subemitter, RID, RID)
 
 	BIND2(particles_set_draw_order, RID, RS::ParticlesDrawOrder)
 
