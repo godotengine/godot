@@ -101,9 +101,11 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		minsize.width += check_w;
 	}
 
-	int height_limit = get_usable_parent_rect().size.height;
-	if (minsize.height > height_limit) {
-		minsize.height = height_limit;
+	if (is_inside_tree()) {
+		int height_limit = get_usable_parent_rect().size.height;
+		if (minsize.height > height_limit) {
+			minsize.height = height_limit;
+		}
 	}
 
 	return minsize;
