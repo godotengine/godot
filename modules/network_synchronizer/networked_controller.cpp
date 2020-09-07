@@ -225,7 +225,7 @@ void NetworkedController::set_doll_collect_rate_factor(int p_peer, real_t p_fact
 	ServerController *server_controller = static_cast<ServerController *>(controller);
 	const uint32_t pos = server_controller->find_peer(p_peer);
 	ERR_FAIL_COND_MSG(pos == UINT32_MAX, "The peer is not found.");
-	server_controller->peers[pos].update_rate_factor = CLAMP(p_factor, 1.0, 0.001);
+	server_controller->peers[pos].update_rate_factor = CLAMP(p_factor, 0.001, 1.0);
 }
 
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
@@ -775,10 +775,6 @@ void ServerController::doll_sync(real_t p_delta) {
 			}
 		}
 
-#ifdef DEBUG_ENABLED
-		// This can't happens thanks to the below check.
-		CRASH_COND(peers[i].epoch_batch.size() > 8);
-#endif
 		peers[i].sync_timer += p_delta;
 		if (
 				peers[i].epoch_batch.size() != 0 && // Has something.
@@ -1165,11 +1161,8 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 		batch_old_epoch = MAX(epoch, batch_old_epoch);
 	}
 
-	// Establish the interpolation speed
+	// ~~ Establish the interpolation speed ~~
 	ERR_FAIL_COND_MSG(batch_young_epoch == UINT32_MAX, "The received batch doesn't contains any epoch, this is a bug.");
-
-	const real_t batch_epoch_span = batch_old_epoch - batch_young_epoch;
-
 	if (current_epoch == UINT32_MAX || previous_oldest_epoch == UINT32_MAX) {
 		// Nothing more to do.
 		return;
@@ -1179,6 +1172,19 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	const int ideal_target_frame = 2;
 	const real_t doll_interpolation_speedup_factor = 4.0;
 	const real_t doll_interpolation_max_speedup = 0.2;
+
+	real_t batch_epoch_span = batch_old_epoch - batch_young_epoch;
+	if (batch_old_epoch == batch_young_epoch) {
+		// Sometimes the batch contains only 1 epoch, so count the amount of
+		// epochs using the oldest epoch in the interpolator.
+		batch_epoch_span = batch_old_epoch - previous_oldest_epoch;
+		if (batch_epoch_span <= 0.0) {
+			// TODO print a warning.
+			// Was not possible to establish the epoch span correctly, this
+			// packet may contains old informations.
+			return;
+		}
+	}
 
 	const uint32_t left_epochs = previous_oldest_epoch - current_epoch;
 
@@ -1191,7 +1197,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	// track of the status for past batches. By taking the lowest balance value,
 	// from the `averager`, is possible to guess pessimisticaly:
 	// so in case the connection become worse the interpolation still looks good.
-	additional_speed = doll_interpolation_max_speedup * (real_t(averager.min() - ideal_target_frame) / (batch_epoch_span * doll_interpolation_speedup_factor));
+	additional_speed = doll_interpolation_max_speedup * (real_t(averager.min(3) - ideal_target_frame) / (batch_epoch_span * doll_interpolation_speedup_factor));
 	additional_speed = CLAMP(additional_speed, -doll_interpolation_max_speedup, doll_interpolation_max_speedup);
 
 	// TODO the issue with the above approach is that it can do something to
@@ -1204,7 +1210,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	// In this way we stop relying on the amount of missing epochs, and
 	// hopefully increase the buffers size before something goes wrong.
 
-	//print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Averager min: " + itos(averager.min()) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs) + " - Average derivative: " + rtos(averager.average_derivative()));
+	print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Averager min: " + itos(averager.min(3)) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs) + " - Average derivative: " + rtos(averager.average_derivative()));
 
 	missing_epochs = 0;
 }
@@ -1268,9 +1274,12 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	if (unlikely((oldest_epoch - current_epoch) > max_virtual_delay)) {
 		// This client seems too much behind at this point. Teleport forward.
 		current_epoch = oldest_epoch - max_virtual_delay;
+		print_line("~~~ Hard reset ~~~");
 	} else {
 		advancing_epoch += 1.0 + additional_speed;
 	}
+
+	//print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch) + " Epoch range: " + itos(oldest_epoch - current_epoch));
 
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
@@ -1281,8 +1290,6 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 		// Keep the floating point part.
 		advancing_epoch -= uint32_t(advancing_epoch);
 	}
-
-	//print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch));
 
 	return current_epoch;
 }

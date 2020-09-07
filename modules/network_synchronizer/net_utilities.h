@@ -84,7 +84,7 @@ public:
 	T max() const;
 
 	/// Minumum value.
-	T min() const;
+	T min(uint32_t p_consider_last) const;
 
 	/// Median value.
 	T average() const;

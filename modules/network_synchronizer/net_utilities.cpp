@@ -120,13 +120,21 @@ T Averager<T>::max() const {
 }
 
 template <class T>
-T Averager<T>::min() const {
+T Averager<T>::min(uint32_t p_consider_last) const {
 	CRASH_COND(data.size() == 0);
+	p_consider_last = MIN(p_consider_last, data.size());
 
-	T a = data[0];
-	for (uint32_t i = 1; i < data.size(); i += 1) {
+	const uint32_t youngest = (index == 0 ? data.size() : index) - 1;
+	const uint32_t oldest = (index + (data.size() - p_consider_last)) % time.size();
+
+	T a = data[oldest];
+
+	uint32_t i = oldest;
+	do {
+		i = (i + 1) % time.size();
 		a = MIN(a, data[i]);
-	}
+	} while (i != youngest);
+
 	return a;
 }
 
