@@ -50,7 +50,9 @@ public:
 		TYPE_VERTEX,
 		TYPE_FRAGMENT,
 		TYPE_LIGHT,
-		TYPE_COMPUTE,
+		TYPE_EMIT,
+		TYPE_PROCESS,
+		TYPE_END,
 		TYPE_MAX
 	};
 
@@ -112,6 +114,7 @@ private:
 	Error _write_node(Type p_type, StringBuilder &global_code, StringBuilder &global_code_per_node, Map<Type, StringBuilder> &global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
+	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
 
 protected:
 	virtual void _update_shader() const override;
