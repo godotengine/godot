@@ -200,7 +200,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, size_
 		files[fname] = f;
 
 		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files);
+		PackedData::get_singleton()->add_path(p_path, fname, 1, 0, md5, this, p_replace_files, false);
 		//printf("packed data add path %s, %s\n", p_name.utf8().get_data(), fname.utf8().get_data());
 
 		if ((i + 1) < gi.number_entry) {

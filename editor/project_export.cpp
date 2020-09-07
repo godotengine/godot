@@ -310,6 +310,24 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	_update_export_all();
 	child_controls_changed();
 
+	String enc_in_filters_str = current->get_enc_in_filter();
+	String enc_ex_filters_str = current->get_enc_ex_filter();
+	if (!updating_enc_filters) {
+		enc_in_filters->set_text(enc_in_filters_str);
+		enc_ex_filters->set_text(enc_ex_filters_str);
+	}
+
+	bool enc_pck_mode = current->get_enc_pck();
+	enc_pck->set_pressed(enc_pck_mode);
+
+	enc_directory->set_disabled(!enc_pck_mode);
+	enc_in_filters->set_editable(enc_pck_mode);
+	enc_ex_filters->set_editable(enc_pck_mode);
+	script_key->set_editable(enc_pck_mode);
+
+	bool enc_directory_mode = current->get_enc_directory();
+	enc_directory->set_pressed(enc_directory_mode);
+
 	int script_export_mode = current->get_script_export_mode();
 	script_mode->select(script_export_mode);
 
@@ -317,7 +335,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	if (!updating_script_key) {
 		script_key->set_text(key);
 	}
-	if (script_export_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
+	if (enc_pck_mode) {
 		script_key->set_editable(true);
 
 		bool key_valid = _validate_script_encryption_key(key);
@@ -517,6 +535,56 @@ void ProjectExportDialog::_export_path_changed(const StringName &p_property, con
 
 	current->set_export_path(p_value);
 	_update_presets();
+}
+
+void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_enc_in_filter(enc_in_filters->get_text());
+	current->set_enc_ex_filter(enc_ex_filters->get_text());
+
+	updating_enc_filters = true;
+	_update_current_preset();
+	updating_enc_filters = false;
+}
+
+void ProjectExportDialog::_open_key_help_link() {
+	OS::get_singleton()->shell_open("https://docs.godotengine.org/en/latest/development/compiling/compiling_with_script_encryption_key.html");
+}
+
+void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_enc_pck(p_pressed);
+	enc_directory->set_disabled(!p_pressed);
+	enc_in_filters->set_editable(p_pressed);
+	enc_ex_filters->set_editable(p_pressed);
+	script_key->set_editable(p_pressed);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_enc_directory_changed(bool p_pressed) {
+	if (updating) {
+		return;
+	}
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_enc_directory(p_pressed);
+
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
@@ -1148,6 +1216,12 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
 
+	script_mode = memnew(OptionButton);
+	resources_vb->add_margin_child(TTR("Script Export Mode:"), script_mode);
+	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
+	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
+	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+
 	// Patch packages.
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
@@ -1205,23 +1279,50 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Script export parameters.
 
 	updating_script_key = false;
+	updating_enc_filters = false;
 
-	VBoxContainer *script_vb = memnew(VBoxContainer);
-	script_vb->set_name(TTR("Script"));
-	script_mode = memnew(OptionButton);
-	script_vb->add_margin_child(TTR("Script Export Mode:"), script_mode);
-	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
-	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
-	script_mode->add_item(TTR("Encrypted (Provide Key Below)"), (int)EditorExportPreset::MODE_SCRIPT_ENCRYPTED);
-	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
+	VBoxContainer *sec_vb = memnew(VBoxContainer);
+	sec_vb->set_name(TTR("Encryption"));
+
+	enc_pck = memnew(CheckButton);
+	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
+	enc_pck->set_text(TTR("Encrypt exported PCK"));
+	sec_vb->add_child(enc_pck);
+
+	enc_directory = memnew(CheckButton);
+	enc_directory->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_directory_changed));
+	enc_directory->set_text("Encrypt index (file names and info).");
+	sec_vb->add_child(enc_directory);
+
+	enc_in_filters = memnew(LineEdit);
+	enc_in_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	sec_vb->add_margin_child(
+			TTR("Filters to include files/folders\n(comma-separated, e.g: *.tscn, *.tres, scenes/*)"),
+			enc_in_filters);
+
+	enc_ex_filters = memnew(LineEdit);
+	enc_ex_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
+	sec_vb->add_margin_child(
+			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.stex, *.import, music/*)"),
+			enc_ex_filters);
+
 	script_key = memnew(LineEdit);
 	script_key->connect("text_changed", callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
 	script_key_error->add_theme_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_theme_color("error_color", "Editor"));
-	script_vb->add_margin_child(TTR("Script Encryption Key (256-bits as hex):"), script_key);
-	script_vb->add_child(script_key_error);
-	sections->add_child(script_vb);
+	sec_vb->add_margin_child(TTR("Encryption Key (256-bits as hex):"), script_key);
+	sec_vb->add_child(script_key_error);
+	sections->add_child(sec_vb);
+
+	Label *sec_info = memnew(Label);
+	sec_info->set_text(TTR("Note: Encryption key needs to be stored in the binary,\nyou need to build the export templates from source."));
+	sec_vb->add_child(sec_info);
+
+	LinkButton *sec_more_info = memnew(LinkButton);
+	sec_more_info->set_text(TTR("More Info..."));
+	sec_more_info->connect("pressed", callable_mp(this, &ProjectExportDialog::_open_key_help_link));
+	sec_vb->add_child(sec_more_info);
 
 	sections->connect("tab_changed", callable_mp(this, &ProjectExportDialog::_tab_changed));
 
