@@ -900,13 +900,12 @@ void RenderingServerCanvas::canvas_item_attach_skeleton(RID p_item, RID p_skelet
 void RenderingServerCanvas::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
-	if (bool(canvas_item->copy_back_buffer != nullptr) != p_enable) {
-		if (p_enable) {
-			canvas_item->copy_back_buffer = memnew(RasterizerCanvas::Item::CopyBackBuffer);
-		} else {
-			memdelete(canvas_item->copy_back_buffer);
-			canvas_item->copy_back_buffer = nullptr;
-		}
+	if (p_enable && (canvas_item->copy_back_buffer == nullptr)) {
+		canvas_item->copy_back_buffer = memnew(RasterizerCanvas::Item::CopyBackBuffer);
+	}
+	if (!p_enable && (canvas_item->copy_back_buffer != nullptr)) {
+		memdelete(canvas_item->copy_back_buffer);
+		canvas_item->copy_back_buffer = nullptr;
 	}
 
 	if (p_enable) {
