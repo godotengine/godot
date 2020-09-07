@@ -86,6 +86,9 @@ class PopupMenu : public Popup {
 		}
 	};
 
+	bool close_allowed = false;
+
+	Timer *minimum_lifetime_timer = nullptr;
 	Timer *submenu_timer;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
@@ -102,7 +105,7 @@ class PopupMenu : public Popup {
 	void _scroll_to_item(int p_item);
 
 	void _gui_input(const Ref<InputEvent> &p_event);
-	void _activate_submenu(int over);
+	void _activate_submenu(int p_over);
 	void _submenu_timeout();
 
 	uint64_t popup_time_msec = 0;
@@ -129,6 +132,9 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 	void _draw_background();
+
+	void _minimum_lifetime_timeout();
+	void _close_pressed();
 
 protected:
 	friend class MenuButton;
