@@ -191,6 +191,59 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		double step = get_step();
+		double real_step = step;
+		if (step < 1) {
+			double divisor = 1.0 / get_step();
+
+			if (trunc(divisor) == divisor) {
+				step = 1.0;
+			}
+		}
+
+		if (k->is_ctrl_pressed()) {
+			step *= 100.0;
+		} else if (k->is_shift_pressed()) {
+			step *= 10.0;
+		} else if (k->is_alt_pressed()) {
+			step *= 0.1;
+		}
+
+		uint32_t code = k->get_keycode();
+		switch (code) {
+			case KEY_UP: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value + step);
+				double new_value = get_value();
+
+				if (new_value < CLAMP(last_value + step, get_min(), get_max())) {
+					set_value(last_value + real_step);
+				}
+
+				value_input->set_text(get_text_value());
+			} break;
+			case KEY_DOWN: {
+				_evaluate_input_text();
+
+				double last_value = get_value();
+				set_value(last_value - step);
+				double new_value = get_value();
+
+				if (new_value > CLAMP(last_value - step, get_min(), get_max())) {
+					set_value(last_value - real_step);
+				}
+
+				value_input->set_text(get_text_value());
+			} break;
+		}
+	}
+}
+
 void EditorSpinSlider::_update_value_input_stylebox() {
 	if (!value_input) {
 		return;
@@ -585,11 +638,13 @@ void EditorSpinSlider::_ensure_input_popup() {
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
+	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
 	}
 }
+
 EditorSpinSlider::EditorSpinSlider() {
 	flat = false;
 	grabbing_spinner_attempt = false;
