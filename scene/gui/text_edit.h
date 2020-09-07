@@ -79,10 +79,10 @@ private:
 		struct Line {
 			Vector<Gutter> gutters;
 
-			int width_cache : 24;
-			bool marked : 1;
-			bool hidden : 1;
-			int wrap_amount_cache : 24;
+			int32_t width_cache;
+			bool marked;
+			bool hidden;
+			int32_t wrap_amount_cache;
 			String data;
 			Line() {
 				width_cache = 0;
