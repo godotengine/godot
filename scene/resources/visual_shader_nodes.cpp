@@ -892,6 +892,7 @@ String VisualShaderNodeSample3D::get_warning(Shader::Mode p_mode, VisualShader::
 }
 
 VisualShaderNodeSample3D::VisualShaderNodeSample3D() {
+	simple_decl = false;
 }
 
 ////////////// Texture2DArray
@@ -1135,6 +1136,7 @@ void VisualShaderNodeCubemap::_bind_methods() {
 }
 
 VisualShaderNodeCubemap::VisualShaderNodeCubemap() {
+	simple_decl = false;
 }
 
 ////////////// Float Op
@@ -2236,6 +2238,7 @@ void VisualShaderNodeColorFunc::_bind_methods() {
 }
 
 VisualShaderNodeColorFunc::VisualShaderNodeColorFunc() {
+	simple_decl = false;
 	set_input_port_default_value(0, Vector3());
 }
 
@@ -4226,6 +4229,7 @@ bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) co
 }
 
 VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
+	simple_decl = false;
 }
 
 ////////////// Texture Uniform (Triplanar)
@@ -4529,6 +4533,7 @@ String VisualShaderNodeIf::generate_code(Shader::Mode p_mode, VisualShader::Type
 }
 
 VisualShaderNodeIf::VisualShaderNodeIf() {
+	simple_decl = false;
 	set_input_port_default_value(0, 0.0);
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, CMP_EPSILON);
@@ -4593,6 +4598,7 @@ String VisualShaderNodeSwitch::generate_code(Shader::Mode p_mode, VisualShader::
 }
 
 VisualShaderNodeSwitch::VisualShaderNodeSwitch() {
+	simple_decl = false;
 	set_input_port_default_value(0, false);
 	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
 	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
