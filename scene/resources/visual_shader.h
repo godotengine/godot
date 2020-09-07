@@ -180,7 +180,7 @@ VARIANT_ENUM_CAST(VisualShader::Type)
 class VisualShaderNode : public Resource {
 	GDCLASS(VisualShaderNode, Resource);
 
-	int port_preview;
+	int port_preview = -1;
 
 	Map<int, Variant> default_input_values;
 	Map<int, bool> connected_input_ports;
@@ -188,7 +188,7 @@ class VisualShaderNode : public Resource {
 	int connected_output_count = 0;
 
 protected:
-	bool simple_decl = false;
+	bool simple_decl = true;
 	static void _bind_methods();
 
 public:
