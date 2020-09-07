@@ -1124,8 +1124,8 @@ void VisualScriptEditor::_update_members() {
 		TreeItem *ti = members->create_item(variables);
 
 		ti->set_text(0, E->get());
-		Variant var = script->get_variable_default_value(E->get());
-		ti->set_suffix(0, "= " + String(var));
+
+		ti->set_suffix(0, "= " + _sanitized_variant_text(E->get()));
 		ti->set_icon(0, type_icons[script->get_variable_info(E->get()).type]);
 
 		ti->set_selectable(0, true);
@@ -1165,6 +1165,18 @@ void VisualScriptEditor::_update_members() {
 	base_type_select->set_icon(Control::get_theme_icon(icon_type, "EditorIcons"));
 
 	updating_members = false;
+}
+
+String VisualScriptEditor::_sanitized_variant_text(const StringName &property_name) {
+	Variant var = script->get_variable_default_value(property_name);
+
+	if (script->get_variable_info(property_name).type != Variant::NIL) {
+		Callable::CallError ce;
+		const Variant *converted = &var;
+		var = Variant::construct(script->get_variable_info(property_name).type, &converted, 1, ce, false);
+	}
+
+	return String(var);
 }
 
 void VisualScriptEditor::_member_selected() {

@@ -146,6 +146,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool updating_members;
 
 	void _update_members();
+	String _sanitized_variant_text(const StringName &property_name);
 
 	StringName selected;
 
