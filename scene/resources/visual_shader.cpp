@@ -172,8 +172,6 @@ void VisualShaderNode::_bind_methods() {
 }
 
 VisualShaderNode::VisualShaderNode() {
-	port_preview = -1;
-	simple_decl = true;
 }
 
 /////////////////////////////////////////////////////////
@@ -2951,6 +2949,7 @@ String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShade
 }
 
 VisualShaderNodeGroupBase::VisualShaderNodeGroupBase() {
+	simple_decl = false;
 }
 
 ////////////// Expression
