@@ -3,7 +3,7 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
-from compat import iteritems, isbasestring, decode_utf8, qualname
+from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
@@ -86,7 +86,7 @@ def update_version(module_version_string=""):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
+        head = open_utf8(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
             head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
