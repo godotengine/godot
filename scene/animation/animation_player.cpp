@@ -1241,6 +1241,26 @@ void AnimationPlayer::stop(bool p_reset) {
 	playing = false;
 }
 
+void AnimationPlayer::pause(bool p_pause) {
+	_stop_playing_caches();
+	Playback &c = playback;
+	c.blend.clear();
+
+	_set_process(!p_pause);
+	queued.clear();
+	playing = !p_pause;
+}
+
+void AnimationPlayer::resume() {
+	_stop_playing_caches();
+	Playback &c = playback;
+	c.blend.clear();
+
+	_set_process(true);
+	queued.clear();
+	playing = true;
+}
+
 void AnimationPlayer::set_speed_scale(float p_speed) {
 	speed_scale = p_speed;
 }
@@ -1559,6 +1579,8 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("stop", "reset"), &AnimationPlayer::stop, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("pause", "pause"), &AnimationPlayer::pause, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("resume"), &AnimationPlayer::resume);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);
