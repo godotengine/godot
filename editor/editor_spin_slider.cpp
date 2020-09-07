@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 
@@ -182,6 +183,39 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
 		update();
+	}
+}
+
+void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed()) {
+		uint32_t code = k->get_keycode();
+		double step = get_step();
+
+#ifdef APPLE_STYLE_KEYS
+		if (k->is_command_pressed()) {
+#else
+		if (k->is_ctrl_pressed()) {
+#endif
+			step = 100.0;
+		} else if (k->is_shift_pressed()) {
+			step = 10.0;
+		} else if (k->is_alt_pressed()) {
+			step = 0.1;
+		}
+
+		switch (code) {
+			case KEY_UP:
+				_evaluate_input_text();
+				set_value(get_value() + step);
+				value_input->set_text(get_text_value());
+				break;
+			case KEY_DOWN:
+				_evaluate_input_text();
+				set_value(get_value() - step);
+				value_input->set_text(get_text_value());
+				break;
+		}
 	}
 }
 
@@ -572,6 +606,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
+	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 	value_input_just_closed = false;
 	hide_slider = false;
 	read_only = false;
