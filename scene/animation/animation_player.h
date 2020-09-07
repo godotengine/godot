@@ -288,7 +288,7 @@ public:
 	Vector<String> get_queue();
 	void clear_queue();
 	void stop(bool p_reset = true);
-	void pause(bool p_pause = true);
+	void pause();
 	void resume();
 	bool is_playing() const;
 	String get_current_animation() const;
