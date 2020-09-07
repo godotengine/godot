@@ -920,16 +920,30 @@ void ShaderLanguage::clear() {
 	}
 }
 
-bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name) {
-	if (p_builtin_types.has(p_identifier)) {
+bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name) {
+	if (p_function_info.built_ins.has(p_identifier)) {
 		if (r_data_type) {
-			*r_data_type = p_builtin_types[p_identifier].type;
+			*r_data_type = p_function_info.built_ins[p_identifier].type;
 		}
 		if (r_is_const) {
-			*r_is_const = p_builtin_types[p_identifier].constant;
+			*r_is_const = p_function_info.built_ins[p_identifier].constant;
 		}
 		if (r_type) {
 			*r_type = IDENTIFIER_BUILTIN_VAR;
+		}
+
+		return true;
+	}
+
+	if (p_function_info.stage_functions.has(p_identifier)) {
+		if (r_data_type) {
+			*r_data_type = p_function_info.stage_functions[p_identifier].return_type;
+		}
+		if (r_is_const) {
+			*r_is_const = true;
+		}
+		if (r_type) {
+			*r_type = IDENTIFIER_FUNCTION;
 		}
 
 		return true;
@@ -2152,7 +2166,7 @@ const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[]
 	{ nullptr, 0 }
 };
 
-bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
+bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str) {
 	ERR_FAIL_COND_V(p_func->op != OP_CALL && p_func->op != OP_CONSTRUCT, false);
 
 	Vector<DataType> args;
@@ -2168,6 +2182,30 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 	}
 
 	int argcount = args.size();
+
+	if (p_function_info.stage_functions.has(name)) {
+		//stage based function
+		const StageFunctionInfo &sf = p_function_info.stage_functions[name];
+		if (argcount != sf.arguments.size()) {
+			_set_error(vformat("Invalid number of arguments when calling stage function '%s', which expects %d arguments.", String(name), sf.arguments.size()));
+			return false;
+		}
+		//validate arguments
+		for (int i = 0; i < argcount; i++) {
+			if (args[i] != sf.arguments[i].type) {
+				_set_error(vformat("Invalid argument type when calling stage function '%s', type expected is '%s'.", String(name), String(get_datatype_name(sf.arguments[i].type))));
+				return false;
+			}
+		}
+
+		if (r_ret_type) {
+			*r_ret_type = sf.return_type;
+		}
+		if (r_ret_type_str) {
+			*r_ret_type_str = "";
+		}
+		return true;
+	}
 
 	bool failed_builtin = false;
 	bool unsupported_builtin = false;
@@ -2241,8 +2279,8 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 										if (shader->uniforms.has(varname)) {
 											fail = true;
 										} else {
-											if (p_builtin_types.has(varname)) {
-												BuiltInInfo info = p_builtin_types[varname];
+											if (p_function_info.built_ins.has(varname)) {
+												BuiltInInfo info = p_function_info.built_ins[varname];
 												if (info.constant) {
 													fail = true;
 												}
@@ -2278,7 +2316,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const Map<Strin
 								const BlockNode *b = p_block;
 								bool valid = false;
 								while (b) {
-									if (b->variables.has(var_name) || p_builtin_types.has(var_name)) {
+									if (b->variables.has(var_name) || p_function_info.built_ins.has(var_name)) {
 										valid = true;
 										break;
 									}
@@ -2492,7 +2530,7 @@ bool ShaderLanguage::_compare_datatypes_in_nodes(Node *a, Node *b) const {
 	return true;
 }
 
-bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg) {
+bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg) {
 	TkPos pos = _get_tkpos();
 	Token tk = _get_token();
 
@@ -2514,7 +2552,7 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Map<Str
 			}
 		}
 
-		Node *arg = _parse_and_reduce_expression(p_block, p_builtin_types);
+		Node *arg = _parse_and_reduce_expression(p_block, p_function_info);
 
 		if (!arg) {
 			return false;
@@ -3053,16 +3091,16 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 	return false;
 }
 
-bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message) {
+bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message) {
 	if (p_node->type == Node::TYPE_OPERATOR) {
 		OperatorNode *op = static_cast<OperatorNode *>(p_node);
 
 		if (op->op == OP_INDEX) {
-			return _validate_assign(op->arguments[0], p_builtin_types, r_message);
+			return _validate_assign(op->arguments[0], p_function_info, r_message);
 
 		} else if (_is_operator_assign(op->op)) {
 			//chained assignment
-			return _validate_assign(op->arguments[1], p_builtin_types, r_message);
+			return _validate_assign(op->arguments[1], p_function_info, r_message);
 
 		} else if (op->op == OP_CALL) {
 			if (r_message) {
@@ -3081,7 +3119,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 			return false;
 		}
 
-		return _validate_assign(member->owner, p_builtin_types, r_message);
+		return _validate_assign(member->owner, p_function_info, r_message);
 
 	} else if (p_node->type == Node::TYPE_VARIABLE) {
 		VariableNode *var = static_cast<VariableNode *>(p_node);
@@ -3107,7 +3145,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 			return false;
 		}
 
-		if (!(p_builtin_types.has(var->name) && p_builtin_types[var->name].constant)) {
+		if (!(p_function_info.built_ins.has(var->name) && p_function_info.built_ins[var->name].constant)) {
 			return true;
 		}
 	} else if (p_node->type == Node::TYPE_ARRAY) {
@@ -3204,7 +3242,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringNa
 	ERR_FAIL_V(false); //bug? function not found
 }
 
-ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types) {
+ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const FunctionInfo &p_function_info) {
 	Vector<Expression> expression;
 
 	//Vector<TokenType> operators;
@@ -3220,7 +3258,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 		if (tk.type == TK_PARENTHESIS_OPEN) {
 			//handle subexpression
 
-			expr = _parse_and_reduce_expression(p_block, p_builtin_types);
+			expr = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!expr) {
 				return nullptr;
 			}
@@ -3293,7 +3331,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			int carg = -1;
 
-			bool ok = _parse_function_arguments(p_block, p_builtin_types, func, &carg);
+			bool ok = _parse_function_arguments(p_block, p_function_info, func, &carg);
 
 			if (carg >= 0) {
 				completion_type = COMPLETION_CALL_ARGUMENTS;
@@ -3307,7 +3345,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				return nullptr;
 			}
 
-			if (!_validate_function_call(p_block, p_builtin_types, func, &func->return_cache, &func->struct_name)) {
+			if (!_validate_function_call(p_block, p_function_info, func, &func->return_cache, &func->struct_name)) {
 				_set_error("No matching constructor found for: '" + String(funcname->name) + "'");
 				return nullptr;
 			}
@@ -3383,7 +3421,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 									} else {
 										_set_tkpos(pos2);
 
-										Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+										Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 										if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 											_set_error("Expected single integer constant > 0");
 											return nullptr;
@@ -3444,7 +3482,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 							if (tk.type == TK_PARENTHESIS_OPEN || auto_size) { // initialization
 								while (true) {
-									Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+									Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 									if (!n) {
 										return nullptr;
 									}
@@ -3484,7 +3522,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 							nexpr = an;
 						} else {
-							nexpr = _parse_and_reduce_expression(p_block, p_builtin_types);
+							nexpr = _parse_and_reduce_expression(p_block, p_function_info);
 							if (!nexpr) {
 								return nullptr;
 							}
@@ -3526,7 +3564,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 					int carg = -1;
 
-					bool ok = _parse_function_arguments(p_block, p_builtin_types, func, &carg);
+					bool ok = _parse_function_arguments(p_block, p_function_info, func, &carg);
 
 					// Check if block has a variable with the same name as function to prevent shader crash.
 					ShaderLanguage::BlockNode *bnode = p_block;
@@ -3568,7 +3606,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						return nullptr;
 					}
 
-					if (!_validate_function_call(p_block, p_builtin_types, func, &func->return_cache, &func->struct_name)) {
+					if (!_validate_function_call(p_block, p_function_info, func, &func->return_cache, &func->struct_name)) {
 						_set_error("No matching function found for: '" + String(funcname->name) + "'");
 						return nullptr;
 					}
@@ -3620,8 +3658,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 												} else if (shader->uniforms.has(varname)) {
 													error = true;
 												} else {
-													if (p_builtin_types.has(varname)) {
-														BuiltInInfo info = p_builtin_types[varname];
+													if (p_function_info.built_ins.has(varname)) {
+														BuiltInInfo info = p_function_info.built_ins[varname];
 														if (info.constant) {
 															error = true;
 														}
@@ -3653,7 +3691,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 											if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
 												return nullptr;
 											}
-										} else if (p_builtin_types.has(varname)) {
+										} else if (p_function_info.built_ins.has(varname)) {
 											//a built-in
 											if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
 												return nullptr;
@@ -3708,7 +3746,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						return nullptr;
 					}
 				} else {
-					if (!_find_identifier(p_block, false, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
+					if (!_find_identifier(p_block, false, p_function_info, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
 						_set_error("Unknown identifier in expression: " + String(identifier));
 						return nullptr;
 					}
@@ -3733,7 +3771,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					if (tk.type == TK_PERIOD) {
 						completion_class = TAG_ARRAY;
 						p_block->block_tag = SubClassTag::TAG_ARRAY;
-						call_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
+						call_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						p_block->block_tag = SubClassTag::TAG_GLOBAL;
 						if (!call_expression) {
 							return nullptr;
@@ -3741,7 +3779,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						data_type = call_expression->get_datatype();
 					} else { // indexing
 
-						index_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
+						index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
 							return nullptr;
 						}
@@ -4121,7 +4159,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error("Nested array length() is not yet implemented");
 						return nullptr;
 					} else if (tk.type == TK_BRACKET_OPEN) {
-						Node *index_expression = _parse_and_reduce_expression(p_block, p_builtin_types);
+						Node *index_expression = _parse_and_reduce_expression(p_block, p_function_info);
 						if (!index_expression) {
 							return nullptr;
 						}
@@ -4170,7 +4208,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 	*/
 			} else if (tk.type == TK_BRACKET_OPEN) {
-				Node *index = _parse_and_reduce_expression(p_block, p_builtin_types);
+				Node *index = _parse_and_reduce_expression(p_block, p_function_info);
 				if (!index) {
 					return nullptr;
 				}
@@ -4312,7 +4350,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					return nullptr;
 				}
 
-				if (!_validate_assign(expr, p_builtin_types)) {
+				if (!_validate_assign(expr, p_function_info)) {
 					_set_error("Invalid use of increment/decrement operator in constant expression.");
 					return nullptr;
 				}
@@ -4610,7 +4648,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
-				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_builtin_types)) {
+				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info)) {
 					_set_error("Can't use increment/decrement operator in constant expression.");
 					return nullptr;
 				}
@@ -4684,7 +4722,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 			if (_is_operator_assign(op->op)) {
 				String assign_message;
-				if (!_validate_assign(expression[next_op - 1].node, p_builtin_types, &assign_message)) {
+				if (!_validate_assign(expression[next_op - 1].node, p_function_info, &assign_message)) {
 					_set_error(assign_message);
 					return nullptr;
 				}
@@ -4838,8 +4876,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 	return p_node;
 }
 
-ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types) {
-	ShaderLanguage::Node *expr = _parse_expression(p_block, p_builtin_types);
+ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info) {
+	ShaderLanguage::Node *expr = _parse_expression(p_block, p_function_info);
 	if (!expr) { //errored
 		return nullptr;
 	}
@@ -4849,7 +4887,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_and_reduce_expression(BlockNode *p_
 	return expr;
 }
 
-Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one, bool p_can_break, bool p_can_continue) {
+Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one, bool p_can_break, bool p_can_continue) {
 	while (true) {
 		TkPos pos = _get_tkpos();
 
@@ -4933,7 +4971,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 				StringName name = tk.text;
 				ShaderLanguage::IdentifierType itype;
-				if (_find_identifier(p_block, true, p_builtin_types, name, (ShaderLanguage::DataType *)nullptr, &itype)) {
+				if (_find_identifier(p_block, true, p_function_info, name, (ShaderLanguage::DataType *)nullptr, &itype)) {
 					if (itype != IDENTIFIER_FUNCTION) {
 						_set_error("Redefinition of '" + String(name) + "'");
 						return ERR_PARSE_ERROR;
@@ -5052,7 +5090,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 								} else {
 									_set_tkpos(pos2);
 
-									Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+									Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 									if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 										_set_error("Expected single integer constant > 0");
 										return ERR_PARSE_ERROR;
@@ -5133,7 +5171,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 						if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
 							while (true) {
-								Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+								Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 								if (!n) {
 									return ERR_PARSE_ERROR;
 								}
@@ -5205,7 +5243,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					decl.initializer = nullptr;
 
 					//variable created with assignment! must parse an expression
-					Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+					Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
@@ -5265,7 +5303,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			//a sub block, just because..
 			BlockNode *block = alloc_node<BlockNode>();
 			block->parent_block = p_block;
-			if (_parse_block(block, p_builtin_types, false, p_can_break, p_can_continue) != OK) {
+			if (_parse_block(block, p_function_info, false, p_can_break, p_can_continue) != OK) {
 				return ERR_PARSE_ERROR;
 			}
 			p_block->statements.push_back(block);
@@ -5279,7 +5317,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
 			cf->flow_op = FLOW_OP_IF;
-			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
@@ -5301,7 +5339,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
+			Error err = _parse_block(block, p_function_info, true, p_can_break, p_can_continue);
 			if (err) {
 				return err;
 			}
@@ -5312,7 +5350,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				block = alloc_node<BlockNode>();
 				block->parent_block = p_block;
 				cf->blocks.push_back(block);
-				err = _parse_block(block, p_builtin_types, true, p_can_break, p_can_continue);
+				err = _parse_block(block, p_function_info, true, p_can_break, p_can_continue);
 
 			} else {
 				_set_tkpos(pos); //rollback
@@ -5331,7 +5369,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
 			cf->flow_op = FLOW_OP_SWITCH;
-			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
@@ -5359,7 +5397,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			int prev_type = TK_CF_CASE;
 			while (true) { // Go-through multiple cases.
 
-				if (_parse_block(switch_block, p_builtin_types, true, true, false) != OK) {
+				if (_parse_block(switch_block, p_function_info, true, true, false) != OK) {
 					return ERR_PARSE_ERROR;
 				}
 				pos = _get_tkpos();
@@ -5460,7 +5498,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			cf->blocks.push_back(case_block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(case_block, p_builtin_types, false, true, false);
+			Error err = _parse_block(case_block, p_function_info, false, true, false);
 			if (err) {
 				return err;
 			}
@@ -5494,7 +5532,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			cf->blocks.push_back(default_block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(default_block, p_builtin_types, false, true, false);
+			Error err = _parse_block(default_block, p_function_info, false, true, false);
 			if (err) {
 				return err;
 			}
@@ -5511,7 +5549,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				do_block = alloc_node<BlockNode>();
 				do_block->parent_block = p_block;
 
-				Error err = _parse_block(do_block, p_builtin_types, true, true, true);
+				Error err = _parse_block(do_block, p_function_info, true, true, true);
 				if (err) {
 					return err;
 				}
@@ -5535,7 +5573,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			} else {
 				cf->flow_op = FLOW_OP_WHILE;
 			}
-			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+			Node *n = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
@@ -5552,7 +5590,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				cf->blocks.push_back(block);
 				p_block->statements.push_back(cf);
 
-				Error err = _parse_block(block, p_builtin_types, true, true, true);
+				Error err = _parse_block(block, p_function_info, true, true, true);
 				if (err) {
 					return err;
 				}
@@ -5583,11 +5621,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			init_block->parent_block = p_block;
 			init_block->single_statement = true;
 			cf->blocks.push_back(init_block);
-			if (_parse_block(init_block, p_builtin_types, true, false, false) != OK) {
+			if (_parse_block(init_block, p_function_info, true, false, false) != OK) {
 				return ERR_PARSE_ERROR;
 			}
 
-			Node *n = _parse_and_reduce_expression(init_block, p_builtin_types);
+			Node *n = _parse_and_reduce_expression(init_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
@@ -5605,7 +5643,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			cf->expressions.push_back(n);
 
-			n = _parse_and_reduce_expression(init_block, p_builtin_types);
+			n = _parse_and_reduce_expression(init_block, p_function_info);
 			if (!n) {
 				return ERR_PARSE_ERROR;
 			}
@@ -5623,7 +5661,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			cf->blocks.push_back(block);
 			p_block->statements.push_back(cf);
 
-			Error err = _parse_block(block, p_builtin_types, true, true, true);
+			Error err = _parse_block(block, p_function_info, true, true, true);
 			if (err) {
 				return err;
 			}
@@ -5659,7 +5697,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				}
 			} else {
 				_set_tkpos(pos); //rollback, wants expression
-				Node *expr = _parse_and_reduce_expression(p_block, p_builtin_types);
+				Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 				if (!expr) {
 					return ERR_PARSE_ERROR;
 				}
@@ -5761,7 +5799,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 		} else {
 			//nothing else, so expression
 			_set_tkpos(pos); //rollback
-			Node *expr = _parse_and_reduce_expression(p_block, p_builtin_types);
+			Node *expr = _parse_and_reduce_expression(p_block, p_function_info);
 			if (!expr) {
 				return ERR_PARSE_ERROR;
 			}
@@ -6102,7 +6140,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				name = tk.text;
 
-				if (_find_identifier(nullptr, false, Map<StringName, BuiltInInfo>(), name)) {
+				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -6351,7 +6389,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					//reset scope for next uniform
 
 					if (tk.type == TK_OP_ASSIGN) {
-						Node *expr = _parse_and_reduce_expression(nullptr, Map<StringName, BuiltInInfo>());
+						Node *expr = _parse_and_reduce_expression(nullptr, FunctionInfo());
 						if (!expr) {
 							return ERR_PARSE_ERROR;
 						}
@@ -6476,7 +6514,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					return ERR_PARSE_ERROR;
 				}
 
-				if (_find_identifier(nullptr, false, Map<StringName, BuiltInInfo>(), name)) {
+				if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
 					_set_error("Redefinition of '" + String(name) + "'");
 					return ERR_PARSE_ERROR;
 				}
@@ -6589,7 +6627,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 										} else {
 											_set_tkpos(pos2);
 
-											Node *n = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
+											Node *n = _parse_and_reduce_expression(NULL, FunctionInfo());
 											if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
 												_set_error("Expected single integer constant > 0");
 												return ERR_PARSE_ERROR;
@@ -6670,7 +6708,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 								if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
 									while (true) {
-										Node *n = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
+										Node *n = _parse_and_reduce_expression(NULL, FunctionInfo());
 										if (!n) {
 											return ERR_PARSE_ERROR;
 										}
@@ -6725,7 +6763,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								constant.initializer = static_cast<ConstantNode *>(expr);
 							} else {
 								//variable created with assignment! must parse an expression
-								Node *expr = _parse_and_reduce_expression(NULL, Map<StringName, BuiltInInfo>());
+								Node *expr = _parse_and_reduce_expression(NULL, FunctionInfo());
 								if (!expr)
 									return ERR_PARSE_ERROR;
 								if (expr->type == Node::TYPE_OPERATOR && ((OperatorNode *)expr)->op == OP_CALL) {
@@ -6762,7 +6800,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							}
 
 							name = tk.text;
-							if (_find_identifier(nullptr, false, Map<StringName, BuiltInInfo>(), name)) {
+							if (_find_identifier(nullptr, false, FunctionInfo(), name)) {
 								_set_error("Redefinition of '" + String(name) + "'");
 								return ERR_PARSE_ERROR;
 							}
@@ -6785,14 +6823,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					break;
 				}
 
-				Map<StringName, BuiltInInfo> builtin_types;
+				FunctionInfo builtins;
 				if (p_functions.has(name)) {
-					builtin_types = p_functions[name].built_ins;
+					builtins = p_functions[name];
 				}
 
 				if (p_functions.has("global")) { // Adds global variables: 'TIME'
 					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
-						builtin_types.insert(E->key(), E->value());
+						builtins.built_ins.insert(E->key(), E->value());
 					}
 				}
 
@@ -6915,7 +6953,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					pname = tk.text;
 
 					ShaderLanguage::IdentifierType itype;
-					if (_find_identifier(func_node->body, false, builtin_types, pname, (ShaderLanguage::DataType *)nullptr, &itype)) {
+					if (_find_identifier(func_node->body, false, builtins, pname, (ShaderLanguage::DataType *)nullptr, &itype)) {
 						if (itype != IDENTIFIER_FUNCTION) {
 							_set_error("Redefinition of '" + String(pname) + "'");
 							return ERR_PARSE_ERROR;
@@ -6977,7 +7015,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				current_function = name;
 
-				Error err = _parse_block(func_node->body, builtin_types);
+				Error err = _parse_block(func_node->body, builtins);
 				if (err) {
 					return err;
 				}

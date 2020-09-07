@@ -88,7 +88,7 @@ public:
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_lenght, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
@@ -661,6 +661,8 @@ public:
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
+	virtual void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
+	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
 
