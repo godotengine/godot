@@ -374,8 +374,8 @@ public:
 		}
 	}
 
-	void clear_custom_defines() {
-		custom_defines.clear();
+	void remove_custom_define(const String &p_define) {
+		custom_defines.erase(p_define.utf8());
 	}
 
 	virtual ~ShaderGLES3();

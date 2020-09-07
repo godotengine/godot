@@ -128,7 +128,7 @@ public:
 
 	FUNC2(shader_add_custom_define, RID, const String &)
 	FUNC2SC(shader_get_custom_defines, RID, Vector<String> *)
-	FUNC1(shader_clear_custom_defines, RID)
+	FUNC2(shader_remove_custom_define, RID, const String &)
 
 	/* COMMON MATERIAL API */
 
