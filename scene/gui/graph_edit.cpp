@@ -764,23 +764,8 @@ void GraphEdit::set_selected(Node *p_child) {
 		if (!gn) {
 			continue;
 		}
-		
-		if (gn != p_child && gn->is_selected()) {
-			emit_signal("node_unselected", gn);
-		}
-	}
-
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn) {
-			continue;
-		}
 
 		gn->set_selected(gn == p_child);
-
-		if (gn == p_child) {
-			emit_signal("node_selected", gn);
-		}
 	}
 }
 
