@@ -539,7 +539,7 @@ public:
 
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define);
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const;
-	virtual void shader_clear_custom_defines(RID p_shader);
+	virtual void shader_remove_custom_define(RID p_shader, const String &p_define);
 
 	void _update_shader(Shader *p_shader) const;
 

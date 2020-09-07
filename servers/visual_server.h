@@ -197,7 +197,7 @@ public:
 
 	virtual void shader_add_custom_define(RID p_shader, const String &p_define) = 0;
 	virtual void shader_get_custom_defines(RID p_shader, Vector<String> *p_defines) const = 0;
-	virtual void shader_clear_custom_defines(RID p_shader) = 0;
+	virtual void shader_remove_custom_define(RID p_shader, const String &p_define) = 0;
 
 	/* COMMON MATERIAL API */
 

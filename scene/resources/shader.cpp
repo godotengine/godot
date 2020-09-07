@@ -128,24 +128,20 @@ void Shader::get_default_texture_param_list(List<StringName> *r_textures) const 
 }
 
 void Shader::set_custom_defines(const String &p_defines) {
-
-	VS::get_singleton()->shader_clear_custom_defines(shader);
-	VS::get_singleton()->shader_add_custom_define(shader, p_defines);
-}
-
-String Shader::get_custom_defines() {
-	Vector<String> custom_defines;
-	VS::get_singleton()->shader_get_custom_defines(shader, &custom_defines);
-
-	String concatenated_defines;
-	for (int i = 0; i < custom_defines.size(); i++) {
-		if (i != 0) {
-			concatenated_defines += "\n";
-		}
-		concatenated_defines += custom_defines[i];
+	if (shader_custom_defines == p_defines) {
+		return;
 	}
 
-	return concatenated_defines;
+	if (!shader_custom_defines.empty()) {
+		VS::get_singleton()->shader_remove_custom_define(shader, shader_custom_defines);
+	}
+
+	shader_custom_defines = p_defines;
+	VS::get_singleton()->shader_add_custom_define(shader, shader_custom_defines);
+}
+
+String Shader::get_custom_defines() const {
+	return shader_custom_defines;
 }
 
 bool Shader::is_text_shader() const {

@@ -2584,12 +2584,12 @@ void RasterizerStorageGLES3::shader_get_custom_defines(RID p_shader, Vector<Stri
 	shader->shader->get_custom_defines(p_defines);
 }
 
-void RasterizerStorageGLES3::shader_clear_custom_defines(RID p_shader) {
+void RasterizerStorageGLES3::shader_remove_custom_define(RID p_shader, const String &p_define) {
 
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
-	shader->shader->clear_custom_defines();
+	shader->shader->remove_custom_define(p_define);
 
 	_shader_make_dirty(shader);
 }

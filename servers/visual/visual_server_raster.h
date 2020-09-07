@@ -192,7 +192,7 @@ public:
 
 	BIND2(shader_add_custom_define, RID, const String &)
 	BIND2C(shader_get_custom_defines, RID, Vector<String> *)
-	BIND1(shader_clear_custom_defines, RID)
+	BIND2(shader_remove_custom_define, RID, const String &)
 
 	/* COMMON MATERIAL API */
 
