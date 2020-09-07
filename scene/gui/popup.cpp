@@ -93,7 +93,7 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_parent_focused() {
-	if (popped_up) {
+	if (popped_up && close_on_parent_focus) {
 		_close_pressed();
 	}
 }
@@ -112,7 +112,19 @@ void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
 
+void Popup::set_close_on_parent_focus(bool p_close) {
+	close_on_parent_focus = p_close;
+}
+
+bool Popup::get_close_on_parent_focus() {
+	return close_on_parent_focus;
+}
+
 void Popup::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_close_on_parent_focus", "close"), &Popup::set_close_on_parent_focus);
+	ClassDB::bind_method(D_METHOD("get_close_on_parent_focus"), &Popup::get_close_on_parent_focus);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "close_on_parent_focus"), "set_close_on_parent_focus", "get_close_on_parent_focus");
+
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 

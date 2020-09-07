@@ -173,11 +173,11 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int over) {
-	Node *n = get_node(items[over].submenu);
-	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[over].submenu + ".");
+void PopupMenu::_activate_submenu(int p_over) {
+	Node *n = get_node(items[p_over].submenu);
+	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[p_over].submenu + ".");
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
-	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[over].submenu + ".");
+	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
 	if (submenu_popup->is_visible()) {
 		return; //already visible!
 	}
@@ -190,7 +190,7 @@ void PopupMenu::_activate_submenu(int over) {
 
 	float scroll_offset = control->get_position().y;
 
-	Point2 submenu_pos = this_pos + Point2(this_rect.size.width, items[over]._ofs_cache + scroll_offset);
+	Point2 submenu_pos = this_pos + Point2(this_rect.size.width, items[p_over]._ofs_cache + scroll_offset);
 	Size2 submenu_size = submenu_popup->get_size();
 
 	// Fix pos if going outside parent rect
@@ -198,6 +198,7 @@ void PopupMenu::_activate_submenu(int over) {
 		submenu_pos.x = this_pos.x - submenu_size.width;
 	}
 
+	submenu_popup->set_close_on_parent_focus(false);
 	submenu_popup->set_position(submenu_pos);
 	submenu_popup->set_as_minsize(); // Shrink the popup size to it's contents.
 	submenu_popup->popup();
@@ -210,11 +211,11 @@ void PopupMenu::_activate_submenu(int over) {
 
 		// Autohide area above the submenu item
 		submenu_pum->clear_autohide_areas();
-		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
+		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
 
 		// If there is an area below the submenu item, add an autohide area there.
-		if (items[over]._ofs_cache + items[over]._height_cache + scroll_offset <= control->get_size().height) {
-			int from = items[over]._ofs_cache + items[over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
+		if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
+			int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
 			submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 		}
 	}
@@ -547,6 +548,31 @@ void PopupMenu::_draw_background() {
 	style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
 }
 
+void PopupMenu::_minimum_lifetime_timeout() {
+	close_allowed = true;
+	// If the mouse still isn't in this popup after timer expires, close.
+	if (!get_visible_rect().has_point(get_mouse_position())) {
+		_close_pressed();
+	}
+}
+
+void PopupMenu::_close_pressed() {
+	// Only apply minimum lifetime to submenus.
+	PopupMenu *parent_pum = Object::cast_to<PopupMenu>(get_parent());
+	if (!parent_pum) {
+		Popup::_close_pressed();
+		return;
+	}
+
+	// If the timer has expired, close. If timer is still running, do nothing.
+	if (close_allowed) {
+		close_allowed = false;
+		Popup::_close_pressed();
+	} else if (minimum_lifetime_timer->is_stopped()) {
+		minimum_lifetime_timer->start();
+	}
+}
+
 void PopupMenu::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -566,7 +592,7 @@ void PopupMenu::_notification(int p_what) {
 			control->update();
 		} break;
 		case NOTIFICATION_WM_MOUSE_ENTER: {
-			//grab_focus();
+			grab_focus();
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 			if (mouse_over >= 0 && (items[mouse_over].submenu == "" || submenu_over != -1)) {
@@ -1484,6 +1510,12 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", callable_mp(this, &PopupMenu::_submenu_timeout));
 	add_child(submenu_timer);
+
+	minimum_lifetime_timer = memnew(Timer);
+	minimum_lifetime_timer->set_wait_time(0.3);
+	minimum_lifetime_timer->set_one_shot(true);
+	minimum_lifetime_timer->connect("timeout", callable_mp(this, &PopupMenu::_minimum_lifetime_timeout));
+	add_child(minimum_lifetime_timer);
 }
 
 PopupMenu::~PopupMenu() {
