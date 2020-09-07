@@ -91,7 +91,7 @@ void RenderingServerDefault::request_frame_drawn_callback(Object *p_where, const
 	frame_drawn_callbacks.push_back(fdc);
 }
 
-void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::_draw(bool p_swap_buffers, float frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal("frame_pre_draw");
 
@@ -332,7 +332,7 @@ void RenderingServerDefault::_thread_exit() {
 	exit = true;
 }
 
-void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::_thread_draw(bool p_swap_buffers, float frame_step) {
 	if (!atomic_decrement(&draw_pending)) {
 		_draw(p_swap_buffers, frame_step);
 	}
@@ -378,7 +378,7 @@ void RenderingServerDefault::sync() {
 	}
 }
 
-void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::draw(bool p_swap_buffers, float frame_step) {
 	if (create_thread) {
 		atomic_increment(&draw_pending);
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);

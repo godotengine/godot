@@ -380,7 +380,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t max_lights_per_render;
 		uint32_t max_lights_per_item;
 
-		double time;
+		float time;
 
 	} state;
 
@@ -462,7 +462,7 @@ public:
 
 	virtual void set_shadow_texture_size(int p_size);
 
-	void set_time(double p_time);
+	void set_time(float p_time);
 	void update();
 	bool free(RID p_rid);
 	RendererCanvasRenderRD(RendererStorageRD *p_storage);

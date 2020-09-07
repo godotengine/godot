@@ -2804,7 +2804,7 @@ RID RendererSceneRenderForward::_render_buffers_get_normal_texture(RID p_render_
 
 RendererSceneRenderForward *RendererSceneRenderForward::singleton = nullptr;
 
-void RendererSceneRenderForward::set_time(double p_time, double p_step) {
+void RendererSceneRenderForward::set_time(float p_time, float p_step) {
 	time = p_time;
 	RendererSceneRenderRD::set_time(p_time, p_step);
 }

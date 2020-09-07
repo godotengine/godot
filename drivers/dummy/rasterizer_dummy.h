@@ -180,7 +180,7 @@ public:
 	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) override {}
 
 	void set_scene_pass(uint64_t p_pass) override {}
-	void set_time(double p_time, double p_step) override {}
+	void set_time(float p_time, float p_step) override {}
 	void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) override {}
 
 	RID render_buffers_create() override { return RID(); }
@@ -712,7 +712,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
 
 	void initialize() override {}
-	void begin_frame(double frame_step) override {
+	void begin_frame(float frame_step) override {
 		frame++;
 		delta = frame_step;
 	}

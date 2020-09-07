@@ -95,14 +95,14 @@ class RenderingServerDefault : public RenderingServer {
 	bool create_thread;
 
 	uint64_t draw_pending;
-	void _thread_draw(bool p_swap_buffers, double frame_step);
+	void _thread_draw(bool p_swap_buffers, float frame_step);
 	void _thread_flush();
 
 	void _thread_exit();
 
 	Mutex alloc_mutex;
 
-	void _draw(bool p_swap_buffers, double frame_step);
+	void _draw(bool p_swap_buffers, float frame_step);
 	void _init();
 	void _finish();
 
@@ -893,7 +893,7 @@ public:
 
 	virtual void request_frame_drawn_callback(Object *p_where, const StringName &p_method, const Variant &p_userdata) override;
 
-	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void draw(bool p_swap_buffers, float frame_step) override;
 	virtual void sync() override;
 	virtual bool has_changed() const override;
 	virtual void init() override;

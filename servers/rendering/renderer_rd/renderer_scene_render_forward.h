@@ -492,7 +492,7 @@ class RendererSceneRenderForward : public RendererSceneRenderRD {
 
 	static RendererSceneRenderForward *singleton;
 
-	double time;
+	float time;
 	RID default_shader;
 	RID default_material;
 	RID overdraw_material_shader;
@@ -761,7 +761,7 @@ public:
 	virtual void geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count);
 	virtual void geometry_instance_pair_gi_probe_instances(GeometryInstance *p_geometry_instance, const RID *p_gi_probe_instances, uint32_t p_gi_probe_instance_count);
 
-	virtual void set_time(double p_time, double p_step);
+	virtual void set_time(float p_time, float p_step);
 
 	virtual bool free(RID p_rid);
 

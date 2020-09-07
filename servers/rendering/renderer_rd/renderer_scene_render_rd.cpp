@@ -8281,7 +8281,7 @@ void RendererSceneRenderRD::update() {
 	_update_dirty_skys();
 }
 
-void RendererSceneRenderRD::set_time(double p_time, double p_step) {
+void RendererSceneRenderRD::set_time(float p_time, float p_step) {
 	time = p_time;
 	time_step = p_step;
 }

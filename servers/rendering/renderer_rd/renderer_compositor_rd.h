@@ -52,7 +52,7 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
-	double time;
+	float time;
 	float delta;
 
 	static uint64_t frame;
@@ -65,7 +65,7 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {}
 
 	void initialize();
-	void begin_frame(double frame_step);
+	void begin_frame(float frame_step);
 	void prepare_for_blitting_render_targets();
 	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
@@ -74,7 +74,7 @@ public:
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ float get_frame_delta_time() const { return delta; }
-	_ALWAYS_INLINE_ double get_total_time() const { return time; }
+	_ALWAYS_INLINE_ float get_total_time() const { return time; }
 
 	static Error is_viable() {
 		return OK;
