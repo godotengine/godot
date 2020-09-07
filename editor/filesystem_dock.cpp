@@ -2300,6 +2300,7 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	// Right click is pressed in the tree.
 	Vector<String> paths = _tree_get_selected(false);
 
+	tree_popup->clear();
 	if (paths.size() == 1) {
 		if (paths[0].ends_with("/")) {
 			tree_popup->add_icon_item(get_theme_icon("GuiTreeArrowDown", "EditorIcons"), TTR("Expand All"), FOLDER_EXPAND_ALL);
@@ -2310,7 +2311,6 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 
 	// Popup.
 	if (!paths.empty()) {
-		tree_popup->clear();
 		tree_popup->set_size(Size2(1, 1));
 		_file_and_folders_fill_popup(tree_popup, paths);
 		tree_popup->set_position(tree->get_screen_position() + p_pos);
