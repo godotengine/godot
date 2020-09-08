@@ -156,7 +156,7 @@ void SceneSynchronizer::_notification(int p_what) {
 			}
 
 			const int lowest_priority_number = INT32_MAX;
-			ERR_FAIL_COND_MSG(get_process_priority() != lowest_priority_number, "The process priority MUST not be changed, is likely there is a better way of doing what you are trying to do, if you really need it please open an issue.");
+			ERR_FAIL_COND_MSG(get_process_priority() != lowest_priority_number, "The process priority MUST not be changed, it's likely there is a better way of doing what you are trying to do, if you really need it please open an issue.");
 
 			process();
 		} break;
@@ -533,7 +533,7 @@ SceneSynchronizer::NodeData *SceneSynchronizer::register_node(Node *p_node) {
 			if (unlikely(controller->has_scene_synchronizer())) {
 				node_data.erase(nd);
 				memdelete(nd);
-				ERR_FAIL_V_MSG(nullptr, "This controller has already a synchronizer. This is a bug!");
+				ERR_FAIL_V_MSG(nullptr, "This controller already has a synchronizer. This is a bug!");
 			}
 
 			nd->is_controller = true;
@@ -1345,7 +1345,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		bool recover_this_node = false;
 		const Vector<SceneSynchronizer::VarData> *c_vars = client_snapshots.front().node_vars.lookup_ptr(*s_snap_it.key);
 		if (c_vars == nullptr) {
-			NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
+			NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contain this node: " + rew_node_data->node->get_path());
 			recover_this_node = true;
 		} else {
 			SceneSynchronizer::PostponedRecover rec;

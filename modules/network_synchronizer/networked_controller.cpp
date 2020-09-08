@@ -252,7 +252,7 @@ void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 }
 
 void NetworkedController::_on_peer_connection_change(int p_peer_id) {
-	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function is only supposed to be called on servel. This is a bug.");
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function is only supposed to be called on server. This is a bug.");
 	static_cast<ServerController *>(controller)->update_peers();
 }
 
@@ -761,7 +761,7 @@ void ServerController::doll_sync(real_t p_delta) {
 							// packets.
 							peers[i].batch_size + epoch_state_data.get_buffer().get_bytes().size() + 1 >= 1350)) {
 					if (epoch_state_data.get_buffer().get_bytes().size() > UINT8_MAX) {
-						NET_DEBUG_ERR("The status update is too big, try to staty under 255 byte per update, so the batch system can be used.");
+						NET_DEBUG_ERR("The status update is too big, try to staty under 255 bytes per update, so the batch system can be used.");
 					} else {
 						NET_DEBUG_WARN("The amount of data collected per batch is more than 1350 bytes. Please make sure the `doll_sync_timer_rate` is not so big, so the batch can be correctly created. Batch size: " + itos(peers[i].batch_size) + " - Epochs into the batch: " + itos(peers[i].epoch_batch.size()));
 					}
@@ -791,7 +791,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			uint8_t *data_ptr = data.ptrw();
 			uint32_t j = 0;
 			for (uint32_t x = 0; x < peers[i].epoch_batch.size(); x += 1) {
-				ERR_CONTINUE_MSG(peers[i].epoch_batch[x].size() > 256, "It's not allowed to send more then 256 bytes per status. This status is dropped.");
+				ERR_CONTINUE_MSG(peers[i].epoch_batch[x].size() > 256, "It's not allowed to send more than 256 bytes per status. This status is dropped.");
 				data_ptr[j] = peers[i].epoch_batch[x].size();
 				j += 1;
 				for (int l = 0; l < peers[i].epoch_batch[x].size(); l += 1) {
