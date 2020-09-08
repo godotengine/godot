@@ -79,8 +79,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-01 11:14+0000\n"
-"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2020-09-08 13:44+0200\n"
+"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -88,7 +88,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Poedit 2.4.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -136,7 +136,7 @@ msgstr "Lors de l’appel à '%s' :"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr "Octet"
+msgstr "o"
 
 #: core/ustring.cpp
 msgid "KiB"
@@ -1196,9 +1196,12 @@ msgstr "Fondateurs du projet"
 msgid "Lead Developer"
 msgstr "Développeur principal"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
-msgstr "Gestionnaire de projets "
+msgstr "Chef de projet "
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -1217,14 +1220,12 @@ msgid "Gold Sponsors"
 msgstr "Sponsors Or"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Donateurs Argent"
+msgstr "Sponsors Argent"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Donateurs Bronze"
+msgstr "Sponsors Bronze"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -8590,7 +8591,7 @@ msgstr "Système de contrôle de version"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Initialize"
-msgstr "initialiser"
+msgstr "Initialiser"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Staging area"
@@ -10027,6 +10028,7 @@ msgstr ""
 "Godot existants ?\n"
 "Cela pourrait prendre un moment."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Gestionnaire de projets"
