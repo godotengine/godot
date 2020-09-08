@@ -529,6 +529,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 		append(p_arguments[i]);
 	}
 	append(p_target);
+	alloc_call(p_arguments.size());
 }
 
 void GDScriptByteCodeGenerator::write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) {
