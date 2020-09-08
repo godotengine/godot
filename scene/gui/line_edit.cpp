@@ -313,7 +313,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						DisplayServer::get_singleton()->virtual_keyboard_hide();
 					}
 
-					return;
 				} break;
 
 				case KEY_BACKSPACE: {
