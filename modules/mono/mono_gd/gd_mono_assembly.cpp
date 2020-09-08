@@ -109,7 +109,7 @@ void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, [[maybe_unused]]
 	GDMonoAssembly *gdassembly = memnew(GDMonoAssembly(name, image, assembly));
 
 #ifdef GD_MONO_HOT_RELOAD
-	const char *path = mono_image_get_filename(image);
+	String path = String::utf8(mono_image_get_filename(image));
 	if (FileAccess::exists(path))
 		gdassembly->modified_time = FileAccess::get_modified_time(path);
 #endif
