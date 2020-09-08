@@ -75,8 +75,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-08-24 13:17+0000\n"
-"Last-Translator: UnluckyNinja <unluckyninja1994@gmail.com>\n"
+"PO-Revision-Date: 2020-09-05 09:37+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -84,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1169,6 +1169,9 @@ msgstr "项目创始人"
 msgid "Lead Developer"
 msgstr "主要开发者"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "项目管理员 "
@@ -1190,14 +1193,12 @@ msgid "Gold Sponsors"
 msgstr "黄金赞助"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "白银捐赠者"
+msgstr "白银赞助"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "青铜捐赠者"
+msgstr "青铜赞助"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -9759,6 +9760,7 @@ msgstr ""
 "您确定要扫描%s文件夹中的现有Godot项目吗？ \n"
 "这可能需要一段时间。"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "项目管理器"
