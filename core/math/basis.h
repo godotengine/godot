@@ -36,7 +36,11 @@
 
 class Basis {
 public:
-	Vector3 elements[3];
+	Vector3 elements[3] = {
+		Vector3(1, 0, 0),
+		Vector3(0, 1, 0),
+		Vector3(0, 0, 1)
+	};
 
 	_FORCE_INLINE_ const Vector3 &operator[](int axis) const {
 
@@ -257,18 +261,7 @@ public:
 		elements[2] = row2;
 	}
 
-	_FORCE_INLINE_ Basis() {
-
-		elements[0][0] = 1;
-		elements[0][1] = 0;
-		elements[0][2] = 0;
-		elements[1][0] = 0;
-		elements[1][1] = 1;
-		elements[1][2] = 0;
-		elements[2][0] = 0;
-		elements[2][1] = 0;
-		elements[2][2] = 1;
-	}
+	_FORCE_INLINE_ Basis() {}
 };
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
