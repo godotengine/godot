@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-02 14:35+0000\n"
-"Last-Translator: Ziv D <wizdavid@gmail.com>\n"
+"PO-Revision-Date: 2020-09-08 11:40+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1168,6 +1168,9 @@ msgstr "Fondatori del progetto"
 msgid "Lead Developer"
 msgstr "Sviluppatore principale"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Gestore progetto "
@@ -1189,14 +1192,12 @@ msgid "Gold Sponsors"
 msgstr "Sponsor oro"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Donatori argento"
+msgstr "Sponsor Argento"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Donatori bronzo"
+msgstr "Sponsor Bronzo"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -9981,6 +9982,7 @@ msgstr ""
 "esistenti?\n"
 "Per questo potrebbe volerci un pò."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Gestore dei progetti"
