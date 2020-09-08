@@ -106,7 +106,7 @@ void NetworkedController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("collect_epoch_data", PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo("setup_interpolator", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator")));
 	BIND_VMETHOD(MethodInfo("parse_epoch_data", PropertyInfo(Variant::OBJECT, "interpolator", PROPERTY_HINT_RESOURCE_TYPE, "Interpolator"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
-	BIND_VMETHOD(MethodInfo("epoch_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
+	BIND_VMETHOD(MethodInfo("apply_epoch", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::ARRAY, "interpolated_data")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -409,7 +409,7 @@ void NetworkedController::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(has_method("collect_epoch_data") == false, "In your script you must inherit the virtual method `collect_epoch_data` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("setup_interpolator") == false, "In your script you must inherit the virtual method `setup_interpolator` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("parse_epoch_data") == false, "In your script you must inherit the virtual method `parse_epoch_data` to correctly use the `NetworkedController`.");
-			ERR_FAIL_COND_MSG(has_method("epoch_process") == false, "In your script you must inherit the virtual method `epoch_process` to correctly use the `NetworkedController`.");
+			ERR_FAIL_COND_MSG(has_method("apply_epoch") == false, "In your script you must inherit the virtual method `apply_epoch` to correctly use the `NetworkedController`.");
 
 			controller->ready();
 
@@ -1143,7 +1143,7 @@ void DollController::process(real_t p_delta) {
 	}
 
 	const real_t fractional_part = advancing_epoch;
-	node->call("epoch_process", p_delta, interpolator.pop_epoch(frame_epoch, fractional_part));
+	node->call("apply_epoch", p_delta, interpolator.pop_epoch(frame_epoch, fractional_part));
 }
 
 uint32_t DollController::get_current_input_id() const {
