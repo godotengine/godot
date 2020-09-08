@@ -79,6 +79,7 @@ private:
 	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
+	int previous;
 	int _get_top_margin() const;
 	TabAlign tab_align;
 	int rb_hover;
@@ -140,6 +141,7 @@ public:
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
 	int get_tab_offset() const;
