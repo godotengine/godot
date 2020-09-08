@@ -791,7 +791,7 @@ bool Variant::is_zero() const {
 		} break;
 		case OBJECT: {
 
-			return _OBJ_PTR(*this) == NULL;
+			return _UNSAFE_OBJ_PROXY_PTR(*this) == NULL;
 		} break;
 		case NODE_PATH: {
 
@@ -2865,7 +2865,7 @@ uint32_t Variant::hash() const {
 		} break;
 		case OBJECT: {
 
-			return hash_djb2_one_64(make_uint64_t(_OBJ_PTR(*this)));
+			return hash_djb2_one_64(make_uint64_t(_UNSAFE_OBJ_PROXY_PTR(*this)));
 		} break;
 		case NODE_PATH: {
 
