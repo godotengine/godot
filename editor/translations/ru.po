@@ -86,12 +86,13 @@
 # Ron788 <ustinov200511@gmail.com>, 2020.
 # Daniel <dan.ef1999@gmail.com>, 2020.
 # NeoLan Qu <it.bulla@mail.ru>, 2020.
+# Nikita Epifanov <nikgreens@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-15 09:32+0000\n"
-"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
+"PO-Revision-Date: 2020-09-08 11:40+0000\n"
+"Last-Translator: Nikita Epifanov <nikgreens@protonmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -100,7 +101,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1198,6 +1199,9 @@ msgstr "Основатели Проекта"
 msgid "Lead Developer"
 msgstr "Ведущий разработчик"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Менеджер проектов "
@@ -1219,14 +1223,12 @@ msgid "Gold Sponsors"
 msgstr "Золотые спонсоры"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Серебряные доноры"
+msgstr "Серебряные спонсоры"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Бронзовые доноры"
+msgstr "Бронзовые спонсоры"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -9950,6 +9952,7 @@ msgstr ""
 "Вы действительно хотите поискать существующие проекты Godot в %s папках?\n"
 "Это может занять много времени."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Менеджер проектов"

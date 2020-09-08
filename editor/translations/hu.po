@@ -11,12 +11,13 @@
 # Máté Lugosi <mate.lugosi@gmail.com>, 2019.
 # sztrovacsek <magadeve@gmail.com>, 2019.
 # Ács Zoltán <acszoltan111@gmail.com>, 2020.
+# cefrebevalo <szmarci711@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
-"Last-Translator: Ács Zoltán <acszoltan111@gmail.com>\n"
+"PO-Revision-Date: 2020-09-05 09:37+0000\n"
+"Last-Translator: cefrebevalo <szmarci711@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -24,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -33,9 +34,8 @@ msgstr ""
 "Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Expected a string of length 1 (a character)."
-msgstr "Egy karakter hosszúságú string-et várt."
+msgstr "A várt string egy karakter hosszú."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -64,10 +64,8 @@ msgid "Invalid named index '%s' for base type %s"
 msgstr "Érvénytelen nevezett index '%s' %s alaptípushoz"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
 msgstr ""
-"Érvénytelen típus argumentum a convert()-hez használjon TYPE_* konstansokat."
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -204,14 +202,12 @@ msgid "Change Animation Loop"
 msgstr "Animációs ciklus változtatása"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Property Track"
-msgstr "Tulajdonság Követés"
+msgstr "Tulajdonságkövetés"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "UV Térkép Transzformálása"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
@@ -226,9 +222,8 @@ msgid "Audio Playback Track"
 msgstr "Hang lejátszás követése"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "Animáció lejátszásának leállítása. (S)"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
@@ -239,9 +234,8 @@ msgid "Animation length (seconds)"
 msgstr "Animáció hossza (másodpercben)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Animáció nyomvonal hozzáadás"
+msgstr "Nyomvonal hozzáadása"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -261,9 +255,8 @@ msgid "Anim Clips:"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Tömb Értékének Megváltoztatása"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -1167,6 +1160,9 @@ msgstr "Projekt Alapítói"
 msgid "Lead Developer"
 msgstr "Vezető Fejlesztő"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Projekt Kezelő "
@@ -10228,6 +10224,7 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Projektkezelő"

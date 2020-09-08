@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-02 14:35+0000\n"
+"PO-Revision-Date: 2020-09-08 11:40+0000\n"
 "Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
@@ -1122,6 +1122,9 @@ msgstr "Pengasas Projek"
 msgid "Lead Developer"
 msgstr "Pemaju Utama"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Pengurus Projek "
@@ -2379,65 +2382,68 @@ msgstr "Sumber %s yang diubahsuai telah disimpan."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr ""
+msgstr "Nod akar diperlukan untuk menyimpan adegan."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr ""
+msgstr "Simpan Adegan Sebagai..."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "Tidak"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "Ya"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
-msgstr ""
+msgstr "Adegan ini tidak pernah disimpan. Simpan sebelum menjalankan?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "Operasi ini tidak boleh dilakukan tanpa adegan."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "Eksport Perpustakaan Mesh"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr ""
+msgstr "Operasi ini tidak boleh dilakukan tanpa nod akar."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr ""
+msgstr "Eksport Tile Set"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr ""
+msgstr "Operasi ini tidak dapat dilakukan tanpa nod terpilih."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr ""
+msgstr "Adegan semasa tidak disimpan. Masih buka?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr ""
+msgstr "Tidak dapat memuatkan semula adegan yang tidak pernah disimpan."
 
 #: editor/editor_node.cpp
 msgid "Reload Saved Scene"
-msgstr ""
+msgstr "Muatkan semula Adegan yang Disimpan"
 
 #: editor/editor_node.cpp
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Adegan semasa mempunyai perubahan yang belum disimpan.\n"
+"Masih muat semula adegan yang telah disimpan? Tindakan ini tidak boleh "
+"dibuat asal."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr ""
+msgstr "Jalan Cepat Adegan..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -9586,6 +9592,7 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr ""

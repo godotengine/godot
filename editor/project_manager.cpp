@@ -2388,6 +2388,7 @@ ProjectManager::ProjectManager() {
 
 	String cp;
 	cp += 0xA9;
+	// TRANSLATORS: This refers to the application where users manage their Godot projects.
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));

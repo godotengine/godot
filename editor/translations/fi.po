@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-05 16:58+0000\n"
+"PO-Revision-Date: 2020-09-05 09:37+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1117,6 +1117,9 @@ msgstr "Projektin perustajat"
 msgid "Lead Developer"
 msgstr "Pääkehittäjä"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Projektipäällikkö "
@@ -1138,14 +1141,12 @@ msgid "Gold Sponsors"
 msgstr "Kultasponsorit"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Hopealahjoittajat"
+msgstr "Hopeasponsorit"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Pronssilahjoittajat"
+msgstr "Pronssisponsorit"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -9872,6 +9873,7 @@ msgstr ""
 "Haluatko varmasti etsiä %s kansiosta olemassa olevia Godot-projekteja?\n"
 "Tämä saattaa kestää hetken."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Projektinhallinta"

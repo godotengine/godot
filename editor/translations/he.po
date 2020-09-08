@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-04 06:51+0000\n"
+"PO-Revision-Date: 2020-09-08 11:40+0000\n"
 "Last-Translator: Ziv D <wizdavid@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
@@ -1133,6 +1133,9 @@ msgstr "מקימי המיזם"
 msgid "Lead Developer"
 msgstr "מפתחים ראשיים"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "מנהל המיזם "
@@ -9961,6 +9964,7 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "מנהל המיזמים"
@@ -12174,11 +12178,11 @@ msgstr "מזהה לא חוקי:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "סמליל נדרש אינו מוגדר בהגדרות יצוא."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "עצירת שרת HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -12213,74 +12217,74 @@ msgid "Using default boot splash image."
 msgstr "נעשה שימוש בתמונת הפתיח כבררת מחדל."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package short name."
-msgstr "שם שגוי."
+msgstr "שם קצר של חבילה לא חוקי."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "שם שגוי."
+msgstr "שם יחודי של חבילה לא חוקי."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package publisher display name."
-msgstr "שם שגוי."
+msgstr "שם תצוגה של מפרסם החבילה לא חוקי."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "שם שגוי."
+msgstr "GUID מוצר לא חוקי."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "נתיב שגוי."
+msgstr "GUID מפרסם לא חוקי."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "שם שגוי."
+msgstr "צבע רקע לא חוקי."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "מידות תמונת לוגו חנות לא חוקיות (צריכות להיות 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "מידות תמונת לוגו מרובעות 44x44 לא חוקיות (צריכות להיות 44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "מידות תמונת לוגו מרובעות 71x71 לא חוקיות (צריכות להיות 71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
+"מידות תמונת לוגו מרובעות בגודל 150x150 לא חוקיות (צריכות להיות 150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
+"מידות תמונת לוגו מרובעות בגודל 310x310 אינן חוקיות (צריכות להיות 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "מידות תמונת לוגו רחבה 310x150 לא חוקיות (צריכות להיות 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "מידות תמונת פתיח לא חוקיות (צריכות להיות 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"יש ליצור או להגדיר משאב SpriteFrames במאפיין \"Frames\" כדי ש- "
+"AnimatedSprite יציג תמוניות."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"מותר רק CanvasModulate גלוי אחד לכל סצנה (או סט מופעי סצינות). הראשון שנוצר "
+"יעבוד, ואילו השאר לא."
 
 #: scene/2d/collision_object_2d.cpp
 msgid ""
@@ -12288,6 +12292,9 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
+"למפרק זה אין צורה ולכן הוא לא יכול להתנגש או לקיים אינטראקציה עם אובייקטים "
+"אחרים.\n"
+"הוספת CollisionShape2D או CollisionPolygon2D כילד תגדיר את צורתו."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -12295,6 +12302,9 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D משמש רק להספקת צורת התנגשות למפרק היורש מ-"
+"CollisionObject2D. השימוש בו הוא רק כילד של Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D וכו'."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -12306,18 +12316,23 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"CollisionShape2D משמש רק להספקת צורת התנגשות למפרק היורש מ-"
+"CollisionObject2D. השימוש בו הוא רק כילד של Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D וכו'."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr ""
+msgstr "יש לספק צורה כדי ש-CollisionShape2D יתפקד. יש ליצור משאב צורה עבורו!"
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"צורות מבוססות מצולע אינן מיועדות לשימוש או לעריכה ישירות דרך מפרק "
+"CollisionShape2D. במקום זאת יש להשתמש במפרק מסוג CollisionPolygon2D."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
