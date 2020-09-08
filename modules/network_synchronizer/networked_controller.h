@@ -141,10 +141,10 @@ private:
 	/// The collected state is not immediatelly sent to the clients, rather it's
 	/// delayed so to be sent in batch each X seconds. The states marked as
 	/// important are sent immediatelly.
-	real_t doll_state_collect_rate = 0.05;
+	real_t doll_epoch_collect_rate = 0.05;
 
 	/// Sync rate used to delay state sent, in seconds. Default 200ms.
-	real_t doll_state_sync_rate = 0.2;
+	real_t doll_epoch_sync_rate = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
@@ -185,11 +185,11 @@ public:
 	void set_server_input_storage_size(int p_size);
 	int get_server_input_storage_size() const;
 
-	void set_doll_state_collect_rate(real_t p_rate);
-	real_t get_doll_state_collect_rate() const;
+	void set_doll_epoch_collect_rate(real_t p_rate);
+	real_t get_doll_epoch_collect_rate() const;
 
-	void set_doll_state_sync_rate(real_t p_rate);
-	real_t get_doll_state_sync_rate() const;
+	void set_doll_epoch_sync_rate(real_t p_rate);
+	real_t get_doll_epoch_sync_rate() const;
 
 	uint32_t get_current_input_id() const;
 

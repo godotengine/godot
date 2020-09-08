@@ -73,11 +73,11 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &NetworkedController::set_server_input_storage_size);
 	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &NetworkedController::get_server_input_storage_size);
 
-	ClassDB::bind_method(D_METHOD("set_doll_state_collect_rate", "rate"), &NetworkedController::set_doll_state_collect_rate);
-	ClassDB::bind_method(D_METHOD("get_doll_state_collect_rate"), &NetworkedController::get_doll_state_collect_rate);
+	ClassDB::bind_method(D_METHOD("set_doll_epoch_collect_rate", "rate"), &NetworkedController::set_doll_epoch_collect_rate);
+	ClassDB::bind_method(D_METHOD("get_doll_epoch_collect_rate"), &NetworkedController::get_doll_epoch_collect_rate);
 
-	ClassDB::bind_method(D_METHOD("set_doll_state_sync_rate", "rate"), &NetworkedController::set_doll_state_sync_rate);
-	ClassDB::bind_method(D_METHOD("get_doll_state_sync_rate"), &NetworkedController::get_doll_state_sync_rate);
+	ClassDB::bind_method(D_METHOD("set_doll_epoch_sync_rate", "rate"), &NetworkedController::set_doll_epoch_sync_rate);
+	ClassDB::bind_method(D_METHOD("get_doll_epoch_sync_rate"), &NetworkedController::get_doll_epoch_sync_rate);
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
@@ -116,8 +116,8 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_collect_rate", "get_doll_state_collect_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_sync_rate", "get_doll_state_sync_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_collect_rate", "get_doll_epoch_collect_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_sync_rate", "get_doll_epoch_sync_rate");
 
 	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
 	ADD_SIGNAL(MethodInfo("doll_sync_started"));
@@ -195,20 +195,20 @@ int NetworkedController::get_server_input_storage_size() const {
 	return server_input_storage_size;
 }
 
-void NetworkedController::set_doll_state_collect_rate(real_t p_rate) {
-	doll_state_collect_rate = MAX(p_rate, 0.001);
+void NetworkedController::set_doll_epoch_collect_rate(real_t p_rate) {
+	doll_epoch_collect_rate = MAX(p_rate, 0.001);
 }
 
-real_t NetworkedController::get_doll_state_collect_rate() const {
-	return doll_state_collect_rate;
+real_t NetworkedController::get_doll_epoch_collect_rate() const {
+	return doll_epoch_collect_rate;
 }
 
-void NetworkedController::set_doll_state_sync_rate(real_t p_rate) {
-	doll_state_sync_rate = MAX(p_rate, 0.001);
+void NetworkedController::set_doll_epoch_sync_rate(real_t p_rate) {
+	doll_epoch_sync_rate = MAX(p_rate, 0.001);
 }
 
-real_t NetworkedController::get_doll_state_sync_rate() const {
-	return doll_state_sync_rate;
+real_t NetworkedController::get_doll_epoch_sync_rate() const {
+	return doll_epoch_sync_rate;
 }
 
 uint32_t NetworkedController::get_current_input_id() const {
@@ -730,9 +730,9 @@ void ServerController::doll_sync(real_t p_delta) {
 		peers[i].collect_timer += p_delta;
 		if (
 				is_epoch_important ||
-				peers[i].collect_timer >= (node->get_doll_state_collect_rate() / peers[i].update_rate_factor)) {
+				peers[i].collect_timer >= (node->get_doll_epoch_collect_rate() / peers[i].update_rate_factor)) {
 			// Resets the timer.
-			peers[i].collect_timer -= node->get_doll_state_collect_rate() / peers[i].update_rate_factor;
+			peers[i].collect_timer -= node->get_doll_epoch_collect_rate() / peers[i].update_rate_factor;
 			// Needed because is possible to force send the state update.
 			peers[i].collect_timer = MAX(0.0, peers[i].collect_timer);
 
@@ -782,8 +782,8 @@ void ServerController::doll_sync(real_t p_delta) {
 				peers[i].epoch_batch.size() != 0 && // Has something.
 				(
 						force_dispatch_batch ||
-						peers[i].sync_timer >= node->get_doll_state_sync_rate())) {
-			peers[i].sync_timer -= node->get_doll_state_sync_rate();
+						peers[i].sync_timer >= node->get_doll_epoch_sync_rate())) {
+			peers[i].sync_timer -= node->get_doll_epoch_sync_rate();
 
 			// Prepare the batch data.
 			Vector<uint8_t> data;
