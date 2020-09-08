@@ -2514,11 +2514,16 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				cache.hover_cell = col;
 
 				if (it != old_it || col != old_col) {
-					// Only need to update if mouse enters/exits a button
-					bool was_over_button = old_it && old_it->cells[old_col].custom_button;
-					bool is_over_button = it && it->cells[col].custom_button;
-					if (was_over_button || is_over_button) {
+					if (old_it && old_col >= old_it->cells.size()) {
+						// Columns may have changed since last update().
 						update();
+					} else {
+						// Only need to update if mouse enters/exits a button
+						bool was_over_button = old_it && old_it->cells[old_col].custom_button;
+						bool is_over_button = it && it->cells[col].custom_button;
+						if (was_over_button || is_over_button) {
+							update();
+						}
 					}
 				}
 			}
