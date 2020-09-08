@@ -388,6 +388,7 @@ void Tabs::set_current_tab(int p_current) {
 	}
 	ERR_FAIL_INDEX(p_current, get_tab_count());
 
+	previous = current;
 	current = p_current;
 
 	_change_notify("current_tab");
@@ -399,6 +400,10 @@ void Tabs::set_current_tab(int p_current) {
 
 int Tabs::get_current_tab() const {
 	return current;
+}
+
+int Tabs::get_previous_tab() const {
+	return previous;
 }
 
 int Tabs::get_hovered_tab() const {
@@ -588,6 +593,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 void Tabs::clear_tabs() {
 	tabs.clear();
 	current = 0;
+	previous = 0;
 	call_deferred("_update_hover");
 	update();
 }
@@ -605,6 +611,7 @@ void Tabs::remove_tab(int p_idx) {
 
 	if (current < 0) {
 		current = 0;
+		previous = 0;
 	}
 	if (current >= tabs.size()) {
 		current = tabs.size() - 1;
@@ -917,6 +924,7 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
+	ClassDB::bind_method(D_METHOD("get_previous_tab"), &Tabs::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &Tabs::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &Tabs::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &Tabs::set_tab_icon);
@@ -970,6 +978,7 @@ void Tabs::_bind_methods() {
 
 Tabs::Tabs() {
 	current = 0;
+	previous = 0;
 	tab_align = ALIGN_CENTER;
 	rb_hover = -1;
 	rb_pressing = false;
