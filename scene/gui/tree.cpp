@@ -2401,8 +2401,10 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				cache.hover_item = it;
 				cache.hover_cell = col;
-
-				if (it != old_it || col != old_col) {
+				if (old_it == nullptr || old_it->cells.size() <= old_col) {
+					// We prevent a crash here and update, because the tree has changed
+					update();
+				} else if (it != old_it || col != old_col) {
 					// Only need to update if mouse enters/exits a button
 					bool was_over_button = old_it && old_it->cells[old_col].custom_button;
 					bool is_over_button = it && it->cells[col].custom_button;
