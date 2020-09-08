@@ -993,9 +993,11 @@
 		</member>
 		<member name="rendering/batching/options/use_batching" type="bool" setter="" getter="" default="true">
 			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
+			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
 		</member>
 		<member name="rendering/batching/options/use_batching_in_editor" type="bool" setter="" getter="" default="true">
 			Switches on batching within the editor.
+			[b]Note:[/b] Currently only effective when using the GLES2 renderer.
 		</member>
 		<member name="rendering/batching/parameters/batch_buffer_size" type="int" setter="" getter="" default="16384">
 			Size of buffer reserved for batched vertices. Larger size enables larger batches, but there are diminishing returns for the memory used. This should only have a minor effect on performance.
