@@ -1101,6 +1101,9 @@ msgstr "ผู้ริเริ่มโครงการ"
 msgid "Lead Developer"
 msgstr "ผู้พัฒนาหลัก"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "ผู้จัดการโครงการ "
@@ -9857,6 +9860,7 @@ msgstr ""
 "ทำการสแกนหาโปรเจกต์ ในโฟลเดอร์ %s หรือไม่?\n"
 "อาจจะใช้เวลาสักครู่"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "ตัวจัดการโปรเจกต์"
