@@ -238,7 +238,7 @@ public:
 	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
 
 	/* On puppet rpc functions. */
-	void _rpc_doll_notify_connection_status(bool p_open);
+	void _rpc_doll_notify_sync_pause(uint32_t p_epoch);
 	void _rpc_doll_send_epoch(Vector<uint8_t> p_data);
 	void _rpc_doll_send_epoch_batch(Vector<uint8_t> p_data);
 
@@ -380,7 +380,13 @@ struct DollController : public Controller {
 	real_t advancing_epoch = 0.0;
 	uint32_t missing_epochs = 0;
 
-	Averager<int> averager;
+	// Any received epoch prior to this one is discarded.
+	uint32_t paused_epoch = 0;
+
+	/// This is the averager size.
+	uint32_t watch_list_size = 60;
+	/// Used to track the balance at each received epoch.
+	Averager<int> averager = Averager<int>(watch_list_size, 0);
 
 	DollController(NetworkedController *p_node);
 	~DollController();
@@ -394,6 +400,7 @@ struct DollController : public Controller {
 	uint32_t receive_epoch(Vector<uint8_t> p_data);
 
 	uint32_t next_epoch(real_t p_delta);
+	void pause(uint32_t p_epoch);
 };
 
 /// This controller is used when the game instance is not a peer of any kind.

@@ -43,9 +43,12 @@
 	print_line(String("[Net] ") + msg)
 #define NET_DEBUG_WARN(msg) \
 	WARN_PRINT(String("[Net] ") + msg)
+#define NET_DEBUG_ERR(msg) \
+	ERR_PRINT(String("[Net] ") + msg)
 #else
 #define NET_DEBUG_PRINT(msg)
 #define NET_DEBUG_WARN(msg)
+#define NET_DEBUG_ERR(msg)
 #endif
 
 /// Traces the arrived vs missing packets and estimates the connection loss.

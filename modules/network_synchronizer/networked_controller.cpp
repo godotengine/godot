@@ -90,7 +90,7 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
-	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &NetworkedController::_rpc_doll_notify_connection_status);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_sync_pause"), &NetworkedController::_rpc_doll_notify_sync_pause);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch"), &NetworkedController::_rpc_doll_send_epoch);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch_batch"), &NetworkedController::_rpc_doll_send_epoch_batch);
 
@@ -119,14 +119,14 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_collect_rate", "get_doll_state_collect_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_state_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_state_sync_rate", "get_doll_state_sync_rate");
 
-	ADD_SIGNAL(MethodInfo("doll_server_comunication_opened"));
-	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
+	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
+	ADD_SIGNAL(MethodInfo("doll_sync_started"));
 }
 
 NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_doll_notify_sync_pause", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch_batch", MultiplayerAPI::RPC_MODE_REMOTE);
 }
@@ -243,7 +243,12 @@ void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	server_controller->peers[pos].active = p_active;
 	server_controller->peers[pos].collect_timer = 0.0;
 	server_controller->peers[pos].sync_timer = 0.0;
-	rpc_id(p_peer_id, "_rpc_doll_notify_connection_status", p_active);
+
+	if (p_active == false) {
+		// Notify the doll only for deactivations. The activations are automatically
+		// handled when the first epoch is received.
+		rpc_id(p_peer_id, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+	}
 }
 
 void NetworkedController::_on_peer_connection_change(int p_peer_id) {
@@ -336,12 +341,10 @@ void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data
 	player_controller->tick_additional_speed = CLAMP(additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 }
 
-void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
-	// TODO consider change this to `notify_sync_paused` so the connection "restart" is just automatic
-	// when a new state is send.
+void NetworkedController::_rpc_doll_notify_sync_pause(uint32_t p_epoch) {
 	ERR_FAIL_COND_MSG(is_doll_controller() == false, "Only dolls are supposed to receive this function call");
 
-#warning TODO emit a signal.
+	static_cast<DollController *>(controller)->pause(p_epoch);
 }
 
 void NetworkedController::_rpc_doll_send_epoch(Vector<uint8_t> p_data) {
@@ -749,7 +752,6 @@ void ServerController::doll_sync(real_t p_delta) {
 						epoch_state_data.get_buffer().get_bytes());
 			} else {
 				// Store this into epoch batch.
-				// TODO count buffer size.
 				if (unlikely(
 							// If the packet is more than 255 it can't be sent
 							// into a batch.
@@ -759,9 +761,9 @@ void ServerController::doll_sync(real_t p_delta) {
 							// packets.
 							peers[i].batch_size + epoch_state_data.get_buffer().get_bytes().size() + 1 >= 1350)) {
 					if (epoch_state_data.get_buffer().get_bytes().size() > UINT8_MAX) {
-						ERR_PRINT("The status update is too big, try to staty under 255 byte per update, so the batch system can be used.");
+						NET_DEBUG_ERR("The status update is too big, try to staty under 255 byte per update, so the batch system can be used.");
 					} else {
-						WARN_PRINT("The amount of data collected per batch is more than 1350 bytes. Please make sure the `doll_sync_timer_rate` is not so big, so the batch can be correctly created. Batch size: " + itos(peers[i].batch_size) + " - Epochs into the batch: " + itos(peers[i].epoch_batch.size()));
+						NET_DEBUG_WARN("The amount of data collected per batch is more than 1350 bytes. Please make sure the `doll_sync_timer_rate` is not so big, so the batch can be correctly created. Batch size: " + itos(peers[i].batch_size) + " - Epochs into the batch: " + itos(peers[i].epoch_batch.size()));
 					}
 					force_dispatch_batch = true;
 					node->rpc_unreliable_id(
@@ -783,14 +785,25 @@ void ServerController::doll_sync(real_t p_delta) {
 						peers[i].sync_timer >= node->get_doll_state_sync_rate())) {
 			peers[i].sync_timer -= node->get_doll_state_sync_rate();
 
-			// Prepare the batch
+			// Prepare the batch data.
 			Vector<uint8_t> data;
-			// TODO Resize the array here.
+			data.resize(peers[i].batch_size);
+			uint8_t *data_ptr = data.ptrw();
+			uint32_t j = 0;
 			for (uint32_t x = 0; x < peers[i].epoch_batch.size(); x += 1) {
 				ERR_CONTINUE_MSG(peers[i].epoch_batch[x].size() > 256, "It's not allowed to send more then 256 bytes per status. This status is dropped.");
-				data.push_back(peers[i].epoch_batch[x].size());
-				data.append_array(peers[i].epoch_batch[x]);
+				data_ptr[j] = peers[i].epoch_batch[x].size();
+				j += 1;
+				for (int l = 0; l < peers[i].epoch_batch[x].size(); l += 1) {
+					data_ptr[j] = peers[i].epoch_batch[x][l];
+					j += 1;
+				}
 			}
+#ifdef DEBUG_ENABLED
+			// This is not supposed to happen because the batch_size is
+			// correctly computed.
+			CRASH_COND(j != peers[i].batch_size);
+#endif
 			peers[i].epoch_batch.clear();
 			peers[i].batch_size = 0;
 
@@ -1108,9 +1121,7 @@ bool PlayerController::can_accept_new_inputs() const {
 }
 
 DollController::DollController(NetworkedController *p_node) :
-		Controller(p_node),
-		averager(10, 0) {
-}
+		Controller(p_node) {}
 
 DollController::~DollController() {
 	node->set_physics_process_internal(false);
@@ -1162,7 +1173,11 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	}
 
 	// ~~ Establish the interpolation speed ~~
-	ERR_FAIL_COND_MSG(batch_young_epoch == UINT32_MAX, "The received batch doesn't contains any epoch, this is a bug.");
+	if (batch_young_epoch == UINT32_MAX) {
+		// This may just be a late arrived batch, so nothing more to do.
+		return;
+	}
+
 	if (current_epoch == UINT32_MAX || previous_oldest_epoch == UINT32_MAX) {
 		// Nothing more to do.
 		return;
@@ -1179,9 +1194,7 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 		// epochs using the oldest epoch in the interpolator.
 		batch_epoch_span = batch_old_epoch - previous_oldest_epoch;
 		if (batch_epoch_span <= 0.0) {
-			// TODO print a warning.
-			// Was not possible to establish the epoch span correctly, this
-			// packet may contains old informations.
+			NET_DEBUG_WARN("Was not possible to establish the epoch span correctly, this packet may contains old informations. Though is not supposed to happen a lot.");
 			return;
 		}
 	}
@@ -1197,20 +1210,20 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	// track of the status for past batches. By taking the lowest balance value,
 	// from the `averager`, is possible to guess pessimisticaly:
 	// so in case the connection become worse the interpolation still looks good.
-	additional_speed = doll_interpolation_max_speedup * (real_t(averager.min(3) - ideal_target_frame) / (batch_epoch_span * doll_interpolation_speedup_factor));
+	additional_speed = doll_interpolation_max_speedup * (real_t(averager.min(watch_list_size) - ideal_target_frame) / (batch_epoch_span * doll_interpolation_speedup_factor));
 	additional_speed = CLAMP(additional_speed, -doll_interpolation_max_speedup, doll_interpolation_max_speedup);
 
 	// TODO the issue with the above approach is that it can do something to
 	// fix the connection problems only when the epochs are missing so it's too
 	// late.
-	// A better solution must be researched, an idea could be vary the `idea_target_frame`
-	// depending how the internet goes.
-	// But a class, totally independent, to this controller should establish
-	// how good the connection is.
-	// In this way we stop relying on the amount of missing epochs, and
-	// hopefully increase the buffers size before something goes wrong.
+	// A much better approach would be establish when the next batch should arrive,
+	// then when it arrives see the discrepancy. That discrepancy is due to the
+	// connection: based on that increase or decrease the `ideal_target_frame`.
+	// The main idea is to be able to find the period when the connection is
+	// bad, and start strinking the buffer only when the batches arrives before
+	// was espected.
 
-	print_line("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Averager min: " + itos(averager.min(3)) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs) + " - Average derivative: " + rtos(averager.average_derivative()));
+	//NET_DEBUG_PRINT("Additional speed: " + rtos(additional_speed) + " - Balance: " + itos(balance) + " - Averager min: " + itos(averager.min(watch_list_size)) + " - Left epochs: " + itos(left_epochs) + " - Missing: " + itos(missing_epochs) + " - Average derivative: " + rtos(averager.average_derivative()));
 
 	missing_epochs = 0;
 }
@@ -1219,6 +1232,12 @@ uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
 	DataBuffer buffer(p_data);
 	buffer.begin_read();
 	const uint32_t epoch = buffer.read_int(DataBuffer::COMPRESSION_LEVEL_1);
+
+	if (epoch <= paused_epoch) {
+		// The sync is in pause from this epoch, so just discard this received
+		// epoch that may just be a late received epoch.
+		return UINT32_MAX;
+	}
 
 	interpolator.begin_write(epoch);
 	node->call("parse_epoch_data", &interpolator, &buffer);
@@ -1250,6 +1269,7 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 
 		// Start epoch interpolation.
 		current_epoch = interpolator.get_youngest_epoch();
+		node->emit_signal("doll_sync_started");
 	}
 
 	// At this point the interpolation is started and the function must
@@ -1274,12 +1294,11 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	if (unlikely((oldest_epoch - current_epoch) > max_virtual_delay)) {
 		// This client seems too much behind at this point. Teleport forward.
 		current_epoch = oldest_epoch - max_virtual_delay;
-		print_line("~~~ Hard reset ~~~");
 	} else {
 		advancing_epoch += 1.0 + additional_speed;
 	}
 
-	//print_line("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch) + " Epoch range: " + itos(oldest_epoch - current_epoch));
+	//NET_DEBUG_PRINT("Advancing: " + rtos(advancing_epoch) + " - Epoch: " + itos(current_epoch) + " Epoch range: " + itos(oldest_epoch - current_epoch));
 
 	if (advancing_epoch > 0.0) {
 		// Advance the epoch by the the integral amount.
@@ -1292,6 +1311,19 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 	}
 
 	return current_epoch;
+}
+
+void DollController::pause(uint32_t p_epoch) {
+	paused_epoch = p_epoch;
+
+	interpolator.clear();
+	additional_speed = 0.0;
+	current_epoch = UINT32_MAX;
+	advancing_epoch = 0.0;
+	missing_epochs = 0;
+	averager.reset(watch_list_size, 0);
+
+	node->emit_signal("doll_sync_paused");
 }
 
 NoNetController::NoNetController(NetworkedController *p_node) :
