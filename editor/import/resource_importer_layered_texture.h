@@ -93,10 +93,6 @@ private:
 	static const char *compression_formats[];
 
 protected:
-	static void _texture_reimport_srgb(const Ref<StreamTexture2D> &p_tex);
-	static void _texture_reimport_3d(const Ref<StreamTexture2D> &p_tex);
-	static void _texture_reimport_normal(const Ref<StreamTexture2D> &p_tex);
-
 	static ResourceImporterLayeredTexture *singleton;
 
 public:

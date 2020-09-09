@@ -363,6 +363,82 @@ void Image::get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int 
 	r_size = ofs2 - ofs;
 }
 
+Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_images) {
+	int w = p_width;
+	int h = p_height;
+	int d = p_depth;
+
+	int arr_ofs = 0;
+
+	while (true) {
+		for (int i = 0; i < d; i++) {
+			int idx = i + arr_ofs;
+			if (idx >= p_images.size()) {
+				return VALIDATE_3D_ERR_MISSING_IMAGES;
+			}
+			if (p_images[idx].is_null() || p_images[idx]->empty()) {
+				return VALIDATE_3D_ERR_IMAGE_EMPTY;
+			}
+			if (p_images[idx]->get_format() != p_format) {
+				return VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH;
+			}
+			if (p_images[idx]->get_width() != w || p_images[idx]->get_height() != h) {
+				return VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH;
+			}
+			if (p_images[idx]->has_mipmaps()) {
+				return VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS;
+			}
+		}
+
+		arr_ofs += d;
+
+		if (!p_mipmaps) {
+			break;
+		}
+
+		if (w == 1 && h == 1 && d == 1) {
+			break;
+		}
+
+		w = MAX(1, w >> 1);
+		h = MAX(1, h >> 1);
+		d = MAX(1, d >> 1);
+	}
+
+	if (arr_ofs != p_images.size()) {
+		return VALIDATE_3D_ERR_EXTRA_IMAGES;
+	}
+
+	return VALIDATE_3D_OK;
+}
+
+String Image::get_3d_image_validation_error_text(Image3DValidateError p_error) {
+	switch (p_error) {
+		case VALIDATE_3D_OK: {
+			return TTR("Ok");
+		} break;
+		case VALIDATE_3D_ERR_IMAGE_EMPTY: {
+			return TTR("Empty Image found");
+		} break;
+		case VALIDATE_3D_ERR_MISSING_IMAGES: {
+			return TTR("Missing Images");
+		} break;
+		case VALIDATE_3D_ERR_EXTRA_IMAGES: {
+			return TTR("Too many Images");
+		} break;
+		case VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH: {
+			return TTR("Image size mismatch");
+		} break;
+		case VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH: {
+			return TTR("Image format mismatch");
+		} break;
+		case VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS: {
+			return TTR("Image has included mipmaps");
+		} break;
+	}
+	return String();
+}
+
 int Image::get_width() const {
 	return width;
 }
