@@ -644,7 +644,7 @@ static GDScriptCompletionIdentifier _type_from_gdtype(const GDScriptDataType &p_
 	ci.type.has_type = true;
 	ci.type.builtin_type = p_gdtype.builtin_type;
 	ci.type.native_type = p_gdtype.native_type;
-	ci.type.script_type = p_gdtype.script_type;
+	ci.type.script_type = Ref<Script>(p_gdtype.script_type);
 
 	switch (p_gdtype.kind) {
 		case GDScriptDataType::UNINITIALIZED: {

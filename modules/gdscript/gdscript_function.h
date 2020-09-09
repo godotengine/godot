@@ -53,7 +53,8 @@ struct GDScriptDataType {
 	} kind;
 	Variant::Type builtin_type;
 	StringName native_type;
-	Ref<Script> script_type;
+	Script *script_type;
+	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) return true; // Can't type check
@@ -149,7 +150,8 @@ struct GDScriptDataType {
 	GDScriptDataType() :
 			has_type(false),
 			kind(UNINITIALIZED),
-			builtin_type(Variant::NIL) {}
+			builtin_type(Variant::NIL),
+			script_type(NULL) {}
 };
 
 class GDScriptFunction {
