@@ -126,7 +126,7 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1 });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, Port>(), nullptr });
 
 	if (!p_visual_node->is_connected("show_port_preview", callable_mp(this, &VisualShaderGraphPlugin::show_port_preview))) {
 		p_visual_node->connect("show_port_preview", callable_mp(this, &VisualShaderGraphPlugin::show_port_preview), varray(p_id), CONNECT_DEFERRED);
