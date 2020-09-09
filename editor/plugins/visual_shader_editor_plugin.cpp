@@ -60,6 +60,88 @@ void VisualShaderNodePlugin::_bind_methods() {
 
 ///////////////////
 
+VisualShaderGraphPlugin::VisualShaderGraphPlugin() {
+}
+
+void VisualShaderGraphPlugin::_bind_methods() {
+	ClassDB::bind_method("show_port_preview", &VisualShaderGraphPlugin::show_port_preview);
+}
+
+void VisualShaderGraphPlugin::register_shader(VisualShader *p_shader) {
+	visual_shader = Ref<VisualShader>(p_shader);
+}
+
+void VisualShaderGraphPlugin::show_port_preview(int p_port_id, int p_node_id) {
+	if (links.has(p_node_id) && links[p_node_id].type == visual_shader->get_shader_type()) {
+		for (Map<int, Port>::Element *E = links[p_node_id].output_ports.front(); E; E = E->next()) {
+			E->value().preview_button->set_pressed(false);
+		}
+
+		if (links[p_node_id].preview_visible && !is_dirty()) {
+			links[p_node_id].graph_node->remove_child(links[p_node_id].preview_box);
+			links[p_node_id].graph_node->set_size(Vector2(-1, -1));
+			links[p_node_id].preview_visible = false;
+		}
+
+		if (p_port_id != -1) {
+			if (is_dirty()) {
+				links[p_node_id].preview_pos = links[p_node_id].graph_node->get_child_count();
+			}
+
+			VBoxContainer *vbox = memnew(VBoxContainer);
+			links[p_node_id].graph_node->add_child(vbox);
+			if (links[p_node_id].preview_pos != -1) {
+				links[p_node_id].graph_node->move_child(vbox, links[p_node_id].preview_pos);
+			}
+
+			Control *offset = memnew(Control);
+			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+			vbox->add_child(offset);
+
+			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
+			port_preview->setup(visual_shader, visual_shader->get_shader_type(), p_node_id, p_port_id);
+			port_preview->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+			vbox->add_child(port_preview);
+			links[p_node_id].preview_visible = true;
+			links[p_node_id].preview_box = vbox;
+			links[p_node_id].output_ports[p_port_id].preview_button->set_pressed(true);
+		}
+	}
+}
+
+bool VisualShaderGraphPlugin::is_preview_visible(int p_id) const {
+	return links[p_id].preview_visible;
+}
+
+void VisualShaderGraphPlugin::clear_links() {
+	links.clear();
+}
+
+bool VisualShaderGraphPlugin::is_dirty() const {
+	return dirty;
+}
+
+void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
+	dirty = p_enabled;
+}
+
+void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1 });
+
+	if (!p_visual_node->is_connected("show_port_preview", callable_mp(this, &VisualShaderGraphPlugin::show_port_preview))) {
+		p_visual_node->connect("show_port_preview", callable_mp(this, &VisualShaderGraphPlugin::show_port_preview), varray(p_id), CONNECT_DEFERRED);
+	}
+}
+
+void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
+	links[p_node_id].output_ports.insert(p_port, { p_button });
+}
+
+VisualShaderGraphPlugin::~VisualShaderGraphPlugin() {
+}
+
+/////////////////
+
 void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	bool changed = false;
 	if (p_visual_shader) {
@@ -71,6 +153,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			}
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
+		graph_plugin->register_shader(visual_shader.ptr());
 		if (!visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
 			visual_shader->connect("changed", callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
@@ -528,6 +611,9 @@ void VisualShaderEditor::_update_graph() {
 
 	Control *offset;
 
+	graph_plugin->clear_links();
+	graph_plugin->make_dirty(true);
+
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
 		Vector2 position = visual_shader->get_node_position(type, nodes[n_i]);
 		Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, nodes[n_i]);
@@ -542,6 +628,7 @@ void VisualShaderEditor::_update_graph() {
 
 		GraphNode *node = memnew(GraphNode);
 		visual_shader->set_graph_node(type, nodes[n_i], node);
+		graph_plugin->register_link(type, nodes[n_i], vsnode.ptr(), node);
 
 		if (is_group) {
 			size = group_node->get_size();
@@ -813,9 +900,7 @@ void VisualShaderEditor::_update_graph() {
 				preview->set_pressed_texture(get_theme_icon("GuiVisibilityVisible", "EditorIcons"));
 				preview->set_v_size_flags(SIZE_SHRINK_CENTER);
 
-				if (vsnode->get_output_port_for_preview() == i) {
-					preview->set_pressed(true);
-				}
+				graph_plugin->register_output_port(nodes[n_i], i, preview);
 
 				preview->connect("pressed", callable_mp(this, &VisualShaderEditor::_preview_select_port), varray(nodes[n_i], i), CONNECT_DEFERRED);
 				hb->add_child(preview);
@@ -834,18 +919,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		if (vsnode->get_output_port_for_preview() >= 0) {
-			int port_type = vsnode->get_output_port_type(vsnode->get_output_port_for_preview());
-
-			if (port_type != VisualShaderNode::PORT_TYPE_TRANSFORM && port_type != VisualShaderNode::PORT_TYPE_SAMPLER) {
-				offset = memnew(Control);
-				offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
-				node->add_child(offset);
-
-				VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
-				port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
-				port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
-				node->add_child(port_preview);
-			}
+			graph_plugin->show_port_preview(vsnode->get_output_port_for_preview(), nodes[n_i]);
 		}
 
 		offset = memnew(Control);
@@ -907,6 +981,8 @@ void VisualShaderEditor::_update_graph() {
 			}
 		}
 	}
+
+	graph_plugin->make_dirty(false);
 
 	for (List<VisualShader::Connection>::Element *E = connections.front(); E; E = E->next()) {
 		int from = E->get().from_node;
@@ -1208,11 +1284,9 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	if (node->get_output_port_for_preview() == p_port) {
 		p_port = -1; //toggle it
 	}
-	undo_redo->create_action(TTR("Set Uniform Name"));
+	undo_redo->create_action(p_port == -1 ? TTR("Hide Port Preview") : TTR("Show Port Preview"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", p_port);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", node->get_output_port_for_preview());
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 }
 
@@ -3030,11 +3104,15 @@ VisualShaderEditor::VisualShaderEditor() {
 	default_plugin.instance();
 	add_plugin(default_plugin);
 
+	graph_plugin.instance();
+
 	property_editor = memnew(CustomPropertyEditor);
 	add_child(property_editor);
 
 	property_editor->connect("variant_changed", callable_mp(this, &VisualShaderEditor::_port_edited));
 }
+
+/////////////////
 
 void VisualShaderEditorPlugin::edit(Object *p_object) {
 	visual_shader_editor->edit(Object::cast_to<VisualShader>(p_object));
