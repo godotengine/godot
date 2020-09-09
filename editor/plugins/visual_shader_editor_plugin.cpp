@@ -93,6 +93,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			edit_type = edit_type_standart;
 			particles_mode = false;
 		}
+		visual_shader->set_shader_type(get_current_shader_type());
 	} else {
 		if (visual_shader.is_valid()) {
 			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
@@ -540,6 +541,7 @@ void VisualShaderEditor::_update_graph() {
 		String expression = "";
 
 		GraphNode *node = memnew(GraphNode);
+		visual_shader->set_graph_node(type, nodes[n_i], node);
 
 		if (is_group) {
 			size = group_node->get_size();
@@ -1518,14 +1520,10 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node) {
 	VisualShader::Type type = get_current_shader_type();
 
-	updating = true;
 	undo_redo->create_action(TTR("Node Moved"));
 	undo_redo->add_do_method(visual_shader.ptr(), "set_node_position", type, p_node, p_to);
 	undo_redo->add_undo_method(visual_shader.ptr(), "set_node_position", type, p_node, p_from);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
-	updating = false;
 }
 
 void VisualShaderEditor::_connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index) {
@@ -2055,6 +2053,7 @@ void VisualShaderEditor::_delete_nodes() {
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
+	visual_shader->set_shader_type(VisualShader::Type(p_id));
 	_update_options_menu();
 	_update_graph();
 }

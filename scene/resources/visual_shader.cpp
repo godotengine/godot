@@ -317,6 +317,17 @@ VisualShaderNodeCustom::VisualShaderNodeCustom() {
 
 /////////////////////////////////////////////////////////
 
+void VisualShader::set_graph_node(Type p_type, int p_id, GraphNode *p_graph_node) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	Graph *g = &graph[p_type];
+	ERR_FAIL_COND(!g->nodes.has(p_id));
+	g->nodes[p_id].graph_node = p_graph_node;
+}
+
+void VisualShader::set_shader_type(Type p_type) {
+	current_type = p_type;
+}
+
 void VisualShader::set_version(const String &p_version) {
 	version = p_version;
 }
@@ -400,6 +411,11 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	Graph *g = &graph[p_type];
 	ERR_FAIL_COND(!g->nodes.has(p_id));
 	g->nodes[p_id].position = p_position;
+	if (current_type == p_type) {
+		if (g->nodes[p_id].graph_node != nullptr) {
+			g->nodes[p_id].graph_node->set_offset(p_position);
+		}
+	}
 }
 
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
