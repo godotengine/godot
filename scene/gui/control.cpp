@@ -591,7 +591,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				if (get_viewport() != nullptr) {
-					get_viewport()->_gui_hid_control(this);
+					get_viewport()->_gui_hide_control(this);
 				}
 
 				//remove key focus

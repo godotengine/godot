@@ -2422,7 +2422,7 @@ void Viewport::_gui_unfocus_control(Control *p_control) {
 	}
 }
 
-void Viewport::_gui_hid_control(Control *p_control) {
+void Viewport::_gui_hide_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		_drop_mouse_focus();
 	}
