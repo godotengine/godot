@@ -387,7 +387,7 @@ private:
 	void _gui_show_tooltip();
 
 	void _gui_remove_control(Control *p_control);
-	void _gui_hid_control(Control *p_control);
+	void _gui_hide_control(Control *p_control);
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
