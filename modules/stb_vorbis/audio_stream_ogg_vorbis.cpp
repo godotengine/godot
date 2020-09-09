@@ -167,13 +167,15 @@ void AudioStreamOGGVorbis::clear_data() {
 void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 
 	int src_data_len = p_data.size();
-#define MAX_TEST_MEM (1 << 20)
-
 	uint32_t alloc_try = 1024;
 	PoolVector<char> alloc_mem;
 	PoolVector<char>::Write w;
 	stb_vorbis *ogg_stream = NULL;
 	stb_vorbis_alloc ogg_alloc;
+
+	// Vorbis comments may be up to UINT32_MAX, but that's arguably pretty rare.
+	// Let's go with 2^30 so we don't risk going out of bounds.
+	const uint32_t MAX_TEST_MEM = 1 << 30;
 
 	while (alloc_try < MAX_TEST_MEM) {
 
@@ -216,6 +218,8 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 			break;
 		}
 	}
+
+	ERR_FAIL_COND_MSG(alloc_try == MAX_TEST_MEM, vformat("Couldn't set vorbis data even with an alloc buffer of %d bytes, report bug.", MAX_TEST_MEM));
 }
 
 PoolVector<uint8_t> AudioStreamOGGVorbis::get_data() const {
