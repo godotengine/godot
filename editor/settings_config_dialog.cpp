@@ -202,7 +202,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 	Map<String, TreeItem *> sections;
 
 	for (List<String>::Element *E = slist.front(); E; E = E->next()) {
-		Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
+		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E->get());
 		if (!sc->has_meta("original")) {
 			continue;
 		}
@@ -268,7 +268,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 	ERR_FAIL_COND(!ti);
 
 	String item = ti->get_metadata(0);
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(item);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(item);
 
 	if (p_idx == 0) {
 		press_a_key_label->set_text(TTR("Press a Key..."));
@@ -335,7 +335,7 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_metakey(last_wait_for_key->get_metakey());
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
 
 	undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_configured + "'");
 	undo_redo->add_do_method(sc.ptr(), "set_shortcut", ie);

@@ -77,7 +77,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			String name = arr[i];
 			Ref<InputEvent> shortcut = arr[i + 1];
 
-			Ref<ShortCut> sc;
+			Ref<Shortcut> sc;
 			sc.instance();
 			sc->set_shortcut(shortcut);
 			add_shortcut(name, sc);
@@ -120,8 +120,8 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name.operator String() == "shortcuts") {
 		Array arr;
-		for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-			Ref<ShortCut> sc = E->get();
+		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
+			Ref<Shortcut> sc = E->get();
 
 			if (optimize_save) {
 				if (!sc->has_meta("original")) {
@@ -1481,50 +1481,50 @@ String EditorSettings::get_editor_layouts_config() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
 }
 
-Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	if (!E) {
-		return Ref<ShortCut>();
+		return Ref<Shortcut>();
 	}
 
 	return E->get();
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-	for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
+	for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 		r_shortcuts->push_back(E->key());
 	}
 }
 
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	if (!EditorSettings::get_singleton()) {
 		return nullptr;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	ERR_FAIL_COND_V_MSG(!sc.is_valid(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path + ".");
 
 	return sc;
 }
 
-struct ShortCutMapping {
+struct ShortcutMapping {
 	const char *path;
 	uint32_t keycode;
 };
 
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1545,7 +1545,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	}
 
 	if (!EditorSettings::get_singleton()) {
-		Ref<ShortCut> sc;
+		Ref<Shortcut> sc;
 		sc.instance();
 		sc->set_name(p_name);
 		sc->set_shortcut(ie);
@@ -1553,7 +1553,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		return sc;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
 		sc->set_meta("original", ie); //to compare against changes

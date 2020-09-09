@@ -400,11 +400,11 @@ private:
 	Ref<Texture2D> select_handle;
 	Ref<Texture2D> anchor_handle;
 
-	Ref<ShortCut> drag_pivot_shortcut;
-	Ref<ShortCut> set_pivot_shortcut;
-	Ref<ShortCut> multiply_grid_step_shortcut;
-	Ref<ShortCut> divide_grid_step_shortcut;
-	Ref<ShortCut> pan_view_shortcut;
+	Ref<Shortcut> drag_pivot_shortcut;
+	Ref<Shortcut> set_pivot_shortcut;
+	Ref<Shortcut> multiply_grid_step_shortcut;
+	Ref<Shortcut> divide_grid_step_shortcut;
+	Ref<Shortcut> pan_view_shortcut;
 
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
