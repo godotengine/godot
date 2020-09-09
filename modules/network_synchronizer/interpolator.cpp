@@ -164,30 +164,30 @@ Variant interpolate(const Variant &p_v1, const Variant &p_v2, real_t p_delta) {
 
 	switch (p_v1.get_type()) {
 		case Variant::Type::INT:
-			return int(Math::round(Math::lerp(real_t(p_v1), real_t(p_v2), p_delta)));
+			return int(Math::round(Math::lerp(p_v1.operator real_t(), p_v2.operator real_t(), p_delta)));
 		case Variant::Type::FLOAT:
 			return Math::lerp(p_v1, p_v2, p_delta);
 		case Variant::Type::VECTOR2:
-			return Vector2(p_v1).lerp(Vector2(p_v2), p_delta);
+			return p_v1.operator Vector2().lerp(p_v2.operator Vector2(), p_delta);
 		case Variant::Type::VECTOR2I:
 			return Vector2i(
-					int(Math::round(Math::lerp(Vector2i(p_v1)[0], Vector2i(p_v2)[0], p_delta))),
-					int(Math::round(Math::lerp(Vector2i(p_v1)[1], Vector2i(p_v2)[1], p_delta))));
+					int(Math::round(Math::lerp(p_v1.operator Vector2i()[0], p_v2.operator Vector2i()[0], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector2i()[1], p_v2.operator Vector2i()[1], p_delta))));
 		case Variant::Type::TRANSFORM2D:
-			return Transform2D(p_v1).interpolate_with(Transform2D(p_v2), p_delta);
+			return p_v1.operator Transform2D().interpolate_with(p_v2.operator Transform2D(), p_delta);
 		case Variant::Type::VECTOR3:
-			return Vector3(p_v1).lerp(Vector3(p_v2), p_delta);
+			return p_v1.operator Vector3().lerp(p_v2.operator Vector3(), p_delta);
 		case Variant::Type::VECTOR3I:
 			return Vector3i(
-					int(Math::round(Math::lerp(Vector3i(p_v1)[0], Vector3i(p_v2)[0], p_delta))),
-					int(Math::round(Math::lerp(Vector3i(p_v1)[1], Vector3i(p_v2)[1], p_delta))),
-					int(Math::round(Math::lerp(Vector3i(p_v1)[2], Vector3i(p_v2)[2], p_delta))));
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[0], p_v2.operator Vector3i()[0], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[1], p_v2.operator Vector3i()[1], p_delta))),
+					int(Math::round(Math::lerp(p_v1.operator Vector3i()[2], p_v2.operator Vector3i()[2], p_delta))));
 		case Variant::Type::QUAT:
-			return Quat(p_v1).slerp(Quat(p_v2), p_delta);
+			return p_v1.operator Quat().slerp(p_v2.operator Quat(), p_delta);
 		case Variant::Type::BASIS:
-			return Basis(p_v1).slerp(Basis(p_v2), p_delta);
+			return p_v1.operator Basis().slerp(p_v2.operator Basis(), p_delta);
 		case Variant::Type::TRANSFORM:
-			return Transform(p_v1).interpolate_with(Transform(p_v2), p_delta);
+			return p_v1.operator Transform().interpolate_with(p_v2.operator Transform(), p_delta);
 		default:
 			return p_delta > 0.5 ? p_v2 : p_v1;
 	}

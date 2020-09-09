@@ -108,6 +108,12 @@ DataBuffer::DataBuffer() :
 		bit_offset(0),
 		is_reading(true) {}
 
+DataBuffer::DataBuffer(const DataBuffer &p_other) :
+		Object(),
+		bit_offset(p_other.bit_offset),
+		is_reading(p_other.is_reading),
+		buffer(p_other.buffer) {}
+
 DataBuffer::DataBuffer(const BitArray &p_buffer) :
 		Object(),
 		bit_offset(0),

@@ -157,6 +157,7 @@ public:
 	static void _bind_methods();
 
 	DataBuffer();
+	DataBuffer(const DataBuffer &p_other);
 	DataBuffer(const BitArray &p_buffer);
 
 	const BitArray &get_buffer() const {
