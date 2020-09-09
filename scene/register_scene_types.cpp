@@ -295,7 +295,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<ShortCut>();
+	ClassDB::register_class<Shortcut>();
 	ClassDB::register_class<Control>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
@@ -871,6 +871,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
 	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
+	ClassDB::add_compatibility_class("ShortCut", "Shortcut");
 	ClassDB::add_compatibility_class("Skeleton", "Skeleton3D");
 	ClassDB::add_compatibility_class("SkeletonIK", "SkeletonIK3D");
 	ClassDB::add_compatibility_class("SliderJoint", "SliderJoint3D");
