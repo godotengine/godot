@@ -50,8 +50,50 @@ public:
 	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
+class VisualShaderGraphPlugin : public Reference {
+	GDCLASS(VisualShaderGraphPlugin, Reference);
+
+private:
+	struct Port {
+		TextureButton *preview_button;
+	};
+
+	struct Link {
+		VisualShader::Type type;
+		VisualShaderNode *visual_node;
+		GraphNode *graph_node;
+		bool preview_visible;
+		int preview_pos;
+		Map<int, Port> output_ports;
+		VBoxContainer *preview_box;
+	};
+
+	Ref<VisualShader> visual_shader;
+	Map<int, Link> links;
+	bool dirty = false;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void register_shader(VisualShader *p_visual_shader);
+	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
+	void register_output_port(int p_id, int p_port, TextureButton *p_button);
+	void clear_links();
+	void set_shader_type(VisualShader::Type p_type);
+	bool is_preview_visible(int p_id) const;
+	bool is_dirty() const;
+	void make_dirty(bool p_enabled);
+
+	void show_port_preview(int p_node_id, int p_port_id);
+
+	VisualShaderGraphPlugin();
+	~VisualShaderGraphPlugin();
+};
+
 class VisualShaderEditor : public VBoxContainer {
 	GDCLASS(VisualShaderEditor, VBoxContainer);
+	friend class VisualShaderGraphPlugin;
 
 	CustomPropertyEditor *property_editor;
 	int editing_node;
@@ -242,6 +284,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2());
 
 	Vector<Ref<VisualShaderNodePlugin>> plugins;
+	Ref<VisualShaderGraphPlugin> graph_plugin;
 
 	void _mode_selected(int p_id);
 	void _rebuild();
