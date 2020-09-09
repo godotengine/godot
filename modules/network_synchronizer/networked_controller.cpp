@@ -90,6 +90,7 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
+	ClassDB::bind_method(D_METHOD("_rpc_set_client_enabled"), &NetworkedController::_rpc_set_client_enabled);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_sync_pause"), &NetworkedController::_rpc_doll_notify_sync_pause);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch"), &NetworkedController::_rpc_doll_send_epoch);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_epoch_batch"), &NetworkedController::_rpc_doll_send_epoch_batch);
@@ -98,6 +99,9 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_player_controller"), &NetworkedController::is_player_controller);
 	ClassDB::bind_method(D_METHOD("is_doll_controller"), &NetworkedController::is_doll_controller);
 	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &NetworkedController::is_nonet_controller);
+
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NetworkedController::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &NetworkedController::is_enabled);
 
 	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta"), PropertyInfo(Variant::OBJECT, "buffer", PROPERTY_HINT_RESOURCE_TYPE, "DataBuffer")));
@@ -119,13 +123,16 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_collect_rate", "get_doll_epoch_collect_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_sync_rate", "get_doll_epoch_sync_rate");
 
-	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
+	ADD_SIGNAL(MethodInfo("sync_started"));
+	ADD_SIGNAL(MethodInfo("sync_paused"));
 	ADD_SIGNAL(MethodInfo("doll_sync_started"));
+	ADD_SIGNAL(MethodInfo("doll_sync_paused"));
 }
 
 NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_set_client_enabled", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_sync_pause", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_epoch_batch", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -309,6 +316,32 @@ bool NetworkedController::is_nonet_controller() const {
 	return get_tree()->get_network_peer().is_null();
 }
 
+void NetworkedController::set_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function can be used only on server side.");
+	if (enabled == p_enabled) {
+		return;
+	}
+
+	enabled = p_enabled;
+
+	if (enabled == false) {
+		// Notify the dolls this actor is disabled.
+		ServerController *server_controller = static_cast<ServerController *>(controller);
+		for (uint32_t i = 0; i < server_controller->peers.size(); i += 1) {
+			if (server_controller->peers[i].active) {
+				// Notify this actor is no more active.
+				rpc_id(server_controller->peers[i].peer, "_rpc_doll_notify_sync_pause", server_controller->epoch);
+			}
+		}
+	}
+
+	rpc_id(get_network_master(), "_rpc_set_client_enabled", enabled);
+}
+
+bool NetworkedController::is_enabled() const {
+	return enabled;
+}
+
 void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
@@ -339,6 +372,22 @@ void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data
 
 	PlayerController *player_controller = static_cast<PlayerController *>(controller);
 	player_controller->tick_additional_speed = CLAMP(additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+}
+
+void NetworkedController::_rpc_set_client_enabled(bool p_enabled) {
+	ERR_FAIL_COND(is_player_controller() == false);
+
+	if (enabled == p_enabled) {
+		return;
+	}
+
+	enabled = p_enabled;
+
+	if (enabled) {
+		emit_signal("sync_started");
+	} else {
+		emit_signal("sync_paused");
+	}
 }
 
 void NetworkedController::_rpc_doll_notify_sync_pause(uint32_t p_epoch) {
@@ -453,6 +502,10 @@ void ServerController::update_peers() {
 }
 
 void ServerController::process(real_t p_delta) {
+	if (unlikely(node->is_enabled() == false)) {
+		return;
+	}
+
 	fetch_next_input();
 
 	if (unlikely(current_input_buffer_id == UINT32_MAX)) {
@@ -893,6 +946,9 @@ PlayerController::PlayerController(NetworkedController *p_node) :
 }
 
 void PlayerController::process(real_t p_delta) {
+	if (unlikely(node->is_enabled() == false)) {
+		return;
+	}
 	// We need to know if we can accept a new input because in case of bad
 	// internet connection we can't keep accumulating inputs forever
 	// otherwise the server will differ too much from the client and we

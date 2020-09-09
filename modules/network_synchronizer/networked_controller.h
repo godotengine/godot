@@ -152,6 +152,7 @@ private:
 
 	SceneSynchronizer *scene_synchronizer = nullptr;
 
+	bool enabled = true;
 	bool packet_missing = false;
 	bool has_player_new_input = false;
 
@@ -224,6 +225,10 @@ public:
 	bool is_doll_controller() const;
 	bool is_nonet_controller() const;
 
+	/// Active / Disactive the controller.
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
+
 public:
 	void set_inputs_buffer(const BitArray &p_new_buffer);
 
@@ -236,6 +241,7 @@ public:
 
 	/* On client rpc functions. */
 	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
+	void _rpc_set_client_enabled(bool p_enabled);
 
 	/* On puppet rpc functions. */
 	void _rpc_doll_notify_sync_pause(uint32_t p_epoch);

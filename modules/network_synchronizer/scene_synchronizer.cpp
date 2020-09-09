@@ -941,6 +941,10 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		// node->get_network_master() to get the peer.
 		ERR_CONTINUE_MSG(nd == nullptr, "This should never happen. Likely there is a bug.");
 
+		if (unlikely(static_cast<NetworkedController *>(nd->node)->is_enabled() == false)) {
+			continue;
+		}
+
 		Vector<Variant> snap;
 		if (peer_it.value->need_full_snapshot) {
 			peer_it.value->need_full_snapshot = false;
@@ -1194,7 +1198,9 @@ void ClientSynchronizer::on_node_added(SceneSynchronizer::NodeData *p_node_data)
 		return;
 	}
 	ERR_FAIL_COND_MSG(player_controller_node_data != nullptr, "Only one player controller is supported, at the moment.");
-	player_controller_node_data = p_node_data;
+	if (static_cast<NetworkedController *>(p_node_data->node)->is_player_controller()) {
+		player_controller_node_data = p_node_data;
+	}
 }
 
 void ClientSynchronizer::on_node_removed(SceneSynchronizer::NodeData *p_node_data) {
