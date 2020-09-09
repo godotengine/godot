@@ -76,7 +76,7 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 	}
 }
 
-GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const {
+GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner) const {
 	if (!p_datatype.is_set() || !p_datatype.is_hard_type()) {
 		return GDScriptDataType();
 	}
@@ -98,7 +98,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
-			result.script_type = p_datatype.script_type;
+			result.script_type = Ref<Script>(p_datatype.script_type).ptr();
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::CLASS: {
@@ -124,11 +124,11 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						names.pop_back();
 					}
 					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type = script;
+					result.script_type = script.ptr();
 					result.native_type = script->get_instance_base_type();
 				} else {
 					result.kind = GDScriptDataType::GDSCRIPT;
-					result.script_type = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					result.script_type = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path).ptr();
 					result.native_type = p_datatype.native_type;
 				}
 			}
@@ -147,6 +147,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			ERR_PRINT("Parser bug: converting unresolved type.");
 			return GDScriptDataType();
 		}
+	}
+
+	// Only hold strong reference to the script if it's not the owner of the
+	// element qualified with this type, to avoid cyclic references (leaks).
+	if (result.script_type && result.script_type != p_owner) {
+		result.script_type_ref = Ref<Script>(result.script_type);
 	}
 
 	return result;
@@ -1668,7 +1674,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		func_name = p_func->identifier->name;
 		is_static = p_func->is_static;
 		rpc_mode = p_func->rpc_mode;
-		return_type = _gdtype_from_datatype(p_func->get_datatype());
+		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
 		if (p_for_ready) {
 			func_name = "_ready";
@@ -1685,7 +1691,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	if (p_func) {
 		for (int i = 0; i < p_func->parameters.size(); i++) {
 			const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
-			GDScriptDataType par_type = _gdtype_from_datatype(parameter->get_datatype());
+			GDScriptDataType par_type = _gdtype_from_datatype(parameter->get_datatype(), p_script);
 			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->default_value != nullptr, par_type);
 			codegen.parameters[parameter->identifier->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
 
@@ -1830,7 +1836,7 @@ Error GDScriptCompiler::_parse_setter_getter(GDScript *p_script, const GDScriptP
 		return_type.kind = GDScriptDataType::BUILTIN;
 		return_type.builtin_type = Variant::NIL;
 	} else {
-		return_type = _gdtype_from_datatype(p_variable->get_datatype());
+		return_type = _gdtype_from_datatype(p_variable->get_datatype(), p_script);
 	}
 
 	codegen.generator->write_start(p_script, func_name, false, p_variable->rpc_mode, return_type);
@@ -1927,7 +1933,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->native = native;
 		} break;
 		case GDScriptDataType::GDSCRIPT: {
-			Ref<GDScript> base = base_type.script_type;
+			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			p_script->base = base;
 			p_script->_base = base.ptr();
 
@@ -1994,7 +2000,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 						break;
 				}
 				minfo.rpc_mode = variable->rpc_mode;
-				minfo.data_type = _gdtype_from_datatype(variable->get_datatype());
+				minfo.data_type = _gdtype_from_datatype(variable->get_datatype(), p_script);
 
 				PropertyInfo prop_info = minfo.data_type;
 				prop_info.name = name;
