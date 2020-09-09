@@ -56,7 +56,8 @@ struct GDScriptDataType {
 	bool has_type = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
-	Ref<Script> script_type;
+	Script *script_type = nullptr;
+	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) {

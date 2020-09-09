@@ -84,7 +84,7 @@ class GDScriptCompiler {
 
 					Ref<Script> script = obj->get_script();
 					if (script.is_valid()) {
-						type.script_type = script;
+						type.script_type = script.ptr();
 						Ref<GDScript> gdscript = script;
 						if (gdscript.is_valid()) {
 							type.kind = GDScriptDataType::GDSCRIPT;
@@ -125,7 +125,7 @@ class GDScriptCompiler {
 	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::BinaryOpNode *on, Variant::Operator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 	Error _create_binary_operator(CodeGen &codegen, const GDScriptParser::ExpressionNode *p_left_operand, const GDScriptParser::ExpressionNode *p_right_operand, Variant::Operator op, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 
-	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const;
+	GDScriptDataType _gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner = nullptr) const;
 
 	GDScriptCodeGenerator::Address _parse_assign_right_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::AssignmentNode *p_assignmentint, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
 	GDScriptCodeGenerator::Address _parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root = false, bool p_initializer = false, const GDScriptCodeGenerator::Address &p_index_addr = GDScriptCodeGenerator::Address());
