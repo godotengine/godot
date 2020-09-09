@@ -61,7 +61,7 @@ class PopupMenu : public Popup {
 		int _ofs_cache;
 		int _height_cache;
 		int h_ofs;
-		Ref<ShortCut> shortcut;
+		Ref<Shortcut> shortcut;
 		bool shortcut_is_global;
 		bool shortcut_is_disabled;
 
@@ -114,10 +114,10 @@ class PopupMenu : public Popup {
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
-	Map<Ref<ShortCut>, int> shortcut_refcount;
+	Map<Ref<Shortcut>, int> shortcut_refcount;
 
-	void _ref_shortcut(Ref<ShortCut> p_sc);
-	void _unref_shortcut(Ref<ShortCut> p_sc);
+	void _ref_shortcut(Ref<Shortcut> p_sc);
+	void _unref_shortcut(Ref<Shortcut> p_sc);
 
 	bool allow_search;
 	uint64_t search_time_msec;
@@ -145,12 +145,12 @@ public:
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, uint32_t p_accel = 0);
 
-	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
@@ -166,7 +166,7 @@ public:
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
-	void set_item_shortcut(int p_idx, const Ref<ShortCut> &p_shortcut, bool p_global = false);
+	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
 	void set_item_h_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
@@ -189,7 +189,7 @@ public:
 	bool is_item_radio_checkable(int p_idx) const;
 	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
-	Ref<ShortCut> get_item_shortcut(int p_idx) const;
+	Ref<Shortcut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
 	int get_current_index() const;
