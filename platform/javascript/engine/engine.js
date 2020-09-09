@@ -121,7 +121,7 @@ Function('return this')()['Engine'] = (function() {
 				if (me.onExit)
 					me.onExit(code);
 				me.rtenv = null;
-			}
+			};
 			return new Promise(function(resolve, reject) {
 				preloader.preloadedFiles.forEach(function(file) {
 					me.rtenv['copyToFS'](file.path, file.buffer);
@@ -207,18 +207,18 @@ Function('return this')()['Engine'] = (function() {
 		if (this.rtenv)
 			this.rtenv.onExecute = onExecute;
 		this.onExecute = onExecute;
-	}
+	};
 
 	Engine.prototype.setOnExit = function(onExit) {
 		this.onExit = onExit;
-	}
+	};
 
 	Engine.prototype.copyToFS = function(path, buffer) {
 		if (this.rtenv == null) {
 			throw new Error("Engine must be inited before copying files");
 		}
 		this.rtenv['copyToFS'](path, buffer);
-	}
+	};
 
 	// Closure compiler exported engine methods.
 	/** @export */
