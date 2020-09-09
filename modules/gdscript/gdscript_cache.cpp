@@ -108,20 +108,20 @@ GDScriptParserRef::~GDScriptParserRef() {
 	if (analyzer != nullptr) {
 		memdelete(analyzer);
 	}
-	MutexLock(GDScriptCache::singleton->lock);
+	MutexLock lock(GDScriptCache::singleton->lock);
 	GDScriptCache::singleton->parser_map.erase(path);
 }
 
 GDScriptCache *GDScriptCache::singleton = nullptr;
 
 void GDScriptCache::remove_script(const String &p_path) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	singleton->shallow_gdscript_cache.erase(p_path);
 	singleton->full_gdscript_cache.erase(p_path);
 }
 
 Ref<GDScriptParserRef> GDScriptCache::get_parser(const String &p_path, GDScriptParserRef::Status p_status, Error &r_error, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	Ref<GDScriptParserRef> ref;
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
@@ -168,7 +168,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 }
 
 Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
@@ -190,7 +190,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 }
 
 Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner) {
-	MutexLock(singleton->lock);
+	MutexLock lock(singleton->lock);
 
 	if (p_owner != String()) {
 		singleton->dependencies[p_owner].insert(p_path);
