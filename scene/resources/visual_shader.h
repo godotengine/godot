@@ -131,6 +131,7 @@ protected:
 public: // internal methods
 	void set_graph_node(Type p_type, int p_id, GraphNode *p_graph_node);
 	void set_shader_type(Type p_type);
+	Type get_shader_type() const;
 
 public:
 	void set_version(const String &p_version);
