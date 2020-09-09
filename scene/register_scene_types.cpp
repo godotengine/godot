@@ -230,6 +230,7 @@ static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
 
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
+static Ref<ResourceFormatLoaderStreamTexture3D> resource_loader_texture_3d;
 
 static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
 
@@ -251,6 +252,9 @@ void register_scene_types() {
 
 	resource_loader_texture_layered.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
+
+	resource_loader_texture_3d.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_texture_3d);
 
 	resource_saver_text.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_text, true);
@@ -701,6 +705,9 @@ void register_scene_types() {
 	ClassDB::register_class<CameraTexture>();
 	ClassDB::register_virtual_class<TextureLayered>();
 	ClassDB::register_virtual_class<ImageTextureLayered>();
+	ClassDB::register_virtual_class<Texture3D>();
+	ClassDB::register_class<ImageTexture3D>();
+	ClassDB::register_class<StreamTexture3D>();
 	ClassDB::register_class<Cubemap>();
 	ClassDB::register_class<CubemapArray>();
 	ClassDB::register_class<Texture2DArray>();
@@ -945,6 +952,9 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_texture_3d);
+	resource_loader_texture_3d.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();

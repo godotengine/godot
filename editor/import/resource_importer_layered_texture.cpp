@@ -70,7 +70,7 @@ String ResourceImporterLayeredTexture::get_visible_name() const {
 			return "CubemapArray";
 		} break;
 		case MODE_3D: {
-			return "3D";
+			return "Texture3D";
 		} break;
 	}
 
@@ -156,15 +156,103 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 }
 
 void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
-	for (int i = 0; i < p_images.size(); i++) {
-		if (p_force_po2) {
-			p_images.write[i]->resize_to_po2();
+	Vector<Ref<Image>> mipmap_images; //for 3D
+
+	if (mode == MODE_3D) {
+		//3D saves in its own way
+
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_images.write[i]->has_mipmaps()) {
+				p_images.write[i]->clear_mipmaps();
+			}
+
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
 		}
 
 		if (p_mipmaps) {
-			p_images.write[i]->generate_mipmaps();
-		} else {
-			p_images.write[i]->clear_mipmaps();
+			Vector<Ref<Image>> parent_images = p_images;
+			//create 3D mipmaps, this is horrible, though not used very often
+			int w = p_images[0]->get_width();
+			int h = p_images[0]->get_height();
+			int d = p_images.size();
+
+			while (w > 1 || h > 1 || d > 1) {
+				Vector<Ref<Image>> mipmaps;
+				int mm_w = MAX(1, w >> 1);
+				int mm_h = MAX(1, h >> 1);
+				int mm_d = MAX(1, d >> 1);
+
+				for (int i = 0; i < mm_d; i++) {
+					Ref<Image> mm;
+					mm.instance();
+					mm->create(mm_w, mm_h, false, p_images[0]->get_format());
+					Vector3 pos;
+					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
+					for (int x = 0; x < mm_w; x++) {
+						for (int y = 0; y < mm_h; y++) {
+							pos.x = float(x) * float(w) / float(mm_w) + 0.5;
+							pos.y = float(y) * float(h) / float(mm_h) + 0.5;
+
+							Vector3i posi = Vector3i(pos);
+							Vector3 fract = pos - Vector3(posi);
+							Vector3i posi_n = posi;
+							if (posi_n.x < w - 1) {
+								posi_n.x++;
+							}
+							if (posi_n.y < h - 1) {
+								posi_n.y++;
+							}
+							if (posi_n.z < d - 1) {
+								posi_n.z++;
+							}
+
+							Color c000 = parent_images[posi.z]->get_pixel(posi.x, posi.y);
+							Color c100 = parent_images[posi.z]->get_pixel(posi_n.x, posi.y);
+							Color c010 = parent_images[posi.z]->get_pixel(posi.x, posi_n.y);
+							Color c110 = parent_images[posi.z]->get_pixel(posi_n.x, posi_n.y);
+							Color c001 = parent_images[posi_n.z]->get_pixel(posi.x, posi.y);
+							Color c101 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi.y);
+							Color c011 = parent_images[posi_n.z]->get_pixel(posi.x, posi_n.y);
+							Color c111 = parent_images[posi_n.z]->get_pixel(posi_n.x, posi_n.y);
+
+							Color cx00 = c000.lerp(c100, fract.x);
+							Color cx01 = c001.lerp(c101, fract.x);
+							Color cx10 = c010.lerp(c110, fract.x);
+							Color cx11 = c011.lerp(c111, fract.x);
+
+							Color cy0 = cx00.lerp(cx10, fract.y);
+							Color cy1 = cx01.lerp(cx11, fract.y);
+
+							Color cz = cy0.lerp(cy1, fract.z);
+
+							mm->set_pixel(x, y, cz);
+						}
+					}
+
+					mipmaps.push_back(mm);
+				}
+
+				w = mm_w;
+				h = mm_h;
+				d = mm_d;
+
+				mipmap_images.append_array(mipmaps);
+				parent_images = mipmaps;
+			}
+		}
+	} else {
+		for (int i = 0; i < p_images.size(); i++) {
+			if (p_force_po2) {
+				p_images.write[i]->resize_to_po2();
+			}
+
+			if (p_mipmaps) {
+				p_images.write[i]->generate_mipmaps();
+			} else {
+				p_images.write[i]->clear_mipmaps();
+			}
 		}
 	}
 
@@ -175,18 +263,21 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_8('L');
 
 	f->store_32(StreamTextureLayered::FORMAT_VERSION);
-	f->store_32(p_images.size());
+	f->store_32(p_images.size()); //2d layers or 3d depth
 	f->store_32(mode);
-	f->store_32(0); //dataformat
-	f->store_32(0); //mipmap limit
-
-	//reserved
 	f->store_32(0);
+
+	f->store_32(0);
+	f->store_32(mipmap_images.size()); // amount of mipmaps
 	f->store_32(0);
 	f->store_32(0);
 
 	for (int i = 0; i < p_images.size(); i++) {
 		ResourceImporterTexture::save_to_stex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
+	}
+
+	for (int i = 0; i < mipmap_images.size(); i++) {
+		ResourceImporterTexture::save_to_stex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_lossy);
 	}
 
 	f->close();

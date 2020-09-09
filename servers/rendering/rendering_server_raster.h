@@ -114,6 +114,14 @@ public:
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 #define BIND4RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
+#define BIND5R(m_r, m_name, m_type1, m_type2, m_type3, m_type4, m_type5) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5) { return BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5); }
+#define BIND5RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4, m_type5) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5); }
+#define BIND6R(m_r, m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6) { return BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6); }
+#define BIND6RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6) \
+	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4, m_type5 arg5, m_type6 arg6) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4, arg5, arg6); }
 
 #define BIND0(m_name) \
 	void m_name() { DISPLAY_CHANGED BINDBASE->m_name(); }
@@ -160,14 +168,14 @@ public:
 	//these go pass-through, as they can be called from any thread
 	BIND1R(RID, texture_2d_create, const Ref<Image> &)
 	BIND2R(RID, texture_2d_layered_create, const Vector<Ref<Image>> &, TextureLayeredType)
-	BIND1R(RID, texture_3d_create, const Vector<Ref<Image>> &)
+	BIND6R(RID, texture_3d_create, Image::Format, int, int, int, bool, const Vector<Ref<Image>> &)
 	BIND1R(RID, texture_proxy_create, RID)
 
 	//goes pass-through
 	BIND3(texture_2d_update_immediate, RID, const Ref<Image> &, int)
 	//these go through command queue if they are in another thread
 	BIND3(texture_2d_update, RID, const Ref<Image> &, int)
-	BIND4(texture_3d_update, RID, const Ref<Image> &, int, int)
+	BIND2(texture_3d_update, RID, const Vector<Ref<Image>> &)
 	BIND2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
@@ -177,7 +185,7 @@ public:
 
 	BIND1RC(Ref<Image>, texture_2d_get, RID)
 	BIND2RC(Ref<Image>, texture_2d_layer_get, RID, int)
-	BIND3RC(Ref<Image>, texture_3d_slice_get, RID, int, int)
+	BIND1RC(Vector<Ref<Image>>, texture_3d_get, RID)
 
 	BIND2(texture_replace, RID, RID)
 

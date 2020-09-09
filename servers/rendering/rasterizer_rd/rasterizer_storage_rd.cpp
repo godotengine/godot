@@ -715,8 +715,120 @@ RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_l
 	return texture_owner.make_rid(texture);
 }
 
-RID RasterizerStorageRD::texture_3d_create(const Vector<Ref<Image>> &p_slices) {
-	return RID();
+RID RasterizerStorageRD::texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+	ERR_FAIL_COND_V(p_data.size() == 0, RID());
+	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
+	if (verr != Image::VALIDATE_3D_OK) {
+		ERR_FAIL_V_MSG(RID(), Image::get_3d_image_validation_error_text(verr));
+	}
+
+	TextureToRDFormat ret_format;
+	Image::Format validated_format = Image::FORMAT_MAX;
+	Vector<uint8_t> all_data;
+	uint32_t mipmap_count = 0;
+	Vector<Texture::BufferSlice3D> slices;
+	{
+		Vector<Ref<Image>> images;
+		uint32_t all_data_size = 0;
+		images.resize(p_data.size());
+		for (int i = 0; i < p_data.size(); i++) {
+			TextureToRDFormat f;
+			images.write[i] = _validate_texture_format(p_data[i], f);
+			if (i == 0) {
+				ret_format = f;
+				validated_format = images[0]->get_format();
+			}
+
+			all_data_size += images[i]->get_data().size();
+		}
+
+		all_data.resize(all_data_size); //consolidate all data here
+		uint32_t offset = 0;
+		Size2i prev_size;
+		for (int i = 0; i < p_data.size(); i++) {
+			uint32_t s = images[i]->get_data().size();
+
+			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			{
+				Texture::BufferSlice3D slice;
+				slice.size.width = images[i]->get_width();
+				slice.size.height = images[i]->get_height();
+				slice.offset = offset;
+				slice.buffer_size = s;
+				slices.push_back(slice);
+			}
+			offset += s;
+
+			Size2i img_size(images[i]->get_width(), images[i]->get_height());
+			if (img_size != prev_size) {
+				mipmap_count++;
+			}
+			prev_size = img_size;
+		}
+	}
+
+	Texture texture;
+
+	texture.type = Texture::TYPE_3D;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.depth = p_depth;
+	texture.mipmaps = mipmap_count;
+	texture.format = p_data[0]->get_format();
+	texture.validated_format = validated_format;
+
+	texture.buffer_size_3d = all_data.size();
+	texture.buffer_slices_3d = slices;
+
+	texture.rd_type = RD::TEXTURE_TYPE_3D;
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = texture.depth;
+		rd_format.array_layers = 1;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+	Vector<Vector<uint8_t>> data_slices;
+	data_slices.push_back(all_data); //one slice
+
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND_V(texture.rd_texture.is_null(), RID());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free(texture.rd_texture);
+			ERR_FAIL_COND_V(texture.rd_texture_srgb.is_null(), RID());
+		}
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	return texture_owner.make_rid(texture);
 }
 
 RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
@@ -772,7 +884,41 @@ void RasterizerStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_i
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
 
-void RasterizerStorageRD::texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) {
+void RasterizerStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
+	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
+	if (verr != Image::VALIDATE_3D_OK) {
+		ERR_FAIL_MSG(Image::get_3d_image_validation_error_text(verr));
+	}
+
+	Vector<uint8_t> all_data;
+	{
+		Vector<Ref<Image>> images;
+		uint32_t all_data_size = 0;
+		images.resize(p_data.size());
+		for (int i = 0; i < p_data.size(); i++) {
+			Ref<Image> image = p_data[i];
+			if (image->get_format() != tex->validated_format) {
+				image = image->duplicate();
+				image->convert(tex->validated_format);
+			}
+			all_data_size += images[i]->get_data().size();
+			images.push_back(image);
+		}
+
+		all_data.resize(all_data_size); //consolidate all data here
+		uint32_t offset = 0;
+
+		for (int i = 0; i < p_data.size(); i++) {
+			uint32_t s = images[i]->get_data().size();
+			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			offset += s;
+		}
+	}
+
+	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data, true);
 }
 
 void RasterizerStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
@@ -858,7 +1004,25 @@ RID RasterizerStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayere
 }
 
 RID RasterizerStorageRD::texture_3d_placeholder_create() {
-	return RID();
+	//this could be better optimized to reuse an existing image , done this way
+	//for now to get it working
+	Ref<Image> image;
+	image.instance();
+	image->create(4, 4, false, Image::FORMAT_RGBA8);
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			image->set_pixel(i, j, Color(1, 0, 1, 1));
+		}
+	}
+
+	Vector<Ref<Image>> images;
+	//cube
+	for (int i = 0; i < 4; i++) {
+		images.push_back(image);
+	}
+
+	return texture_3d_create(Image::FORMAT_RGBA8, 4, 4, 4, false, images);
 }
 
 Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
@@ -890,11 +1054,51 @@ Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
 }
 
 Ref<Image> RasterizerStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
-	return Ref<Image>();
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Ref<Image>());
+
+	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
+	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	Ref<Image> image;
+	image.instance();
+	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	ERR_FAIL_COND_V(image->empty(), Ref<Image>());
+	if (tex->format != tex->validated_format) {
+		image->convert(tex->format);
+	}
+
+	return image;
 }
 
-Ref<Image> RasterizerStorageRD::texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const {
-	return Ref<Image>();
+Vector<Ref<Image>> RasterizerStorageRD::texture_3d_get(RID p_texture) const {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Vector<Ref<Image>>());
+	ERR_FAIL_COND_V(tex->type != Texture::TYPE_3D, Vector<Ref<Image>>());
+
+	Vector<uint8_t> all_data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+
+	ERR_FAIL_COND_V(all_data.size() != (int)tex->buffer_size_3d, Vector<Ref<Image>>());
+
+	Vector<Ref<Image>> ret;
+
+	for (int i = 0; i < tex->buffer_slices_3d.size(); i++) {
+		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
+		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
+		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
+		Vector<uint8_t> sub_region = all_data.subarray(bs.offset, bs.offset + bs.buffer_size - 1);
+
+		Ref<Image> img;
+		img.instance();
+		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
+		ERR_FAIL_COND_V(img->empty(), Vector<Ref<Image>>());
+		if (tex->format != tex->validated_format) {
+			img->convert(tex->format);
+		}
+
+		ret.push_back(img);
+	}
+
+	return ret;
 }
 
 void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {

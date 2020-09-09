@@ -230,6 +230,19 @@ public:
 	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
 	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; //get where the mipmap begins in data
 
+	enum Image3DValidateError {
+		VALIDATE_3D_OK,
+		VALIDATE_3D_ERR_IMAGE_EMPTY,
+		VALIDATE_3D_ERR_MISSING_IMAGES,
+		VALIDATE_3D_ERR_EXTRA_IMAGES,
+		VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH,
+		VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH,
+		VALIDATE_3D_ERR_IMAGE_HAS_MIPMAPS,
+	};
+
+	static Image3DValidateError validate_3d_image(Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_images);
+	static String get_3d_image_validation_error_text(Image3DValidateError p_error);
+
 	/**
 	 * Resize the image, using the preferred interpolation method.
 	 */

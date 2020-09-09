@@ -205,6 +205,14 @@ private:
 		int height_2d;
 		int width_2d;
 
+		struct BufferSlice3D {
+			Size2i size;
+			uint32_t offset = 0;
+			uint32_t buffer_size = 0;
+		};
+		Vector<BufferSlice3D> buffer_slices_3d;
+		uint32_t buffer_size_3d = 0;
+
 		bool is_render_target;
 		bool is_proxy;
 
@@ -980,14 +988,14 @@ public:
 
 	virtual RID texture_2d_create(const Ref<Image> &p_image);
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type);
-	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices); //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data); //all slices, then all the mipmaps, must be coherent
 	virtual RID texture_proxy_create(RID p_base);
 
 	virtual void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_immediate);
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0); //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
-	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap);
+	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data);
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to);
 
 	//these two APIs can be used together or in combination with the others.
@@ -997,7 +1005,7 @@ public:
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const;
-	virtual Ref<Image> texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const;
+	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture);
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height);

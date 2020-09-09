@@ -157,6 +157,7 @@
 #include "editor/plugins/sprite_frames_editor_plugin.h"
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
+#include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
 #include "editor/plugins/texture_layered_editor_plugin.h"
 #include "editor/plugins/texture_region_editor_plugin.h"
@@ -5620,10 +5621,10 @@ EditorNode::EditorNode() {
 		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
 		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
 
-		/*Ref<ResourceImporterLayeredTexture> import_3d;
+		Ref<ResourceImporterLayeredTexture> import_3d;
 		import_3d.instance();
 		import_3d->set_mode(ResourceImporterLayeredTexture::MODE_3D);
-		ResourceFormatImporter::get_singleton()->add_importer(import_3d);*/
+		ResourceFormatImporter::get_singleton()->add_importer(import_3d);
 
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
@@ -6622,6 +6623,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CurveEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureLayeredEditorPlugin(this)));
+	add_editor_plugin(memnew(Texture3DEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	add_editor_plugin(memnew(Skeleton3DEditorPlugin(this)));

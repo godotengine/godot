@@ -791,7 +791,311 @@ String ResourceFormatLoaderStreamTexture2D::get_resource_type(const String &p_pa
 	return "";
 }
 
+////////////////////////////////////
+
+TypedArray<Image> Texture3D::_get_data() const {
+	Vector<Ref<Image>> data = get_data();
+
+	TypedArray<Image> ret;
+	ret.resize(data.size());
+	for (int i = 0; i < data.size(); i++) {
+		ret[i] = data[i];
+	}
+	return ret;
+}
+
+void Texture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_format"), &Texture3D::get_format);
+	ClassDB::bind_method(D_METHOD("get_width"), &Texture3D::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"), &Texture3D::get_height);
+	ClassDB::bind_method(D_METHOD("get_depth"), &Texture3D::get_depth);
+	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture3D::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_data);
+}
 //////////////////////////////////////////
+
+Image::Format ImageTexture3D::get_format() const {
+	return format;
+}
+int ImageTexture3D::get_width() const {
+	return width;
+}
+int ImageTexture3D::get_height() const {
+	return height;
+}
+int ImageTexture3D::get_depth() const {
+	return depth;
+}
+bool ImageTexture3D::has_mipmaps() const {
+	return mipmaps;
+}
+
+Error ImageTexture3D::_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data) {
+	Vector<Ref<Image>> images;
+	images.resize(p_data.size());
+	for (int i = 0; i < images.size(); i++) {
+		images.write[i] = p_data[i];
+	}
+	return create(p_format, p_width, p_height, p_depth, p_mipmaps, images);
+}
+
+void ImageTexture3D::_update(const TypedArray<Image> &p_data) {
+	Vector<Ref<Image>> images;
+	images.resize(p_data.size());
+	for (int i = 0; i < images.size(); i++) {
+		images.write[i] = p_data[i];
+	}
+	return update(images);
+}
+
+Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+	RID tex = RenderingServer::get_singleton()->texture_3d_create(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
+	ERR_FAIL_COND_V(tex.is_null(), ERR_CANT_CREATE);
+
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->texture_replace(texture, tex);
+	}
+
+	return OK;
+}
+
+void ImageTexture3D::update(const Vector<Ref<Image>> &p_data) {
+	ERR_FAIL_COND(!texture.is_valid());
+	RenderingServer::get_singleton()->texture_3d_update(texture, p_data);
+}
+
+Vector<Ref<Image>> ImageTexture3D::get_data() const {
+	ERR_FAIL_COND_V(!texture.is_valid(), Vector<Ref<Image>>());
+	return RS::get_singleton()->texture_3d_get(texture);
+}
+
+RID ImageTexture3D::get_rid() const {
+	if (!texture.is_valid()) {
+		texture = RS::get_singleton()->texture_3d_placeholder_create();
+	}
+	return texture;
+}
+void ImageTexture3D::set_path(const String &p_path, bool p_take_over) {
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
+void ImageTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create", "format", "width", "height", "depth", "use_mipmaps", "data"), &ImageTexture3D::_create);
+	ClassDB::bind_method(D_METHOD("update", "data"), &ImageTexture3D::_update);
+}
+
+ImageTexture3D::ImageTexture3D() {
+}
+
+ImageTexture3D::~ImageTexture3D() {
+	if (texture.is_valid()) {
+		RS::get_singleton()->free(texture);
+	}
+}
+
+////////////////////////////////////////////
+
+void StreamTexture3D::set_path(const String &p_path, bool p_take_over) {
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
+
+Image::Format StreamTexture3D::get_format() const {
+	return format;
+}
+
+Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+
+	uint8_t header[4];
+	f->get_buffer(header, 4);
+	ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != 'L', ERR_FILE_UNRECOGNIZED);
+
+	//stored as stream textures (used for lossless and lossy compression)
+	uint32_t version = f->get_32();
+
+	if (version > FORMAT_VERSION) {
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Stream texture file is too new.");
+	}
+
+	r_depth = f->get_32(); //depth
+	f->get_32(); //ignored (mode)
+	f->get_32(); // ignored (data format)
+
+	f->get_32(); //ignored
+	int mipmaps = f->get_32();
+	f->get_32(); //ignored
+	f->get_32(); //ignored
+
+	r_mipmaps = mipmaps != 0;
+
+	r_data.clear();
+
+	for (int i = 0; i < (r_depth + mipmaps); i++) {
+		Ref<Image> image = StreamTexture2D::load_image_from_file(f, 0);
+		ERR_FAIL_COND_V(image.is_null() || image->empty(), ERR_CANT_OPEN);
+		if (i == 0) {
+			r_format = image->get_format();
+			r_width = image->get_width();
+			r_height = image->get_height();
+		}
+		r_data.push_back(image);
+	}
+
+	return OK;
+}
+
+Error StreamTexture3D::load(const String &p_path) {
+	Vector<Ref<Image>> data;
+
+	int tw, th, td;
+	Image::Format tfmt;
+	bool tmm;
+
+	Error err = _load_data(p_path, data, tfmt, tw, th, td, tmm);
+	if (err) {
+		return err;
+	}
+
+	if (texture.is_valid()) {
+		RID new_texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data);
+		RS::get_singleton()->texture_replace(texture, new_texture);
+	} else {
+		texture = RS::get_singleton()->texture_3d_create(tfmt, tw, th, td, tmm, data);
+	}
+
+	w = tw;
+	h = th;
+	d = td;
+	mipmaps = tmm;
+	format = tfmt;
+
+	path_to_file = p_path;
+
+	if (get_path() == String()) {
+		//temporarily set path if no path set for resource, helps find errors
+		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	_change_notify();
+	emit_changed();
+	return OK;
+}
+
+String StreamTexture3D::get_load_path() const {
+	return path_to_file;
+}
+
+int StreamTexture3D::get_width() const {
+	return w;
+}
+
+int StreamTexture3D::get_height() const {
+	return h;
+}
+
+int StreamTexture3D::get_depth() const {
+	return d;
+}
+
+bool StreamTexture3D::has_mipmaps() const {
+	return mipmaps;
+}
+
+RID StreamTexture3D::get_rid() const {
+	if (!texture.is_valid()) {
+		texture = RS::get_singleton()->texture_3d_placeholder_create();
+	}
+	return texture;
+}
+
+Vector<Ref<Image>> StreamTexture3D::get_data() const {
+	if (texture.is_valid()) {
+		return RS::get_singleton()->texture_3d_get(texture);
+	} else {
+		return Vector<Ref<Image>>();
+	}
+}
+
+void StreamTexture3D::reload_from_file() {
+	String path = get_path();
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	path = ResourceLoader::path_remap(path); //remap for translation
+	path = ResourceLoader::import_remap(path); //remap for import
+	if (!path.is_resource_file()) {
+		return;
+	}
+
+	load(path);
+}
+
+void StreamTexture3D::_validate_property(PropertyInfo &property) const {
+}
+
+void StreamTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture3D::load);
+	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTexture3D::get_load_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
+}
+
+StreamTexture3D::StreamTexture3D() {
+	format = Image::FORMAT_MAX;
+	w = 0;
+	h = 0;
+	d = 0;
+	mipmaps = false;
+}
+
+StreamTexture3D::~StreamTexture3D() {
+	if (texture.is_valid()) {
+		RS::get_singleton()->free(texture);
+	}
+}
+
+/////////////////////////////
+
+RES ResourceFormatLoaderStreamTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
+	Ref<StreamTexture3D> st;
+	st.instance();
+	Error err = st->load(p_path);
+	if (r_error) {
+		*r_error = err;
+	}
+	if (err != OK) {
+		return RES();
+	}
+
+	return st;
+}
+
+void ResourceFormatLoaderStreamTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("stex3d");
+}
+
+bool ResourceFormatLoaderStreamTexture3D::handles_type(const String &p_type) const {
+	return p_type == "StreamTexture3D";
+}
+
+String ResourceFormatLoaderStreamTexture3D::get_resource_type(const String &p_path) const {
+	if (p_path.get_extension().to_lower() == "stex3d") {
+		return "StreamTexture3D";
+	}
+	return "";
+}
+
+////////////////////////////////////////////
 
 int AtlasTexture::get_width() const {
 	if (region.size.width == 0) {
