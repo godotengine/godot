@@ -451,7 +451,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_readonly_color", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_outline_color", "TextEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "TextEdit", control_selection_color);
-	theme->set_color("mark_color", "TextEdit", Color(1.0, 0.4, 0.4, 0.4));
 	theme->set_color("code_folding_color", "TextEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
@@ -494,7 +493,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_readonly_color", "CodeEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("font_outline_color", "CodeEdit", Color(1, 1, 1));
 	theme->set_color("selection_color", "CodeEdit", control_selection_color);
-	theme->set_color("mark_color", "CodeEdit", Color(1.0, 0.4, 0.4, 0.4));
 	theme->set_color("bookmark_color", "CodeEdit", Color(0.5, 0.64, 1, 0.8));
 	theme->set_color("breakpoint_color", "CodeEdit", Color(0.9, 0.29, 0.3));
 	theme->set_color("executing_line_color", "CodeEdit", Color(0.98, 0.89, 0.27));

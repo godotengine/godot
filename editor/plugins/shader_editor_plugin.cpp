@@ -83,53 +83,16 @@ void ShaderTextEditor::reload_text() {
 }
 
 void ShaderTextEditor::_load_theme_settings() {
-	Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
-	Color completion_background_color = EDITOR_GET("text_editor/highlighting/completion_background_color");
-	Color completion_selected_color = EDITOR_GET("text_editor/highlighting/completion_selected_color");
-	Color completion_existing_color = EDITOR_GET("text_editor/highlighting/completion_existing_color");
-	Color completion_scroll_color = EDITOR_GET("text_editor/highlighting/completion_scroll_color");
-	Color completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
-	Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
-	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
-	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
-	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
-	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
-	Color selection_color = EDITOR_GET("text_editor/highlighting/selection_color");
-	Color brace_mismatch_color = EDITOR_GET("text_editor/highlighting/brace_mismatch_color");
-	Color current_line_color = EDITOR_GET("text_editor/highlighting/current_line_color");
-	Color line_length_guideline_color = EDITOR_GET("text_editor/highlighting/line_length_guideline_color");
-	Color word_highlighted_color = EDITOR_GET("text_editor/highlighting/word_highlighted_color");
-	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
-	Color bookmark_color = EDITOR_GET("text_editor/highlighting/bookmark_color");
-	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
-	Color executing_line_color = EDITOR_GET("text_editor/highlighting/executing_line_color");
-	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
-	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
-	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
-
-	get_text_editor()->add_theme_color_override("background_color", background_color);
-	get_text_editor()->add_theme_color_override("completion_background_color", completion_background_color);
-	get_text_editor()->add_theme_color_override("completion_selected_color", completion_selected_color);
-	get_text_editor()->add_theme_color_override("completion_existing_color", completion_existing_color);
-	get_text_editor()->add_theme_color_override("completion_scroll_color", completion_scroll_color);
-	get_text_editor()->add_theme_color_override("completion_font_color", completion_font_color);
-	get_text_editor()->add_theme_color_override("font_color", text_color);
-	get_text_editor()->add_theme_color_override("line_number_color", line_number_color);
-	get_text_editor()->add_theme_color_override("caret_color", caret_color);
-	get_text_editor()->add_theme_color_override("caret_background_color", caret_background_color);
-	get_text_editor()->add_theme_color_override("font_selected_color", text_selected_color);
-	get_text_editor()->add_theme_color_override("selection_color", selection_color);
-	get_text_editor()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
-	get_text_editor()->add_theme_color_override("current_line_color", current_line_color);
-	get_text_editor()->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
-	get_text_editor()->add_theme_color_override("word_highlighted_color", word_highlighted_color);
-	get_text_editor()->add_theme_color_override("mark_color", mark_color);
-	get_text_editor()->add_theme_color_override("bookmark_color", bookmark_color);
-	get_text_editor()->add_theme_color_override("breakpoint_color", breakpoint_color);
-	get_text_editor()->add_theme_color_override("executing_line_color", executing_line_color);
-	get_text_editor()->add_theme_color_override("code_folding_color", code_folding_color);
-	get_text_editor()->add_theme_color_override("search_result_color", search_result_color);
-	get_text_editor()->add_theme_color_override("search_result_border_color", search_result_border_color);
+	CodeEdit *text_editor = get_text_editor();
+	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	if (updated_marked_line_color != marked_line_color) {
+		for (int i = 0; i < text_editor->get_line_count(); i++) {
+			if (text_editor->get_line_background_color(i) == marked_line_color) {
+				text_editor->set_line_background_color(i, updated_marked_line_color);
+			}
+		}
+		marked_line_color = updated_marked_line_color;
+	}
 
 	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/highlighting/number_color"));
 	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/highlighting/symbol_color"));
@@ -231,13 +194,13 @@ void ShaderTextEditor::_validate_script() {
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-			get_text_editor()->set_line_as_marked(i, false);
+			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
-		get_text_editor()->set_line_as_marked(sl.get_error_line() - 1, true);
+		get_text_editor()->set_line_background_color(sl.get_error_line() - 1, marked_line_color);
 
 	} else {
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
-			get_text_editor()->set_line_as_marked(i, false);
+			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
 		set_error("");
 	}

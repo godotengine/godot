@@ -92,7 +92,7 @@ private:
 			Vector<Vector2i> bidi_override;
 			Ref<TextParagraph> data_buf;
 
-			bool marked = false;
+			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
 
 			Line() {
@@ -129,12 +129,11 @@ private:
 
 		void set_width(float p_width);
 		int get_line_wrap_amount(int p_line) const;
+
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
 
 		void set(int p_line, const String &p_text, const Vector<Vector2i> &p_bidi_override);
-		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
-		bool is_marked(int p_line) const { return text[p_line].marked; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override);
@@ -167,6 +166,10 @@ private:
 
 		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text.write[p_line].gutters.write[p_gutter].clickable = p_clickable; }
 		bool is_line_gutter_clickable(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].clickable; }
+
+		/* Line style. */
+		void set_line_background_color(int p_line, const Color &p_color) { text.write[p_line].background_color = p_color; }
+		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
 	};
 
 	struct Cursor {
@@ -484,7 +487,6 @@ protected:
 		Color font_selected_color;
 		Color font_readonly_color;
 		Color selection_color;
-		Color mark_color;
 		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
@@ -560,6 +562,10 @@ public:
 
 	void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable);
 	bool is_line_gutter_clickable(int p_line, int p_gutter) const;
+
+	// Line style
+	void set_line_background_color(int p_line, const Color &p_color);
+	Color get_line_background_color(int p_line);
 
 	enum MenuItems {
 		MENU_CUT,
@@ -637,7 +643,6 @@ public:
 	void insert_text_at_cursor(const String &p_text);
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
-	void set_line_as_marked(int p_line, bool p_marked);
 
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;

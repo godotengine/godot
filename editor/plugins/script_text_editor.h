@@ -89,6 +89,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color default_line_number_color = Color(1, 1, 1);
 	Color safe_line_number_color = Color(1, 1, 1);
 
+	Color marked_line_color = Color(1, 1, 1);
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;

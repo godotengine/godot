@@ -167,6 +167,15 @@
 				Returns the text of a specific line.
 			</description>
 		</method>
+		<method name="get_line_background_color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<description>
+				Returns the current background color of the line. [code]Color(0, 0, 0, 0)[/code] is returned if no color is set.
+			</description>
+		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
 			</return>
@@ -546,6 +555,17 @@
 			</argument>
 			<description>
 				If [code]true[/code], hides the line of the specified index.
+			</description>
+		</method>
+		<method name="set_line_background_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+				Sets the current background color of the line. Set to [code]Color(0, 0, 0, 0)[/code] for no color.
 			</description>
 		</method>
 		<method name="set_line_gutter_clickable">
@@ -986,9 +1006,6 @@
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
 			Sets the spacing between the lines.
-		</theme_item>
-		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
-			Sets the [Color] of marked text.
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
