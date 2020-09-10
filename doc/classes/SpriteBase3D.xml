@@ -4,7 +4,7 @@
 		2D sprite node in 3D environment.
 	</brief_description>
 	<description>
-		A node that displays 2D texture information in a 3D environment.
+		A node that displays 2D texture information in a 3D environment. See also [Sprite3D] where many other properties are defined.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +13,7 @@
 			<return type="TriangleMesh">
 			</return>
 			<description>
+				Returns a [TriangleMesh] with the sprite's vertices following its current configuration (such as its [member axis] and [member pixel_size]).
 			</description>
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
@@ -39,17 +40,19 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the specified flag will be enabled.
+				If [code]true[/code], the specified flag will be enabled. See [enum SpriteBase3D.DrawFlags] for a list of flags.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="alpha_cut" type="int" setter="set_alpha_cut_mode" getter="get_alpha_cut_mode" enum="SpriteBase3D.AlphaCutMode" default="0">
+			The alpha cutting mode to use for the sprite. See [enum AlphaCutMode] for possible values.
 		</member>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis" default="2">
 			The direction in which the front of the texture faces.
 		</member>
 		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="BaseMaterial3D.BillboardMode" default="0">
+			The billboard mode to use for the sprite. See [enum BaseMaterial3D.BillboardMode] for possible values.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
@@ -90,16 +93,19 @@
 			If set, lights in the environment affect the sprite.
 		</constant>
 		<constant name="FLAG_DOUBLE_SIDED" value="2" enum="DrawFlags">
-			If set, texture can be seen from the back as well, if not, it is invisible when looking at it from behind.
+			If set, texture can be seen from the back as well. If not, the texture is invisible when looking at it from behind.
 		</constant>
 		<constant name="FLAG_MAX" value="3" enum="DrawFlags">
 			Represents the size of the [enum DrawFlags] enum.
 		</constant>
 		<constant name="ALPHA_CUT_DISABLED" value="0" enum="AlphaCutMode">
+			This mode performs standard alpha blending. It can display translucent areas, but transparency sorting issues may be visible when multiple transparent materials are overlapping.
 		</constant>
 		<constant name="ALPHA_CUT_DISCARD" value="1" enum="AlphaCutMode">
+			This mode only allows fully transparent or fully opaque pixels. Harsh edges will be visible unless some form of screen-space antialiasing is enabled (see [member ProjectSettings.rendering/quality/screen_filters/screen_space_aa]). On the bright side, this mode doesn't suffer from transparency sorting issues when multiple transparent materials are overlapping. This mode is also known as [i]alpha testing[/i] or [i]1-bit transparency[/i].
 		</constant>
 		<constant name="ALPHA_CUT_OPAQUE_PREPASS" value="2" enum="AlphaCutMode">
+			This mode draws fully opaque pixels in the depth prepass. This is slower than [constant ALPHA_CUT_DISABLED] or [constant ALPHA_CUT_DISCARD], but it allows displaying translucent areas and smooth edges while using proper sorting.
 		</constant>
 	</constants>
 </class>
