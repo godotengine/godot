@@ -383,3 +383,6 @@ ruby.png
 snow.png
 updown.png
 gcov.css
+
+# https://clangd.llvm.org/ cache folder
+.clangd/
