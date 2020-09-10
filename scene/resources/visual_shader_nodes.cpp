@@ -951,6 +951,64 @@ void VisualShaderNodeTexture2DArray::_bind_methods() {
 
 VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
 }
+
+////////////// Texture3D
+
+String VisualShaderNodeTexture3D::get_caption() const {
+	return "Texture3D";
+}
+
+String VisualShaderNodeTexture3D::get_input_port_name(int p_port) const {
+	if (p_port == 2) {
+		return "sampler3D";
+	}
+	return VisualShaderNodeSample3D::get_input_port_name(p_port);
+}
+
+Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	VisualShader::DefaultTextureParam dtp;
+	dtp.name = make_unique_id(p_type, p_id, "tex3d");
+	dtp.param = texture;
+	Vector<VisualShader::DefaultTextureParam> ret;
+	ret.push_back(dtp);
+	return ret;
+}
+
+String VisualShaderNodeTexture3D::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	if (source == SOURCE_TEXTURE) {
+		return "uniform sampler3D " + make_unique_id(p_type, p_id, "tex3d") + ";\n";
+	}
+	return String();
+}
+
+void VisualShaderNodeTexture3D::set_texture(Ref<Texture3D> p_value) {
+	texture = p_value;
+	emit_changed();
+}
+
+Ref<Texture3D> VisualShaderNodeTexture3D::get_texture() const {
+	return texture;
+}
+
+Vector<StringName> VisualShaderNodeTexture3D::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("source");
+	if (source == SOURCE_TEXTURE) {
+		props.push_back("texture");
+	}
+	return props;
+}
+
+void VisualShaderNodeTexture3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "value"), &VisualShaderNodeTexture3D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeTexture3D::get_texture);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture3D"), "set_texture", "get_texture");
+}
+
+VisualShaderNodeTexture3D::VisualShaderNodeTexture3D() {
+}
+
 ////////////// Cubemap
 
 String VisualShaderNodeCubemap::get_caption() const {
@@ -4395,6 +4453,74 @@ String VisualShaderNodeTexture2DArrayUniform::generate_code(Shader::Mode p_mode,
 }
 
 VisualShaderNodeTexture2DArrayUniform::VisualShaderNodeTexture2DArrayUniform() {
+}
+
+////////////// Texture3D Uniform
+
+String VisualShaderNodeTexture3DUniform::get_caption() const {
+	return "Texture3DUniform";
+}
+
+int VisualShaderNodeTexture3DUniform::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeTexture3DUniform::PortType VisualShaderNodeTexture3DUniform::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SAMPLER;
+}
+
+String VisualShaderNodeTexture3DUniform::get_output_port_name(int p_port) const {
+	return "sampler3D";
+}
+
+int VisualShaderNodeTexture3DUniform::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeTexture3DUniform::PortType VisualShaderNodeTexture3DUniform::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTexture3DUniform::get_input_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeTexture3DUniform::get_input_port_default_hint(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler3D " + get_uniform_name();
+
+	switch (texture_type) {
+		case TYPE_DATA:
+			if (color_default == COLOR_DEFAULT_BLACK)
+				code += " : hint_black;\n";
+			else
+				code += ";\n";
+			break;
+		case TYPE_COLOR:
+			if (color_default == COLOR_DEFAULT_BLACK)
+				code += " : hint_black_albedo;\n";
+			else
+				code += " : hint_albedo;\n";
+			break;
+		case TYPE_NORMALMAP:
+			code += " : hint_normal;\n";
+			break;
+		case TYPE_ANISO:
+			code += " : hint_aniso;\n";
+			break;
+	}
+
+	return code;
+}
+
+String VisualShaderNodeTexture3DUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return String();
+}
+
+VisualShaderNodeTexture3DUniform::VisualShaderNodeTexture3DUniform() {
 }
 
 ////////////// Cubemap Uniform
