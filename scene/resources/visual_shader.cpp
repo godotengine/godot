@@ -40,7 +40,6 @@ bool VisualShaderNode::is_simple_decl() const {
 
 void VisualShaderNode::set_output_port_for_preview(int p_index) {
 	port_preview = p_index;
-	emit_signal("show_port_preview", p_index);
 }
 
 int VisualShaderNode::get_output_port_for_preview() const {
@@ -162,7 +161,6 @@ void VisualShaderNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
 	ADD_SIGNAL(MethodInfo("editor_refresh_request"));
-	ADD_SIGNAL(MethodInfo("show_port_preview", PropertyInfo(Variant::INT, "port_id")));
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
@@ -319,13 +317,6 @@ VisualShaderNodeCustom::VisualShaderNodeCustom() {
 
 /////////////////////////////////////////////////////////
 
-void VisualShader::set_graph_node(Type p_type, int p_id, GraphNode *p_graph_node) {
-	ERR_FAIL_INDEX(p_type, TYPE_MAX);
-	Graph *g = &graph[p_type];
-	ERR_FAIL_COND(!g->nodes.has(p_id));
-	g->nodes[p_id].graph_node = p_graph_node;
-}
-
 void VisualShader::set_shader_type(Type p_type) {
 	current_type = p_type;
 }
@@ -417,11 +408,6 @@ void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_pos
 	Graph *g = &graph[p_type];
 	ERR_FAIL_COND(!g->nodes.has(p_id));
 	g->nodes[p_id].position = p_position;
-	if (current_type == p_type) {
-		if (g->nodes[p_id].graph_node != nullptr) {
-			g->nodes[p_id].graph_node->set_offset(p_position);
-		}
-	}
 }
 
 Vector2 VisualShader::get_node_position(Type p_type, int p_id) const {
