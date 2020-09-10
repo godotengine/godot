@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTexture" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
-		Performs a texture lookup within the visual shader graph.
+		Performs a 2D texture lookup within the visual shader graph.
 	</brief_description>
 	<description>
 		Performs a lookup operation on the provided texture, with support for multiple texture sources to choose from.
