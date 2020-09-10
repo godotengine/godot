@@ -4,7 +4,6 @@ Import("env")
 
 import core_builders
 import make_binders
-from platform_methods import run_in_subprocess
 
 env.core_sources = []
 
