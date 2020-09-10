@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 from methods import detect_darwin_sdk_path
 
 

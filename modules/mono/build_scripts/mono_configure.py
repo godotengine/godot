@@ -1,6 +1,5 @@
 import os
 import os.path
-import sys
 import subprocess
 
 from SCons.Script import Dir, Environment
