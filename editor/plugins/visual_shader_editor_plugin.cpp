@@ -848,6 +848,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 		expression_syntax_highlighter->add_color_region("//", "", comment_color, true);
 
+		expression_box->clear_comment_delimiters();
+		expression_box->add_comment_delimiter("/*", "*/", false);
+		expression_box->add_comment_delimiter("//", "", true);
+
 		expression_box->set_text(expression);
 		expression_box->set_context_menu_enabled(false);
 		expression_box->set_draw_line_numbers(true);
@@ -2983,6 +2987,10 @@ void VisualShaderEditor::_notification(int p_what) {
 			syntax_highlighter->clear_color_regions();
 			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 			syntax_highlighter->add_color_region("//", "", comment_color, true);
+
+			preview_text->clear_comment_delimiters();
+			preview_text->add_comment_delimiter("/*", "*/", false);
+			preview_text->add_comment_delimiter("//", "", true);
 
 			error_text->add_theme_font_override("font", get_theme_font("status_source", "EditorFonts"));
 			error_text->add_theme_font_size_override("font_size", get_theme_font_size("status_source_size", "EditorFonts"));

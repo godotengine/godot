@@ -30,6 +30,12 @@
 
 #include "code_edit.h"
 
+#include "core/string/ustring.h"
+
+static bool _is_whitespace(char32_t c) {
+	return c == '\t' || c == ' ';
+}
+
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
@@ -275,6 +281,175 @@ void CodeEdit::_fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_regi
 	folded_icon->draw_rect(get_canvas_item(), p_region, false, folding_color);
 }
 
+/* Delimiters */
+// Strings
+void CodeEdit::add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only) {
+	_add_delimiter(p_start_key, p_end_key, p_line_only, TYPE_STRING);
+}
+
+void CodeEdit::remove_string_delimiter(const String &p_start_key) {
+	_remove_delimiter(p_start_key, TYPE_STRING);
+}
+
+bool CodeEdit::has_string_delimiter(const String &p_start_key) const {
+	return _has_delimiter(p_start_key, TYPE_STRING);
+}
+
+void CodeEdit::set_string_delimiters(const TypedArray<String> &p_string_delimiters) {
+	_set_delimiters(p_string_delimiters, TYPE_STRING);
+}
+
+void CodeEdit::clear_string_delimiters() {
+	_clear_delimiters(TYPE_STRING);
+}
+
+TypedArray<String> CodeEdit::get_string_delimiters() const {
+	return _get_delimiters(TYPE_STRING);
+}
+
+int CodeEdit::is_in_string(int p_line, int p_column) const {
+	return _is_in_delimiter(p_line, p_column, TYPE_STRING);
+}
+
+// Comments
+void CodeEdit::add_comment_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only) {
+	_add_delimiter(p_start_key, p_end_key, p_line_only, TYPE_COMMENT);
+}
+
+void CodeEdit::remove_comment_delimiter(const String &p_start_key) {
+	_remove_delimiter(p_start_key, TYPE_COMMENT);
+}
+
+bool CodeEdit::has_comment_delimiter(const String &p_start_key) const {
+	return _has_delimiter(p_start_key, TYPE_COMMENT);
+}
+
+void CodeEdit::set_comment_delimiters(const TypedArray<String> &p_comment_delimiters) {
+	_set_delimiters(p_comment_delimiters, TYPE_COMMENT);
+}
+
+void CodeEdit::clear_comment_delimiters() {
+	_clear_delimiters(TYPE_COMMENT);
+}
+
+TypedArray<String> CodeEdit::get_comment_delimiters() const {
+	return _get_delimiters(TYPE_COMMENT);
+}
+
+int CodeEdit::is_in_comment(int p_line, int p_column) const {
+	return _is_in_delimiter(p_line, p_column, TYPE_COMMENT);
+}
+
+String CodeEdit::get_delimiter_start_key(int p_delimiter_idx) const {
+	ERR_FAIL_INDEX_V(p_delimiter_idx, delimiters.size(), "");
+	return delimiters[p_delimiter_idx].start_key;
+}
+
+String CodeEdit::get_delimiter_end_key(int p_delimiter_idx) const {
+	ERR_FAIL_INDEX_V(p_delimiter_idx, delimiters.size(), "");
+	return delimiters[p_delimiter_idx].end_key;
+}
+
+Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
+	if (delimiters.size() == 0) {
+		return Point2(-1, -1);
+	}
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
+	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).size(), Point2(-1, -1));
+
+	Point2 start_position;
+	start_position.y = -1;
+	start_position.x = -1;
+
+	bool in_region = ((p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value()) != -1;
+
+	/* Check the keys for this line. */
+	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
+		if (E->key() > p_column) {
+			break;
+		}
+		in_region = E->value() != -1;
+		start_position.x = in_region ? E->key() : -1;
+	}
+
+	/* Region was found on this line and is not a multiline continuation. */
+	if (start_position.x != -1 && start_position.x != get_line(p_line).length() + 1) {
+		start_position.y = p_line;
+		return start_position;
+	}
+
+	/* Not in a region */
+	if (!in_region) {
+		return start_position;
+	}
+
+	/* Region starts on a previous line */
+	for (int i = p_line - 1; i >= 0; i--) {
+		if (delimiter_cache[i].size() < 1) {
+			continue;
+		}
+		start_position.y = i;
+		start_position.x = delimiter_cache[i].back()->key();
+
+		/* Make sure it's not a multiline continuation. */
+		if (start_position.x != get_line(i).length() + 1) {
+			break;
+		}
+	}
+	return start_position;
+}
+
+Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
+	if (delimiters.size() == 0) {
+		return Point2(-1, -1);
+	}
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
+	ERR_FAIL_COND_V(p_column - 1 > get_line(p_line).size(), Point2(-1, -1));
+
+	Point2 end_position;
+	end_position.y = -1;
+	end_position.x = -1;
+
+	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
+
+	/* Check the keys for this line. */
+	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
+		end_position.x = (E->value() == -1) ? E->key() : -1;
+		if (E->key() > p_column) {
+			break;
+		}
+		region = E->value();
+	}
+
+	/* Region was found on this line and is not a multiline continuation. */
+	if (region != -1 && end_position.x != -1 && (delimiters[region].line_only || end_position.x != get_line(p_line).length() + 1)) {
+		end_position.y = p_line;
+		return end_position;
+	}
+
+	/* Not in a region */
+	if (region == -1) {
+		end_position.x = -1;
+		return end_position;
+	}
+
+	/* Region ends on a later line */
+	for (int i = p_line + 1; i < get_line_count(); i++) {
+		if (delimiter_cache[i].size() < 1 || delimiter_cache[i].front()->value() != -1) {
+			continue;
+		}
+		end_position.x = delimiter_cache[i].front()->key();
+
+		/* Make sure it's not a multiline continuation. */
+		if (get_line(i).length() > 0 && end_position.x != get_line(i).length() + 1) {
+			end_position.y = i;
+			break;
+		}
+		end_position.x = -1;
+	}
+	return end_position;
+}
+
 void CodeEdit::_bind_methods() {
 	/* Main Gutter */
 	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
@@ -320,6 +495,36 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_draw_fold_gutter", "enable"), &CodeEdit::set_draw_fold_gutter);
 	ClassDB::bind_method(D_METHOD("is_drawing_fold_gutter"), &CodeEdit::is_drawing_fold_gutter);
 
+	/* Delimiters */
+	// Strings
+	ClassDB::bind_method(D_METHOD("add_string_delimiter", "start_key", "end_key", "line_only"), &CodeEdit::add_string_delimiter, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_string_delimiter", "start_key"), &CodeEdit::remove_string_delimiter);
+	ClassDB::bind_method(D_METHOD("has_string_delimiter", "start_key"), &CodeEdit::has_string_delimiter);
+
+	ClassDB::bind_method(D_METHOD("set_string_delimiters", "string_delimiters"), &CodeEdit::set_string_delimiters);
+	ClassDB::bind_method(D_METHOD("clear_string_delimiters"), &CodeEdit::clear_string_delimiters);
+	ClassDB::bind_method(D_METHOD("get_string_delimiters"), &CodeEdit::get_string_delimiters);
+
+	ClassDB::bind_method(D_METHOD("is_in_string", "line", "column"), &CodeEdit::is_in_string, DEFVAL(-1));
+
+	// Comments
+	ClassDB::bind_method(D_METHOD("add_comment_delimiter", "start_key", "end_key", "line_only"), &CodeEdit::add_comment_delimiter, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_comment_delimiter", "start_key"), &CodeEdit::remove_comment_delimiter);
+	ClassDB::bind_method(D_METHOD("has_comment_delimiter", "start_key"), &CodeEdit::has_comment_delimiter);
+
+	ClassDB::bind_method(D_METHOD("set_comment_delimiters", "comment_delimiters"), &CodeEdit::set_comment_delimiters);
+	ClassDB::bind_method(D_METHOD("clear_comment_delimiters"), &CodeEdit::clear_comment_delimiters);
+	ClassDB::bind_method(D_METHOD("get_comment_delimiters"), &CodeEdit::get_comment_delimiters);
+
+	ClassDB::bind_method(D_METHOD("is_in_comment", "line", "column"), &CodeEdit::is_in_comment, DEFVAL(-1));
+
+	// Util
+	ClassDB::bind_method(D_METHOD("get_delimiter_start_key", "delimiter_index"), &CodeEdit::get_delimiter_start_key);
+	ClassDB::bind_method(D_METHOD("get_delimiter_end_key", "delimiter_index"), &CodeEdit::get_delimiter_end_key);
+
+	ClassDB::bind_method(D_METHOD("get_delimiter_start_postion", "line", "column"), &CodeEdit::get_delimiter_start_position);
+	ClassDB::bind_method(D_METHOD("get_delimiter_end_postion", "line", "column"), &CodeEdit::get_delimiter_end_position);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
@@ -330,6 +535,10 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "zero_pad_line_numbers"), "set_line_numbers_zero_padded", "is_line_numbers_zero_padded");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_fold_gutter"), "set_draw_fold_gutter", "is_drawing_fold_gutter");
+
+	ADD_GROUP("Delimiters", "delimiter_");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
 }
@@ -360,7 +569,332 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 }
 
+void CodeEdit::_update_gutter_indexes() {
+	for (int i = 0; i < get_gutter_count(); i++) {
+		if (get_gutter_name(i) == "main_gutter") {
+			main_gutter = i;
+			continue;
+		}
+
+		if (get_gutter_name(i) == "line_numbers") {
+			line_number_gutter = i;
+			continue;
+		}
+
+		if (get_gutter_name(i) == "fold_gutter") {
+			fold_gutter = i;
+			continue;
+		}
+	}
+}
+
+/* Delimiters */
+void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
+	if (delimiters.size() == 0) {
+		return;
+	}
+
+	int line_count = get_line_count();
+	if (p_to_line == -1) {
+		p_to_line = line_count;
+	}
+
+	int start_line = MIN(p_from_line, p_to_line);
+	int end_line = MAX(p_from_line, p_to_line);
+
+	/* Make sure delimiter_cache has all the lines. */
+	if (start_line != end_line) {
+		if (p_to_line < p_from_line) {
+			for (int i = end_line; i > start_line; i--) {
+				delimiter_cache.remove(i);
+			}
+		} else {
+			for (int i = start_line; i < end_line; i++) {
+				delimiter_cache.insert(i, Map<int, int>());
+			}
+		}
+	}
+
+	int in_region = -1;
+	for (int i = start_line; i < MIN(end_line + 1, line_count); i++) {
+		int current_end_region = (i <= 0 || delimiter_cache[i].size() < 1) ? -1 : delimiter_cache[i].back()->value();
+		in_region = (i <= 0 || delimiter_cache[i - 1].size() < 1) ? -1 : delimiter_cache[i - 1].back()->value();
+
+		const String &str = get_line(i);
+		const int line_length = str.length();
+		delimiter_cache.write[i].clear();
+
+		if (str.length() == 0) {
+			if (in_region != -1) {
+				delimiter_cache.write[i][0] = in_region;
+			}
+			if (i == end_line && current_end_region != in_region) {
+				end_line = MIN(end_line++, line_count);
+			}
+			continue;
+		}
+
+		int end_region = -1;
+		for (int j = 0; j < line_length; j++) {
+			int from = j;
+			for (; from < line_length; from++) {
+				if (str[from] == '\\') {
+					from++;
+					continue;
+				}
+				break;
+			}
+
+			/* check if we are in entering a region */
+			bool same_line = false;
+			if (in_region == -1) {
+				for (int d = 0; d < delimiters.size(); d++) {
+					/* check there is enough room */
+					int chars_left = line_length - from;
+					int start_key_length = delimiters[d].start_key.length();
+					int end_key_length = delimiters[d].end_key.length();
+					if (chars_left < start_key_length) {
+						continue;
+					}
+
+					/* search the line */
+					bool match = true;
+					const char32_t *start_key = delimiters[d].start_key.get_data();
+					for (int k = 0; k < start_key_length; k++) {
+						if (start_key[k] != str[from + k]) {
+							match = false;
+							break;
+						}
+					}
+					if (!match) {
+						continue;
+					}
+					same_line = true;
+					in_region = d;
+					delimiter_cache.write[i][from + 1] = d;
+					from += start_key_length;
+
+					/* check if it's the whole line */
+					if (end_key_length == 0 || delimiters[d].line_only || from + end_key_length > line_length) {
+						j = line_length;
+						if (delimiters[d].line_only) {
+							delimiter_cache.write[i][line_length + 1] = -1;
+						} else {
+							end_region = in_region;
+						}
+					}
+					break;
+				}
+
+				if (j == line_length || in_region == -1) {
+					continue;
+				}
+			}
+
+			/* if we are in one find the end key */
+			/* search the line */
+			int region_end_index = -1;
+			int end_key_length = delimiters[in_region].end_key.length();
+			const char32_t *end_key = delimiters[in_region].end_key.get_data();
+			for (; from < line_length; from++) {
+				if (line_length - from < end_key_length) {
+					break;
+				}
+
+				if (!is_symbol(str[from])) {
+					continue;
+				}
+
+				if (str[from] == '\\') {
+					from++;
+					continue;
+				}
+
+				region_end_index = from;
+				for (int k = 0; k < end_key_length; k++) {
+					if (end_key[k] != str[from + k]) {
+						region_end_index = -1;
+						break;
+					}
+				}
+
+				if (region_end_index != -1) {
+					break;
+				}
+			}
+
+			j = from + (end_key_length - 1);
+			end_region = (region_end_index == -1) ? in_region : -1;
+			if (!same_line || region_end_index != -1) {
+				delimiter_cache.write[i][j + 1] = end_region;
+			}
+			in_region = -1;
+		}
+
+		if (i == end_line && current_end_region != end_region) {
+			end_line = MIN(end_line++, line_count);
+		}
+	}
+}
+
+int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const {
+	if (delimiters.size() == 0) {
+		return -1;
+	}
+	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
+
+	int region = (p_line <= 0 || delimiter_cache[p_line - 1].size() < 1) ? -1 : delimiter_cache[p_line - 1].back()->value();
+	bool in_region = region != -1 && delimiters[region].type == p_type;
+	for (Map<int, int>::Element *E = delimiter_cache[p_line].front(); E; E = E->next()) {
+		/* If column is specified, loop untill the key is larger then the column. */
+		if (p_column != -1) {
+			if (E->key() > p_column) {
+				break;
+			}
+			in_region = E->value() != -1 && delimiters[E->value()].type == p_type;
+			region = in_region ? E->value() : -1;
+			continue;
+		}
+
+		/* If no column, calulate if the entire line is a region       */
+		/* excluding whitespace.                                       */
+		const String line = get_line(p_line);
+		if (!in_region) {
+			if (E->value() == -1 || delimiters[E->value()].type != p_type) {
+				break;
+			}
+
+			region = E->value();
+			in_region = true;
+			for (int i = E->key() - 2; i >= 0; i--) {
+				if (!_is_whitespace(line[i])) {
+					return -1;
+				}
+			}
+		}
+
+		if (delimiters[region].line_only) {
+			return region;
+		}
+
+		int end_col = E->key();
+		if (E->value() != -1) {
+			if (!E->next()) {
+				return region;
+			}
+			end_col = E->next()->key();
+		}
+
+		for (int i = end_col; i < line.length(); i++) {
+			if (!_is_whitespace(line[i])) {
+				return -1;
+			}
+		}
+		return region;
+	}
+	return in_region ? region : -1;
+}
+
+void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only, DelimiterType p_type) {
+	if (p_start_key.length() > 0) {
+		for (int i = 0; i < p_start_key.length(); i++) {
+			ERR_FAIL_COND_MSG(!is_symbol(p_start_key[i]), "delimiter must start with a symbol");
+		}
+	}
+
+	if (p_end_key.length() > 0) {
+		for (int i = 0; i < p_end_key.length(); i++) {
+			ERR_FAIL_COND_MSG(!is_symbol(p_end_key[i]), "delimiter must end with a symbol");
+		}
+	}
+
+	int at = 0;
+	for (int i = 0; i < delimiters.size(); i++) {
+		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
+		if (p_start_key.length() < delimiters[i].start_key.length()) {
+			at++;
+		}
+	}
+
+	Delimiter delimiter;
+	delimiter.type = p_type;
+	delimiter.start_key = p_start_key;
+	delimiter.end_key = p_end_key;
+	delimiter.line_only = p_line_only || p_end_key == "";
+	delimiters.insert(at, delimiter);
+	if (!setting_delimiters) {
+		delimiter_cache.clear();
+		_update_delimiter_cache();
+	}
+}
+
+void CodeEdit::_remove_delimiter(const String &p_start_key, DelimiterType p_type) {
+	for (int i = 0; i < delimiters.size(); i++) {
+		if (delimiters[i].start_key != p_start_key) {
+			continue;
+		}
+
+		if (delimiters[i].type != p_type) {
+			break;
+		}
+
+		delimiters.remove(i);
+		if (!setting_delimiters) {
+			delimiter_cache.clear();
+			_update_delimiter_cache();
+		}
+		break;
+	}
+}
+
+bool CodeEdit::_has_delimiter(const String &p_start_key, DelimiterType p_type) const {
+	for (int i = 0; i < delimiters.size(); i++) {
+		if (delimiters[i].start_key == p_start_key) {
+			return delimiters[i].type == p_type;
+		}
+	}
+	return false;
+}
+
+void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, DelimiterType p_type) {
+	setting_delimiters = true;
+	_clear_delimiters(p_type);
+
+	for (int i = 0; i < p_delimiters.size(); i++) {
+		String key = p_delimiters[i].is_null() ? "" : p_delimiters[i];
+
+		const String start_key = key.get_slice(" ", 0);
+		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
+
+		_add_delimiter(start_key, end_key, end_key == "", p_type);
+	}
+	setting_delimiters = false;
+	_update_delimiter_cache();
+}
+
+void CodeEdit::_clear_delimiters(DelimiterType p_type) {
+	for (int i = delimiters.size() - 1; i >= 0; i--) {
+		if (delimiters[i].type == p_type) {
+			delimiters.remove(i);
+		}
+	}
+	delimiter_cache.clear();
+}
+
+TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
+	TypedArray<String> r_delimiters;
+	for (int i = 0; i < delimiters.size(); i++) {
+		if (delimiters[i].type != p_type) {
+			continue;
+		}
+		r_delimiters.push_back(delimiters[i].start_key + (delimiters[i].end_key.empty() ? "" : " " + delimiters[i].end_key));
+	}
+	return r_delimiters;
+}
+
 void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
+	_update_delimiter_cache(p_from_line, p_to_line);
+
 	if (p_from_line == p_to_line) {
 		return;
 	}
@@ -387,25 +921,6 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 		if (line_count > 0 || line >= p_from_line) {
 			emit_signal("breakpoint_toggled", line + line_count);
 			breakpointed_lines[line + line_count] = true;
-			continue;
-		}
-	}
-}
-
-void CodeEdit::_update_gutter_indexes() {
-	for (int i = 0; i < get_gutter_count(); i++) {
-		if (get_gutter_name(i) == "main_gutter") {
-			main_gutter = i;
-			continue;
-		}
-
-		if (get_gutter_name(i) == "line_numbers") {
-			line_number_gutter = i;
-			continue;
-		}
-
-		if (get_gutter_name(i) == "fold_gutter") {
-			fold_gutter = i;
 			continue;
 		}
 	}

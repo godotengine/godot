@@ -154,6 +154,10 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
 
+	text_editor->clear_comment_delimiters();
+	text_editor->add_comment_delimiter("/*", "*/", false);
+	text_editor->add_comment_delimiter("//", "", true);
+
 	if (warnings_panel) {
 		// Warnings panel
 		warnings_panel->add_theme_font_override("normal_font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("main", "EditorFonts"));
