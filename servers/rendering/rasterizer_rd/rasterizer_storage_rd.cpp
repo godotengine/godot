@@ -7190,15 +7190,18 @@ RasterizerStorageRD::RasterizerStorageRD() {
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 				} break;
 				default: {
 				}
