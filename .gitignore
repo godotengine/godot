@@ -360,3 +360,6 @@ compile_commands.json
 
 # Cppcheck
 *.cppcheck
+
+# https://clangd.llvm.org/ cache folder
+.clangd/
