@@ -35,8 +35,8 @@
 #include "mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
-void RayCast3D::set_cast_to(const Vector3 &p_point) {
-	cast_to = p_point;
+void RayCast3D::set_target_position(const Vector3 &p_point) {
+	target_position = p_point;
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update_gizmo();
 	}
@@ -45,8 +45,8 @@ void RayCast3D::set_cast_to(const Vector3 &p_point) {
 	}
 }
 
-Vector3 RayCast3D::get_cast_to() const {
-	return cast_to;
+Vector3 RayCast3D::get_target_position() const {
+	return target_position;
 }
 
 void RayCast3D::set_collision_mask(uint32_t p_mask) {
@@ -202,7 +202,7 @@ void RayCast3D::_update_raycast_state() {
 
 	Transform gt = get_global_transform();
 
-	Vector3 to = cast_to;
+	Vector3 to = target_position;
 	if (to == Vector3()) {
 		to = Vector3(0, 0.01, 0);
 	}
@@ -276,8 +276,8 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast3D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_cast_to", "local_point"), &RayCast3D::set_cast_to);
-	ClassDB::bind_method(D_METHOD("get_cast_to"), &RayCast3D::get_cast_to);
+	ClassDB::bind_method(D_METHOD("set_target_position", "local_point"), &RayCast3D::set_target_position);
+	ClassDB::bind_method(D_METHOD("get_target_position"), &RayCast3D::get_target_position);
 
 	ClassDB::bind_method(D_METHOD("is_colliding"), &RayCast3D::is_colliding);
 	ClassDB::bind_method(D_METHOD("force_raycast_update"), &RayCast3D::force_raycast_update);
@@ -312,7 +312,7 @@ void RayCast3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cast_to"), "set_cast_to", "get_cast_to");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	ADD_GROUP("Collide With", "collide_with");
@@ -360,7 +360,7 @@ void RayCast3D::_update_debug_shape() {
 
 	Vector<Vector3> verts;
 	verts.push_back(Vector3());
-	verts.push_back(cast_to);
+	verts.push_back(target_position);
 	a[Mesh::ARRAY_VERTEX] = verts;
 
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
@@ -387,7 +387,7 @@ RayCast3D::RayCast3D() {
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;
-	cast_to = Vector3(0, -1, 0);
+	target_position = Vector3(0, -1, 0);
 	debug_shape = nullptr;
 	exclude_parent_body = true;
 	collide_with_areas = false;
