@@ -41,8 +41,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual bool can_edit(const Ref<AnimationNode> &p_node);
-	virtual void edit(const Ref<AnimationNode> &p_node);
+	bool can_edit(const Ref<AnimationNode> &p_node) override;
+	virtual void edit(const Ref<AnimationNode> &p_node) override;
 
 	int fill_tracks(AnimationPlayer *player, Animation *anim, NodePath &root);
 

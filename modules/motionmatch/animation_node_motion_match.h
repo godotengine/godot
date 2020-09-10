@@ -77,7 +77,7 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
 protected:
 	static void _bind_methods();
 	Variant get_parameter_default_value(
-			const StringName &p_parameter) const;
+			const StringName &p_parameter) const override;
 
 public:
 	Skeleton3D *skeleton;
@@ -86,9 +86,9 @@ public:
 	bool done = false;
 	bool editing = false;
 	float delta_time;
-	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	void get_parameter_list(List<PropertyInfo> *r_list) const override;
 
-	float process(float p_time, bool p_seek);
+	float process(float p_time, bool p_seek) override;
 	void add_matching_track(const NodePath &p_track_path);
 	void remove_matching_track(const NodePath &p_track_path);
 	bool is_matching_track(const NodePath &p_track_path) const;
