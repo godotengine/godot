@@ -203,6 +203,26 @@ void ScriptTextEditor::_set_theme_for_script() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->get_syntax_highlighter()->update_cache();
 
+	List<String> strings;
+	script->get_language()->get_string_delimiters(&strings);
+	text_edit->clear_string_delimiters();
+	for (List<String>::Element *E = strings.front(); E; E = E->next()) {
+		String string = E->get();
+		String beg = string.get_slice(" ", 0);
+		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
+		text_edit->add_string_delimiter(beg, end, end == "");
+	}
+
+	List<String> comments;
+	script->get_language()->get_comment_delimiters(&comments);
+	text_edit->clear_comment_delimiters();
+	for (List<String>::Element *E = comments.front(); E; E = E->next()) {
+		String comment = E->get();
+		String beg = comment.get_slice(" ", 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		text_edit->add_comment_delimiter(beg, end, end == "");
+	}
+
 	/* add keywords for auto completion */
 	// singleton autoloads (as types, just as engine singletons are)
 	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();

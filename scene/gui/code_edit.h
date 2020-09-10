@@ -80,9 +80,71 @@ private:
 	void _fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
 
 	void _gutter_clicked(int p_line, int p_gutter);
-	void _lines_edited_from(int p_from_line, int p_to_line);
-
 	void _update_gutter_indexes();
+
+	/* Delimiters */
+	enum DelimiterType {
+		TYPE_STRING,
+		TYPE_COMMENT,
+	};
+
+	struct Delimiter {
+		DelimiterType type;
+		String start_key = "";
+		String end_key = "";
+		bool line_only = true;
+	};
+	bool setting_delimiters = false;
+	Vector<Delimiter> delimiters;
+	/*
+	 *  Vector entry per line, contains a Map of column numbers to delimiter index, -1 marks the end of a region.
+	 *  e.g the following text will be stored as so:
+	 *
+	 *  0: nothing here
+	 *  1:
+	 *  2: # test
+	 *  3: "test" text "multiline
+	 *  4:
+	 *  5: test
+	 *  6: string"
+	 *
+	 *  Vector [
+	 *      0 = []
+	 *      1 = []
+	 *      2 = [
+	 *          1 = 1
+	 *          6 = -1
+	 *      ]
+	 *      3 = [
+	 *	        1 = 0
+	 *          6 = -1
+	 *          13 = 0
+	 *      ]
+	 *      4 = [
+	 *          0 = 0
+	 *      ]
+	 *      5 = [
+	 *          5 = 0
+	 *      ]
+	 *      6 = [
+	 *          7 = -1
+	 *      ]
+	 *  ]
+	 */
+	Vector<Map<int, int>> delimiter_cache;
+
+	void _update_delimiter_cache(int p_from_line = 0, int p_to_line = -1);
+	int _is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const;
+
+	void _add_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only, DelimiterType p_type);
+	void _remove_delimiter(const String &p_start_key, DelimiterType p_type);
+	bool _has_delimiter(const String &p_start_key, DelimiterType p_type) const;
+
+	void _set_delimiters(const TypedArray<String> &p_delimiters, DelimiterType p_type);
+	void _clear_delimiters(DelimiterType p_type);
+	TypedArray<String> _get_delimiters(DelimiterType p_type) const;
+
+	void _lines_edited_from(int p_from_line, int p_to_line);
 
 protected:
 	void _notification(int p_what);
@@ -127,6 +189,33 @@ public:
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
 	bool is_drawing_fold_gutter() const;
+
+	/* Delimiters */
+	void add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
+	void remove_string_delimiter(const String &p_start_key);
+	bool has_string_delimiter(const String &p_start_key) const;
+
+	void set_string_delimiters(const TypedArray<String> &p_string_delimiters);
+	void clear_string_delimiters();
+	TypedArray<String> get_string_delimiters() const;
+
+	int is_in_string(int p_line, int p_column = -1) const;
+
+	void add_comment_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
+	void remove_comment_delimiter(const String &p_start_key);
+	bool has_comment_delimiter(const String &p_start_key) const;
+
+	void set_comment_delimiters(const TypedArray<String> &p_comment_delimiters);
+	void clear_comment_delimiters();
+	TypedArray<String> get_comment_delimiters() const;
+
+	int is_in_comment(int p_line, int p_column = -1) const;
+
+	String get_delimiter_start_key(int p_delimiter_idx) const;
+	String get_delimiter_end_key(int p_delimiter_idx) const;
+
+	Point2 get_delimiter_start_position(int p_line, int p_column) const;
+	Point2 get_delimiter_end_position(int p_line, int p_column) const;
 
 	CodeEdit();
 	~CodeEdit();
