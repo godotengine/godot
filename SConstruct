@@ -13,8 +13,6 @@ from collections import OrderedDict
 # Local
 import methods
 import glsl_builders
-import version
-from platform_methods import run_in_subprocess
 
 # Scan possible build platforms
 
