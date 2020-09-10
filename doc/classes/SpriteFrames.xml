@@ -54,7 +54,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code], the given animation will loop.
+				Returns [code]true[/code] if the given animation is configured to loop when it finishes playing. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="get_animation_names" qualifiers="const">
