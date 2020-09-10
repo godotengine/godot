@@ -1912,7 +1912,7 @@ void RayCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<Vector3> lines;
 
 	lines.push_back(Vector3());
-	lines.push_back(raycast->get_cast_to());
+	lines.push_back(raycast->get_target_position());
 
 	const Ref<StandardMaterial3D> material =
 			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
