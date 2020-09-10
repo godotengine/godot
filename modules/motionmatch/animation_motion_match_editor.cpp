@@ -4,6 +4,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/io/resource_loader.h"
+#include "editor/editor_scale.h"
 
 bool AnimationNodeMotionMatchEditor::can_edit(
 		const Ref<AnimationNode> &p_node) {
@@ -53,7 +54,7 @@ void AnimationNodeMotionMatchEditor::_match_tracks_edited() {
 void AnimationNodeMotionMatchEditor::_edit_match_tracks() {
 	_update_match_tracks();
 	motion_match->editing = true;
-	match_tracks_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
+	match_tracks_dialog->popup_centered_clamped(Size2(500, 500) * EDSCALE);
 }
 
 void AnimationNodeMotionMatchEditor::_clear_tree() {
@@ -155,7 +156,7 @@ void AnimationNodeMotionMatchEditor::_update_match_tracks() {
 
 		if (path.get_subname_count()) {
 			String concat = path.get_concatenated_subnames();
-			this->skeleton = Object::cast_to<Skeleton>(node);
+			this->skeleton = Object::cast_to<Skeleton3D>(node);
 			if (skeleton && skeleton->find_bone(concat) != -1) {
 				// path in skeleton
 				String bone = concat;
@@ -179,7 +180,7 @@ void AnimationNodeMotionMatchEditor::_update_match_tracks() {
 						ti->set_text(0, F->get());
 						ti->set_selectable(0, false);
 						ti->set_editable(0, false);
-						ti->set_icon(0, get_icon("BoneAttachment", "EditorIcons"));
+						ti->set_icon(0, get_theme_icon("BoneAttachment", "EditorIcons"));
 					} else {
 						ti = parenthood[accum];
 					}
@@ -190,7 +191,7 @@ void AnimationNodeMotionMatchEditor::_update_match_tracks() {
 				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_text(0, concat);
 				ti->set_checked(0, motion_match->is_matching_track(path));
-				ti->set_icon(0, get_icon("BoneAttachment", "EditorIcons"));
+				ti->set_icon(0, get_theme_icon("BoneAttachment", "EditorIcons"));
 				ti->set_metadata(0, path);
 
 			} else {
@@ -264,14 +265,14 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
 			int root = anim->find_track(AnimationTreeEditor::get_singleton()
 												->get_tree()
 												->get_root_motion_track());
+			NodePath root_motion_track = AnimationTreeEditor::get_singleton()->get_tree()->get_root_motion_track();
 			int max_count =
-					fill_tracks(player, anim.ptr(), AnimationTreeEditor::get_singleton()->get_tree()->get_root_motion_track());
+					fill_tracks(player, anim.ptr(), root_motion_track);
 
 			motion_match->delta_time =
 					anim->track_get_key_time(max_key_track, max_count - 1) / max_count;
 
 			for (int j = 0; j < max_count - snap_x->get_value(); j++) {
-				int quad = 0;
 				float x = 0;
 				float z = 0;
 				for (int p = 0; p < 2; p++) {
@@ -288,7 +289,7 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
 					int track = anim->find_track(motion_match->get_matching_tracks()[y]);
 					Vector3 loc = Vector3(Dictionary(anim->track_get_key_value(track, j))
 												  .get("location", Variant()));
-					PoolRealArray arr = {};
+					Vector<float> arr = {};
 					for (int l = 0; l < snap_x->get_value(); l++) {
 						if (l != 1) {
 							arr.append(loc[l]);
@@ -304,7 +305,7 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
 											.get("location", Variant()));
 					for (int l = 0; l < 3; l++) {
 						if (l != 1) {
-							key->traj->append((loc[l] - r_loc[l]) * 10);
+							key->traj.append((loc[l] - r_loc[l]) * 10);
 						}
 					}
 				}
@@ -349,11 +350,11 @@ AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
 	match_tracks_vbox->add_child(match_tracks);
 	match_tracks->set_v_size_flags(SIZE_EXPAND_FILL);
 	match_tracks->set_hide_root(true);
-	match_tracks->connect("item_edited", this, "_match_tracks_edited");
+	match_tracks->connect_compat("item_edited", this, "_match_tracks_edited");
 
 	edit_match_tracks = memnew(Button("Edit Matching Tracks"));
 	add_child(edit_match_tracks);
-	edit_match_tracks->connect("pressed", this, "_edit_match_tracks");
+	edit_match_tracks->connect_compat("pressed", this, "_edit_match_tracks");
 
 	snap_x = memnew(SpinBox);
 	add_child(snap_x);
@@ -364,7 +365,7 @@ AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
 
 	update_tracks = memnew(Button("Update DataBase"));
 	add_child(update_tracks);
-	update_tracks->connect("pressed", this, "_update_tracks");
+	update_tracks->connect_compat("pressed", this, "_update_tracks");
 
 	HBoxContainer *velocity_vbox = memnew(HBoxContainer);
 	Label *l = memnew(Label);

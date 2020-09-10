@@ -3,9 +3,10 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "frame_model.h"
+
 #include "core/reference.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
-#include "frame_model.h"
 #include "modules/motionmatch/animation_node_motion_match.h"
 
 class AnimationNodeMotionMatchEditor : public AnimationTreeNodeEditorPlugin {
@@ -22,10 +23,10 @@ class AnimationNodeMotionMatchEditor : public AnimationTreeNodeEditorPlugin {
 
 	SpinBox *snap_x;
 
-	Skeleton *skeleton;
+	Skeleton3D *skeleton;
 
 	bool updating;
-	PoolVector<frame_model *> *keys = new PoolVector<frame_model *>();
+	Vector<frame_model *> *keys = new Vector<frame_model *>();
 
 	void _match_tracks_edited();
 

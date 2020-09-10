@@ -1,19 +1,19 @@
 #include "animation_node_motion_match.h"
-#include "scene\main\node.h"
+#include "scene/main/node.h"
 
 void AnimationNodeMotionMatch::get_parameter_list(
 		List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::INT, min, PROPERTY_HINT_NONE, ""));
 	r_list->push_back(PropertyInfo(Variant::INT, samples, PROPERTY_HINT_RANGE,
 			"5,40,1,or_greater"));
-	r_list->push_back(PropertyInfo(Variant::REAL, pvst, PROPERTY_HINT_RANGE,
+	r_list->push_back(PropertyInfo(Variant::FLOAT, pvst, PROPERTY_HINT_RANGE,
 			"0,1,0.01,or_greater"));
-	r_list->push_back(PropertyInfo(Variant::REAL, f_time, PROPERTY_HINT_RANGE,
+	r_list->push_back(PropertyInfo(Variant::FLOAT, f_time, PROPERTY_HINT_RANGE,
 			"0,2,0.01,or_greater"));
 }
 
 Variant AnimationNodeMotionMatch::get_parameter_default_value(
-		const StringName &p_parameter) {
+		const StringName &p_parameter) const {
 	if (p_parameter == min) {
 		return 0;
 	} else if (p_parameter == samples) {
@@ -161,7 +161,7 @@ AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
 
 AnimationNodeMotionMatch::~AnimationNodeMotionMatch() {}
 
-void AnimationNodeMotionMatch::add_coordinates(PoolRealArray point) {
+void AnimationNodeMotionMatch::add_coordinates(Vector<float> point) {
 	if (point.size() != dim_len) {
 		print_line("ERROR: Point is of wrong size.");
 		error = true;
@@ -174,14 +174,18 @@ void AnimationNodeMotionMatch::add_coordinates(PoolRealArray point) {
 	}
 } // adds point to KD-tree
 
-void AnimationNodeMotionMatch::load_coordinates(PoolRealArray points) {
-	if (points.size() % dim_len != 0) {
+void AnimationNodeMotionMatch::load_coordinates(Vector<float> points) {
+	if (dim_len < 0) {
+		print_line("ERROR: Length is negative");
+		error = true;
+		err = LOAD_POINT_ERROR;
+	} else if (points.size() % dim_len != 0) {
 		print_line("ERROR: Point is of wrong size.");
 		error = true;
 		err = LOAD_POINT_ERROR;
 	} else {
 		for (int i = 0; i < points.size() / dim_len; i++) {
-			PoolRealArray point;
+			Vector<float> point;
 			for (int j = 0; j < dim_len; j++) {
 				point.append(points[i * dim_len + j]);
 			}
@@ -190,7 +194,7 @@ void AnimationNodeMotionMatch::load_coordinates(PoolRealArray points) {
 	}
 } // load multiple points at a go to KD-Tree
 
-PoolRealArray AnimationNodeMotionMatch::get_coordinates() {
+Vector<float> AnimationNodeMotionMatch::get_coordinates() {
 	return this->point_coordinates;
 }
 
@@ -198,11 +202,11 @@ void AnimationNodeMotionMatch::clear_coordinates() {
 	this->point_coordinates.resize(0);
 }
 
-void AnimationNodeMotionMatch::set_dim_len(uint32_t dim_len) {
+void AnimationNodeMotionMatch::set_dim_len(int32_t dim_len) {
 	this->dim_len = dim_len;
 } // set dimension length
 
-uint32_t AnimationNodeMotionMatch::get_dim_len() {
+int32_t AnimationNodeMotionMatch::get_dim_len() {
 	return this->dim_len;
 }
 
@@ -214,15 +218,15 @@ void AnimationNodeMotionMatch::clear_root() {
 	root->point_indices = {};
 	root->split_th = 0;
 	root->split_axis = 0;
-	root->left = nullptr;
-	root->right = nullptr;
+	root->left = Ref<KDNode>();
+	root->right = Ref<KDNode>();
 } // resets KDtree
 
-void AnimationNodeMotionMatch::set_start_index(uint32_t si) {
+void AnimationNodeMotionMatch::set_start_index(int32_t si) {
 	this->start_index = si;
 } // set from which point you want to start evaluation
 
-uint32_t AnimationNodeMotionMatch::get_start_index() {
+int32_t AnimationNodeMotionMatch::get_start_index() {
 	return this->start_index;
 }
 
@@ -234,11 +238,11 @@ void AnimationNodeMotionMatch::calc_root_threshold() {
 	}
 } // Calculating root threshold TODO : Add options for threshold
 
-void AnimationNodeMotionMatch::set_min_leaves(uint32_t min_l) {
+void AnimationNodeMotionMatch::set_min_leaves(int32_t min_l) {
 	min_leaves = min_l;
 } // min_leaves per node
 
-uint32_t AnimationNodeMotionMatch::get_min_leaves() {
+int32_t AnimationNodeMotionMatch::get_min_leaves() {
 	return min_leaves;
 }
 
@@ -248,7 +252,7 @@ void AnimationNodeMotionMatch::build_tree() {
 			print_line("ERROR: Check the input points");
 		else if (err == QUERY_POINT_ERROR)
 			print_line("ERROR: Check your query point");
-		else if (err = K_ERROR)
+		else if (err == K_ERROR)
 			print_line("ERROR: Invalid value for number of neighbors");
 
 	} else {
@@ -258,7 +262,7 @@ void AnimationNodeMotionMatch::build_tree() {
 	}
 } // Builds the tree with all the given parameters
 
-float dist_between(PoolRealArray point_coordinates, PoolRealArray p1,
+float dist_between(Vector<float> point_coordinates, Vector<float> p1,
 		uint32_t index) {
 	float n = 0;
 	for (int i = 0; i < p1.size(); i++) {
@@ -268,7 +272,7 @@ float dist_between(PoolRealArray point_coordinates, PoolRealArray p1,
 	return sqrt(n);
 }
 
-bool in_array(PoolRealArray points, uint32_t query) {
+bool in_array(Vector<float> points, uint32_t query) {
 	for (int i = 0; i < points.size(); i++) {
 		if (points[i] == query)
 			return true;
@@ -276,8 +280,8 @@ bool in_array(PoolRealArray points, uint32_t query) {
 	return false;
 }
 
-PoolRealArray AnimationNodeMotionMatch::KNNSearch(PoolRealArray point,
-		uint32_t k) {
+Vector<float> AnimationNodeMotionMatch::KNNSearch(Vector<float> point,
+		int32_t k) {
 	if (error == false && point.size() % dim_len != 0) {
 		error = true;
 		err = QUERY_POINT_ERROR;
@@ -291,13 +295,13 @@ PoolRealArray AnimationNodeMotionMatch::KNNSearch(PoolRealArray point,
 			print_line("ERROR: Check the input points");
 		else if (err == QUERY_POINT_ERROR)
 			print_line("ERROR: Check your query point");
-		else if (err = K_ERROR)
+		else if (err == K_ERROR)
 			print_line("ERROR: Invalid value for number of neighbors");
 
 		return {};
 
 	} else {
-		PoolRealArray Knn = {};
+		Vector<float> Knn = {};
 		KDNode *m_node; /*node where the query point can be placed*/
 		KDNode *node = root.ptr();
 
@@ -310,7 +314,7 @@ PoolRealArray AnimationNodeMotionMatch::KNNSearch(PoolRealArray point,
 		}
 		m_node = node;
 		for (int j = 0; j < k; j++) {
-			uint32_t nn; /*nearest neighbour*/
+			uint32_t nn = 0; /*nearest neighbour*/
 			float nd = std::numeric_limits<float>::max(); /*nearest distance*/
 			for (int i = 0; i < node->get_indices().size(); i++) {
 				if (j == 0) {
@@ -360,10 +364,10 @@ PoolRealArray AnimationNodeMotionMatch::KNNSearch(PoolRealArray point,
 		}
 		return Knn;
 	}
-} /*returns K nearest neighbours in a PoolRealArray*/
+} /*returns K nearest neighbours in a Vector<float>*/
 
 void AnimationNodeMotionMatch::KDNode::calculate_threshold(
-		PoolRealArray point_coordinates, uint32_t dim_len) {
+		Vector<float> point_coordinates, int32_t dim_len) {
 	if (point_coordinates.size() % dim_len != 0) {
 		print_line("ERROR: Point coordinates array is of wrong size.");
 	} else {
@@ -377,7 +381,7 @@ void AnimationNodeMotionMatch::KDNode::calculate_threshold(
 } // threshold calculating function
 
 bool AnimationNodeMotionMatch::KDNode::are_all_points_same(
-		PoolRealArray point_coordinates, uint32_t dim_len) {
+		Vector<float> point_coordinates, int32_t dim_len) {
 	for (int i = 0; i < dim_len; i++) {
 		for (int j = 0; j < point_indices.size(); j++) {
 			float p = point_coordinates[(point_indices[j] * dim_len) + i];
@@ -408,7 +412,7 @@ void AnimationNodeMotionMatch::KDNode::clear_indices() {
 	point_indices.resize(0);
 }
 
-PoolRealArray AnimationNodeMotionMatch::KDNode::get_indices() {
+Vector<float> AnimationNodeMotionMatch::KDNode::get_indices() {
 	return point_indices;
 }
 
@@ -419,8 +423,8 @@ AnimationNodeMotionMatch::KDNode::KDNode() {
 }
 
 void AnimationNodeMotionMatch::KDNode::leaf_split(
-		PoolRealArray point_coordinates, uint32_t dim_len, uint32_t dim,
-		uint32_t min_leaves) {
+		Vector<float> point_coordinates, int32_t dim_len, int32_t dim,
+		int32_t min_leaves) {
 	if (point_coordinates.size() % dim_len != 0) {
 		print_line("ERROR: Point coordinates array is of wrong size.");
 	} else {
@@ -485,8 +489,7 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 		l_v = get("velocity");
 		future_traj = Predict_traj(l_v, get_parameter(samples));
 		float min_cost = std::numeric_limits<float>::max();
-		float min_cost_time;
-		int anim = 1;
+		float min_cost_time = 0;
 		int dup;
 
 		if (first_time) {
@@ -505,8 +508,6 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 				float traj_cost = 0.0f;
 				float tot_cost = 0.0f;
 
-				PoolVector<frame_model *>::Read read = keys->read();
-
 				for (int i = 0; i < matching_tracks.size(); i++) {
 					Vector<String> s = String(matching_tracks[i]).split(":");
 					Vector3 pos =
@@ -514,14 +515,14 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 									.get_origin();
 
 					for (int po = 0; po < 2; po++) {
-						pos_cost += (pos[po] - read[p]->bone_data->read()[i][po]) *
-									(pos[po] - read[p]->bone_data->read()[i][po]);
+						pos_cost += (pos[po] - (*(*keys)[p]->bone_data)[i][po]) *
+									(pos[po] - (*(*keys)[p]->bone_data)[i][po]);
 					}
 				} // calculating pose costs
 
 				for (int t = 0; t < int(get_parameter(samples)) * 2; t++) {
-					traj_cost += (read[p]->traj->read()[t] - future_traj[t]) *
-								 (read[p]->traj->read()[t] - future_traj[t]);
+					traj_cost += ((*keys)[p]->traj[t] - future_traj[t]) *
+								 ((*keys)[p]->traj[t] - future_traj[t]);
 				} // calculating traj costs
 
 				real_t lbd = get_parameter(pvst); // Pose vs Trajectory cost
@@ -529,8 +530,7 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 
 				if (tot_cost < min_cost) {
 					min_cost = tot_cost;
-					min_cost_time = keys->read()[p]->time;
-					anim = keys->read()[p]->anim_num;
+					min_cost_time = (*keys)[p]->time;
 					set_parameter(min, p);
 				} // set min
 			}
@@ -547,16 +547,15 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 	return 0.0;
 }
 
-PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
+Vector<float> AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
 		int samples) {
 	// used exponential decay here
 	// TODO : Add multiple options to pick for the user
 	// Can use interpolation functions
-	PoolRealArray futurepath = {};
+	Vector<float> futurepath = {};
 	Vector3 c_pos = Vector3();
 
 	float time = 0;
-	int quad = 0;
 
 	for (int i = 0; i < samples; i++) {
 		c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
@@ -569,10 +568,10 @@ PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
 	return futurepath;
 }
 
-void AnimationNodeMotionMatch::print_array(PoolRealArray ar) {
+void AnimationNodeMotionMatch::print_array(Vector<float> ar) {
 	String s = "";
 	for (int k = 0; k < ar.size(); k++) {
-		s += itos(ar.read()[k]) + ",";
+		s += itos(ar[k]) + ",";
 	}
 	print_line(s);
 }
