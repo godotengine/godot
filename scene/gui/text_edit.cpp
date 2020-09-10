@@ -253,7 +253,6 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Vector<Vector2i
 void TextEdit::Text::insert(int p_at, const String &p_text, const Vector<Vector2i> &p_bidi_override) {
 	Line line;
 	line.gutters.resize(gutter_count);
-	line.marked = false;
 	line.hidden = false;
 	line.data = p_text;
 	line.bidi_override = p_bidi_override;
@@ -867,6 +866,8 @@ void TextEdit::_notification(int p_what) {
 
 					Dictionary color_map = _get_line_syntax_highlighting(minimap_line);
 
+					Color line_background_color = text.get_line_background_color(minimap_line);
+					line_background_color.a *= 0.6;
 					Color current_color = cache.font_color;
 					if (readonly) {
 						current_color = cache.font_readonly_color;
@@ -900,6 +901,12 @@ void TextEdit::_notification(int p_what) {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - cache.minimap_width, i * 3, cache.minimap_width, 2), cache.current_line_color);
 							} else {
 								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, cache.minimap_width, 2), cache.current_line_color);
+							}
+						} else if (line_background_color != Color(0, 0, 0, 0)) {
+							if (rtl) {
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - (xmargin_end + 2) - cache.minimap_width, i * 3, cache.minimap_width, 2), line_background_color);
+							} else {
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, cache.minimap_width, 2), line_background_color);
 							}
 						}
 
@@ -1048,11 +1055,11 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					if (text.is_marked(line)) {
+					if (text.get_line_background_color(line) != Color(0, 0, 0, 0)) {
 						if (rtl) {
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end - xmargin_beg, row_height), cache.mark_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(size.width - ofs_x - xmargin_end, ofs_y, xmargin_end - xmargin_beg, row_height), text.get_line_background_color(line));
 						} else {
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, row_height), cache.mark_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, row_height), text.get_line_background_color(line));
 						}
 					}
 
@@ -4789,7 +4796,6 @@ void TextEdit::_update_caches() {
 	cache.font_selected_color = get_theme_color("font_selected_color");
 	cache.font_readonly_color = get_theme_color("font_readonly_color");
 	cache.selection_color = get_theme_color("selection_color");
-	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");
 	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
 	cache.code_folding_color = get_theme_color("code_folding_color");
@@ -5017,6 +5023,18 @@ bool TextEdit::is_line_gutter_clickable(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
 	return text.is_line_gutter_clickable(p_line, p_gutter);
+}
+
+// Line style
+void TextEdit::set_line_background_color(int p_line, const Color &p_color) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	text.set_line_background_color(p_line, p_color);
+	update();
+}
+
+Color TextEdit::get_line_background_color(int p_line) {
+	ERR_FAIL_INDEX_V(p_line, text.size(), Color());
+	return text.get_line_background_color(p_line);
 }
 
 void TextEdit::add_keyword(const String &p_keyword) {
@@ -5435,12 +5453,6 @@ void TextEdit::_cursor_changed_emit() {
 void TextEdit::_text_changed_emit() {
 	emit_signal("text_changed");
 	text_changed_dirty = false;
-}
-
-void TextEdit::set_line_as_marked(int p_line, bool p_marked) {
-	ERR_FAIL_INDEX(p_line, text.size());
-	text.set_marked(p_line, p_marked);
-	update();
 }
 
 void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {
@@ -6979,6 +6991,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_gutter_item_color", "line", "gutter"), &TextEdit::get_line_gutter_item_color);
 	ClassDB::bind_method(D_METHOD("set_line_gutter_clickable", "line", "gutter", "clickable"), &TextEdit::set_line_gutter_clickable);
 	ClassDB::bind_method(D_METHOD("is_line_gutter_clickable", "line", "gutter"), &TextEdit::is_line_gutter_clickable);
+
+	// Line style
+	ClassDB::bind_method(D_METHOD("set_line_background_color", "line", "color"), &TextEdit::set_line_background_color);
+	ClassDB::bind_method(D_METHOD("get_line_background_color", "line"), &TextEdit::get_line_background_color);
 
 	ClassDB::bind_method(D_METHOD("set_highlight_current_line", "enabled"), &TextEdit::set_highlight_current_line);
 	ClassDB::bind_method(D_METHOD("is_highlight_current_line_enabled"), &TextEdit::is_highlight_current_line_enabled);

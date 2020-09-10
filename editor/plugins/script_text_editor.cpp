@@ -170,65 +170,24 @@ void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->clear_keywords();
 
+	Color updated_marked_line_color = EDITOR_GET("text_editor/highlighting/mark_color");
 	Color updated_safe_line_number_color = EDITOR_GET("text_editor/highlighting/safe_line_number_color");
-	if (updated_safe_line_number_color != safe_line_number_color) {
+
+	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
+	bool marked_line_color_updated = updated_marked_line_color != marked_line_color;
+	if (safe_line_number_color_updated || marked_line_color_updated) {
 		safe_line_number_color = updated_safe_line_number_color;
 		for (int i = 0; i < text_edit->get_line_count(); i++) {
-			if (text_edit->get_line_gutter_item_color(i, line_number_gutter) != default_line_number_color) {
+			if (marked_line_color_updated && text_edit->get_line_background_color(i) == marked_line_color) {
+				text_edit->set_line_background_color(i, updated_marked_line_color);
+			}
+
+			if (safe_line_number_color_updated && text_edit->get_line_gutter_item_color(i, line_number_gutter) != default_line_number_color) {
 				text_edit->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			}
 		}
+		marked_line_color = updated_marked_line_color;
 	}
-
-	Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
-	Color completion_background_color = EDITOR_GET("text_editor/highlighting/completion_background_color");
-	Color completion_selected_color = EDITOR_GET("text_editor/highlighting/completion_selected_color");
-	Color completion_existing_color = EDITOR_GET("text_editor/highlighting/completion_existing_color");
-	Color completion_scroll_color = EDITOR_GET("text_editor/highlighting/completion_scroll_color");
-	Color completion_font_color = EDITOR_GET("text_editor/highlighting/completion_font_color");
-	Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
-	Color line_number_color = EDITOR_GET("text_editor/highlighting/line_number_color");
-	Color caret_color = EDITOR_GET("text_editor/highlighting/caret_color");
-	Color caret_background_color = EDITOR_GET("text_editor/highlighting/caret_background_color");
-	Color text_selected_color = EDITOR_GET("text_editor/highlighting/text_selected_color");
-	Color selection_color = EDITOR_GET("text_editor/highlighting/selection_color");
-	Color brace_mismatch_color = EDITOR_GET("text_editor/highlighting/brace_mismatch_color");
-	Color current_line_color = EDITOR_GET("text_editor/highlighting/current_line_color");
-	Color line_length_guideline_color = EDITOR_GET("text_editor/highlighting/line_length_guideline_color");
-	Color word_highlighted_color = EDITOR_GET("text_editor/highlighting/word_highlighted_color");
-	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
-	Color bookmark_color = EDITOR_GET("text_editor/highlighting/bookmark_color");
-	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
-	Color executing_line_color = EDITOR_GET("text_editor/highlighting/executing_line_color");
-	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
-	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
-	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
-
-	text_edit->add_theme_color_override("background_color", background_color);
-	text_edit->add_theme_color_override("completion_background_color", completion_background_color);
-	text_edit->add_theme_color_override("completion_selected_color", completion_selected_color);
-	text_edit->add_theme_color_override("completion_existing_color", completion_existing_color);
-	text_edit->add_theme_color_override("completion_scroll_color", completion_scroll_color);
-	text_edit->add_theme_color_override("completion_font_color", completion_font_color);
-	text_edit->add_theme_color_override("font_color", text_color);
-	text_edit->add_theme_color_override("line_number_color", line_number_color);
-	text_edit->add_theme_color_override("caret_color", caret_color);
-	text_edit->add_theme_color_override("caret_background_color", caret_background_color);
-	text_edit->add_theme_color_override("font_selected_color", text_selected_color);
-	text_edit->add_theme_color_override("selection_color", selection_color);
-	text_edit->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
-	text_edit->add_theme_color_override("current_line_color", current_line_color);
-	text_edit->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
-	text_edit->add_theme_color_override("word_highlighted_color", word_highlighted_color);
-	text_edit->add_theme_color_override("bookmark_color", bookmark_color);
-	text_edit->add_theme_color_override("breakpoint_color", breakpoint_color);
-	text_edit->add_theme_color_override("executing_line_color", executing_line_color);
-	text_edit->add_theme_color_override("mark_color", mark_color);
-	text_edit->add_theme_color_override("code_folding_color", code_folding_color);
-	text_edit->add_theme_color_override("search_result_color", search_result_color);
-	text_edit->add_theme_color_override("search_result_border_color", search_result_border_color);
-
-	text_edit->add_theme_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 
 	theme_loaded = true;
 	if (!script.is_null()) {
@@ -546,7 +505,7 @@ void ScriptTextEditor::_validate_script() {
 	bool highlight_safe = EDITOR_DEF("text_editor/highlighting/highlight_type_safe_lines", true);
 	bool last_is_safe = false;
 	for (int i = 0; i < te->get_line_count(); i++) {
-		te->set_line_as_marked(i, line == i);
+		te->set_line_background_color(i, (line == i) ? marked_line_color : Color(0, 0, 0, 0));
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
 				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);

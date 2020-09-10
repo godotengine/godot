@@ -193,8 +193,6 @@
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
 		</theme_item>
-		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
-		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 		</theme_item>
 		<theme_item name="outline_size" type="int" default="0">
