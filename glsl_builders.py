@@ -211,11 +211,6 @@ def build_raw_header(filename):
     fd.close()
 
 
-def build_rd_headers(target, source, env):
-    for x in source:
-        build_rd_header(str(x))
-
-
 def build_raw_headers(target, source, env):
     for x in source:
         build_raw_header(str(x))

@@ -70,7 +70,6 @@ def _write_message(msgctx, msg, msg_plural, location):
 def _add_additional_location(msgctx, msg, location):
     global main_po
     # Add additional location to previous occurrence.
-    msg_pos = -1
     if msgctx != "":
         msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
     else:
@@ -86,7 +85,6 @@ def _write_translator_comment(msgctx, msg, translator_comment):
         return
 
     global main_po
-    msg_pos = -1
     if msgctx != "":
         msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
     else:
