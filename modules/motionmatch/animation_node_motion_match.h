@@ -9,142 +9,143 @@
 #include <limits>
 
 class AnimationNodeMotionMatch : public AnimationRootNode {
-  GDCLASS(AnimationNodeMotionMatch, AnimationRootNode)
+	GDCLASS(AnimationNodeMotionMatch, AnimationRootNode)
 
-  Vector<NodePath> matching_tracks;
-  // parameters
-  StringName vel;
-  StringName pos;
-  StringName min;
-  StringName pvst;
-  StringName samples;
-  StringName f_time;
+	Vector<NodePath> matching_tracks;
+	// parameters
+	StringName vel;
+	StringName pos;
+	StringName min;
+	StringName pvst;
+	StringName samples;
+	StringName f_time;
 
-  StringName main;
-  // variables used during matching
-  bool first_time = true;
-  float c_time = 0;
-  bool timeout = false;
-  Vector3 v = Vector3();
-  // KDNode Struct
-  struct KDNode : public Reference {
-    /*th -> Threshold*/
-    // Variables
-    PoolRealArray point_indices;
-    Ref<KDNode> left;
-    Ref<KDNode> right;
-    float split_th;
-    uint32_t split_axis;
-    // Methods
-    bool are_all_points_same(PoolRealArray point_coordinates, uint32_t dim_len);
-    KDNode *prev;
-    void calculate_threshold(PoolRealArray points, uint32_t dim_len);
+	StringName main;
+	// variables used during matching
+	bool first_time = true;
+	float c_time = 0;
+	bool timeout = false;
+	Vector3 v = Vector3();
+	// KDNode Struct
+	struct KDNode : public Reference {
+		/*th -> Threshold*/
+		// Variables
+		PoolRealArray point_indices;
+		Ref<KDNode> left;
+		Ref<KDNode> right;
+		float split_th;
+		uint32_t split_axis;
+		// Methods
+		bool are_all_points_same(PoolRealArray point_coordinates, uint32_t dim_len);
+		KDNode *prev;
+		void calculate_threshold(PoolRealArray points, uint32_t dim_len);
 
-    void add_index(uint32_t i);
-    void clear_indices();
-    PoolRealArray get_indices();
+		void add_index(uint32_t i);
+		void clear_indices();
+		PoolRealArray get_indices();
 
-    void leaf_split(PoolRealArray point_coordinates, uint32_t dim_len,
-                    uint32_t dim, uint32_t min_leaves);
+		void leaf_split(PoolRealArray point_coordinates, uint32_t dim_len,
+				uint32_t dim, uint32_t min_leaves);
 
-    KDNode *get_left();
-    KDNode *get_right();
-    KDNode *get_prev() { return prev; }
+		KDNode *get_left();
+		KDNode *get_right();
+		KDNode *get_prev() { return prev; }
 
-    uint32_t get_split_axis() { return split_axis; }
+		uint32_t get_split_axis() { return split_axis; }
 
-    void set_th(float th);
-    float get_th();
-    KDNode();
-  };
+		void set_th(float th);
+		float get_th();
+		KDNode();
+	};
 
-  PoolVector<frame_model *> *keys = new PoolVector<frame_model *>();
-  PoolRealArray future_traj;
-  PoolRealArray point_coordinates;
-  Ref<KDNode> root;
-  int dim_len;          /*no of dimensions*/
-  uint32_t start_index; /*Axis relative to which the first split occurs*/
-  uint32_t min_leaves;  /*Minimum leafs in nodes at the end level*/
-  bool error = false;
+	PoolVector<frame_model *> *keys = new PoolVector<frame_model *>();
+	PoolRealArray future_traj;
+	PoolRealArray point_coordinates;
+	Ref<KDNode> root;
+	int dim_len; /*no of dimensions*/
+	uint32_t start_index; /*Axis relative to which the first split occurs*/
+	uint32_t min_leaves; /*Minimum leafs in nodes at the end level*/
+	bool error = false;
 
-  enum errortype { LOAD_POINT_ERROR, QUERY_POINT_ERROR, K_ERROR };
+	enum errortype { LOAD_POINT_ERROR,
+		QUERY_POINT_ERROR,
+		K_ERROR };
 
-  Vector3 velocity;
+	Vector3 velocity;
 
 protected:
-  static void _bind_methods();
-  Variant AnimationNodeMotionMatch::get_parameter_default_value(
-      const StringName &p_parameter);
+	static void _bind_methods();
+	Variant AnimationNodeMotionMatch::get_parameter_default_value(
+			const StringName &p_parameter);
 
 public:
-  Skeleton *skeleton;
-  NodePath root_track = NodePath();
-  int r_index;
-  bool done = false;
-  bool editing = false;
-  float delta_time;
-  virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
+	Skeleton *skeleton;
+	NodePath root_track = NodePath();
+	int r_index;
+	bool done = false;
+	bool editing = false;
+	float delta_time;
+	virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 
-  float process(float p_time, bool p_seek);
-  void add_matching_track(const NodePath &p_track_path);
-  void remove_matching_track(const NodePath &p_track_path);
-  bool is_matching_track(const NodePath &p_track_path) const;
-  Vector<NodePath> get_matching_tracks();
-  void update_motion_database(AnimationPlayer *p_animation_player);
+	float process(float p_time, bool p_seek);
+	void add_matching_track(const NodePath &p_track_path);
+	void remove_matching_track(const NodePath &p_track_path);
+	bool is_matching_track(const NodePath &p_track_path) const;
+	Vector<NodePath> get_matching_tracks();
+	void update_motion_database(AnimationPlayer *p_animation_player);
 
-  errortype err;
-  void set_start_index(uint32_t si);
-  uint32_t get_start_index();
+	errortype err;
+	void set_start_index(uint32_t si);
+	uint32_t get_start_index();
 
-  void set_min_leaves(uint32_t min_l);
-  uint32_t get_min_leaves();
+	void set_min_leaves(uint32_t min_l);
+	uint32_t get_min_leaves();
 
-  void add_coordinates(PoolRealArray point);
-  void load_coordinates(PoolRealArray points);
-  PoolRealArray get_coordinates();
-  void clear_coordinates();
+	void add_coordinates(PoolRealArray point);
+	void load_coordinates(PoolRealArray points);
+	PoolRealArray get_coordinates();
+	void clear_coordinates();
 
-  void set_dim_len(uint32_t dim_len);
-  uint32_t get_dim_len();
+	void set_dim_len(uint32_t dim_len);
+	uint32_t get_dim_len();
 
-  void calc_root_threshold();
+	void calc_root_threshold();
 
-  PoolRealArray KNNSearch(PoolRealArray point, uint32_t k);
+	PoolRealArray KNNSearch(PoolRealArray point, uint32_t k);
 
-  void build_tree();
-  KDNode *get_root();
-  void clear_root();
+	void build_tree();
+	KDNode *get_root();
+	void clear_root();
 
-  PoolVector<frame_model *> *get_keys_data() { return keys; }
+	PoolVector<frame_model *> *get_keys_data() { return keys; }
 
-  void set_keys_data(PoolVector<frame_model *> *kys) { keys = kys; }
-  void clear_keys() {
+	void set_keys_data(PoolVector<frame_model *> *kys) { keys = kys; }
+	void clear_keys() {
+		while (keys->size() != 0) {
+			keys->remove(0);
+		}
+		c_time = 0;
+		timeout = false;
+	}
 
-    while (keys->size() != 0) {
-      keys->remove(0);
-    }
-    c_time = 0;
-    timeout = false;
-  }
+	PoolRealArray Predict_traj(Vector3 L_Velocity, int samples);
 
-  PoolRealArray Predict_traj(Vector3 L_Velocity, int samples);
+	int get_traj_samples() { return get_parameter(samples); }
+	void set_traj_samples(int sa) { set_parameter(samples, sa); }
 
-  int get_traj_samples() { return get_parameter(samples); }
-  void set_traj_samples(int sa) { set_parameter(samples, sa); }
+	Vector3 get_velocity() { return velocity; }
 
-  Vector3 get_velocity() { return velocity; }
+	void set_velocity(Vector3 v) { velocity = v; }
 
-  void set_velocity(Vector3 v) { velocity = v; }
+	// for trajectory drawing
 
-  // for trajectory drawing
+	int get_key_size() { return keys->size(); }
+	PoolRealArray *get_key_traj(int k_n) { return keys->read()[k_n]->traj; }
+	PoolRealArray get_future_traj() { return future_traj; }
 
-  int get_key_size() { return keys->size(); }
-  PoolRealArray *get_key_traj(int k_n) { return keys->read()[k_n]->traj; }
-  PoolRealArray get_future_traj() { return future_traj; }
-
-  void print_array(PoolRealArray ar);
-  AnimationNodeMotionMatch();
-  ~AnimationNodeMotionMatch();
+	void print_array(PoolRealArray ar);
+	AnimationNodeMotionMatch();
+	~AnimationNodeMotionMatch();
 };
 
 #endif // ANIMATION_NODE_MOTION_MATCH_H

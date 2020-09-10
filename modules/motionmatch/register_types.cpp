@@ -36,20 +36,18 @@
 #include "animation_motion_match_editor.h"
 
 static void _editor_init() {
-
-  AnimationNodeMotionMatchEditor *motion_match_editor =
-      memnew(AnimationNodeMotionMatchEditor);
-  AnimationTreeEditor::get_singleton()->add_plugin(motion_match_editor);
+	AnimationNodeMotionMatchEditor *motion_match_editor =
+			memnew(AnimationNodeMotionMatchEditor);
+	AnimationTreeEditor::get_singleton()->add_plugin(motion_match_editor);
 }
 
 #endif
 
 void register_motionmatch_types() {
-
-  ClassDB::register_class<AnimationNodeMotionMatch>();
+	ClassDB::register_class<AnimationNodeMotionMatch>();
 
 #ifdef TOOLS_ENABLED
-  EditorNode::add_init_callback(_editor_init);
+	EditorNode::add_init_callback(_editor_init);
 #endif
 }
 
