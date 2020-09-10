@@ -35,15 +35,15 @@
 #include "physics_body_2d.h"
 #include "servers/physics_server_2d.h"
 
-void RayCast2D::set_cast_to(const Vector2 &p_point) {
-	cast_to = p_point;
+void RayCast2D::set_target_position(const Vector2 &p_point) {
+	target_position = p_point;
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
 		update();
 	}
 }
 
-Vector2 RayCast2D::get_cast_to() const {
-	return cast_to;
+Vector2 RayCast2D::get_target_position() const {
+	return target_position;
 }
 
 void RayCast2D::set_collision_mask(uint32_t p_mask) {
@@ -160,8 +160,8 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			Transform2D xf;
-			xf.rotate(cast_to.angle());
-			xf.translate(Vector2(cast_to.length(), 0));
+			xf.rotate(target_position.angle());
+			xf.translate(Vector2(target_position.length(), 0));
 
 			// Draw an arrow indicating where the RayCast is pointing to
 			Color draw_col = get_tree()->get_debug_collisions_color();
@@ -171,7 +171,7 @@ void RayCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			draw_line(Vector2(), cast_to, draw_col, 2);
+			draw_line(Vector2(), target_position, draw_col, 2);
 			Vector<Vector2> pts;
 			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
@@ -206,7 +206,7 @@ void RayCast2D::_update_raycast_state() {
 
 	Transform2D gt = get_global_transform();
 
-	Vector2 to = cast_to;
+	Vector2 to = target_position;
 	if (to == Vector2()) {
 		to = Vector2(0, 0.01);
 	}
@@ -280,8 +280,8 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast2D::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_cast_to", "local_point"), &RayCast2D::set_cast_to);
-	ClassDB::bind_method(D_METHOD("get_cast_to"), &RayCast2D::get_cast_to);
+	ClassDB::bind_method(D_METHOD("set_target_position", "local_point"), &RayCast2D::set_target_position);
+	ClassDB::bind_method(D_METHOD("get_target_position"), &RayCast2D::get_target_position);
 
 	ClassDB::bind_method(D_METHOD("is_colliding"), &RayCast2D::is_colliding);
 	ClassDB::bind_method(D_METHOD("force_raycast_update"), &RayCast2D::force_raycast_update);
@@ -316,7 +316,7 @@ void RayCast2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cast_to"), "set_cast_to", "get_cast_to");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
 
 	ADD_GROUP("Collide With", "collide_with");
@@ -329,7 +329,7 @@ RayCast2D::RayCast2D() {
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;
-	cast_to = Vector2(0, 50);
+	target_position = Vector2(0, 50);
 	exclude_parent_body = true;
 	collide_with_bodies = true;
 	collide_with_areas = false;
