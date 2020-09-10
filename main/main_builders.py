@@ -4,7 +4,6 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 
 """
 from platform_methods import subprocess_main
-from collections import OrderedDict
 
 
 def make_splash(target, source, env):
