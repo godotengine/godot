@@ -36,13 +36,13 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 
-void Engine::set_iterations_per_second(int p_ips) {
-	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
-	ips = p_ips;
+void Engine::set_physics_fps(int p_physics_fps) {
+	ERR_FAIL_COND_MSG(p_physics_fps <= 0, "The physics FPS must be greater than 0.");
+	physics_fps = p_physics_fps;
 }
 
-int Engine::get_iterations_per_second() const {
-	return ips;
+int Engine::get_physics_fps() const {
+	return physics_fps;
 }
 
 void Engine::set_physics_jitter_fix(float p_threshold) {
