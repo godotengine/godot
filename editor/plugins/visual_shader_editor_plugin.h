@@ -115,7 +115,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool pending_update_preview;
 	bool shader_error;
 	VBoxContainer *preview_vbox;
-	TextEdit *preview_text;
+	CodeEdit *preview_text;
 	Ref<CodeHighlighter> syntax_highlighter;
 	Label *error_text;
 
@@ -304,7 +304,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _change_output_port_type(int p_type, int p_node, int p_port);
 	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
 
-	void _expression_focus_out(Object *text_edit, int p_node);
+	void _expression_focus_out(Object *code_edit, int p_node);
 
 	void _set_node_size(int p_type, int p_node, const Size2 &p_size);
 	void _node_resized(const Vector2 &p_new_size, int p_type, int p_node);
