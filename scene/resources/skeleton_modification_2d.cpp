@@ -35,6 +35,10 @@
 #include "scene/2d/collision_shape_2d.h"
 #include "scene/2d/physical_bone_2d.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 ///////////////////////////////////////
 // ModificationStack2D
 ///////////////////////////////////////
@@ -84,6 +88,11 @@ void SkeletonModificationStack2D::setup() {
 			}
 			modifications.get(i)->setup_modification(this);
 		}
+
+#ifdef TOOLS_ENABLED
+		set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
+
 	} else {
 		WARN_PRINT("Cannot setup SkeletonModificationStack2D: no Skeleton2D set!");
 	}
@@ -113,6 +122,41 @@ void SkeletonModificationStack2D::execute(float delta, int p_execution_mode) {
 	}
 }
 
+void SkeletonModificationStack2D::draw_editor_gizmos() {
+	if (!is_setup) {
+		return;
+	}
+
+	if (editor_gizmo_dirty) {
+		for (int i = 0; i < modifications.size(); i++) {
+			if (!modifications[i].is_valid()) {
+				continue;
+			}
+
+			if (modifications[i]->editor_draw_gizmo) {
+				modifications.get(i)->draw_editor_gizmo();
+			}
+		}
+		skeleton->draw_set_transform(Vector2(0, 0));
+		editor_gizmo_dirty = false;
+	}
+}
+
+void SkeletonModificationStack2D::set_editor_gizmos_dirty(bool p_dirty) {
+	if (!is_setup) {
+		return;
+	}
+
+	if (!editor_gizmo_dirty && p_dirty) {
+		editor_gizmo_dirty = p_dirty;
+		if (skeleton) {
+			skeleton->update();
+		}
+	} else {
+		editor_gizmo_dirty = p_dirty;
+	}
+}
+
 void SkeletonModificationStack2D::enable_all_modifications(bool p_enabled) {
 	for (int i = 0; i < modifications.size(); i++) {
 		if (!modifications[i].is_valid()) {
@@ -130,11 +174,19 @@ Ref<SkeletonModification2D> SkeletonModificationStack2D::get_modification(int p_
 void SkeletonModificationStack2D::add_modification(Ref<SkeletonModification2D> p_mod) {
 	p_mod->setup_modification(this);
 	modifications.push_back(p_mod);
+
+#ifdef TOOLS_ENABLED
+	set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModificationStack2D::delete_modification(int p_mod_idx) {
 	ERR_FAIL_INDEX(p_mod_idx, modifications.size());
 	modifications.remove(p_mod_idx);
+
+#ifdef TOOLS_ENABLED
+	set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonModification2D> p_mod) {
@@ -146,11 +198,19 @@ void SkeletonModificationStack2D::set_modification(int p_mod_idx, Ref<SkeletonMo
 		p_mod->setup_modification(this);
 		modifications.set(p_mod_idx, p_mod);
 	}
+
+#ifdef TOOLS_ENABLED
+	set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModificationStack2D::set_modification_count(int p_count) {
 	modifications.resize(p_count);
 	_change_notify();
+
+#ifdef TOOLS_ENABLED
+	set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 int SkeletonModificationStack2D::get_modification_count() const {
@@ -254,6 +314,9 @@ void SkeletonModification2D::setup_modification(SkeletonModificationStack2D *p_s
 	}
 }
 
+void SkeletonModification2D::draw_editor_gizmo() {
+}
+
 bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_message) {
 	if (p_condition && !execution_error_found) {
 		ERR_PRINT(p_message);
@@ -264,6 +327,14 @@ bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_m
 
 void SkeletonModification2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
+
+#ifdef TOOLS_ENABLED
+	if (editor_draw_gizmo) {
+		if (stack) {
+			stack->set_editor_gizmos_dirty(true);
+		}
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2D::get_enabled() {
@@ -338,6 +409,17 @@ int SkeletonModification2D::get_execution_mode() const {
 	return execution_mode;
 }
 
+void SkeletonModification2D::set_editor_draw_gizmo(bool p_draw_gizmo) {
+	editor_draw_gizmo = p_draw_gizmo;
+#ifdef TOOLS_ENABLED
+	stack->set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
+}
+
+bool SkeletonModification2D::get_editor_draw_gizmo() const {
+	return editor_draw_gizmo;
+}
+
 void SkeletonModification2D::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
@@ -380,6 +462,13 @@ bool SkeletonModification2DLookAt::_set(const StringName &p_path, const Variant 
 	} else if (path.begins_with("additional_rotation")) {
 		set_additional_rotation(Math::deg2rad(float(p_value)));
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		set_editor_draw_gizmo(p_value);
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -399,6 +488,13 @@ bool SkeletonModification2DLookAt::_get(const StringName &p_path, Variant &r_ret
 	} else if (path.begins_with("additional_rotation")) {
 		r_ret = Math::rad2deg(get_additional_rotation());
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		r_ret = get_editor_draw_gizmo();
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -411,6 +507,12 @@ void SkeletonModification2DLookAt::_get_property_list(List<PropertyInfo> *p_list
 		p_list->push_back(PropertyInfo(Variant::BOOL, "constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	}
 	p_list->push_back(PropertyInfo(Variant::FLOAT, "additional_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DLookAt::execute(float delta) {
@@ -479,6 +581,10 @@ void SkeletonModification2DLookAt::execute(float delta) {
 
 	// If we completed it successfully, then we can set execution_error_found to false.
 	execution_error_found = false;
+	// Draw the editor gizmo in case something changed
+#ifdef TOOLS_ENABLED
+	//stack->set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DLookAt::setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -489,6 +595,62 @@ void SkeletonModification2DLookAt::setup_modification(SkeletonModificationStack2
 		execution_error_found = false;
 		update_target_cache();
 		update_bone2d_cache();
+	}
+}
+
+void SkeletonModification2DLookAt::draw_editor_gizmo() {
+	if (!enabled || !is_setup) {
+		return;
+	}
+
+	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
+	if (!operation_bone) {
+		return;
+	}
+
+	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+	}
+#endif // TOOLS_ENABLED
+
+	float arc_angle_min = constraint_angle_min + operation_bone->get_bone_angle();
+	float arc_angle_max = constraint_angle_max + operation_bone->get_bone_angle();
+
+	if (arc_angle_min > arc_angle_max) {
+		float tmp = arc_angle_min;
+		arc_angle_min = arc_angle_max;
+		arc_angle_max = tmp;
+	}
+
+	if (enable_constraint) {
+		if (constraint_in_localspace) {
+			Node *operation_bone_parent = operation_bone->get_parent();
+			Bone2D *operation_bone_parent_bone = Object::cast_to<Bone2D>(operation_bone_parent);
+
+			if (operation_bone_parent_bone) {
+				stack->skeleton->draw_set_transform(
+						stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()),
+						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
+			} else {
+				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+			}
+		} else {
+			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+		}
+
+		if (constraint_angle_invert) {
+			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
+					(Math_PI * 2) - arc_angle_max, arc_angle_min, 32, bone_ik_color, 4.0);
+		} else {
+			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
+					arc_angle_min, arc_angle_max, 32, bone_ik_color, 4.0);
+		}
+	} else {
+		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+		stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 4.0);
 	}
 }
 
@@ -600,6 +762,11 @@ void SkeletonModification2DLookAt::set_additional_rotation(float p_rotation) {
 void SkeletonModification2DLookAt::set_enable_constraint(bool p_constraint) {
 	enable_constraint = p_constraint;
 	_change_notify();
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_enable_constraint() const {
@@ -608,6 +775,11 @@ bool SkeletonModification2DLookAt::get_enable_constraint() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_min(float p_angle_min) {
 	constraint_angle_min = p_angle_min;
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DLookAt::get_constraint_angle_min() const {
@@ -616,6 +788,11 @@ float SkeletonModification2DLookAt::get_constraint_angle_min() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_max(float p_angle_max) {
 	constraint_angle_max = p_angle_max;
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DLookAt::get_constraint_angle_max() const {
@@ -624,6 +801,11 @@ float SkeletonModification2DLookAt::get_constraint_angle_max() const {
 
 void SkeletonModification2DLookAt::set_constraint_angle_invert(bool p_invert) {
 	constraint_angle_invert = p_invert;
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_constraint_angle_invert() const {
@@ -632,6 +814,11 @@ bool SkeletonModification2DLookAt::get_constraint_angle_invert() const {
 
 void SkeletonModification2DLookAt::set_constraint_in_localspace(bool p_constraint_in_localspace) {
 	constraint_in_localspace = p_constraint_in_localspace;
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DLookAt::get_constraint_in_localspace() const {
@@ -674,6 +861,8 @@ SkeletonModification2DLookAt::SkeletonModification2DLookAt() {
 	constraint_angle_max = Math_PI * 2;
 	constraint_angle_invert = false;
 	enabled = true;
+
+	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DLookAt::~SkeletonModification2DLookAt() {

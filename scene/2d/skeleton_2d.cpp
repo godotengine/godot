@@ -680,6 +680,16 @@ void Skeleton2D::_notification(int p_what) {
 			execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
 		}
 	}
+
+#ifdef TOOLS_ENABLED
+	if (p_what == NOTIFICATION_DRAW) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			if (modification_stack.is_valid()) {
+				modification_stack->draw_editor_gizmos();
+			}
+		}
+	}
+#endif // TOOLS_ENABLED
 }
 
 RID Skeleton2D::get_skeleton() const {
@@ -707,6 +717,10 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 	if (modification_stack.is_valid()) {
 		modification_stack->set_skeleton(this);
 		modification_stack->setup();
+
+#ifdef TOOLS_ENABLED
+		modification_stack->set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 	}
 }
 
@@ -756,6 +770,10 @@ void Skeleton2D::execute_modifications(float delta, int p_execution_mode) {
 	for (int i = 0; i < bones.size(); i++) {
 		bones[i].bone->copy_transform_to_cache = true;
 	}
+
+#ifdef TOOLS_ENABLED
+	modification_stack->set_editor_gizmos_dirty(true);
+#endif // TOOLS_ENABLED
 }
 
 void Skeleton2D::_bind_methods() {

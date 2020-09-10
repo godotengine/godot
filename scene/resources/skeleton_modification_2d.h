@@ -68,6 +68,10 @@ public:
 	void setup();
 	void execute(float delta, int p_execution_mode);
 
+	bool editor_gizmo_dirty = false;
+	void draw_editor_gizmos();
+	void set_editor_gizmos_dirty(bool p_dirty);
+
 	void enable_all_modifications(bool p_enable);
 	Ref<SkeletonModification2D> get_modification(int p_mod_idx) const;
 	void add_modification(Ref<SkeletonModification2D> p_mod);
@@ -114,6 +118,11 @@ protected:
 public:
 	virtual void execute(float delta);
 	virtual void setup_modification(SkeletonModificationStack2D *p_stack);
+	virtual void draw_editor_gizmo();
+
+	bool editor_draw_gizmo = false;
+	void set_editor_draw_gizmo(bool p_draw_gizmo);
+	bool get_editor_draw_gizmo() const;
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
@@ -164,6 +173,7 @@ protected:
 public:
 	void execute(float delta) override;
 	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void draw_editor_gizmo() override;
 
 	void set_bone2d_node(const NodePath &p_target_node);
 	NodePath get_bone2d_node() const;
