@@ -126,9 +126,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3( 0, -1, 0 )">
-			The ray's destination point, relative to the RayCast's [code]position[/code].
-		</member>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
 			If [code]true[/code], collision with [Area3D]s will be reported.
 		</member>
@@ -143,6 +140,9 @@
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
 			If [code]true[/code], collisions will be ignored for this RayCast3D's immediate parent.
+		</member>
+		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3( 0, -1, 0 )">
+			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 	</members>
 	<constants>
