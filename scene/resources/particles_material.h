@@ -50,7 +50,6 @@ class ParticlesMaterial : public Material {
 
 public:
 	enum Parameter {
-
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
 		PARAM_ORBIT_VELOCITY,

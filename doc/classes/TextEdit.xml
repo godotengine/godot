@@ -9,6 +9,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_gutter">
+			<return type="void">
+			</return>
+			<argument index="0" name="at" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="can_fold" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -112,11 +120,34 @@
 				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
-		<method name="get_breakpoints" qualifiers="const">
-			<return type="Array">
+		<method name="get_gutter_count" qualifiers="const">
+			<return type="int">
 			</return>
 			<description>
-				Returns an array containing the line number of each breakpoint.
+			</description>
+		</method>
+		<method name="get_gutter_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_gutter_type" qualifiers="const">
+			<return type="int" enum="TextEdit.GutterType">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_gutter_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_line" qualifiers="const">
@@ -133,6 +164,46 @@
 			</return>
 			<description>
 				Returns the amount of total lines in the text.
+			</description>
+		</method>
+		<method name="get_line_gutter_icon" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_item_color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_metadata" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_gutter_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -202,6 +273,40 @@
 				Returns whether the line at the specified index is folded or not.
 			</description>
 		</method>
+		<method name="is_gutter_clickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_gutter_drawn" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_gutter_overwritable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_line_gutter_clickable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="is_line_hidden" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -241,11 +346,12 @@
 				Perform redo operation.
 			</description>
 		</method>
-		<method name="remove_breakpoints">
+		<method name="remove_gutter">
 			<return type="void">
 			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
 			<description>
-				Removes all the breakpoints. This will not fire the [signal breakpoint_toggled] signal.
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
@@ -295,6 +401,78 @@
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
+		<method name="set_gutter_clickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="clickable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_custom_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="object" type="Object">
+			</argument>
+			<argument index="2" name="callback" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_draw">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="draw" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_overwritable">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="overwritable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="type" type="int" enum="TextEdit.GutterType">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gutter_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="gutter" type="int">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_line">
 			<return type="void">
 			</return>
@@ -315,6 +493,66 @@
 			</argument>
 			<description>
 				If [code]true[/code], hides the line of the specified index.
+			</description>
+		</method>
+		<method name="set_line_gutter_clickable">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="clickable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="icon" type="Texture2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_item_color">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_metadata">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="metadata" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_gutter_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="toggle_fold_line">
@@ -351,9 +589,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="breakpoint_gutter" type="bool" setter="set_breakpoint_gutter_enabled" getter="is_breakpoint_gutter_enabled" default="false">
-			If [code]true[/code], the breakpoint gutter is visible.
-		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled" default="false">
 			If [code]true[/code], the caret (visual cursor) blinks.
 		</member>
@@ -378,9 +613,6 @@
 			If [code]true[/code], the "tab" character will have a visible representation.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
-		<member name="fold_gutter" type="bool" setter="set_draw_fold_gutter" getter="is_drawing_fold_gutter" default="false">
-			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
-		</member>
 		<member name="hiding_enabled" type="bool" setter="set_hiding_enabled" getter="is_hiding_enabled" default="false">
 			If [code]true[/code], all lines that have been set to hidden by [method set_line_as_hidden], will not be visible.
 		</member>
@@ -416,9 +648,6 @@
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
-		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled" default="false">
-			If [code]true[/code], line numbers are displayed to the left of the text.
-		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
 		</member>
@@ -438,29 +667,31 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="breakpoint_toggled">
-			<argument index="0" name="row" type="int">
-			</argument>
-			<description>
-				Emitted when a breakpoint is placed via the breakpoint gutter.
-			</description>
-		</signal>
 		<signal name="cursor_changed">
 			<description>
 				Emitted when the cursor changes.
 			</description>
 		</signal>
-		<signal name="info_clicked">
-			<argument index="0" name="row" type="int">
-			</argument>
-			<argument index="1" name="info" type="String">
-			</argument>
+		<signal name="gutter_added">
 			<description>
-				Emitted when the info icon is clicked.
 			</description>
 		</signal>
-		<signal name="line_edited_from">
+		<signal name="gutter_clicked">
 			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="gutter" type="int">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="gutter_removed">
+			<description>
+			</description>
+		</signal>
+		<signal name="lines_edited_from">
+			<argument index="0" name="from_line" type="int">
+			</argument>
+			<argument index="1" name="to_line" type="int">
 			</argument>
 			<description>
 			</description>
@@ -501,6 +732,12 @@
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
+		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
+		</constant>
+		<constant name="GUTTER_TPYE_ICON" value="1" enum="GutterType">
+		</constant>
+		<constant name="GUTTER_TPYE_CUSTOM" value="2" enum="GutterType">
+		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
 		</constant>
@@ -530,13 +767,7 @@
 		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
 			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
-		<theme_item name="bookmark_color" type="Color" default="Color( 0.08, 0.49, 0.98, 1 )">
-			Sets the [Color] of the bookmark marker. [member syntax_highlighting] has to be enabled.
-		</theme_item>
 		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
-		</theme_item>
-		<theme_item name="breakpoint_color" type="Color" default="Color( 0.8, 0.8, 0.4, 0.2 )">
-			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
@@ -565,13 +796,7 @@
 		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
-		<theme_item name="executing_line_color" type="Color" default="Color( 0.2, 0.8, 0.2, 0.4 )">
-		</theme_item>
 		<theme_item name="focus" type="StyleBox">
-		</theme_item>
-		<theme_item name="fold" type="Texture2D">
-		</theme_item>
-		<theme_item name="folded" type="Texture2D">
 		</theme_item>
 		<theme_item name="font" type="Font">
 			Sets the default [Font].
@@ -584,9 +809,6 @@
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
-		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
-			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
-		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
 			Sets the spacing between the lines.
 		</theme_item>
@@ -598,8 +820,6 @@
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
-		</theme_item>
-		<theme_item name="safe_line_number_color" type="Color" default="Color( 0.67, 0.78, 0.67, 0.6 )">
 		</theme_item>
 		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 			Sets the highlight [Color] of text selections.
