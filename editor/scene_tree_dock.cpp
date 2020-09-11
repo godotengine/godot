@@ -739,6 +739,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign()) {
 				break;
 			}
+			// TODO: Ideally we could check here whether there are any animations
+			// in the scene using this node, and only if so, add a checkbox to the
+			// dialog to choose if the animations should be kept or deleted.
+			//
+			// When confirm override is set, there are two options:
+			// either still show the dialog if there are animations linked
+			// or default to one of the two options delete/no-delete?
+
+			// For now just add a checkbox that directly reflects the editor setting
+			// "editors/animation/autorename_animation_tracks"
+			// as this currently influences renaming and removing (as well as
+			// renaming exported properties in scripts)
 
 			if (p_confirm_override) {
 				_delete_confirm();
@@ -1266,6 +1278,12 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 }
 
 void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames) {
+	// TODO: I don't think this should be checked here, as this method is called
+	// by both _do_reparent and _delete_confirm (where it's about removing,
+	// i.e. setting to null, rather than actual renaming) AND the same rename
+	// info is also used to rename node paths in exported script properties, so having
+	// this set to true implies "autoremoving" animation tracks in addition to
+	// renaming, and having it false also disables autorenaming script properties!
 	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true))) {
 		return;
 	}
@@ -1813,6 +1831,11 @@ void SceneTreeDock::_delete_confirm() {
 		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
 		List<Pair<NodePath, NodePath>> path_renames;
 
+		// TODO: The following uses the ..._renames functions to remove animation
+		// tracks, rather than rename them. And as a side effect remove references
+		// in exported script properties.
+		// Would probably be good to refactor to make this clear.
+
 		//delete from animation
 		for (List<Node *>::Element *E = remove_list.front(); E; E = E->next()) {
 			Node *n = E->get();
@@ -1841,6 +1864,14 @@ void SceneTreeDock::_delete_confirm() {
 			editor_data->get_undo_redo().add_do_method(n->get_parent(), "remove_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "add_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "move_child", n, n->get_index());
+			// TODO: the following seemed wrong but on closer reading,
+			// this only removes the root in the currently open AnimationTrackEditor,
+			// if it happens to show an AnimationPlayer that was affected.
+			// The root is a property of the AnimationPlayers and there can
+			// be more than one BUT any of those that had their root deleted
+			// should already have been dealt with in the "_renames" code above.
+			// Still unclear if this is still needed if the player root was already
+			// removed - plus could be clearer.
 			if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == n) {
 				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", n);
 			}
