@@ -220,7 +220,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Returns the image's raw data.
+				Returns a copy of the image's raw data.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
