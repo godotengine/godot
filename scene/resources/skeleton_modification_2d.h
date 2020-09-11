@@ -39,6 +39,7 @@
 
 class Skeleton2D;
 class SkeletonModification2D;
+class Bone2D;
 
 class SkeletonModificationStack2D : public Resource {
 	GDCLASS(SkeletonModificationStack2D, Resource);
@@ -102,6 +103,7 @@ public:
 class SkeletonModification2D : public Resource {
 	GDCLASS(SkeletonModification2D, Resource);
 	friend class Skeleton2D;
+	friend class Bone2D;
 
 protected:
 	static void _bind_methods();
@@ -135,6 +137,7 @@ public:
 	int get_execution_mode() const;
 
 	float clamp_angle(float angle, float min_bound, float max_bound, bool invert_clamp = false);
+	void editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound, bool constraint_enabled, bool constraint_in_localspace, bool constraint_inverted);
 
 	SkeletonModification2D();
 };
@@ -220,6 +223,8 @@ private:
 		float constraint_angle_max = (2.0 * Math_PI);
 		bool constraint_angle_invert = false;
 		bool constraint_in_localspace = true;
+
+		bool editor_draw_gizmo = true;
 	};
 
 	Vector<CCDIK_Joint_Data2D> ccdik_data_chain;
@@ -244,6 +249,7 @@ protected:
 public:
 	void execute(float delta) override;
 	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -270,6 +276,8 @@ public:
 	bool ccdik_joint_get_constraint_angle_invert(int p_joint_idx) const;
 	void ccdik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
 	bool ccdik_joint_get_constraint_in_localspace(int p_joint_idx) const;
+	void ccdik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
+	bool ccdik_joint_get_editor_draw_gizmo(int p_joint_idx) const;
 
 	SkeletonModification2DCCDIK();
 	~SkeletonModification2DCCDIK();
@@ -296,6 +304,8 @@ private:
 		float constraint_angle_max = (2.0 * Math_PI);
 		bool constraint_angle_invert = false;
 		bool constraint_in_localspace = true;
+
+		bool editor_draw_gizmo = true;
 	};
 
 	Vector<FABRIK_Joint_Data2D> fabrik_data_chain;
@@ -329,6 +339,7 @@ protected:
 public:
 	void execute(float delta) override;
 	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -355,6 +366,8 @@ public:
 	bool fabrik_joint_get_constraint_angle_invert(int p_joint_idx) const;
 	void fabrik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
 	bool fabrik_joint_get_constraint_in_localspace(int p_joint_idx) const;
+	void fabrik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
+	bool fabrik_joint_get_editor_draw_gizmo(int p_joint_idx) const;
 
 	SkeletonModification2DFABRIK();
 	~SkeletonModification2DFABRIK();
@@ -478,20 +491,10 @@ private:
 	NodePath joint_one_bone2d_node;
 	ObjectID joint_one_bone2d_node_cache;
 	int joint_one_bone_idx = -1;
-	bool joint_one_enable_constraint = false;
-	float joint_one_constraint_angle_min = 0;
-	float joint_one_constraint_angle_max = (2.0 * Math_PI);
-	bool joint_one_constraint_angle_invert = false;
-	bool joint_one_constraint_in_localspace = true;
 
 	NodePath joint_two_bone2d_node;
 	ObjectID joint_two_bone2d_node_cache;
 	int joint_two_bone_idx = -1;
-	bool joint_two_enable_constraint = false;
-	float joint_two_constraint_angle_min = 0;
-	float joint_two_constraint_angle_max = (2.0 * Math_PI);
-	bool joint_two_constraint_angle_invert = false;
-	bool joint_two_constraint_in_localspace = true;
 
 	void update_target_cache();
 	void update_joint_one_bone2d_cache();
@@ -506,6 +509,7 @@ protected:
 public:
 	void execute(float delta) override;
 	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void draw_editor_gizmo() override;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
@@ -519,31 +523,11 @@ public:
 	NodePath get_joint_one_bone2d_node() const;
 	void set_joint_one_bone_idx(int p_bone_idx);
 	int get_joint_one_bone_idx() const;
-	void set_joint_one_enable_constraint(bool p_constraint);
-	bool get_joint_one_enable_constraint() const;
-	void set_joint_one_constraint_angle_min(float p_angle);
-	float get_joint_one_constraint_angle_min() const;
-	void set_joint_one_constraint_angle_max(float p_angle);
-	float get_joint_one_constraint_angle_max() const;
-	void set_joint_one_constraint_angle_invert(bool p_invert);
-	bool get_joint_one_constraint_angle_invert() const;
-	void set_joint_one_constraint_in_localspace(bool p_in_localspace);
-	bool get_joint_one_constraint_in_localspace() const;
 
 	void set_joint_two_bone2d_node(const NodePath &p_node);
 	NodePath get_joint_two_bone2d_node() const;
 	void set_joint_two_bone_idx(int p_bone_idx);
 	int get_joint_two_bone_idx() const;
-	void set_joint_two_enable_constraint(bool p_constraint);
-	bool get_joint_two_enable_constraint() const;
-	void set_joint_two_constraint_angle_min(float p_angle);
-	float get_joint_two_constraint_angle_min() const;
-	void set_joint_two_constraint_angle_max(float p_angle);
-	float get_joint_two_constraint_angle_max() const;
-	void set_joint_two_constraint_angle_invert(bool p_invert);
-	bool get_joint_two_constraint_angle_invert() const;
-	void set_joint_two_constraint_in_localspace(bool p_in_localspace);
-	bool get_joint_two_constraint_in_localspace() const;
 
 	SkeletonModification2DTwoBoneIK();
 	~SkeletonModification2DTwoBoneIK();
@@ -612,6 +596,7 @@ public:
 
 	void execute(float delta) override;
 	void setup_modification(SkeletonModificationStack2D *p_stack) override;
+	void draw_editor_gizmo() override;
 
 	void set_held_modification_stack(Ref<SkeletonModificationStack2D> p_held_stack);
 	Ref<SkeletonModificationStack2D> get_held_modification_stack() const;

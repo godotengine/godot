@@ -389,6 +389,68 @@ float SkeletonModification2D::clamp_angle(float angle, float min_bound, float ma
 	return angle;
 }
 
+void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *operation_bone, float min_bound, float max_bound,
+		bool constraint_enabled, bool constraint_in_localspace, bool constraint_inverted) {
+	if (!operation_bone) {
+		return;
+	}
+
+	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+	}
+#endif // TOOLS_ENABLED
+
+	float arc_angle_min = min_bound;
+	float arc_angle_max = max_bound;
+	if (arc_angle_min < 0) {
+		arc_angle_min = (Math_PI * 2) + arc_angle_min;
+	}
+	if (arc_angle_max < 0) {
+		arc_angle_max = (Math_PI * 2) + arc_angle_max;
+	}
+	if (arc_angle_min > arc_angle_max) {
+		float tmp = arc_angle_min;
+		arc_angle_min = arc_angle_max;
+		arc_angle_max = tmp;
+	}
+	arc_angle_min += operation_bone->get_bone_angle();
+	arc_angle_max += operation_bone->get_bone_angle();
+
+	if (constraint_enabled) {
+		if (constraint_in_localspace) {
+			Node *operation_bone_parent = operation_bone->get_parent();
+			Bone2D *operation_bone_parent_bone = Object::cast_to<Bone2D>(operation_bone_parent);
+
+			if (operation_bone_parent_bone) {
+				stack->skeleton->draw_set_transform(
+						stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()),
+						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
+			} else {
+				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+			}
+		} else {
+			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+		}
+
+		if (constraint_inverted) {
+			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
+					(Math_PI * 2) - arc_angle_max, arc_angle_min, 32, bone_ik_color, 1.0);
+		} else {
+			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
+					arc_angle_min, arc_angle_max, 32, bone_ik_color, 1.0);
+		}
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_min), Math::sin(arc_angle_min)) * operation_bone->get_length(), bone_ik_color, 1.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(arc_angle_max), Math::sin(arc_angle_max)) * operation_bone->get_length(), bone_ik_color, 1.0);
+
+	} else {
+		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
+		stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 1.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(1, 0) * operation_bone->get_length(), bone_ik_color, 1.0);
+	}
+}
+
 SkeletonModificationStack2D *SkeletonModification2D::get_modification_stack() {
 	return stack;
 }
@@ -581,10 +643,6 @@ void SkeletonModification2DLookAt::execute(float delta) {
 
 	// If we completed it successfully, then we can set execution_error_found to false.
 	execution_error_found = false;
-	// Draw the editor gizmo in case something changed
-#ifdef TOOLS_ENABLED
-	//stack->set_editor_gizmos_dirty(true);
-#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DLookAt::setup_modification(SkeletonModificationStack2D *p_stack) {
@@ -604,54 +662,8 @@ void SkeletonModification2DLookAt::draw_editor_gizmo() {
 	}
 
 	Bone2D *operation_bone = stack->skeleton->get_bone(bone_idx);
-	if (!operation_bone) {
-		return;
-	}
-
-	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
-	}
-#endif // TOOLS_ENABLED
-
-	float arc_angle_min = constraint_angle_min + operation_bone->get_bone_angle();
-	float arc_angle_max = constraint_angle_max + operation_bone->get_bone_angle();
-
-	if (arc_angle_min > arc_angle_max) {
-		float tmp = arc_angle_min;
-		arc_angle_min = arc_angle_max;
-		arc_angle_max = tmp;
-	}
-
-	if (enable_constraint) {
-		if (constraint_in_localspace) {
-			Node *operation_bone_parent = operation_bone->get_parent();
-			Bone2D *operation_bone_parent_bone = Object::cast_to<Bone2D>(operation_bone_parent);
-
-			if (operation_bone_parent_bone) {
-				stack->skeleton->draw_set_transform(
-						stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()),
-						operation_bone_parent_bone->get_global_rotation() - stack->skeleton->get_global_rotation());
-			} else {
-				stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
-			}
-		} else {
-			stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
-		}
-
-		if (constraint_angle_invert) {
-			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
-					(Math_PI * 2) - arc_angle_max, arc_angle_min, 32, bone_ik_color, 4.0);
-		} else {
-			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
-					arc_angle_min, arc_angle_max, 32, bone_ik_color, 4.0);
-		}
-	} else {
-		stack->skeleton->draw_set_transform(stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone->get_global_position()));
-		stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(), 0, Math_PI * 2, 32, bone_ik_color, 4.0);
-	}
+	editor_draw_angle_constraints(operation_bone, constraint_angle_min, constraint_angle_max,
+			enable_constraint, constraint_in_localspace, constraint_angle_invert);
 }
 
 void SkeletonModification2DLookAt::update_bone2d_cache() {
@@ -897,8 +909,22 @@ bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &
 		} else if (what == "constraint_in_localspace") {
 			ccdik_joint_set_constraint_in_localspace(which, p_value);
 		}
+
+#ifdef TOOLS_ENABLED
+		if (what.begins_with("editor_draw_gizmo")) {
+			ccdik_joint_set_editor_draw_gizmo(which, p_value);
+		}
+#endif // TOOLS_ENABLED
+
 		return true;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		set_editor_draw_gizmo(p_value);
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -927,8 +953,22 @@ bool SkeletonModification2DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 		} else if (what == "constraint_in_localspace") {
 			r_ret = ccdik_joint_get_constraint_in_localspace(which);
 		}
+
+#ifdef TOOLS_ENABLED
+		if (what.begins_with("editor_draw_gizmo")) {
+			r_ret = ccdik_joint_get_editor_draw_gizmo(which);
+		}
+#endif // TOOLS_ENABLED
+
 		return true;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		r_ret = get_editor_draw_gizmo();
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -947,7 +987,19 @@ void SkeletonModification2DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
+
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "editor_draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		}
+#endif // TOOLS_ENABLED
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DCCDIK::execute(float delta) {
@@ -1038,6 +1090,22 @@ void SkeletonModification2DCCDIK::setup_modification(SkeletonModificationStack2D
 		execution_error_found = false;
 		update_target_cache();
 		update_tip_cache();
+	}
+}
+
+void SkeletonModification2DCCDIK::draw_editor_gizmo() {
+	if (!enabled || !is_setup) {
+		return;
+	}
+
+	for (int i = 0; i < ccdik_data_chain.size(); i++) {
+		if (!ccdik_data_chain[i].editor_draw_gizmo) {
+			continue;
+		}
+
+		Bone2D *operation_bone = stack->skeleton->get_bone(ccdik_data_chain[i].bone_idx);
+		editor_draw_angle_constraints(operation_bone, ccdik_data_chain[i].constraint_angle_min, ccdik_data_chain[i].constraint_angle_max,
+				ccdik_data_chain[i].enable_constraint, ccdik_data_chain[i].constraint_in_localspace, ccdik_data_chain[i].constraint_angle_invert);
 	}
 }
 
@@ -1201,6 +1269,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_enable_constraint(int p_joint_
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
 	_change_notify();
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::ccdik_joint_get_enable_constraint(int p_joint_idx) const {
@@ -1211,6 +1285,12 @@ bool SkeletonModification2DCCDIK::ccdik_joint_get_enable_constraint(int p_joint_
 void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_min(int p_joint_idx) const {
@@ -1221,6 +1301,12 @@ float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_min(int p_jo
 void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_max(int p_joint_idx) const {
@@ -1231,6 +1317,12 @@ float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_max(int p_jo
 void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_invert(int p_joint_idx) const {
@@ -1241,11 +1333,33 @@ bool SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_invert(int p_
 void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DCCDIK::ccdik_joint_get_constraint_in_localspace(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].constraint_in_localspace;
+}
+
+void SkeletonModification2DCCDIK::ccdik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
+	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
+	ccdik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
+}
+
+bool SkeletonModification2DCCDIK::ccdik_joint_get_editor_draw_gizmo(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
+	return ccdik_data_chain[p_joint_idx].editor_draw_gizmo;
 }
 
 void SkeletonModification2DCCDIK::_bind_methods() {
@@ -1281,6 +1395,7 @@ SkeletonModification2DCCDIK::SkeletonModification2DCCDIK() {
 	stack = nullptr;
 	is_setup = false;
 	enabled = true;
+	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DCCDIK::~SkeletonModification2DCCDIK() {
@@ -1317,8 +1432,22 @@ bool SkeletonModification2DFABRIK::_set(const StringName &p_path, const Variant 
 		} else if (what == "constraint_in_localspace") {
 			fabrik_joint_set_constraint_in_localspace(which, p_value);
 		}
+
+#ifdef TOOLS_ENABLED
+		if (what.begins_with("editor_draw_gizmo")) {
+			fabrik_joint_set_editor_draw_gizmo(which, p_value);
+		}
+#endif // TOOLS_ENABLED
+
 		return true;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		set_editor_draw_gizmo(p_value);
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -1349,8 +1478,22 @@ bool SkeletonModification2DFABRIK::_get(const StringName &p_path, Variant &r_ret
 		} else if (what == "constraint_in_localspace") {
 			r_ret = fabrik_joint_get_constraint_in_localspace(which);
 		}
+
+#ifdef TOOLS_ENABLED
+		if (what.begins_with("editor_draw_gizmo")) {
+			r_ret = fabrik_joint_get_editor_draw_gizmo(which);
+		}
+#endif // TOOLS_ENABLED
+
 		return true;
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		r_ret = get_editor_draw_gizmo();
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -1375,7 +1518,19 @@ void SkeletonModification2DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		}
+
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "editor_draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		}
+#endif // TOOLS_ENABLED
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DFABRIK::execute(float delta) {
@@ -1629,6 +1784,22 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 	}
 }
 
+void SkeletonModification2DFABRIK::draw_editor_gizmo() {
+	if (!enabled || !is_setup) {
+		return;
+	}
+
+	for (int i = 0; i < fabrik_data_chain.size(); i++) {
+		if (!fabrik_data_chain[i].editor_draw_gizmo) {
+			continue;
+		}
+
+		Bone2D *operation_bone = stack->skeleton->get_bone(fabrik_data_chain[i].bone_idx);
+		editor_draw_angle_constraints(operation_bone, fabrik_data_chain[i].constraint_angle_min, fabrik_data_chain[i].constraint_angle_max,
+				fabrik_data_chain[i].enable_constraint, fabrik_data_chain[i].constraint_in_localspace, fabrik_data_chain[i].constraint_angle_invert);
+	}
+}
+
 void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
@@ -1744,6 +1915,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_enable_constraint(int p_join
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
 	_change_notify();
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DFABRIK::fabrik_joint_get_enable_constraint(int p_joint_idx) const {
@@ -1754,6 +1931,12 @@ bool SkeletonModification2DFABRIK::fabrik_joint_get_enable_constraint(int p_join
 void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_min(int p_joint_idx) const {
@@ -1764,6 +1947,12 @@ float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_min(int p_
 void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_max(int p_joint_idx) const {
@@ -1774,6 +1963,12 @@ float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_max(int p_
 void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_invert(int p_joint_idx) const {
@@ -1784,11 +1979,33 @@ bool SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_invert(int 
 void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DFABRIK::fabrik_joint_get_constraint_in_localspace(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].constraint_in_localspace;
+}
+
+void SkeletonModification2DFABRIK::fabrik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
+	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
+	fabrik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
+}
+
+bool SkeletonModification2DFABRIK::fabrik_joint_get_editor_draw_gizmo(int p_joint_idx) const {
+	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
+	return fabrik_data_chain[p_joint_idx].editor_draw_gizmo;
 }
 
 void SkeletonModification2DFABRIK::_bind_methods() {
@@ -1823,6 +2040,7 @@ SkeletonModification2DFABRIK::SkeletonModification2DFABRIK() {
 	stack = nullptr;
 	is_setup = false;
 	enabled = true;
+	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DFABRIK::~SkeletonModification2DFABRIK() {
@@ -2366,6 +2584,7 @@ SkeletonModification2DJiggle::SkeletonModification2DJiggle() {
 	use_gravity = false;
 	gravity = Vector2(0, 6.0);
 	enabled = true;
+	editor_draw_gizmo = false; // Nothing to really show in a gizmo right now.
 }
 
 SkeletonModification2DJiggle::~SkeletonModification2DJiggle() {
@@ -2382,31 +2601,17 @@ bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Varia
 		set_joint_one_bone_idx(p_value);
 	} else if (path == "joint_one_bone2d_node") {
 		set_joint_one_bone2d_node(p_value);
-	} else if (path == "joint_one_enable_constraint") {
-		set_joint_one_enable_constraint(p_value);
-	} else if (path == "joint_one_constraint_angle_min") {
-		set_joint_one_constraint_angle_min(Math::deg2rad(float(p_value)));
-	} else if (path == "joint_one_constraint_angle_max") {
-		set_joint_one_constraint_angle_max(Math::deg2rad(float(p_value)));
-	} else if (path == "joint_one_constraint_angle_invert") {
-		set_joint_one_constraint_angle_invert(p_value);
-	} else if (path == "joint_one_constraint_in_localspace") {
-		set_joint_one_constraint_in_localspace(p_value);
 	} else if (path == "joint_two_bone_idx") {
 		set_joint_two_bone_idx(p_value);
 	} else if (path == "joint_two_bone2d_node") {
 		set_joint_two_bone2d_node(p_value);
-	} else if (path == "joint_two_enable_constraint") {
-		set_joint_two_enable_constraint(p_value);
-	} else if (path == "joint_two_constraint_angle_min") {
-		set_joint_two_constraint_angle_min(Math::deg2rad(float(p_value)));
-	} else if (path == "joint_two_constraint_angle_max") {
-		set_joint_two_constraint_angle_max(Math::deg2rad(float(p_value)));
-	} else if (path == "joint_two_constraint_angle_invert") {
-		set_joint_two_constraint_angle_invert(p_value);
-	} else if (path == "joint_two_constraint_in_localspace") {
-		set_joint_two_constraint_in_localspace(p_value);
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		set_editor_draw_gizmo(p_value);
+	}
+#endif // TOOLS_ENABLED
 
 	return true;
 }
@@ -2418,31 +2623,17 @@ bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 		r_ret = get_joint_one_bone_idx();
 	} else if (path == "joint_one_bone2d_node") {
 		r_ret = get_joint_one_bone2d_node();
-	} else if (path == "joint_one_enable_constraint") {
-		r_ret = get_joint_one_enable_constraint();
-	} else if (path == "joint_one_constraint_angle_min") {
-		r_ret = Math::rad2deg(get_joint_one_constraint_angle_min());
-	} else if (path == "joint_one_constraint_angle_max") {
-		r_ret = Math::rad2deg(get_joint_one_constraint_angle_max());
-	} else if (path == "joint_one_constraint_angle_invert") {
-		r_ret = get_joint_one_constraint_angle_invert();
-	} else if (path == "joint_one_constraint_in_localspace") {
-		r_ret = get_joint_one_constraint_in_localspace();
 	} else if (path == "joint_two_bone_idx") {
 		r_ret = get_joint_two_bone_idx();
 	} else if (path == "joint_two_bone2d_node") {
 		r_ret = get_joint_two_bone2d_node();
-	} else if (path == "joint_two_enable_constraint") {
-		r_ret = get_joint_two_enable_constraint();
-	} else if (path == "joint_two_constraint_angle_min") {
-		r_ret = Math::rad2deg(get_joint_two_constraint_angle_min());
-	} else if (path == "joint_two_constraint_angle_max") {
-		r_ret = Math::rad2deg(get_joint_two_constraint_angle_max());
-	} else if (path == "joint_two_constraint_angle_invert") {
-		r_ret = get_joint_two_constraint_angle_invert();
-	} else if (path == "joint_two_constraint_in_localspace") {
-		r_ret = get_joint_two_constraint_in_localspace();
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path.begins_with("editor/draw_gizmo")) {
+		r_ret = get_editor_draw_gizmo();
+	}
+#endif // TOOLS_ENABLED
 
 	return true;
 }
@@ -2450,23 +2641,15 @@ bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "joint_one_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_one_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_enable_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	if (joint_one_enable_constraint) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one_constraint_angle_min", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_one_constraint_angle_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_one_constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	}
 
 	p_list->push_back(PropertyInfo(Variant::INT, "joint_two_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_two_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_enable_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	if (joint_two_enable_constraint) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two_constraint_angle_min", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "joint_two_constraint_angle_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_constraint_angle_invert", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_two_constraint_in_localspace", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DTwoBoneIK::execute(float delta) {
@@ -2540,22 +2723,6 @@ void SkeletonModification2DTwoBoneIK::execute(float delta) {
 		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
 	}
 
-	// global constrains
-	if (joint_one_enable_constraint && !joint_one_constraint_in_localspace) {
-		joint_one_bone->set_global_rotation(clamp_angle(joint_one_bone->get_global_rotation(), joint_one_constraint_angle_min, joint_one_constraint_angle_max, joint_one_constraint_angle_invert));
-	}
-	if (joint_two_enable_constraint && !joint_two_constraint_in_localspace) {
-		joint_two_bone->set_global_rotation(clamp_angle(joint_two_bone->get_global_rotation(), joint_two_constraint_angle_min, joint_two_constraint_angle_max, joint_two_constraint_angle_invert));
-	}
-
-	// local constrains
-	if (joint_one_enable_constraint && joint_one_constraint_in_localspace) {
-		joint_one_bone->set_rotation(clamp_angle(joint_one_bone->get_rotation(), joint_one_constraint_angle_min, joint_one_constraint_angle_max, joint_one_constraint_angle_invert));
-	}
-	if (joint_two_enable_constraint && joint_two_constraint_in_localspace) {
-		joint_two_bone->set_rotation(clamp_angle(joint_two_bone->get_rotation(), joint_two_constraint_angle_min, joint_two_constraint_angle_max, joint_two_constraint_angle_invert));
-	}
-
 	stack->skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), stack->strength, true);
 	stack->skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), stack->strength, true);
 
@@ -2571,6 +2738,35 @@ void SkeletonModification2DTwoBoneIK::setup_modification(SkeletonModificationSta
 		update_target_cache();
 		update_joint_one_bone2d_cache();
 		update_joint_two_bone2d_cache();
+	}
+}
+
+void SkeletonModification2DTwoBoneIK::draw_editor_gizmo() {
+	if (!enabled || !is_setup) {
+		return;
+	}
+
+	Bone2D *operation_bone_one = stack->skeleton->get_bone(joint_one_bone_idx);
+	if (!operation_bone_one) {
+		return;
+	}
+	stack->skeleton->draw_set_transform(
+			stack->skeleton->get_global_transform().affine_inverse().xform(operation_bone_one->get_global_position()),
+			operation_bone_one->get_global_rotation() - stack->skeleton->get_global_rotation());
+
+	Color bone_ik_color = Color(1.0, 0.65, 0.0, 0.4);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+	}
+#endif // TOOLS_ENABLED
+
+	if (flip_bend_direction) {
+		float angle = -(Math_PI * 0.5) + operation_bone_one->get_bone_angle();
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 1.0);
+	} else {
+		float angle = (Math_PI * 0.5) + operation_bone_one->get_bone_angle();
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 1.0);
 	}
 }
 
@@ -2683,6 +2879,12 @@ float SkeletonModification2DTwoBoneIK::get_target_minimum_distance() const {
 
 void SkeletonModification2DTwoBoneIK::set_flip_bend_direction(bool p_flip_direction) {
 	flip_bend_direction = p_flip_direction;
+
+#ifdef TOOLS_ENABLED
+	if (stack && is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 bool SkeletonModification2DTwoBoneIK::get_flip_bend_direction() const {
@@ -2755,90 +2957,6 @@ int SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx() const {
 	return joint_two_bone_idx;
 }
 
-// TwoBoneIK property functions
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_enable_constraint(bool p_constraint) {
-	joint_one_enable_constraint = p_constraint;
-	_change_notify();
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_one_enable_constraint() const {
-	return joint_one_enable_constraint;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_min(float p_angle) {
-	joint_one_constraint_angle_min = p_angle;
-}
-
-float SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_min() const {
-	return joint_one_constraint_angle_min;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_max(float p_angle) {
-	joint_one_constraint_angle_max = p_angle;
-}
-
-float SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_max() const {
-	return joint_one_constraint_angle_max;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_invert(bool p_invert) {
-	joint_one_constraint_angle_invert = p_invert;
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_invert() const {
-	return joint_one_constraint_angle_invert;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_constraint_in_localspace(bool p_in_localspace) {
-	joint_one_constraint_in_localspace = p_in_localspace;
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_one_constraint_in_localspace() const {
-	return joint_one_constraint_in_localspace;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_enable_constraint(bool p_constraint) {
-	joint_two_enable_constraint = p_constraint;
-	_change_notify();
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_two_enable_constraint() const {
-	return joint_two_enable_constraint;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_min(float p_angle) {
-	joint_two_constraint_angle_min = p_angle;
-}
-
-float SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_min() const {
-	return joint_two_constraint_angle_min;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_max(float p_angle) {
-	joint_two_constraint_angle_max = p_angle;
-}
-
-float SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_max() const {
-	return joint_two_constraint_angle_max;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_invert(bool p_invert) {
-	joint_two_constraint_angle_invert = p_invert;
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_invert() const {
-	return joint_two_constraint_angle_invert;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_constraint_in_localspace(bool p_in_localspace) {
-	joint_two_constraint_in_localspace = p_in_localspace;
-}
-
-bool SkeletonModification2DTwoBoneIK::get_joint_two_constraint_in_localspace() const {
-	return joint_two_constraint_in_localspace;
-}
-
 void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification2DTwoBoneIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification2DTwoBoneIK::get_target_node);
@@ -2852,31 +2970,11 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_one_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node);
 	ClassDB::bind_method(D_METHOD("set_joint_one_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_joint_one_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx);
-	ClassDB::bind_method(D_METHOD("set_joint_one_enable_constraint", "enable_constraint"), &SkeletonModification2DTwoBoneIK::set_joint_one_enable_constraint);
-	ClassDB::bind_method(D_METHOD("get_joint_one_enable_constraint"), &SkeletonModification2DTwoBoneIK::get_joint_one_enable_constraint);
-	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_min", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_min"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_max", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_max"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_angle_invert", "invert"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_angle_invert"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("set_joint_one_constraint_in_localspace", "in_localspace"), &SkeletonModification2DTwoBoneIK::set_joint_one_constraint_in_localspace);
-	ClassDB::bind_method(D_METHOD("get_joint_one_constraint_in_localspace"), &SkeletonModification2DTwoBoneIK::get_joint_one_constraint_in_localspace);
 
 	ClassDB::bind_method(D_METHOD("set_joint_two_bone2d_node", "bone2d_node"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node);
 	ClassDB::bind_method(D_METHOD("get_joint_two_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node);
 	ClassDB::bind_method(D_METHOD("set_joint_two_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx);
 	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx);
-	ClassDB::bind_method(D_METHOD("set_joint_two_enable_constraint", "enable_constraint"), &SkeletonModification2DTwoBoneIK::set_joint_two_enable_constraint);
-	ClassDB::bind_method(D_METHOD("get_joint_two_enable_constraint"), &SkeletonModification2DTwoBoneIK::get_joint_two_enable_constraint);
-	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_min", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_min"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_max", "angle"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_max"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_angle_invert", "invert"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_angle_invert"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("set_joint_two_constraint_in_localspace", "in_localspace"), &SkeletonModification2DTwoBoneIK::set_joint_two_constraint_in_localspace);
-	ClassDB::bind_method(D_METHOD("get_joint_two_constraint_in_localspace"), &SkeletonModification2DTwoBoneIK::get_joint_two_constraint_in_localspace);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_NONE, ""), "set_target_minimum_distance", "get_target_minimum_distance");
@@ -2888,6 +2986,7 @@ SkeletonModification2DTwoBoneIK::SkeletonModification2DTwoBoneIK() {
 	stack = nullptr;
 	is_setup = false;
 	enabled = true;
+	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DTwoBoneIK::~SkeletonModification2DTwoBoneIK() {
@@ -3155,6 +3254,7 @@ SkeletonModification2DPhysicalBones::SkeletonModification2DPhysicalBones() {
 	is_setup = false;
 	physical_bone_chain = Vector<PhysicalBone_Data2D>();
 	enabled = true;
+	editor_draw_gizmo = false; // Nothing to really show in a gizmo right now.
 }
 
 SkeletonModification2DPhysicalBones::~SkeletonModification2DPhysicalBones() {
@@ -3170,6 +3270,13 @@ bool SkeletonModification2DStackHolder::_set(const StringName &p_path, const Var
 	if (path == "held_modification_stack") {
 		set_held_modification_stack(p_value);
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path == "editor/draw_gizmo") {
+		set_editor_draw_gizmo(p_value);
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
@@ -3179,11 +3286,24 @@ bool SkeletonModification2DStackHolder::_get(const StringName &p_path, Variant &
 	if (path == "held_modification_stack") {
 		r_ret = get_held_modification_stack();
 	}
+
+#ifdef TOOLS_ENABLED
+	if (path == "editor/draw_gizmo") {
+		r_ret = get_editor_draw_gizmo();
+	}
+#endif // TOOLS_ENABLED
+
 	return true;
 }
 
 void SkeletonModification2DStackHolder::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "held_modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DStackHolder::execute(float delta) {
@@ -3204,6 +3324,14 @@ void SkeletonModification2DStackHolder::setup_modification(SkeletonModificationS
 		if (held_modification_stack.is_valid()) {
 			held_modification_stack->set_skeleton(stack->get_skeleton());
 			held_modification_stack->setup();
+		}
+	}
+}
+
+void SkeletonModification2DStackHolder::draw_editor_gizmo() {
+	if (stack) {
+		if (held_modification_stack.is_valid()) {
+			held_modification_stack->draw_editor_gizmos();
 		}
 	}
 }
