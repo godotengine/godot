@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_loader_jpegd.h                                                 */
+/*  model_abstraction.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_LOADER_JPG_H
-#define IMAGE_LOADER_JPG_H
+#ifndef MODEL_ABSTRACTION_FBX_IMPORTER_H
+#define MODEL_ABSTRACTION_FBX_IMPORTER_H
 
-#include "core/io/image_loader.h"
+#include "thirdparty/assimp_fbx/FBXDocument.h"
 
-class ImageLoaderJPG : public ImageFormatLoader {
+struct ModelAbstraction {
+	mutable const Assimp::FBX::Model *fbx_model = nullptr;
 
-public:
-	static Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len);
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderJPG();
+	void set_model(const Assimp::FBX::Model *p_model) {
+		fbx_model = p_model;
+	}
+
+	bool has_model() const {
+		return fbx_model != nullptr;
+	}
+
+	const Assimp::FBX::Model *get_model() const {
+		return fbx_model;
+	}
 };
 
-#endif
+#endif // MODEL_ABSTRACTION_FBX_IMPORTER_H

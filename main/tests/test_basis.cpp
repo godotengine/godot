@@ -89,6 +89,7 @@ Basis EulerToBasis(RotOrder mode, const Vector3 &p_rotation) {
 }
 
 Vector3 BasisToEuler(RotOrder mode, const Basis &p_rotation) {
+
 	switch (mode) {
 		case EulerXYZ:
 			return p_rotation.get_euler_xyz();
@@ -135,6 +136,7 @@ String get_rot_order_name(RotOrder ro) {
 }
 
 bool test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
+
 	// This test:
 	// 1. Converts the rotation vector from deg to rad.
 	// 2. Converts euler to basis.
@@ -316,7 +318,7 @@ void test_euler_conversion() {
 }
 
 MainLoop *test() {
-	OS::get_singleton()->print("Start euler conversion checks.\n");
+	OS::get_singleton()->print("Start euler conversion check.\n");
 	test_euler_conversion();
 
 	return NULL;

@@ -36,7 +36,7 @@
 #include <jpgd.h>
 #include <string.h>
 
-Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
+Error ImageLoaderJPG::jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 
 	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);
 
@@ -130,7 +130,7 @@ static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 
 	Ref<Image> img;
 	img.instance();
-	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
+	Error err = ImageLoaderJPG::jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
 	ERR_FAIL_COND_V(err, Ref<Image>());
 	return img;
 }
