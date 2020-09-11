@@ -105,8 +105,18 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	parent_name->deselect();
 
 	if (p_base_path != "") {
-		initial_bp = p_base_path.get_basename();
-		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
+		ScriptLanguage *lang = ScriptServer::get_language(language_menu->get_selected());
+		initial_bp = p_base_path.get_base_dir();
+
+		String file = p_base_path.get_file();
+		if (lang->get_name() != "C#") {
+			file = file.camelcase_to_underscore();
+			if (file[0] == '_') {
+				file.erase(0, 1);
+			}
+		}
+		initial_bp = initial_bp.plus_file(file.get_basename());
+		file_path->set_text(initial_bp + "." + lang->get_extension());
 		current_language = language_menu->get_selected();
 	} else {
 		initial_bp = "";
