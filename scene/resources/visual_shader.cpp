@@ -1509,11 +1509,11 @@ void VisualShader::_update_shader() const {
 		if (shader_mode != Shader::MODE_PARTICLES) {
 			func_code += "\nvoid " + String(func_name[i]) + "() {\n";
 		}
+		insertion_pos.insert(i, code.get_string_length() + func_code.get_string_length());
 
 		Set<int> processed;
 		Error err = _write_node(Type(i), global_code, global_code_per_node, global_code_per_func, func_code, default_tex_params, input_connections, output_connections, NODE_ID_OUTPUT, processed, false, classes);
 		ERR_FAIL_COND(err != OK);
-		insertion_pos.insert(i, code.get_string_length());
 
 		if (shader_mode == Shader::MODE_PARTICLES) {
 			code_map.insert(i, func_code);
