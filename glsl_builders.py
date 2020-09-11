@@ -96,8 +96,6 @@ def build_rd_header(filename):
     out_file = filename + ".gen.h"
     fd = open(out_file, "w")
 
-    enum_constants = []
-
     fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
     out_file_base = out_file
@@ -165,7 +163,6 @@ class RAWHeaderStruct:
 def include_file_in_raw_header(filename, header_data, depth):
     fs = open(filename, "r")
     line = fs.readline()
-    text = ""
 
     while line:
 
@@ -191,8 +188,6 @@ def build_raw_header(filename):
 
     out_file = filename + ".gen.h"
     fd = open(out_file, "w")
-
-    enum_constants = []
 
     fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
 
