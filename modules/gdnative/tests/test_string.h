@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_gdnative_string.h                                               */
+/*  test_string.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_GDNATVIE_STRING_H
-#define TEST_GDNATVIE_STRING_H
+#ifndef TEST_GDNATIVE_STRING_H
+#define TEST_GDNATIVE_STRING_H
 
 namespace TestGDNativeString {
-
-#include "modules/modules_enabled.gen.h"
-#ifdef MODULE_GDNATIVE_ENABLED
 
 #include "gdnative/string.h"
 
@@ -46,7 +43,7 @@ int u32scmp(const char32_t *l, const char32_t *r) {
 	return *l - *r;
 }
 
-TEST_CASE("[GDNatvie String] Construct from Latin-1 char string") {
+TEST_CASE("[GDNative String] Construct from Latin-1 char string") {
 	godot_string s;
 
 	godot_string_new_with_latin1_chars(&s, "Hello");
@@ -58,7 +55,7 @@ TEST_CASE("[GDNatvie String] Construct from Latin-1 char string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Construct from wchar_t string") {
+TEST_CASE("[GDNative String] Construct from wchar_t string") {
 	godot_string s;
 
 	godot_string_new_with_wide_chars(&s, L"Give me");
@@ -70,7 +67,7 @@ TEST_CASE("[GDNatvie String] Construct from wchar_t string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Construct from UTF-8 char string") {
+TEST_CASE("[GDNative String] Construct from UTF-8 char string") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char32_t u32str_short[] = { 0x0045, 0x0020, 0x304A, 0 };
 	static const uint8_t u8str[] = { 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
@@ -100,7 +97,7 @@ TEST_CASE("[GDNatvie String] Construct from UTF-8 char string") {
 	godot_char_string_destroy(&cs);
 }
 
-TEST_CASE("[GDNatvie String] Construct from UTF-8 string with BOM") {
+TEST_CASE("[GDNative String] Construct from UTF-8 string with BOM") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x304A, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char32_t u32str_short[] = { 0x0045, 0x0020, 0x304A, 0 };
 	static const uint8_t u8str[] = { 0xEF, 0xBB, 0xBF, 0x45, 0x20, 0xE3, 0x81, 0x8A, 0xE3, 0x98, 0x8F, 0xE3, 0x82, 0x88, 0xE3, 0x81, 0x86, 0xF0, 0x9F, 0x8E, 0xA4, 0 };
@@ -116,7 +113,7 @@ TEST_CASE("[GDNatvie String] Construct from UTF-8 string with BOM") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Construct from UTF-16 string") {
+TEST_CASE("[GDNative String] Construct from UTF-16 string") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x1F3A4, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char32_t u32str_short[] = { 0x0045, 0x0020, 0x1F3A4, 0 };
 	static const char16_t u16str[] = { 0x0045, 0x0020, 0xD83C, 0xDFA4, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
@@ -146,7 +143,7 @@ TEST_CASE("[GDNatvie String] Construct from UTF-16 string") {
 	godot_char16_string_destroy(&cs);
 }
 
-TEST_CASE("[GDNatvie String] Construct from UTF-16 string with BOM ") {
+TEST_CASE("[GDNative String] Construct from UTF-16 string with BOM ") {
 	static const char32_t u32str[] = { 0x0045, 0x0020, 0x1F3A4, 0x360F, 0x3088, 0x3046, 0x1F3A4, 0 };
 	static const char32_t u32str_short[] = { 0x0045, 0x0020, 0x1F3A4, 0 };
 	static const char16_t u16str[] = { 0xFEFF, 0x0045, 0x0020, 0xD83C, 0xDFA4, 0x360F, 0x3088, 0x3046, 0xD83C, 0xDFA4, 0 };
@@ -171,7 +168,7 @@ TEST_CASE("[GDNatvie String] Construct from UTF-16 string with BOM ") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Construct string copy") {
+TEST_CASE("[GDNative String] Construct string copy") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "Hello");
@@ -181,7 +178,7 @@ TEST_CASE("[GDNatvie String] Construct string copy") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Construct empty string") {
+TEST_CASE("[GDNative String] Construct empty string") {
 	godot_string s;
 
 	godot_string_new(&s);
@@ -189,7 +186,7 @@ TEST_CASE("[GDNatvie String] Construct empty string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] ASCII/Latin-1") {
+TEST_CASE("[GDNative String] ASCII/Latin-1") {
 	godot_string s;
 	godot_string_new_with_utf32_chars(&s, U"Primero Leche");
 
@@ -204,7 +201,7 @@ TEST_CASE("[GDNatvie String] ASCII/Latin-1") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Comparisons (equal)") {
+TEST_CASE("[GDNative String] Comparisons (equal)") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "Test Compare");
@@ -214,7 +211,7 @@ TEST_CASE("[GDNatvie String] Comparisons (equal)") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] Comparisons (operator <)") {
+TEST_CASE("[GDNative String] Comparisons (operator <)") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "Bees");
@@ -234,7 +231,7 @@ TEST_CASE("[GDNatvie String] Comparisons (operator <)") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Concatenation (operator +)") {
+TEST_CASE("[GDNative String] Concatenation (operator +)") {
 	godot_string s, t, x;
 
 	godot_string_new_with_latin1_chars(&s, "Hel");
@@ -246,7 +243,7 @@ TEST_CASE("[GDNatvie String] Concatenation (operator +)") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] Testing size and length of string") {
+TEST_CASE("[GDNative String] Testing size and length of string") {
 	godot_string s;
 
 	godot_string_new_with_latin1_chars(&s, "Mellon");
@@ -258,7 +255,7 @@ TEST_CASE("[GDNatvie String] Testing size and length of string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Testing for empty string") {
+TEST_CASE("[GDNative String] Testing for empty string") {
 	godot_string s;
 
 	godot_string_new_with_latin1_chars(&s, "Mellon");
@@ -270,7 +267,7 @@ TEST_CASE("[GDNatvie String] Testing for empty string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Test chr") {
+TEST_CASE("[GDNative String] Test chr") {
 	godot_string s;
 
 	s = godot_string_chr('H');
@@ -292,7 +289,7 @@ TEST_CASE("[GDNatvie String] Test chr") {
 	ERR_PRINT_ON
 }
 
-TEST_CASE("[GDNatvie String] Operator []") {
+TEST_CASE("[GDNative String] Operator []") {
 	godot_string s;
 
 	godot_string_new_with_latin1_chars(&s, "Hello");
@@ -302,7 +299,7 @@ TEST_CASE("[GDNatvie String] Operator []") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Case function test") {
+TEST_CASE("[GDNative String] Case function test") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "MoMoNgA");
@@ -318,7 +315,7 @@ TEST_CASE("[GDNatvie String] Case function test") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Case compare function test") {
+TEST_CASE("[GDNative String] Case compare function test") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "MoMoNgA");
@@ -331,7 +328,7 @@ TEST_CASE("[GDNatvie String] Case compare function test") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] Natural compare function test") {
+TEST_CASE("[GDNative String] Natural compare function test") {
 	godot_string s, t;
 
 	godot_string_new_with_latin1_chars(&s, "img2.png");
@@ -344,14 +341,14 @@ TEST_CASE("[GDNatvie String] Natural compare function test") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] hex_encode_buffer") {
+TEST_CASE("[GDNative String] hex_encode_buffer") {
 	static const uint8_t u8str[] = { 0x45, 0xE3, 0x81, 0x8A, 0x8F, 0xE3 };
 	godot_string s = godot_string_hex_encode_buffer(u8str, 6);
 	CHECK(u32scmp(godot_string_get_data(&s), U"45e3818a8fe3") == 0);
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Substr") {
+TEST_CASE("[GDNative String] Substr") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "Killer Baby");
 	t = godot_string_substr(&s, 3, 4);
@@ -360,7 +357,7 @@ TEST_CASE("[GDNatvie String] Substr") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Find") {
+TEST_CASE("[GDNative String] Find") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "Pretty Woman Woman");
 
@@ -383,7 +380,7 @@ TEST_CASE("[GDNatvie String] Find") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Find no case") {
+TEST_CASE("[GDNative String] Find no case") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "Pretty Whale Whale");
 
@@ -406,7 +403,7 @@ TEST_CASE("[GDNatvie String] Find no case") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Find MK") {
+TEST_CASE("[GDNative String] Find MK") {
 	godot_packed_string_array keys;
 	godot_packed_string_array_new(&keys);
 
@@ -440,7 +437,7 @@ TEST_CASE("[GDNatvie String] Find MK") {
 #undef PUSH_KEY
 }
 
-TEST_CASE("[GDNatvie String] Find and replace") {
+TEST_CASE("[GDNative String] Find and replace") {
 	godot_string s, c, w;
 	godot_string_new_with_latin1_chars(&s, "Happy Birthday, Anna!");
 	godot_string_new_with_latin1_chars(&c, "Birthday");
@@ -462,7 +459,7 @@ TEST_CASE("[GDNatvie String] Find and replace") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Insertion") {
+TEST_CASE("[GDNative String] Insertion") {
 	godot_string s, t, r, u;
 	godot_string_new_with_latin1_chars(&s, "Who is Frederic?");
 	godot_string_new_with_latin1_chars(&t, "?");
@@ -477,7 +474,7 @@ TEST_CASE("[GDNatvie String] Insertion") {
 	godot_string_destroy(&u);
 }
 
-TEST_CASE("[GDNatvie String] Number to string") {
+TEST_CASE("[GDNative String] Number to string") {
 	godot_string s;
 	s = godot_string_num(3.141593);
 	CHECK(u32scmp(godot_string_get_data(&s), U"3.141593") == 0);
@@ -508,7 +505,7 @@ TEST_CASE("[GDNatvie String] Number to string") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] String to integer") {
+TEST_CASE("[GDNative String] String to integer") {
 	static const wchar_t *wnums[4] = { L"1237461283", L"- 22", L"0", L" - 1123412" };
 	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
 	static const int num[4] = { 1237461283, -22, 0, -1123412 };
@@ -524,7 +521,7 @@ TEST_CASE("[GDNatvie String] String to integer") {
 	}
 }
 
-TEST_CASE("[GDNatvie String] Hex to integer") {
+TEST_CASE("[GDNative String] Hex to integer") {
 	static const char *nums[4] = { "0xFFAE", "22", "0", "AADDAD" };
 	static const int64_t num[4] = { 0xFFAE, 0x22, 0, 0xAADDAD };
 	static const bool wo_prefix[4] = { false, true, true, true };
@@ -539,7 +536,7 @@ TEST_CASE("[GDNatvie String] Hex to integer") {
 	}
 }
 
-TEST_CASE("[GDNatvie String] String to float") {
+TEST_CASE("[GDNative String] String to float") {
 	static const wchar_t *wnums[4] = { L"-12348298412.2", L"0.05", L"2.0002", L" -0.0001" };
 	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
 	static const double num[4] = { -12348298412.2, 0.05, 2.0002, -0.0001 };
@@ -555,7 +552,7 @@ TEST_CASE("[GDNatvie String] String to float") {
 	}
 }
 
-TEST_CASE("[GDNatvie String] CamelCase to underscore") {
+TEST_CASE("[GDNative String] CamelCase to underscore") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "TestTestStringGD");
 
@@ -570,7 +567,7 @@ TEST_CASE("[GDNatvie String] CamelCase to underscore") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Slicing") {
+TEST_CASE("[GDNative String] Slicing") {
 	godot_string s, c;
 	godot_string_new_with_latin1_chars(&s, "Mars,Jupiter,Saturn,Uranus");
 	godot_string_new_with_latin1_chars(&c, ",");
@@ -591,7 +588,7 @@ TEST_CASE("[GDNatvie String] Slicing") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Splitting") {
+TEST_CASE("[GDNative String] Splitting") {
 	godot_string s, c;
 	godot_string_new_with_latin1_chars(&s, "Mars,Jupiter,Saturn,Uranus");
 	godot_string_new_with_latin1_chars(&c, ",");
@@ -682,7 +679,7 @@ TEST_CASE("[GDNatvie String] Splitting") {
 	godot_packed_string_array_destroy(&keys);
 }
 
-TEST_CASE("[GDNatvie String] Erasing") {
+TEST_CASE("[GDNative String] Erasing") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "Josephine is such a cute girl!");
 	godot_string_new_with_latin1_chars(&t, "cute ");
@@ -701,7 +698,7 @@ struct test_27_data {
 	bool expected;
 };
 
-TEST_CASE("[GDNatvie String] Begins with") {
+TEST_CASE("[GDNative String] Begins with") {
 	test_27_data tc[] = {
 		{ "res://foobar", "res://", true },
 		{ "res", "res://", false },
@@ -730,7 +727,7 @@ TEST_CASE("[GDNatvie String] Begins with") {
 	CHECK(state);
 }
 
-TEST_CASE("[GDNatvie String] Ends with") {
+TEST_CASE("[GDNative String] Ends with") {
 	test_27_data tc[] = {
 		{ "res://foobar", "foobar", true },
 		{ "res", "res://", false },
@@ -759,7 +756,7 @@ TEST_CASE("[GDNatvie String] Ends with") {
 	CHECK(state);
 }
 
-TEST_CASE("[GDNatvie String] format") {
+TEST_CASE("[GDNative String] format") {
 	godot_string value_format, t;
 	godot_string_new_with_latin1_chars(&value_format, "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"");
 
@@ -813,7 +810,7 @@ TEST_CASE("[GDNatvie String] format") {
 	godot_string_destroy(&value_format);
 }
 
-TEST_CASE("[GDNatvie String] sprintf") {
+TEST_CASE("[GDNative String] sprintf") {
 	//godot_string GDAPI (const godot_string *p_self, const godot_array *p_values, godot_bool *p_error);
 	godot_string format, output;
 	godot_array args;
@@ -1215,7 +1212,7 @@ TEST_CASE("[GDNatvie String] sprintf") {
 #undef ARRAY_PUSH_STRING
 }
 
-TEST_CASE("[GDNatvie String] is_numeric") {
+TEST_CASE("[GDNative String] is_numeric") {
 #define IS_NUM_TEST(x, r)                          \
 	{                                              \
 		godot_string t;                            \
@@ -1233,7 +1230,7 @@ TEST_CASE("[GDNatvie String] is_numeric") {
 #undef IS_NUM_TEST
 }
 
-TEST_CASE("[GDNatvie String] pad") {
+TEST_CASE("[GDNative String] pad") {
 	godot_string s, c;
 	godot_string_new_with_latin1_chars(&s, "test");
 	godot_string_new_with_latin1_chars(&c, "x");
@@ -1260,7 +1257,7 @@ TEST_CASE("[GDNatvie String] pad") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] is_subsequence_of") {
+TEST_CASE("[GDNative String] is_subsequence_of") {
 	godot_string a, t;
 	godot_string_new_with_latin1_chars(&a, "is subsequence of");
 
@@ -1279,7 +1276,7 @@ TEST_CASE("[GDNatvie String] is_subsequence_of") {
 	godot_string_destroy(&a);
 }
 
-TEST_CASE("[GDNatvie String] match") {
+TEST_CASE("[GDNative String] match") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "*.png");
 
@@ -1299,7 +1296,7 @@ TEST_CASE("[GDNatvie String] match") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] IPVX address to string") {
+TEST_CASE("[GDNative String] IPVX address to string") {
 	godot_string ip;
 
 	godot_string_new_with_latin1_chars(&ip, "192.168.0.1");
@@ -1331,7 +1328,7 @@ TEST_CASE("[GDNatvie String] IPVX address to string") {
 	godot_string_destroy(&ip);
 }
 
-TEST_CASE("[GDNatvie String] Capitalize against many strings") {
+TEST_CASE("[GDNative String] Capitalize against many strings") {
 #define CAP_TEST(i, o)                                                                 \
 	godot_string_new_with_latin1_chars(&input, i);                                     \
 	godot_string_new_with_latin1_chars(&output, o);                                    \
@@ -1361,7 +1358,7 @@ TEST_CASE("[GDNatvie String] Capitalize against many strings") {
 #undef CAP_TEST
 }
 
-TEST_CASE("[GDNatvie String] lstrip and rstrip") {
+TEST_CASE("[GDNative String] lstrip and rstrip") {
 #define LSTRIP_TEST(x, y, z)                                                                     \
 	{                                                                                            \
 		godot_string xx, yy, zz, rr;                                                             \
@@ -1484,7 +1481,7 @@ TEST_CASE("[GDNatvie String] lstrip and rstrip") {
 #undef RSTRIP_UTF8_TEST
 }
 
-TEST_CASE("[GDNatvie String] Cyrillic to_lower()") {
+TEST_CASE("[GDNative String] Cyrillic to_lower()") {
 	godot_string upper, lower, test;
 	godot_string_new_with_utf8_chars(&upper, "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ");
 	godot_string_new_with_utf8_chars(&lower, "абвгдеёжзийклмнопрстуфхцчшщъыьэюя");
@@ -1498,7 +1495,7 @@ TEST_CASE("[GDNatvie String] Cyrillic to_lower()") {
 	godot_string_destroy(&test);
 }
 
-TEST_CASE("[GDNatvie String] Count and countn functionality") {
+TEST_CASE("[GDNative String] Count and countn functionality") {
 #define COUNT_TEST(x, y, r)                                       \
 	{                                                             \
 		godot_string s, t;                                        \
@@ -1570,7 +1567,7 @@ TEST_CASE("[GDNatvie String] Count and countn functionality") {
 #undef COUNTNR_TEST
 }
 
-TEST_CASE("[GDNatvie String] Bigrams") {
+TEST_CASE("[GDNative String] Bigrams") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "abcd");
 	godot_packed_string_array bigr = godot_string_bigrams(&s);
@@ -1593,7 +1590,7 @@ TEST_CASE("[GDNatvie String] Bigrams") {
 	godot_packed_string_array_destroy(&bigr);
 }
 
-TEST_CASE("[GDNatvie String] c-escape/unescape") {
+TEST_CASE("[GDNative String] c-escape/unescape") {
 	godot_string s;
 	godot_string_new_with_latin1_chars(&s, "\\1\a2\b\f3\n45\r6\t7\v8\'9\?0\"");
 	godot_string t = godot_string_c_escape(&s);
@@ -1604,7 +1601,7 @@ TEST_CASE("[GDNatvie String] c-escape/unescape") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] dedent") {
+TEST_CASE("[GDNative String] dedent") {
 	godot_string s, t;
 	godot_string_new_with_latin1_chars(&s, "      aaa\n    bbb");
 	godot_string_new_with_latin1_chars(&t, "aaa\nbbb");
@@ -1615,7 +1612,7 @@ TEST_CASE("[GDNatvie String] dedent") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Path functions") {
+TEST_CASE("[GDNative String] Path functions") {
 	static const char *path[4] = { "C:\\Godot\\project\\test.tscn", "/Godot/project/test.xscn", "../Godot/project/test.scn", "Godot\\test.doc" };
 	static const char *base_dir[4] = { "C:\\Godot\\project", "/Godot/project", "../Godot/project", "Godot" };
 	static const char *base_name[4] = { "C:\\Godot\\project\\test", "/Godot/project/test", "../Godot/project/test", "Godot\\test" };
@@ -1678,7 +1675,7 @@ TEST_CASE("[GDNatvie String] Path functions") {
 	}
 }
 
-TEST_CASE("[GDNatvie String] hash") {
+TEST_CASE("[GDNative String] hash") {
 	godot_string a, b, c;
 	godot_string_new_with_latin1_chars(&a, "Test");
 	godot_string_new_with_latin1_chars(&b, "Test");
@@ -1694,7 +1691,7 @@ TEST_CASE("[GDNatvie String] hash") {
 	godot_string_destroy(&c);
 }
 
-TEST_CASE("[GDNatvie String] http_escape/unescape") {
+TEST_CASE("[GDNative String] http_escape/unescape") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "Godot Engine:'docs'");
 	godot_string_new_with_latin1_chars(&t, "Godot%20Engine%3A%27docs%27");
@@ -1711,7 +1708,7 @@ TEST_CASE("[GDNatvie String] http_escape/unescape") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] percent_encode/decode") {
+TEST_CASE("[GDNative String] percent_encode/decode") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "Godot Engine:'docs'");
 	godot_string_new_with_latin1_chars(&t, "Godot%20Engine%3a%27docs%27");
@@ -1728,7 +1725,7 @@ TEST_CASE("[GDNatvie String] percent_encode/decode") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] xml_escape/unescape") {
+TEST_CASE("[GDNative String] xml_escape/unescape") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "\"Test\" <test@test&'test'>");
 
@@ -1747,7 +1744,7 @@ TEST_CASE("[GDNatvie String] xml_escape/unescape") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Strip escapes") {
+TEST_CASE("[GDNative String] Strip escapes") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "\t\tTest Test\r\n Test");
 	godot_string_new_with_latin1_chars(&t, "Test Test Test");
@@ -1760,7 +1757,7 @@ TEST_CASE("[GDNatvie String] Strip escapes") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Strip edges") {
+TEST_CASE("[GDNative String] Strip edges") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "\t Test Test   ");
 
@@ -1785,7 +1782,7 @@ TEST_CASE("[GDNatvie String] Strip edges") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Similarity") {
+TEST_CASE("[GDNative String] Similarity") {
 	godot_string a, b, c;
 	godot_string_new_with_latin1_chars(&a, "Test");
 	godot_string_new_with_latin1_chars(&b, "West");
@@ -1798,7 +1795,7 @@ TEST_CASE("[GDNatvie String] Similarity") {
 	godot_string_destroy(&c);
 }
 
-TEST_CASE("[GDNatvie String] Trim") {
+TEST_CASE("[GDNative String] Trim") {
 	godot_string s, t, u, p;
 	godot_string_new_with_latin1_chars(&s, "aaaTestbbb");
 
@@ -1827,7 +1824,7 @@ TEST_CASE("[GDNatvie String] Trim") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Right/Left") {
+TEST_CASE("[GDNative String] Right/Left") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, "aaaTestbbb");
 	//                                            ^
@@ -1847,7 +1844,7 @@ TEST_CASE("[GDNatvie String] Right/Left") {
 	godot_string_destroy(&s);
 }
 
-TEST_CASE("[GDNatvie String] Repeat") {
+TEST_CASE("[GDNative String] Repeat") {
 	godot_string t, u;
 	godot_string_new_with_latin1_chars(&t, "ab");
 
@@ -1858,7 +1855,7 @@ TEST_CASE("[GDNatvie String] Repeat") {
 	godot_string_destroy(&t);
 }
 
-TEST_CASE("[GDNatvie String] SHA1/SHA256/MD5") {
+TEST_CASE("[GDNative String] SHA1/SHA256/MD5") {
 	godot_string s, t, sha1, sha256, md5;
 	godot_string_new_with_latin1_chars(&s, "Godot");
 	godot_string_new_with_latin1_chars(&sha1, "a1e91f39b9fce6a9998b14bdbe2aa2b39dc2d201");
@@ -1906,7 +1903,7 @@ TEST_CASE("[GDNatvie String] SHA1/SHA256/MD5") {
 	godot_string_destroy(&md5);
 }
 
-TEST_CASE("[GDNatvie String] Join") {
+TEST_CASE("[GDNative String] Join") {
 	godot_string s, t, u;
 	godot_string_new_with_latin1_chars(&s, ", ");
 
@@ -1932,7 +1929,7 @@ TEST_CASE("[GDNatvie String] Join") {
 	godot_packed_string_array_destroy(&parts);
 }
 
-TEST_CASE("[GDNatvie String] Is_*") {
+TEST_CASE("[GDNative String] Is_*") {
 	static const char *data[12] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1" };
 	static bool isnum[12] = { true, true, true, false, false, false, false, false, false, false, false, false };
 	static bool isint[12] = { true, true, false, false, false, false, false, false, false, false, false, false };
@@ -1954,7 +1951,7 @@ TEST_CASE("[GDNatvie String] Is_*") {
 	}
 }
 
-TEST_CASE("[GDNatvie String] humanize_size") {
+TEST_CASE("[GDNative String] humanize_size") {
 	godot_string s;
 
 	s = godot_string_humanize_size(1000);
@@ -1978,8 +1975,6 @@ TEST_CASE("[GDNatvie String] humanize_size") {
 	godot_string_destroy(&s);
 }
 
-#endif
-
 } // namespace TestGDNativeString
 
-#endif // TEST_GDNATVIE_STRING_H
+#endif // TEST_GDNATIVE_STRING_H
