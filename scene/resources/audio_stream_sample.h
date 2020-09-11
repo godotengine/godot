@@ -282,6 +282,9 @@ public:
 					}
 					p_wave_data->loop_begin = p_file->get_32();
 					p_wave_data->loop_end = p_file->get_32();
+				} else {
+					p_wave_data->loop_begin = 0;
+					p_wave_data->loop_end = p_wave_data->frames;
 				}
 			}
 			p_file->seek(file_pos + chunksize);
