@@ -970,7 +970,6 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 void MultiplayerAPI::_add_peer(int p_id) {
 	connected_peers.insert(p_id);
-	path_get_cache.insert(p_id, PathGetCache());
 	emit_signal("network_peer_connected", p_id);
 }
 
