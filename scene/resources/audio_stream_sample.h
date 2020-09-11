@@ -253,6 +253,10 @@ public:
 				}
 			}
 
+			// Add a default loop
+			p_wave_data->loop_begin = 0;
+			p_wave_data->loop_end = p_wave_data->frames;
+
 			if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
 				//loop point info!
 
@@ -282,9 +286,6 @@ public:
 					}
 					p_wave_data->loop_begin = p_file->get_32();
 					p_wave_data->loop_end = p_file->get_32();
-				} else {
-					p_wave_data->loop_begin = 0;
-					p_wave_data->loop_end = p_wave_data->frames;
 				}
 			}
 			p_file->seek(file_pos + chunksize);
