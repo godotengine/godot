@@ -54,7 +54,6 @@ def make_fonts_header(target, source, env):
     g.write("#define _EDITOR_FONTS_H\n")
 
     # saving uncompressed, since freetype will reference from memory pointer
-    xl_names = []
     for i in range(len(source)):
         with open(source[i], "rb") as f:
             buf = f.read()
