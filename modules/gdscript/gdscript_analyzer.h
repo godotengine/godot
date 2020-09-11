@@ -89,6 +89,9 @@ class GDScriptAnalyzer {
 	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
 
+	void const_fold_array(GDScriptParser::ArrayNode *p_array);
+	void const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
+
 	// Helpers.
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
