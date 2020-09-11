@@ -275,6 +275,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	if (gn) {
 		gn->disconnect("offset_changed", this, "_graph_node_moved");
 		gn->disconnect("raise_request", this, "_graph_node_raised");
+		gn->disconnect("item_rect_changed", connections_layer, "update");
 	}
 }
 
