@@ -780,14 +780,33 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				delete_dialog->set_text(msg);
 				// add a checkbox to set/unset
 				// "editors/animation/autorename_animation_tracks"
-				// as this currenctly decides if animation tracks will be deleted
-				CheckBox* checkbox = memnew(CheckBox);
-				delete_dialog->add_child(checkbox);
-				checkbox->set_text("Also delete animation tracks?");
-				// TODO: connect signal to actually set the editor setting:
+				// as this currently decides if animation tracks will be deleted
+				// but check if we did it previously:
+				// TODO: if we keep it like this, move this to the constructor...
+				Node *child_node = nullptr;
+				int cc = delete_dialog->get_child_count();
+				for (int i = 0; i < cc; i++) {
+					Node *cd = delete_dialog->get_child(i);
+					if (cd->get_name() == "DeleteAnimationsCheckBox") {
+						child_node = cd;
+						break;
+					}
+				}
+				CheckBox* checkbox = nullptr;
+				if (child_node) {
+					checkbox = (CheckBox*) child_node;
+				} else {
+					// This shouldn't leak memory because add_child takes ownership (?)
+					checkbox = memnew(CheckBox);
+					checkbox->set_name("DeleteAnimationsCheckBox");
+					checkbox->set_text(TTR("Also delete animation tracks?"));
+					checkbox->set_tooltip(TTR("Explain that this directly sets the editor setting"));
+					delete_dialog->add_child(checkbox);
+					delete_dialog->set_min_size(Size2(200, 120) * EDSCALE);
+					// TODO: resize this properly, or rather add it with a vbox?
 
-				// TODO: will this leak memory or does add_child take ownership?
-
+					// TODO: connect signal to actually set the editor setting:
+				}
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
 				// a deletion confirmation for a node with a long name.
