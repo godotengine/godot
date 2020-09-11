@@ -44,6 +44,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/check_box.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
@@ -777,6 +778,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				delete_dialog->set_text(msg);
+				// add a checkbox to set/unset
+				// "editors/animation/autorename_animation_tracks"
+				// as this currenctly decides if animation tracks will be deleted
+				CheckBox* checkbox = memnew(CheckBox);
+				delete_dialog->add_child(checkbox);
+				checkbox->set_text("Also delete animation tracks?");
+				// TODO: connect signal to actually set the editor setting:
+
+				// TODO: will this leak memory or does add_child take ownership?
 
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
