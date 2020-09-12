@@ -6,15 +6,32 @@
 	<description>
 		[Callable] is a first class object which can be held in variables and passed to functions. It represents a given method in an [Object], and is typically used for signal callbacks.
 		[b]Example:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var callable = Callable(self, "print_args")
 		func print_args(arg1, arg2, arg3 = ""):
 		    prints(arg1, arg2, arg3)
+
 		func test():
 		    callable.call("hello", "world")  # Prints "hello world".
 		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(Node.gd)::print_args".
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		Callable callable = new Callable(this, "print_args");
+		public void PrintArgs(object arg1, object arg2, object arg3 = "")
+		{
+		    GD.PrintS(arg1, arg2, arg3);
+		}
+
+		public void Test()
+		{
+		    callable.Call("hello", "world"); // Prints "hello world".
+		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.gd)::print_args".
+		    callable.Call("invalid"); // Invalid call, should have at least 2 arguments.
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>

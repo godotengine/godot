@@ -18,11 +18,18 @@
 		</member>
 		<member name="character" type="int" setter="set_character" getter="get_character" default="0">
 			The Unicode codepoint the character will use. This only affects non-whitespace characters. [method @GDScript.ord] can be useful here. For example, the following will replace all characters with asterisks:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			# `char_fx` is the CharFXTransform parameter from `_process_custom_fx()`.
 			# See the RichTextEffect documentation for details.
 			char_fx.character = ord("*")
-			[/codeblock]
+			[/gdscript]
+			[csharp]
+			// `char_fx` is the CharFXTransform parameter from `_process_custom_fx()`.
+			// See the RichTextEffect documentation for details.
+			charFx.Character = char.GetNumericValue('*');
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
 			The color the character will be drawn with.
