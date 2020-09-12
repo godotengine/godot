@@ -395,28 +395,38 @@ public:
 		ERR_FAIL_COND(p_A->data != _data);
 		ERR_FAIL_COND(p_B->data != _data);
 
+		if (p_A == p_B) {
+			return;
+		}
 		Element *A_prev = p_A->prev_ptr;
 		Element *A_next = p_A->next_ptr;
+		Element *B_prev = p_B->prev_ptr;
+		Element *B_next = p_B->next_ptr;
 
-		p_A->next_ptr = p_B->next_ptr;
-		p_A->prev_ptr = p_B->prev_ptr;
-
-		p_B->next_ptr = A_next;
-		p_B->prev_ptr = A_prev;
-
-		if (p_A->prev_ptr) {
-			p_A->prev_ptr->next_ptr = p_A;
+		if (A_prev) {
+			A_prev->next_ptr = p_B;
+		} else {
+			_data->first = p_B;
 		}
-		if (p_A->next_ptr) {
-			p_A->next_ptr->prev_ptr = p_A;
+		if (B_prev) {
+			B_prev->next_ptr = p_A;
+		} else {
+			_data->first = p_A;
 		}
-
-		if (p_B->prev_ptr) {
-			p_B->prev_ptr->next_ptr = p_B;
+		if (A_next) {
+			A_next->prev_ptr = p_B;
+		} else {
+			_data->last = p_B;
 		}
-		if (p_B->next_ptr) {
-			p_B->next_ptr->prev_ptr = p_B;
+		if (B_next) {
+			B_next->prev_ptr = p_A;
+		} else {
+			_data->last = p_A;
 		}
+		p_A->prev_ptr = A_next == p_B ? p_B : B_prev;
+		p_A->next_ptr = B_next == p_A ? p_B : B_next;
+		p_B->prev_ptr = B_next == p_A ? p_A : A_prev;
+		p_B->next_ptr = A_next == p_B ? p_A : A_next;
 	}
 	/**
 	 * copy the list
