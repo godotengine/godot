@@ -245,22 +245,22 @@ bool Variant::booleanize() const {
 		_RETURN(p_a._data.m_type);                              \
 	}
 
-#define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                          \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                   \
-		if (p_b.type == INT)                                                                   \
-			_RETURN(p_a._data.m_type m_op p_b._data._int);                                     \
-		if (p_b.type == FLOAT)                                                                 \
-			_RETURN(p_a._data.m_type m_op p_b._data._float);                                   \
-		if (p_b.type == VECTOR2)                                                               \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
-		if (p_b.type == VECTOR3)                                                               \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
-		if (p_b.type == VECTOR2I)                                                              \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem)); \
-		if (p_b.type == VECTOR3I)                                                              \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
-                                                                                               \
-		_RETURN_FAIL                                                                           \
+#define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                           \
+	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                    \
+		if (p_b.type == INT)                                                                    \
+			_RETURN(p_a._data.m_type m_op p_b._data._int);                                      \
+		if (p_b.type == FLOAT)                                                                  \
+			_RETURN(p_a._data.m_type m_op p_b._data._float);                                    \
+		if (p_b.type == VECTOR2)                                                                \
+			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem));  \
+		if (p_b.type == VECTOR3)                                                                \
+			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem));  \
+		if (p_b.type == VECTOR2I)                                                               \
+			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2i *>(p_b._data._mem)); \
+		if (p_b.type == VECTOR3I)                                                               \
+			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3i *>(p_b._data._mem)); \
+                                                                                                \
+		_RETURN_FAIL                                                                            \
 	}
 
 #define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                              \
