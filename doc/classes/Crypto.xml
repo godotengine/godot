@@ -6,13 +6,12 @@
 	<description>
 		The Crypto class allows you to access some more advanced cryptographic functionalities in Godot.
 		For now, this includes generating cryptographically secure random bytes, RSA keys and self-signed X509 certificates generation, asymmetric key encryption/decryption, and signing/verification.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		extends Node
-
 		var crypto = Crypto.new()
 		var key = CryptoKey.new()
 		var cert = X509Certificate.new()
-
 		func _ready():
 		    # Generate new RSA key.
 		    key = crypto.generate_rsa(4096)
@@ -33,7 +32,42 @@
 		    # Checks
 		    assert(verified)
 		    assert(data.to_utf8() == decrypted)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+		using System.Diagnostics;
+
+		public class CryptoNode : Node
+		{
+		    public Crypto Crypto = new Crypto();
+		    public CryptoKey Key = new CryptoKey();
+		    public X509Certificate Cert = new X509Certificate();
+		    public override void _Ready()
+		    {
+		        // Generate new RSA key.
+		        Key = Crypto.GenerateRsa(4096);
+		        // Generate new self-signed certificate with the given key.
+		        Cert = Crypto.GenerateSelfSignedCertificate(Key, "CN=mydomain.com,O=My Game Company,C=IT");
+		        // Save key and certificate in the user folder.
+		        Key.Save("user://generated.key");
+		        Cert.Save("user://generated.crt");
+		        // Encryption
+		        string data = "Some data";
+		        byte[] encrypted = Crypto.Encrypt(Key, data.ToUTF8());
+		        // Decryption
+		        byte[] decrypted = Crypto.Decrypt(Key, encrypted);
+		        // Signing
+		        byte[] signature = Crypto.Sign(HashingContext.HashType.Sha256, Data.SHA256Buffer(), Key);
+		        // Verifying
+		        bool verified = Crypto.Verify(HashingContext.HashType.Sha256, Data.SHA256Buffer(), signature, Key);
+		        // Checks
+		        Debug.Assert(verified);
+		        Debug.Assert(data.ToUTF8() == decrypted);
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
@@ -95,13 +129,22 @@
 			<description>
 				Generates a self-signed [X509Certificate] from the given [CryptoKey] and [code]issuer_name[/code]. The certificate validity will be defined by [code]not_before[/code] and [code]not_after[/code] (first valid date and last valid date). The [code]issuer_name[/code] must contain at least "CN=" (common name, i.e. the domain name), "O=" (organization, i.e. your company name), "C=" (country, i.e. 2 lettered ISO-3166 code of the country the organization is based in).
 				A small example to generate an RSA key and a X509 self-signed certificate.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var crypto = Crypto.new()
 				# Generate 4096 bits RSA key.
 				var key = crypto.generate_rsa(4096)
 				# Generate self-signed certificate using the given key.
 				var cert = crypto.generate_self_signed_certificate(key, "CN=example.com,O=A Game Company,C=IT")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var crypto = new Crypto();
+				// Generate 4096 bits RSA key.
+				CryptoKey key = crypto.GenerateRsa(4096);
+				// Generate self-signed certificate using the given key.
+				X509Certificate cert = crypto.GenerateSelfSignedCertificate(key, "CN=mydomain.com,O=My Game Company,C=IT");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="sign">

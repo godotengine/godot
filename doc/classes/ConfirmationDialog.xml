@@ -6,9 +6,14 @@
 	<description>
 		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
 		To get cancel action, you can use:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		get_cancel().connect("pressed", self, "cancelled")
-		[/codeblock].
+		[/gdscript]
+		[csharp]
+		GetCancel().Connect("pressed", this, nameof(Cancelled));
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
