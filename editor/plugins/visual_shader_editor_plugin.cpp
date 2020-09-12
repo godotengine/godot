@@ -690,19 +690,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		}
 #endif
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
-
-		if (visual_shader->get_mode() == VisualShader::MODE_PARTICLES) {
-			edit_type_standart->set_visible(false);
-			edit_type_particles->set_visible(true);
-			edit_type = edit_type_particles;
-			particles_mode = true;
-		} else {
-			edit_type_particles->set_visible(false);
-			edit_type_standart->set_visible(true);
-			edit_type = edit_type_standart;
-			particles_mode = false;
-		}
-		visual_shader->set_shader_type(get_current_shader_type());
+		_set_mode(visual_shader->get_mode());
 	} else {
 		if (visual_shader.is_valid()) {
 			if (visual_shader->is_connected("changed", callable_mp(this, &VisualShaderEditor::_update_preview))) {
@@ -1008,6 +996,21 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 		item->set_meta("id", options[i].temp_idx);
 	}
+}
+
+void VisualShaderEditor::_set_mode(int p_which) {
+	if (p_which == VisualShader::MODE_PARTICLES) {
+		edit_type_standart->set_visible(false);
+		edit_type_particles->set_visible(true);
+		edit_type = edit_type_particles;
+		particles_mode = true;
+	} else {
+		edit_type_particles->set_visible(false);
+		edit_type_standart->set_visible(true);
+		edit_type = edit_type_standart;
+		particles_mode = false;
+	}
+	visual_shader->set_shader_type(get_current_shader_type());
 }
 
 Size2 VisualShaderEditor::get_minimum_size() const {
@@ -2308,7 +2311,7 @@ void VisualShaderEditor::_delete_nodes() {
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
-	visual_shader->set_shader_type(VisualShader::Type(p_id));
+	visual_shader->set_shader_type(particles_mode ? VisualShader::Type(p_id + 3) : VisualShader::Type(p_id));
 	_update_options_menu();
 	_update_graph();
 }
@@ -2611,6 +2614,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
 	ClassDB::bind_method("_update_uniforms", &VisualShaderEditor::_update_uniforms);
+	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -3628,6 +3632,10 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 	//do is easy
 	undo_redo->add_do_method(visual_shader.ptr(), "set_mode", p_which);
 	undo_redo->add_undo_method(visual_shader.ptr(), "set_mode", visual_shader->get_mode());
+
+	undo_redo->add_do_method(VisualShaderEditor::get_singleton(), "_set_mode", p_which);
+	undo_redo->add_undo_method(VisualShaderEditor::get_singleton(), "_set_mode", visual_shader->get_mode());
+
 	//now undo is hell
 
 	//1. restore connections to output

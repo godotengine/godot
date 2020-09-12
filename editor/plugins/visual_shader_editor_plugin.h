@@ -251,6 +251,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _add_texture_node(const String &p_path);
 	VisualShaderNode *_add_node(int p_idx, int p_op_idx = -1);
 	void _update_options_menu();
+	void _set_mode(int p_which);
 
 	void _show_preview_text();
 	void _update_preview();
