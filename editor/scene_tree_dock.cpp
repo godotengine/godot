@@ -796,9 +796,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					}
 				}
-				CheckBox* checkbox = nullptr;
+				CheckBox *checkbox = nullptr;
 				if (child_node) {
-					checkbox = (CheckBox*) child_node;
+					checkbox = (CheckBox *)child_node;
 				} else {
 					// This shouldn't leak memory because add_child takes ownership (?)
 					checkbox = memnew(CheckBox);
