@@ -39,6 +39,7 @@
 #include "test_expression.h"
 #include "test_gradient.h"
 #include "test_gui.h"
+#include "test_list.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
