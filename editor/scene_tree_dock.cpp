@@ -806,7 +806,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					// TODO: resize this properly, or rather add it with a vbox?
 
 					// TODO: connect signal to actually set the editor setting:
+
 				}
+				// set checkbox state based on editor setting:
+				bool auto_rename = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+				checkbox->set_pressed(auto_rename);
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
 				// a deletion confirmation for a node with a long name.
