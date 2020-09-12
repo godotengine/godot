@@ -18,7 +18,7 @@
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
-		Callable callable = new Callable(this, "print_args");
+		Callable callable = new Callable(this, nameof("printArgs"));
 		public void PrintArgs(object arg1, object arg2, object arg3 = "")
 		{
 		    GD.PrintS(arg1, arg2, arg3);
@@ -67,6 +67,7 @@
 			<return type="Callable">
 			</return>
 			<description>
+				Returns a copy of this [Callable] with the arguments bound. Bound arguments are passed after the arguments supplied by [method call].
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
@@ -108,24 +109,28 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the hash value of this [Callable]'s object.
 			</description>
 		</method>
 		<method name="is_custom">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this [Callable] is a custom callable whose behavior differs based on implementation details. Custom callables are used in the engine for various reasons. If [code]true[/code], you can't use [method get_method].
 			</description>
 		</method>
 		<method name="is_null">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this [Callable] has no target to call the method on.
 			</description>
 		</method>
 		<method name="is_standard">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this [Callable] is a standard callable, referencing an object and a method using a [StringName].
 			</description>
 		</method>
 		<method name="operator !=" qualifiers="operator">
@@ -134,6 +139,7 @@
 			<argument index="0" name="right" type="Callable">
 			</argument>
 			<description>
+				Returns [code]true[/code] if both [Callable]s invoke different targets.
 			</description>
 		</method>
 		<method name="operator ==" qualifiers="operator">
@@ -142,6 +148,7 @@
 			<argument index="0" name="right" type="Callable">
 			</argument>
 			<description>
+				Returns [code]true[/code] if both [Callable]s invoke the same custom target.
 			</description>
 		</method>
 		<method name="unbind">
@@ -150,6 +157,7 @@
 			<argument index="0" name="argcount" type="int">
 			</argument>
 			<description>
+				Returns a copy of this [Callable] with the arguments unbound. Calling the returned [Callable] will call the method without the extra arguments that are supplied in the [Callable] on which you are calling this method.
 			</description>
 		</method>
 	</methods>
