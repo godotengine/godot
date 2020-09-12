@@ -324,6 +324,10 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 	return result;
 }
 
+void SceneTreeDock::set_editor_setting(const Variant &p_value, const String &p_setting) {
+	EditorSettings::get_singleton()->set_setting(p_setting, p_value);
+}
+
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 	current_option = p_tool;
 
@@ -805,8 +809,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					delete_dialog->set_min_size(Size2(200, 120) * EDSCALE);
 					// TODO: resize this properly, or rather add it with a vbox?
 
-					// TODO: connect signal to actually set the editor setting:
-
+					// connect signal to actually set the editor setting:
+					// This here doesn't work, as the binds can only be set for trailing arguments in the target callable:
+					//checkbox->connect("toggled", callable_mp(EditorSettings::get_singleton(), &EditorSettings::set_setting), make_binds("editors/animation/autorename_animation_tracks"));
+					// This here, using a lambda to make a partial function, does not work as the callable_mp helper insists that the function passed in is actually a method of the instance, even though that seems to not be required for it to work AFAICT
+					//checkbox->connect("toggled", callable_mp(EditorSettings::get_singleton(), [](bool button_pressed) {EditorSettings::get_singleton()->set_setting("editors/animation/autorename_animation_tracks", button_pressed); } );
+					// So let's resort for now to making a local method in this class:
+					checkbox->connect("toggled", callable_mp(this, &SceneTreeDock::set_editor_setting), make_binds("editors/animation/autorename_animation_tracks"));
 				}
 				// set checkbox state based on editor setting:
 				bool auto_rename = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
