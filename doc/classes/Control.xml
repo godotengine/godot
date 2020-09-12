@@ -446,7 +446,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -469,7 +469,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a constant from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -480,7 +480,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a font from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -491,7 +491,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns an icon from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -502,7 +502,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code].
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
@@ -566,7 +566,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [Color] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_color_override" qualifiers="const">
@@ -586,7 +586,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if constant with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
@@ -606,7 +606,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if font with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -626,7 +626,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if icon with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -655,7 +655,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]type[/code] exists in assigned [Theme].
+				Returns [code]true[/code] if [StyleBox] with given [code]name[/code] and associated with [Control] of given [code]node_type[/code] exists in assigned [Theme].
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
