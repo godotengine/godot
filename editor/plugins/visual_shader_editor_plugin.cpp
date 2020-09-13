@@ -142,42 +142,8 @@ void VisualShaderGraphPlugin::update_property_editor(VisualShader::Type p_type, 
 	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
-	Control *custom_editor = links[p_node_id].custom_editor;
-	if (custom_editor != nullptr) {
-		links[p_node_id].graph_node->remove_child(custom_editor);
-		memdelete(custom_editor);
-		custom_editor = nullptr;
-	}
-
-	links[p_node_id].visual_node->set_meta("id", p_node_id);
-	links[p_node_id].visual_node->set_meta("shader_type", (int)p_type);
-
-	for (int i = 0; i < VisualShaderEditor::get_singleton()->plugins.size(); i++) {
-		custom_editor = VisualShaderEditor::get_singleton()->plugins.write[i]->create_editor(visual_shader, links[p_node_id].visual_node);
-		if (custom_editor) {
-			break;
-		}
-	}
-	links[p_node_id].visual_node->remove_meta("id");
-	links[p_node_id].visual_node->remove_meta("shader_type");
-	links[p_node_id].custom_editor = custom_editor;
-	if (custom_editor) {
-		links[p_node_id].graph_node->add_child(custom_editor);
-		links[p_node_id].graph_node->move_child(custom_editor, links[p_node_id].editor_pos);
-
-		Ref<VisualShaderNode> vsnode = Ref<VisualShaderNode>(links[p_node_id].visual_node);
-		Ref<VisualShaderNodeFloatUniform> float_uniform = vsnode;
-		Ref<VisualShaderNodeIntUniform> int_uniform = vsnode;
-		Ref<VisualShaderNodeVec3Uniform> vec3_uniform = vsnode;
-		Ref<VisualShaderNodeColorUniform> color_uniform = vsnode;
-		Ref<VisualShaderNodeBooleanUniform> bool_uniform = vsnode;
-		Ref<VisualShaderNodeTransformUniform> transform_uniform = vsnode;
-
-		if (float_uniform.is_valid() || int_uniform.is_valid() || vec3_uniform.is_valid() || color_uniform.is_valid() || bool_uniform.is_valid() || transform_uniform.is_valid()) {
-			custom_editor->call_deferred("_show_prop_names", true);
-		}
-	}
-	links[p_node_id].graph_node->set_size(Vector2(-1, -1));
+	remove_node(p_type, p_node_id);
+	add_node(p_type, p_node_id);
 }
 
 void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value) {
@@ -247,19 +213,11 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, -1 });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr });
 }
 
 void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
 	links[p_node_id].output_ports.insert(p_port, { p_button });
-}
-
-void VisualShaderGraphPlugin::register_custom_editor(int p_node_id, Control *p_custom_editor) {
-	links[p_node_id].custom_editor = p_custom_editor;
-}
-
-void VisualShaderGraphPlugin::register_editor_pos(int p_node_id, int p_pos) {
-	links[p_node_id].editor_pos = p_pos;
 }
 
 void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
@@ -379,10 +337,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	if (custom_editor && !float_uniform.is_valid() && !int_uniform.is_valid() && !vec3_uniform.is_valid() && !bool_uniform.is_valid() && !transform_uniform.is_valid() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
 		//will be embedded in first port
 	} else if (custom_editor) {
-		register_editor_pos(p_id, port_offset);
 		port_offset++;
 		node->add_child(custom_editor);
-		register_custom_editor(p_id, custom_editor);
 		if (color_uniform.is_valid()) {
 			custom_editor->call_deferred("_show_prop_names", true);
 		}
@@ -454,12 +410,14 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			default_value = vsnode->get_input_port_default_value(i);
 		}
 
+		Button *button = memnew(Button);
+		hb->add_child(button);
+		register_default_input_button(p_id, i, button);
+		button->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, i));
 		if (default_value.get_type() != Variant::NIL) { // only a label
-			Button *button = memnew(Button);
-			hb->add_child(button);
-			button->connect("pressed", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_edit_port_default_input), varray(button, p_id, i));
-			register_default_input_button(p_id, i, button);
 			set_input_port_default_value(p_type, p_id, i, default_value);
+		} else {
+			button->hide();
 		}
 
 		if (i == 0 && custom_editor) {
@@ -654,12 +612,19 @@ void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id) {
 void VisualShaderGraphPlugin::connect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	if (visual_shader->get_shader_type() == p_type) {
 		VisualShaderEditor::get_singleton()->graph->connect_node(itos(p_from_node), p_from_port, itos(p_to_node), p_to_port);
+		if (links[p_to_node].input_ports.has(p_to_port) && links[p_to_node].input_ports[p_to_port].default_input_button != nullptr) {
+			links[p_to_node].input_ports[p_to_port].default_input_button->hide();
+		}
 	}
 }
 
 void VisualShaderGraphPlugin::disconnect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
 	if (visual_shader->get_shader_type() == p_type) {
 		VisualShaderEditor::get_singleton()->graph->disconnect_node(itos(p_from_node), p_from_port, itos(p_to_node), p_to_port);
+		if (links[p_to_node].input_ports.has(p_to_port) && links[p_to_node].input_ports[p_to_port].default_input_button != nullptr) {
+			links[p_to_node].input_ports[p_to_port].default_input_button->show();
+			set_input_port_default_value(p_type, p_to_node, p_to_port, links[p_to_node].visual_node->get_input_port_default_value(p_to_port));
+		}
 	}
 }
 
