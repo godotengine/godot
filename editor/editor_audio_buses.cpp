@@ -172,6 +172,10 @@ void EditorAudioBus::_notification(int p_what) {
 					channel[i].prev_active = activity_found;
 				}
 			}
+
+			if (effects->is_anything_selected() && !effects->has_focus()) {
+				effects->deselect_all();
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
