@@ -352,7 +352,7 @@ void ShaderEditor::_menu_option(int p_option) {
 
 		} break;
 		case EDIT_COMPLETE: {
-			shader_editor->get_text_editor()->query_code_comple();
+			shader_editor->get_text_editor()->request_code_completion();
 		} break;
 		case SEARCH_FIND: {
 			shader_editor->get_find_replace_bar()->popup_search();

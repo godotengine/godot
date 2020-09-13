@@ -1076,7 +1076,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			_edit_option_toggle_inline_comment();
 		} break;
 		case EDIT_COMPLETE: {
-			tx->query_code_comple();
+			tx->request_code_completion(true);
 		} break;
 		case EDIT_AUTO_INDENT: {
 			String text = tx->get_text();

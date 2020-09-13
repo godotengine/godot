@@ -816,12 +816,12 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 	if (!is_visible_in_tree()) {
 		return;
 	}
-	text_editor->query_code_comple();
+	text_editor->request_code_completion();
 }
 
 void CodeTextEditor::_complete_request() {
 	List<ScriptCodeCompletionOption> entries;
-	String ctext = text_editor->get_text_for_completion();
+	String ctext = text_editor->get_text_for_code_completion();
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
 	if (code_complete_func) {
@@ -832,16 +832,17 @@ void CodeTextEditor::_complete_request() {
 	}
 
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
-		ScriptCodeCompletionOption *e = &E->get();
-		e->icon = _get_completion_icon(*e);
-		e->font_color = completion_font_color;
-		if (e->insert_text.begins_with("\"") || e->insert_text.begins_with("\'")) {
-			e->font_color = completion_string_color;
-		} else if (e->insert_text.begins_with("#") || e->insert_text.begins_with("//")) {
-			e->font_color = completion_comment_color;
+		ScriptCodeCompletionOption &e = E->get();
+
+		Color font_color = completion_font_color;
+		if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
+			font_color = completion_string_color;
+		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
+			font_color = completion_comment_color;
 		}
+		text_editor->add_code_completion_option((CodeEdit::CodeCompletionKind)e.kind, e.display, e.insert_text, font_color, _get_completion_icon(e), e.default_value);
 	}
-	text_editor->code_complete(entries, forced);
+	text_editor->update_code_completion_options(forced);
 }
 
 Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
@@ -1847,15 +1848,17 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));
 	text_editor->connect("cursor_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect("text_changed", callable_mp(this, &CodeTextEditor::_text_changed));
-	text_editor->connect("request_completion", callable_mp(this, &CodeTextEditor::_complete_request));
-	Vector<String> cs;
+	text_editor->connect("request_code_completion", callable_mp(this, &CodeTextEditor::_complete_request));
+	TypedArray<String> cs;
 	cs.push_back(".");
 	cs.push_back(",");
 	cs.push_back("(");
 	cs.push_back("=");
 	cs.push_back("$");
 	cs.push_back("@");
-	text_editor->set_completion(true, cs);
+	cs.push_back("\"");
+	cs.push_back("\'");
+	text_editor->set_code_completion_prefixes(cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 
 	code_complete_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_code_complete_timer_timeout));

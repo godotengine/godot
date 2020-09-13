@@ -30,10 +30,16 @@
 
 #include "code_edit.h"
 
+#include "core/os/keyboard.h"
+#include "core/string/string_builder.h"
 #include "core/string/ustring.h"
 
 static bool _is_whitespace(char32_t c) {
 	return c == '\t' || c == ' ';
+}
+
+static bool _is_char(char32_t c) {
+	return !is_symbol(c);
 }
 
 void CodeEdit::_notification(int p_what) {
@@ -58,10 +64,252 @@ void CodeEdit::_notification(int p_what) {
 			folding_color = get_theme_color("code_folding_color");
 			can_fold_icon = get_theme_icon("can_fold");
 			folded_icon = get_theme_icon("folded");
+
+			code_completion_max_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x').x;
+			code_completion_max_lines = get_theme_constant("completion_lines");
+			code_completion_scroll_width = get_theme_constant("completion_scroll_width");
+			code_completion_scroll_color = get_theme_color("completion_scroll_color");
+			code_completion_background_color = get_theme_color("completion_background_color");
+			code_completion_selected_color = get_theme_color("completion_selected_color");
+			code_completion_existing_color = get_theme_color("completion_existing_color");
 		} break;
 		case NOTIFICATION_DRAW: {
+			RID ci = get_canvas_item();
+			const bool caret_visible = is_caret_visible();
+			const bool rtl = is_layout_rtl();
+			const int row_height = get_row_height();
+
+			bool code_completion_below = false;
+			if (caret_visible && code_completion_active && code_completion_options.size() > 0) {
+				Ref<StyleBox> csb = get_theme_stylebox("completion");
+
+				const int code_completion_options_count = code_completion_options.size();
+				const int lines = MIN(code_completion_options_count, code_completion_max_lines);
+				const int icon_hsep = get_theme_constant("hseparation", "ItemList");
+				const Size2 icon_area_size(row_height, row_height);
+
+				code_completion_rect.size.width = code_completion_longest_line + icon_hsep + icon_area_size.width + 2;
+				code_completion_rect.size.height = lines * row_height;
+
+				const Point2 caret_pos = get_caret_draw_pos();
+				const int total_height = csb->get_minimum_size().y + code_completion_rect.size.height;
+				if (caret_pos.y + row_height + total_height > get_size().height) {
+					code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + cache.line_spacing;
+				} else {
+					code_completion_rect.position.y = caret_pos.y + (cache.line_spacing / 2.0f);
+					code_completion_below = true;
+				}
+
+				const int scroll_width = code_completion_options_count > code_completion_max_lines ? code_completion_scroll_width : 0;
+				const int code_completion_base_width = cache.font->get_string_size(code_completion_base).width;
+				if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
+					code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
+				} else {
+					code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
+				}
+
+				draw_style_box(csb, Rect2(code_completion_rect.position - csb->get_offset(), code_completion_rect.size + csb->get_minimum_size() + Size2(scroll_width, 0)));
+				if (code_completion_background_color.a > 0.01) {
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), code_completion_background_color);
+				}
+
+				code_completion_line_ofs = CLAMP(code_completion_current_selected - lines / 2, 0, code_completion_options_count - lines);
+				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(code_completion_rect.position.x, code_completion_rect.position.y + (code_completion_current_selected - code_completion_line_ofs) * row_height), Size2(code_completion_rect.size.width, row_height)), code_completion_selected_color);
+				draw_rect(Rect2(code_completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(code_completion_base_width, code_completion_rect.size.width - (icon_area_size.x + icon_hsep)), code_completion_rect.size.height)), code_completion_existing_color);
+
+				for (int i = 0; i < lines; i++) {
+					int l = code_completion_line_ofs + i;
+					ERR_CONTINUE(l < 0 || l >= code_completion_options_count);
+
+					Ref<TextLine> tl;
+					tl.instance();
+					tl->add_string(code_completion_options[l].display, cache.font, cache.font_size);
+
+					int yofs = (row_height - tl->get_size().y) / 2;
+					Point2 title_pos(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height + yofs);
+
+					/* Draw completion icon if it is valid. */
+					const Ref<Texture2D> &icon = code_completion_options[l].icon;
+					Rect2 icon_area(code_completion_rect.position.x, code_completion_rect.position.y + i * row_height, icon_area_size.width, icon_area_size.height);
+					if (icon.is_valid()) {
+						Size2 icon_size = icon_area.size * 0.7;
+						icon->draw_rect(ci, Rect2(icon_area.position + (icon_area.size - icon_size) / 2, icon_size));
+					}
+					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
+
+					tl->set_width(code_completion_rect.size.width - (icon_area_size.x + icon_hsep));
+					if (rtl) {
+						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+							draw_rect(Rect2(Point2(code_completion_rect.position.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
+						}
+						tl->set_align(HALIGN_RIGHT);
+					} else {
+						if (code_completion_options[l].default_value.get_type() == Variant::COLOR) {
+							draw_rect(Rect2(Point2(code_completion_rect.position.x + code_completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)code_completion_options[l].default_value);
+						}
+						tl->set_align(HALIGN_LEFT);
+					}
+					tl->draw(ci, title_pos, code_completion_options[l].font_color);
+				}
+
+				/* Draw a small scroll rectangle to show a position in the options. */
+				if (scroll_width) {
+					float r = (float)code_completion_max_lines / code_completion_options_count;
+					float o = (float)code_completion_line_ofs / code_completion_options_count;
+					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), code_completion_scroll_color);
+				}
+			}
 		} break;
 	}
+}
+
+void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
+	Ref<InputEventMouseButton> mb = p_gui_input;
+
+	if (mb.is_valid()) {
+		if (code_completion_active && code_completion_rect.has_point(mb->get_position())) {
+			if (!mb->is_pressed()) {
+				return;
+			}
+
+			switch (mb->get_button_index()) {
+				case MOUSE_BUTTON_WHEEL_UP: {
+					if (code_completion_current_selected > 0) {
+						code_completion_current_selected--;
+						update();
+					}
+				} break;
+				case MOUSE_BUTTON_WHEEL_DOWN: {
+					if (code_completion_current_selected < code_completion_options.size() - 1) {
+						code_completion_current_selected++;
+						update();
+					}
+				} break;
+				case MOUSE_BUTTON_LEFT: {
+					code_completion_current_selected = CLAMP(code_completion_line_ofs + (mb->get_position().y - code_completion_rect.position.y) / get_row_height(), 0, code_completion_options.size() - 1);
+					if (mb->is_double_click()) {
+						confirm_code_completion();
+					}
+					update();
+				} break;
+			}
+			return;
+		}
+		cancel_code_completion();
+	}
+
+	Ref<InputEventKey> k = p_gui_input;
+	bool update_code_completion = false;
+	if (!k.is_valid()) {
+		TextEdit::_gui_input(p_gui_input);
+		return;
+	}
+
+	if (!k->is_pressed()) {
+		return;
+	}
+
+	// If a modifier has been pressed, and nothing else, return.
+	if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT || k->get_keycode() == KEY_META) {
+		return;
+	}
+
+	/* Allow unicode handling if:              */
+	/* No Modifiers are pressed (except shift) */
+	bool allow_unicode_handling = !(k->is_command_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+
+	/* AUTO-COMPLETE */
+	if (code_completion_enabled && k->is_action("ui_text_completion_query", true)) {
+		request_code_completion(true);
+		accept_event();
+		return;
+	}
+
+	if (code_completion_active) {
+		if (k->is_action("ui_up", true)) {
+			if (code_completion_current_selected > 0) {
+				code_completion_current_selected--;
+			} else {
+				code_completion_current_selected = code_completion_options.size() - 1;
+			}
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_down", true)) {
+			if (code_completion_current_selected < code_completion_options.size() - 1) {
+				code_completion_current_selected++;
+			} else {
+				code_completion_current_selected = 0;
+			}
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_page_up", true)) {
+			code_completion_current_selected = MAX(0, code_completion_current_selected - code_completion_max_lines);
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_page_down", true)) {
+			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + code_completion_max_lines);
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_home", true)) {
+			code_completion_current_selected = 0;
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_end", true)) {
+			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + code_completion_max_lines);
+			update();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
+			confirm_code_completion(k->is_action("ui_text_completion_replace", true));
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_cancel", true)) {
+			cancel_code_completion();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_text_backspace", true)) {
+			backspace_at_cursor();
+			_filter_code_completion_candidates();
+			accept_event();
+			return;
+		}
+
+		if (k->is_action("ui_left", true) || k->is_action("ui_right", true)) {
+			update_code_completion = true;
+		} else {
+			update_code_completion = (allow_unicode_handling && k->get_unicode() >= 32);
+		}
+
+		if (!update_code_completion) {
+			cancel_code_completion();
+		}
+	}
+
+	TextEdit::_gui_input(p_gui_input);
+
+	if (update_code_completion) {
+		_filter_code_completion_candidates();
+	}
+}
+
+Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (is_readonly() && (!is_selecting_enabled() || get_line_count() == 0))) {
+		return CURSOR_ARROW;
+	}
+	return TextEdit::get_cursor_shape(p_pos);
 }
 
 /* Main Gutter */
@@ -450,6 +698,274 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 	return end_position;
 }
 
+/* Code Completion */
+void CodeEdit::set_code_completion_enabled(bool p_enable) {
+	code_completion_enabled = p_enable;
+}
+
+bool CodeEdit::is_code_completion_enabled() const {
+	return code_completion_enabled;
+}
+
+void CodeEdit::set_code_completion_prefixes(const TypedArray<String> &p_prefixes) {
+	code_completion_prefixes.clear();
+	for (int i = 0; i < p_prefixes.size(); i++) {
+		code_completion_prefixes.insert(p_prefixes[i]);
+	}
+}
+
+TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
+	TypedArray<String> prefixes;
+	for (Set<String>::Element *E = code_completion_prefixes.front(); E; E = E->next()) {
+		prefixes.push_back(E->get());
+	}
+	return prefixes;
+}
+
+String CodeEdit::get_text_for_code_completion() const {
+	StringBuilder completion_text;
+	const int text_size = get_line_count();
+	for (int i = 0; i < text_size; i++) {
+		String line = get_line(i);
+
+		if (i == cursor_get_line()) {
+			completion_text += line.substr(0, cursor_get_column());
+			/* Not unicode, represents the caret. */
+			completion_text += String::chr(0xFFFF);
+			completion_text += line.substr(cursor_get_column(), line.size());
+		} else {
+			completion_text += line;
+		}
+
+		if (i != text_size - 1) {
+			completion_text += "\n";
+		}
+	}
+	return completion_text.as_string();
+}
+
+void CodeEdit::request_code_completion(bool p_force) {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_request_code_completion")) {
+		si->call("_request_code_completion", p_force);
+		return;
+	}
+
+	/* Don't re-query if all existing options are quoted types, eg path, signal. */
+	bool ignored = code_completion_active && !code_completion_options.is_empty();
+	if (ignored) {
+		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
+		const ScriptCodeCompletionOption *previous_option = nullptr;
+		for (int i = 0; i < code_completion_options.size(); i++) {
+			const ScriptCodeCompletionOption &current_option = code_completion_options[i];
+			if (!previous_option) {
+				previous_option = &current_option;
+				kind = current_option.kind;
+			}
+			if (previous_option->kind != current_option.kind) {
+				ignored = false;
+				break;
+			}
+		}
+		ignored = ignored && (kind == ScriptCodeCompletionOption::KIND_FILE_PATH || kind == ScriptCodeCompletionOption::KIND_NODE_PATH || kind == ScriptCodeCompletionOption::KIND_SIGNAL);
+	}
+
+	if (ignored) {
+		return;
+	}
+
+	if (p_force) {
+		emit_signal("request_code_completion");
+		return;
+	}
+
+	String line = get_line(cursor_get_line());
+	int ofs = CLAMP(cursor_get_column(), 0, line.length());
+
+	if (ofs > 0 && (is_in_string(cursor_get_line(), ofs) != -1 || _is_char(line[ofs - 1]) || code_completion_prefixes.has(String::chr(line[ofs - 1])))) {
+		emit_signal("request_code_completion");
+	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[ofs - 2]))) {
+		emit_signal("request_code_completion");
+	}
+}
+
+void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const RES &p_icon, const Variant &p_value) {
+	ScriptCodeCompletionOption completion_option;
+	completion_option.kind = (ScriptCodeCompletionOption::Kind)p_type;
+	completion_option.display = p_display_text;
+	completion_option.insert_text = p_insert_text;
+	completion_option.font_color = p_text_color;
+	completion_option.icon = p_icon;
+	completion_option.default_value = p_value;
+	code_completion_option_submitted.push_back(completion_option);
+}
+
+void CodeEdit::update_code_completion_options(bool p_forced) {
+	code_completion_forced = p_forced;
+	code_completion_option_sources = code_completion_option_submitted;
+	code_completion_option_submitted.clear();
+	_filter_code_completion_candidates();
+}
+
+TypedArray<Dictionary> CodeEdit::get_code_completion_options() const {
+	if (!code_completion_active) {
+		return TypedArray<Dictionary>();
+	}
+
+	TypedArray<Dictionary> completion_options;
+	completion_options.resize(code_completion_options.size());
+	for (int i = 0; i < code_completion_options.size(); i++) {
+		Dictionary option;
+		option["kind"] = code_completion_options[i].kind;
+		option["display_text"] = code_completion_options[i].display;
+		option["insert_text"] = code_completion_options[i].insert_text;
+		option["font_color"] = code_completion_options[i].font_color;
+		option["icon"] = code_completion_options[i].icon;
+		option["default_value"] = code_completion_options[i].default_value;
+		completion_options[i] = option;
+	}
+	return completion_options;
+}
+
+Dictionary CodeEdit::get_code_completion_option(int p_index) const {
+	if (!code_completion_active) {
+		return Dictionary();
+	}
+	ERR_FAIL_INDEX_V(p_index, code_completion_options.size(), Dictionary());
+
+	Dictionary option;
+	option["kind"] = code_completion_options[p_index].kind;
+	option["display_text"] = code_completion_options[p_index].display;
+	option["insert_text"] = code_completion_options[p_index].insert_text;
+	option["font_color"] = code_completion_options[p_index].font_color;
+	option["icon"] = code_completion_options[p_index].icon;
+	option["default_value"] = code_completion_options[p_index].default_value;
+	return option;
+}
+
+int CodeEdit::get_code_completion_selected_index() const {
+	return (code_completion_active) ? code_completion_current_selected : -1;
+}
+
+void CodeEdit::set_code_completion_selected_index(int p_index) {
+	if (!code_completion_active) {
+		return;
+	}
+	ERR_FAIL_INDEX(p_index, code_completion_options.size());
+	code_completion_current_selected = p_index;
+	update();
+}
+
+void CodeEdit::confirm_code_completion(bool p_replace) {
+	if (is_readonly() || !code_completion_active) {
+		return;
+	}
+
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_confirm_code_completion")) {
+		si->call("_confirm_code_completion", p_replace);
+		return;
+	}
+	begin_complex_operation();
+
+	int caret_line = cursor_get_line();
+
+	const String &insert_text = code_completion_options[code_completion_current_selected].insert_text;
+	const String &display_text = code_completion_options[code_completion_current_selected].display;
+
+	if (p_replace) {
+		/* Find end of current section */
+		const String line = get_line(caret_line);
+		int caret_col = cursor_get_column();
+		int caret_remove_line = caret_line;
+
+		bool merge_text = true;
+		int in_string = is_in_string(caret_line, caret_col);
+		if (in_string != -1) {
+			Point2 string_end = get_delimiter_end_position(caret_line, caret_col);
+			if (string_end.x != -1) {
+				merge_text = false;
+				caret_remove_line = string_end.y;
+				caret_col = string_end.x - 1;
+			}
+		}
+
+		if (merge_text) {
+			for (; caret_col < line.length(); caret_col++) {
+				if (!_is_char(line[caret_col])) {
+					break;
+				}
+			}
+		}
+
+		/* Replace. */
+		_remove_text(caret_line, cursor_get_column() - code_completion_base.length(), caret_remove_line, caret_col);
+		cursor_set_column(cursor_get_column() - code_completion_base.length(), false);
+		insert_text_at_cursor(insert_text);
+	} else {
+		/* Get first non-matching char. */
+		const String line = get_line(caret_line);
+		int caret_col = cursor_get_column();
+		int matching_chars = code_completion_base.length();
+		for (; matching_chars <= insert_text.length(); matching_chars++) {
+			if (caret_col >= line.length() || line[caret_col] != insert_text[matching_chars]) {
+				break;
+			}
+			caret_col++;
+		}
+
+		/* Remove base completion text. */
+		_remove_text(caret_line, cursor_get_column() - code_completion_base.length(), caret_line, cursor_get_column());
+		cursor_set_column(cursor_get_column() - code_completion_base.length(), false);
+
+		/* Merge with text. */
+		insert_text_at_cursor(insert_text.substr(0, code_completion_base.length()));
+		cursor_set_column(caret_col, false);
+		insert_text_at_cursor(insert_text.substr(matching_chars));
+	}
+
+	/* TODO: merge with autobrace completion, when in CodeEdit. */
+	/* Handle merging of symbols eg strings, brackets. */
+	const String line = get_line(caret_line);
+	char32_t next_char = line[cursor_get_column()];
+	char32_t last_completion_char = insert_text[insert_text.length() - 1];
+	char32_t last_completion_char_display = display_text[display_text.length() - 1];
+
+	if ((last_completion_char == '"' || last_completion_char == '\'') && (last_completion_char == next_char || last_completion_char_display == next_char)) {
+		_remove_text(caret_line, cursor_get_column(), caret_line, cursor_get_column() + 1);
+	}
+
+	if (last_completion_char == '(') {
+		if (next_char == last_completion_char) {
+			_remove_text(caret_line, cursor_get_column() - 1, caret_line, cursor_get_column());
+		} else if (auto_brace_completion_enabled) {
+			insert_text_at_cursor(")");
+			cursor_set_column(cursor_get_column() - 1);
+		}
+	} else if (last_completion_char == ')' && next_char == '(') {
+		_remove_text(caret_line, cursor_get_column() - 2, caret_line, cursor_get_column());
+		if (line[cursor_get_column() + 1] != ')') {
+			cursor_set_column(cursor_get_column() - 1);
+		}
+	}
+
+	end_complex_operation();
+
+	cancel_code_completion();
+	if (last_completion_char == '(') {
+		request_code_completion();
+	}
+}
+
+void CodeEdit::cancel_code_completion() {
+	if (!code_completion_active) {
+		return;
+	}
+	code_completion_forced = false;
+	code_completion_active = false;
+	update();
+}
+
 void CodeEdit::_bind_methods() {
 	/* Main Gutter */
 	ClassDB::bind_method(D_METHOD("_main_gutter_draw_callback"), &CodeEdit::_main_gutter_draw_callback);
@@ -525,6 +1041,42 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_delimiter_start_postion", "line", "column"), &CodeEdit::get_delimiter_start_position);
 	ClassDB::bind_method(D_METHOD("get_delimiter_end_postion", "line", "column"), &CodeEdit::get_delimiter_end_position);
 
+	/* Code Completion */
+	BIND_ENUM_CONSTANT(KIND_CLASS);
+	BIND_ENUM_CONSTANT(KIND_FUNCTION);
+	BIND_ENUM_CONSTANT(KIND_SIGNAL);
+	BIND_ENUM_CONSTANT(KIND_VARIABLE);
+	BIND_ENUM_CONSTANT(KIND_MEMBER);
+	BIND_ENUM_CONSTANT(KIND_ENUM);
+	BIND_ENUM_CONSTANT(KIND_CONSTANT);
+	BIND_ENUM_CONSTANT(KIND_NODE_PATH);
+	BIND_ENUM_CONSTANT(KIND_FILE_PATH);
+	BIND_ENUM_CONSTANT(KIND_PLAIN_TEXT);
+
+	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
+	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(RES()), DEFVAL(Variant::NIL));
+	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
+	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
+	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);
+	ClassDB::bind_method(D_METHOD("get_code_completion_selected_index"), &CodeEdit::get_code_completion_selected_index);
+	ClassDB::bind_method(D_METHOD("set_code_completion_selected_index", "index"), &CodeEdit::set_code_completion_selected_index);
+
+	ClassDB::bind_method(D_METHOD("confirm_code_completion", "replace"), &CodeEdit::confirm_code_completion, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("cancel_code_completion"), &CodeEdit::cancel_code_completion);
+
+	ClassDB::bind_method(D_METHOD("set_code_completion_enabled", "enable"), &CodeEdit::set_code_completion_enabled);
+	ClassDB::bind_method(D_METHOD("is_code_completion_enabled"), &CodeEdit::is_code_completion_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_code_completion_prefixes", "prefixes"), &CodeEdit::set_code_completion_prefixes);
+	ClassDB::bind_method(D_METHOD("get_code_comletion_prefixes"), &CodeEdit::get_code_completion_prefixes);
+
+	// Overridable
+	BIND_VMETHOD(MethodInfo("_confirm_code_completion", PropertyInfo(Variant::BOOL, "replace")));
+	BIND_VMETHOD(MethodInfo("_request_code_completion", PropertyInfo(Variant::BOOL, "force")));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "_filter_code_completion_candidates", PropertyInfo(Variant::ARRAY, "candidates")));
+
+	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_breakpoints_gutter"), "set_draw_breakpoints_gutter", "is_drawing_breakpoints_gutter");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_bookmarks"), "set_draw_bookmarks_gutter", "is_drawing_bookmarks_gutter");
@@ -540,7 +1092,13 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_strings"), "set_string_delimiters", "get_string_delimiters");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
 
+	ADD_GROUP("Code Completion", "code_completion_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_comletion_prefixes");
+
+	/* Signals */
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::INT, "line")));
+	ADD_SIGNAL(MethodInfo("request_code_completion"));
 }
 
 void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
@@ -629,7 +1187,8 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 				delimiter_cache.write[i][0] = in_region;
 			}
 			if (i == end_line && current_end_region != in_region) {
-				end_line = MIN(end_line++, line_count);
+				end_line++;
+				end_line = MIN(end_line, line_count);
 			}
 			continue;
 		}
@@ -732,7 +1291,8 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 		}
 
 		if (i == end_line && current_end_region != end_region) {
-			end_line = MIN(end_line++, line_count);
+			end_line++;
+			end_line = MIN(end_line, line_count);
 		}
 	}
 }
@@ -887,9 +1447,241 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 		if (delimiters[i].type != p_type) {
 			continue;
 		}
-		r_delimiters.push_back(delimiters[i].start_key + (delimiters[i].end_key.empty() ? "" : " " + delimiters[i].end_key));
+		r_delimiters.push_back(delimiters[i].start_key + (delimiters[i].end_key.is_empty() ? "" : " " + delimiters[i].end_key));
 	}
 	return r_delimiters;
+}
+
+/* Code Completion */
+void CodeEdit::_filter_code_completion_candidates() {
+	ScriptInstance *si = get_script_instance();
+	if (si && si->has_method("_filter_code_completion_candidates")) {
+		code_completion_options.clear();
+		code_completion_base = "";
+
+		/* Build options argument. */
+		TypedArray<Dictionary> completion_options_sources;
+		completion_options_sources.resize(code_completion_option_sources.size());
+		int i = 0;
+		for (List<ScriptCodeCompletionOption>::Element *E = code_completion_option_sources.front(); E; E = E->next()) {
+			Dictionary option;
+			option["kind"] = E->get().kind;
+			option["display_text"] = E->get().display;
+			option["insert_text"] = E->get().insert_text;
+			option["font_color"] = E->get().font_color;
+			option["icon"] = E->get().icon;
+			option["default_value"] = E->get().default_value;
+			completion_options_sources[i] = option;
+			i++;
+		}
+
+		TypedArray<Dictionary> completion_options = si->call("_filter_code_completion_candidates", completion_options_sources);
+
+		/* No options to complete, cancel. */
+		if (completion_options.size() == 0) {
+			cancel_code_completion();
+			return;
+		}
+
+		/* Convert back into options. */
+		int max_width = 0;
+		for (i = 0; i < completion_options.size(); i++) {
+			ScriptCodeCompletionOption option;
+			option.kind = (ScriptCodeCompletionOption::Kind)(int)completion_options[i].get("kind");
+			option.display = completion_options[i].get("display_text");
+			option.insert_text = completion_options[i].get("insert_text");
+			option.font_color = completion_options[i].get("font_color");
+			option.icon = completion_options[i].get("icon");
+			option.default_value = completion_options[i].get("default_value");
+
+			max_width = MAX(max_width, cache.font->get_string_size(option.display).width);
+			code_completion_options.push_back(option);
+		}
+
+		code_completion_longest_line = MIN(max_width, code_completion_max_width);
+		code_completion_current_selected = 0;
+		code_completion_active = true;
+		update();
+		return;
+	}
+
+	const int caret_line = cursor_get_line();
+	const int caret_column = cursor_get_column();
+	const String line = get_line(caret_line);
+
+	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {
+		cancel_code_completion();
+		return;
+	}
+
+	/* Get string status, are we in one or at the close. */
+	int in_string = is_in_string(caret_line, caret_column);
+	int first_quote_col = -1;
+	if (in_string != -1) {
+		Point2 string_start_pos = get_delimiter_start_position(caret_line, caret_column);
+		first_quote_col = (string_start_pos.y == caret_line) ? string_start_pos.x : -1;
+	} else if (caret_column > 0) {
+		if (is_in_string(caret_line, caret_column - 1) != -1) {
+			first_quote_col = caret_column - 1;
+		}
+	}
+
+	int cofs = caret_column;
+	String string_to_complete;
+	bool prev_is_word = false;
+
+	/* Cancel if we are at the close of a string. */
+	if (in_string == -1 && first_quote_col == cofs - 1) {
+		cancel_code_completion();
+		return;
+		/* In a string, therefore we are trying to complete the string text. */
+	} else if (in_string != -1 && first_quote_col != -1) {
+		int key_length = delimiters[in_string].start_key.length();
+		string_to_complete = line.substr(first_quote_col - key_length, (cofs - first_quote_col) + key_length);
+		/* If we have a space, previous word might be a keyword. eg "func |". */
+	} else if (cofs > 0 && line[cofs - 1] == ' ') {
+		int ofs = cofs - 1;
+		while (ofs >= 0 && line[ofs] == ' ') {
+			ofs--;
+		}
+		prev_is_word = _is_char(line[ofs]);
+		/* Otherwise get current word and set cofs to the start. */
+	} else {
+		int start_cofs = cofs;
+		while (cofs > 0 && line[cofs - 1] > 32 && (line[cofs - 1] == '/' || _is_char(line[cofs - 1]))) {
+			cofs--;
+		}
+		string_to_complete = line.substr(cofs, start_cofs - cofs);
+	}
+
+	/* If all else fails, check for a prefix.         */
+	/* Single space between caret and prefix is okay. */
+	bool prev_is_prefix = false;
+	if (cofs > 0 && code_completion_prefixes.has(String::chr(line[cofs - 1]))) {
+		prev_is_prefix = true;
+	} else if (cofs > 1 && line[cofs - 1] == ' ' && code_completion_prefixes.has(String::chr(line[cofs - 2]))) {
+		prev_is_prefix = true;
+	}
+
+	if (!prev_is_word && string_to_complete.is_empty() && (cofs == 0 || !prev_is_prefix)) {
+		cancel_code_completion();
+		return;
+	}
+
+	/* Filter Options. */
+	/* For now handle only tradional quoted strings. */
+	bool single_quote = in_string != -1 && first_quote_col > 0 && delimiters[in_string].start_key == "'";
+
+	code_completion_options.clear();
+	code_completion_base = string_to_complete;
+
+	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq;
+	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
+
+	int max_width = 0;
+	String string_to_complete_lower = string_to_complete.to_lower();
+	for (List<ScriptCodeCompletionOption>::Element *E = code_completion_option_sources.front(); E; E = E->next()) {
+		ScriptCodeCompletionOption &option = E->get();
+
+		if (single_quote && option.display.is_quoted()) {
+			option.display = option.display.unquote().quote("'");
+		}
+
+		if (in_string != -1) {
+			String quote = single_quote ? "'" : "\"";
+			option.display = option.display.unquote().quote(quote);
+			option.insert_text = option.insert_text.unquote().quote(quote);
+		}
+
+		if (option.display.length() == 0) {
+			continue;
+		}
+
+		if (string_to_complete.length() == 0) {
+			code_completion_options.push_back(option);
+			max_width = MAX(max_width, cache.font->get_string_size(option.display).width);
+			continue;
+		}
+
+		/* This code works the same as:
+
+		if (option.display.begins_with(s)) {
+			completion_options.push_back(option);
+		} else if (option.display.to_lower().begins_with(s.to_lower())) {
+			completion_options_casei.push_back(option);
+		} else if (s.is_subsequence_of(option.display)) {
+			completion_options_subseq.push_back(option);
+		} else if (s.is_subsequence_ofi(option.display)) {
+			completion_options_subseq_casei.push_back(option);
+		}
+
+		But is more performant due to being inlined and looping over the characters only once
+		*/
+
+		String display_lower = option.display.to_lower();
+
+		const char32_t *ssq = &string_to_complete[0];
+		const char32_t *ssq_lower = &string_to_complete_lower[0];
+
+		const char32_t *tgt = &option.display[0];
+		const char32_t *tgt_lower = &display_lower[0];
+
+		const char32_t *ssq_last_tgt = nullptr;
+		const char32_t *ssq_lower_last_tgt = nullptr;
+
+		for (; *tgt; tgt++, tgt_lower++) {
+			if (*ssq == *tgt) {
+				ssq++;
+				ssq_last_tgt = tgt;
+			}
+			if (*ssq_lower == *tgt_lower) {
+				ssq_lower++;
+				ssq_lower_last_tgt = tgt;
+			}
+		}
+
+		/* Matched the whole subsequence in s. */
+		if (!*ssq) {
+			/* Finished matching in the first s.length() characters. */
+			if (ssq_last_tgt == &option.display[string_to_complete.length() - 1]) {
+				code_completion_options.push_back(option);
+			} else {
+				completion_options_subseq.push_back(option);
+			}
+			max_width = MAX(max_width, cache.font->get_string_size(option.display).width);
+			/* Matched the whole subsequence in s_lower. */
+		} else if (!*ssq_lower) {
+			/* Finished matching in the first s.length() characters. */
+			if (ssq_lower_last_tgt == &option.display[string_to_complete.length() - 1]) {
+				completion_options_casei.push_back(option);
+			} else {
+				completion_options_subseq_casei.push_back(option);
+			}
+			max_width = MAX(max_width, cache.font->get_string_size(option.display).width);
+		}
+	}
+
+	code_completion_options.append_array(completion_options_casei);
+	code_completion_options.append_array(completion_options_subseq);
+	code_completion_options.append_array(completion_options_subseq_casei);
+
+	/* No options to complete, cancel. */
+	if (code_completion_options.size() == 0) {
+		cancel_code_completion();
+		return;
+	}
+
+	/* A perfect match, stop completion. */
+	if (code_completion_options.size() == 1 && string_to_complete == code_completion_options[0].display) {
+		cancel_code_completion();
+		return;
+	}
+
+	code_completion_longest_line = MIN(max_width, code_completion_max_width);
+	code_completion_current_selected = 0;
+	code_completion_active = true;
+	update();
 }
 
 void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
