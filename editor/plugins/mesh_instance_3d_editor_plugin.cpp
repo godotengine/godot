@@ -138,6 +138,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
+			cshape->set_transform(node->get_transform());
 
 			Node *owner = node->get_owner();
 
