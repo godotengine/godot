@@ -9,7 +9,8 @@
 		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		Creating a dictionary:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var my_dir = {} # Creates an empty dictionary.
 		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
 		var another_dir = {
@@ -17,28 +18,74 @@
 		    key2: value2,
 		    key3: value3,
 		}
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var myDir = new Godot.Collections.Dictionary(); // Creates an empty dictionary.
+		var pointsDir = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+		[/csharp]
+		[/codeblocks]
 		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
-		[codeblock]
-		export(String, "White", "Yellow", "Orange") var my_color
+		[codeblocks]
+		[gdscript]
+		export(string, "White", "Yellow", "Orange") var my_color
 		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.
 		    var points = points_dir[my_color]
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
+		public string MyColor { get; set; }
+		public Godot.Collections.Dictionary pointsDir = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+
+		public override void _Ready()
+		{
+		    int points = (int)pointsDir[MyColor];
+		}
+		[/csharp]
+		[/codeblocks]
 		In the above code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
 		Dictionaries can contain more complex data:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var myDir = new Godot.Collections.Dictionary
+		{
+		    {"First Array", new Godot.Collections.Array{1, 2, 3, 4}}
+		};
+		[/csharp]
+		[/codeblocks]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
 		points_dir["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var pointsDir = new Godot.Collections.Dictionary
+		{
+		    {"White", 50},
+		    {"Yellow", 75},
+		    {"Orange", 100}
+		};
+		pointsDir["blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
+		[/csharp]
+		[/codeblocks]
 		Finally, dictionaries can contain different types of keys and values in the same dictionary:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# This is a valid dictionary.
 		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
@@ -48,29 +95,75 @@
 		    7: "Hello",
 		    "sub_dir": {"sub_key": "Nested value"},
 		}
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// This is a valid dictionary.
+		// To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		// Indexing styles can be mixed and matched depending on your needs.
+		var myDir = new Godot.Collections.Dictionary {
+		    {"String Key", 5},
+		    {4, new Godot.Collections.Array{1,2,3}},
+		    {7, "Hello"},
+		    {"sub_dir", new Godot.Collections.Dictionary{{"sub_key", "Nested value"}}}
+		};
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] Unlike [Array]s, you can't compare dictionaries directly:
-		[codeblock]
-		array1 = [1, 2, 3]
-		array2 = [1, 2, 3]
+		[codeblocks]
+		[gdscript]
+		var array1 = [1, 2, 3]
+		var array2 = [1, 2, 3]
 
 		func compare_arrays():
 		    print(array1 == array2) # Will print true.
 
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		var dir1 = {"a": 1, "b": 2, "c": 3}
+		var dir2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
 		    print(dir1 == dir2) # Will NOT print true.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// You have to use GD.Hash().
+
+		public Godot.Collections.Array array1 = new Godot.Collections.Array{1, 2, 3};
+		public Godot.Collections.Array array2 = new Godot.Collections.Array{1, 2, 3};
+
+		public void CompareArrays()
+		{
+		    GD.Print(array1 == array2); // Will print FALSE!!
+		    GD.Print(GD.Hash(array1) == GD.Hash(array2)); // Will print true.
+		}
+
+		public Godot.Collections.Dictionary dir1 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+		public Godot.Collections.Dictionary dir2 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+
+		public void CompareDictionaries()
+		{
+		    GD.Print(dir1 == dir2); // Will NOT print true.
+		}
+		[/csharp]
+		[/codeblocks]
 		You need to first calculate the dictionary's hash with [method hash] before you can compare them:
-		[codeblock]
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		[codeblocks]
+		[gdscript]
+		var dir1 = {"a": 1, "b": 2, "c": 3}
+		var dir2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
 		    print(dir1.hash() == dir2.hash()) # Will print true.
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// You have to use GD.Hash().
+		public Godot.Collections.Dictionary dir1 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+		public Godot.Collections.Dictionary dir2 = new Godot.Collections.Dictionary{{"a", 1}, {"b", 2}, {"c", 3}};
+
+		public void CompareDictionaries()
+		{
+		    GD.Print(GD.Hash(dir1) == GD.Hash(dir2)); // Will print true.
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
@@ -129,11 +222,20 @@
 			<description>
 				Returns [code]true[/code] if the dictionary has a given key.
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Will evaluate to `true`.
 				if "godot" in {"godot": "engine"}:
 				    pass
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// You have to use Contains() here as an alternative to GDScript's `in` operator.
+				if (new Godot.Collections.Dictionary{{"godot", "engine"}}.Contains("godot"))
+				{
+				    // I am executed.
+				}
+				[/csharp]
+				[/codeblocks]
 				This method (like the [code]in[/code] operator) will evaluate to [code]true[/code] as long as the key exists, even if the associated value is [code]null[/code].
 			</description>
 		</method>
@@ -151,12 +253,21 @@
 			</return>
 			<description>
 				Returns a hashed integer value representing the dictionary contents. This can be used to compare dictionaries by value:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var dict1 = {0: 10}
 				var dict2 = {0: 10}
 				# The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
 				print(dict1.hash() == dict2.hash())
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var dict1 = new Godot.Collections.Dictionary{{0, 10}};
+				var dict2 = new Godot.Collections.Dictionary{{0, 10}};
+				// The line below prints `true`, whereas it would have printed `false` if both variables were compared directly.
+				// Dictionary has no Hash() method. Use GD.Hash() instead.
+				GD.Print(GD.Hash(dict1) == GD.Hash(dict2));
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Dictionaries with the same keys/values but in a different order will have a different hash.
 			</description>
 		</method>
