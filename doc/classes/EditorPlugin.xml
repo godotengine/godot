@@ -227,21 +227,35 @@
 			</argument>
 			<description>
 				Called when there is a root node in the current edited scene, [method handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# Prevents the InputEvent to reach other Editor classes
 				func forward_canvas_gui_input(event):
-				    var forward = true
-				    return forward
-				[/codeblock]
+				    return true
+				[/gdscript]
+				[csharp]
+				// Prevents the InputEvent to reach other Editor classes
+				public override bool ForwardCanvasGuiInput(InputEvent @event)
+				{
+				    return true;
+				}
+				[/csharp]
+				[/codeblocks]
 				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
-				[codeblock]
-				# Consumes InputEventMouseMotion and forwards other InputEvent types
+				[codeblocks]
+				[gdscript]
+				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func forward_canvas_gui_input(event):
-				    var forward = false
-				    if event is InputEventMouseMotion:
-				        forward = true
-				    return forward
-				[/codeblock]
+				    return event is InputEventMouseMotion
+				[/gdscript]
+				[csharp]
+				// Consumes InputEventMouseMotion and forwards other InputEvent types.
+				public override bool ForwardCanvasGuiInput(InputEvent @event)
+				{
+				    return @event is InputEventMouseMotion;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="forward_spatial_gui_input" qualifiers="virtual">
@@ -253,21 +267,35 @@
 			</argument>
 			<description>
 				Called when there is a root node in the current edited scene, [method handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
-				[codeblock]
-				# Prevents the InputEvent to reach other Editor classes
+				[codeblocks]
+				[gdscript]
+				# Prevents the InputEvent to reach other Editor classes.
 				func forward_spatial_gui_input(camera, event):
-				    var forward = true
-				    return forward
-				[/codeblock]
+				    return true
+				[/gdscript]
+				[csharp]
+				// Prevents the InputEvent to reach other Editor classes.
+				public override bool ForwardSpatialGuiInput(Camera3D camera, InputEvent @event)
+				{
+				    return true;
+				}
+				[/csharp]
+				[/codeblocks]
 				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
-				[codeblock]
-				# Consumes InputEventMouseMotion and forwards other InputEvent types
+				[codeblocks]
+				[gdscript]
+				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func forward_spatial_gui_input(camera, event):
-				    var forward = false
-				    if event is InputEventMouseMotion:
-				        forward = true
-				    return forward
-				[/codeblock]
+				    return event is InputEventMouseMotion
+				[/gdscript]
+				[csharp]
+				// Consumes InputEventMouseMotion and forwards other InputEvent types.
+				public override bool ForwardSpatialGuiInput(Camera3D camera, InputEvent @event)
+				{
+				    return @event is InputEventMouseMotion;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
@@ -291,13 +319,24 @@
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
 				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
 				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func get_plugin_icon():
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
 				    return get_editor_interface().get_base_control().get_icon("Node", "EditorIcons")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override Texture2D GetPluginIcon()
+				{
+				    // You can use a custom icon:
+				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
+				    // Or use a built-in icon:
+				    return GetEditorInterface().GetBaseControl().GetIcon("Node", "EditorIcons");
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_plugin_name" qualifiers="virtual">
