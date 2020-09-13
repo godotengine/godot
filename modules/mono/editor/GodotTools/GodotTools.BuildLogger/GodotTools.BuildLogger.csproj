@@ -4,7 +4,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
+<<<<<<< HEAD
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" Version="16.5.0" />
+=======
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
+>>>>>>> audio-bus-effect-fixed
   </ItemGroup>
 </Project>

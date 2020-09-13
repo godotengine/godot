@@ -299,7 +299,11 @@ def make_license_header(target, source, env):
         f.write("const int COPYRIGHT_INFO_COUNT = " + str(len(projects)) + ";\n")
 
         f.write("const ComponentCopyright COPYRIGHT_INFO[] = {\n")
+<<<<<<< HEAD
         for project_name, project in iter(projects.items()):
+=======
+        for project_name, project in iteritems(projects):
+>>>>>>> audio-bus-effect-fixed
             f.write(
                 '\t{ "'
                 + escape_string(project_name)

@@ -20,10 +20,16 @@ local.properties
 *.iml
 .gradletasknamecache
 project.properties
+<<<<<<< HEAD
 platform/android/java/lib/.cxx/
 platform/android/java/libs/*
 platform/android/java/app/libs/*
 platform/android/java/lib/.cxx/*
+=======
+platform/android/java/app/libs/*
+platform/android/java/libs/*
+platform/android/java/lib/.cxx/
+>>>>>>> audio-bus-effect-fixed
 
 # General c++ generated files
 *.lib

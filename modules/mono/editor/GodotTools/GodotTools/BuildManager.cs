@@ -173,7 +173,11 @@ namespace GodotTools
             {
                 pr.Step("Building project solution", 0);
 
+<<<<<<< HEAD
                 var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets: new[] {"Build"}, config, restore: true);
+=======
+                var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, new[] {"Build"}, config, restore: true);
+>>>>>>> audio-bus-effect-fixed
 
                 // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
                 if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))

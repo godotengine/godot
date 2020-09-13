@@ -39,10 +39,20 @@
 #include "scene/gui/split_container.h"
 
 void TileMapEditor::_node_removed(Node *p_node) {
+<<<<<<< HEAD
 	if (p_node == node) {
 		node = nullptr;
 	}
 }
+=======
+
+	if (p_node == node) {
+		node = NULL;
+	}
+}
+
+void TileMapEditor::_notification(int p_what) {
+>>>>>>> audio-bus-effect-fixed
 
 void TileMapEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -54,9 +64,18 @@ void TileMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+<<<<<<< HEAD
 			get_tree()->connect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
 			[[fallthrough]];
 		}
+=======
+
+			get_tree()->connect("node_removed", this, "_node_removed");
+			FALLTHROUGH;
+		}
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+>>>>>>> audio-bus-effect-fixed
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (is_visible_in_tree()) {
@@ -88,6 +107,10 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
 		} break;
 	}
 }
@@ -217,6 +240,11 @@ void TileMapEditor::_palette_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 }
+<<<<<<< HEAD
+=======
+
+void TileMapEditor::_canvas_mouse_enter() {
+>>>>>>> audio-bus-effect-fixed
 
 void TileMapEditor::_canvas_mouse_enter() {
 	mouse_over = true;
@@ -1881,8 +1909,35 @@ void TileMapEditor::_icon_size_changed(float p_value) {
 }
 
 void TileMapEditor::_bind_methods() {
+<<<<<<< HEAD
 	ClassDB::bind_method(D_METHOD("_fill_points"), &TileMapEditor::_fill_points);
 	ClassDB::bind_method(D_METHOD("_erase_points"), &TileMapEditor::_erase_points);
+=======
+
+	ClassDB::bind_method(D_METHOD("_manual_toggled"), &TileMapEditor::_manual_toggled);
+	ClassDB::bind_method(D_METHOD("_priority_toggled"), &TileMapEditor::_priority_toggled);
+	ClassDB::bind_method(D_METHOD("_text_entered"), &TileMapEditor::_text_entered);
+	ClassDB::bind_method(D_METHOD("_text_changed"), &TileMapEditor::_text_changed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"), &TileMapEditor::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_button_tool_select"), &TileMapEditor::_button_tool_select);
+	ClassDB::bind_method(D_METHOD("_menu_option"), &TileMapEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_enter"), &TileMapEditor::_canvas_mouse_enter);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_exit"), &TileMapEditor::_canvas_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_tileset_settings_changed"), &TileMapEditor::_tileset_settings_changed);
+	ClassDB::bind_method(D_METHOD("_rotate"), &TileMapEditor::_rotate);
+	ClassDB::bind_method(D_METHOD("_flip_horizontal"), &TileMapEditor::_flip_horizontal);
+	ClassDB::bind_method(D_METHOD("_flip_vertical"), &TileMapEditor::_flip_vertical);
+	ClassDB::bind_method(D_METHOD("_clear_transform"), &TileMapEditor::_clear_transform);
+	ClassDB::bind_method(D_METHOD("_palette_selected"), &TileMapEditor::_palette_selected);
+	ClassDB::bind_method(D_METHOD("_palette_multi_selected"), &TileMapEditor::_palette_multi_selected);
+	ClassDB::bind_method(D_METHOD("_palette_input"), &TileMapEditor::_palette_input);
+
+	ClassDB::bind_method(D_METHOD("_fill_points"), &TileMapEditor::_fill_points);
+	ClassDB::bind_method(D_METHOD("_erase_points"), &TileMapEditor::_erase_points);
+
+	ClassDB::bind_method(D_METHOD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"), &TileMapEditor::_node_removed);
+>>>>>>> audio-bus-effect-fixed
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i &p_pos) {
@@ -2039,10 +2094,17 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
 	palette->set_select_mode(ItemList::SELECT_MULTI);
+<<<<<<< HEAD
 	palette->add_theme_constant_override("vseparation", 8 * EDSCALE);
 	palette->connect("item_selected", callable_mp(this, &TileMapEditor::_palette_selected));
 	palette->connect("multi_selected", callable_mp(this, &TileMapEditor::_palette_multi_selected));
 	palette->connect("gui_input", callable_mp(this, &TileMapEditor::_palette_input));
+=======
+	palette->add_constant_override("vseparation", 8 * EDSCALE);
+	palette->connect("item_selected", this, "_palette_selected");
+	palette->connect("multi_selected", this, "_palette_multi_selected");
+	palette->connect("gui_input", this, "_palette_input");
+>>>>>>> audio-bus-effect-fixed
 	palette_container->add_child(palette);
 
 	// Add message for when no texture is selected.
@@ -2081,6 +2143,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
 
+<<<<<<< HEAD
 	line_button = memnew(Button);
 	line_button->set_flat(true);
 	line_button->set_shortcut(ED_SHORTCUT("tile_map_editor/line_fill", TTR("Line Fill"), KEY_L));
@@ -2115,6 +2178,23 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	select_button->set_flat(true);
 	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_M));
 	select_button->connect("pressed", callable_mp(this, &TileMapEditor::_button_tool_select), make_binds(TOOL_SELECTING));
+=======
+	bucket_fill_button = memnew(ToolButton);
+	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_B));
+	bucket_fill_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_BUCKET));
+	bucket_fill_button->set_toggle_mode(true);
+	toolbar->add_child(bucket_fill_button);
+
+	picker_button = memnew(ToolButton);
+	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pick_tile", TTR("Pick Tile"), KEY_I));
+	picker_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PICKING));
+	picker_button->set_toggle_mode(true);
+	toolbar->add_child(picker_button);
+
+	select_button = memnew(ToolButton);
+	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_M));
+	select_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SELECTING));
+>>>>>>> audio-bus-effect-fixed
 	select_button->set_toggle_mode(true);
 	toolbar->add_child(select_button);
 

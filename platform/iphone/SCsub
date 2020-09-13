@@ -3,8 +3,15 @@
 Import("env")
 
 iphone_lib = [
+<<<<<<< HEAD
     "godot_iphone.mm",
     "os_iphone.mm",
+=======
+    "godot_iphone.cpp",
+    "os_iphone.cpp",
+    "semaphore_iphone.cpp",
+    "gl_view.mm",
+>>>>>>> audio-bus-effect-fixed
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",
@@ -12,6 +19,7 @@ iphone_lib = [
     "in_app_store.mm",
     "icloud.mm",
     "ios.mm",
+<<<<<<< HEAD
     "vulkan_context_iphone.mm",
     "display_server_iphone.mm",
     "joypad_iphone.mm",
@@ -19,6 +27,9 @@ iphone_lib = [
     "display_layer.mm",
     "godot_view_renderer.mm",
     "godot_view_gesture_recognizer.m",
+=======
+    "gl_view_gesture_recognizer.m",
+>>>>>>> audio-bus-effect-fixed
 ]
 
 env_ios = env.Clone()

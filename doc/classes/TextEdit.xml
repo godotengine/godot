@@ -31,6 +31,16 @@
 			</return>
 			<description>
 				Centers the viewport on the line the editing cursor is at. This also resets the [member scroll_horizontal] value to [code]0[/code].
+<<<<<<< HEAD
+=======
+			</description>
+		</method>
+		<method name="clear_colors">
+			<return type="void">
+			</return>
+			<description>
+				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
+>>>>>>> audio-bus-effect-fixed
 			</description>
 		</method>
 		<method name="clear_undo_history">
@@ -401,6 +411,7 @@
 				If [member selecting_enabled] is [code]false[/code], no selection will occur.
 			</description>
 		</method>
+<<<<<<< HEAD
 		<method name="set_gutter_clickable">
 			<return type="void">
 			</return>
@@ -473,6 +484,8 @@
 			<description>
 			</description>
 		</method>
+=======
+>>>>>>> audio-bus-effect-fixed
 		<method name="set_line">
 			<return type="void">
 			</return>
@@ -647,6 +660,12 @@
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
+<<<<<<< HEAD
+=======
+		</member>
+		<member name="show_line_numbers" type="bool" setter="set_show_line_numbers" getter="is_show_line_numbers_enabled" default="false">
+			If [code]true[/code], line numbers are displayed to the left of the text.
+>>>>>>> audio-bus-effect-fixed
 		</member>
 		<member name="smooth_scrolling" type="bool" setter="set_smooth_scroll_enable" getter="is_smooth_scroll_enabled" default="false">
 			If [code]true[/code], sets the [code]step[/code] of the scrollbars to [code]0.25[/code] which results in smoother scrolling.
@@ -808,6 +827,14 @@
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
+<<<<<<< HEAD
+=======
+		</theme_item>
+		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.64, 0.81, 1 )">
+		</theme_item>
+		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
+			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
+>>>>>>> audio-bus-effect-fixed
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
 			Sets the spacing between the lines.

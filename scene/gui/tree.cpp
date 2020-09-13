@@ -2385,6 +2385,9 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				TreeItem *old_it = cache.hover_item;
 				int old_col = cache.hover_cell;
 
+				TreeItem *old_it = cache.hover_item;
+				int old_col = cache.hover_cell;
+
 				int col, h, section;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
@@ -3425,6 +3428,11 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 	TreeItem *from = p_at;
 	TreeItem *loop = nullptr; // Safe-guard against infinite loop.
+<<<<<<< HEAD
+=======
+
+	while (p_at) {
+>>>>>>> audio-bus-effect-fixed
 
 	while (p_at) {
 		for (int i = 0; i < columns.size(); i++) {
@@ -3450,6 +3458,14 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 			loop = p_at;
 		} else if (loop == p_at) {
 			break;
+<<<<<<< HEAD
+=======
+
+		if (!loop) {
+			loop = p_at;
+		} else if (loop == p_at) {
+			break;
+>>>>>>> audio-bus-effect-fixed
 		}
 	}
 
@@ -3477,8 +3493,15 @@ TreeItem *Tree::get_item_with_text(const String &p_find) const {
 			}
 		}
 	}
+<<<<<<< HEAD
 	return nullptr;
 }
+=======
+	return NULL;
+}
+
+void Tree::_do_incr_search(const String &p_add) {
+>>>>>>> audio-bus-effect-fixed
 
 void Tree::_do_incr_search(const String &p_add) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
@@ -3665,6 +3688,47 @@ int Tree::get_button_id_at_position(const Point2 &p_pos) const {
 
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
+				if (pos.x > col_width - size.width) {
+					return c.buttons[j].id;
+				}
+				col_width -= size.width;
+			}
+		}
+	}
+
+	return -1;
+}
+
+int Tree::get_button_id_at_position(const Point2 &p_pos) const {
+	if (root) {
+		Point2 pos = p_pos;
+		pos -= cache.bg->get_offset();
+		pos.y -= _get_title_button_height();
+		if (pos.y < 0) {
+			return -1;
+		}
+
+		if (h_scroll->is_visible_in_tree()) {
+			pos.x += h_scroll->get_value();
+		}
+		if (v_scroll->is_visible_in_tree()) {
+			pos.y += v_scroll->get_value();
+		}
+
+		int col, h, section;
+		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+		if (it) {
+			const TreeItem::Cell &c = it->cells[col];
+			int col_width = get_column_width(col);
+
+			for (int i = 0; i < col; i++) {
+				pos.x -= get_column_width(i);
+			}
+
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture> b = c.buttons[j].texture;
 				Size2 size = b->get_size() + cache.button_pressed->get_minimum_size();
 				if (pos.x > col_width - size.width) {
 					return c.buttons[j].id;

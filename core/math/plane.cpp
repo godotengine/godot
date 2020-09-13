@@ -52,6 +52,13 @@ Plane Plane::normalized() const {
 	return p;
 }
 
+<<<<<<< HEAD
+=======
+Vector3 Plane::get_any_point() const {
+	return get_normal() * d;
+}
+
+>>>>>>> audio-bus-effect-fixed
 Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p1 = Vector3(1, 0, 0);
 	static const Vector3 p2 = Vector3(0, 1, 0);

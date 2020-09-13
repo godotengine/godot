@@ -915,6 +915,10 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		return Variant(); //dragging from button
 	}
 
+	if (tree->get_button_id_at_position(p_point) != -1) {
+		return Variant(); //dragging from button
+	}
+
 	Vector<Node *> selected;
 	Vector<Ref<Texture2D>> icons;
 	TreeItem *next = tree->get_next_selected(nullptr);

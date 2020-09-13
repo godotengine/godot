@@ -40,7 +40,66 @@
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
 	_fill_type_list();
 
+<<<<<<< HEAD
 	icon_fallback = search_options->has_theme_icon(base_type, "EditorIcons") ? base_type : "Object";
+=======
+	type_list.clear();
+	ClassDB::get_class_list(&type_list);
+	ScriptServer::get_global_class_list(&type_list);
+	type_list.sort_custom<StringName::AlphCompare>();
+
+	recent->clear();
+
+	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::READ);
+
+	if (f) {
+
+		TreeItem *root = recent->create_item();
+
+		String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+
+		while (!f->eof_reached()) {
+			String l = f->get_line().strip_edges();
+			String name = l.split(" ")[0];
+			if ((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)) {
+				TreeItem *ti = recent->create_item(root);
+				ti->set_text(0, l);
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+			}
+		}
+
+		memdelete(f);
+	}
+
+	favorites->clear();
+
+	f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::READ);
+
+	favorite_list.clear();
+
+	if (f) {
+
+		while (!f->eof_reached()) {
+			String l = f->get_line().strip_edges();
+
+			if (l != String()) {
+				favorite_list.push_back(l);
+			}
+		}
+
+		memdelete(f);
+	}
+
+	_save_and_update_favorite_list();
+
+	// Restore valid window bounds or pop up at default size.
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2());
+	if (saved_size != Rect2()) {
+		popup(saved_size);
+	} else {
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+	}
+>>>>>>> audio-bus-effect-fixed
 
 	if (p_dont_clear) {
 		search_box->select_all();
@@ -110,8 +169,13 @@ bool CreateDialog::_is_type_preferred(const String &p_type) const {
 	return EditorNode::get_editor_data().script_class_is_parent(p_type, preferred_search_result_type);
 }
 
+<<<<<<< HEAD
 bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_class) const {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+=======
+	String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+	item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
+>>>>>>> audio-bus-effect-fixed
 
 	return !profile.is_null() && profile->is_class_disabled(p_class);
 }
@@ -168,8 +232,13 @@ void CreateDialog::_update_search() {
 
 	TreeItem *root = search_options->create_item();
 	root->set_text(0, base_type);
+<<<<<<< HEAD
 	root->set_icon(0, search_options->get_theme_icon(icon_fallback, "EditorIcons"));
 	search_options_types[base_type] = root;
+=======
+	String base_icon = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+	root->set_icon(0, get_icon(base_icon, "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 	const String search_text = search_box->get_text();
 	bool empty_search = search_text == "";
@@ -216,10 +285,16 @@ void CreateDialog::_add_type(const String &p_type, bool p_cpp_type) {
 
 	_add_type(inherits, p_cpp_type || ClassDB::class_exists(inherits));
 
+<<<<<<< HEAD
 	TreeItem *item = search_options->create_item(search_options_types[inherits]);
 	search_options_types[p_type] = item;
 	_configure_search_option_item(item, p_type, p_cpp_type);
 }
+=======
+			bool found = false;
+			String type2 = type;
+			bool cpp_type2 = cpp_type;
+>>>>>>> audio-bus-effect-fixed
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String &p_type, const bool p_cpp_type) {
 	bool script_type = ScriptServer::is_global_class(p_type);
@@ -233,11 +308,16 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_text(0, p_type);
 	}
 
+<<<<<<< HEAD
 	bool can_instance = (p_cpp_type && ClassDB::can_instance(p_type)) || !p_cpp_type;
 	if (!can_instance) {
 		r_item->set_custom_color(0, search_options->get_theme_color("disabled_font_color", "Editor"));
 		r_item->set_selectable(0, false);
 	}
+=======
+			while (type2 != "" && (cpp_type2 ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
+				if (search_box->get_text().is_subsequence_ofi(type2)) {
+>>>>>>> audio-bus-effect-fixed
 
 	if (search_box->get_text() != "") {
 		r_item->set_collapsed(false);
@@ -245,6 +325,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		// Don't collapse the root node or an abstract node on the first tree level.
 		bool should_collapse = p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instance);
 
+<<<<<<< HEAD
 		if (should_collapse && bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 			should_collapse = false; // Collapse all nodes anyway.
 		}
@@ -254,6 +335,15 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
 	r_item->set_tooltip(0, description);
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
+=======
+				type2 = cpp_type2 ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
+				cpp_type2 = cpp_type2 || ClassDB::class_exists(type2); // Built-in class can't inherit from custom type, so we can skip the check if it's already true.
+
+				if (!cpp_type2 && !search_loaded_scripts.has(type2)) {
+					search_loaded_scripts[type2] = ed.script_class_load_script(type2);
+				}
+			}
+>>>>>>> audio-bus-effect-fixed
 
 	if (!p_cpp_type && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
@@ -291,8 +381,15 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 
 	score *= _is_type_preferred(p_type) ? 1.0f : 0.8f;
 
+<<<<<<< HEAD
 	// Add score for being a favorite type.
 	score *= (favorite_list.find(p_type) > -1) ? 1.0f : 0.7f;
+=======
+				TreeItem *item = search_options->create_item(ti);
+				item->set_metadata(0, type);
+				item->set_text(0, ct[i].name);
+				item->set_icon(0, ct[i].icon.is_valid() ? ct[i].icon : get_icon(base_icon, "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
@@ -479,8 +576,56 @@ void CreateDialog::_favorite_toggled() {
 	_save_and_update_favorite_list();
 }
 
+<<<<<<< HEAD
 void CreateDialog::_history_selected(int p_idx) {
 	search_box->set_text(recent->get_item_text(p_idx).get_slicec(' ', 0));
+=======
+void CreateDialog::_save_favorite_list() {
+
+	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
+
+	if (f) {
+
+		for (int i = 0; i < favorite_list.size(); i++) {
+			String l = favorite_list[i];
+			String name = l.split(" ")[0];
+			if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name)))
+				continue;
+			f->store_line(l);
+		}
+		memdelete(f);
+	}
+}
+
+void CreateDialog::_update_favorite_list() {
+
+	favorites->clear();
+
+	TreeItem *root = favorites->create_item();
+
+	String icon_fallback = has_icon(base_type, "EditorIcons") ? base_type : "Object";
+
+	for (int i = 0; i < favorite_list.size(); i++) {
+		String l = favorite_list[i];
+		String name = l.split(" ")[0];
+		if (!((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)))
+			continue;
+
+		TreeItem *ti = favorites->create_item(root);
+		ti->set_text(0, l);
+		ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+	}
+	emit_signal("favorites_updated");
+}
+
+void CreateDialog::_history_selected() {
+
+	TreeItem *item = recent->get_selected();
+	if (!item)
+		return;
+
+	search_box->set_text(item->get_text(0).get_slicec(' ', 0));
+>>>>>>> audio-bus-effect-fixed
 	favorites->deselect_all();
 	_update_search();
 }

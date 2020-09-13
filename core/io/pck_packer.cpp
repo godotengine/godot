@@ -254,8 +254,12 @@ Error PCKPacker::flush(bool p_verbose) {
 		src->close();
 		memdelete(src);
 		count += 1;
+<<<<<<< HEAD
 		const int file_num = files.size();
 		if (p_verbose && (file_num > 0)) {
+=======
+		if (p_verbose && files.size() > 0) {
+>>>>>>> audio-bus-effect-fixed
 			if (count % 100 == 0) {
 				printf("%i/%i (%.2f)\r", count, file_num, float(count) / file_num * 100);
 				fflush(stdout);

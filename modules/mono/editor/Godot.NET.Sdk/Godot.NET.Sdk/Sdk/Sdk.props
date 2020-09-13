@@ -53,8 +53,13 @@
 
   <!-- Auto-detect the target Godot platform if it was not specified. -->
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == '' ">
+<<<<<<< HEAD
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">linuxbsd</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(FreeBSD))' ">linuxbsd</GodotTargetPlatform>
+=======
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Linux))' ">x11</GodotTargetPlatform>
+    <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(FreeBSD))' ">x11</GodotTargetPlatform>
+>>>>>>> audio-bus-effect-fixed
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(OSX))' ">osx</GodotTargetPlatform>
     <GodotTargetPlatform Condition=" '$([MSBuild]::IsOsPlatform(Windows))' ">windows</GodotTargetPlatform>
   </PropertyGroup>
@@ -73,7 +78,11 @@
     recognized platform names and the platform category (PC, MOBILE or WEB).
     -->
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'windows' ">GODOT_WINDOWS;GODOT_PC</GodotPlatformConstants>
+<<<<<<< HEAD
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'linuxbsd' ">GODOT_LINUXBSD;GODOT_PC</GodotPlatformConstants>
+=======
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'x11' ">GODOT_X11;GODOT_PC</GodotPlatformConstants>
+>>>>>>> audio-bus-effect-fixed
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'osx' ">GODOT_OSX;GODOT_MACOS;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'server' ">GODOT_SERVER;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'uwp' ">GODOT_UWP;GODOT_PC</GodotPlatformConstants>
@@ -109,4 +118,14 @@
       <HintPath>$(GodotProjectDir).mono\assemblies\$(GodotApiConfiguration)\GodotSharpEditor.dll</HintPath>
     </Reference>
   </ItemGroup>
+<<<<<<< HEAD
+=======
+
+  <PropertyGroup Condition=" '$(AutomaticallyUseReferenceAssemblyPackages)' == '' and '$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)' == '' ">
+    <!-- Old 'Microsoft.NET.Sdk' so we reference the 'Microsoft.NETFramework.ReferenceAssemblies' package ourselves. -->
+    <AutomaticallyUseReferenceAssemblyPackages>true</AutomaticallyUseReferenceAssemblyPackages>
+    <MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion>1.0.0</MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion>
+    <GodotUseNETFrameworkRefAssemblies>true</GodotUseNETFrameworkRefAssemblies>
+  </PropertyGroup>
+>>>>>>> audio-bus-effect-fixed
 </Project>

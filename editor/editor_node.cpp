@@ -216,6 +216,44 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					full_path = full_path.substr(0, full_path.rfind("."));
 				}
 
+<<<<<<< HEAD
+=======
+void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
+	// Keep track of a list of "index sets," i.e. sets of indices
+	// within disambiguated_scene_names which contain the same name.
+	Vector<Set<int> > index_sets;
+	Map<String, int> scene_name_to_set_index;
+	for (int i = 0; i < r_filenames.size(); i++) {
+		String scene_name = r_filenames[i];
+		if (!scene_name_to_set_index.has(scene_name)) {
+			index_sets.push_back(Set<int>());
+			scene_name_to_set_index.insert(r_filenames[i], index_sets.size() - 1);
+		}
+		index_sets.write[scene_name_to_set_index[scene_name]].insert(i);
+	}
+
+	// For each index set with a size > 1, we need to disambiguate
+	for (int i = 0; i < index_sets.size(); i++) {
+		Set<int> iset = index_sets[i];
+		while (iset.size() > 1) {
+			// Append the parent folder to each scene name
+			for (Set<int>::Element *E = iset.front(); E; E = E->next()) {
+				int set_idx = E->get();
+				String scene_name = r_filenames[set_idx];
+				String full_path = p_full_paths[set_idx];
+
+				// Get rid of file extensions and res:// prefixes
+				if (scene_name.rfind(".") >= 0) {
+					scene_name = scene_name.substr(0, scene_name.rfind("."));
+				}
+				if (full_path.begins_with("res://")) {
+					full_path = full_path.substr(6);
+				}
+				if (full_path.rfind(".") >= 0) {
+					full_path = full_path.substr(0, full_path.rfind("."));
+				}
+
+>>>>>>> audio-bus-effect-fixed
 				int scene_name_size = scene_name.size();
 				int full_path_size = full_path.size();
 				int difference = full_path_size - scene_name_size;
@@ -232,6 +270,64 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 					r_filenames.write[set_idx] = parent + r_filenames[set_idx];
 				}
 			}
+<<<<<<< HEAD
+=======
+
+			// Loop back through scene names and remove non-ambiguous names
+			bool can_proceed = false;
+			Set<int>::Element *E = iset.front();
+			while (E) {
+				String scene_name = r_filenames[E->get()];
+				bool duplicate_found = false;
+				for (Set<int>::Element *F = iset.front(); F; F = F->next()) {
+					if (E->get() == F->get()) {
+						continue;
+					}
+					String other_scene_name = r_filenames[F->get()];
+					if (other_scene_name == scene_name) {
+						duplicate_found = true;
+						break;
+					}
+				}
+
+				Set<int>::Element *to_erase = duplicate_found ? nullptr : E;
+
+				// We need to check that we could actually append anymore names
+				// if we wanted to for disambiguation. If we can't, then we have
+				// to abort even with ambiguous names. We clean the full path
+				// and the scene name first to remove extensions so that this
+				// comparison actually works.
+				String path = p_full_paths[E->get()];
+				if (path.begins_with("res://")) {
+					path = path.substr(6);
+				}
+				if (path.rfind(".") >= 0) {
+					path = path.substr(0, path.rfind("."));
+				}
+				if (scene_name.rfind(".") >= 0) {
+					scene_name = scene_name.substr(0, scene_name.rfind("."));
+				}
+
+				// We can proceed iff the full path is longer than the scene name,
+				// meaning that there is at least one more parent folder we can
+				// tack onto the name.
+				can_proceed = can_proceed || (path.size() - scene_name.size()) >= 1;
+
+				E = E->next();
+				if (to_erase) {
+					iset.erase(to_erase);
+				}
+			}
+
+			if (!can_proceed) {
+				break;
+			}
+		}
+	}
+}
+
+void EditorNode::_update_scene_tabs() {
+>>>>>>> audio-bus-effect-fixed
 
 			// Loop back through scene names and remove non-ambiguous names
 			bool can_proceed = false;
@@ -299,6 +395,16 @@ void EditorNode::_update_scene_tabs() {
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		disambiguated_scene_names.append(editor_data.get_scene_title(i));
 		full_path_names.append(editor_data.get_scene_path(i));
+	}
+
+	disambiguate_filenames(full_path_names, disambiguated_scene_names);
+
+	// Get all scene names, which may be ambiguous
+	Vector<String> disambiguated_scene_names;
+	Vector<String> full_path_names;
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		disambiguated_scene_names.push_back(editor_data.get_scene_title(i));
+		full_path_names.push_back(editor_data.get_scene_path(i));
 	}
 
 	disambiguate_filenames(full_path_names, disambiguated_scene_names);
@@ -642,6 +748,7 @@ void EditorNode::_notification(int p_what) {
 			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 
 			PopupMenu *p = help_menu->get_popup();
+<<<<<<< HEAD
 			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_theme_icon("HelpSearch", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_theme_icon("Instance", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_theme_icon("Instance", "EditorIcons"));
@@ -650,6 +757,16 @@ void EditorNode::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_theme_icon("Instance", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon("Instance", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_theme_icon("Godot", "EditorIcons"));
+=======
+			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_REPORT_A_BUG), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 			_update_update_spinner();
 		} break;
@@ -1251,7 +1368,11 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
 			if (profile.is_valid() && !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+<<<<<<< HEAD
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+=======
+				img = SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_data();
+>>>>>>> audio-bus-effect-fixed
 			}
 		}
 
@@ -1523,7 +1644,12 @@ void EditorNode::_mark_unsaved_scenes() {
 
 		String path = node->get_filename();
 		if (!(path == String() || FileAccess::exists(path))) {
+<<<<<<< HEAD
 			if (i == editor_data.get_edited_scene()) {
+=======
+
+			if (i == editor_data.get_edited_scene())
+>>>>>>> audio-bus-effect-fixed
 				set_current_version(-1);
 			} else {
 				editor_data.set_edited_scene_version(-1, i);
@@ -2438,6 +2564,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case EDIT_RELOAD_SAVED_SCENE: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 			Node *scene = get_edited_scene();
 
 			if (!scene) {
@@ -2455,7 +2585,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				confirmation->get_ok()->set_text(TTR("Reload Saved Scene"));
 				confirmation->set_text(
 						TTR("The current scene has unsaved changes.\nReload the saved scene anyway? This action cannot be undone."));
+<<<<<<< HEAD
 				confirmation->popup_centered();
+=======
+				confirmation->popup_centered_minsize();
+>>>>>>> audio-bus-effect-fixed
 				break;
 			}
 
@@ -2524,6 +2658,25 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RUN_PLAY_SCENE: {
 			run_play_current();
 
+<<<<<<< HEAD
+=======
+		} break;
+		case RUN_PLAY_NATIVE: {
+
+			bool autosave = EDITOR_GET("run/auto_save/save_before_running");
+			if (autosave) {
+				_menu_option_confirm(FILE_SAVE_ALL_SCENES, false);
+			}
+			if (run_native->is_deploy_debug_remote_enabled()) {
+				_menu_option_confirm(RUN_STOP, true);
+
+				if (!call_build())
+					break; // build failed
+
+				emit_signal("play_pressed");
+				editor_run.run_native_notify();
+			}
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case RUN_SCENE_SETTINGS: {
 			run_settings_dialog->popup_run_settings();
@@ -2818,6 +2971,26 @@ void EditorNode::_discard_changes(const String &p_str) {
 	}
 }
 
+<<<<<<< HEAD
+=======
+void EditorNode::_update_debug_options() {
+
+	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
+	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
+	bool check_debug_collisons = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
+	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
+
+	if (check_deploy_remote) _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
+	if (check_file_server) _menu_option_confirm(RUN_FILE_SERVER, true);
+	if (check_debug_collisons) _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
+	if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
+	if (check_live_debug) _menu_option_confirm(RUN_LIVE_DEBUG, true);
+	if (check_reload_scripts) _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
+}
+
+>>>>>>> audio-bus-effect-fixed
 void EditorNode::_update_file_menu_opened() {
 	Ref<Shortcut> close_scene_sc = ED_GET_SHORTCUT("editor/close_scene");
 	close_scene_sc->set_name(TTR("Close Scene"));
@@ -3208,7 +3381,11 @@ void EditorNode::_clear_undo_history() {
 
 void EditorNode::set_current_scene(int p_idx) {
 	//Save the folding in case the scene gets reloaded.
+<<<<<<< HEAD
 	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx)) {
+=======
+	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx))
+>>>>>>> audio-bus-effect-fixed
 		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 	}
 
@@ -3767,8 +3944,13 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	return nullptr;
 }
 
+<<<<<<< HEAD
 Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
 	ERR_FAIL_COND_V_MSG(p_class.empty(), nullptr, "Class name cannot be empty.");
+=======
+Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_fallback) const {
+	ERR_FAIL_COND_V_MSG(p_class.empty(), NULL, "Class name cannot be empty.");
+>>>>>>> audio-bus-effect-fixed
 
 	if (ScriptServer::is_global_class(p_class)) {
 		Ref<ImageTexture> icon;
@@ -3786,7 +3968,11 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 
 		if (icon.is_null()) {
+<<<<<<< HEAD
 			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
+=======
+			icon = gui_base->get_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
+>>>>>>> audio-bus-effect-fixed
 		}
 	}
 
@@ -3802,12 +3988,21 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 	}
 
+<<<<<<< HEAD
 	if (gui_base->has_theme_icon(p_class, "EditorIcons")) {
 		return gui_base->get_theme_icon(p_class, "EditorIcons");
 	}
 
 	if (p_fallback.length() && gui_base->has_theme_icon(p_fallback, "EditorIcons")) {
 		return gui_base->get_theme_icon(p_fallback, "EditorIcons");
+=======
+	if (gui_base->has_icon(p_class, "EditorIcons")) {
+		return gui_base->get_icon(p_class, "EditorIcons");
+	}
+
+	if (p_fallback.length() && gui_base->has_icon(p_fallback, "EditorIcons")) {
+		return gui_base->get_icon(p_fallback, "EditorIcons");
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	return nullptr;
@@ -5554,10 +5749,17 @@ EditorNode::EditorNode() {
 			case 0: {
 				// Try applying a suitable display scale automatically
 #ifdef OSX_ENABLED
+<<<<<<< HEAD
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
 				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+=======
+				editor_set_scale(OS::get_singleton()->get_screen_max_scale());
+#else
+				const int screen = OS::get_singleton()->get_current_screen();
+				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+>>>>>>> audio-bus-effect-fixed
 #endif
 			} break;
 
@@ -5739,7 +5941,11 @@ EditorNode::EditorNode() {
 	EDITOR_DEF_RST("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_DEF_RST("interface/inspector/capitalize_properties", true);
 	EDITOR_DEF_RST("interface/inspector/default_float_step", 0.001);
+<<<<<<< HEAD
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
+=======
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "interface/inspector/default_float_step", PROPERTY_HINT_RANGE, "0,1,0"));
+>>>>>>> audio-bus-effect-fixed
 	EDITOR_DEF_RST("interface/inspector/disable_folding", false);
 	EDITOR_DEF_RST("interface/inspector/auto_unfold_foreign_scenes", true);
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
@@ -6096,7 +6302,11 @@ EditorNode::EditorNode() {
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/reload_saved_scene", TTR("Reload Saved Scene")), EDIT_RELOAD_SAVED_SCENE);
+<<<<<<< HEAD
 	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_W), FILE_CLOSE);
+=======
+	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_W), FILE_CLOSE);
+>>>>>>> audio-bus-effect-fixed
 
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_name("RecentScenes");
@@ -6164,6 +6374,28 @@ EditorNode::EditorNode() {
 	debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox("MenuHover", "EditorStyles"));
 	left_menu_hb->add_child(debug_menu);
 
+<<<<<<< HEAD
+=======
+	p = debug_menu->get_popup();
+	p->set_hide_on_window_lose_focus(true);
+	p->set_hide_on_checkable_item_selection(false);
+	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network FS")), RUN_FILE_SERVER);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
+	p->add_separator();
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
+	p->add_separator();
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
+	p->connect("id_pressed", this, "_menu_option");
+
+>>>>>>> audio-bus-effect-fixed
 	menu_hb->add_spacer();
 
 	settings_menu = memnew(MenuButton);
@@ -6174,6 +6406,10 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(settings_menu);
 
 	p = settings_menu->get_popup();
+<<<<<<< HEAD
+=======
+	p->set_hide_on_window_lose_focus(true);
+>>>>>>> audio-bus-effect-fixed
 #ifdef OSX_ENABLED
 	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings..."), KEY_MASK_CMD + KEY_COMMA), SETTINGS_PREFERENCES);
 #else
@@ -6228,11 +6464,19 @@ EditorNode::EditorNode() {
 	p->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 	p->add_icon_shortcut(gui_base->get_theme_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_MASK_SHIFT | KEY_F1), HELP_SEARCH);
 	p->add_separator();
+<<<<<<< HEAD
 	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
 	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
 	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
 	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
 	p->add_icon_shortcut(gui_base->get_theme_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
+=======
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
+>>>>>>> audio-bus-effect-fixed
 	p->add_separator();
 	p->add_icon_shortcut(gui_base->get_theme_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About")), HELP_ABOUT);
 

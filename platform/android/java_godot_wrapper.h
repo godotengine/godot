@@ -64,7 +64,10 @@ private:
 	jmethodID _vibrate = 0;
 	jmethodID _get_input_fallback_mapping = 0;
 	jmethodID _on_godot_main_loop_started = 0;
+<<<<<<< HEAD
 	jmethodID _get_class_loader = 0;
+=======
+>>>>>>> audio-bus-effect-fixed
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);
@@ -75,10 +78,18 @@ public:
 
 	jobject get_class_loader();
 
+<<<<<<< HEAD
 	void on_video_init(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);
 	void force_quit(JNIEnv *p_env = nullptr);
+=======
+	void gfx_init(bool gl2);
+	void on_video_init(JNIEnv *p_env = NULL);
+	void on_godot_main_loop_started(JNIEnv *p_env = NULL);
+	void restart(JNIEnv *p_env = NULL);
+	void force_quit(JNIEnv *p_env = NULL);
+>>>>>>> audio-bus-effect-fixed
 	void set_keep_screen_on(bool p_enabled);
 	void alert(const String &p_message, const String &p_title);
 	int get_gles_version_code();

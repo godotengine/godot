@@ -120,7 +120,11 @@ Module.drop_handler = (function() {
 			HEAP32[(argv >> 2) + i] = allocateUTF8OnStack(args[i]);
 		}
 		HEAP32[(argv >> 2) + argc] = 0;
+<<<<<<< HEAD
 		// Defined in display_server_javascript.cpp
+=======
+		// Defined in javascript_main.cpp
+>>>>>>> audio-bus-effect-fixed
 		ccall('_drop_files_callback', 'void', ['number', 'number'], [argv, argc]);
 	}
 

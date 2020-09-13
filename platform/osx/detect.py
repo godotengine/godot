@@ -23,6 +23,7 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
+<<<<<<< HEAD
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         BoolVariable(
@@ -31,6 +32,10 @@ def get_opts():
             " validation layers)",
             False,
         ),
+=======
+        ("osxcross_sdk", "OSXCross SDK version", "darwin14"),
+        ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
+>>>>>>> audio-bus-effect-fixed
         EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
@@ -50,11 +55,17 @@ def configure(env):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
+<<<<<<< HEAD
             env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize"])
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize"])
         if env["arch"] != "arm64":
             env.Prepend(CCFLAGS=["-msse2"])
+=======
+            env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize", "-msse2"])
+        else:  # optimize for size
+            env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize", "-msse2"])
+>>>>>>> audio-bus-effect-fixed
 
         if env["debug_symbols"] == "yes":
             env.Prepend(CCFLAGS=["-g1"])
@@ -89,6 +100,7 @@ def configure(env):
     if "OSXCROSS_ROOT" in os.environ:
         env["osxcross"] = True
 
+<<<<<<< HEAD
     if env["arch"] == "arm64":
         print("Building for macOS 10.15+, platform arm64.")
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
@@ -99,6 +111,18 @@ def configure(env):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
 
     if not "osxcross" in env:  # regular native build
+=======
+    if not "osxcross" in env:  # regular native build
+        if env["arch"] == "arm64":
+            print("Building for macOS 10.15+, platform arm64.")
+            env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+            env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+        else:
+            print("Building for macOS 10.9+, platform x86-64.")
+            env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+            env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
+
+>>>>>>> audio-bus-effect-fixed
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -167,7 +191,21 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/osx"])
+<<<<<<< HEAD
     env.Append(CPPDEFINES=["OSX_ENABLED", "UNIX_ENABLED", "APPLE_STYLE_KEYS", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
+=======
+    env.Append(
+        CPPDEFINES=[
+            "OSX_ENABLED",
+            "UNIX_ENABLED",
+            "GLES_ENABLED",
+            "APPLE_STYLE_KEYS",
+            "COREAUDIO_ENABLED",
+            "COREMIDI_ENABLED",
+            "GL_SILENCE_DEPRECATION",
+        ]
+    )
+>>>>>>> audio-bus-effect-fixed
     env.Append(
         LINKFLAGS=[
             "-framework",
@@ -175,16 +213,28 @@ def configure(env):
             "-framework",
             "Carbon",
             "-framework",
+<<<<<<< HEAD
+=======
+            "OpenGL",
+            "-framework",
+            "AGL",
+            "-framework",
+>>>>>>> audio-bus-effect-fixed
             "AudioUnit",
             "-framework",
             "CoreAudio",
             "-framework",
             "CoreMIDI",
+<<<<<<< HEAD
+=======
+            "-lz",
+>>>>>>> audio-bus-effect-fixed
             "-framework",
             "IOKit",
             "-framework",
             "ForceFeedback",
             "-framework",
+<<<<<<< HEAD
             "CoreVideo",
             "-framework",
             "AVFoundation",
@@ -203,3 +253,13 @@ def configure(env):
         env.Append(LIBS=["vulkan"])
 
     # env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
+=======
+            "AVFoundation",
+            "-framework",
+            "CoreMedia",
+            "-framework",
+            "CoreVideo",
+        ]
+    )
+    env.Append(LIBS=["pthread"])
+>>>>>>> audio-bus-effect-fixed

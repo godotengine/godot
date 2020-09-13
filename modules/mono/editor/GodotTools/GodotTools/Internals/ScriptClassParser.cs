@@ -19,7 +19,11 @@ namespace GodotTools.Internals
                 Name.Substring(Name.LastIndexOf(".", StringComparison.Ordinal) + 1) :
                 Name;
 
+<<<<<<< HEAD
             public ClassDecl(string name, string @namespace, bool nested, long baseCount)
+=======
+            public ClassDecl(string name, string @namespace, bool nested, int baseCount)
+>>>>>>> audio-bus-effect-fixed
             {
                 Name = name;
                 Namespace = @namespace;

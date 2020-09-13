@@ -53,6 +53,7 @@ public:
 private:
 	RID shader;
 	Mode mode;
+	String shader_custom_defines;
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> RenderingServer name translations, to make
@@ -78,6 +79,9 @@ public:
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
+
+	void set_custom_defines(const String &p_defines);
+	String get_custom_defines() const;
 
 	virtual bool is_text_shader() const;
 

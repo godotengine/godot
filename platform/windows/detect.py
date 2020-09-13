@@ -65,7 +65,10 @@ def get_opts():
         # Vista support dropped after EOL due to GH-10243
         ("target_win_version", "Targeted Windows version, >= 0x0601 (Windows 7)", "0x0601"),
         EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+<<<<<<< HEAD
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("console", "gui")),
+=======
+>>>>>>> audio-bus-effect-fixed
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         ("msvc_version", "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.", None),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed. Only used on Windows.", False),
@@ -129,9 +132,13 @@ def setup_msvc_manual(env):
         print("Compiled program architecture will be a 32 bit executable. (forcing bits=32).")
     else:
         print(
+<<<<<<< HEAD
             "Failed to manually detect MSVC compiler architecture version... Defaulting to 32bit executable settings"
             " (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this"
             " build is compiled for. You should check your settings/compilation setup, or avoid setting VCINSTALLDIR."
+=======
+            "Failed to manually detect MSVC compiler architecture version... Defaulting to 32bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup, or avoid setting VCINSTALLDIR."
+>>>>>>> audio-bus-effect-fixed
         )
 
 
@@ -178,14 +185,21 @@ def configure_msvc(env, manual_msvc_config):
     """Configure env to work with MSVC"""
 
     # Build type
+<<<<<<< HEAD
     if env["tests"]:
         env["windows_subsystem"] = "console"
+=======
+>>>>>>> audio-bus-effect-fixed
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["/O2"])
         else:  # optimize for size
             env.Append(CCFLAGS=["/O1"])
+<<<<<<< HEAD
+=======
+        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+>>>>>>> audio-bus-effect-fixed
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
@@ -195,21 +209,32 @@ def configure_msvc(env, manual_msvc_config):
         else:  # optimize for size
             env.Append(CCFLAGS=["/O1"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
+<<<<<<< HEAD
+=======
+        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+>>>>>>> audio-bus-effect-fixed
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
+<<<<<<< HEAD
+=======
+        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+>>>>>>> audio-bus-effect-fixed
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
         env.AppendUnique(CCFLAGS=["/Z7"])
         env.AppendUnique(LINKFLAGS=["/DEBUG"])
+<<<<<<< HEAD
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
     else:
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+=======
+>>>>>>> audio-bus-effect-fixed
 
     ## Compile/link flags
 
@@ -226,6 +251,10 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(
         CPPDEFINES=[
             "WINDOWS_ENABLED",
+<<<<<<< HEAD
+=======
+            "OPENGL_ENABLED",
+>>>>>>> audio-bus-effect-fixed
             "WASAPI_ENABLED",
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
@@ -243,6 +272,10 @@ def configure_msvc(env, manual_msvc_config):
 
     LIBS = [
         "winmm",
+<<<<<<< HEAD
+=======
+        "opengl32",
+>>>>>>> audio-bus-effect-fixed
         "dsound",
         "kernel32",
         "ole32",
@@ -262,6 +295,7 @@ def configure_msvc(env, manual_msvc_config):
         "Avrt",
         "dwmapi",
     ]
+<<<<<<< HEAD
 
     env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
@@ -272,6 +306,8 @@ def configure_msvc(env, manual_msvc_config):
     # env.AppendUnique(CPPDEFINES = ['OPENGL_ENABLED'])
     LIBS += ["opengl32"]
 
+=======
+>>>>>>> audio-bus-effect-fixed
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
@@ -308,9 +344,12 @@ def configure_mingw(env):
 
     ## Build type
 
+<<<<<<< HEAD
     if env["tests"]:
         env["windows_subsystem"] = "console"
 
+=======
+>>>>>>> audio-bus-effect-fixed
     if env["target"] == "release":
         env.Append(CCFLAGS=["-msse2"])
 
@@ -322,6 +361,11 @@ def configure_mingw(env):
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
+<<<<<<< HEAD
+=======
+        env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
+
+>>>>>>> audio-bus-effect-fixed
         if env["debug_symbols"] == "yes":
             env.Prepend(CCFLAGS=["-g1"])
         if env["debug_symbols"] == "full":
@@ -342,6 +386,7 @@ def configure_mingw(env):
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+<<<<<<< HEAD
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
@@ -351,6 +396,17 @@ def configure_mingw(env):
     ## Compiler configuration
 
     if os.name != "nt":
+=======
+
+    ## Compiler configuration
+
+    if os.name == "nt":
+        # Force splitting libmodules.a in multiple chunks to work around
+        # issues reaching the linker command line size limit, which also
+        # seem to induce huge slowdown for 'ar' (GH-30892).
+        env["split_libmodules"] = True
+    else:
+>>>>>>> audio-bus-effect-fixed
         env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
 
     if env["bits"] == "default":
@@ -403,12 +459,20 @@ def configure_mingw(env):
     ## Compile flags
 
     env.Append(CCFLAGS=["-mwindows"])
+<<<<<<< HEAD
 
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
+=======
+    env.Append(CPPDEFINES=["WINDOWS_ENABLED", "OPENGL_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
+>>>>>>> audio-bus-effect-fixed
     env.Append(CPPDEFINES=[("WINVER", env["target_win_version"]), ("_WIN32_WINNT", env["target_win_version"])])
     env.Append(
         LIBS=[
             "mingw32",
+<<<<<<< HEAD
+=======
+            "opengl32",
+>>>>>>> audio-bus-effect-fixed
             "dsound",
             "ole32",
             "d3d9",
@@ -431,6 +495,7 @@ def configure_mingw(env):
         ]
     )
 
+<<<<<<< HEAD
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
         env.Append(LIBS=["vulkan"])
@@ -441,6 +506,8 @@ def configure_mingw(env):
     # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
     env.Append(LIBS=["opengl32"])
 
+=======
+>>>>>>> audio-bus-effect-fixed
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
     # resrc

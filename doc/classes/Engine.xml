@@ -99,7 +99,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
+				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. [code]GodotPayment[/code] on Android.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">

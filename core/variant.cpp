@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object_rc.h"
 #include "core/print_string.h"
 #include "core/resource.h"
 #include "core/variant_parser.h"
@@ -906,6 +907,10 @@ bool Variant::is_zero() const {
 		case STRING_NAME: {
 			return *reinterpret_cast<const StringName *>(_data._mem) != StringName();
 
+<<<<<<< HEAD
+=======
+			return _OBJ_PTR(*this) == NULL;
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
@@ -1127,6 +1132,15 @@ void Variant::reference(const Variant &p_variant) {
 			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
 			_get_obj().id = p_variant._get_obj().id;
 
+<<<<<<< HEAD
+=======
+			memnew_placement(_data._mem, ObjData(p_variant._get_obj()));
+#ifdef DEBUG_ENABLED
+			if (_get_obj().rc) {
+				_get_obj().rc->increment();
+			}
+#endif
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case CALLABLE: {
 			memnew_placement(_data._mem, Callable(*reinterpret_cast<const Callable *>(p_variant._data._mem)));
@@ -1301,6 +1315,7 @@ void Variant::clear() {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			if (_get_obj().id.is_reference()) {
 				//we are safe that there is a reference here
 				Reference *reference = static_cast<Reference *>(_get_obj().obj);
@@ -1310,6 +1325,21 @@ void Variant::clear() {
 			}
 			_get_obj().obj = nullptr;
 			_get_obj().id = ObjectID();
+=======
+
+#ifdef DEBUG_ENABLED
+			if (likely(_get_obj().rc)) {
+				if (unlikely(_get_obj().rc->decrement())) {
+					memdelete(_get_obj().rc);
+				}
+			} else {
+				_get_obj().ref.unref();
+			}
+#else
+			_get_obj().obj = NULL;
+			_get_obj().ref.unref();
+#endif
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case _RID: {
 			// not much need probably
@@ -1830,6 +1860,7 @@ String Variant::stringify(List<const void *> &stack) const {
 
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			if (_get_obj().obj) {
 				if (!_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					return "[Freed Object]";
@@ -1840,6 +1871,24 @@ String Variant::stringify(List<const void *> &stack) const {
 				return "[Object:null]";
 			}
 
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+			if (obj) {
+				if (_get_obj().ref.is_null() && !ObjectDB::get_instance(obj->get_instance_id())) {
+					return "[Deleted Object]";
+				}
+
+				return obj->to_string();
+			} else {
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					return "[Deleted Object]";
+				}
+#endif
+				return "[Object:null]";
+			}
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case CALLABLE: {
 			const Callable &c = *reinterpret_cast<const Callable *>(_data._mem);
@@ -2042,6 +2091,7 @@ Variant::operator NodePath() const {
 }
 
 Variant::operator RID() const {
+<<<<<<< HEAD
 	if (type == _RID) {
 		return *reinterpret_cast<const RID *>(_data._mem);
 	} else if (type == OBJECT && _get_obj().obj == nullptr) {
@@ -2056,14 +2106,44 @@ Variant::operator RID() const {
 		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::_RID) {
 			return ret;
+=======
+
+	if (type == _RID) {
+		return *reinterpret_cast<const RID *>(_data._mem);
+	} else if (type == OBJECT) {
+		if (!_get_obj().ref.is_null()) {
+			return _get_obj().ref.get_rid();
+		} else {
+#ifdef DEBUG_ENABLED
+			Object *obj = likely(_get_obj().rc) ? _get_obj().rc->get_ptr() : NULL;
+			if (unlikely(!obj)) {
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted get RID on a deleted object.");
+				}
+				return RID();
+			}
+#else
+			Object *obj = _get_obj().obj;
+			if (unlikely(!obj)) {
+				return RID();
+			}
+#endif
+			Variant::CallError ce;
+			Variant ret = obj->call(CoreStringNames::get_singleton()->get_rid, NULL, 0, ce);
+			if (ce.error == Variant::CallError::CALL_OK && ret.get_type() == Variant::_RID) {
+				return ret;
+			} else {
+				return RID();
+			}
+>>>>>>> audio-bus-effect-fixed
 		}
-		return RID();
 	} else {
 		return RID();
 	}
 }
 
 Variant::operator Object *() const {
+<<<<<<< HEAD
 	if (type == OBJECT) {
 		return _get_obj().obj;
 	} else {
@@ -2088,22 +2168,53 @@ Object *Variant::get_validated_object() const {
 	} else {
 		return nullptr;
 	}
+=======
+
+	if (type == OBJECT)
+		return _OBJ_PTR(*this);
+	else
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 }
 
+<<<<<<< HEAD
 Variant::operator Node *() const {
 	if (type == OBJECT) {
 		return Object::cast_to<Node>(_get_obj().obj);
 	} else {
 		return nullptr;
 	}
+=======
+	if (type == OBJECT) {
+#ifdef DEBUG_ENABLED
+		Object *obj = _get_obj().rc ? _get_obj().rc->get_ptr() : NULL;
+#else
+		Object *obj = _get_obj().obj;
+#endif
+		return Object::cast_to<Node>(obj);
+	}
+	return NULL;
+>>>>>>> audio-bus-effect-fixed
 }
 
+<<<<<<< HEAD
 Variant::operator Control *() const {
 	if (type == OBJECT) {
 		return Object::cast_to<Control>(_get_obj().obj);
 	} else {
 		return nullptr;
 	}
+=======
+	if (type == OBJECT) {
+#ifdef DEBUG_ENABLED
+		Object *obj = _get_obj().rc ? _get_obj().rc->get_ptr() : NULL;
+#else
+		Object *obj = _get_obj().obj;
+#endif
+		return Object::cast_to<Control>(obj);
+	}
+	return NULL;
+>>>>>>> audio-bus-effect-fixed
 }
 
 Variant::operator Dictionary() const {
@@ -2520,6 +2631,22 @@ Variant::Variant(const NodePath &p_node_path) {
 	memnew_placement(_data._mem, NodePath(p_node_path));
 }
 
+<<<<<<< HEAD
+=======
+Variant::Variant(const RefPtr &p_resource) {
+
+	type = OBJECT;
+	memnew_placement(_data._mem, ObjData);
+#ifdef DEBUG_ENABLED
+	_get_obj().rc = NULL;
+#else
+	REF *ref = reinterpret_cast<REF *>(p_resource.get_data());
+	_get_obj().obj = ref->ptr();
+#endif
+	_get_obj().ref = p_resource;
+}
+
+>>>>>>> audio-bus-effect-fixed
 Variant::Variant(const RID &p_rid) {
 	type = _RID;
 	memnew_placement(_data._mem, RID(p_rid));
@@ -2529,6 +2656,7 @@ Variant::Variant(const Object *p_object) {
 	type = OBJECT;
 
 	memnew_placement(_data._mem, ObjData);
+<<<<<<< HEAD
 
 	if (p_object) {
 		if (p_object->is_reference()) {
@@ -2546,6 +2674,13 @@ Variant::Variant(const Object *p_object) {
 		_get_obj().obj = nullptr;
 		_get_obj().id = ObjectID();
 	}
+=======
+#ifdef DEBUG_ENABLED
+	_get_obj().rc = p_object ? const_cast<Object *>(p_object)->_use_rc() : NULL;
+#else
+	_get_obj().obj = const_cast<Object *>(p_object);
+#endif
+>>>>>>> audio-bus-effect-fixed
 }
 
 Variant::Variant(const Callable &p_callable) {
@@ -2777,6 +2912,22 @@ void Variant::operator=(const Variant &p_variant) {
 			_get_obj().obj = const_cast<Object *>(p_variant._get_obj().obj);
 			_get_obj().id = p_variant._get_obj().id;
 
+<<<<<<< HEAD
+=======
+#ifdef DEBUG_ENABLED
+			if (likely(_get_obj().rc)) {
+				if (unlikely(_get_obj().rc->decrement())) {
+					memdelete(_get_obj().rc);
+				}
+			}
+#endif
+			*reinterpret_cast<ObjData *>(_data._mem) = p_variant._get_obj();
+#ifdef DEBUG_ENABLED
+			if (likely(_get_obj().rc)) {
+				_get_obj().rc->increment();
+			}
+#endif
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case CALLABLE: {
 			*reinterpret_cast<Callable *>(_data._mem) = *reinterpret_cast<const Callable *>(p_variant._data._mem);
@@ -2959,7 +3110,12 @@ uint32_t Variant::hash() const {
 			return hash_djb2_one_64(reinterpret_cast<const RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			return hash_djb2_one_64(make_uint64_t(_get_obj().obj));
+=======
+
+			return hash_djb2_one_64(make_uint64_t(_OBJ_PTR(*this)));
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case STRING_NAME: {
 			return reinterpret_cast<const StringName *>(_data._mem)->hash();

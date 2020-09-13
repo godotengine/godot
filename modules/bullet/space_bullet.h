@@ -110,10 +110,17 @@ class SpaceBullet : public RIDBullet {
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;
 
+<<<<<<< HEAD
 	LocalVector<CollisionObjectBullet *> queue_pre_flush;
 	LocalVector<CollisionObjectBullet *> queue_flush;
 	LocalVector<CollisionObjectBullet *> collision_objects;
 	LocalVector<AreaBullet *> areas;
+=======
+	real_t linear_damp;
+	real_t angular_damp;
+
+	Vector<AreaBullet *> areas;
+>>>>>>> audio-bus-effect-fixed
 
 	LocalVector<Vector3> contactDebug;
 	uint32_t contactDebugCount = 0;
@@ -197,8 +204,13 @@ public:
 	real_t get_linear_damp() const { return linear_damp; }
 	real_t get_angular_damp() const { return angular_damp; }
 
+<<<<<<< HEAD
 	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes);
 	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, float p_margin);
+=======
+	bool test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes);
+	int test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, float p_margin);
+>>>>>>> audio-bus-effect-fixed
 
 private:
 	void create_empty_world(bool p_create_soft_world);

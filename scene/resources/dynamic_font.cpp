@@ -292,6 +292,23 @@ Size2 DynamicFontAtSize::get_char_size(char32_t p_char, char32_t p_next, const V
 
 String DynamicFontAtSize::get_available_chars() const {
 	String chars;
+<<<<<<< HEAD
+=======
+
+	FT_UInt gindex;
+	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+	while (gindex != 0) {
+		if (charcode != 0) {
+			chars += CharType(charcode);
+		}
+		charcode = FT_Get_Next_Char(face, charcode, &gindex);
+	}
+
+	return chars;
+}
+
+void DynamicFontAtSize::set_texture_flags(uint32_t p_flags) {
+>>>>>>> audio-bus-effect-fixed
 
 	FT_UInt gindex;
 	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
@@ -581,8 +598,12 @@ DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(char32_t p_ch
 	}
 	if (FT_Glyph_Stroke(&glyph, stroker, 1) != 0) {
 		goto cleanup_glyph;
+<<<<<<< HEAD
 	}
 	if (FT_Glyph_To_Bitmap(&glyph, font->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0) {
+=======
+	if (FT_Glyph_To_Bitmap(&glyph, font->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0)
+>>>>>>> audio-bus-effect-fixed
 		goto cleanup_glyph;
 	}
 
@@ -865,9 +886,31 @@ Size2 DynamicFont::get_char_size(char32_t p_char, char32_t p_next) const {
 }
 
 String DynamicFont::get_available_chars() const {
+<<<<<<< HEAD
 	if (!data_at_size.is_valid()) {
 		return "";
 	}
+=======
+
+	if (!data_at_size.is_valid())
+		return "";
+
+	String chars = data_at_size->get_available_chars();
+
+	for (int i = 0; i < fallback_data_at_size.size(); i++) {
+		String fallback_chars = fallback_data_at_size[i]->get_available_chars();
+		for (int j = 0; j < fallback_chars.length(); j++) {
+			if (chars.find_char(fallback_chars[j]) == -1) {
+				chars += fallback_chars[j];
+			}
+		}
+	}
+
+	return chars;
+}
+
+bool DynamicFont::is_distance_field_hint() const {
+>>>>>>> audio-bus-effect-fixed
 
 	String chars = data_at_size->get_available_chars();
 

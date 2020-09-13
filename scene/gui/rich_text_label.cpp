@@ -256,7 +256,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
 			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
 			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
+<<<<<<< HEAD
 			if (align != ALIGN_FILL) {                                                                                                                          \
+=======
+			if ((p_mode == PROCESS_DRAW) && (align != ALIGN_FILL)) {                                                                                            \
+>>>>>>> audio-bus-effect-fixed
 				if (line < l.offset_caches.size()) {                                                                                                            \
 					wofs = l.offset_caches[line];                                                                                                               \
 				}                                                                                                                                               \
@@ -440,12 +444,20 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					}
 
 					{
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 						int ofs = 0 - backtrack;
 
 						for (int i = 0; i < end; i++) {
 							int pofs = wofs + ofs;
 
 							if (p_mode == PROCESS_POINTER && r_click_char && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 								int cw = font->get_char_size(c[i], c[i + 1]).x;
 
 								if (c[i] == '\t') {
@@ -488,6 +500,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 								const bool previously_visible = visible;
 
 								for (int j = 0; j < fx_stack.size(); j++) {
+
 									ItemFX *item_fx = fx_stack[j];
 
 									if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
@@ -610,7 +623,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							Color uc = color;
 							uc.a *= 0.5;
 							int uy = y + lh - (line_ascent + line_descent) / 2;
+<<<<<<< HEAD
 							float strikethrough_width = font->get_underline_thickness();
+=======
+							float strikethrough_width = 1.0;
+>>>>>>> audio-bus-effect-fixed
 #ifdef TOOLS_ENABLED
 							strikethrough_width *= EDSCALE;
 #endif
@@ -878,7 +895,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 }
 
 void RichTextLabel::_scroll_changed(double) {
+<<<<<<< HEAD
 	if (updating_scroll) {
+=======
+
+	if (updating_scroll)
+>>>>>>> audio-bus-effect-fixed
 		return;
 	}
 
@@ -1206,38 +1228,68 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 	if (k.is_valid()) {
 		if (k->is_pressed() && !k->get_alt() && !k->get_shift()) {
 			bool handled = false;
+<<<<<<< HEAD
 			switch (k->get_keycode()) {
 				case KEY_PAGEUP: {
+=======
+			switch (k->get_scancode()) {
+				case KEY_PAGEUP: {
+
+>>>>>>> audio-bus-effect-fixed
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() - vscroll->get_page());
 						handled = true;
 					}
 				} break;
 				case KEY_PAGEDOWN: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() + vscroll->get_page());
 						handled = true;
 					}
 				} break;
 				case KEY_UP: {
+<<<<<<< HEAD
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() - get_theme_font("normal_font")->get_height());
+=======
+
+					if (vscroll->is_visible_in_tree()) {
+						vscroll->set_value(vscroll->get_value() - get_font("normal_font")->get_height());
+>>>>>>> audio-bus-effect-fixed
 						handled = true;
 					}
 				} break;
 				case KEY_DOWN: {
+<<<<<<< HEAD
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_value() + get_theme_font("normal_font")->get_height());
+=======
+
+					if (vscroll->is_visible_in_tree()) {
+						vscroll->set_value(vscroll->get_value() + get_font("normal_font")->get_height());
+>>>>>>> audio-bus-effect-fixed
 						handled = true;
 					}
 				} break;
 				case KEY_HOME: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(0);
 						handled = true;
 					}
 				} break;
 				case KEY_END: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 					if (vscroll->is_visible_in_tree()) {
 						vscroll->set_value(vscroll->get_max());
 						handled = true;
@@ -1978,10 +2030,13 @@ void RichTextLabel::clear() {
 	if (scroll_follow) {
 		scroll_following = true;
 	}
+<<<<<<< HEAD
 
 	if (fixed_width != -1) {
 		minimum_size_changed();
 	}
+=======
+>>>>>>> audio-bus-effect-fixed
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {
@@ -2000,6 +2055,15 @@ void RichTextLabel::set_fit_content_height(bool p_enabled) {
 		minimum_size_changed();
 	}
 }
+<<<<<<< HEAD
+=======
+
+bool RichTextLabel::is_fit_content_height_enabled() const {
+	return fit_content_height;
+}
+
+void RichTextLabel::set_meta_underline(bool p_underline) {
+>>>>>>> audio-bus-effect-fixed
 
 bool RichTextLabel::is_fit_content_height_enabled() const {
 	return fit_content_height;
@@ -2100,6 +2164,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 		String tag = p_bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 		Vector<String> split_tag_block = tag.split(" ", false);
+<<<<<<< HEAD
 
 		// Find optional parameters.
 		String bbcode_name;
@@ -2117,6 +2182,10 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 		} else {
 			bbcode_name = tag;
 		}
+=======
+		String bbcode = !split_tag_block.empty() ? split_tag_block[0] : "";
+		if (tag.begins_with("/") && tag_stack.size()) {
+>>>>>>> audio-bus-effect-fixed
 
 		// Find main parameter.
 		String bbcode_value;
@@ -2314,6 +2383,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 
+<<<<<<< HEAD
 		} else if (bbcode_name == "fade") {
 			int start_index = 0;
 			OptionMap::Element *start_option = bbcode_options.find("start");
@@ -2325,63 +2395,142 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			OptionMap::Element *length_option = bbcode_options.find("length");
 			if (length_option) {
 				length = length_option->value().to_int();
+=======
+		} else if (bbcode == "fade") {
+			int startIndex = 0;
+			int length = 10;
+
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("start=")) {
+						String start_str = expr.substr(6, expr.length());
+						startIndex = start_str.to_int();
+					} else if (expr.begins_with("length=")) {
+						String end_str = expr.substr(7, expr.length());
+						length = end_str.to_int();
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			push_fade(start_index, length);
 			pos = brk_end + 1;
 			tag_stack.push_front("fade");
+<<<<<<< HEAD
 		} else if (bbcode_name == "shake") {
+=======
+		} else if (bbcode == "shake") {
+>>>>>>> audio-bus-effect-fixed
 			int strength = 5;
 			OptionMap::Element *strength_option = bbcode_options.find("level");
 			if (strength_option) {
 				strength = strength_option->value().to_int();
 			}
 
+<<<<<<< HEAD
 			float rate = 20.0f;
 			OptionMap::Element *rate_option = bbcode_options.find("rate");
 			if (rate_option) {
 				rate = rate_option->value().to_float();
+=======
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("level=")) {
+						String str_str = expr.substr(6, expr.length());
+						strength = str_str.to_int();
+					} else if (expr.begins_with("rate=")) {
+						String rate_str = expr.substr(5, expr.length());
+						rate = rate_str.to_float();
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			push_shake(strength, rate);
 			pos = brk_end + 1;
 			tag_stack.push_front("shake");
 			set_process_internal(true);
+<<<<<<< HEAD
 		} else if (bbcode_name == "wave") {
+=======
+		} else if (bbcode == "wave") {
+>>>>>>> audio-bus-effect-fixed
 			float amplitude = 20.0f;
 			OptionMap::Element *amplitude_option = bbcode_options.find("amp");
 			if (amplitude_option) {
 				amplitude = amplitude_option->value().to_float();
 			}
 
+<<<<<<< HEAD
 			float period = 5.0f;
 			OptionMap::Element *period_option = bbcode_options.find("freq");
 			if (period_option) {
 				period = period_option->value().to_float();
+=======
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("amp=")) {
+						String amp_str = expr.substr(4, expr.length());
+						amplitude = amp_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String period_str = expr.substr(5, expr.length());
+						period = period_str.to_float();
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			push_wave(period, amplitude);
 			pos = brk_end + 1;
 			tag_stack.push_front("wave");
 			set_process_internal(true);
+<<<<<<< HEAD
 		} else if (bbcode_name == "tornado") {
+=======
+		} else if (bbcode == "tornado") {
+>>>>>>> audio-bus-effect-fixed
 			float radius = 10.0f;
 			OptionMap::Element *radius_option = bbcode_options.find("radius");
 			if (radius_option) {
 				radius = radius_option->value().to_float();
 			}
 
+<<<<<<< HEAD
 			float frequency = 1.0f;
 			OptionMap::Element *frequency_option = bbcode_options.find("freq");
 			if (frequency_option) {
 				frequency = frequency_option->value().to_float();
+=======
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("radius=")) {
+						String amp_str = expr.substr(7, expr.length());
+						radius = amp_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String period_str = expr.substr(5, expr.length());
+						frequency = period_str.to_float();
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			push_tornado(frequency, radius);
 			pos = brk_end + 1;
 			tag_stack.push_front("tornado");
 			set_process_internal(true);
+<<<<<<< HEAD
 		} else if (bbcode_name == "rainbow") {
+=======
+		} else if (bbcode == "rainbow") {
+>>>>>>> audio-bus-effect-fixed
 			float saturation = 0.8f;
 			OptionMap::Element *saturation_option = bbcode_options.find("sat");
 			if (saturation_option) {
@@ -2394,10 +2543,28 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				value = value_option->value().to_float();
 			}
 
+<<<<<<< HEAD
 			float frequency = 1.0f;
 			OptionMap::Element *frequency_option = bbcode_options.find("freq");
 			if (frequency_option) {
 				frequency = frequency_option->value().to_float();
+=======
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("sat=")) {
+						String sat_str = expr.substr(4, expr.length());
+						saturation = sat_str.to_float();
+					} else if (expr.begins_with("val=")) {
+						String val_str = expr.substr(4, expr.length());
+						value = val_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String freq_str = expr.substr(5, expr.length());
+						frequency = freq_str.to_float();
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			push_rainbow(saturation, value, frequency);
@@ -2830,6 +2997,10 @@ void RichTextLabel::set_fixed_size_to_width(int p_width) {
 }
 
 Size2 RichTextLabel::get_minimum_size() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	Size2 size(0, 0);
 	if (fixed_width != -1) {
 		size.x = fixed_width;
@@ -2871,16 +3042,20 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		Vector<String> values = parts[1].split(",", false);
 
+<<<<<<< HEAD
 #ifdef MODULE_REGEX_ENABLED
 		RegEx color = RegEx();
+=======
+		RegEx color;
+>>>>>>> audio-bus-effect-fixed
 		color.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
-		RegEx nodepath = RegEx();
+		RegEx nodepath;
 		nodepath.compile("^\\$");
-		RegEx boolean = RegEx();
+		RegEx boolean;
 		boolean.compile("^(true|false)$");
-		RegEx decimal = RegEx();
+		RegEx decimal;
 		decimal.compile("^-?^.?\\d+(\\.\\d+?)?$");
-		RegEx numerical = RegEx();
+		RegEx numerical;
 		numerical.compile("^\\d+$");
 
 		for (int j = 0; j < values.size(); j++) {

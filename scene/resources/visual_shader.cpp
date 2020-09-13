@@ -37,6 +37,11 @@
 bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
+<<<<<<< HEAD
+=======
+
+void VisualShaderNode::set_output_port_for_preview(int p_index) {
+>>>>>>> audio-bus-effect-fixed
 
 void VisualShaderNode::set_output_port_for_preview(int p_index) {
 	port_preview = p_index;
@@ -172,6 +177,11 @@ void VisualShaderNode::_bind_methods() {
 }
 
 VisualShaderNode::VisualShaderNode() {
+<<<<<<< HEAD
+=======
+	port_preview = -1;
+	simple_decl = true;
+>>>>>>> audio-bus-effect-fixed
 }
 
 /////////////////////////////////////////////////////////
@@ -1226,8 +1236,11 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = src_var;
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_VECTOR) {
 				inputs[i] = "dot(" + src_var + ", vec3(0.333333, 0.333333, 0.333333))";
+<<<<<<< HEAD
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR_INT && out_type == VisualShaderNode::PORT_TYPE_VECTOR) {
 				inputs[i] = "dot(float(" + src_var + "), vec3(0.333333, 0.333333, 0.333333))";
+=======
+>>>>>>> audio-bus-effect-fixed
 			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = "vec3(" + src_var + ")";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_SCALAR_INT) {
@@ -1236,6 +1249,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "all(bvec3(" + src_var + "))";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = src_var + " > 0.0 ? true : false";
+<<<<<<< HEAD
 			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_SCALAR_INT) {
 				inputs[i] = src_var + " > 0 ? true : false";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {
@@ -1248,6 +1262,12 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "float(" + src_var + ")";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR_INT && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = "int(" + src_var + ")";
+=======
+			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {
+				inputs[i] = src_var + " ? 1.0 : 0.0";
+			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {
+				inputs[i] = "vec3(" + src_var + " ? 1.0 : 0.0)";
+>>>>>>> audio-bus-effect-fixed
 			}
 		} else {
 			if (!vsnode->is_generate_input_var(i)) {
@@ -1301,6 +1321,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		for (int i = 0; i < output_count; i++) {
 			String var_name = "n_out" + itos(node) + "p" + itos(i);
 			switch (vsnode->get_output_port_type(i)) {
+<<<<<<< HEAD
 				case VisualShaderNode::PORT_TYPE_SCALAR:
 					outputs[i] = "float " + var_name;
 					break;
@@ -1316,11 +1337,31 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				case VisualShaderNode::PORT_TYPE_TRANSFORM:
 					outputs[i] = "mat4 " + var_name;
 					break;
+=======
+				case VisualShaderNode::PORT_TYPE_SCALAR: outputs[i] = "float " + var_name; break;
+				case VisualShaderNode::PORT_TYPE_VECTOR: outputs[i] = "vec3 " + var_name; break;
+				case VisualShaderNode::PORT_TYPE_BOOLEAN: outputs[i] = "bool " + var_name; break;
+				case VisualShaderNode::PORT_TYPE_TRANSFORM: outputs[i] = "mat4 " + var_name; break;
 				default: {
 				}
 			}
 		}
 
+	} else {
+		for (int i = 0; i < output_count; i++) {
+			outputs[i] = "n_out" + itos(node) + "p" + itos(i);
+			switch (vsnode->get_output_port_type(i)) {
+				case VisualShaderNode::PORT_TYPE_SCALAR: code += String() + "\tfloat " + outputs[i] + ";\n"; break;
+				case VisualShaderNode::PORT_TYPE_VECTOR: code += String() + "\tvec3 " + outputs[i] + ";\n"; break;
+				case VisualShaderNode::PORT_TYPE_BOOLEAN: code += String() + "\tbool " + outputs[i] + ";\n"; break;
+				case VisualShaderNode::PORT_TYPE_TRANSFORM: code += String() + "\tmat4 " + outputs[i] + ";\n"; break;
+>>>>>>> audio-bus-effect-fixed
+				default: {
+				}
+			}
+		}
+
+<<<<<<< HEAD
 	} else {
 		for (int i = 0; i < output_count; i++) {
 			outputs[i] = "n_out" + itos(node) + "p" + itos(i);
@@ -1342,6 +1383,18 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 					break;
 				default: {
 				}
+=======
+		global_code += vsnode->generate_global(get_mode(), type, node);
+
+		String class_name = vsnode->get_class_name();
+		if (class_name == "VisualShaderNodeCustom") {
+			class_name = vsnode->get_script_instance()->get_script()->get_path();
+		}
+		if (!r_classes.has(class_name)) {
+			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
+			for (int i = 0; i < TYPE_MAX; i++) {
+				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
+>>>>>>> audio-bus-effect-fixed
 			}
 		}
 	}
@@ -1399,6 +1452,10 @@ void VisualShader::_update_shader() const {
 					}
 				}
 				if (modes.has(render_mode_enums[idx].string) || specular) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 					int which = 0;
 					if (modes.has(render_mode_enums[idx].string)) {
 						which = modes[render_mode_enums[idx].string];
@@ -1621,6 +1678,8 @@ void VisualShader::_bind_methods() {
 
 	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
 
+	ADD_PROPERTY_DEFAULT("code", ""); // Inherited from Shader, prevents showing default code as override in docs.
+
 	BIND_ENUM_CONSTANT(TYPE_VERTEX);
 	BIND_ENUM_CONSTANT(TYPE_FRAGMENT);
 	BIND_ENUM_CONSTANT(TYPE_LIGHT);
@@ -1722,6 +1781,8 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "uv", "vec3(UV,0.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "modulate_color", "MODULATE.rgb" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "modulate_alpha", "MODULATE.a" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "point_size", "POINT_SIZE" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "texture_pixel_size", "vec3(TEXTURE_PIXEL_SIZE, 1.0)" },
 
@@ -1735,6 +1796,11 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "uv", "vec3(UV, 0.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+<<<<<<< HEAD
+=======
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "modulate_color", "MODULATE.rgb" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "modulate_alpha", "MODULATE.a" },
+>>>>>>> audio-bus-effect-fixed
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "screen_uv", "vec3(SCREEN_UV, 0.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "texture_pixel_size", "vec3(TEXTURE_PIXEL_SIZE, 1.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "screen_pixel_size", "vec3(SCREEN_PIXEL_SIZE, 1.0)" },
@@ -1750,6 +1816,11 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "normal", "NORMAL" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+<<<<<<< HEAD
+=======
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "modulate_color", "MODULATE.rgb" },
+	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "modulate_alpha", "MODULATE.a" },
+>>>>>>> audio-bus-effect-fixed
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "light_vec", "vec3(LIGHT_VEC, 0.0)" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "light_height", "LIGHT_HEIGHT" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "light_color", "LIGHT_COLOR.rgb" },
@@ -2358,6 +2429,7 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	// Canvas Item, Light
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR, "light", "LIGHT.rgb" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_LIGHT, VisualShaderNode::PORT_TYPE_SCALAR, "light_alpha", "LIGHT.a" },
+<<<<<<< HEAD
 	// Particles, Emit
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_EMIT, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_EMIT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
@@ -2387,6 +2459,16 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "ALPHA" },
 
 	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
+=======
+	// Particles, Vertex
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "COLOR.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "VELOCITY" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "custom", "CUSTOM.rgb" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "custom_alpha", "CUSTOM.a" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+>>>>>>> audio-bus-effect-fixed
 };
 
 int VisualShaderNodeOutput::get_input_port_count() const {
@@ -3042,6 +3124,13 @@ String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShade
 }
 
 VisualShaderNodeGroupBase::VisualShaderNodeGroupBase() {
+<<<<<<< HEAD
+=======
+	size = Size2(0, 0);
+	inputs = "";
+	outputs = "";
+	editable = false;
+>>>>>>> audio-bus-effect-fixed
 	simple_decl = false;
 }
 

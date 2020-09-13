@@ -4,7 +4,11 @@
     <OutputPath>bin/$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
+<<<<<<< HEAD
     <TargetFramework>netstandard2.1</TargetFramework>
+=======
+    <TargetFramework>netstandard2.0</TargetFramework>
+>>>>>>> audio-bus-effect-fixed
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>

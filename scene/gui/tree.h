@@ -579,7 +579,11 @@ public:
 	bool edit_selected();
 
 	// First item that starts with the text, from the current focused item down and wraps around.
+<<<<<<< HEAD
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
+=======
+	TreeItem *search_item_text(const String &p_find, int *r_col = NULL, bool p_selectable = false);
+>>>>>>> audio-bus-effect-fixed
 	// First item that matches the whole text, from the first item down.
 	TreeItem *get_item_with_text(const String &p_find) const;
 

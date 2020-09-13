@@ -186,6 +186,10 @@ private:
 
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 						set_message(TTR("Error opening package file (it's not in ZIP format)."), MESSAGE_ERROR);
 						memdelete(d);
 						get_ok()->set_disabled(true);
@@ -249,6 +253,10 @@ private:
 				}
 
 			} else if (valid_path.ends_with("zip")) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
 				memdelete(d);
 				get_ok()->set_disabled(true);
@@ -748,7 +756,14 @@ public:
 			_test_path();
 		}
 
+<<<<<<< HEAD
 		popup_centered(Size2i(500, 0) * EDSCALE);
+=======
+		// Reset the dialog to its initial size. Otherwise, the dialog window would be too large
+		// when opening a small dialog after closing a large dialog.
+		set_size(get_minimum_size());
+		popup_centered_minsize(Size2(500, 0) * EDSCALE);
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	ProjectDialog() {
@@ -1329,7 +1344,11 @@ void ProjectList::create_project_item_control(int p_index) {
 	TextureRect *tf = memnew(TextureRect);
 	// The project icon may not be loaded by the time the control is displayed,
 	// so use a loading placeholder.
+<<<<<<< HEAD
 	tf->set_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
+=======
+	tf->set_texture(get_icon("ProjectIconLoading", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 	tf->set_v_size_flags(SIZE_SHRINK_CENTER);
 	if (item.missing) {
 		tf->set_modulate(Color(1, 1, 1, 0.5));
@@ -2349,10 +2368,17 @@ ProjectManager::ProjectManager() {
 			case 0: {
 				// Try applying a suitable display scale automatically
 #ifdef OSX_ENABLED
+<<<<<<< HEAD
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
 				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+=======
+				editor_set_scale(OS::get_singleton()->get_screen_max_scale());
+#else
+				const int screen = OS::get_singleton()->get_current_screen();
+				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+>>>>>>> audio-bus-effect-fixed
 #endif
 			} break;
 
@@ -2383,7 +2409,11 @@ ProjectManager::ProjectManager() {
 		DisplayServer::get_singleton()->window_set_min_size(Size2(750, 420) * EDSCALE);
 
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
+<<<<<<< HEAD
 		DisplayServer::get_singleton()->window_set_size(DisplayServer::get_singleton()->window_get_size() * MAX(1, EDSCALE));
+=======
+		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	String cp;
@@ -2407,6 +2437,14 @@ ProjectManager::ProjectManager() {
 	panel->add_child(vb);
 	vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
 
+<<<<<<< HEAD
+=======
+	String cp;
+	cp += 0xA9;
+	// TRANSLATORS: This refers to the application where users manage their Godot projects.
+	OS::get_singleton()->set_window_title(VERSION_NAME + String(" - ") + TTR("Project Manager") + " - " + cp + " 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors");
+
+>>>>>>> audio-bus-effect-fixed
 	Control *center_box = memnew(Control);
 	center_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(center_box);
@@ -2656,5 +2694,90 @@ ProjectManager::ProjectManager() {
 ProjectManager::~ProjectManager() {
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
+<<<<<<< HEAD
+=======
+}
+
+void ProjectListFilter::_setup_filters(Vector<String> options) {
+
+	filter_option->clear();
+	for (int i = 0; i < options.size(); i++)
+		filter_option->add_item(options[i]);
+}
+
+void ProjectListFilter::_search_text_changed(const String &p_newtext) {
+	emit_signal("filter_changed");
+}
+
+String ProjectListFilter::get_search_term() {
+	return search_box->get_text().strip_edges();
+}
+
+ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
+	return _current_filter;
+}
+
+void ProjectListFilter::set_filter_option(FilterOption option) {
+	filter_option->select((int)option);
+	_filter_option_selected(0);
+}
+
+void ProjectListFilter::_filter_option_selected(int p_idx) {
+	FilterOption selected = (FilterOption)(filter_option->get_selected());
+	if (_current_filter != selected) {
+		_current_filter = selected;
+		emit_signal("filter_changed");
+	}
+}
+
+void ProjectListFilter::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE && has_search_box) {
+		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+		search_box->set_clear_button_enabled(true);
+	}
+}
+
+void ProjectListFilter::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
+	ClassDB::bind_method(D_METHOD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
+
+	ADD_SIGNAL(MethodInfo("filter_changed"));
+}
+
+void ProjectListFilter::add_filter_option() {
+	filter_option = memnew(OptionButton);
+	filter_option->set_clip_text(true);
+	filter_option->connect("item_selected", this, "_filter_option_selected");
+	add_child(filter_option);
+}
+
+void ProjectListFilter::add_search_box() {
+	search_box = memnew(LineEdit);
+	search_box->set_placeholder(TTR("Search"));
+	search_box->set_tooltip(
+			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+	search_box->connect("text_changed", this, "_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	has_search_box = true;
+}
+
+void ProjectListFilter::set_filter_size(int h_size) {
+	filter_option->set_custom_minimum_size(Size2(h_size * EDSCALE, 10 * EDSCALE));
+}
+
+ProjectListFilter::ProjectListFilter() {
+
+	_current_filter = FILTER_NAME;
+	has_search_box = false;
+}
+
+void ProjectListFilter::clear() {
+	if (has_search_box) {
+		search_box->clear();
+>>>>>>> audio-bus-effect-fixed
 	}
 }

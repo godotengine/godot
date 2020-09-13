@@ -1,15 +1,31 @@
 import os
 import platform
 
+<<<<<<< HEAD
 if os.name == "nt":
     import sys
     import winreg
+=======
+from compat import decode_utf8
+
+if os.name == "nt":
+    import sys
+
+    if sys.version_info < (3,):
+        import _winreg as winreg
+    else:
+        import winreg
+>>>>>>> audio-bus-effect-fixed
 
 
 def _reg_open_key(key, subkey):
     try:
         return winreg.OpenKey(key, subkey)
+<<<<<<< HEAD
     except OSError:
+=======
+    except (WindowsError, OSError):
+>>>>>>> audio-bus-effect-fixed
         if platform.architecture()[0] == "32bit":
             bitness_sam = winreg.KEY_WOW64_64KEY
         else:
@@ -76,7 +92,11 @@ def find_msbuild_tools_path_reg():
         lines = subprocess.check_output([vswhere] + vswhere_args).splitlines()
 
         for line in lines:
+<<<<<<< HEAD
             parts = line.decode("utf-8").split(":", 1)
+=======
+            parts = decode_utf8(line).split(":", 1)
+>>>>>>> audio-bus-effect-fixed
 
             if len(parts) < 2 or parts[0] != "installationPath":
                 continue
@@ -97,7 +117,11 @@ def find_msbuild_tools_path_reg():
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
         print("Error reading output from vswhere: " + e.message)
+<<<<<<< HEAD
     except OSError:
+=======
+    except WindowsError:
+>>>>>>> audio-bus-effect-fixed
         pass  # Fine, vswhere not found
     except (subprocess.CalledProcessError, OSError):
         pass
@@ -109,5 +133,9 @@ def find_msbuild_tools_path_reg():
         with _reg_open_key(winreg.HKEY_LOCAL_MACHINE, subkey) as hKey:
             value = winreg.QueryValueEx(hKey, "MSBuildToolsPath")[0]
             return value
+<<<<<<< HEAD
     except OSError:
+=======
+    except (WindowsError, OSError):
+>>>>>>> audio-bus-effect-fixed
         return ""

@@ -44,14 +44,23 @@
 
 /// Abstract ENet interface for UDP/DTLS.
 class ENetGodotSocket {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 public:
 	virtual Error bind(IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IP_Address p_ip, uint16_t p_port) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) = 0;
 	virtual int set_option(ENetSocketOption p_option, int p_value) = 0;
 	virtual void close() = 0;
+<<<<<<< HEAD
 	virtual void set_refuse_new_connections(bool p_enable) {} /* Only used by dtls server */
 	virtual ~ENetGodotSocket() {}
+=======
+	virtual void set_refuse_new_connections(bool p_refuse) { /* Only used by dtls server */ }
+	virtual ~ENetGodotSocket(){};
+>>>>>>> audio-bus-effect-fixed
 };
 
 class ENetDTLSClient;
@@ -59,19 +68,32 @@ class ENetDTLSServer;
 
 /// NetSocket interface
 class ENetUDP : public ENetGodotSocket {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	friend class ENetDTLSClient;
 	friend class ENetDTLSServer;
 
 private:
 	Ref<NetSocket> sock;
 	IP_Address address;
+<<<<<<< HEAD
 	uint16_t port = 0;
 	bool bound = false;
+=======
+	uint16_t port;
+	bool bound;
+>>>>>>> audio-bus-effect-fixed
 
 public:
 	ENetUDP() {
 		sock = Ref<NetSocket>(NetSocket::create());
 		IP::Type ip_type = IP::TYPE_ANY;
+<<<<<<< HEAD
+=======
+		bound = false;
+>>>>>>> audio-bus-effect-fixed
 		sock->open(NetSocket::TYPE_UDP, ip_type);
 	}
 
@@ -92,9 +114,14 @@ public:
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
 		Error err = sock->poll(NetSocket::POLL_TYPE_IN, 0);
+<<<<<<< HEAD
 		if (err != OK) {
 			return err;
 		}
+=======
+		if (err != OK)
+			return err;
+>>>>>>> audio-bus-effect-fixed
 		return sock->recvfrom(p_buffer, p_len, r_read, r_ip, r_port);
 	}
 
@@ -147,10 +174,18 @@ public:
 
 /// DTLS Client ENet interface
 class ENetDTLSClient : public ENetGodotSocket {
+<<<<<<< HEAD
 	bool connected = false;
 	Ref<PacketPeerUDP> udp;
 	Ref<PacketPeerDTLS> dtls;
 	bool verify = false;
+=======
+
+	bool connected;
+	Ref<PacketPeerUDP> udp;
+	Ref<PacketPeerDTLS> dtls;
+	bool verify;
+>>>>>>> audio-bus-effect-fixed
 	String for_hostname;
 	Ref<X509Certificate> cert;
 
@@ -165,6 +200,10 @@ public:
 		if (p_base->bound) {
 			bind(p_base->address, p_base->port);
 		}
+<<<<<<< HEAD
+=======
+		connected = false;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	~ENetDTLSClient() {
@@ -182,17 +221,25 @@ public:
 			connected = true;
 		}
 		dtls->poll();
+<<<<<<< HEAD
 		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
 		} else if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
 			return FAILED;
 		}
+=======
+		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+			return ERR_BUSY;
+		else if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED)
+			return FAILED;
+>>>>>>> audio-bus-effect-fixed
 		r_sent = p_len;
 		return dtls->put_packet(p_buffer, p_len);
 	}
 
 	Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
 		dtls->poll();
+<<<<<<< HEAD
 		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
 		}
@@ -205,6 +252,17 @@ public:
 		} else if (pc < 0) {
 			return FAILED;
 		}
+=======
+		if (dtls->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+			return ERR_BUSY;
+		if (dtls->get_status() != PacketPeerDTLS::STATUS_CONNECTED)
+			return FAILED;
+		int pc = dtls->get_available_packet_count();
+		if (pc == 0)
+			return ERR_BUSY;
+		else if (pc < 0)
+			return FAILED;
+>>>>>>> audio-bus-effect-fixed
 
 		const uint8_t *buffer;
 		Error err = dtls->get_packet(&buffer, r_read);
@@ -229,6 +287,7 @@ public:
 
 /// DTLSServer - ENet interface
 class ENetDTLSServer : public ENetGodotSocket {
+<<<<<<< HEAD
 	Ref<DTLSServer> server;
 	Ref<UDPServer> udp_server;
 	Map<String, Ref<PacketPeerDTLS>> peers;
@@ -236,6 +295,17 @@ class ENetDTLSServer : public ENetGodotSocket {
 
 public:
 	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
+=======
+
+	Ref<DTLSServer> server;
+	Ref<UDPServer> udp_server;
+	Map<String, Ref<PacketPeerDTLS> > peers;
+	int last_service;
+
+public:
+	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
+		last_service = 0;
+>>>>>>> audio-bus-effect-fixed
 		udp_server.instance();
 		p_base->close();
 		if (p_base->bound) {
@@ -262,6 +332,7 @@ public:
 		ERR_FAIL_COND_V(!peers.has(key), ERR_UNAVAILABLE);
 		Ref<PacketPeerDTLS> peer = peers[key];
 		Error err = peer->put_packet(p_buffer, p_len);
+<<<<<<< HEAD
 		if (err == OK) {
 			r_sent = p_len;
 		} else if (err == ERR_BUSY) {
@@ -269,6 +340,14 @@ public:
 		} else {
 			r_sent = -1;
 		}
+=======
+		if (err == OK)
+			r_sent = p_len;
+		else if (err == ERR_BUSY)
+			r_sent = 0;
+		else
+			r_sent = -1;
+>>>>>>> audio-bus-effect-fixed
 		return err;
 	}
 
@@ -290,6 +369,7 @@ public:
 		List<String> remove;
 		Error err = ERR_BUSY;
 		// TODO this needs to be fair!
+<<<<<<< HEAD
 		for (Map<String, Ref<PacketPeerDTLS>>::Element *E = peers.front(); E; E = E->next()) {
 			Ref<PacketPeerDTLS> peer = E->get();
 			peer->poll();
@@ -297,6 +377,15 @@ public:
 			if (peer->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING) {
 				continue;
 			} else if (peer->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
+=======
+		for (Map<String, Ref<PacketPeerDTLS> >::Element *E = peers.front(); E; E = E->next()) {
+			Ref<PacketPeerDTLS> peer = E->get();
+			peer->poll();
+
+			if (peer->get_status() == PacketPeerDTLS::STATUS_HANDSHAKING)
+				continue;
+			else if (peer->get_status() != PacketPeerDTLS::STATUS_CONNECTED) {
+>>>>>>> audio-bus-effect-fixed
 				// Peer disconnected, removing it.
 				remove.push_back(E->key());
 				continue;
@@ -335,7 +424,11 @@ public:
 	}
 
 	void close() {
+<<<<<<< HEAD
 		for (Map<String, Ref<PacketPeerDTLS>>::Element *E = peers.front(); E; E = E->next()) {
+=======
+		for (Map<String, Ref<PacketPeerDTLS> >::Element *E = peers.front(); E; E = E->next()) {
+>>>>>>> audio-bus-effect-fixed
 			E->get()->disconnect_from_peer();
 		}
 		peers.clear();
@@ -388,6 +481,10 @@ int enet_address_get_host(const ENetAddress *address, char *name, size_t nameLen
 }
 
 ENetSocket enet_socket_create(ENetSocketType type) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ENetUDP *socket = memnew(ENetUDP);
 
 	return socket;
@@ -409,6 +506,11 @@ void enet_host_refuse_new_connections(ENetHost *host, int p_refuse) {
 	ERR_FAIL_COND(!host->socket);
 	((ENetGodotSocket *)host->socket)->set_refuse_new_connections(p_refuse);
 }
+<<<<<<< HEAD
+=======
+
+int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
+>>>>>>> audio-bus-effect-fixed
 
 int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
 	IP_Address ip;
@@ -434,6 +536,11 @@ void enet_socket_destroy(ENetSocket socket) {
 int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBuffer *buffers, size_t bufferCount) {
 	ERR_FAIL_COND_V(address == nullptr, -1);
 
+<<<<<<< HEAD
+=======
+	ERR_FAIL_COND_V(address == NULL, -1);
+
+>>>>>>> audio-bus-effect-fixed
 	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
 	IP_Address dest;
 	Error err;
@@ -511,6 +618,10 @@ int enet_socket_listen(ENetSocket socket, int backlog) {
 }
 
 int enet_socket_set_option(ENetSocket socket, ENetSocketOption option, int value) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ENetGodotSocket *sock = (ENetGodotSocket *)socket;
 	return sock->set_option(option, value);
 }

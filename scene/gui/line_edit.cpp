@@ -118,11 +118,19 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
+<<<<<<< HEAD
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				if (selection.enabled) {
 					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), false, max_length, selection.begin, selection.end);
 				} else {
 					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), false, max_length, cursor_pos);
+=======
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, cursor_pos);
+>>>>>>> audio-bus-effect-fixed
 				}
 			}
 		}
@@ -309,9 +317,14 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_KP_ENTER:
 				case KEY_ENTER: {
 					emit_signal("text_entered", text);
+<<<<<<< HEAD
 					if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 						DisplayServer::get_singleton()->virtual_keyboard_hide();
 					}
+=======
+					if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+						OS::get_singleton()->hide_virtual_keyboard();
+>>>>>>> audio-bus-effect-fixed
 
 				} break;
 
@@ -633,11 +646,18 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		set_cursor_at_pixel_pos(p_point.x);
 		int selected = selection.end - selection.begin;
 
+<<<<<<< HEAD
 		Ref<Font> font = get_theme_font("font");
 		if (font != nullptr) {
 			for (int i = selection.begin; i < selection.end; i++) {
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 			}
+=======
+		Ref<Font> font = get_font("font");
+		if (font != NULL) {
+			for (int i = selection.begin; i < selection.end; i++)
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
+>>>>>>> audio-bus-effect-fixed
 		}
 
 		text.erase(selection.begin, selected);
@@ -935,6 +955,7 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
+<<<<<<< HEAD
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
 				Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
@@ -947,8 +968,21 @@ void LineEdit::_notification(int p_what) {
 				} else {
 					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), false, max_length, cursor_pos);
 				}
+=======
+			{
+				OS::get_singleton()->set_ime_active(true);
+				Point2 cursor_pos2 = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos2);
+>>>>>>> audio-bus-effect-fixed
 			}
 
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), false, max_length, cursor_pos);
+				}
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled && !caret_force_displayed) {
@@ -962,9 +996,14 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 
+<<<<<<< HEAD
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
+=======
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+				OS::get_singleton()->hide_virtual_keyboard();
+>>>>>>> audio-bus-effect-fixed
 
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
@@ -1105,7 +1144,11 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 	while (ofs < text.length()) {
 		int char_w = 0;
+<<<<<<< HEAD
 		if (font != nullptr) {
+=======
+		if (font != NULL) {
+>>>>>>> audio-bus-effect-fixed
 			char_w = font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		pixel_ofs += char_w;
@@ -1155,7 +1198,11 @@ int LineEdit::get_cursor_pixel_pos() {
 	}
 
 	while (ofs < cursor_pos) {
+<<<<<<< HEAD
 		if (font != nullptr) {
+=======
+		if (font != NULL) {
+>>>>>>> audio-bus-effect-fixed
 			pixel_ofs += font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		ofs++;
@@ -1226,8 +1273,15 @@ void LineEdit::delete_char() {
 		return;
 	}
 
+<<<<<<< HEAD
 	Ref<Font> font = get_theme_font("font");
 	if (font != nullptr) {
+=======
+	if ((text.length() <= 0) || (cursor_pos == 0)) return;
+
+	Ref<Font> font = get_font("font");
+	if (font != NULL) {
+>>>>>>> audio-bus-effect-fixed
 		cached_width -= font->get_char_size(pass ? secret_character[0] : text[cursor_pos - 1]).width;
 	}
 
@@ -1243,6 +1297,7 @@ void LineEdit::delete_char() {
 }
 
 void LineEdit::delete_text(int p_from_column, int p_to_column) {
+<<<<<<< HEAD
 	ERR_FAIL_COND_MSG(p_from_column < 0 || p_from_column > p_to_column || p_to_column > text.length(),
 			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
 	if (text.size() > 0) {
@@ -1251,6 +1306,16 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 			for (int i = p_from_column; i < p_to_column; i++) {
 				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 			}
+=======
+
+	ERR_FAIL_COND_MSG(p_from_column < 0 || p_from_column > p_to_column || p_to_column > text.length(),
+			vformat("Positional parameters (from: %d, to: %d) are inverted or outside the text length (%d).", p_from_column, p_to_column, text.length()));
+	if (text.size() > 0) {
+		Ref<Font> font = get_font("font");
+		if (font != NULL) {
+			for (int i = p_from_column; i < p_to_column; i++)
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
+>>>>>>> audio-bus-effect-fixed
 		}
 	} else {
 		cached_width = 0;
@@ -1725,9 +1790,15 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::update_cached_width() {
+<<<<<<< HEAD
 	Ref<Font> font = get_theme_font("font");
 	cached_width = 0;
 	if (font != nullptr) {
+=======
+	Ref<Font> font = get_font("font");
+	cached_width = 0;
+	if (font != NULL) {
+>>>>>>> audio-bus-effect-fixed
 		String text = get_text();
 		for (int i = 0; i < text.length(); i++) {
 			cached_width += font->get_char_size(pass ? secret_character[0] : text[i]).width;
@@ -1736,9 +1807,15 @@ void LineEdit::update_cached_width() {
 }
 
 void LineEdit::update_placeholder_width() {
+<<<<<<< HEAD
 	Ref<Font> font = get_theme_font("font");
 	cached_placeholder_width = 0;
 	if (font != nullptr) {
+=======
+	Ref<Font> font = get_font("font");
+	cached_placeholder_width = 0;
+	if (font != NULL) {
+>>>>>>> audio-bus-effect-fixed
 		for (int i = 0; i < placeholder_translated.length(); i++) {
 			cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
 		}

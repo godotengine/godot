@@ -33,6 +33,11 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/object.h"
+<<<<<<< HEAD
+=======
+#include "core/object_rc.h"
+#include "core/script_language.h"
+>>>>>>> audio-bus-effect-fixed
 
 #define CASE_TYPE_ALL(PREFIX, OP) \
 	CASE_TYPE(PREFIX, OP, INT)    \
@@ -469,7 +474,11 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(true);
 				if (p_b.type == OBJECT)
+<<<<<<< HEAD
 					_RETURN(p_b._get_obj().obj == nullptr);
+=======
+					_RETURN(_OBJ_PTR(p_b) == NULL);
+>>>>>>> audio-bus-effect-fixed
 
 				_RETURN(false);
 			}
@@ -486,9 +495,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
+					_RETURN(_OBJ_PTR(p_a) == _OBJ_PTR(p_b));
 				if (p_b.type == NIL)
+<<<<<<< HEAD
 					_RETURN(p_a._get_obj().obj == nullptr);
+=======
+					_RETURN(_OBJ_PTR(p_a) == NULL);
+>>>>>>> audio-bus-effect-fixed
 
 				_RETURN_FAIL;
 			}
@@ -566,7 +579,11 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == NIL)
 					_RETURN(false);
 				if (p_b.type == OBJECT)
+<<<<<<< HEAD
 					_RETURN(p_b._get_obj().obj != nullptr);
+=======
+					_RETURN(_OBJ_PTR(p_b) != NULL);
+>>>>>>> audio-bus-effect-fixed
 
 				_RETURN(true);
 			}
@@ -584,9 +601,13 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 
 			CASE_TYPE(math, OP_NOT_EQUAL, OBJECT) {
 				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
+					_RETURN((_OBJ_PTR(p_a) != _OBJ_PTR(p_b)));
 				if (p_b.type == NIL)
+<<<<<<< HEAD
 					_RETURN(p_a._get_obj().obj != nullptr);
+=======
+					_RETURN(_OBJ_PTR(p_a) != NULL);
+>>>>>>> audio-bus-effect-fixed
 
 				_RETURN_FAIL;
 			}
@@ -678,7 +699,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
+				_RETURN(_OBJ_PTR(p_a) < _OBJ_PTR(p_b));
 			}
 
 			DEFAULT_OP_LOCALMEM_NULL(math, OP_LESS, CALLABLE, <, Callable);
@@ -741,7 +762,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
+				_RETURN(_OBJ_PTR(p_a) <= _OBJ_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
@@ -800,7 +821,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj > p_b._get_obj().obj));
+				_RETURN(_OBJ_PTR(p_a) > _OBJ_PTR(p_b));
 			}
 
 			CASE_TYPE(math, OP_GREATER, ARRAY) {
@@ -863,7 +884,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
 				if (p_b.type != OBJECT)
 					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj >= p_b._get_obj().obj));
+				_RETURN(_OBJ_PTR(p_a) >= _OBJ_PTR(p_b));
 			}
 
 			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
@@ -1761,15 +1782,24 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 			}
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 #ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				break;
 			} else if (EngineDebugger::is_active() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+#ifdef DEBUG_ENABLED
+			if (unlikely(!obj)) {
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted set on a deleted object.");
+				}
+>>>>>>> audio-bus-effect-fixed
 				break;
 			}
-
 #endif
-			_get_obj().obj->set(p_index, p_value, &valid);
+			obj->set(p_index, p_value, &valid);
 
 		} break;
 		default: {
@@ -1947,6 +1977,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 			}
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 #ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
 				if (r_valid) {
@@ -1959,12 +1990,22 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 						*r_valid = false;
 					}
 					return "Attempted use of stray pointer object.";
-				}
-			}
+=======
 
+			Object *obj = _OBJ_PTR(*this);
+#ifdef DEBUG_ENABLED
+			if (unlikely(!obj)) {
+				if (r_valid)
+					*r_valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted get on a deleted object.");
+>>>>>>> audio-bus-effect-fixed
+				}
+				return Variant();
+			}
 #endif
 
-			return _get_obj().obj->get(p_index, r_valid);
+			return obj->get(p_index, r_valid);
 
 		} break;
 		default: {
@@ -2561,6 +2602,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		case _RID: {
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			Object *obj = _get_obj().obj;
 			//only if debugging!
 
@@ -2570,17 +2612,36 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					WARN_PRINT("Attempted use of previously freed pointer object.");
 					valid = false;
 					return;
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+			if (unlikely(!obj)) {
+#ifdef DEBUG_ENABLED
+				valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted set on a deleted object.");
+>>>>>>> audio-bus-effect-fixed
 				}
 #endif
+				return;
+			}
 
+<<<<<<< HEAD
 				if (p_index.get_type() != Variant::STRING_NAME && p_index.get_type() != Variant::STRING) {
 					obj->setvar(p_index, p_value, r_valid);
 					return;
 				}
 
 				obj->set(p_index, p_value, r_valid);
+=======
+			if (p_index.get_type() != Variant::STRING) {
+				obj->setvar(p_index, p_value, r_valid);
+>>>>>>> audio-bus-effect-fixed
 				return;
 			}
+
+			obj->set(p_index, p_value, r_valid);
+			return;
 		} break;
 		case DICTIONARY: {
 			Dictionary *dic = reinterpret_cast<Dictionary *>(_data._mem);
@@ -2992,6 +3053,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case _RID: {
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			Object *obj = _get_obj().obj;
 			if (obj) {
 #ifdef DEBUG_ENABLED
@@ -2999,13 +3061,22 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					valid = false;
 					return "Attempted get on previously freed instance.";
+=======
+			Object *obj = _OBJ_PTR(*this);
+			if (unlikely(!obj)) {
+#ifdef DEBUG_ENABLED
+				valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted get on a deleted object.");
+>>>>>>> audio-bus-effect-fixed
 				}
 #endif
+				return Variant();
+			}
 
-				if (p_index.get_type() != Variant::STRING) {
-					return obj->getvar(p_index, r_valid);
-				}
-
+			if (p_index.get_type() != Variant::STRING) {
+				return obj->getvar(p_index, r_valid);
+			} else {
 				return obj->get(p_index, r_valid);
 			}
 
@@ -3052,6 +3123,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			Object *obj = _get_obj().obj;
 			if (obj) {
 				bool valid = false;
@@ -3070,15 +3142,34 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 					obj->getvar(p_index, &valid);
 				} else {
 					obj->get(p_index, &valid);
-				}
-
-				return valid;
-			} else {
+=======
+			Object *obj = _OBJ_PTR(*this);
+			if (unlikely(!obj)) {
+#ifdef DEBUG_ENABLED
 				if (r_valid) {
 					*r_valid = false;
 				}
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted 'in' on a deleted object.");
+>>>>>>> audio-bus-effect-fixed
+				}
+#endif
+				return false;
 			}
-			return false;
+
+			bool result;
+			if (p_index.get_type() != Variant::STRING) {
+				obj->getvar(p_index, &result);
+			} else {
+<<<<<<< HEAD
+				if (r_valid) {
+					*r_valid = false;
+				}
+=======
+				obj->get(p_index, &result);
+>>>>>>> audio-bus-effect-fixed
+			}
+			return result;
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
@@ -3366,6 +3457,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		case _RID: {
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			Object *obj = _get_obj().obj;
 			if (obj) {
 #ifdef DEBUG_ENABLED
@@ -3373,13 +3465,21 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					WARN_PRINT("Attempted get_property list on previously freed instance.");
 					return;
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+			if (unlikely(!obj)) {
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted get property list on a deleted object.");
+>>>>>>> audio-bus-effect-fixed
 				}
 
 #endif
-
-				obj->get_property_list(p_list);
+				return;
 			}
 
+			obj->get_property_list(p_list);
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
@@ -3454,6 +3554,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			int64_t to = reinterpret_cast<const Vector3i *>(_data._mem)->y;
 			int64_t step = reinterpret_cast<const Vector3i *>(_data._mem)->z;
 
+<<<<<<< HEAD
 			r_iter = from;
 
 			if (from == to) {
@@ -3472,7 +3573,15 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 #ifdef DEBUG_ENABLED
 
 			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+=======
+			Object *obj = _OBJ_PTR(*this);
+#ifdef DEBUG_ENABLED
+			if (unlikely(!obj)) {
+>>>>>>> audio-bus-effect-fixed
 				valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted iteration start on a deleted object.");
+				}
 				return false;
 			}
 
@@ -3483,7 +3592,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -3691,6 +3800,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			if (!_get_obj().obj) {
 				valid = false;
 				return false;
@@ -3699,7 +3809,16 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 #ifdef DEBUG_ENABLED
 
 			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+#ifdef DEBUG_ENABLED
+			if (unlikely(!obj)) {
+>>>>>>> audio-bus-effect-fixed
 				valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted iteration check next on a deleted object.");
+				}
 				return false;
 			}
 
@@ -3710,7 +3829,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 				valid = false;
@@ -3878,13 +3997,23 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			return r_iter;
 		} break;
 		case OBJECT: {
+<<<<<<< HEAD
 			if (!_get_obj().obj) {
 				r_valid = false;
 				return Variant();
 			}
 #ifdef DEBUG_ENABLED
 			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+=======
+
+			Object *obj = _OBJ_PTR(*this);
+#ifdef DEBUG_ENABLED
+			if (unlikely(!obj)) {
+>>>>>>> audio-bus-effect-fixed
 				r_valid = false;
+				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
+					WARN_PRINT("Attempted iteration get next on a deleted object.");
+				}
 				return Variant();
 			}
 
@@ -3892,7 +4021,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_valid = false;

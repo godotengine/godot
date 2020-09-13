@@ -699,6 +699,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 	ScriptEditorBase *current = Object::cast_to<ScriptEditorBase>(tselected);
 	if (current) {
 		Ref<Script> script = current->get_edited_resource();
+<<<<<<< HEAD
 		if (p_save && script.is_valid()) {
 			// Do not try to save internal scripts, but prompt to save in-memory
 			// scripts which are not saved to disk yet (have empty path).
@@ -711,6 +712,17 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 				// Only saved scripts can be restored.
 				previous_scripts.push_back(script->get_path());
 			}
+=======
+		if (p_save) {
+			// Do not try to save internal scripts
+			if (!script.is_valid() || !(script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)) {
+				_menu_option(FILE_SAVE);
+			}
+		}
+
+		if (script != NULL) {
+			previous_scripts.push_back(script->get_path());
+>>>>>>> audio-bus-effect-fixed
 			notify_script_close(script);
 		}
 	}
@@ -1489,8 +1501,16 @@ void ScriptEditor::_notification(int p_what) {
 			help_search->set_icon(get_theme_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_theme_icon("Instance", "EditorIcons"));
 
+<<<<<<< HEAD
 			script_forward->set_icon(get_theme_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_theme_icon("Back", "EditorIcons"));
+=======
+			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
+			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+
+			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
+			script_back->set_icon(get_icon("Back", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 			members_overview_alphabeta_sort_button->set_icon(get_theme_icon("Sort", "EditorIcons"));
 
@@ -1589,6 +1609,11 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		if (base.begins_with("local://") || base == "") {
 			continue;
 		}
+<<<<<<< HEAD
+=======
+
+		for (List<int>::Element *E = bpoints.front(); E; E = E->next()) {
+>>>>>>> audio-bus-effect-fixed
 
 		Array bpoints = se->get_breakpoints();
 		for (int j = 0; j < bpoints.size(); j++) {
@@ -1921,8 +1946,13 @@ void ScriptEditor::_update_script_names() {
 		Vector<String> disambiguated_script_names;
 		Vector<String> full_script_paths;
 		for (int j = 0; j < sedata.size(); j++) {
+<<<<<<< HEAD
 			disambiguated_script_names.append(sedata[j].name.replace("(*)", ""));
 			full_script_paths.append(sedata[j].tooltip);
+=======
+			disambiguated_script_names.push_back(sedata[j].name.replace("(*)", ""));
+			full_script_paths.push_back(sedata[j].tooltip);
+>>>>>>> audio-bus-effect-fixed
 		}
 
 		EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
@@ -2113,7 +2143,11 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	}
 
 	if (use_external_editor &&
+<<<<<<< HEAD
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
+=======
+			(debugger->get_dump_stack_script() != p_resource || debugger->get_debug_with_external_editor()) &&
+>>>>>>> audio-bus-effect-fixed
 			p_resource->get_path().is_resource_file() &&
 			p_resource->get_class_name() != StringName("VisualScript")) {
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
@@ -2992,6 +3026,7 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	return out_scripts;
 }
 
+<<<<<<< HEAD
 Array ScriptEditor::_get_open_script_editors() const {
 	Array script_editors;
 	for (int i = 0; i < tab_container->get_child_count(); i++) {
@@ -3004,6 +3039,8 @@ Array ScriptEditor::_get_open_script_editors() const {
 	return script_editors;
 }
 
+=======
+>>>>>>> audio-bus-effect-fixed
 void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	// Don't open dominant script if using an external editor.
 	const bool use_external_editor =
@@ -3387,8 +3424,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(site_search);
 	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
+<<<<<<< HEAD
 	help_search = memnew(Button);
 	help_search->set_flat(true);
+=======
+	help_search = memnew(ToolButton);
+>>>>>>> audio-bus-effect-fixed
 	help_search->set_text(TTR("Search Help"));
 	help_search->connect("pressed", callable_mp(this, &ScriptEditor::_menu_option), varray(SEARCH_HELP));
 	menu_hb->add_child(help_search);

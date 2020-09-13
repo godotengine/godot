@@ -41,6 +41,11 @@ EditorRun::Status EditorRun::get_status() const {
 String EditorRun::get_running_scene() const {
 	return running_scene;
 }
+<<<<<<< HEAD
+=======
+
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
+>>>>>>> audio-bus-effect-fixed
 
 Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 	List<String> args;
@@ -114,6 +119,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
 	bool hidpi_proj = ProjectSettings::get_singleton()->get("display/window/dpi/allow_hidpi");
 	int display_scale = 1;
+<<<<<<< HEAD
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
 		if (OS::get_singleton()->is_hidpi_allowed()) {
 			if (hidpi_proj) {
@@ -131,6 +137,23 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		screen_rect.position /= display_scale;
 		screen_rect.size /= display_scale;
 	}
+=======
+	if (OS::get_singleton()->is_hidpi_allowed()) {
+		if (hidpi_proj) {
+			display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
+		} else {
+			display_scale = OS::get_singleton()->get_screen_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
+		}
+	} else {
+		if (hidpi_proj) {
+			display_scale = (1.f / OS::get_singleton()->get_screen_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
+		} else {
+			display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
+		}
+	}
+	screen_rect.position /= display_scale;
+	screen_rect.size /= display_scale;
+>>>>>>> audio-bus-effect-fixed
 
 	switch (window_placement) {
 		case 0: { // top left
@@ -138,7 +161,11 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 			args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
 		} break;
 		case 1: { // centered
+<<<<<<< HEAD
 			Vector2 pos = (screen_rect.position) + ((screen_rect.size - desired_size) / 2).floor();
+=======
+			Vector2 pos = screen_rect.position + ((screen_rect.size - desired_size) / 2).floor();
+>>>>>>> audio-bus-effect-fixed
 			args.push_back("--position");
 			args.push_back(itos(pos.x) + "," + itos(pos.y));
 		} break;
@@ -220,7 +247,18 @@ bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
 			return true;
 		}
 	}
+<<<<<<< HEAD
 	return false;
+=======
+
+	status = STATUS_STOP;
+	running_scene = "";
+}
+
+void EditorRun::set_debug_collisions(bool p_debug) {
+
+	debug_collisions = p_debug;
+>>>>>>> audio-bus-effect-fixed
 }
 
 void EditorRun::stop_child_process(OS::ProcessID p_pid) {
@@ -244,4 +282,9 @@ void EditorRun::stop() {
 EditorRun::EditorRun() {
 	status = STATUS_STOP;
 	running_scene = "";
+<<<<<<< HEAD
+=======
+	debug_collisions = false;
+	debug_navigation = false;
+>>>>>>> audio-bus-effect-fixed
 }

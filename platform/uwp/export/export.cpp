@@ -969,7 +969,11 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 public:
+<<<<<<< HEAD
 	virtual String get_name() const override {
+=======
+	virtual String get_name() const {
+>>>>>>> audio-bus-effect-fixed
 		return "UWP";
 	}
 	virtual String get_os_name() const override {
@@ -1153,7 +1157,11 @@ public:
 			err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 		}
 
+<<<<<<< HEAD
 		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture2D>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+=======
+		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
+>>>>>>> audio-bus-effect-fixed
 			valid = false;
 			err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 		}

@@ -6,12 +6,20 @@ import os
 
 import editor_icons_builders
 
+<<<<<<< HEAD
 
 env["BUILDERS"]["MakeEditorIconsBuilder"] = Builder(
     action=env.Run(editor_icons_builders.make_editor_icons_action, "Generating editor icons header."),
     suffix=".h",
     src_suffix=".svg",
 )
+=======
+make_editor_icons_builder = Builder(
+    action=run_in_subprocess(editor_icons_builders.make_editor_icons_action), suffix=".h", src_suffix=".svg"
+)
+
+env["BUILDERS"]["MakeEditorIconsBuilder"] = make_editor_icons_builder
+>>>>>>> audio-bus-effect-fixed
 
 # Editor's own icons
 icon_sources = Glob("*.svg")

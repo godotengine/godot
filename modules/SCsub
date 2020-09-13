@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
+<<<<<<< HEAD
 import modules_builders
 import os
 
 Import("env")
+=======
+Import("env")
+
+import os
+>>>>>>> audio-bus-effect-fixed
 
 env_modules = env.Clone()
 
@@ -35,15 +41,31 @@ if env["tests"]:
     )
     env.AlwaysBuild("modules_tests.gen.h")
 
+<<<<<<< HEAD
 vs_sources = []
 # libmodule_<name>.a for each active module.
 for name, path in env.module_list.items():
     env.modules_sources = []
 
+=======
+for name, path in env.module_list.items():
+    if name in env.disabled_modules:
+        continue
+
+    env_modules.Append(CPPDEFINES=["MODULE_" + name.upper() + "_ENABLED"])
+>>>>>>> audio-bus-effect-fixed
     if not os.path.isabs(path):
         SConscript(name + "/SCsub")  # Built-in.
     else:
         SConscript(path + "/SCsub")  # Custom.
+<<<<<<< HEAD
+=======
+
+if env["split_libmodules"]:
+    env.split_lib("modules", env_lib=env_modules)
+else:
+    lib = env_modules.add_library("modules", env.modules_sources)
+>>>>>>> audio-bus-effect-fixed
 
     # Some modules are not linked automatically but can be enabled optionally
     # on iOS, so we handle those specially.

@@ -1,0 +1,90 @@
+#!/bin/bash
+
+BASH_RC=~/.bashrc
+GODOT_BUILD_TOOLS_PATH=/godot-dev/build-tools
+mkdir -p $GODOT_BUILD_TOOLS_PATH
+cd $GODOT_BUILD_TOOLS_PATH
+
+ANDROID_BASE_URL=http://dl.google.com/android
+
+ANDROID_SDK_RELEASE=android-sdk_r24.4.1
+ANDROID_SDK_DIR=android-sdk-linux
+ANDROID_SDK_FILENAME=$ANDROID_SDK_RELEASE-linux.tgz
+ANDROID_SDK_URL=$ANDROID_BASE_URL/$ANDROID_SDK_FILENAME
+ANDROID_SDK_PATH=$GODOT_BUILD_TOOLS_PATH/$ANDROID_SDK_DIR
+ANDROID_SDK_SHA1=725bb360f0f7d04eaccff5a2d57abdd49061326d
+
+ANDROID_NDK_RELEASE=android-ndk-r10e
+ANDROID_NDK_DIR=$ANDROID_NDK_RELEASE
+ANDROID_NDK_FILENAME=$ANDROID_NDK_RELEASE-linux-x86_64.bin
+ANDROID_NDK_URL=$ANDROID_BASE_URL/ndk/$ANDROID_NDK_FILENAME
+ANDROID_NDK_PATH=$GODOT_BUILD_TOOLS_PATH/$ANDROID_NDK_DIR
+ANDROID_NDK_MD5=19af543b068bdb7f27787c2bc69aba7f
+
+echo
+echo "Download and install Android development tools ..."
+echo
+
+if [ ! -e $ANDROID_SDK_FILENAME ]; then
+	echo "Downloading: Android SDK ..."
+	wget $ANDROID_SDK_URL
+else
+	echo $ANDROID_SDK_SHA1 $ANDROID_SDK_FILENAME > $ANDROID_SDK_FILENAME.sha1
+	sha1sum --check --strict $ANDROID_SDK_FILENAME.sha1
+	if [ ! $? -eq 0 ]; then
+		echo "Downloading: Android SDK ..."
+		wget $ANDROID_SDK_URL
+	fi
+fi
+
+if [ ! -d $ANDROID_SDK_DIR ]; then
+	tar -xvzf $ANDROID_SDK_FILENAME
+fi
+
+if [ ! -e $ANDROID_NDK_FILENAME ]; then
+	echo "Downloading: Android NDK ..."
+	wget $ANDROID_NDK_URL
+else
+	echo $ANDROID_NDK_MD5 $ANDROID_NDK_FILENAME > $ANDROID_NDK_FILENAME.md5
+	md5sum --check --strict $ANDROID_NDK_FILENAME.md5
+	if [ ! $? -eq 0 ]; then
+		echo "Downloading: Android NDK ..."
+		wget $ANDROID_NDK_URL
+	fi
+fi
+
+if [ ! -d $ANDROID_NDK_DIR ]; then
+	chmod a+x $ANDROID_NDK_FILENAME
+	./$ANDROID_NDK_FILENAME
+	echo
+fi
+
+cd $ANDROID_SDK_DIR/tools
+chmod a+x android
+
+if ! ./android list target | grep -q 'android-19'; then
+	echo "Installing: Android Tools ..."
+	echo y | ./android update sdk --no-ui --all --filter "platform-tools,android-19,build-tools-19.1.0,\
+	extra-android-m2repository,extra-android-support,extra-google-google_play_services,extra-google-m2repository,\
+	extra-google-play_apk_expansion,extra-google-play_billing,extra-google-play_licensing"
+fi
+
+EXPORT_VAL="export ANDROID_HOME=$ANDROID_SDK_PATH"
+if ! grep -q "^$EXPORT_VAL" $BASH_RC; then
+        echo $EXPORT_VAL >> ~/.bashrc
+fi
+
+
+EXPORT_VAL="export ANDROID_NDK_ROOT=$ANDROID_NDK_PATH"
+if ! grep -q "^$EXPORT_VAL" $BASH_RC; then
+        echo $EXPORT_VAL >> ~/.bashrc
+fi
+
+EXPORT_VAL="export PATH=$PATH:$ANDROID_SDK_PATH/tools"
+if ! grep -q "^export PATH=.*$ANDROID_SDK_PATH/tools.*" $BASH_RC; then
+        echo $EXPORT_VAL >> ~/.bashrc
+fi
+
+echo
+echo "Done!"
+echo

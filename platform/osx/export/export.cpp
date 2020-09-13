@@ -597,6 +597,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		print_line("Creating " + tmp_app_path_name + "/Contents/Frameworks");
 		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Frameworks");
+<<<<<<< HEAD
 	}
 
 	if (err == OK) {
@@ -604,6 +605,15 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
 	}
 
+=======
+	}
+
+	if (err == OK) {
+		print_line("Creating " + tmp_app_path_name + "/Contents/Resources");
+		err = tmp_app_path->make_dir_recursive(tmp_app_path_name + "/Contents/Resources");
+	}
+
+>>>>>>> audio-bus-effect-fixed
 	// Now process our template.
 	bool found_binary = false;
 	int total_size = 0;
@@ -777,6 +787,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				if (FileAccess::exists(p_path)) {
 					OS::get_singleton()->move_to_trash(p_path);
 				}
+<<<<<<< HEAD
 
 				FileAccess *dst_f = nullptr;
 				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
@@ -794,6 +805,17 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				return ERR_SKIP;
 			}
 			err = _notarize(p_preset, p_path);
+=======
+
+				FileAccess *dst_f = nullptr;
+				zlib_filefunc_def io_dst = zipio_create_io_from_file(&dst_f);
+				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+
+				_zip_folder_recursive(zip, EditorSettings::get_singleton()->get_cache_dir(), pkg_name + ".app", pkg_name);
+
+				zipClose(zip, nullptr);
+			}
+>>>>>>> audio-bus-effect-fixed
 		}
 
 		// Clean up temporary .app dir.
@@ -863,6 +885,11 @@ void EditorExportPlatformOSX::_zip_folder_recursive(zipFile &p_zip, const String
 	da->list_dir_end();
 	memdelete(da);
 }
+<<<<<<< HEAD
+=======
+
+bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+>>>>>>> audio-bus-effect-fixed
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;

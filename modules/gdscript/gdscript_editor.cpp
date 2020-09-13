@@ -492,6 +492,7 @@ struct GDScriptCompletionIdentifier {
 	const GDScriptParser::ExpressionNode *assigned_expression = nullptr;
 };
 
+<<<<<<< HEAD
 // TODO: Move this to a central location (maybe core?).
 static const char *underscore_classes[] = {
 	"ClassDB",
@@ -518,6 +519,26 @@ static StringName _get_real_class_name(const StringName &p_source) {
 			return String("_") + p_source;
 		}
 		class_name++;
+=======
+static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String, ScriptCodeCompletionOption> &r_list, String p_ends_with = "") {
+
+	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		ScriptCodeCompletionOption option(p_dir->get_file_path(i), ScriptCodeCompletionOption::KIND_FILE_PATH);
+		option.insert_text = quote_style + option.display + quote_style;
+		if (!p_ends_with.empty()) {
+			if (option.display.ends_with(p_ends_with)) {
+				r_list.insert(option.display, option);
+			}
+		} else {
+			r_list.insert(option.display, option);
+		}
+	}
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		_get_directory_contents(p_dir->get_subdir(i), r_list, p_ends_with);
+>>>>>>> audio-bus-effect-fixed
 	}
 	return p_source;
 }
@@ -2098,10 +2119,33 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				return false;
 			} break;
 			case GDScriptParser::DataType::BUILTIN: {
+<<<<<<< HEAD
 				Callable::CallError err;
 				Variant tmp = Variant::construct(base_type.builtin_type, nullptr, 0, err);
 				if (err.error != Callable::CallError::CALL_OK) {
 					return false;
+=======
+				Variant::CallError err;
+				Variant tmp = Variant::construct(base_type.builtin_type, NULL, 0, err);
+				if (err.error != Variant::CallError::CALL_OK) {
+					return;
+				}
+
+				if (!p_only_functions) {
+					List<PropertyInfo> members;
+					if (p_base.value.get_type() != Variant::NIL) {
+						p_base.value.get_property_list(&members);
+					} else {
+						tmp.get_property_list(&members);
+					}
+
+					for (List<PropertyInfo>::Element *E = members.front(); E; E = E->next()) {
+						if (String(E->get().name).find("/") == -1) {
+							ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_MEMBER);
+							r_result.insert(option.display, option);
+						}
+					}
+>>>>>>> audio-bus-effect-fixed
 				}
 
 				List<MethodInfo> methods;
@@ -2122,8 +2166,29 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 		}
 	}
 
+<<<<<<< HEAD
 	return false;
 }
+=======
+	if (!p_only_functions && block) {
+		GDScriptCompletionContext c = p_context;
+		c.block = block;
+		_find_identifiers_in_block(c, r_result);
+	}
+
+	const GDScriptParser::ClassNode *clss = p_context._class;
+	bool _static = p_context.function && p_context.function->_static;
+
+	while (clss) {
+		GDScriptCompletionContext c = p_context;
+		c._class = clss;
+		c.block = NULL;
+		c.function = NULL;
+		_find_identifiers_in_class(c, _static, p_only_functions, false, r_result);
+		_static = true;
+		clss = clss->owner;
+	}
+>>>>>>> audio-bus-effect-fixed
 
 static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_context, const String &p_enum_hint, Map<String, ScriptCodeCompletionOption> &r_result) {
 	if (p_enum_hint.find(".") == -1) {
@@ -2167,20 +2232,60 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
+<<<<<<< HEAD
 	while (base_type.is_set() && !base_type.is_variant()) {
+=======
+#define IS_METHOD_SIGNAL(m_method) (m_method == "connect" || m_method == "disconnect" || m_method == "is_connected" || m_method == "emit_signal")
+
+	while (base_type.has_type) {
+>>>>>>> audio-bus-effect-fixed
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
 				if (base_type.class_type->has_member(p_method)) {
 					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_method);
 
+<<<<<<< HEAD
 					if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
 						r_arghint = _make_arguments_hint(member.function, p_argidx);
 						return;
+=======
+				if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
+					for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
+						ScriptCodeCompletionOption option(base_type.class_type->_signals[i].name.operator String(), ScriptCodeCompletionOption::KIND_SIGNAL);
+						option.insert_text = quote_style + option.display + quote_style;
+						r_result.insert(option.display, option);
+>>>>>>> audio-bus-effect-fixed
 					}
 				}
 
 				base_type = base_type.class_type->base_type;
 			} break;
+<<<<<<< HEAD
+=======
+			case GDScriptParser::DataType::GDSCRIPT: {
+				Ref<GDScript> gds = base_type.script_type;
+				if (gds.is_valid()) {
+					if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
+						List<MethodInfo> signals;
+						gds->get_script_signal_list(&signals);
+						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
+							ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_SIGNAL);
+							option.insert_text = quote_style + option.display + quote_style;
+							r_result.insert(option.display, option);
+						}
+					}
+					Ref<GDScript> base_script = gds->get_base_script();
+					if (base_script.is_valid()) {
+						base_type.script_type = base_script;
+					} else {
+						base_type.kind = GDScriptParser::DataType::NATIVE;
+						base_type.native_type = gds->get_instance_base_type();
+					}
+				} else {
+					return;
+				}
+			} break;
+>>>>>>> audio-bus-effect-fixed
 			case GDScriptParser::DataType::NATIVE: {
 				StringName class_name = _get_real_class_name(base_type.native_type);
 				if (!ClassDB::class_exists(class_name)) {
@@ -2212,9 +2317,21 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						}
 					}
 
+<<<<<<< HEAD
 					r_arghint = _make_arguments_hint(info, p_argidx);
 					return;
+=======
+				if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
+					List<MethodInfo> signals;
+					ClassDB::get_signal_list(class_name, &signals);
+					for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
+						ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_SIGNAL);
+						option.insert_text = quote_style + option.display + quote_style;
+						r_result.insert(option.display, option);
+					}
+>>>>>>> audio-bus-effect-fixed
 				}
+#undef IS_METHOD_SIGNAL
 
 				if (ClassDB::is_parent_class(class_name, "Node") && (p_method == "get_node" || p_method == "has_node") && p_argidx == 0) {
 					// Get autoloads
@@ -2420,6 +2537,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 			_list_available_types(false, completion_context, options);
 			r_forced = true;
 		} break;
+<<<<<<< HEAD
 		case GDScriptParser::COMPLETION_PROPERTY_DECLARATION_OR_TYPE: {
 			_list_available_types(false, completion_context, options);
 			ScriptCodeCompletionOption get("get", ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
@@ -2443,6 +2561,59 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 				const GDScriptParser::ClassNode::Member &member = completion_context.current_class->members[i];
 				if (member.type != GDScriptParser::ClassNode::Member::FUNCTION) {
 					continue;
+=======
+		case GDScriptParser::COMPLETION_EXTENDS: {
+
+			// Native classes.
+			List<StringName> class_list;
+			ClassDB::get_class_list(&class_list);
+			for (int i = 0; i < class_list.size(); i++) {
+				ScriptCodeCompletionOption option(class_list[i], ScriptCodeCompletionOption::KIND_CLASS);
+				options.insert(option.display, option);
+			}
+
+			// GDScript classes.
+			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths")) {
+				for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+					if (ScriptServer::get_language(i)->get_name() == "GDScript") {
+						List<String> extensions;
+						ScriptServer::get_language(i)->get_recognized_extensions(&extensions);
+						for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+							_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options, String("." + E->get()));
+						}
+					}
+				}
+				r_forced = true;
+			}
+
+			// Named Scripts.
+			List<StringName> named_scripts;
+			ScriptServer::get_global_class_list(&named_scripts);
+			for (List<StringName>::Element *E = named_scripts.front(); E; E = E->next()) {
+				ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
+				options.insert(option.display, option);
+			}
+		} break;
+		case GDScriptParser::COMPLETION_GET_NODE: {
+			if (p_owner) {
+				List<String> opts;
+				p_owner->get_argument_options("get_node", 0, &opts);
+
+				for (List<String>::Element *E = opts.front(); E; E = E->next()) {
+
+					String opt = E->get().strip_edges();
+					if (opt.is_quoted()) {
+						r_forced = true;
+						String idopt = opt.unquote();
+						if (idopt.replace("/", "_").is_valid_identifier()) {
+							ScriptCodeCompletionOption option(idopt, ScriptCodeCompletionOption::KIND_NODE_PATH);
+							options.insert(option.display, option);
+						} else {
+							ScriptCodeCompletionOption option(opt, ScriptCodeCompletionOption::KIND_NODE_PATH);
+							options.insert(option.display, option);
+						}
+					}
+>>>>>>> audio-bus-effect-fixed
 				}
 				if (member.function->is_static) {
 					continue;
@@ -2767,10 +2938,50 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
 				if (base_type.class_type) {
+<<<<<<< HEAD
 					if (base_type.class_type->has_member(p_symbol)) {
 						r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
 						r_result.location = base_type.class_type->get_member(p_symbol).get_line();
 						return OK;
+=======
+					if (p_is_function) {
+						for (int i = 0; i < base_type.class_type->functions.size(); i++) {
+							if (base_type.class_type->functions[i]->name == p_symbol) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location = base_type.class_type->functions[i]->line;
+								return OK;
+							}
+						}
+						for (int i = 0; i < base_type.class_type->static_functions.size(); i++) {
+							if (base_type.class_type->static_functions[i]->name == p_symbol) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location = base_type.class_type->static_functions[i]->line;
+								return OK;
+							}
+						}
+					} else {
+						if (base_type.class_type->constant_expressions.has(p_symbol)) {
+							r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+							r_result.location = base_type.class_type->constant_expressions[p_symbol].expression->line;
+							return OK;
+						}
+
+						for (int i = 0; i < base_type.class_type->variables.size(); i++) {
+							if (base_type.class_type->variables[i].identifier == p_symbol) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location = base_type.class_type->variables[i].line;
+								return OK;
+							}
+						}
+
+						for (int i = 0; i < base_type.class_type->subclasses.size(); i++) {
+							if (base_type.class_type->subclasses[i]->name == p_symbol) {
+								r_result.type = ScriptLanguage::LookupResult::RESULT_SCRIPT_LOCATION;
+								r_result.location = base_type.class_type->subclasses[i]->line;
+								return OK;
+							}
+						}
+>>>>>>> audio-bus-effect-fixed
 					}
 					base_type = base_type.class_type->base_type;
 				}
@@ -3103,9 +3314,18 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				return OK;
 			}
 		} break;
+<<<<<<< HEAD
 		case GDScriptParser::COMPLETION_TYPE_NAME_OR_VOID:
 		case GDScriptParser::COMPLETION_TYPE_NAME: {
 			GDScriptParser::DataType base_type = context.current_class->get_datatype();
+=======
+		case GDScriptParser::COMPLETION_TYPE_HINT: {
+
+			GDScriptParser::DataType base_type = context._class->base_type;
+			base_type.has_type = true;
+			base_type.kind = GDScriptParser::DataType::CLASS;
+			base_type.class_type = const_cast<GDScriptParser::ClassNode *>(context._class);
+>>>>>>> audio-bus-effect-fixed
 
 			if (_lookup_symbol_from_base(base_type, p_symbol, false, r_result) == OK) {
 				return OK;

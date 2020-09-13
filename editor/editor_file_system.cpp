@@ -643,12 +643,21 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			break;
 		}
 
+<<<<<<< HEAD
 		if (da->current_is_hidden()) {
 			continue;
 		}
 
 		if (da->current_is_dir()) {
 			if (f.begins_with(".")) { // Ignore special and . / ..
+=======
+		if (da->current_is_hidden())
+			continue;
+
+		if (da->current_is_dir()) {
+
+			if (f.begins_with(".")) // Ignore special and . / ..
+>>>>>>> audio-bus-effect-fixed
 				continue;
 			}
 
@@ -832,12 +841,21 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				break;
 			}
 
+<<<<<<< HEAD
 			if (da->current_is_hidden()) {
 				continue;
 			}
 
 			if (da->current_is_dir()) {
 				if (f.begins_with(".")) { // Ignore special and . / ..
+=======
+			if (da->current_is_hidden())
+				continue;
+
+			if (da->current_is_dir()) {
+
+				if (f.begins_with(".")) // Ignore special and . / ..
+>>>>>>> audio-bus-effect-fixed
 					continue;
 				}
 
@@ -1018,6 +1036,10 @@ void EditorFileSystem::get_changed_sources(List<String> *r_changed) {
 }
 
 void EditorFileSystem::scan_changes() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if (first_scan || // Prevent a premature changes scan from inhibiting the first full scan
 			scanning || scanning_changes || thread) {
 		scan_changes_pending = true;
@@ -1074,8 +1096,13 @@ void EditorFileSystem::_notification(int p_what) {
 				}
 				Thread::wait_to_finish(active_thread);
 				memdelete(active_thread);
+<<<<<<< HEAD
 				thread = nullptr;
 				thread_sources = nullptr;
+=======
+				thread = NULL;
+				thread_sources = NULL;
+>>>>>>> audio-bus-effect-fixed
 				WARN_PRINT("Scan thread aborted...");
 				set_process(false);
 			}

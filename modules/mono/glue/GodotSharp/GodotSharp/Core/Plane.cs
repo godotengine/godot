@@ -117,6 +117,20 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// The center of the plane, the point where the normal line intersects the plane.
+        /// Deprecated, use the Center property instead.
+        /// </summary>
+        /// <returns>Equivalent to <see cref="Normal"/> multiplied by `D`.</returns>
+        [Obsolete("GetAnyPoint is deprecated. Use the Center property instead.")]
+        public Vector3 GetAnyPoint()
+        {
+            return _normal * D;
+        }
+
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// Returns true if point is inside the plane.
         /// Comparison uses a custom minimum epsilon threshold.
         /// </summary>

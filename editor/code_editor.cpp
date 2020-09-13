@@ -113,10 +113,17 @@ void FindReplaceBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Control *focus_owner = get_focus_owner();
+<<<<<<< HEAD
 	if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_a_parent_of(focus_owner))) {
 		bool accepted = true;
 
 		switch (k->get_keycode()) {
+=======
+	if (text_edit->has_focus() || (focus_owner && vbc_lineedit->is_a_parent_of(focus_owner))) {
+		bool accepted = true;
+
+		switch (k->get_scancode()) {
+>>>>>>> audio-bus-effect-fixed
 			case KEY_ESCAPE: {
 				_hide_bar();
 			} break;
@@ -169,16 +176,25 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
+<<<<<<< HEAD
 	bool selection_enabled = text_editor->is_selection_active();
 	Point2i selection_begin, selection_end;
 	if (selection_enabled) {
 		selection_begin = Point2i(text_editor->get_selection_from_line(), text_editor->get_selection_from_column());
 		selection_end = Point2i(text_editor->get_selection_to_line(), text_editor->get_selection_to_column());
+=======
+	bool selection_enabled = text_edit->is_selection_active();
+	Point2i selection_begin, selection_end;
+	if (selection_enabled) {
+		selection_begin = Point2i(text_edit->get_selection_from_line(), text_edit->get_selection_from_column());
+		selection_end = Point2i(text_edit->get_selection_to_line(), text_edit->get_selection_to_column());
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	String replace_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
+<<<<<<< HEAD
 	text_editor->begin_complex_operation();
 	if (selection_enabled && is_selection_only()) { // To restrict search_current() to selected region
 		text_editor->cursor_set_line(selection_begin.width);
@@ -188,28 +204,56 @@ void FindReplaceBar::_replace() {
 	if (search_current()) {
 		text_editor->unfold_line(result_line);
 		text_editor->select(result_line, result_col, result_line, result_col + search_text_len);
+=======
+	text_edit->begin_complex_operation();
+	if (selection_enabled && is_selection_only()) { // To restrict search_current() to selected region
+		text_edit->cursor_set_line(selection_begin.width);
+		text_edit->cursor_set_column(selection_begin.height);
+	}
+
+	if (search_current()) {
+		text_edit->unfold_line(result_line);
+		text_edit->select(result_line, result_col, result_line, result_col + search_text_len);
+>>>>>>> audio-bus-effect-fixed
 
 		if (selection_enabled && is_selection_only()) {
 			Point2i match_from(result_line, result_col);
 			Point2i match_to(result_line, result_col + search_text_len);
 			if (!(match_from < selection_begin || match_to > selection_end)) {
+<<<<<<< HEAD
 				text_editor->insert_text_at_cursor(replace_text);
+=======
+				text_edit->insert_text_at_cursor(replace_text);
+>>>>>>> audio-bus-effect-fixed
 				if (match_to.x == selection_end.x) { // Adjust selection bounds if necessary
 					selection_end.y += replace_text.length() - search_text_len;
 				}
 			}
 		} else {
+<<<<<<< HEAD
 			text_editor->insert_text_at_cursor(replace_text);
 		}
 	}
 	text_editor->end_complex_operation();
+=======
+			text_edit->insert_text_at_cursor(replace_text);
+		}
+	}
+	text_edit->end_complex_operation();
+>>>>>>> audio-bus-effect-fixed
 	results_count = -1;
 
 	if (selection_enabled && is_selection_only()) {
 		// Reselect in order to keep 'Replace' restricted to selection
+<<<<<<< HEAD
 		text_editor->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
 	} else {
 		text_editor->deselect();
+=======
+		text_edit->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
+	} else {
+		text_edit->deselect();
+>>>>>>> audio-bus-effect-fixed
 	}
 }
 
@@ -241,8 +285,13 @@ void FindReplaceBar::_replace_all() {
 	text_editor->begin_complex_operation();
 
 	if (selection_enabled && is_selection_only()) {
+<<<<<<< HEAD
 		text_editor->cursor_set_line(selection_begin.width);
 		text_editor->cursor_set_column(selection_begin.height);
+=======
+		text_edit->cursor_set_line(selection_begin.width);
+		text_edit->cursor_set_column(selection_begin.height);
+>>>>>>> audio-bus-effect-fixed
 	}
 	if (search_current()) {
 		do {
@@ -294,8 +343,13 @@ void FindReplaceBar::_replace_all() {
 		text_editor->deselect();
 	}
 
+<<<<<<< HEAD
 	text_editor->set_v_scroll(vsval);
 	matches_label->add_theme_color_override("font_color", rc > 0 ? get_theme_color("font_color", "Label") : get_theme_color("error_color", "Editor"));
+=======
+	text_edit->set_v_scroll(vsval);
+	matches_label->add_color_override("font_color", rc > 0 ? get_color("font_color", "Label") : get_color("error_color", "Editor"));
+>>>>>>> audio-bus-effect-fixed
 	matches_label->set_text(vformat(TTR("%d replaced."), rc));
 
 	text_editor->call_deferred("connect", "text_changed", Callable(this, "_editor_text_changed"));
@@ -307,6 +361,10 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 	r_col = text_editor->cursor_get_column();
 
 	if (text_editor->is_selection_active() && is_selection_only()) {
+		return;
+	}
+
+	if (text_edit->is_selection_active() && is_selection_only()) {
 		return;
 	}
 
@@ -340,10 +398,16 @@ void FindReplaceBar::_update_results_count() {
 		int pos_subsequent = pos + searched.length();
 		if (is_whole_words()) {
 			from_pos = pos + 1; // Making sure we won't hit the same match next time, if we get out via a continue.
+<<<<<<< HEAD
 			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n')) {
 				continue;
 			}
 			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n')) {
+=======
+			if (pos > 0 && !(is_symbol(full_text[pos - 1]) || full_text[pos - 1] == '\n'))
+				continue;
+			if (pos_subsequent < full_text.length() && !(is_symbol(full_text[pos_subsequent]) || full_text[pos_subsequent] == '\n'))
+>>>>>>> audio-bus-effect-fixed
 				continue;
 			}
 		}

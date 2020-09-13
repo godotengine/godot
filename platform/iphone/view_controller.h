@@ -33,9 +33,13 @@
 
 @class GodotView;
 
+<<<<<<< HEAD
 @interface ViewController : UIViewController <GKGameCenterControllerDelegate>
 
 - (GodotView *)godotView;
+=======
+- (void)didReceiveMemoryWarning;
+>>>>>>> audio-bus-effect-fixed
 
 // MARK: Native Video Player
 

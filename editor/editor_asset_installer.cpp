@@ -58,6 +58,27 @@ void EditorAssetInstaller::_uncheck_parent(TreeItem *p_item) {
 	if (!p_item) {
 		return;
 	}
+<<<<<<< HEAD
+=======
+
+	bool any_checked = false;
+	TreeItem *item = p_item->get_children();
+	while (item) {
+		if (item->is_checked(0)) {
+			any_checked = true;
+			break;
+		}
+		item = item->get_next();
+	}
+
+	if (!any_checked) {
+		p_item->set_checked(0, false);
+		_uncheck_parent(p_item->get_parent());
+	}
+}
+
+void EditorAssetInstaller::_item_edited() {
+>>>>>>> audio-bus-effect-fixed
 
 	bool any_checked = false;
 	TreeItem *item = p_item->get_children();

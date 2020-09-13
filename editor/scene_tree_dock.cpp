@@ -427,6 +427,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			attach_script_to_selected(false);
 		} break;
 		case TOOL_DETACH_SCRIPT: {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 			if (!profile_allow_script_editing) {
 				break;
 			}
@@ -438,7 +442,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			editor_data->get_undo_redo().create_action(TTR("Detach Script"));
+<<<<<<< HEAD
 			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)nullptr);
+=======
+			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
+>>>>>>> audio-bus-effect-fixed
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *n = Object::cast_to<Node>(selection[i]);
@@ -565,6 +573,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			selection.sort_custom<Node::Comparator>();
 
 			Node *add_below_node = selection.back()->get();
+<<<<<<< HEAD
+=======
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+>>>>>>> audio-bus-effect-fixed
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node *node = E->get();
@@ -588,7 +601,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
+<<<<<<< HEAD
 				editor_data->get_undo_redo().add_do_method(add_below_node, "add_sibling", dup);
+=======
+				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", add_below_node, dup);
+				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
+>>>>>>> audio-bus-effect-fixed
 
 				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 					if (!duplimap.has(F->get())) {
@@ -603,8 +621,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 
+<<<<<<< HEAD
 				editor_data->get_undo_redo().add_do_method(ed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
 				editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(dup->get_name())));
+=======
+				editor_data->get_undo_redo().add_do_method(sed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
+				editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(dup->get_name())));
+>>>>>>> audio-bus-effect-fixed
 
 				add_below_node = dup;
 			}
@@ -615,7 +638,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				editor->push_item(dupsingle);
 			}
 
+<<<<<<< HEAD
 			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev()) {
+=======
+			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev())
+>>>>>>> audio-bus-effect-fixed
 				_toggle_editable_children(E->get());
 			}
 
@@ -1077,10 +1104,17 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect_compat("item_lock_status_changed", scene_tree, "_update_tree");
 			spatial_editor_plugin->get_spatial_editor()->connect_compat("item_group_status_changed", scene_tree, "_update_tree");
 
+<<<<<<< HEAD
 			button_add->set_icon(get_theme_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
 			button_create_script->set_icon(get_theme_icon("ScriptCreate", "EditorIcons"));
 			button_detach_script->set_icon(get_theme_icon("ScriptRemove", "EditorIcons"));
+=======
+			button_add->set_icon(get_icon("Add", "EditorIcons"));
+			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
+			button_detach_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
@@ -1156,10 +1190,17 @@ void SceneTreeDock::_notification(int p_what) {
 			clear_inherit_confirm->disconnect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected));
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+<<<<<<< HEAD
 			button_add->set_icon(get_theme_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
 			button_create_script->set_icon(get_theme_icon("ScriptCreate", "EditorIcons"));
 			button_detach_script->set_icon(get_theme_icon("ScriptRemove", "EditorIcons"));
+=======
+			button_add->set_icon(get_icon("Add", "EditorIcons"));
+			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate", "EditorIcons"));
+			button_detach_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
@@ -2082,7 +2123,10 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 			if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
+<<<<<<< HEAD
 			}
+=======
+>>>>>>> audio-bus-effect-fixed
 
 			if (E->get().name == "__meta__") {
 				if (Object::cast_to<CanvasItem>(newnode)) {
@@ -2454,7 +2498,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 		if (existing_script.is_valid() && existing_script_removable) {
 			add_separator = true;
+<<<<<<< HEAD
 			menu->add_icon_shortcut(get_theme_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+=======
+			menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+>>>>>>> audio-bus-effect-fixed
 		} else if (full_selection.size() > 1) {
 			bool script_exists = false;
 			for (List<Node *>::Element *E = full_selection.front(); E; E = E->next()) {
@@ -2466,7 +2514,11 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 			if (script_exists) {
 				add_separator = true;
+<<<<<<< HEAD
 				menu->add_icon_shortcut(get_theme_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+=======
+				menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/detach_script"), TOOL_DETACH_SCRIPT);
+>>>>>>> audio-bus-effect-fixed
 			}
 		}
 
@@ -2677,10 +2729,18 @@ void SceneTreeDock::_remote_tree_selected() {
 }
 
 void SceneTreeDock::_local_tree_selected() {
+<<<<<<< HEAD
 	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
 		scene_tree->show();
 	}
 	if (remote_tree) {
+=======
+
+	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
+		scene_tree->show();
+	}
+	if (remote_tree)
+>>>>>>> audio-bus-effect-fixed
 		remote_tree->hide();
 	}
 	edit_remote->set_pressed(false);
@@ -2842,17 +2902,27 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter->add_theme_constant_override("minimum_spaces", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
 
+<<<<<<< HEAD
 	button_create_script = memnew(Button);
 	button_create_script->set_flat(true);
 	button_create_script->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_ATTACH_SCRIPT, false));
+=======
+	button_create_script = memnew(ToolButton);
+	button_create_script->connect("pressed", this, "_tool_selected", make_binds(TOOL_ATTACH_SCRIPT, false));
+>>>>>>> audio-bus-effect-fixed
 	button_create_script->set_tooltip(TTR("Attach a new or existing script to the selected node."));
 	button_create_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
 	filter_hbc->add_child(button_create_script);
 	button_create_script->hide();
 
+<<<<<<< HEAD
 	button_detach_script = memnew(Button);
 	button_detach_script->set_flat(true);
 	button_detach_script->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_DETACH_SCRIPT, false));
+=======
+	button_detach_script = memnew(ToolButton);
+	button_detach_script->connect("pressed", this, "_tool_selected", make_binds(TOOL_DETACH_SCRIPT, false));
+>>>>>>> audio-bus-effect-fixed
 	button_detach_script->set_tooltip(TTR("Detach the script from the selected node."));
 	button_detach_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/detach_script"));
 	filter_hbc->add_child(button_detach_script);

@@ -49,8 +49,13 @@ Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		f->get_buffer(writer, buffer_size);
 		f->close();
 	}
+<<<<<<< HEAD
 	const uint8_t *reader = file_buffer.ptr();
 	return PNGDriverCommon::png_to_image(reader, buffer_size, p_force_linear, p_image);
+=======
+	PoolVector<uint8_t>::Read reader = file_buffer.read();
+	return PNGDriverCommon::png_to_image(reader.ptr(), buffer_size, p_force_linear, p_image);
+>>>>>>> audio-bus-effect-fixed
 }
 
 void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const {

@@ -188,7 +188,11 @@ public:
 	float get_underline_position() const;
 	float get_underline_thickness() const;
 
+<<<<<<< HEAD
 	Size2 get_char_size(char32_t p_char, char32_t p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
+=======
+	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
+>>>>>>> audio-bus-effect-fixed
 	String get_available_chars() const;
 
 	float draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, char32_t p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks, bool p_advance_only = false, bool p_outline = false) const;
@@ -277,7 +281,11 @@ public:
 	virtual float get_underline_position() const override;
 	virtual float get_underline_thickness() const override;
 
+<<<<<<< HEAD
 	virtual Size2 get_char_size(char32_t p_char, char32_t p_next = 0) const override;
+=======
+	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
+>>>>>>> audio-bus-effect-fixed
 	String get_available_chars() const;
 
 	virtual bool is_distance_field_hint() const override;

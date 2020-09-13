@@ -345,6 +345,42 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Deprecated, please use the array operator instead.
+        /// </summary>
+        /// <param name="index">Which column.</param>
+        /// <returns>One of `Column0`, `Column1`, or `Column2`.</returns>
+        [Obsolete("GetColumn is deprecated. Use the array operator instead.")]
+        public Vector3 GetColumn(int index)
+        {
+            return this[index];
+        }
+
+        /// <summary>
+        /// Deprecated, please use the array operator instead.
+        /// </summary>
+        /// <param name="index">Which column.</param>
+        /// <param name="value">The vector to set the column to.</param>
+        [Obsolete("SetColumn is deprecated. Use the array operator instead.")]
+        public void SetColumn(int index, Vector3 value)
+        {
+            this[index] = value;
+        }
+
+        /// <summary>
+        /// Deprecated, please use the array operator instead.
+        /// </summary>
+        /// <param name="axis">Which column.</param>
+        /// <returns>One of `Column0`, `Column1`, or `Column2`.</returns>
+        [Obsolete("GetAxis is deprecated. Use the array operator instead.")]
+        public Vector3 GetAxis(int axis)
+        {
+            return new Vector3(this.Row0[axis], this.Row1[axis], this.Row2[axis]);
+        }
+
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// This function considers a discretization of rotations into
         /// 24 points on unit sphere, lying along the vectors (x, y, z) with
         /// each component being either -1, 0, or 1, and returns the index

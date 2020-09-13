@@ -286,6 +286,10 @@ private:
 
 public:
 	struct CallState {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 		GDScript *script;
 		GDScriptInstance *instance;
 #ifdef DEBUG_ENABLED

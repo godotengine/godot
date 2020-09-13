@@ -308,7 +308,11 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
+<<<<<<< HEAD
         public Vector2 Lerp(Vector2 to, real_t weight)
+=======
+        public Vector2 LinearInterpolate(Vector2 to, real_t weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Vector2
             (
@@ -324,7 +328,11 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
+<<<<<<< HEAD
         public Vector2 Lerp(Vector2 to, Vector2 weight)
+=======
+        public Vector2 LinearInterpolate(Vector2 to, Vector2 weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Vector2
             (
@@ -379,6 +387,19 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Returns a perpendicular vector rotated 90 degrees counter-clockwise
+        /// compared to the original, with the same length.
+        /// </summary>
+        /// <returns>The perpendicular vector.</returns>
+        public Vector2 Perpendicular()
+        {
+            return new Vector2(y, -x);
+        }
+
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// Returns a vector composed of the <see cref="Mathf.PosMod(real_t, real_t)"/> of this vector's components and `mod`.
         /// </summary>
         /// <param name="mod">A value representing the divisor of the operation.</param>
@@ -405,7 +426,11 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
         /// Returns this vector projected onto another vector `b`.
+=======
+        /// Returns this vector projected onto another vector.
+>>>>>>> audio-bus-effect-fixed
         /// </summary>
         /// <param name="onNormal">The vector to project onto.</param>
         /// <returns>The projected vector.</returns>
@@ -451,6 +476,22 @@ namespace Godot
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
+<<<<<<< HEAD
+=======
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
+        public void Set(real_t x, real_t y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(Vector2) + ") constructor instead.", error: true)]
+        public void Set(Vector2 v)
+        {
+            x = v.x;
+            y = v.y;
+        }
+
+>>>>>>> audio-bus-effect-fixed
         /// <summary>
         /// Returns a vector with each component set to one or negative one, depending
         /// on the signs of this vector's components, or zero if the component is zero,
@@ -513,9 +554,16 @@ namespace Godot
         /// <summary>
         /// Returns a perpendicular vector rotated 90 degrees counter-clockwise
         /// compared to the original, with the same length.
+<<<<<<< HEAD
         /// </summary>
         /// <returns>The perpendicular vector.</returns>
         public Vector2 Perpendicular()
+=======
+        /// Deprecated, will be replaced by <see cref="Perpendicular"/> in 4.0.
+        /// </summary>
+        /// <returns>The perpendicular vector.</returns>
+        public Vector2 Tangent()
+>>>>>>> audio-bus-effect-fixed
         {
             return new Vector2(y, -x);
         }
@@ -536,6 +584,14 @@ namespace Godot
         /// <value>Equivalent to `new Vector2(0, 0)`</value>
         public static Vector2 Zero { get { return _zero; } }
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Deprecated, please use a negative sign with <see cref="One"/> instead.
+        /// </summary>
+        /// <value>Equivalent to `new Vector2(-1, -1)`</value>
+        public static Vector2 NegOne { get { return _negOne; } }
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// One vector, a vector with all components set to `1`.
         /// </summary>
         /// <value>Equivalent to `new Vector2(1, 1)`</value>

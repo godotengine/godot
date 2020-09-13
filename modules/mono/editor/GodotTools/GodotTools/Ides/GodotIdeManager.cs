@@ -157,7 +157,11 @@ namespace GodotTools.Ides
             }
         }
 
+<<<<<<< HEAD
         public readonly struct EditorPick
+=======
+        public struct EditorPick
+>>>>>>> audio-bus-effect-fixed
         {
             private readonly string identity;
 

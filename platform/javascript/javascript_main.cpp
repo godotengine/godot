@@ -30,31 +30,63 @@
 
 #include "core/io/resource_loader.h"
 #include "main/main.h"
+<<<<<<< HEAD
 #include "platform/javascript/display_server_javascript.h"
+=======
+>>>>>>> audio-bus-effect-fixed
 #include "platform/javascript/os_javascript.h"
 
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
 
+<<<<<<< HEAD
 static OS_JavaScript *os = nullptr;
 static uint64_t target_ticks = 0;
 
+=======
+static OS_JavaScript *os = NULL;
+static uint64_t target_ticks = 0;
+
+// Files drop (implemented in JS for now).
+extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
+	if (!os || !os->get_main_loop()) {
+		ERR_FAIL_MSG("Unable to drop files because the OS or MainLoop are not active");
+	}
+	Vector<String> files;
+	for (int i = 0; i < p_filec; i++) {
+		files.push_back(String::utf8(p_filev[i]));
+	}
+	os->get_main_loop()->drop_files(files);
+}
+
+>>>>>>> audio-bus-effect-fixed
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
 	Main::cleanup();
 	int exit_code = OS_JavaScript::get_singleton()->get_exit_code();
 	memdelete(os);
+<<<<<<< HEAD
 	os = nullptr;
+=======
+	os = NULL;
+>>>>>>> audio-bus-effect-fixed
 	emscripten_force_exit(exit_code); // No matter that we call cancel_main_loop, regular "exit" will not work, forcing.
 }
 
 void main_loop_callback() {
 	uint64_t current_ticks = os->get_ticks_usec();
 
+<<<<<<< HEAD
 	bool force_draw = DisplayServerJavaScript::get_singleton()->check_size_force_redraw();
 	if (force_draw) {
 		Main::force_redraw();
 	} else if (current_ticks < target_ticks) {
+=======
+	bool force_draw = os->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+	} else if (current_ticks < target_ticks && !force_draw) {
+>>>>>>> audio-bus-effect-fixed
 		return; // Skip frame.
 	}
 
@@ -91,13 +123,40 @@ extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
+<<<<<<< HEAD
+=======
+	// Set IDBFS status
+>>>>>>> audio-bus-effect-fixed
 	String idbfs_err = String::utf8(p_idbfs_err);
 	if (!idbfs_err.empty()) {
 		print_line("IndexedDB not available: " + idbfs_err);
 	}
 	os->set_idb_available(idbfs_err.empty());
+<<<<<<< HEAD
 	// TODO: Check error return value.
 	Main::setup2(); // Manual second phase.
+=======
+
+	// Set canvas ID
+	char canvas_ptr[256];
+	/* clang-format off */
+	EM_ASM({
+		stringToUTF8("#" + Module['canvas'].id, $0, 255);
+	}, canvas_ptr);
+	/* clang-format on */
+	os->canvas_id.parse_utf8(canvas_ptr, 255);
+
+	// Set locale
+	char locale_ptr[16];
+	/* clang-format off */
+	EM_ASM({
+		stringToUTF8(Module['locale'], $0, 16);
+	}, locale_ptr);
+	/* clang-format on */
+	setenv("LANG", locale_ptr, true);
+
+	Main::setup2();
+>>>>>>> audio-bus-effect-fixed
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
@@ -114,6 +173,7 @@ int main(int argc, char *argv[]) {
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
 	});
+<<<<<<< HEAD
 
 	// Configure locale.
 	char locale_ptr[16];
@@ -136,6 +196,9 @@ int main(int argc, char *argv[]) {
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
 
+=======
+	os = new OS_JavaScript(argc, argv);
+>>>>>>> audio-bus-effect-fixed
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	emscripten_pause_main_loop(); // Will need to wait for FS sync.

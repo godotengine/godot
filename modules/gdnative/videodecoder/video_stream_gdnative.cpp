@@ -213,6 +213,7 @@ void VideoStreamPlaybackGDNative::cleanup() {
 	}
 	if (pcm) {
 		memfree(pcm);
+<<<<<<< HEAD
 	}
 	if (file) {
 		file->close();
@@ -220,6 +221,14 @@ void VideoStreamPlaybackGDNative::cleanup() {
 		file = nullptr;
 	}
 	pcm = nullptr;
+=======
+	if (file) {
+		file->close();
+		memdelete(file);
+		file = NULL;
+	}
+	pcm = NULL;
+>>>>>>> audio-bus-effect-fixed
 	time = 0;
 	num_channels = -1;
 	interface = nullptr;

@@ -8,6 +8,12 @@ def find_dotnet_cli():
     import os.path
 
     if os.name == "nt":
+<<<<<<< HEAD
+=======
+        windows_exts = os.environ["PATHEXT"]
+        windows_exts = windows_exts.split(os.pathsep) if windows_exts else []
+
+>>>>>>> audio-bus-effect-fixed
         for hint_dir in os.environ["PATH"].split(os.pathsep):
             hint_dir = hint_dir.strip('"')
             hint_path = os.path.join(hint_dir, "dotnet")

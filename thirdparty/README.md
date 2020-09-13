@@ -23,6 +23,7 @@ Files extracted from upstream source:
 - `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
    include/assimp/irrXMLWrapper.h`
 
+<<<<<<< HEAD
 
 ## basis_universal
 
@@ -36,11 +37,17 @@ Files extracted from upstream source:
 - `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
 - `LICENSE`
 
+=======
+>>>>>>> audio-bus-effect-fixed
 
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
+<<<<<<< HEAD
 - Version: git pre-2.90 (cd8cf7521cbb8b7808126a6adebd47bb83ea166a, 2020)
+=======
+- Version: 2.89 (2019)
+>>>>>>> audio-bus-effect-fixed
 - License: zlib
 
 Important: Synced with a pre-release version of bullet 2.90 from the master branch.
@@ -151,7 +158,11 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
+<<<<<<< HEAD
 - Version: 2.10.2 (2020)
+=======
+- Version: 2.10.1 (2019)
+>>>>>>> audio-bus-effect-fixed
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -163,6 +174,7 @@ Files extracted from upstream source:
 
 ## glslang
 
+<<<<<<< HEAD
 - Upstream: https://github.com/KhronosGroup/glslang
 - Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
 - License: glslang
@@ -172,6 +184,11 @@ section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
 good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
 
 Files extracted from upstream source:
+=======
+- Upstream: https://github.com/Dav1dde/glad
+- Version: 0.1.33 (2019)
+- License: MIT
+>>>>>>> audio-bus-effect-fixed
 
 - `glslang`, `OGLCompilersDLL`, `SPIRV`
 - `LICENSE.txt`
@@ -564,7 +581,11 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
+<<<<<<< HEAD
 - Version: 1.0.0 (e4b7840d9448b7d57a88384ce26143004f3c0c71, 2020)
+=======
+- Version: git (4dbd05a22f51a2d7462311569b8b0cba0bbe2ac5, 2020)
+>>>>>>> audio-bus-effect-fixed
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

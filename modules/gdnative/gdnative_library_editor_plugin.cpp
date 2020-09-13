@@ -127,12 +127,23 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 	String section = (id == BUTTON_SELECT_DEPENDENCES || id == BUTTON_CLEAR_DEPENDENCES) ? "dependencies" : "entry";
 
 	if (id == BUTTON_SELECT_LIBRARY || id == BUTTON_SELECT_DEPENDENCES) {
+<<<<<<< HEAD
 		TreeItem *treeItem = Object::cast_to<TreeItem>(item)->get_parent();
 		EditorFileDialog::FileMode mode = EditorFileDialog::FILE_MODE_OPEN_FILE;
 		if (id == BUTTON_SELECT_DEPENDENCES) {
 			mode = EditorFileDialog::FILE_MODE_OPEN_FILES;
 		} else if (treeItem->get_text(0) == "iOS") {
 			mode = EditorFileDialog::FILE_MODE_OPEN_ANY;
+=======
+
+		TreeItem *treeItem = Object::cast_to<TreeItem>(item)->get_parent();
+		EditorFileDialog::Mode mode = EditorFileDialog::MODE_OPEN_FILE;
+
+		if (id == BUTTON_SELECT_DEPENDENCES) {
+			mode = EditorFileDialog::MODE_OPEN_FILES;
+		} else if (treeItem->get_text(0) == "iOS") {
+			mode = EditorFileDialog::MODE_OPEN_ANY;
+>>>>>>> audio-bus-effect-fixed
 		}
 
 		file_dialog->set_meta("target", target);
@@ -145,8 +156,13 @@ void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
 			file_dialog->add_filter(filters[i]);
 		}
 
+<<<<<<< HEAD
 		file_dialog->set_file_mode(mode);
 		file_dialog->popup_file_dialog();
+=======
+		file_dialog->set_mode(mode);
+		file_dialog->popup_centered_ratio();
+>>>>>>> audio-bus-effect-fixed
 
 	} else if (id == BUTTON_CLEAR_LIBRARY) {
 		_set_target_value(section, target, "");
@@ -370,9 +386,15 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
 	//file_dialog->set_resizable(true);
 	add_child(file_dialog);
+<<<<<<< HEAD
 	file_dialog->connect("file_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
 	file_dialog->connect("dir_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
 	file_dialog->connect("files_selected", callable_mp(this, &GDNativeLibraryEditor::_on_dependencies_selected));
+=======
+	file_dialog->connect("file_selected", this, "_on_library_selected");
+	file_dialog->connect("dir_selected", this, "_on_library_selected");
+	file_dialog->connect("files_selected", this, "_on_dependencies_selected");
+>>>>>>> audio-bus-effect-fixed
 
 	new_architecture_dialog = memnew(ConfirmationDialog);
 	add_child(new_architecture_dialog);

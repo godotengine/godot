@@ -146,7 +146,11 @@
 			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
+<<<<<<< HEAD
 				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
+=======
+				Adds [code]child_node[/code] as a child. The child is placed below the given [code]node[/code] in the list of children.
+>>>>>>> audio-bus-effect-fixed
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
@@ -335,6 +339,16 @@
 			</return>
 			<description>
 				Returns the time elapsed since the last physics-bound frame (see [method _physics_process]). This is always a constant value in physics processing unless the frames per second is changed via [member Engine.iterations_per_second].
+<<<<<<< HEAD
+=======
+			</description>
+		</method>
+		<method name="get_position_in_parent" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
+>>>>>>> audio-bus-effect-fixed
 			</description>
 		</method>
 		<method name="get_process_delta_time" qualifiers="const">

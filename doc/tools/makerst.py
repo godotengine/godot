@@ -664,8 +664,43 @@ def rstize_text(text, state):  # type: (str, State) -> str
             result = format_codeblock(block_type, post_text, indent_level, state)
             if result is None:
                 return ""
+<<<<<<< HEAD
             text = pre_text + result[0]
             pos += result[1]
+=======
+
+            code_text = post_text[len("[codeblock]") : end_pos]
+            post_text = post_text[end_pos:]
+
+            # Remove extraneous tabs
+            code_pos = 0
+            while True:
+                code_pos = code_text.find("\n", code_pos)
+                if code_pos == -1:
+                    break
+
+                to_skip = 0
+                while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
+                    to_skip += 1
+
+                if to_skip > indent_level:
+                    print_error(
+                        "Four spaces should be used for indentation within [codeblock], file: {}".format(
+                            state.current_class
+                        ),
+                        state,
+                    )
+
+                if len(code_text[code_pos + to_skip + 1 :]) == 0:
+                    code_text = code_text[:code_pos] + "\n"
+                    code_pos += 1
+                else:
+                    code_text = code_text[:code_pos] + "\n    " + code_text[code_pos + to_skip + 1 :]
+                    code_pos += 5 - to_skip
+
+            text = pre_text + "\n[codeblock]" + code_text + post_text
+            pos += len("\n[codeblock]" + code_text)
+>>>>>>> audio-bus-effect-fixed
 
         # Handle normal text
         else:
@@ -710,7 +745,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
         else:  # command
             cmd = tag_text
             space_pos = tag_text.find(" ")
+<<<<<<< HEAD
             if cmd == "/codeblock" or cmd == "/gdscript" or cmd == "/csharp":
+=======
+            if cmd == "/codeblock":
+>>>>>>> audio-bus-effect-fixed
                 tag_text = ""
                 tag_depth -= 1
                 inside_code = False
@@ -823,6 +862,7 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_depth -= 1
                 tag_text = ""
             elif cmd == "codeblock":
+<<<<<<< HEAD
                 tag_depth += 1
                 tag_text = "\n::\n"
                 inside_code = True
@@ -840,6 +880,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
             elif cmd == "/codeblocks":
                 tag_depth -= 1
                 tag_text = ""
+=======
+                tag_depth += 1
+                tag_text = "\n::\n"
+                inside_code = True
+>>>>>>> audio-bus-effect-fixed
             elif cmd == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"
@@ -868,12 +913,15 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_text = "``"
                 tag_depth += 1
                 inside_code = True
+<<<<<<< HEAD
             elif cmd == "kbd":
                 tag_text = ":kbd:`"
                 tag_depth += 1
             elif cmd == "/kbd":
                 tag_text = "`"
                 tag_depth -= 1
+=======
+>>>>>>> audio-bus-effect-fixed
             elif cmd.startswith("enum "):
                 tag_text = make_enum(cmd[5:], state)
                 escape_post = True
@@ -946,6 +994,7 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
     f.write("\n")
 
 
+<<<<<<< HEAD
 def make_type(klass, state):  # type: (str, State) -> str
     link_type = klass
     if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
@@ -954,6 +1003,13 @@ def make_type(klass, state):  # type: (str, State) -> str
         return ":ref:`{}<class_{}>`".format(klass, link_type)
     print_error("Unresolved type '{}', file: {}".format(klass, state.current_class), state)
     return klass
+=======
+def make_type(t, state):  # type: (str, State) -> str
+    if t in state.classes:
+        return ":ref:`{0}<class_{0}>`".format(t)
+    print_error("Unresolved type '{}', file: {}".format(t, state.current_class), state)
+    return t
+>>>>>>> audio-bus-effect-fixed
 
 
 def make_enum(t, state):  # type: (str, State) -> str

@@ -7,11 +7,16 @@ def configure(env):
 
 
 def get_doc_classes():
+<<<<<<< HEAD
     return [
         "WebRTCPeerConnection",
         "WebRTCDataChannel",
         "WebRTCMultiplayer",
     ]
+=======
+    return ["WebRTCPeerConnection", "WebRTCDataChannel", "WebRTCMultiplayer"]
+
+>>>>>>> audio-bus-effect-fixed
 
 
 def get_doc_path():

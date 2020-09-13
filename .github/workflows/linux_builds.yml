@@ -3,13 +3,21 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
+<<<<<<< HEAD
   GODOT_BASE_BRANCH: master
+=======
+  GODOT_BASE_BRANCH: 3.2
+>>>>>>> audio-bus-effect-fixed
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
   linux-editor:
     runs-on: "ubuntu-20.04"
+<<<<<<< HEAD
     name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
+=======
+    name: Editor w/ Mono (target=release_debug, tools=yes)
+>>>>>>> audio-bus-effect-fixed
 
     steps:
       - uses: actions/checkout@v2
@@ -17,7 +25,10 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+<<<<<<< HEAD
           sudo rm -f /etc/apt/sources.list.d/*
+=======
+>>>>>>> audio-bus-effect-fixed
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -61,6 +72,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
+<<<<<<< HEAD
           scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd tools=yes tests=yes target=release_debug module_mono_enabled=yes mono_glue=no
 
       # Execute unit tests for the editor
@@ -128,6 +140,9 @@ jobs:
       - name: Unit Tests
         run: |
           ./bin/godot.linuxbsd.tools.64s --test
+=======
+          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+>>>>>>> audio-bus-effect-fixed
 
   linux-template:
     runs-on: "ubuntu-20.04"
@@ -139,7 +154,10 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+<<<<<<< HEAD
           sudo rm -f /etc/apt/sources.list.d/*
+=======
+>>>>>>> audio-bus-effect-fixed
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -182,4 +200,8 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
+<<<<<<< HEAD
           scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd target=release tools=no module_mono_enabled=yes mono_glue=no
+=======
+          scons -j2 verbose=yes warnings=all werror=yes platform=x11 target=release tools=no module_mono_enabled=yes mono_glue=no
+>>>>>>> audio-bus-effect-fixed

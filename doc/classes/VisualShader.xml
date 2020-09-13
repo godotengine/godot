@@ -195,8 +195,11 @@
 	<members>
 		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
 			The offset vector of the whole graph.
+<<<<<<< HEAD
 		</member>
 		<member name="version" type="String" setter="set_version" getter="get_version" default="&quot;&quot;">
+=======
+>>>>>>> audio-bus-effect-fixed
 		</member>
 	</members>
 	<constants>
@@ -208,12 +211,15 @@
 		</constant>
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
 			A shader for light calculations.
+<<<<<<< HEAD
 		</constant>
 		<constant name="TYPE_EMIT" value="3" enum="Type">
 		</constant>
 		<constant name="TYPE_PROCESS" value="4" enum="Type">
 		</constant>
 		<constant name="TYPE_END" value="5" enum="Type">
+=======
+>>>>>>> audio-bus-effect-fixed
 		</constant>
 		<constant name="TYPE_MAX" value="6" enum="Type">
 			Represents the size of the [enum Type] enum.

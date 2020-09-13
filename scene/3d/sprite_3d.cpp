@@ -358,21 +358,90 @@ SpriteBase3D::SpriteBase3D() {
 	modulate = Color(1, 1, 1, 1);
 	pending_update = false;
 	opacity = 1.0;
+<<<<<<< HEAD
 	immediate = RenderingServer::get_singleton()->immediate_create();
 	set_base(immediate);
 }
 
 SpriteBase3D::~SpriteBase3D() {
 	RenderingServer::get_singleton()->free(immediate);
+=======
+
+	material = VisualServer::get_singleton()->material_create();
+	// Set defaults for material, names need to match up those in SpatialMaterial
+	VS::get_singleton()->material_set_param(material, "albedo", Color(1, 1, 1, 1));
+	VS::get_singleton()->material_set_param(material, "specular", 0.5);
+	VS::get_singleton()->material_set_param(material, "metallic", 0.0);
+	VS::get_singleton()->material_set_param(material, "roughness", 1.0);
+	VS::get_singleton()->material_set_param(material, "uv1_offset", Vector3(0, 0, 0));
+	VS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
+	VS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
+	VS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
+
+	mesh = VisualServer::get_singleton()->mesh_create();
+
+	PoolVector2Array mesh_vertices;
+	PoolVector3Array mesh_normals;
+	PoolRealArray mesh_tangents;
+	PoolColorArray mesh_colors;
+	PoolVector2Array mesh_uvs;
+
+	mesh_vertices.resize(4);
+	mesh_normals.resize(4);
+	mesh_tangents.resize(16);
+	mesh_colors.resize(4);
+	mesh_uvs.resize(4);
+
+	// create basic mesh and store format information
+	for (int i = 0; i < 4; i++) {
+		mesh_normals.write()[i] = Vector3(0.0, 0.0, 0.0);
+		mesh_tangents.write()[i * 4 + 0] = 0.0;
+		mesh_tangents.write()[i * 4 + 1] = 0.0;
+		mesh_tangents.write()[i * 4 + 2] = 0.0;
+		mesh_tangents.write()[i * 4 + 3] = 0.0;
+		mesh_colors.write()[i] = Color(1.0, 1.0, 1.0, 1.0);
+		mesh_uvs.write()[i] = Vector2(0.0, 0.0);
+		mesh_vertices.write()[i] = Vector2(0.0, 0.0);
+	}
+
+	Array mesh_array;
+	mesh_array.resize(VS::ARRAY_MAX);
+	mesh_array[VS::ARRAY_VERTEX] = mesh_vertices;
+	mesh_array[VS::ARRAY_NORMAL] = mesh_normals;
+	mesh_array[VS::ARRAY_TANGENT] = mesh_tangents;
+	mesh_array[VS::ARRAY_COLOR] = mesh_colors;
+	mesh_array[VS::ARRAY_TEX_UV] = mesh_uvs;
+
+	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLE_FAN, mesh_array);
+	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, 0);
+	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, 0);
+
+	mesh_surface_format = VS::get_singleton()->mesh_surface_get_format(mesh, 0);
+	mesh_buffer = VS::get_singleton()->mesh_surface_get_array(mesh, 0);
+	mesh_stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(mesh_surface_format, surface_vertex_len, surface_index_len, mesh_surface_offsets);
+}
+
+SpriteBase3D::~SpriteBase3D() {
+
+	VisualServer::get_singleton()->free(mesh);
+	VisualServer::get_singleton()->free(material);
+>>>>>>> audio-bus-effect-fixed
 }
 
 ///////////////////////////////////////////
 
 void Sprite3D::_draw() {
+<<<<<<< HEAD
 	RID immediate = get_immediate();
 
 	RS::get_singleton()->immediate_clear(immediate);
 	if (!texture.is_valid()) {
+=======
+
+	set_base(RID());
+
+	if (!texture.is_valid())
+>>>>>>> audio-bus-effect-fixed
 		return;
 	}
 	Vector2 tsize = texture->get_size();
@@ -458,11 +527,14 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
+<<<<<<< HEAD
 	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 	RS::get_singleton()->immediate_set_material(immediate, mat);
 
 	RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
+=======
+>>>>>>> audio-bus-effect-fixed
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
@@ -482,6 +554,7 @@ void Sprite3D::_draw() {
 
 	AABB aabb;
 
+<<<<<<< HEAD
 	for (int i = 0; i < 6; i++) {
 		static const int index[6] = { 0, 1, 2, 0, 2, 3 };
 
@@ -489,20 +562,80 @@ void Sprite3D::_draw() {
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
 		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+=======
+	// Buffer is using default compression, so everything except position is compressed
+	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
+	int8_t v_normal[4] = {
+		(int8_t)CLAMP(normal.x * 127, -128, 127),
+		(int8_t)CLAMP(normal.y * 127, -128, 127),
+		(int8_t)CLAMP(normal.z * 127, -128, 127),
+		0,
+	};
+>>>>>>> audio-bus-effect-fixed
+
+	int8_t v_tangent[4] = {
+		(int8_t)CLAMP(tangent.normal.x * 127, -128, 127),
+		(int8_t)CLAMP(tangent.normal.y * 127, -128, 127),
+		(int8_t)CLAMP(tangent.normal.z * 127, -128, 127),
+		(int8_t)CLAMP(tangent.d * 127, -128, 127)
+	};
+
+	uint8_t v_color[4] = {
+		(uint8_t)CLAMP(int(color.r * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.g * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.b * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.a * 255.0), 0, 255)
+	};
+
+	for (int i = 0; i < 4; i++) {
 		Vector3 vtx;
+<<<<<<< HEAD
 		vtx[x_axis] = vertices[index[i]][0];
 		vtx[y_axis] = vertices[index[i]][1];
 		RS::get_singleton()->immediate_vertex(immediate, vtx);
+=======
+		vtx[x_axis] = vertices[i][0];
+		vtx[y_axis] = vertices[i][1];
+>>>>>>> audio-bus-effect-fixed
 		if (i == 0) {
 			aabb.position = vtx;
 			aabb.size = Vector3();
 		} else {
 			aabb.expand_to(vtx);
 		}
+		if (mesh_surface_format & VS::ARRAY_COMPRESS_TEX_UV) {
+			uint16_t v_uv[2] = { Math::make_half_float(uvs[i].x), Math::make_half_float(uvs[i].y) };
+			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 4);
+		} else {
+			float v_uv[2] = { uvs[i].x, uvs[i].y };
+			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
+		}
+
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &vertices[i], sizeof(float) * 2);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 	}
+
+	write_buffer.release();
+
+	RID mesh = get_mesh();
+	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
+
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
 	set_aabb(aabb);
+<<<<<<< HEAD
 	RS::get_singleton()->immediate_end(immediate);
+=======
+
+	set_base(mesh);
+
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
+	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
+	VS::get_singleton()->instance_set_surface_material(get_instance(), 0, get_material());
+>>>>>>> audio-bus-effect-fixed
 }
 
 void Sprite3D::_texture_changed() {
@@ -688,8 +821,13 @@ Sprite3D::Sprite3D() {
 ////////////////////////////////////////
 
 void AnimatedSprite3D::_draw() {
+<<<<<<< HEAD
 	RID immediate = get_immediate();
 	RS::get_singleton()->immediate_clear(immediate);
+=======
+
+	set_base(RID());
+>>>>>>> audio-bus-effect-fixed
 
 	if (frames.is_null()) {
 		return;
@@ -784,12 +922,15 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
+<<<<<<< HEAD
 	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 
 	RS::get_singleton()->immediate_set_material(immediate, mat);
 
 	RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_TRIANGLES, texture->get_rid());
 
+=======
+>>>>>>> audio-bus-effect-fixed
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
@@ -809,6 +950,7 @@ void AnimatedSprite3D::_draw() {
 
 	AABB aabb;
 
+<<<<<<< HEAD
 	for (int i = 0; i < 6; i++) {
 		static const int indices[6] = {
 			0, 1, 2,
@@ -819,20 +961,81 @@ void AnimatedSprite3D::_draw() {
 		RS::get_singleton()->immediate_tangent(immediate, tangent);
 		RS::get_singleton()->immediate_color(immediate, color);
 		RS::get_singleton()->immediate_uv(immediate, uvs[i]);
+=======
+	// Buffer is using default compression, so everything except position is compressed
+	PoolVector<uint8_t>::Write write_buffer = mesh_buffer.write();
 
+	int8_t v_normal[4] = {
+		(int8_t)CLAMP(normal.x * 127, -128, 127),
+		(int8_t)CLAMP(normal.y * 127, -128, 127),
+		(int8_t)CLAMP(normal.z * 127, -128, 127),
+		0,
+	};
+
+	int8_t v_tangent[4] = {
+		(int8_t)CLAMP(tangent.normal.x * 127, -128, 127),
+		(int8_t)CLAMP(tangent.normal.y * 127, -128, 127),
+		(int8_t)CLAMP(tangent.normal.z * 127, -128, 127),
+		(int8_t)CLAMP(tangent.d * 127, -128, 127)
+	};
+
+	uint8_t v_color[4] = {
+		(uint8_t)CLAMP(int(color.r * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.g * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.b * 255.0), 0, 255),
+		(uint8_t)CLAMP(int(color.a * 255.0), 0, 255)
+	};
+>>>>>>> audio-bus-effect-fixed
+
+	for (int i = 0; i < 4; i++) {
 		Vector3 vtx;
+<<<<<<< HEAD
 		vtx[x_axis] = vertices[indices[i]][0];
 		vtx[y_axis] = vertices[indices[i]][1];
 		RS::get_singleton()->immediate_vertex(immediate, vtx);
+=======
+		vtx[x_axis] = vertices[i][0];
+		vtx[y_axis] = vertices[i][1];
+>>>>>>> audio-bus-effect-fixed
 		if (i == 0) {
 			aabb.position = vtx;
 			aabb.size = Vector3();
 		} else {
 			aabb.expand_to(vtx);
 		}
+
+		if (mesh_surface_format & VS::ARRAY_COMPRESS_TEX_UV) {
+			uint16_t v_uv[2] = { Math::make_half_float(uvs[i].x), Math::make_half_float(uvs[i].y) };
+			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 4);
+		} else {
+			float v_uv[2] = { uvs[i].x, uvs[i].y };
+			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
+		}
+
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &vertices[i], sizeof(float) * 2);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
 	}
+
+	write_buffer.release();
+
+	RID mesh = get_mesh();
+	VS::get_singleton()->mesh_surface_update_region(mesh, 0, 0, mesh_buffer);
+
+	VS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
 	set_aabb(aabb);
+<<<<<<< HEAD
 	RS::get_singleton()->immediate_end(immediate);
+=======
+
+	set_base(mesh);
+
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	VS::get_singleton()->material_set_shader(get_material(), VS::get_singleton()->material_get_shader(mat));
+	VS::get_singleton()->material_set_param(get_material(), "texture_albedo", texture->get_rid());
+	VS::get_singleton()->instance_set_surface_material(get_instance(), 0, get_material());
+>>>>>>> audio-bus-effect-fixed
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {

@@ -116,8 +116,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			autoplay_icon = get_theme_icon("AutoPlay", "EditorIcons");
 			stop->set_icon(get_theme_icon("Stop", "EditorIcons"));
 
+<<<<<<< HEAD
 			onion_toggle->set_icon(get_theme_icon("Onion", "EditorIcons"));
 			onion_skinning->set_icon(get_theme_icon("GuiTabMenuHl", "EditorIcons"));
+=======
+			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
+			onion_skinning->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 
 			pin->set_icon(get_theme_icon("Pin", "EditorIcons"));
 
@@ -385,7 +390,11 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 	if (p_resource->get_path() != "") {
 		path = p_resource->get_path();
 		if (extensions.size()) {
+<<<<<<< HEAD
 			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == nullptr) {
+=======
+			if (extensions.find(p_resource->get_path().get_extension().to_lower()) == NULL) {
+>>>>>>> audio-bus-effect-fixed
 				path = p_resource->get_path().get_base_dir() + p_resource->get_name() + "." + extensions.front()->get();
 			}
 		}
@@ -399,6 +408,10 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 		}
 	}
 	file->set_current_path(path);
+<<<<<<< HEAD
+=======
+	file->popup_centered_ratio();
+>>>>>>> audio-bus-effect-fixed
 	file->set_title(TTR("Save Resource As..."));
 	file->popup_file_dialog();
 	current_option = RESOURCE_SAVE;

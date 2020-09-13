@@ -437,6 +437,134 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart));
 	restart_hb->add_child(restart_button);
 	restart_button->set_text(TTR("Save & Restart"));
+<<<<<<< HEAD
+=======
+	restart_close_button = memnew(ToolButton);
+	restart_close_button->connect("pressed", this, "_editor_restart_close");
+	restart_hb->add_child(restart_close_button);
+	restart_container->hide();
+
+	message = memnew(AcceptDialog);
+	add_child(message);
+
+	Control *input_base = memnew(Control);
+	input_base->set_name(TTR("Input Map"));
+	tab_container->add_child(input_base);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	input_base->add_child(vbc);
+	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
+	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 0);
+	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
+
+	hbc = memnew(HBoxContainer);
+	vbc->add_child(hbc);
+
+	l = memnew(Label);
+	hbc->add_child(l);
+	l->set_text(TTR("Action:"));
+
+	action_name = memnew(LineEdit);
+	action_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(action_name);
+	action_name->connect("text_entered", this, "_action_adds");
+	action_name->connect("text_changed", this, "_action_check");
+
+	action_add_error = memnew(Label);
+	hbc->add_child(action_add_error);
+	action_add_error->hide();
+
+	add = memnew(Button);
+	hbc->add_child(add);
+	add->set_text(TTR("Add"));
+	add->set_disabled(true);
+	add->connect("pressed", this, "_action_add");
+	action_add = add;
+
+	input_editor = memnew(Tree);
+	vbc->add_child(input_editor);
+	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	input_editor->set_columns(3);
+	input_editor->set_column_titles_visible(true);
+	input_editor->set_column_title(0, TTR("Action"));
+	input_editor->set_column_title(1, TTR("Deadzone"));
+	input_editor->set_column_expand(1, false);
+	input_editor->set_column_min_width(1, 80 * EDSCALE);
+	input_editor->set_column_expand(2, false);
+	input_editor->set_column_min_width(2, 50 * EDSCALE);
+	input_editor->connect("item_edited", this, "_action_edited");
+	input_editor->connect("item_activated", this, "_action_activated");
+	input_editor->connect("cell_selected", this, "_action_selected");
+	input_editor->connect("button_pressed", this, "_action_button_pressed");
+	input_editor->set_drag_forwarding(this);
+
+	popup_add = memnew(PopupMenu);
+	add_child(popup_add);
+	popup_add->connect("id_pressed", this, "_add_item");
+
+	press_a_key = memnew(ConfirmationDialog);
+	press_a_key->set_focus_mode(FOCUS_ALL);
+	add_child(press_a_key);
+
+	l = memnew(Label);
+	l->set_text(TTR("Press a Key..."));
+	l->set_anchors_and_margins_preset(Control::PRESET_WIDE);
+	l->set_align(Label::ALIGN_CENTER);
+	l->set_margin(MARGIN_TOP, 20);
+	l->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_BEGIN, 30);
+	press_a_key->get_ok()->set_disabled(true);
+	press_a_key_label = l;
+	press_a_key->add_child(l);
+	press_a_key->connect("gui_input", this, "_wait_for_key");
+	press_a_key->connect("confirmed", this, "_press_a_key_confirm");
+
+	device_input = memnew(ConfirmationDialog);
+	add_child(device_input);
+	device_input->get_ok()->set_text(TTR("Add"));
+	device_input->connect("confirmed", this, "_device_input_add");
+
+	hbc = memnew(HBoxContainer);
+	device_input->add_child(hbc);
+
+	VBoxContainer *vbc_left = memnew(VBoxContainer);
+	hbc->add_child(vbc_left);
+
+	l = memnew(Label);
+	l->set_text(TTR("Device:"));
+	vbc_left->add_child(l);
+
+	device_id = memnew(OptionButton);
+	for (int i = -1; i < 8; i++)
+		device_id->add_item(_get_device_string(i));
+	_set_current_device(0);
+	vbc_left->add_child(device_id);
+
+	VBoxContainer *vbc_right = memnew(VBoxContainer);
+	hbc->add_child(vbc_right);
+	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	l = memnew(Label);
+	l->set_text(TTR("Index:"));
+	vbc_right->add_child(l);
+	device_index_label = l;
+
+	device_index = memnew(OptionButton);
+	device_index->set_clip_text(true);
+
+	vbc_right->add_child(device_index);
+
+	setting = false;
+
+	//translations
+	TabContainer *translations = memnew(TabContainer);
+	translations->set_tab_align(TabContainer::ALIGN_LEFT);
+	translations->set_name(TTR("Localization"));
+	tab_container->add_child(translations);
+	//remap for properly select language in popup
+	translation_locales_idxs_remap = Vector<int>();
+	translation_locales_list_created = false;
+>>>>>>> audio-bus-effect-fixed
 
 	restart_close_button = memnew(Button);
 	restart_close_button->set_flat(true);

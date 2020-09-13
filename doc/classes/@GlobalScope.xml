@@ -39,6 +39,9 @@
 		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
 			The [GodotSharp] singleton.
 		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			The [GodotSharp] singleton.
+		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
@@ -952,8 +955,31 @@
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
+<<<<<<< HEAD
 		<constant name="JOY_INVALID_BUTTON" value="-1" enum="JoyButtonList">
 			An invalid game controller button.
+=======
+		<constant name="JOY_INVALID_OPTION" value="-1" enum="JoystickList">
+			Invalid button or axis.
+		</constant>
+		<constant name="JOY_BUTTON_0" value="0" enum="JoystickList">
+			Gamepad button 0.
+		</constant>
+		<constant name="JOY_BUTTON_1" value="1" enum="JoystickList">
+			Gamepad button 1.
+		</constant>
+		<constant name="JOY_BUTTON_2" value="2" enum="JoystickList">
+			Gamepad button 2.
+		</constant>
+		<constant name="JOY_BUTTON_3" value="3" enum="JoystickList">
+			Gamepad button 3.
+		</constant>
+		<constant name="JOY_BUTTON_4" value="4" enum="JoystickList">
+			Gamepad button 4.
+		</constant>
+		<constant name="JOY_BUTTON_5" value="5" enum="JoystickList">
+			Gamepad button 5.
+>>>>>>> audio-bus-effect-fixed
 		</constant>
 		<constant name="JOY_BUTTON_A" value="0" enum="JoyButtonList">
 			Game controller SDL button A.

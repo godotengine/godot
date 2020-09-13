@@ -51,9 +51,20 @@
 @property(assign, nonatomic) BOOL isVideoCurrentlyPlaying;
 @property(assign, nonatomic) BOOL videoHasFoundError;
 
+<<<<<<< HEAD
 @end
 
 @implementation ViewController
+=======
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str) {
+		return p_argc;
+	}
+
+	p_args[p_argc++] = (char *)"--path";
+	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
+	p_args[p_argc] = NULL;
+>>>>>>> audio-bus-effect-fixed
 
 - (GodotView *)godotView {
 	return (GodotView *)self.view;
@@ -66,11 +77,21 @@
 	self.renderer = renderer;
 	self.view = view;
 
+<<<<<<< HEAD
 	view.renderer = self.renderer;
 
 	[renderer release];
 	[view release];
 }
+=======
+	for (int i = 0; i < [arr count]; i++) {
+		NSString *str = [arr objectAtIndex:i];
+		if (!str) {
+			continue;
+		}
+		p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
+	};
+>>>>>>> audio-bus-effect-fixed
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
 	self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -89,6 +110,7 @@
 		[self godot_commonInit];
 	}
 
+<<<<<<< HEAD
 	return self;
 }
 
@@ -98,6 +120,8 @@
 	self.videoHasFoundError = false;
 }
 
+=======
+>>>>>>> audio-bus-effect-fixed
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
 	printf("*********** did receive memory warning!\n");

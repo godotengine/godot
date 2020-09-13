@@ -181,10 +181,19 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::PACKED_COLOR_ARRAY;
 			}
 
+<<<<<<< HEAD
 			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
 				return Variant::ARRAY;
 			}
+=======
+			if (array_type->eklass == CACHED_CLASS_RAW(Color))
+				return Variant::POOL_COLOR_ARRAY;
+
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+				return Variant::ARRAY;
+>>>>>>> audio-bus-effect-fixed
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -224,12 +233,15 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			if (p_type.type_class == CACHED_CLASS(System_Collections_ICollection) ||
 					p_type.type_class == CACHED_CLASS(System_Collections_IEnumerable)) {
 				return Variant::ARRAY;
+<<<<<<< HEAD
 			}
 		} break;
 
 		case MONO_TYPE_OBJECT: {
 			if (r_nil_is_variant) {
 				*r_nil_is_variant = true;
+=======
+>>>>>>> audio-bus-effect-fixed
 			}
 			return Variant::NIL;
 		} break;
@@ -311,6 +323,71 @@ bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_
 	return false;
 }
 
+<<<<<<< HEAD
+=======
+bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type) {
+	switch (p_dictionary_type.type_encoding) {
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *dict_reftype = mono_type_get_object(mono_domain_get(), p_dictionary_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(dict_reftype) ||
+					GDMonoUtils::Marshal::type_is_system_generic_dictionary(dict_reftype) ||
+					GDMonoUtils::Marshal::type_is_generic_idictionary(dict_reftype)) {
+				MonoReflectionType *key_reftype;
+				MonoReflectionType *value_reftype;
+
+				GDMonoUtils::Marshal::dictionary_get_key_value_types(dict_reftype, &key_reftype, &value_reftype);
+
+				r_key_type = ManagedType::from_reftype(key_reftype);
+				r_value_type = ManagedType::from_reftype(value_reftype);
+				return true;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return false;
+}
+
+String mono_to_utf8_string(MonoString *p_mono_string) {
+	MonoError error;
+	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
+
+	if (!mono_error_ok(&error)) {
+		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
+		mono_error_cleanup(&error);
+		return String();
+	}
+
+	String ret = String::utf8(utf8);
+
+	mono_free(utf8);
+
+	return ret;
+}
+
+String mono_to_utf16_string(MonoString *p_mono_string) {
+	int len = mono_string_length(p_mono_string);
+	String ret;
+
+	if (len == 0)
+		return ret;
+
+	ret.resize(len + 1);
+	ret.set(len, 0);
+
+	CharType *src = (CharType *)mono_string_chars(p_mono_string);
+	CharType *dst = ret.ptrw();
+
+	for (int i = 0; i < len; i++) {
+		dst[i] = src[i];
+	}
+
+	return ret;
+}
+
+>>>>>>> audio-bus-effect-fixed
 MonoObject *variant_to_mono_object(const Variant *p_var) {
 	ManagedType type;
 
@@ -551,6 +628,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 				return (MonoObject *)PackedVector3Array_to_mono_array(p_var->operator PackedVector3Array());
 			}
 
+<<<<<<< HEAD
 			if (array_type->eklass == CACHED_CLASS_RAW(Color)) {
 				return (MonoObject *)PackedColorArray_to_mono_array(p_var->operator PackedColorArray());
 			}
@@ -561,6 +639,13 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 
 			ERR_FAIL_V_MSG(nullptr, "Attempted to convert Variant to a managed array of unmarshallable element type.");
+=======
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+				return (MonoObject *)Array_to_mono_array(p_var->operator Array(), array_type_class);
+
+			ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed array of unmarshallable element type.");
+>>>>>>> audio-bus-effect-fixed
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -922,6 +1007,10 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return mono_array_to_Array((MonoArray *)p_obj);
 			}
 
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class))
+				return mono_array_to_Array((MonoArray *)p_obj);
+
 			if (p_fail_with_err) {
 				ERR_FAIL_V_MSG(Variant(), "Attempted to convert a managed array of unmarshallable element type to Variant.");
 			} else {
@@ -959,6 +1048,7 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 
 			// Godot.Collections.Dictionary
 			if (CACHED_CLASS(Dictionary) == type_class) {
+<<<<<<< HEAD
 				MonoException *exc = nullptr;
 				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
 				UNHANDLED_EXCEPTION(exc);
@@ -972,6 +1062,21 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
+=======
+				MonoException *exc = NULL;
+				Dictionary *ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr).invoke(p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
+
+			// Godot.Collections.Array
+			if (CACHED_CLASS(Array) == type_class) {
+				MonoException *exc = NULL;
+				Array *ptr = CACHED_METHOD_THUNK(Array, GetPtr).invoke(p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
+				return ptr ? Variant(*ptr) : Variant();
+			}
+>>>>>>> audio-bus-effect-fixed
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
@@ -1147,6 +1252,18 @@ Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, [[ma
 MonoArray *Array_to_mono_array(const Array &p_array) {
 	int length = p_array.size();
 	MonoArray *ret = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), length);
+
+	for (int i = 0; i < length; i++) {
+		MonoObject *boxed = variant_to_mono_object(p_array[i]);
+		mono_array_setref(ret, i, boxed);
+	}
+
+	return ret;
+}
+
+MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class) {
+	int length = p_array.size();
+	MonoArray *ret = mono_array_new(mono_domain_get(), p_array_type_class->get_mono_ptr(), length);
 
 	for (int i = 0; i < length; i++) {
 		MonoObject *boxed = variant_to_mono_object(p_array[i]);

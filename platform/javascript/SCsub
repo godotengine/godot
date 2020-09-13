@@ -4,7 +4,10 @@ Import("env")
 
 javascript_files = [
     "audio_driver_javascript.cpp",
+<<<<<<< HEAD
     "display_server_javascript.cpp",
+=======
+>>>>>>> audio-bus-effect-fixed
     "http_client_javascript.cpp",
     "javascript_eval.cpp",
     "javascript_main.cpp",

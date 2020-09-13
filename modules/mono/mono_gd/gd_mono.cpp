@@ -130,6 +130,10 @@ void gd_mono_profiler_init() {
 }
 
 void gd_mono_debug_init() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
 	if (da_args.length()) {
@@ -341,7 +345,11 @@ void GDMono::initialize() {
 #ifdef ANDROID_ENABLED
 	mono_config_parse_memory(get_godot_android_mono_config().utf8().get_data());
 #else
+<<<<<<< HEAD
 	mono_config_parse(nullptr);
+=======
+	mono_config_parse(NULL);
+>>>>>>> audio-bus-effect-fixed
 #endif
 
 #if defined(ANDROID_ENABLED)
@@ -356,7 +364,11 @@ void GDMono::initialize() {
 	gd_mono_profiler_init();
 #endif
 
+<<<<<<< HEAD
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, nullptr);
+=======
+	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
+>>>>>>> audio-bus-effect-fixed
 
 #ifndef TOOLS_ENABLED
 	// Exported games that don't use C# must still work. They likely don't ship with mscorlib.
@@ -424,9 +436,14 @@ void GDMono::initialize_load_assemblies() {
 	bool tool_assemblies_loaded = _load_tools_assemblies();
 	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
 
+<<<<<<< HEAD
 	if (Main::is_project_manager()) {
 		return;
 	}
+=======
+	if (Main::is_project_manager())
+		return;
+>>>>>>> audio-bus-effect-fixed
 #endif
 
 	// Load the project's main assembly. This doesn't necessarily need to succeed.
@@ -521,6 +538,7 @@ void GDMono::add_assembly(int32_t p_domain_id, GDMonoAssembly *p_assembly) {
 }
 
 GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
+<<<<<<< HEAD
 	if (p_name == "mscorlib" && corlib_assembly) {
 		return corlib_assembly;
 	}
@@ -532,6 +550,20 @@ GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
 }
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
+=======
+
+	if (p_name == "mscorlib" && corlib_assembly)
+		return corlib_assembly;
+
+	MonoDomain *domain = mono_domain_get();
+	uint32_t domain_id = domain ? mono_domain_get_id(domain) : 0;
+	GDMonoAssembly **result = assemblies[domain_id].getptr(p_name);
+	return result ? *result : NULL;
+}
+
+bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
+
+>>>>>>> audio-bus-effect-fixed
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!r_assembly);
 #endif
@@ -549,14 +581,18 @@ bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMo
 	CRASH_COND(!r_assembly);
 #endif
 
+<<<<<<< HEAD
 	return load_assembly(p_name, p_aname, r_assembly, p_refonly, GDMonoAssembly::get_default_search_dirs());
 }
 
 bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs) {
+=======
+>>>>>>> audio-bus-effect-fixed
 #ifdef DEBUG_ENABLED
 	CRASH_COND(!r_assembly);
 #endif
 
+<<<<<<< HEAD
 	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
 
 	GDMonoAssembly *assembly = GDMonoAssembly::load(p_name, p_aname, p_refonly, p_search_dirs);
@@ -565,6 +601,24 @@ bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMo
 		return false;
 	}
 
+=======
+	return load_assembly(p_name, p_aname, r_assembly, p_refonly, GDMonoAssembly::get_default_search_dirs());
+}
+
+bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs) {
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!r_assembly);
+#endif
+
+	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
+
+	GDMonoAssembly *assembly = GDMonoAssembly::load(p_name, p_aname, p_refonly, p_search_dirs);
+
+	if (!assembly)
+		return false;
+
+>>>>>>> audio-bus-effect-fixed
 	*r_assembly = assembly;
 
 	print_verbose("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path());
@@ -581,7 +635,10 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMo
 
 	if (!assembly) {
 		return false;
+<<<<<<< HEAD
 	}
+=======
+>>>>>>> audio-bus-effect-fixed
 
 	*r_assembly = assembly;
 
@@ -1081,7 +1138,13 @@ Error GDMono::_unload_scripts_domain() {
 
 	print_verbose("Mono: Unloading scripts domain...");
 
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	print_verbose("Mono: Unloading scripts domain...");
+
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	mono_domain_try_unload(domain, (MonoObject **)&exc);
 
 	if (exc) {
@@ -1194,14 +1257,26 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 		return klass;
 	}
 
+<<<<<<< HEAD
 	int32_t domain_id = mono_domain_get_id(mono_domain_get());
+=======
+	GDMonoClass *klass = corlib_assembly->get_class(p_namespace, p_name);
+	if (klass)
+		return klass;
+
+	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
+>>>>>>> audio-bus-effect-fixed
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[domain_id];
 
 	const String *k = nullptr;
 	while ((k = domain_assemblies.next(k))) {
 		GDMonoAssembly *assembly = domain_assemblies.get(*k);
 		klass = assembly->get_class(p_namespace, p_name);
+<<<<<<< HEAD
 		if (klass) {
+=======
+		if (klass)
+>>>>>>> audio-bus-effect-fixed
 			return klass;
 		}
 	}
@@ -1294,12 +1369,24 @@ GDMono::~GDMono() {
 
 		_domain_assemblies_cleanup(mono_domain_get_id(root_domain));
 
+<<<<<<< HEAD
 		core_api_assembly.assembly = nullptr;
 
 		project_assembly = nullptr;
 
 		root_domain = nullptr;
 		scripts_domain = nullptr;
+=======
+		core_api_assembly.assembly = NULL;
+
+		project_assembly = NULL;
+
+		root_domain = NULL;
+		scripts_domain = NULL;
+
+		// Leave the rest to 'mono_jit_cleanup'
+#endif
+>>>>>>> audio-bus-effect-fixed
 
 		// Leave the rest to 'mono_jit_cleanup'
 #endif
@@ -1328,7 +1415,11 @@ GDMono::~GDMono() {
 	gdmono::android::support::cleanup();
 #endif
 
+<<<<<<< HEAD
 	if (gdmono_log) {
+=======
+	if (gdmono_log)
+>>>>>>> audio-bus-effect-fixed
 		memdelete(gdmono_log);
 	}
 
@@ -1398,12 +1489,19 @@ bool _GodotSharp::is_runtime_initialized() {
 
 void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
+<<<<<<< HEAD
 	CRASH_COND(CSharpLanguage::get_singleton() == nullptr);
 	// This method may be called more than once with `call_deferred`, so we need to check
 	// again if reloading is needed to avoid reloading multiple times unnecessarily.
 	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
 		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
 	}
+=======
+	// This method may be called more than once with `call_deferred`, so we need to check
+	// again if reloading is needed to avoid reloading multiple times unnecessarily.
+	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed())
+		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+>>>>>>> audio-bus-effect-fixed
 #endif
 }
 

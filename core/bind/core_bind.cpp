@@ -195,6 +195,184 @@ void _OS::close_midi_inputs() {
 	OS::get_singleton()->close_midi_inputs();
 }
 
+<<<<<<< HEAD
+=======
+void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
+
+	OS::VideoMode vm;
+	vm.width = p_size.width;
+	vm.height = p_size.height;
+	vm.fullscreen = p_fullscreen;
+	vm.resizable = p_resizeable;
+	OS::get_singleton()->set_video_mode(vm, p_screen);
+}
+
+Size2 _OS::get_video_mode(int p_screen) const {
+
+	OS::VideoMode vm;
+	vm = OS::get_singleton()->get_video_mode(p_screen);
+	return Size2(vm.width, vm.height);
+}
+
+bool _OS::is_video_mode_fullscreen(int p_screen) const {
+
+	OS::VideoMode vm;
+	vm = OS::get_singleton()->get_video_mode(p_screen);
+	return vm.fullscreen;
+}
+
+int _OS::get_screen_count() const {
+	return OS::get_singleton()->get_screen_count();
+}
+
+int _OS::get_current_screen() const {
+	return OS::get_singleton()->get_current_screen();
+}
+
+void _OS::set_current_screen(int p_screen) {
+	OS::get_singleton()->set_current_screen(p_screen);
+}
+
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
+Size2 _OS::get_screen_size(int p_screen) const {
+	return OS::get_singleton()->get_screen_size(p_screen);
+}
+
+int _OS::get_screen_dpi(int p_screen) const {
+
+	return OS::get_singleton()->get_screen_dpi(p_screen);
+}
+
+float _OS::get_screen_scale(int p_screen) const {
+	return OS::get_singleton()->get_screen_scale(p_screen);
+}
+
+float _OS::get_screen_max_scale() const {
+	return OS::get_singleton()->get_screen_max_scale();
+}
+
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2 &p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
+Size2 _OS::get_max_window_size() const {
+	return OS::get_singleton()->get_max_window_size();
+}
+
+Size2 _OS::get_min_window_size() const {
+	return OS::get_singleton()->get_min_window_size();
+}
+
+Size2 _OS::get_window_size() const {
+	return OS::get_singleton()->get_window_size();
+}
+
+Size2 _OS::get_real_window_size() const {
+	return OS::get_singleton()->get_real_window_size();
+}
+
+void _OS::set_max_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_max_window_size(p_size);
+}
+
+void _OS::set_min_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_min_window_size(p_size);
+}
+
+void _OS::set_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_window_size(p_size);
+}
+
+Rect2 _OS::get_window_safe_area() const {
+	return OS::get_singleton()->get_window_safe_area();
+}
+
+void _OS::set_window_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_fullscreen() const {
+	return OS::get_singleton()->is_window_fullscreen();
+}
+
+void _OS::set_window_resizable(bool p_enabled) {
+	OS::get_singleton()->set_window_resizable(p_enabled);
+}
+
+bool _OS::is_window_resizable() const {
+	return OS::get_singleton()->is_window_resizable();
+}
+
+void _OS::set_window_minimized(bool p_enabled) {
+	OS::get_singleton()->set_window_minimized(p_enabled);
+}
+
+bool _OS::is_window_minimized() const {
+	return OS::get_singleton()->is_window_minimized();
+}
+
+void _OS::set_window_maximized(bool p_enabled) {
+	OS::get_singleton()->set_window_maximized(p_enabled);
+}
+
+bool _OS::is_window_maximized() const {
+	return OS::get_singleton()->is_window_maximized();
+}
+
+void _OS::set_window_always_on_top(bool p_enabled) {
+	OS::get_singleton()->set_window_always_on_top(p_enabled);
+}
+
+bool _OS::is_window_always_on_top() const {
+	return OS::get_singleton()->is_window_always_on_top();
+}
+
+bool _OS::is_window_focused() const {
+	return OS::get_singleton()->is_window_focused();
+}
+
+void _OS::set_borderless_window(bool p_borderless) {
+	OS::get_singleton()->set_borderless_window(p_borderless);
+}
+
+bool _OS::get_window_per_pixel_transparency_enabled() const {
+	return OS::get_singleton()->get_window_per_pixel_transparency_enabled();
+}
+
+void _OS::set_window_per_pixel_transparency_enabled(bool p_enabled) {
+	OS::get_singleton()->set_window_per_pixel_transparency_enabled(p_enabled);
+}
+
+bool _OS::get_borderless_window() const {
+	return OS::get_singleton()->get_borderless_window();
+}
+
+void _OS::set_ime_active(const bool p_active) {
+
+	OS::get_singleton()->set_ime_active(p_active);
+}
+
+void _OS::set_ime_position(const Point2 &p_pos) {
+
+	OS::get_singleton()->set_ime_position(p_pos);
+}
+
+Point2 _OS::get_ime_selection() const {
+	return OS::get_singleton()->get_ime_selection();
+}
+
+String _OS::get_ime_text() const {
+	return OS::get_singleton()->get_ime_text();
+}
+
+>>>>>>> audio-bus-effect-fixed
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 	FileAccess::set_backup_save(p_enable);
 }
@@ -220,6 +398,10 @@ String _OS::get_executable_path() const {
 }
 
 Error _OS::shell_open(String p_uri) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
@@ -282,6 +464,42 @@ String _OS::get_locale() const {
 	return OS::get_singleton()->get_locale();
 }
 
+<<<<<<< HEAD
+=======
+String _OS::get_latin_keyboard_variant() const {
+	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
+		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
+		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
+		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
+		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
+		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
+		case OS::LATIN_KEYBOARD_NEO: return "NEO";
+		case OS::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
+		default: return "ERROR";
+	}
+}
+
+int _OS::keyboard_get_layout_count() const {
+	return OS::get_singleton()->keyboard_get_layout_count();
+}
+
+int _OS::keyboard_get_current_layout() const {
+	return OS::get_singleton()->keyboard_get_current_layout();
+}
+
+void _OS::keyboard_set_current_layout(int p_index) {
+	OS::get_singleton()->keyboard_set_current_layout(p_index);
+}
+
+String _OS::keyboard_get_layout_language(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_language(p_index);
+}
+
+String _OS::keyboard_get_layout_name(int p_index) const {
+	return OS::get_singleton()->keyboard_get_layout_name(p_index);
+}
+
+>>>>>>> audio-bus-effect-fixed
 String _OS::get_model_name() const {
 	return OS::get_singleton()->get_model_name();
 }
@@ -614,6 +832,25 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 
 		type_count[r->get_class()]++;
 	}
+<<<<<<< HEAD
+=======
+};
+
+bool _OS::has_virtual_keyboard() const {
+	return OS::get_singleton()->has_virtual_keyboard();
+}
+
+void _OS::show_virtual_keyboard(const String &p_existing_text, bool p_multiline) {
+	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2(), p_multiline);
+}
+
+void _OS::hide_virtual_keyboard() {
+	OS::get_singleton()->hide_virtual_keyboard();
+}
+
+int _OS::get_virtual_keyboard_height() {
+	return OS::get_singleton()->get_virtual_keyboard_height();
+>>>>>>> audio-bus-effect-fixed
 }
 
 void _OS::print_all_resources(const String &p_to_file) {
@@ -668,9 +905,31 @@ Vector<String> _OS::get_granted_permissions() const {
 	return OS::get_singleton()->get_granted_permissions();
 }
 
+<<<<<<< HEAD
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
+=======
+int _OS::get_tablet_driver_count() const {
+	return OS::get_singleton()->get_tablet_driver_count();
+}
+
+String _OS::get_tablet_driver_name(int p_driver) const {
+	return OS::get_singleton()->get_tablet_driver_name(p_driver);
+}
+
+String _OS::get_current_tablet_driver() const {
+	return OS::get_singleton()->get_current_tablet_driver();
+}
+
+void _OS::set_current_tablet_driver(const String &p_driver) {
+	OS::get_singleton()->set_current_tablet_driver(p_driver);
+}
+
+_OS *_OS::singleton = NULL;
+
+void _OS::_bind_methods() {
+>>>>>>> audio-bus-effect-fixed
 
 int _OS::get_tablet_driver_count() const {
 	return OS::get_singleton()->get_tablet_driver_count();
@@ -695,6 +954,63 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
 
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("get_screen_count"), &_OS::get_screen_count);
+	ClassDB::bind_method(D_METHOD("get_current_screen"), &_OS::get_current_screen);
+	ClassDB::bind_method(D_METHOD("set_current_screen", "screen"), &_OS::set_current_screen);
+	ClassDB::bind_method(D_METHOD("get_screen_position", "screen"), &_OS::get_screen_position, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_screen_size", "screen"), &_OS::get_screen_size, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_screen_dpi", "screen"), &_OS::get_screen_dpi, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_screen_scale", "screen"), &_OS::get_screen_scale, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_screen_max_scale"), &_OS::get_screen_max_scale);
+	ClassDB::bind_method(D_METHOD("get_window_position"), &_OS::get_window_position);
+	ClassDB::bind_method(D_METHOD("set_window_position", "position"), &_OS::set_window_position);
+	ClassDB::bind_method(D_METHOD("get_window_size"), &_OS::get_window_size);
+	ClassDB::bind_method(D_METHOD("get_max_window_size"), &_OS::get_max_window_size);
+	ClassDB::bind_method(D_METHOD("get_min_window_size"), &_OS::get_min_window_size);
+	ClassDB::bind_method(D_METHOD("set_max_window_size", "size"), &_OS::set_max_window_size);
+	ClassDB::bind_method(D_METHOD("set_min_window_size", "size"), &_OS::set_min_window_size);
+	ClassDB::bind_method(D_METHOD("set_window_size", "size"), &_OS::set_window_size);
+	ClassDB::bind_method(D_METHOD("get_window_safe_area"), &_OS::get_window_safe_area);
+	ClassDB::bind_method(D_METHOD("set_window_fullscreen", "enabled"), &_OS::set_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("is_window_fullscreen"), &_OS::is_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("set_window_resizable", "enabled"), &_OS::set_window_resizable);
+	ClassDB::bind_method(D_METHOD("is_window_resizable"), &_OS::is_window_resizable);
+	ClassDB::bind_method(D_METHOD("set_window_minimized", "enabled"), &_OS::set_window_minimized);
+	ClassDB::bind_method(D_METHOD("is_window_minimized"), &_OS::is_window_minimized);
+	ClassDB::bind_method(D_METHOD("set_window_maximized", "enabled"), &_OS::set_window_maximized);
+	ClassDB::bind_method(D_METHOD("is_window_maximized"), &_OS::is_window_maximized);
+	ClassDB::bind_method(D_METHOD("set_window_always_on_top", "enabled"), &_OS::set_window_always_on_top);
+	ClassDB::bind_method(D_METHOD("is_window_always_on_top"), &_OS::is_window_always_on_top);
+	ClassDB::bind_method(D_METHOD("is_window_focused"), &_OS::is_window_focused);
+	ClassDB::bind_method(D_METHOD("request_attention"), &_OS::request_attention);
+	ClassDB::bind_method(D_METHOD("get_real_window_size"), &_OS::get_real_window_size);
+	ClassDB::bind_method(D_METHOD("center_window"), &_OS::center_window);
+	ClassDB::bind_method(D_METHOD("move_window_to_foreground"), &_OS::move_window_to_foreground);
+
+	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
+
+	ClassDB::bind_method(D_METHOD("get_window_per_pixel_transparency_enabled"), &_OS::get_window_per_pixel_transparency_enabled);
+	ClassDB::bind_method(D_METHOD("set_window_per_pixel_transparency_enabled", "enabled"), &_OS::set_window_per_pixel_transparency_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &_OS::set_ime_active);
+	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &_OS::set_ime_position);
+	ClassDB::bind_method(D_METHOD("get_ime_selection"), &_OS::get_ime_selection);
+	ClassDB::bind_method(D_METHOD("get_ime_text"), &_OS::get_ime_text);
+
+	ClassDB::bind_method(D_METHOD("set_screen_orientation", "orientation"), &_OS::set_screen_orientation);
+	ClassDB::bind_method(D_METHOD("get_screen_orientation"), &_OS::get_screen_orientation);
+
+	ClassDB::bind_method(D_METHOD("set_keep_screen_on", "enabled"), &_OS::set_keep_screen_on);
+	ClassDB::bind_method(D_METHOD("is_keep_screen_on"), &_OS::is_keep_screen_on);
+
+	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"), &_OS::has_touchscreen_ui_hint);
+
+	ClassDB::bind_method(D_METHOD("set_window_title", "title"), &_OS::set_window_title);
+
+>>>>>>> audio-bus-effect-fixed
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
 
@@ -734,6 +1050,16 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_locale"), &_OS::get_locale);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &_OS::get_model_name);
 
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &_OS::keyboard_get_layout_count);
+	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &_OS::keyboard_get_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &_OS::keyboard_set_current_layout);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &_OS::keyboard_get_layout_language);
+	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &_OS::keyboard_get_layout_name);
+
+	ClassDB::bind_method(D_METHOD("can_draw"), &_OS::can_draw);
+>>>>>>> audio-bus-effect-fixed
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &_OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &_OS::is_stdout_verbose);
 
@@ -743,6 +1069,13 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &_OS::dump_memory_to_file);
 	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &_OS::dump_resources_to_file);
+<<<<<<< HEAD
+=======
+	ClassDB::bind_method(D_METHOD("has_virtual_keyboard"), &_OS::has_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("show_virtual_keyboard", "existing_text", "multiline"), &_OS::show_virtual_keyboard, DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("hide_virtual_keyboard"), &_OS::hide_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_height"), &_OS::get_virtual_keyboard_height);
+>>>>>>> audio-bus-effect-fixed
 	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &_OS::print_resources_in_use, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &_OS::print_all_resources, DEFVAL(""));
 
@@ -775,6 +1108,13 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_tablet_driver"), &_OS::get_current_tablet_driver);
 	ClassDB::bind_method(D_METHOD("set_current_tablet_driver", "name"), &_OS::set_current_tablet_driver);
 
+<<<<<<< HEAD
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tablet_driver"), "set_current_tablet_driver", "get_current_tablet_driver");
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");
+>>>>>>> audio-bus-effect-fixed
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "exit_code"), "set_exit_code", "get_exit_code");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");

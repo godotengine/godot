@@ -2173,7 +2173,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 	// Move the canvas items with the arrow keys
 	if (k.is_valid() && k->is_pressed() && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
+<<<<<<< HEAD
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
+=======
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+>>>>>>> audio-bus-effect-fixed
 		if (!k->is_echo()) {
 			// Start moving the canvas items with the keyboard
 			drag_selection = _get_edited_canvas_items();
@@ -2263,7 +2267,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	}
 
 	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
+<<<<<<< HEAD
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
+=======
+			(k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_LEFT || k->get_scancode() == KEY_RIGHT)) {
+>>>>>>> audio-bus-effect-fixed
 		// Confirm canvas items move by arrow keys
 		if ((!Input::get_singleton()->is_key_pressed(KEY_UP)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
@@ -3998,6 +4006,7 @@ void CanvasItemEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+<<<<<<< HEAD
 		select_button->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
 		list_select_button->set_icon(get_theme_icon("ListSelect", "EditorIcons"));
 		move_button->set_icon(get_theme_icon("ToolMove", "EditorIcons"));
@@ -4028,6 +4037,38 @@ void CanvasItemEditor::_notification(int p_what) {
 		zoom_plus->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
 		presets_menu->set_icon(get_theme_icon("ControlLayout", "EditorIcons"));
+=======
+		select_button->set_icon(get_icon("ToolSelect", "EditorIcons"));
+		list_select_button->set_icon(get_icon("ListSelect", "EditorIcons"));
+		move_button->set_icon(get_icon("ToolMove", "EditorIcons"));
+		scale_button->set_icon(get_icon("ToolScale", "EditorIcons"));
+		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
+		smart_snap_button->set_icon(get_icon("Snap", "EditorIcons"));
+		grid_snap_button->set_icon(get_icon("SnapGrid", "EditorIcons"));
+		snap_config_menu->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
+		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
+		override_camera_button->set_icon(get_icon("Camera2D", "EditorIcons"));
+		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
+		ruler_button->set_icon(get_icon("Ruler", "EditorIcons"));
+		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
+		select_handle = get_icon("EditorHandle", "EditorIcons");
+		anchor_handle = get_icon("EditorControlAnchor", "EditorIcons");
+		lock_button->set_icon(get_icon("Lock", "EditorIcons"));
+		unlock_button->set_icon(get_icon("Unlock", "EditorIcons"));
+		group_button->set_icon(get_icon("Group", "EditorIcons"));
+		ungroup_button->set_icon(get_icon("Ungroup", "EditorIcons"));
+		key_loc_button->set_icon(get_icon("KeyPosition", "EditorIcons"));
+		key_rot_button->set_icon(get_icon("KeyRotation", "EditorIcons"));
+		key_scale_button->set_icon(get_icon("KeyScale", "EditorIcons"));
+		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
+		key_auto_insert_button->set_icon(get_icon("AutoKey", "EditorIcons"));
+		animation_menu->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
+
+		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
+		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
+
+		presets_menu->set_icon(get_icon("ControlLayout", "EditorIcons"));
+>>>>>>> audio-bus-effect-fixed
 		PopupMenu *p = presets_menu->get_popup();
 
 		p->clear();
@@ -4409,7 +4450,11 @@ float CanvasItemEditor::_get_next_zoom_value(int p_increment_count) const {
 void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
 
+<<<<<<< HEAD
 	if (p_zoom == zoom) {
+=======
+	if (p_zoom == zoom)
+>>>>>>> audio-bus-effect-fixed
 		return;
 	}
 
@@ -5700,7 +5745,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	pan_button->set_flat(true);
 	hb->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
+<<<<<<< HEAD
 	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_PAN));
+=======
+	pan_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
+>>>>>>> audio-bus-effect-fixed
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
@@ -6423,8 +6472,13 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	selector->add_child(vbc);
+<<<<<<< HEAD
 	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+=======
+	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
+>>>>>>> audio-bus-effect-fixed
 	vbc->set_custom_minimum_size(Size2(240, 260) * EDSCALE);
 
 	btn_group = memnew(VBoxContainer);

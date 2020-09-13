@@ -135,7 +135,11 @@ MonoThread *attach_current_thread() {
 	// The scripts domain is the root domain
 	MonoThread *mono_thread = mono_thread_attach(scripts_domain);
 #endif
+<<<<<<< HEAD
 	ERR_FAIL_NULL_V(mono_thread, nullptr);
+=======
+	ERR_FAIL_NULL_V(mono_thread, NULL);
+>>>>>>> audio-bus-effect-fixed
 	return mono_thread;
 }
 
@@ -594,7 +598,11 @@ bool type_is_generic_dictionary(MonoReflectionType *p_reftype) {
 
 bool type_is_system_generic_list(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsSystemGenericList).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -602,7 +610,11 @@ bool type_is_system_generic_list(MonoReflectionType *p_reftype) {
 
 bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsSystemGenericDictionary).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -610,7 +622,11 @@ bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype) {
 
 bool type_is_generic_ienumerable(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericIEnumerable).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -618,7 +634,11 @@ bool type_is_generic_ienumerable(MonoReflectionType *p_reftype) {
 
 bool type_is_generic_icollection(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericICollection).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -626,20 +646,32 @@ bool type_is_generic_icollection(MonoReflectionType *p_reftype) {
 
 bool type_is_generic_idictionary(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericIDictionary).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
 }
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype) {
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType).invoke(p_array_reftype, r_elem_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }
 
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
+<<<<<<< HEAD
 	MonoException *exc = nullptr;
+=======
+	MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 	CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes).invoke(p_dict_reftype, r_key_reftype, r_value_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }

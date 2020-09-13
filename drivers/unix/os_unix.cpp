@@ -170,7 +170,11 @@ double OS_Unix::get_unix_time() const {
 };
 
 OS::Date OS_Unix::get_date(bool utc) const {
+<<<<<<< HEAD
 	time_t t = time(nullptr);
+=======
+	time_t t = time(NULL);
+>>>>>>> audio-bus-effect-fixed
 	struct tm lt;
 	if (utc) {
 		gmtime_r(&t, &lt);
@@ -191,7 +195,11 @@ OS::Date OS_Unix::get_date(bool utc) const {
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
+<<<<<<< HEAD
 	time_t t = time(nullptr);
+=======
+	time_t t = time(NULL);
+>>>>>>> audio-bus-effect-fixed
 	struct tm lt;
 	if (utc) {
 		gmtime_r(&t, &lt);
@@ -207,7 +215,11 @@ OS::Time OS_Unix::get_time(bool utc) const {
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
+<<<<<<< HEAD
 	time_t t = time(nullptr);
+=======
+	time_t t = time(NULL);
+>>>>>>> audio-bus-effect-fixed
 	struct tm lt;
 	localtime_r(&t, &lt);
 	char name[16];

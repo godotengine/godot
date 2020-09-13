@@ -2021,6 +2021,7 @@ Char16String String::utf16() const {
 			APPEND_CHAR(uint32_t((c >> 10) + 0xd7c0)); // lead surrogate.
 			APPEND_CHAR(uint32_t((c & 0x3ff) | 0xdc00)); // trail surrogate.
 		}
+<<<<<<< HEAD
 	}
 #undef APPEND_CHAR
 	*cdst = 0; //trailing zero
@@ -2043,6 +2044,15 @@ String::String(const char32_t *p_str) {
 String::String(const char *p_str, int p_clip_to_len) {
 	copy_from(p_str, p_clip_to_len);
 }
+=======
+		// Check for overflow/underflow, with special case to ensure INT32_MIN does not result in error
+		bool overflow = ((hex > INT32_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT32_MAX >> 4) + 1))) || (sign == -1 && hex == (INT32_MAX >> 4) + 1 && c > '0');
+		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+		hex *= 16;
+		hex += n;
+		s++;
+	}
+>>>>>>> audio-bus-effect-fixed
 
 String::String(const wchar_t *p_str, int p_clip_to_len) {
 	copy_from(p_str, p_clip_to_len);
@@ -2091,7 +2101,10 @@ int64_t String::hex_to_int(bool p_with_prefix) const {
 		} else {
 			return 0;
 		}
+<<<<<<< HEAD
 		// Check for overflow/underflow, with special case to ensure INT64_MIN does not result in error
+=======
+>>>>>>> audio-bus-effect-fixed
 		bool overflow = ((hex > INT64_MAX / 16) && (sign == 1 || (sign == -1 && hex != (INT64_MAX >> 4) + 1))) || (sign == -1 && hex == (INT64_MAX >> 4) + 1 && c > '0');
 		ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
@@ -2156,8 +2169,13 @@ int64_t String::to_int() const {
 	for (int i = 0; i < to; i++) {
 		char32_t c = operator[](i);
 		if (c >= '0' && c <= '9') {
+<<<<<<< HEAD
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+=======
+			bool overflow = (integer > INT32_MAX / 10) || (integer == INT32_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+>>>>>>> audio-bus-effect-fixed
 			integer *= 10;
 			integer += c - '0';
 
@@ -2183,6 +2201,7 @@ int64_t String::to_int(const char *p_str, int p_len) {
 	int64_t sign = 1;
 
 	for (int i = 0; i < to; i++) {
+<<<<<<< HEAD
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
@@ -2191,6 +2210,16 @@ int64_t String::to_int(const char *p_str, int p_len) {
 			integer += c - '0';
 
 		} else if (c == '-' && integer == 0) {
+=======
+		CharType c = operator[](i);
+		if (c >= '0' && c <= '9') {
+			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			integer *= 10;
+			integer += c - '0';
+
+		} else if (integer == 0 && c == '-') {
+>>>>>>> audio-bus-effect-fixed
 			sign = -sign;
 		} else if (c != ' ') {
 			break;
@@ -2216,8 +2245,13 @@ int64_t String::to_int(const wchar_t *p_str, int p_len) {
 	for (int i = 0; i < to; i++) {
 		wchar_t c = p_str[i];
 		if (c >= '0' && c <= '9') {
+<<<<<<< HEAD
 			bool overflow = (integer > INT64_MAX / 10) || (integer == INT64_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
 			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+=======
+			bool overflow = (integer > INT32_MAX / 10) || (integer == INT32_MAX / 10 && ((sign == 1 && c > '7') || (sign == -1 && c > '8')));
+			ERR_FAIL_COND_V_MSG(overflow, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+>>>>>>> audio-bus-effect-fixed
 			integer *= 10;
 			integer += c - '0';
 

@@ -570,7 +570,11 @@ void Environment::_update_sdfgi() {
 
 void Environment::set_glow_enabled(bool p_enabled) {
 	glow_enabled = p_enabled;
+<<<<<<< HEAD
 	_update_glow();
+=======
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 	_change_notify();
 }
 
@@ -587,7 +591,11 @@ void Environment::set_glow_level_enabled(int p_level, bool p_enabled) {
 		glow_levels &= ~(1 << p_level);
 	}
 
+<<<<<<< HEAD
 	_update_glow();
+=======
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 bool Environment::is_glow_level_enabled(int p_level) const {
@@ -598,7 +606,12 @@ bool Environment::is_glow_level_enabled(int p_level) const {
 
 void Environment::set_glow_intensity(float p_intensity) {
 	glow_intensity = p_intensity;
+<<<<<<< HEAD
 	_update_glow();
+=======
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 float Environment::get_glow_intensity() const {
@@ -607,7 +620,11 @@ float Environment::get_glow_intensity() const {
 
 void Environment::set_glow_strength(float p_strength) {
 	glow_strength = p_strength;
+<<<<<<< HEAD
 	_update_glow();
+=======
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 float Environment::get_glow_strength() const {
@@ -623,9 +640,13 @@ float Environment::get_glow_mix() const {
 	return glow_mix;
 }
 
+<<<<<<< HEAD
 void Environment::set_glow_bloom(float p_threshold) {
 	glow_bloom = p_threshold;
 	_update_glow();
+=======
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 float Environment::get_glow_bloom() const {
@@ -634,8 +655,13 @@ float Environment::get_glow_bloom() const {
 
 void Environment::set_glow_blend_mode(GlowBlendMode p_mode) {
 	glow_blend_mode = p_mode;
+<<<<<<< HEAD
 	_update_glow();
 	_change_notify();
+=======
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
@@ -644,16 +670,40 @@ Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
 
 void Environment::set_glow_hdr_bleed_threshold(float p_threshold) {
 	glow_hdr_bleed_threshold = p_threshold;
+<<<<<<< HEAD
 	_update_glow();
+=======
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 float Environment::get_glow_hdr_bleed_threshold() const {
 	return glow_hdr_bleed_threshold;
 }
 
+<<<<<<< HEAD
+=======
+void Environment::set_glow_hdr_luminance_cap(float p_amount) {
+
+	glow_hdr_luminance_cap = p_amount;
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+}
+float Environment::get_glow_hdr_luminance_cap() const {
+
+	return glow_hdr_luminance_cap;
+}
+
+>>>>>>> audio-bus-effect-fixed
 void Environment::set_glow_hdr_bleed_scale(float p_scale) {
 	glow_hdr_bleed_scale = p_scale;
+<<<<<<< HEAD
 	_update_glow();
+=======
+
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 float Environment::get_glow_hdr_bleed_scale() const {
@@ -665,8 +715,13 @@ void Environment::set_glow_hdr_luminance_cap(float p_amount) {
 	_update_glow();
 }
 
+<<<<<<< HEAD
 float Environment::get_glow_hdr_luminance_cap() const {
 	return glow_hdr_luminance_cap;
+=======
+	glow_bicubic_upscale = p_enable;
+	VS::get_singleton()->environment_set_glow(environment, glow_enabled, glow_levels, glow_intensity, glow_strength, glow_bloom, VS::EnvironmentGlowBlendMode(glow_blend_mode), glow_hdr_bleed_threshold, glow_hdr_bleed_scale, glow_hdr_luminance_cap, glow_bicubic_upscale);
+>>>>>>> audio-bus-effect-fixed
 }
 
 void Environment::_update_glow() {
@@ -1059,8 +1114,13 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("Tonemap", "tonemap_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tonemap_mode", PROPERTY_HINT_ENUM, "Linear,Reinhard,Filmic,ACES"), "set_tonemapper", "get_tonemapper");
+<<<<<<< HEAD
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_exposure", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_exposure", "get_tonemap_exposure");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tonemap_white", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_tonemap_white", "get_tonemap_white");
+>>>>>>> audio-bus-effect-fixed
 	ADD_GROUP("Auto Exposure", "auto_exposure_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_exposure_enabled"), "set_tonemap_auto_exposure_enabled", "is_tonemap_auto_exposure_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_exposure_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_tonemap_auto_exposure_grey", "get_tonemap_auto_exposure_grey");
@@ -1109,11 +1169,23 @@ void Environment::_bind_methods() {
 
 	ADD_GROUP("SSAO", "ssao_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ssao_enabled"), "set_ssao_enabled", "is_ssao_enabled");
+<<<<<<< HEAD
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_radius", PROPERTY_HINT_RANGE, "0.1,128,0.01"), "set_ssao_radius", "get_ssao_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_intensity", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity", "get_ssao_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_bias", PROPERTY_HINT_RANGE, "0.001,8,0.001"), "set_ssao_bias", "get_ssao_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
+=======
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_radius", PROPERTY_HINT_RANGE, "0.1,128,0.01"), "set_ssao_radius", "get_ssao_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_intensity", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity", "get_ssao_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_radius2", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_radius2", "get_ssao_radius2");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_intensity2", PROPERTY_HINT_RANGE, "0.0,128,0.01"), "set_ssao_intensity2", "get_ssao_intensity2");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_bias", PROPERTY_HINT_RANGE, "0.001,8,0.001"), "set_ssao_bias", "get_ssao_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_light_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_direct_light_affect", "get_ssao_direct_light_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ssao_ao_channel_affect", PROPERTY_HINT_RANGE, "0.00,1,0.01"), "set_ssao_ao_channel_affect", "get_ssao_ao_channel_affect");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ssao_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ssao_color", "get_ssao_color");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), "set_ssao_quality", "get_ssao_quality");
+>>>>>>> audio-bus-effect-fixed
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ssao_blur", PROPERTY_HINT_ENUM, "Disabled,1x1,2x2,3x3"), "set_ssao_blur", "get_ssao_blur");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ssao_edge_sharpness", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_ssao_edge_sharpness", "get_ssao_edge_sharpness");
 

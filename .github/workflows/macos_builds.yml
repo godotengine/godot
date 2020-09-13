@@ -3,14 +3,22 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
+<<<<<<< HEAD
   GODOT_BASE_BRANCH: master
+=======
+  GODOT_BASE_BRANCH: 3.2
+>>>>>>> audio-bus-effect-fixed
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
   macos-editor:
     runs-on: "macos-latest"
 
+<<<<<<< HEAD
     name: Editor (target=release_debug, tools=yes, tests=yes)
+=======
+    name: Editor (target=release_debug, tools=yes)
+>>>>>>> audio-bus-effect-fixed
 
     steps:
       - uses: actions/checkout@v2
@@ -49,12 +57,16 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
+<<<<<<< HEAD
           scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes tests=yes target=release_debug
 
       # Execute unit tests for the editor
       - name: Unit Tests
         run: |
           ./bin/godot.osx.opt.tools.64 --test
+=======
+          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
+>>>>>>> audio-bus-effect-fixed
 
   macos-template:
     runs-on: "macos-latest"

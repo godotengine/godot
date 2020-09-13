@@ -303,5 +303,12 @@ Error AudioDriverJavaScript::capture_stop() {
 }
 
 AudioDriverJavaScript::AudioDriverJavaScript() {
+<<<<<<< HEAD
+=======
+	_driver_id = 0;
+	internal_buffer = NULL;
+	buffer_length = 0;
+
+>>>>>>> audio-bus-effect-fixed
 	singleton = this;
 }

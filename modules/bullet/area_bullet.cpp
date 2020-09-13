@@ -44,7 +44,23 @@
 */
 
 AreaBullet::AreaBullet() :
+<<<<<<< HEAD
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA) {
+=======
+		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
+		monitorable(true),
+		spOv_mode(PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED),
+		spOv_gravityPoint(false),
+		spOv_gravityPointDistanceScale(0),
+		spOv_gravityPointAttenuation(1),
+		spOv_gravityVec(0, -1, 0),
+		spOv_gravityMag(10),
+		spOv_linearDump(0.1),
+		spOv_angularDump(0.1),
+		spOv_priority(0),
+		isScratched(false) {
+
+>>>>>>> audio-bus-effect-fixed
 	btGhost = bulletnew(btGhostObject);
 	reload_shapes();
 	setupBulletCollisionObject(btGhost);
@@ -172,6 +188,10 @@ void AreaBullet::set_space(SpaceBullet *p_space) {
 
 	if (space) {
 		clear_overlaps(false);
+<<<<<<< HEAD
+=======
+		isScratched = false;
+>>>>>>> audio-bus-effect-fixed
 
 		// Remove this object form the physics world
 		space->unregister_collision_object(this);

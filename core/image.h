@@ -46,7 +46,11 @@
 class Image;
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
+<<<<<<< HEAD
 typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+=======
+typedef PoolVector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+>>>>>>> audio-bus-effect-fixed
 typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
@@ -293,7 +297,11 @@ public:
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
+<<<<<<< HEAD
 	Vector<uint8_t> save_png_to_buffer() const;
+=======
+	PoolVector<uint8_t> save_png_to_buffer() const;
+>>>>>>> audio-bus-effect-fixed
 	Error save_exr(const String &p_path, bool p_grayscale) const;
 
 	/**
@@ -371,6 +379,7 @@ public:
 	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels));
 	static String get_format_name(Format p_format);
 
+<<<<<<< HEAD
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
@@ -378,6 +387,12 @@ public:
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
+=======
+	Error load_png_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
+	Error load_tga_from_buffer(const PoolVector<uint8_t> &p_array);
+>>>>>>> audio-bus-effect-fixed
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);

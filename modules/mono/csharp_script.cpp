@@ -168,7 +168,11 @@ void CSharpLanguage::finalize() {
 		Object *obj = ObjectDB::get_instance(id);
 
 		if (obj) {
+<<<<<<< HEAD
 			ERR_PRINT("Leaked unsafe reference to object: " + obj->to_string());
+=======
+			ERR_PRINTS("Leaked unsafe reference to object: " + obj->to_string());
+>>>>>>> audio-bus-effect-fixed
 		} else {
 			ERR_PRINT("Leaked unsafe reference to deleted object: " + itos(id));
 		}
@@ -2371,18 +2375,30 @@ void CSharpScript::_update_member_info_no_exports() {
 bool CSharpScript::_update_exports() {
 #ifdef TOOLS_ENABLED
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
+<<<<<<< HEAD
 	if (is_editor) {
 		placeholder_fallback_enabled = true; // until proven otherwise
 	}
 #endif
 	if (!valid) {
+=======
+	if (is_editor)
+		placeholder_fallback_enabled = true; // until proven otherwise
+#endif
+
+	if (!valid)
+>>>>>>> audio-bus-effect-fixed
 		return false;
 	}
 
 	bool changed = false;
 
 #ifdef TOOLS_ENABLED
+<<<<<<< HEAD
 	if (exports_invalidated)
+=======
+	if (!is_editor || exports_invalidated)
+>>>>>>> audio-bus-effect-fixed
 #endif
 	{
 		GD_MONO_SCOPE_THREAD_ATTACH;
@@ -2395,6 +2411,7 @@ bool CSharpScript::_update_exports() {
 		MonoObject *tmp_object = nullptr;
 		Object *tmp_native = nullptr;
 		uint32_t tmp_pinned_gchandle = 0;
+<<<<<<< HEAD
 
 		if (is_editor) {
 			exports_invalidated = false;
@@ -2427,6 +2444,40 @@ bool CSharpScript::_update_exports() {
 
 				GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
 				tmp_object = nullptr;
+=======
+
+		if (is_editor) {
+			exports_invalidated = false;
+
+			exported_members_cache.clear();
+			exported_members_defval_cache.clear();
+
+			// Here we create a temporary managed instance of the class to get the initial values
+			tmp_object = mono_object_new(mono_domain_get(), script_class->get_mono_ptr());
+
+			if (!tmp_object) {
+				ERR_PRINT("Failed to allocate temporary MonoObject.");
+				return false;
+			}
+
+			tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
+
+			GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+
+			ERR_FAIL_NULL_V_MSG(ctor, NULL,
+					"Cannot construct temporary MonoObject because the class does not define a parameterless constructor: '" + get_path() + "'.");
+
+			MonoException *ctor_exc = NULL;
+			ctor->invoke(tmp_object, NULL, &ctor_exc);
+
+			tmp_native = GDMonoMarshal::unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(tmp_object));
+
+			if (ctor_exc) {
+				// TODO: Should we free 'tmp_native' if the exception was thrown after its creation?
+
+				MonoGCHandle::free_handle(tmp_pinned_gchandle);
+				tmp_object = NULL;
+>>>>>>> audio-bus-effect-fixed
 
 				ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
 				GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
@@ -2509,11 +2560,19 @@ bool CSharpScript::_update_exports() {
 #ifdef TOOLS_ENABLED
 		if (is_editor) {
 			// Need to check this here, before disposal
+<<<<<<< HEAD
 			bool base_ref = Object::cast_to<Reference>(tmp_native) != nullptr;
 
 			// Dispose the temporary managed instance
 
 			MonoException *exc = nullptr;
+=======
+			bool base_ref = Object::cast_to<Reference>(tmp_native) != NULL;
+
+			// Dispose the temporary managed instance
+
+			MonoException *exc = NULL;
+>>>>>>> audio-bus-effect-fixed
 			GDMonoUtils::dispose(tmp_object, &exc);
 
 			if (exc) {
@@ -2521,13 +2580,22 @@ bool CSharpScript::_update_exports() {
 				GDMonoUtils::debug_print_unhandled_exception(exc);
 			}
 
+<<<<<<< HEAD
 			GDMonoUtils::free_gchandle(tmp_pinned_gchandle);
 			tmp_object = nullptr;
+=======
+			MonoGCHandle::free_handle(tmp_pinned_gchandle);
+			tmp_object = NULL;
+>>>>>>> audio-bus-effect-fixed
 
 			if (tmp_native && !base_ref) {
 				Node *node = Object::cast_to<Node>(tmp_native);
 				if (node && node->is_inside_tree()) {
+<<<<<<< HEAD
 					ERR_PRINT("Temporary instance was added to the scene tree.");
+=======
+					ERR_PRINTS("Temporary instance was added to the scene tree.");
+>>>>>>> audio-bus-effect-fixed
 				} else {
 					memdelete(tmp_native);
 				}
@@ -2674,9 +2742,14 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 
 	if (p_member->is_static()) {
 #ifdef TOOLS_ENABLED
+<<<<<<< HEAD
 		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
 			ERR_PRINT("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 		}
+=======
+		if (p_member->has_attribute(CACHED_CLASS(ExportAttribute)))
+			ERR_PRINTS("Cannot export member because it is static: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> audio-bus-effect-fixed
 #endif
 		return false;
 	}
@@ -2701,17 +2774,27 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
 		if (!property->has_getter()) {
 #ifdef TOOLS_ENABLED
+<<<<<<< HEAD
 			if (exported) {
 				ERR_PRINT("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 			}
+=======
+			if (exported)
+				ERR_PRINTS("Read-only property cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> audio-bus-effect-fixed
 #endif
 			return false;
 		}
 		if (!property->has_setter()) {
 #ifdef TOOLS_ENABLED
+<<<<<<< HEAD
 			if (exported) {
 				ERR_PRINT("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
 			}
+=======
+			if (exported)
+				ERR_PRINTS("Write-only property (without getter) cannot be exported: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> audio-bus-effect-fixed
 #endif
 			return false;
 		}
@@ -2733,9 +2816,15 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 
+<<<<<<< HEAD
 	if (variant_type == Variant::NIL && !nil_is_variant) {
 #ifdef TOOLS_ENABLED
 		ERR_PRINT("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+=======
+	if (variant_type == Variant::NIL) {
+#ifdef TOOLS_ENABLED
+		ERR_PRINTS("Unknown exported member type: '" + MEMBER_FULL_QUALIFIED_NAME(p_member) + "'.");
+>>>>>>> audio-bus-effect-fixed
 #endif
 		return false;
 	}
@@ -2752,6 +2841,7 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
 	}
 #endif
+<<<<<<< HEAD
 
 	uint32_t prop_usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
 
@@ -2759,6 +2849,8 @@ bool CSharpScript::_get_member_export(IMonoClassMember *p_member, bool p_inspect
 		// System.Object (Variant)
 		prop_usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 	}
+=======
+>>>>>>> audio-bus-effect-fixed
 
 	r_prop_info = PropertyInfo(variant_type, (String)p_member->get_name(), hint, hint_string, prop_usage);
 	r_exported = true;
@@ -3010,6 +3102,10 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 }
 
 bool CSharpScript::can_instance() const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 #ifdef TOOLS_ENABLED
 	bool extra_cond = tool || ScriptServer::is_scripting_enabled();
 #else
@@ -3673,6 +3769,11 @@ void CSharpScript::get_members(Set<StringName> *p_members) {
 	}
 #endif
 }
+<<<<<<< HEAD
+=======
+
+/*************** RESOURCE ***************/
+>>>>>>> audio-bus-effect-fixed
 
 /*************** RESOURCE ***************/
 

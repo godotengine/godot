@@ -127,16 +127,29 @@ float CSGShape3D::get_snap() const {
 	return snap;
 }
 
+<<<<<<< HEAD
 void CSGShape3D::_make_dirty() {
 	if (!is_inside_tree()) {
 		return;
 	}
+=======
+void CSGShape::_make_dirty() {
+
+	if (!is_inside_tree())
+		return;
+>>>>>>> audio-bus-effect-fixed
 
 	if (parent) {
 		parent->_make_dirty();
 	} else if (!dirty) {
 		call_deferred("_update_shape");
 	}
+<<<<<<< HEAD
+=======
+
+	dirty = true;
+}
+>>>>>>> audio-bus-effect-fixed
 
 	dirty = true;
 }
@@ -338,6 +351,7 @@ void CSGShape3D::_update_shape() {
 
 	// Update collision faces.
 	if (root_collision_shape.is_valid()) {
+<<<<<<< HEAD
 		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
 		Vector3 *physicsw = physics_faces.ptrw();
@@ -349,6 +363,21 @@ void CSGShape3D::_update_shape() {
 				SWAP(order[1], order[2]);
 			}
 
+=======
+
+		PoolVector<Vector3> physics_faces;
+		physics_faces.resize(n->faces.size() * 3);
+		PoolVector<Vector3>::Write physicsw = physics_faces.write();
+
+		for (int i = 0; i < n->faces.size(); i++) {
+
+			int order[3] = { 0, 1, 2 };
+
+			if (n->faces[i].invert) {
+				SWAP(order[1], order[2]);
+			}
+
+>>>>>>> audio-bus-effect-fixed
 			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
 			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
 			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
@@ -356,6 +385,13 @@ void CSGShape3D::_update_shape() {
 
 		root_collision_shape->set_faces(physics_faces);
 	}
+<<<<<<< HEAD
+=======
+
+	//fill arrays
+	{
+		for (int i = 0; i < n->faces.size(); i++) {
+>>>>>>> audio-bus-effect-fixed
 
 	//fill arrays
 	{

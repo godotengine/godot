@@ -105,10 +105,17 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 	RenameDialog *rename_dialog;
 
+<<<<<<< HEAD
 	Button *button_add;
 	Button *button_instance;
 	Button *button_create_script;
 	Button *button_detach_script;
+=======
+	ToolButton *button_add;
+	ToolButton *button_instance;
+	ToolButton *button_create_script;
+	ToolButton *button_detach_script;
+>>>>>>> audio-bus-effect-fixed
 
 	Button *button_3d;
 

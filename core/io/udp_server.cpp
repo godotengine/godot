@@ -31,6 +31,10 @@
 #include "udp_server.h"
 
 void UDPServer::_bind_methods() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
@@ -87,6 +91,10 @@ Error UDPServer::poll() {
 }
 
 Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -94,6 +102,7 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
 
+<<<<<<< HEAD
 	if (p_bind_address.is_valid()) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
@@ -103,6 +112,15 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	if (err != OK) {
 		return ERR_CANT_CREATE;
 	}
+=======
+	if (p_bind_address.is_valid())
+		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+
+	if (err != OK)
+		return ERR_CANT_CREATE;
+>>>>>>> audio-bus-effect-fixed
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
@@ -124,11 +142,19 @@ bool UDPServer::is_listening() const {
 }
 
 bool UDPServer::is_connection_available() const {
+<<<<<<< HEAD
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
 	if (!_sock->is_open()) {
 		return false;
 	}
+=======
+
+	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+
+	if (!_sock->is_open())
+		return false;
+>>>>>>> audio-bus-effect-fixed
 
 	return pending.size() > 0;
 }
@@ -151,6 +177,10 @@ int UDPServer::get_max_pending_connections() const {
 }
 
 Ref<PacketPeerUDP> UDPServer::take_connection() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	Ref<PacketPeerUDP> conn;
 	if (!is_connection_available()) {
 		return conn;
@@ -173,6 +203,10 @@ void UDPServer::remove_peer(IP_Address p_ip, int p_port) {
 }
 
 void UDPServer::stop() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
@@ -198,5 +232,9 @@ UDPServer::UDPServer() :
 }
 
 UDPServer::~UDPServer() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	stop();
 }

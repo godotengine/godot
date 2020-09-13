@@ -35,6 +35,11 @@
 #include "editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+<<<<<<< HEAD
+=======
+
+class EditorQuickOpen : public ConfirmationDialog {
+>>>>>>> audio-bus-effect-fixed
 
 class EditorQuickOpen : public ConfirmationDialog {
 	GDCLASS(EditorQuickOpen, ConfirmationDialog);
@@ -42,7 +47,12 @@ class EditorQuickOpen : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 	StringName base_type;
+<<<<<<< HEAD
 	bool allow_multi_select;
+=======
+	StringName ei;
+	StringName ot;
+>>>>>>> audio-bus-effect-fixed
 
 	Vector<String> files;
 	OAHashMap<String, Ref<Texture2D>> icons;

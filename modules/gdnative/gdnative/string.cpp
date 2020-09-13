@@ -40,10 +40,16 @@
 extern "C" {
 #endif
 
+<<<<<<< HEAD
 static_assert(sizeof(godot_char16_string) == sizeof(Char16String), "Char16String size mismatch");
 static_assert(sizeof(godot_char_string) == sizeof(CharString), "CharString size mismatch");
 static_assert(sizeof(godot_string) == sizeof(String), "String size mismatch");
 static_assert(sizeof(godot_char_type) == sizeof(char32_t), "char32_t size mismatch");
+=======
+static_assert(sizeof(godot_char_string) == sizeof(CharString), "CharString size mismatch");
+static_assert(sizeof(godot_string) == sizeof(String), "String size mismatch");
+static_assert(sizeof(godot_char_type) == sizeof(CharType), "CharType size mismatch");
+>>>>>>> audio-bus-effect-fixed
 
 godot_int GDAPI godot_char_string_length(const godot_char_string *p_cs) {
 	const CharString *cs = (const CharString *)p_cs;

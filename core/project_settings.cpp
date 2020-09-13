@@ -408,6 +408,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
 			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"));
+<<<<<<< HEAD
 		}
 
 		if (!found) {
@@ -416,6 +417,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
 		}
 
+=======
+		}
+
+		if (!found) {
+			// If we couldn't find them next to the executable, we attempt
+			// the current working directory. Same story, two tests.
+			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
+		}
+
+>>>>>>> audio-bus-effect-fixed
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");

@@ -6,8 +6,13 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>Godot.NET.Sdk</PackageId>
+<<<<<<< HEAD
     <Version>4.0.0</Version>
     <PackageVersion>4.0.0-dev2</PackageVersion>
+=======
+    <Version>3.2.3</Version>
+    <PackageVersion>3.2.3</PackageVersion>
+>>>>>>> audio-bus-effect-fixed
     <PackageProjectUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</PackageProjectUrl>
     <PackageType>MSBuildSdk</PackageType>
     <PackageTags>MSBuildSdk</PackageTags>

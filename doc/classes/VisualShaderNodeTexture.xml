@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTexture" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+<<<<<<< HEAD
 		Performs a 2D texture lookup within the visual shader graph.
+=======
+		Performs a texture lookup within the visual shader graph.
+>>>>>>> audio-bus-effect-fixed
 	</brief_description>
 	<description>
 		Performs a lookup operation on the provided texture, with support for multiple texture sources to choose from.
@@ -14,7 +18,11 @@
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeTexture.Source" default="0">
 			Determines the source for the lookup. See [enum Source] for options.
 		</member>
+<<<<<<< HEAD
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+=======
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
+>>>>>>> audio-bus-effect-fixed
 			The source texture, if needed for the selected [member source].
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTexture.TextureType" default="0">
@@ -29,7 +37,11 @@
 			Use the current viewport's texture as the source.
 		</constant>
 		<constant name="SOURCE_2D_TEXTURE" value="2" enum="Source">
+<<<<<<< HEAD
 			Use the texture from this shader's texture built-in (e.g. a texture of a [Sprite2D]).
+=======
+			Use the texture from this shader's texture built-in (e.g. a texture of a [Sprite]).
+>>>>>>> audio-bus-effect-fixed
 		</constant>
 		<constant name="SOURCE_2D_NORMAL" value="3" enum="Source">
 			Use the texture from this shader's normal map built-in.

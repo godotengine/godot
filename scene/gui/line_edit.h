@@ -91,6 +91,11 @@ private:
 	bool shortcut_keys_enabled;
 
 	bool virtual_keyboard_enabled = true;
+<<<<<<< HEAD
+=======
+
+	Ref<Texture> right_icon;
+>>>>>>> audio-bus-effect-fixed
 
 	Ref<Texture2D> right_icon;
 

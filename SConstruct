@@ -112,14 +112,22 @@ opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
+<<<<<<< HEAD
 
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
+=======
+opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
+>>>>>>> audio-bus-effect-fixed
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
+<<<<<<< HEAD
+=======
+opts.Add(BoolVariable("gdscript", "Enable GDScript support", True))
+>>>>>>> audio-bus-effect-fixed
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
@@ -133,6 +141,16 @@ opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werro
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")))
+<<<<<<< HEAD
+=======
+opts.Add(
+    BoolVariable(
+        "split_libmodules",
+        "Split intermediate libmodules.a in smaller chunks to prevent exceeding linker command line size (forced to True when using MinGW)",
+        False,
+    )
+)
+>>>>>>> audio-bus-effect-fixed
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
@@ -144,7 +162,10 @@ opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True)
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
 opts.Add(BoolVariable("builtin_freetype", "Use the built-in FreeType library", True))
+<<<<<<< HEAD
 opts.Add(BoolVariable("builtin_glslang", "Use the built-in glslang library", True))
+=======
+>>>>>>> audio-bus-effect-fixed
 opts.Add(BoolVariable("builtin_libogg", "Use the built-in libogg library", True))
 opts.Add(BoolVariable("builtin_libpng", "Use the built-in libpng library", True))
 opts.Add(BoolVariable("builtin_libtheora", "Use the built-in libtheora library", True))
@@ -158,9 +179,13 @@ opts.Add(BoolVariable("builtin_opus", "Use the built-in Opus library", True))
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_recast", "Use the built-in Recast library", True))
+<<<<<<< HEAD
 opts.Add(BoolVariable("builtin_rvo2", "Use the built-in RVO2 library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
 opts.Add(BoolVariable("builtin_vulkan", "Use the built-in Vulkan loader library and headers", True))
+=======
+opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
+>>>>>>> audio-bus-effect-fixed
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
@@ -196,7 +221,11 @@ if env_base["custom_modules"]:
             module_search_paths.append(methods.convert_custom_modules_path(p))
         except ValueError as e:
             print(e)
+<<<<<<< HEAD
             Exit(255)
+=======
+            sys.exit(255)
+>>>>>>> audio-bus-effect-fixed
 
 for path in module_search_paths:
     # Note: custom modules can override built-in ones.
@@ -205,7 +234,11 @@ for path in module_search_paths:
     if include_path:
         env_base.Prepend(CPPPATH=[include_path])
 
+<<<<<<< HEAD
 # Add module options.
+=======
+# Add module options
+>>>>>>> audio-bus-effect-fixed
 for name, path in modules_detected.items():
     enabled = True
     sys.path.insert(0, path)
@@ -249,6 +282,7 @@ if env_base["target"] == "debug":
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
 
+<<<<<<< HEAD
 if not env_base["tools"]:
     # Export templates can't run unit test tool.
     env_base["tests"] = False
@@ -256,6 +290,11 @@ if not env_base["tools"]:
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
 
+=======
+if env_base["no_editor_splash"]:
+    env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
+
+>>>>>>> audio-bus-effect-fixed
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
 
@@ -271,7 +310,11 @@ elif env_base["p"] != "":
 else:
     # Missing `platform` argument, try to detect platform automatically
     if sys.platform.startswith("linux"):
+<<<<<<< HEAD
         selected_platform = "linuxbsd"
+=======
+        selected_platform = "x11"
+>>>>>>> audio-bus-effect-fixed
     elif sys.platform == "darwin":
         selected_platform = "osx"
     elif sys.platform == "win32":
@@ -286,12 +329,21 @@ else:
         print("Automatically detected platform: " + selected_platform)
         env_base["platform"] = selected_platform
 
+<<<<<<< HEAD
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
         # Deprecated alias kept for compatibility.
         print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
+=======
+if selected_platform in ["linux", "bsd", "linuxbsd"]:
+    if selected_platform == "linuxbsd":
+        # Alias for forward compatibility.
+        print('Platform "linuxbsd" is still called "x11" in Godot 3.2.x. Building for platform "x11".')
+    # Alias for convenience.
+    selected_platform = "x11"
+>>>>>>> audio-bus-effect-fixed
     env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
@@ -317,8 +369,11 @@ if selected_platform in platform_list:
         env["verbose"] = True
         env["warnings"] = "extra"
         env["werror"] = True
+<<<<<<< HEAD
         if env["tools"]:
             env["tests"] = True
+=======
+>>>>>>> audio-bus-effect-fixed
 
     if env["vsproj"]:
         env.vs_incs = []
@@ -377,6 +432,7 @@ if selected_platform in platform_list:
     detect.configure(env)
 
     # Set our C and C++ standard requirements.
+<<<<<<< HEAD
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
     # Prepending to make it possible to override.
     # This needs to come after `configure`, otherwise we don't have env.msvc.
@@ -437,6 +493,20 @@ if selected_platform in platform_list:
                 "C++17. Supported versions are Clang 6 and later."
             )
             Exit(255)
+=======
+    # Prepending to make it possible to override
+    # This needs to come after `configure`, otherwise we don't have env.msvc.
+    if not env.msvc:
+        # Specifying GNU extensions support explicitly, which are supported by
+        # both GCC and Clang. This mirrors GCC and Clang's current default
+        # compile flags if no -std is specified.
+        env.Prepend(CFLAGS=["-std=gnu11"])
+        env.Prepend(CXXFLAGS=["-std=gnu++14"])
+    else:
+        # MSVC doesn't have clear C standard support, /std only covers C++.
+        # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
+        env.Prepend(CCFLAGS=["/std:c++14"])
+>>>>>>> audio-bus-effect-fixed
 
     # Configure compiler warnings
     if env.msvc:
@@ -457,11 +527,17 @@ if selected_platform in platform_list:
         # Force to use Unicode encoding
         env.Append(MSVC_FLAGS=["/utf8"])
     else:  # Rest of the world
+<<<<<<< HEAD
+=======
+        version = methods.get_compiler_version(env) or [-1, -1]
+
+>>>>>>> audio-bus-effect-fixed
         shadow_local_warning = []
         all_plus_warnings = ["-Wwrite-strings"]
 
         if methods.using_gcc(env):
             env.Append(CCFLAGS=["-Wno-misleading-indentation"])
+<<<<<<< HEAD
             if cc_version_major >= 7:
                 shadow_local_warning = ["-Wshadow-local"]
 
@@ -499,6 +575,37 @@ if selected_platform in platform_list:
                     env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
             else:
                 env.Append(CXXFLAGS=["-Wno-error=#warnings"])
+=======
+            if version[0] >= 7:
+                shadow_local_warning = ["-Wshadow-local"]
+
+        if env["warnings"] == "extra":
+            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
+            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wno-unused-parameter"] + all_plus_warnings + shadow_local_warning)
+            env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
+            if methods.using_gcc(env):
+                env.Append(
+                    CCFLAGS=[
+                        "-Walloc-zero",
+                        "-Wduplicated-branches",
+                        "-Wduplicated-cond",
+                        "-Wstringop-overflow=4",
+                        "-Wlogical-op",
+                    ]
+                )
+                env.Append(CXXFLAGS=["-Wnoexcept", "-Wplacement-new=1"])
+                if version[0] >= 9:
+                    env.Append(CCFLAGS=["-Wattribute-alias=2"])
+        elif env["warnings"] == "all":
+            env.Append(CCFLAGS=["-Wall"] + shadow_local_warning)
+        elif env["warnings"] == "moderate":
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + shadow_local_warning)
+        else:  # 'no'
+            env.Append(CCFLAGS=["-w"])
+        if env["werror"]:
+            env.Append(CCFLAGS=["-Werror"])
+>>>>>>> audio-bus-effect-fixed
         else:  # always enable those errors
             env.Append(CCFLAGS=["-Werror=return-type"])
 
@@ -548,7 +655,23 @@ if selected_platform in platform_list:
         env.current_module = name
         import config
 
+<<<<<<< HEAD
         if config.can_build(env, selected_platform):
+=======
+        # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
+        # so try both to preserve compatibility for 3.0 modules
+        can_build = False
+        try:
+            can_build = config.can_build(env, selected_platform)
+        except TypeError:
+            print(
+                "Warning: module '%s' uses a deprecated `can_build` "
+                "signature in its config.py file, it should be "
+                "`can_build(env, platform)`." % x
+            )
+            can_build = config.can_build(selected_platform)
+        if can_build:
+>>>>>>> audio-bus-effect-fixed
             config.configure(env)
             # Get doc classes paths (if present)
             try:
@@ -566,10 +689,17 @@ if selected_platform in platform_list:
                 # Default path for module icons
                 env.module_icons_paths.append(path + "/" + "icons")
             modules_enabled[name] = path
+<<<<<<< HEAD
 
         sys.path.remove(path)
         sys.modules.pop("config")
 
+=======
+
+        sys.path.remove(path)
+        sys.modules.pop("config")
+
+>>>>>>> audio-bus-effect-fixed
     env.module_list = modules_enabled
 
     methods.update_version(env.module_version_string)
@@ -599,22 +729,35 @@ if selected_platform in platform_list:
                 "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
+<<<<<<< HEAD
             Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
+=======
+            sys.exit(255)
+        else:
+            env.Append(CPPDEFINES=["_3D_DISABLED"])
+    if env["gdscript"]:
+        env.Append(CPPDEFINES=["GDSCRIPT_ENABLED"])
+>>>>>>> audio-bus-effect-fixed
     if env["disable_advanced_gui"]:
         if env["tools"]:
             print(
                 "Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
+<<<<<<< HEAD
             Exit(255)
+=======
+            sys.exit(255)
+>>>>>>> audio-bus-effect-fixed
         else:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
     editor_module_list = ["regex"]
+<<<<<<< HEAD
     if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
         print(
             "Build option 'module_"
@@ -622,10 +765,21 @@ if selected_platform in platform_list:
             + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
         )
         Exit(255)
+=======
+    for x in editor_module_list:
+        if not env["module_" + x + "_enabled"]:
+            if env["tools"]:
+                print(
+                    "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
+                    "only with 'tools=no' (export template)."
+                )
+                sys.exit(255)
+>>>>>>> audio-bus-effect-fixed
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)
 
+<<<<<<< HEAD
     if not env["platform"] == "server":
         GLSL_BUILDERS = {
             "RD_GLSL": env.Builder(
@@ -640,6 +794,23 @@ if selected_platform in platform_list:
             ),
         }
         env.Append(BUILDERS=GLSL_BUILDERS)
+=======
+    if not env["platform"] == "server":  # FIXME: detect GLES3
+        env.Append(
+            BUILDERS={
+                "GLES3_GLSL": env.Builder(
+                    action=run_in_subprocess(gles_builders.build_gles3_headers), suffix="glsl.gen.h", src_suffix=".glsl"
+                )
+            }
+        )
+        env.Append(
+            BUILDERS={
+                "GLES2_GLSL": env.Builder(
+                    action=run_in_subprocess(gles_builders.build_gles2_headers), suffix="glsl.gen.h", src_suffix=".glsl"
+                )
+            }
+        )
+>>>>>>> audio-bus-effect-fixed
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
@@ -647,6 +818,11 @@ if selected_platform in platform_list:
         print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
     Export("env")
+<<<<<<< HEAD
+=======
+
+    # build subdirs, the build order is dependent on link order.
+>>>>>>> audio-bus-effect-fixed
 
     # Build subdirs, the build order is dependent on link order.
     SConscript("core/SCsub")
@@ -692,7 +868,11 @@ elif selected_platform != "":
         # Exit early to suppress the rest of the built-in SCons messages
         Exit()
     else:
+<<<<<<< HEAD
         Exit(255)
+=======
+        sys.exit(255)
+>>>>>>> audio-bus-effect-fixed
 
 # The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():

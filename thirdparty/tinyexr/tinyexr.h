@@ -293,6 +293,7 @@ typedef struct _DeepImage {
 extern int LoadEXR(float **out_rgba, int *width, int *height,
                    const char *filename, const char **err);
 
+<<<<<<< HEAD
 // Loads single-frame OpenEXR image by specifying layer name. Assume EXR image
 // contains A(single channel alpha) or RGB(A) channels. Application must free
 // image data as returned by `out_rgba` Result image format is: float x RGBA x
@@ -302,10 +303,22 @@ extern int LoadEXR(float **out_rgba, int *width, int *height,
 extern int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
                             const char *filename, const char *layer_name,
                             const char **err);
+=======
+// Loads single-frame OpenEXR image by specifing layer name. Assume EXR image contains A(single channel
+// alpha) or RGB(A) channels.
+// Application must free image data as returned by `out_rgba`
+// Result image format is: float x RGBA x width x hight
+// Returns negative value and may set error string in `err` when there's an
+// error
+// When the specified layer name is not found in the EXR file, the function will return `TINYEXR_ERROR_LAYER_NOT_FOUND`.
+extern int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
+                   const char *filename, const char *layer_name, const char **err);
+>>>>>>> audio-bus-effect-fixed
 
 //
 // Get layer infos from EXR file.
 //
+<<<<<<< HEAD
 // @param[out] layer_names List of layer names. Application must free memory
 // after using this.
 // @param[out] num_layers The number of layers
@@ -316,6 +329,15 @@ extern int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
 //
 extern int EXRLayers(const char *filename, const char **layer_names[],
                      int *num_layers, const char **err);
+=======
+// @param[out] layer_names List of layer names. Application must free memory after using this.
+// @param[out] num_layers The number of layers
+// @param[out] err Error string(wll be filled when the function returns error code). Free it using FreeEXRErrorMessage after using this value.
+//
+// @return TINYEXR_SUCCEES upon success.
+//
+extern int EXRLayers(const char *filename, const char **layer_names[], int *num_layers, const char **err);
+>>>>>>> audio-bus-effect-fixed
 
 // @deprecated { to be removed. }
 // Simple wrapper API for ParseEXRHeaderFromFile.
@@ -11070,10 +11092,21 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
 
           int tile_coordinates[4];
           memcpy(tile_coordinates, data_ptr, sizeof(int) * 4);
+<<<<<<< HEAD
           tinyexr::swap4(&tile_coordinates[0]);
           tinyexr::swap4(&tile_coordinates[1]);
           tinyexr::swap4(&tile_coordinates[2]);
           tinyexr::swap4(&tile_coordinates[3]);
+=======
+          tinyexr::swap4(
+              reinterpret_cast<unsigned int *>(&tile_coordinates[0]));
+          tinyexr::swap4(
+              reinterpret_cast<unsigned int *>(&tile_coordinates[1]));
+          tinyexr::swap4(
+              reinterpret_cast<unsigned int *>(&tile_coordinates[2]));
+          tinyexr::swap4(
+              reinterpret_cast<unsigned int *>(&tile_coordinates[3]));
+>>>>>>> audio-bus-effect-fixed
 
           // @todo{ LoD }
           if (tile_coordinates[2] != 0) {
@@ -11088,7 +11121,11 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
           int data_len;
           memcpy(&data_len, data_ptr + 16,
                  sizeof(int));  // 16 = sizeof(tile_coordinates)
+<<<<<<< HEAD
           tinyexr::swap4(&data_len);
+=======
+          tinyexr::swap4(reinterpret_cast<unsigned int *>(&data_len));
+>>>>>>> audio-bus-effect-fixed
 
           if (data_len < 4 || size_t(data_len) > data_size) {
             // TODO(LTE): atomic
@@ -11098,6 +11135,7 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
             err_code = TINYEXR_ERROR_INVALID_DATA;
             break;
           }
+<<<<<<< HEAD
 
           // Move to data addr: 20 = 16 + 4;
           data_ptr += 20;
@@ -11129,6 +11167,39 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
           exr_image->tiles[tile_idx].level_x = tile_coordinates[2];
           exr_image->tiles[tile_idx].level_y = tile_coordinates[3];
 
+=======
+
+          // Move to data addr: 20 = 16 + 4;
+          data_ptr += 20;
+
+          bool ret = tinyexr::DecodeTiledPixelData(
+              exr_image->tiles[tile_idx].images,
+              &(exr_image->tiles[tile_idx].width),
+              &(exr_image->tiles[tile_idx].height),
+              exr_header->requested_pixel_types, data_ptr,
+              static_cast<size_t>(data_len), exr_header->compression_type,
+              exr_header->line_order, data_width, data_height,
+              tile_coordinates[0], tile_coordinates[1], exr_header->tile_size_x,
+              exr_header->tile_size_y, static_cast<size_t>(pixel_data_size),
+              static_cast<size_t>(exr_header->num_custom_attributes),
+              exr_header->custom_attributes,
+              static_cast<size_t>(exr_header->num_channels),
+              exr_header->channels, channel_offset_list);
+
+          if (!ret) {
+            // TODO(LTE): atomic
+            if (err) {
+              (*err) += "Failed to decode tile data.\n";
+            }
+            err_code = TINYEXR_ERROR_INVALID_DATA;
+          }
+
+          exr_image->tiles[tile_idx].offset_x = tile_coordinates[0];
+          exr_image->tiles[tile_idx].offset_y = tile_coordinates[1];
+          exr_image->tiles[tile_idx].level_x = tile_coordinates[2];
+          exr_image->tiles[tile_idx].level_y = tile_coordinates[3];
+
+>>>>>>> audio-bus-effect-fixed
 #if (__cplusplus > 199711L) && (TINYEXR_USE_THREAD > 0)
         }
       }));
@@ -11136,10 +11207,17 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
 
     for (auto &t : workers) {
       t.join();
+<<<<<<< HEAD
     }
 
 #else
     }
+=======
+    }
+
+#else
+    }
+>>>>>>> audio-bus-effect-fixed
 #endif
 
     if (err_code != TINYEXR_SUCCESS) {
@@ -11209,8 +11287,13 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
             memcpy(&line_no, data_ptr, sizeof(int));
             int data_len;
             memcpy(&data_len, data_ptr + 4, sizeof(int));
+<<<<<<< HEAD
             tinyexr::swap4(&line_no);
             tinyexr::swap4(&data_len);
+=======
+            tinyexr::swap4(reinterpret_cast<unsigned int *>(&line_no));
+            tinyexr::swap4(reinterpret_cast<unsigned int *>(&data_len));
+>>>>>>> audio-bus-effect-fixed
 
             if (size_t(data_len) > data_size) {
               invalid_data = true;
@@ -11226,7 +11309,11 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
             } else {
               // line_no may be negative.
               int end_line_no = (std::min)(line_no + num_scanline_blocks,
+<<<<<<< HEAD
                                            (exr_header->data_window.max_y + 1));
+=======
+                                           (exr_header->data_window[3] + 1));
+>>>>>>> audio-bus-effect-fixed
 
               int num_lines = end_line_no - line_no;
 
@@ -11241,13 +11328,21 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
                 // overflow check
                 tinyexr_int64 lno =
                     static_cast<tinyexr_int64>(line_no) -
+<<<<<<< HEAD
                     static_cast<tinyexr_int64>(exr_header->data_window.min_y);
+=======
+                    static_cast<tinyexr_int64>(exr_header->data_window[1]);
+>>>>>>> audio-bus-effect-fixed
                 if (lno > std::numeric_limits<int>::max()) {
                   line_no = -1;  // invalid
                 } else if (lno < -std::numeric_limits<int>::max()) {
                   line_no = -1;  // invalid
                 } else {
+<<<<<<< HEAD
                   line_no -= exr_header->data_window.min_y;
+=======
+                  line_no -= exr_header->data_window[1];
+>>>>>>> audio-bus-effect-fixed
                 }
 
                 if (line_no < 0) {
@@ -11504,8 +11599,12 @@ static int DecodeEXRImage(EXRImage *exr_image, const EXRHeader *exr_header,
   }
 }
 
+<<<<<<< HEAD
 static void GetLayers(const EXRHeader &exr_header,
                       std::vector<std::string> &layer_names) {
+=======
+static void GetLayers(const EXRHeader& exr_header, std::vector<std::string>& layer_names) {
+>>>>>>> audio-bus-effect-fixed
   // Naive implementation
   // Group channels by layers
   // go over all channel names, split by periods
@@ -11516,22 +11615,37 @@ static void GetLayers(const EXRHeader &exr_header,
     const size_t pos = full_name.find_last_of('.');
     if (pos != std::string::npos && pos != 0 && pos + 1 < full_name.size()) {
       full_name.erase(pos);
+<<<<<<< HEAD
       if (std::find(layer_names.begin(), layer_names.end(), full_name) ==
           layer_names.end())
+=======
+      if (std::find(layer_names.begin(), layer_names.end(), full_name) == layer_names.end())
+>>>>>>> audio-bus-effect-fixed
         layer_names.push_back(full_name);
     }
   }
 }
 
 struct LayerChannel {
+<<<<<<< HEAD
   explicit LayerChannel(size_t i, std::string n) : index(i), name(n) {}
+=======
+  explicit LayerChannel (size_t i, std::string n)
+    : index(i)
+    , name(n)
+  {}
+>>>>>>> audio-bus-effect-fixed
   size_t index;
   std::string name;
 };
 
+<<<<<<< HEAD
 static void ChannelsInLayer(const EXRHeader &exr_header,
                             const std::string layer_name,
                             std::vector<LayerChannel> &channels) {
+=======
+static void ChannelsInLayer(const EXRHeader& exr_header, const std::string layer_name, std::vector<LayerChannel>& channels) {
+>>>>>>> audio-bus-effect-fixed
   channels.clear();
   for (int c = 0; c < exr_header.num_channels; c++) {
     std::string ch_name(exr_header.channels[c].name);
@@ -11542,7 +11656,12 @@ static void ChannelsInLayer(const EXRHeader &exr_header,
       }
     } else {
       const size_t pos = ch_name.find(layer_name + '.');
+<<<<<<< HEAD
       if (pos == std::string::npos) continue;
+=======
+      if (pos == std::string::npos)
+        continue;
+>>>>>>> audio-bus-effect-fixed
       if (pos == 0) {
         ch_name = ch_name.substr(layer_name.size() + 1);
       }
@@ -11554,8 +11673,12 @@ static void ChannelsInLayer(const EXRHeader &exr_header,
 
 }  // namespace tinyexr
 
+<<<<<<< HEAD
 int EXRLayers(const char *filename, const char **layer_names[], int *num_layers,
               const char **err) {
+=======
+int EXRLayers(const char *filename, const char **layer_names[], int *num_layers, const char **err) {
+>>>>>>> audio-bus-effect-fixed
   EXRVersion exr_version;
   EXRHeader exr_header;
   InitEXRHeader(&exr_header);
@@ -11569,8 +11692,13 @@ int EXRLayers(const char *filename, const char **layer_names[], int *num_layers,
 
     if (exr_version.multipart || exr_version.non_image) {
       tinyexr::SetErrorMessage(
+<<<<<<< HEAD
           "Loading multipart or DeepImage is not supported  in LoadEXR() API",
           err);
+=======
+        "Loading multipart or DeepImage is not supported  in LoadEXR() API",
+        err);
+>>>>>>> audio-bus-effect-fixed
       return TINYEXR_ERROR_INVALID_DATA;  // @fixme.
     }
   }
@@ -11586,7 +11714,11 @@ int EXRLayers(const char *filename, const char **layer_names[], int *num_layers,
 
   (*num_layers) = int(layer_vec.size());
   (*layer_names) = static_cast<const char **>(
+<<<<<<< HEAD
       malloc(sizeof(const char *) * static_cast<size_t>(layer_vec.size())));
+=======
+    malloc(sizeof(const char *) * static_cast<size_t>(layer_vec.size())));
+>>>>>>> audio-bus-effect-fixed
   for (size_t c = 0; c < static_cast<size_t>(layer_vec.size()); c++) {
 #ifdef _MSC_VER
     (*layer_names)[c] = _strdup(layer_vec[c].c_str());
@@ -11601,6 +11733,7 @@ int EXRLayers(const char *filename, const char **layer_names[], int *num_layers,
 
 int LoadEXR(float **out_rgba, int *width, int *height, const char *filename,
             const char **err) {
+<<<<<<< HEAD
   return LoadEXRWithLayer(out_rgba, width, height, filename,
                           /* layername */ NULL, err);
 }
@@ -11608,6 +11741,13 @@ int LoadEXR(float **out_rgba, int *width, int *height, const char *filename,
 int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
                      const char *filename, const char *layername,
                      const char **err) {
+=======
+  return LoadEXRWithLayer(out_rgba, width, height, filename, /* layername */NULL, err);
+}
+
+int LoadEXRWithLayer(float **out_rgba, int *width, int *height, const char *filename, const char *layername,
+            const char **err) {
+>>>>>>> audio-bus-effect-fixed
   if (out_rgba == NULL) {
     tinyexr::SetErrorMessage("Invalid argument for LoadEXR()", err);
     return TINYEXR_ERROR_INVALID_ARGUMENT;
@@ -11623,8 +11763,12 @@ int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
     int ret = ParseEXRVersionFromFile(&exr_version, filename);
     if (ret != TINYEXR_SUCCESS) {
       std::stringstream ss;
+<<<<<<< HEAD
       ss << "Failed to open EXR file or read version info from EXR file. code("
          << ret << ")";
+=======
+      ss << "Failed to open EXR file or read version info from EXR file. code(" << ret << ")";
+>>>>>>> audio-bus-effect-fixed
       tinyexr::SetErrorMessage(ss.str(), err);
       return ret;
     }
@@ -11671,8 +11815,12 @@ int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
   tinyexr::GetLayers(exr_header, layer_names);
 
   std::vector<tinyexr::LayerChannel> channels;
+<<<<<<< HEAD
   tinyexr::ChannelsInLayer(
       exr_header, layername == NULL ? "" : std::string(layername), channels);
+=======
+  tinyexr::ChannelsInLayer(exr_header, layername == NULL ? "" : std::string(layername), channels);
+>>>>>>> audio-bus-effect-fixed
 
   if (channels.size() < 1) {
     tinyexr::SetErrorMessage("Layer Not Found", err);
@@ -11687,11 +11835,22 @@ int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
 
     if (ch.name == "R") {
       idxR = int(ch.index);
+<<<<<<< HEAD
     } else if (ch.name == "G") {
       idxG = int(ch.index);
     } else if (ch.name == "B") {
       idxB = int(ch.index);
     } else if (ch.name == "A") {
+=======
+    }
+    else if (ch.name == "G") {
+      idxG = int(ch.index);
+    }
+    else if (ch.name == "B") {
+      idxB = int(ch.index);
+    }
+    else if (ch.name == "A") {
+>>>>>>> audio-bus-effect-fixed
       idxA = int(ch.index);
     }
   }
@@ -11738,8 +11897,12 @@ int LoadEXRWithLayer(float **out_rgba, int *width, int *height,
       }
     } else {
       for (int i = 0; i < exr_image.width * exr_image.height; i++) {
+<<<<<<< HEAD
         const float val =
             reinterpret_cast<float **>(exr_image.images)[chIdx][i];
+=======
+        const float val = reinterpret_cast<float **>(exr_image.images)[chIdx][i];
+>>>>>>> audio-bus-effect-fixed
         (*out_rgba)[4 * i + 0] = val;
         (*out_rgba)[4 * i + 1] = val;
         (*out_rgba)[4 * i + 2] = val;
@@ -12375,7 +12538,11 @@ size_t SaveEXRImageToMemory(const EXRImage *exr_image,
   }
 #endif
 
+<<<<<<< HEAD
   // TODO(LTE): C++11 thread
+=======
+  // TOOD(LTE): C++11 thread
+>>>>>>> audio-bus-effect-fixed
 
 // Use signed int since some OpenMP compiler doesn't allow unsigned type for
 // `parallel for`

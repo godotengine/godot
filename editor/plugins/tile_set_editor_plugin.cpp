@@ -257,7 +257,25 @@ void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, C
 
 void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_undo_redo_import_scene", &TileSetEditor::_undo_redo_import_scene);
+<<<<<<< HEAD
 	ClassDB::bind_method("_on_workspace_process", &TileSetEditor::_on_workspace_process); // Still used by some connect_compat.
+=======
+	ClassDB::bind_method("_on_tileset_toolbar_button_pressed", &TileSetEditor::_on_tileset_toolbar_button_pressed);
+	ClassDB::bind_method("_on_textures_added", &TileSetEditor::_on_textures_added);
+	ClassDB::bind_method("_on_tileset_toolbar_confirm", &TileSetEditor::_on_tileset_toolbar_confirm);
+	ClassDB::bind_method("_on_texture_list_selected", &TileSetEditor::_on_texture_list_selected);
+	ClassDB::bind_method("_on_edit_mode_changed", &TileSetEditor::_on_edit_mode_changed);
+	ClassDB::bind_method("_on_scroll_container_input", &TileSetEditor::_on_scroll_container_input);
+	ClassDB::bind_method("_on_workspace_mode_changed", &TileSetEditor::_on_workspace_mode_changed);
+	ClassDB::bind_method("_on_workspace_overlay_draw", &TileSetEditor::_on_workspace_overlay_draw);
+	ClassDB::bind_method("_on_workspace_process", &TileSetEditor::_on_workspace_process);
+	ClassDB::bind_method("_on_workspace_draw", &TileSetEditor::_on_workspace_draw);
+	ClassDB::bind_method("_on_workspace_input", &TileSetEditor::_on_workspace_input);
+	ClassDB::bind_method("_on_tool_clicked", &TileSetEditor::_on_tool_clicked);
+	ClassDB::bind_method("_on_priority_changed", &TileSetEditor::_on_priority_changed);
+	ClassDB::bind_method("_on_z_index_changed", &TileSetEditor::_on_z_index_changed);
+	ClassDB::bind_method("_on_grid_snap_toggled", &TileSetEditor::_on_grid_snap_toggled);
+>>>>>>> audio-bus-effect-fixed
 	ClassDB::bind_method("_set_snap_step", &TileSetEditor::_set_snap_step);
 	ClassDB::bind_method("_set_snap_off", &TileSetEditor::_set_snap_off);
 	ClassDB::bind_method("_set_snap_sep", &TileSetEditor::_set_snap_sep);
@@ -501,7 +519,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
 	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
 	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
+<<<<<<< HEAD
 	tools[SHAPE_NEW_RECTANGLE]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SHAPE_NEW_RECTANGLE));
+=======
+	tools[SHAPE_NEW_RECTANGLE]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_NEW_RECTANGLE));
+>>>>>>> audio-bus-effect-fixed
 
 	tools[SHAPE_NEW_POLYGON] = memnew(Button);
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
@@ -509,7 +531,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
 	tools[SHAPE_NEW_POLYGON]->set_tooltip(TTR("Create a new polygon."));
+<<<<<<< HEAD
 	tools[SHAPE_NEW_POLYGON]->connect("pressed", callable_mp(this, &TileSetEditor::_on_tool_clicked), varray(SHAPE_NEW_POLYGON));
+=======
+	tools[SHAPE_NEW_POLYGON]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_NEW_POLYGON));
+>>>>>>> audio-bus-effect-fixed
 
 	separator_shape_toggle = memnew(VSeparator);
 	toolbar->add_child(separator_shape_toggle);
@@ -589,7 +615,11 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	scroll = memnew(ScrollContainer);
 	main_vb->add_child(scroll);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+<<<<<<< HEAD
 	scroll->connect("gui_input", callable_mp(this, &TileSetEditor::_on_scroll_container_input));
+=======
+	scroll->connect("gui_input", this, "_on_scroll_container_input");
+>>>>>>> audio-bus-effect-fixed
 	scroll->set_clip_contents(true);
 
 	empty_message = memnew(Label);
@@ -1239,6 +1269,11 @@ void TileSetEditor::_on_scroll_container_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 }
+<<<<<<< HEAD
+=======
+
+void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
+>>>>>>> audio-bus-effect-fixed
 
 void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 	if (tileset.is_null() || !get_current_texture().is_valid()) {
@@ -1996,7 +2031,11 @@ void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> &points) {
 		undo_redo->add_do_method(convex.ptr(), "set_points", points);
 		undo_redo->add_undo_method(convex.ptr(), "set_points", _get_edited_shape_points());
 	} else if (concave.is_valid() && points.size() > 1) {
+<<<<<<< HEAD
 		PackedVector2Array segments;
+=======
+		PoolVector2Array segments;
+>>>>>>> audio-bus-effect-fixed
 		for (int i = 0; i < points.size() - 1; i++) {
 			segments.push_back(points[i]);
 			segments.push_back(points[i + 1]);
@@ -2726,9 +2765,15 @@ void TileSetEditor::draw_polygon_shapes() {
 
 					if (!creating_shape && polygon.size() > 1) {
 						for (int j = 0; j < polygon.size() - 1; j++) {
+<<<<<<< HEAD
 							workspace->draw_line(polygon[j], polygon[j + 1], c_border, 1);
 						}
 						workspace->draw_line(polygon[polygon.size() - 1], polygon[0], c_border, 1);
+=======
+							workspace->draw_line(polygon[j], polygon[j + 1], c_border, 1, true);
+						}
+						workspace->draw_line(polygon[polygon.size() - 1], polygon[0], c_border, 1, true);
+>>>>>>> audio-bus-effect-fixed
 					}
 					if (shape == edited_occlusion_shape) {
 						draw_handles = true;

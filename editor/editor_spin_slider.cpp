@@ -32,6 +32,10 @@
 
 #include "core/input/input.h"
 #include "core/math/expression.h"
+<<<<<<< HEAD
+=======
+#include "core/os/input.h"
+>>>>>>> audio-bus-effect-fixed
 #include "editor_node.h"
 #include "editor_scale.h"
 
@@ -198,13 +202,24 @@ void EditorSpinSlider::_notification(int p_what) {
 		// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 		// default margins.
 		Ref<StyleBoxFlat> stylebox =
+<<<<<<< HEAD
 				EditorNode::get_singleton()->get_theme_base()->get_theme_stylebox("normal", "LineEdit")->duplicate();
+=======
+				EditorNode::get_singleton()->get_theme_base()->get_stylebox("normal", "LineEdit")->duplicate();
+>>>>>>> audio-bus-effect-fixed
 		// EditorSpinSliders with a label have more space on the left, so add an
 		// higher margin to match the location where the text begins.
 		// The margin values below were determined by empirical testing.
 		stylebox->set_default_margin(MARGIN_LEFT, (get_label() != String() ? 23 : 16) * EDSCALE);
+<<<<<<< HEAD
 		value_input->add_theme_style_override("normal", stylebox);
 	}
+=======
+		value_input->add_style_override("normal", stylebox);
+	}
+
+	if (p_what == NOTIFICATION_DRAW) {
+>>>>>>> audio-bus-effect-fixed
 
 	if (p_what == NOTIFICATION_DRAW) {
 		updown_offset = -1;

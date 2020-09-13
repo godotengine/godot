@@ -100,6 +100,7 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 //   assembly to the list of loaded assemblies so that the 'search' hook can look it up.
 
 void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, [[maybe_unused]] void *user_data) {
+<<<<<<< HEAD
 	String name = String::utf8(mono_assembly_name_get_name(mono_assembly_get_name(assembly)));
 
 	MonoImage *image = mono_assembly_get_image(assembly);
@@ -113,6 +114,21 @@ void GDMonoAssembly::assembly_load_hook(MonoAssembly *assembly, [[maybe_unused]]
 	}
 #endif
 
+=======
+
+	String name = String::utf8(mono_assembly_name_get_name(mono_assembly_get_name(assembly)));
+
+	MonoImage *image = mono_assembly_get_image(assembly);
+
+	GDMonoAssembly *gdassembly = memnew(GDMonoAssembly(name, image, assembly));
+
+#ifdef GD_MONO_HOT_RELOAD
+	String path = String::utf8(mono_image_get_filename(image));
+	if (FileAccess::exists(path))
+		gdassembly->modified_time = FileAccess::get_modified_time(path);
+#endif
+
+>>>>>>> audio-bus-effect-fixed
 	MonoDomain *domain = mono_domain_get();
 	GDMono::get_singleton()->add_assembly(domain ? mono_domain_get_id(domain) : 0, gdassembly);
 }
@@ -134,16 +150,30 @@ MonoAssembly *GDMonoAssembly::assembly_refonly_preload_hook(MonoAssemblyName *an
 }
 
 MonoAssembly *GDMonoAssembly::_search_hook(MonoAssemblyName *aname, [[maybe_unused]] void *user_data, bool refonly) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	String name = String::utf8(mono_assembly_name_get_name(aname));
 	bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 
 	GDMonoAssembly *loaded_asm = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
+<<<<<<< HEAD
 	if (loaded_asm) {
 		return loaded_asm->get_assembly();
 	}
 
 	return nullptr;
 }
+=======
+	if (loaded_asm)
+		return loaded_asm->get_assembly();
+
+	return NULL;
+}
+
+MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, [[maybe_unused]] void *user_data, bool refonly) {
+>>>>>>> audio-bus-effect-fixed
 
 MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, [[maybe_unused]] void *user_data, bool refonly) {
 	String name = String::utf8(mono_assembly_name_get_name(aname));
@@ -151,7 +181,12 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, [[
 }
 
 MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs) {
+<<<<<<< HEAD
 	MonoAssembly *res = nullptr;
+=======
+
+	MonoAssembly *res = NULL;
+>>>>>>> audio-bus-effect-fixed
 	String path;
 
 	bool has_extension = p_name.ends_with(".dll") || p_name.ends_with(".exe");
@@ -163,7 +198,11 @@ MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, MonoAs
 			path = search_dir.plus_file(p_name);
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly, p_aname);
+<<<<<<< HEAD
 				if (res != nullptr) {
+=======
+				if (res != NULL)
+>>>>>>> audio-bus-effect-fixed
 					return res;
 				}
 			}
@@ -171,7 +210,11 @@ MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, MonoAs
 			path = search_dir.plus_file(p_name + ".dll");
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly, p_aname);
+<<<<<<< HEAD
 				if (res != nullptr) {
+=======
+				if (res != NULL)
+>>>>>>> audio-bus-effect-fixed
 					return res;
 				}
 			}
@@ -179,7 +222,11 @@ MonoAssembly *GDMonoAssembly::_load_assembly_search(const String &p_name, MonoAs
 			path = search_dir.plus_file(p_name + ".exe");
 			if (FileAccess::exists(path)) {
 				res = _real_load_assembly_from(path, p_refonly, p_aname);
+<<<<<<< HEAD
 				if (res != nullptr) {
+=======
+				if (res != NULL)
+>>>>>>> audio-bus-effect-fixed
 					return res;
 				}
 			}
@@ -229,8 +276,14 @@ void GDMonoAssembly::initialize() {
 }
 
 MonoAssembly *GDMonoAssembly::_real_load_assembly_from(const String &p_path, bool p_refonly, MonoAssemblyName *p_aname) {
+<<<<<<< HEAD
 	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
 	ERR_FAIL_COND_V_MSG(data.empty(), nullptr, "Could read the assembly in the specified location");
+=======
+
+	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
+	ERR_FAIL_COND_V_MSG(data.empty(), NULL, "Could read the assembly in the specified location");
+>>>>>>> audio-bus-effect-fixed
 
 	String image_filename;
 
@@ -252,7 +305,11 @@ MonoAssembly *GDMonoAssembly::_real_load_assembly_from(const String &p_path, boo
 			true, &status, p_refonly,
 			image_filename.utf8());
 
+<<<<<<< HEAD
 	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !image, nullptr, "Failed to open assembly image from memory: '" + p_path + "'.");
+=======
+	ERR_FAIL_COND_V_MSG(status != MONO_IMAGE_OK || !image, NULL, "Failed to open assembly image from memory: '" + p_path + "'.");
+>>>>>>> audio-bus-effect-fixed
 
 	if (p_aname != nullptr) {
 		// Check assembly version
@@ -316,9 +373,14 @@ no_pdb:
 		String name = String::utf8(mono_assembly_name_get_name(mono_assembly_get_name(assembly)));
 		bool has_extension = name.ends_with(".dll") || name.ends_with(".exe");
 		GDMonoAssembly *loaded_asm = GDMono::get_singleton()->get_loaded_assembly(has_extension ? name.get_basename() : name);
+<<<<<<< HEAD
 		if (!loaded_asm) {
 			assembly_load_hook(assembly, nullptr);
 		}
+=======
+		if (!loaded_asm)
+			assembly_load_hook(assembly, nullptr);
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	// Decrement refcount which was previously incremented by mono_image_open_from_data_with_name
@@ -328,6 +390,10 @@ no_pdb:
 }
 
 void GDMonoAssembly::unload() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ERR_FAIL_NULL(image); // Should not be called if already unloaded
 
 	for (Map<MonoClass *, GDMonoClass *>::Element *E = cached_raw.front(); E; E = E->next()) {
@@ -337,16 +403,29 @@ void GDMonoAssembly::unload() {
 	cached_classes.clear();
 	cached_raw.clear();
 
+<<<<<<< HEAD
 	assembly = nullptr;
 	image = nullptr;
+=======
+	assembly = NULL;
+	image = NULL;
+}
+
+String GDMonoAssembly::get_path() const {
+	return String::utf8(mono_image_get_filename(image));
+>>>>>>> audio-bus-effect-fixed
 }
 
 String GDMonoAssembly::get_path() const {
 	return String::utf8(mono_image_get_filename(image));
 }
 
+<<<<<<< HEAD
 GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const StringName &p_name) {
 	ERR_FAIL_NULL_V(image, nullptr);
+=======
+	ERR_FAIL_NULL_V(image, NULL);
+>>>>>>> audio-bus-effect-fixed
 
 	ClassKey key(p_namespace, p_name);
 
@@ -371,7 +450,12 @@ GDMonoClass *GDMonoAssembly::get_class(const StringName &p_namespace, const Stri
 }
 
 GDMonoClass *GDMonoAssembly::get_class(MonoClass *p_mono_class) {
+<<<<<<< HEAD
 	ERR_FAIL_NULL_V(image, nullptr);
+=======
+
+	ERR_FAIL_NULL_V(image, NULL);
+>>>>>>> audio-bus-effect-fixed
 
 	Map<MonoClass *, GDMonoClass *>::Element *match = cached_raw.find(p_mono_class);
 
@@ -455,10 +539,17 @@ GDMonoClass *GDMonoAssembly::get_object_derived_class(const StringName &p_class)
 }
 
 GDMonoAssembly *GDMonoAssembly::load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs) {
+<<<<<<< HEAD
 	if (GDMono::get_singleton()->get_corlib_assembly() && (p_name == "mscorlib" || p_name == "mscorlib.dll")) {
 		return GDMono::get_singleton()->get_corlib_assembly();
 	}
 
+=======
+
+	if (GDMono::get_singleton()->get_corlib_assembly() && (p_name == "mscorlib" || p_name == "mscorlib.dll"))
+		return GDMono::get_singleton()->get_corlib_assembly();
+
+>>>>>>> audio-bus-effect-fixed
 	// We need to manually call the search hook in this case, as it won't be called in the next step
 	MonoAssembly *assembly = mono_assembly_invoke_search_hook(p_aname);
 
@@ -477,6 +568,7 @@ GDMonoAssembly *GDMonoAssembly::load(const String &p_name, MonoAssemblyName *p_a
 }
 
 GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_path, bool p_refonly) {
+<<<<<<< HEAD
 	if (p_name == "mscorlib" || p_name == "mscorlib.dll") {
 		return GDMono::get_singleton()->get_corlib_assembly();
 	}
@@ -502,6 +594,44 @@ GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_
 
 GDMonoAssembly::~GDMonoAssembly() {
 	if (image) {
+=======
+
+	if (p_name == "mscorlib" || p_name == "mscorlib.dll")
+		return GDMono::get_singleton()->get_corlib_assembly();
+
+	// We need to manually call the search hook in this case, as it won't be called in the next step
+	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
+	MonoAssembly *assembly = mono_assembly_invoke_search_hook(aname);
+	mono_assembly_name_free(aname);
+	mono_free(aname);
+
+	if (!assembly) {
+		assembly = _real_load_assembly_from(p_path, p_refonly);
+		if (!assembly) {
+			return nullptr;
+		}
+	}
+
+	GDMonoAssembly *loaded_asm = GDMono::get_singleton()->get_loaded_assembly(p_name);
+	ERR_FAIL_NULL_V_MSG(loaded_asm, NULL, "Loaded assembly missing from table. Did we not receive the load hook?");
+
+	return loaded_asm;
+}
+
+GDMonoAssembly::GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
+		name(p_name),
+		image(p_image),
+		assembly(p_assembly),
+#ifdef GD_MONO_HOT_RELOAD
+		modified_time(0),
+#endif
+		gdobject_class_cache_updated(false) {
+}
+
+GDMonoAssembly::~GDMonoAssembly() {
+
+	if (image)
+>>>>>>> audio-bus-effect-fixed
 		unload();
 	}
 }

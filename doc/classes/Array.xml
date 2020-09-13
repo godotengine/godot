@@ -119,8 +119,12 @@
 			<return type="Variant">
 			</return>
 			<description>
+<<<<<<< HEAD
 				Returns the last element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+=======
+				Returns the last element of the array. Throws an error and returns [code]null[/code] if the array is empty.
+>>>>>>> audio-bus-effect-fixed
 			</description>
 		</method>
 		<method name="bsearch">
@@ -217,8 +221,12 @@
 			<return type="Variant">
 			</return>
 			<description>
+<<<<<<< HEAD
 				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+=======
+				Returns the first element of the array. Throws an error and returns [code]null[/code] if the array is empty.
+>>>>>>> audio-bus-effect-fixed
 			</description>
 		</method>
 		<method name="has">
@@ -229,10 +237,17 @@
 			<description>
 				Returns [code]true[/code] if the array contains the given value.
 				[codeblock]
+<<<<<<< HEAD
 				print(["inside", 7].has("inside")) # True
 				print(["inside", 7].has("outside")) # False
 				print(["inside", 7].has(7)) # True
 				print(["inside", 7].has("7")) # False
+=======
+				["inside", 7].has("inside") # True
+				["inside", 7].has("outside") # False
+				["inside", 7].has(7) # True
+				["inside", 7].has("7") # False
+>>>>>>> audio-bus-effect-fixed
 				[/codeblock]
 				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
 				[codeblock]

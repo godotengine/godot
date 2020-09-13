@@ -142,6 +142,10 @@ private:
 	Set<StringName> exported_members_names;
 #endif
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	Set<StringName> exported_members_names;
+#endif
+
 	Map<StringName, PropertyInfo> member_info;
 
 	void _clear();
@@ -152,7 +156,10 @@ private:
 	bool _get_signal(GDMonoClass *p_class, GDMonoMethod *p_delegate_invoke, Vector<SignalParameter> &params);
 
 	bool _update_exports();
+<<<<<<< HEAD
 
+=======
+>>>>>>> audio-bus-effect-fixed
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
 #ifdef TOOLS_ENABLED
 	static int _try_get_member_export_hint(IMonoClassMember *p_member, ManagedType p_type, Variant::Type p_variant_type, bool p_allow_generics, PropertyHint &r_hint, String &r_hint_string);
@@ -199,8 +206,15 @@ public:
 
 	void get_members(Set<StringName> *p_members) override;
 
+<<<<<<< HEAD
 	bool is_tool() const override { return tool; }
 	bool is_valid() const override { return valid; }
+=======
+	virtual void get_members(Set<StringName> *p_members);
+
+	virtual bool is_tool() const { return tool; }
+	virtual bool is_valid() const { return valid; }
+>>>>>>> audio-bus-effect-fixed
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 

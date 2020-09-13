@@ -197,7 +197,11 @@ class VisualShaderNode : public Resource {
 	int connected_output_count = 0;
 
 protected:
+<<<<<<< HEAD
 	bool simple_decl = true;
+=======
+	bool simple_decl;
+>>>>>>> audio-bus-effect-fixed
 	static void _bind_methods();
 
 public:

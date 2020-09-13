@@ -105,7 +105,11 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	if (force_etc1_format) {
 		// If VRAM compression is using ETC, but image has alpha, convert to RGBA4444 or LA8
 		// This saves space while maintaining the alpha channel
+<<<<<<< HEAD
 		if (detected_channels == Image::USED_CHANNELS_RGBA) {
+=======
+		if (detected_channels == Image::DETECTED_RGBA) {
+>>>>>>> audio-bus-effect-fixed
 
 			if (p_img->has_mipmaps()) {
 				// Image doesn't support mipmaps with RGBA4444 textures
@@ -113,7 +117,11 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 			}
 			p_img->convert(Image::FORMAT_RGBA4444);
 			return;
+<<<<<<< HEAD
 		} else if (detected_channels == Image::USE_CHANNELS_LA) {
+=======
+		} else if (detected_channels == Image::DETECTED_LA) {
+>>>>>>> audio-bus-effect-fixed
 
 			p_img->convert(Image::FORMAT_LA8);
 			return;

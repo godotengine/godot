@@ -964,6 +964,9 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 	bool compress_vert_data = state.import_flags & IMPORT_USE_COMPRESSION;
 	uint32_t mesh_flags = compress_vert_data ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
 
+	bool compress_vert_data = state.import_flags & IMPORT_USE_COMPRESSION;
+	uint32_t mesh_flags = compress_vert_data ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
+
 	Array meshes = state.json["meshes"];
 	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 		print_verbose("glTF: Parsing mesh: " + itos(i));
@@ -1218,7 +1221,11 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 
 			//just add it
+<<<<<<< HEAD
 			mesh.mesh->add_surface_from_arrays(primitive, array, morphs, Dictionary(), mesh_flags);
+=======
+			mesh.mesh->add_surface_from_arrays(primitive, array, morphs, mesh_flags);
+>>>>>>> audio-bus-effect-fixed
 
 			if (p.has("material")) {
 				const int material = p["material"];
@@ -2191,6 +2198,10 @@ Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
 		const bool has_ibms = !gltf_skin.inverse_binds.empty();
 
 		for (int joint_i = 0; joint_i < gltf_skin.joints_original.size(); ++joint_i) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 			Transform xform;
 			if (has_ibms) {
 				xform = gltf_skin.inverse_binds[joint_i];
@@ -2301,6 +2312,19 @@ Error EditorSceneImporterGLTF::_parse_lights(GLTFState &state) {
 		} else if (type != "point" && type != "directional") {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Light type is unknown.");
 		}
+<<<<<<< HEAD
+=======
+
+		state.lights.push_back(light);
+	}
+
+	print_verbose("glTF: Total lights: " + itos(state.lights.size()));
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
+>>>>>>> audio-bus-effect-fixed
 
 		state.lights.push_back(light);
 	}
@@ -2553,7 +2577,11 @@ MeshInstance3D *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &stat
 	return mi;
 }
 
+<<<<<<< HEAD
 Light3D *EditorSceneImporterGLTF::_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+=======
+Light *EditorSceneImporterGLTF::_generate_light(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+>>>>>>> audio-bus-effect-fixed
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->light, state.lights.size(), nullptr);
@@ -2571,8 +2599,13 @@ Light3D *EditorSceneImporterGLTF::_generate_light(GLTFState &state, Node *scene_
 	}
 
 	if (l.type == "directional") {
+<<<<<<< HEAD
 		DirectionalLight3D *light = memnew(DirectionalLight3D);
 		light->set_param(Light3D::PARAM_ENERGY, intensity);
+=======
+		DirectionalLight *light = memnew(DirectionalLight);
+		light->set_param(Light::PARAM_ENERGY, intensity);
+>>>>>>> audio-bus-effect-fixed
 		light->set_color(l.color);
 		return light;
 	}
@@ -2582,30 +2615,51 @@ Light3D *EditorSceneImporterGLTF::_generate_light(GLTFState &state, Node *scene_
 	// We want to have double intensity give double brightness, so we need half the attenuation.
 	const float attenuation = range / intensity;
 	if (l.type == "point") {
+<<<<<<< HEAD
 		OmniLight3D *light = memnew(OmniLight3D);
 		light->set_param(OmniLight3D::PARAM_ATTENUATION, attenuation);
 		light->set_param(OmniLight3D::PARAM_RANGE, range);
+=======
+		OmniLight *light = memnew(OmniLight);
+		light->set_param(OmniLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(OmniLight::PARAM_RANGE, range);
+>>>>>>> audio-bus-effect-fixed
 		light->set_color(l.color);
 		return light;
 	}
 	if (l.type == "spot") {
+<<<<<<< HEAD
 		SpotLight3D *light = memnew(SpotLight3D);
 		light->set_param(SpotLight3D::PARAM_ATTENUATION, attenuation);
 		light->set_param(SpotLight3D::PARAM_RANGE, range);
 		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad2deg(l.outer_cone_angle));
+=======
+		SpotLight *light = memnew(SpotLight);
+		light->set_param(SpotLight::PARAM_ATTENUATION, attenuation);
+		light->set_param(SpotLight::PARAM_RANGE, range);
+		light->set_param(SpotLight::PARAM_SPOT_ANGLE, Math::rad2deg(l.outer_cone_angle));
+>>>>>>> audio-bus-effect-fixed
 		light->set_color(l.color);
 
 		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
 		// The points in desmos are not exact, except for (1, infinity).
 		float angle_ratio = l.inner_cone_angle / l.outer_cone_angle;
 		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
+<<<<<<< HEAD
 		light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+=======
+		light->set_param(SpotLight::PARAM_SPOT_ATTENUATION, angle_attenuation);
+>>>>>>> audio-bus-effect-fixed
 		return light;
 	}
 	return nullptr;
 }
 
+<<<<<<< HEAD
 Camera3D *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+=======
+Camera *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+>>>>>>> audio-bus-effect-fixed
 	const GLTFNode *gltf_node = state.nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, state.cameras.size(), nullptr);
@@ -3056,13 +3110,21 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 		//text file
 		Error err = _parse_glb(p_path, state);
 		if (err) {
+<<<<<<< HEAD
 			return nullptr;
+=======
+			return NULL;
+>>>>>>> audio-bus-effect-fixed
 		}
 	} else {
 		//text file
 		Error err = _parse_json(p_path, state);
 		if (err) {
+<<<<<<< HEAD
 			return nullptr;
+=======
+			return NULL;
+>>>>>>> audio-bus-effect-fixed
 		}
 	}
 
@@ -3082,79 +3144,131 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	/* STEP 0 PARSE SCENE */
 	Error err = _parse_scenes(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 1 PARSE NODES */
 	err = _parse_nodes(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 2 PARSE BUFFERS */
 	err = _parse_buffers(state, p_path.get_base_dir());
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 3 PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 4 PARSE ACCESSORS */
 	err = _parse_accessors(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 5 PARSE IMAGES */
 	err = _parse_images(state, p_path.get_base_dir());
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 6 PARSE TEXTURES */
 	err = _parse_textures(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 7 PARSE TEXTURES */
 	err = _parse_materials(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 9 PARSE SKINS */
 	err = _parse_skins(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 10 DETERMINE SKELETONS */
 	err = _determine_skeletons(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 11 CREATE SKELETONS */
 	err = _create_skeletons(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 12 CREATE SKINS */
 	err = _create_skins(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 13 PARSE MESHES (we have enough info now) */
 	err = _parse_meshes(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 14 PARSE LIGHTS */
@@ -3166,20 +3280,32 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	/* STEP 15 PARSE CAMERAS */
 	err = _parse_cameras(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 16 PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	if (err != OK) {
+<<<<<<< HEAD
 		return nullptr;
+=======
+		return NULL;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/* STEP 17 ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
 	/* STEP 18 MAKE SCENE! */
+<<<<<<< HEAD
 	Node3D *scene = _generate_scene(state, p_bake_fps);
+=======
+	Spatial *scene = _generate_scene(state, p_bake_fps);
+>>>>>>> audio-bus-effect-fixed
 
 	return scene;
 }

@@ -14,4 +14,24 @@
     -->
     <DefineConstants Condition=" '$(GodotRealTIsDouble)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
+<<<<<<< HEAD
+=======
+
+  <!-- Backported from newer Microsoft.NET.Sdk version -->
+  <Target Name="IncludeTargetingPackReference" BeforeTargets="_GetRestoreSettingsPerFramework;_CheckForInvalidConfigurationAndPlatform"
+          Condition=" '$(GodotUseNETFrameworkRefAssemblies)' == 'true' and '$(TargetFrameworkMoniker)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(AutomaticallyUseReferenceAssemblyPackages)' == 'true' ">
+    <GetReferenceAssemblyPaths
+        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+        RootPath="$(TargetFrameworkRootPath)"
+        TargetFrameworkFallbackSearchPaths="$(TargetFrameworkFallbackSearchPaths)"
+        BypassFrameworkInstallChecks="$(BypassFrameworkInstallChecks)"
+        SuppressNotFoundError="true">
+      <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
+    </GetReferenceAssemblyPaths>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)" IsImplicitlyDefined="true" Condition="'$(_FullFrameworkReferenceAssemblyPaths)' == ''"/>
+    </ItemGroup>
+  </Target>
+>>>>>>> audio-bus-effect-fixed
 </Project>

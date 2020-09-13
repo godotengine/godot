@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ExternalTexture" inherits="Texture" version="3.2">
+	<brief_description>
+		Enable OpenGL ES external texture extension.
+	</brief_description>
+	<description>
+		Enable support for the OpenGL ES external texture extension as defined by [url=https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt]OES_EGL_image_external[/url].
+		[b]Note:[/b] This is only supported for Android platforms.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_external_texture_id">
+			<return type="int">
+			</return>
+			<description>
+				Returns the external texture name.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 1, 1 )">
+			External texture size.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

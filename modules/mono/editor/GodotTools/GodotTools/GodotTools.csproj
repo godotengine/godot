@@ -16,6 +16,10 @@
     <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
+<<<<<<< HEAD
+=======
+    <PackageReference Include="GodotTools.IdeMessaging" Version="1.1.1" />
+>>>>>>> audio-bus-effect-fixed
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
@@ -30,7 +34,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.BuildLogger\GodotTools.BuildLogger.csproj" />
+<<<<<<< HEAD
     <ProjectReference Include="..\GodotTools.IdeMessaging\GodotTools.IdeMessaging.csproj" />
+=======
+>>>>>>> audio-bus-effect-fixed
     <ProjectReference Include="..\GodotTools.ProjectEditor\GodotTools.ProjectEditor.csproj" />
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
     <!-- Include it if this is an SCons build targeting Windows, or if it's not an SCons build but we're on Windows -->

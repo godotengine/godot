@@ -28,6 +28,7 @@ ext.getExportPackageName = { ->
     return appId
 }
 
+<<<<<<< HEAD
 ext.getExportVersionCode = { ->
     String versionCode = project.hasProperty("export_version_code") ? project.property("export_version_code") : ""
     if (versionCode == null || versionCode.isEmpty()) {
@@ -77,6 +78,10 @@ ext.getExportFilename = {
     return exportFilename
 }
 
+=======
+final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
+
+>>>>>>> audio-bus-effect-fixed
 /**
  * Parse the project properties for the 'plugins_maven_repos' property and return the list
  * of maven repos.

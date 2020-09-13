@@ -8,7 +8,11 @@ namespace GodotTools.ProjectEditor
 {
     public static class ProjectGenerator
     {
+<<<<<<< HEAD
         public const string GodotSdkVersionToUse = "4.0.0-dev2";
+=======
+        public const string GodotSdkVersionToUse = "3.2.3";
+>>>>>>> audio-bus-effect-fixed
 
         public static string GodotSdkAttrValue => $"Godot.NET.Sdk/{GodotSdkVersionToUse}";
 
@@ -22,7 +26,11 @@ namespace GodotTools.ProjectEditor
             root.Sdk = GodotSdkAttrValue;
 
             var mainGroup = root.AddPropertyGroup();
+<<<<<<< HEAD
             mainGroup.AddProperty("TargetFramework", "netstandard2.1");
+=======
+            mainGroup.AddProperty("TargetFramework", "net472");
+>>>>>>> audio-bus-effect-fixed
 
             string sanitizedName = IdentifierUtils.SanitizeQualifiedIdentifier(name, allowEmptyIdentifiers: true);
 

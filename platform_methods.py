@@ -44,12 +44,20 @@ def run_in_subprocess(builder_function):
             json.dump(data, json_file, indent=2)
         json_file_size = os.stat(json_path).st_size
 
+<<<<<<< HEAD
         if env["verbose"]:
             print(
                 "Executing builder function in subprocess: "
                 "module_path=%r, parameter_file=%r, parameter_file_size=%r, target=%r, source=%r"
                 % (module_path, json_path, json_file_size, target, source)
             )
+=======
+        print(
+            "Executing builder function in subprocess: "
+            "module_path=%r, parameter_file=%r, parameter_file_size=%r, target=%r, source=%r"
+            % (module_path, json_path, json_file_size, target, source)
+        )
+>>>>>>> audio-bus-effect-fixed
         try:
             exit_code = subprocess.call([sys.executable, module_path, json_path], env=subprocess_env)
         finally:

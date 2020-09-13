@@ -73,7 +73,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		if (is_eof && l.empty()) {
 			if (status == STATUS_READING_ID || status == STATUS_READING_CONTEXT || (status == STATUS_READING_PLURAL && plural_index != plural_forms - 1)) {
 				memdelete(f);
+<<<<<<< HEAD
 				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading PO file at: " + path + ":" + itos(line));
+=======
+				ERR_FAIL_V_MSG(RES(), "Unexpected EOF while reading 'msgid' at: " + path + ":" + itos(line));
+>>>>>>> audio-bus-effect-fixed
 			} else {
 				break;
 			}
@@ -85,6 +89,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgctxt', was expecting 'msgid_plural' or 'msgstr' before 'msgctxt' while parsing: " + path + ":" + itos(line));
 			}
 
+<<<<<<< HEAD
 			// In PO file, "msgctxt" appears before "msgid". If we encounter a "msgctxt", we add what we have read
 			// and set "entered_context" to true to prevent adding twice.
 			if (!skip_this && msg_id != "") {
@@ -122,6 +127,10 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		} else if (l.begins_with("msgid")) {
 			if (status == STATUS_READING_ID) {
 				memdelete(f);
+=======
+			if (status == STATUS_READING_ID) {
+				memdelete(f);
+>>>>>>> audio-bus-effect-fixed
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
 			}
 
@@ -171,7 +180,11 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 		} else if (l.begins_with("msgstr")) {
 			if (status != STATUS_READING_ID) {
 				memdelete(f);
+<<<<<<< HEAD
 				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
+=======
+				ERR_FAIL_V_MSG(RES(), "Unexpected 'msgstr', was expecting 'msgid' while parsing: " + path + ":" + itos(line));
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			l = l.substr(6, l.length()).strip_edges();

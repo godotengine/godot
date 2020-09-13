@@ -433,7 +433,14 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		} else if (file == "godot.js") {
 			file = p_path.get_file().get_basename() + ".js";
 		} else if (file == "godot.worker.js") {
+<<<<<<< HEAD
 			file = p_path.get_file().get_basename() + ".worker.js";
+=======
+
+			file = p_path.get_file().get_basename() + ".worker.js";
+
+		} else if (file == "godot.wasm") {
+>>>>>>> audio-bus-effect-fixed
 
 		} else if (file == "godot.wasm") {
 			file = p_path.get_file().get_basename() + ".wasm";

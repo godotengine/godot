@@ -214,12 +214,22 @@ void Area2DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E;) {
+<<<<<<< HEAD
 			if (E->get().state == 0) { // Nothing happened
 				E = E->next();
 				continue;
 			}
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+=======
+
+			if (E->get().state == 0) { // Nothing happened
+				E = E->next();
+				continue;
+			}
+
+			res[0] = E->get().state > 0 ? Physics2DServer::AREA_BODY_ADDED : Physics2DServer::AREA_BODY_REMOVED;
+>>>>>>> audio-bus-effect-fixed
 			res[1] = E->key().rid;
 			res[2] = E->key().instance_id;
 			res[3] = E->key().body_shape;
@@ -229,12 +239,21 @@ void Area2DSW::call_queries() {
 			monitored_bodies.erase(E);
 			E = next;
 
+<<<<<<< HEAD
 			Callable::CallError ce;
+=======
+			Variant::CallError ce;
+>>>>>>> audio-bus-effect-fixed
 			obj->call(monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}
 
+<<<<<<< HEAD
 	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
+=======
+	if (area_monitor_callback_id && !monitored_areas.empty()) {
+
+>>>>>>> audio-bus-effect-fixed
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++) {
@@ -249,12 +268,22 @@ void Area2DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E;) {
+<<<<<<< HEAD
 			if (E->get().state == 0) { // Nothing happened
 				E = E->next();
 				continue;
 			}
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
+=======
+
+			if (E->get().state == 0) { // Nothing happened
+				E = E->next();
+				continue;
+			}
+
+			res[0] = E->get().state > 0 ? Physics2DServer::AREA_BODY_ADDED : Physics2DServer::AREA_BODY_REMOVED;
+>>>>>>> audio-bus-effect-fixed
 			res[1] = E->key().rid;
 			res[2] = E->key().instance_id;
 			res[3] = E->key().body_shape;
@@ -264,7 +293,11 @@ void Area2DSW::call_queries() {
 			monitored_areas.erase(E);
 			E = next;
 
+<<<<<<< HEAD
 			Callable::CallError ce;
+=======
+			Variant::CallError ce;
+>>>>>>> audio-bus-effect-fixed
 			obj->call(area_monitor_callback_method, (const Variant **)resptr, 5, ce);
 		}
 	}

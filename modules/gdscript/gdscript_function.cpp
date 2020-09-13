@@ -1221,8 +1221,50 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Signal sig;
 				bool is_signal = true;
 
+<<<<<<< HEAD
 				{
 					Variant result = *argobj;
+=======
+				gdfs->state.stack.resize(alloca_size);
+				//copy variant stack
+				for (int i = 0; i < _stack_size; i++) {
+					memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
+				}
+				gdfs->state.stack_size = _stack_size;
+				gdfs->state.self = self;
+				gdfs->state.alloca_size = alloca_size;
+				gdfs->state.ip = ip + ipofs;
+				gdfs->state.line = line;
+				gdfs->state.script = _script;
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->lock();
+#endif
+
+				_script->pending_func_states.add(&gdfs->scripts_list);
+				if (p_instance) {
+					gdfs->state.instance = p_instance;
+					p_instance->pending_func_states.add(&gdfs->instances_list);
+				} else {
+					gdfs->state.instance = NULL;
+				}
+#ifndef NO_THREADS
+				GDScriptLanguage::singleton->lock->unlock();
+#endif
+#ifdef DEBUG_ENABLED
+				gdfs->state.function_name = name;
+				gdfs->state.script_path = _script->get_path();
+#endif
+				//gdfs->state.result_pos=ip+ipofs-1;
+				gdfs->state.defarg = defarg;
+				gdfs->function = this;
+
+				retvalue = gdfs;
+
+				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
+					//do the oneshot connect
+					GET_VARIANT_PTR(argobj, 1);
+					GET_VARIANT_PTR(argname, 2);
+>>>>>>> audio-bus-effect-fixed
 
 					if (argobj->get_type() == Variant::OBJECT) {
 						bool was_freed = false;
@@ -1774,8 +1816,14 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 	}
 
 	if (p_extended_check) {
+<<<<<<< HEAD
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
+=======
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+#endif
+>>>>>>> audio-bus-effect-fixed
 		// Script gone?
 		if (!scripts_list.in_list()) {
 			return false;
@@ -1792,18 +1840,31 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	{
+<<<<<<< HEAD
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 
 		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
 			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
+=======
+#ifndef NO_THREADS
+		MutexLock lock(GDScriptLanguage::singleton->lock);
+#endif
+		if (!scripts_list.in_list()) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
+>>>>>>> audio-bus-effect-fixed
 #else
 			return Variant();
 #endif
 		}
 		if (state.instance && !instances_list.in_list()) {
 #ifdef DEBUG_ENABLED
+<<<<<<< HEAD
 			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+=======
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+>>>>>>> audio-bus-effect-fixed
 #else
 			return Variant();
 #endif
@@ -1842,7 +1903,10 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
+<<<<<<< HEAD
 		}
+=======
+>>>>>>> audio-bus-effect-fixed
 #endif
 	}
 
@@ -1850,6 +1914,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 }
 
 void GDScriptFunctionState::_clear_stack() {
+<<<<<<< HEAD
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
 		for (int i = 0; i < state.stack_size; i++) {
@@ -1858,6 +1923,18 @@ void GDScriptFunctionState::_clear_stack() {
 		state.stack_size = 0;
 	}
 }
+=======
+
+	if (state.stack_size) {
+		Variant *stack = (Variant *)state.stack.ptr();
+		for (int i = 0; i < state.stack_size; i++)
+			stack[i].~Variant();
+		state.stack_size = 0;
+	}
+}
+
+void GDScriptFunctionState::_bind_methods() {
+>>>>>>> audio-bus-effect-fixed
 
 void GDScriptFunctionState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
@@ -1870,12 +1947,18 @@ void GDScriptFunctionState::_bind_methods() {
 GDScriptFunctionState::GDScriptFunctionState() :
 		scripts_list(this),
 		instances_list(this) {
+<<<<<<< HEAD
 	function = nullptr;
+=======
+
+	function = NULL;
+>>>>>>> audio-bus-effect-fixed
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 	_clear_stack();
 
+<<<<<<< HEAD
 	{
 		MutexLock lock(GDScriptLanguage::singleton->lock);
 		scripts_list.remove_from_list();
@@ -1951,6 +2034,17 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 	}
 
 	return "<err>";
+=======
+	_clear_stack();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	scripts_list.remove_from_list();
+	instances_list.remove_from_list();
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+>>>>>>> audio-bus-effect-fixed
 }
 
 void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {

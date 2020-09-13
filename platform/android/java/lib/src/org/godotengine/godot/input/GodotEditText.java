@@ -96,8 +96,13 @@ public class GodotEditText extends EditText {
 	}
 
 	protected void initView() {
+<<<<<<< HEAD
 		setPadding(0, 0, 0, 0);
 		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+=======
+		this.setPadding(0, 0, 0, 0);
+		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	public boolean isMultiline() {
@@ -129,7 +134,11 @@ public class GodotEditText extends EditText {
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
+<<<<<<< HEAD
 					final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+=======
+					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+>>>>>>> audio-bus-effect-fixed
 					imm.showSoftInput(edit, 0);
 				}
 			} break;

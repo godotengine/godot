@@ -284,7 +284,11 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
+<<<<<<< HEAD
         public Vector3 Lerp(Vector3 to, real_t weight)
+=======
+        public Vector3 LinearInterpolate(Vector3 to, real_t weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Vector3
             (
@@ -301,7 +305,11 @@ namespace Godot
         /// <param name="to">The destination vector for interpolation.</param>
         /// <param name="weight">A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting vector of the interpolation.</returns>
+<<<<<<< HEAD
         public Vector3 Lerp(Vector3 to, Vector3 weight)
+=======
+        public Vector3 LinearInterpolate(Vector3 to, Vector3 weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Vector3
             (
@@ -422,6 +430,7 @@ namespace Godot
             }
 #endif
             return 2.0f * Dot(normal) * normal - this;
+<<<<<<< HEAD
         }
 
         /// <summary>
@@ -440,6 +449,36 @@ namespace Godot
             }
 #endif
             return new Basis(axis, phi).Xform(this);
+=======
+        }
+
+        /// <summary>
+        /// Rotates this vector around a given `axis` vector by `phi` radians.
+        /// The `axis` vector must be a normalized vector.
+        /// </summary>
+        /// <param name="axis">The vector to rotate around. Must be normalized.</param>
+        /// <param name="phi">The angle to rotate by, in radians.</param>
+        /// <returns>The rotated vector.</returns>
+        public Vector3 Rotated(Vector3 axis, real_t phi)
+        {
+#if DEBUG
+            if (!axis.IsNormalized())
+            {
+                throw new ArgumentException("Argument  is not normalized", nameof(axis));
+            }
+#endif
+            return new Basis(axis, phi).Xform(this);
+        }
+
+        /// <summary>
+        /// Returns this vector with all components rounded to the nearest integer,
+        /// with halfway cases rounded towards the nearest multiple of two.
+        /// </summary>
+        /// <returns>The rounded vector.</returns>
+        public Vector3 Round()
+        {
+            return new Vector3(Mathf.Round(x), Mathf.Round(y), Mathf.Round(z));
+>>>>>>> audio-bus-effect-fixed
         }
 
         /// <summary>
@@ -557,6 +596,14 @@ namespace Godot
         /// <value>Equivalent to `new Vector3(1, 1, 1)`</value>
         public static Vector3 One { get { return _one; } }
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Deprecated, please use a negative sign with <see cref="One"/> instead.
+        /// </summary>
+        /// <value>Equivalent to `new Vector3(-1, -1, -1)`</value>
+        public static Vector3 NegOne { get { return _negOne; } }
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// Infinity vector, a vector with all components set to `Mathf.Inf`.
         /// </summary>
         /// <value>Equivalent to `new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf)`</value>

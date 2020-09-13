@@ -3,11 +3,15 @@ import re
 import glob
 import subprocess
 from collections import OrderedDict
+<<<<<<< HEAD
 
 # We need to define our own `Action` method to control the verbosity of output
 # and whenever we need to run those commands in a subprocess on some platforms.
 from SCons.Script import Action
 from platform_methods import run_in_subprocess
+=======
+from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
+>>>>>>> audio-bus-effect-fixed
 
 
 def add_source_files(self, sources, files, warn_duplicates=True):
@@ -67,9 +71,12 @@ def update_version(module_version_string=""):
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     f = open("core/version_generated.gen.h", "w")
+<<<<<<< HEAD
     f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     f.write("#ifndef VERSION_GENERATED_GEN_H\n")
     f.write("#define VERSION_GENERATED_GEN_H\n")
+=======
+>>>>>>> audio-bus-effect-fixed
     f.write('#define VERSION_SHORT_NAME "' + str(version.short_name) + '"\n')
     f.write('#define VERSION_NAME "' + str(version.name) + '"\n')
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
@@ -80,7 +87,10 @@ def update_version(module_version_string=""):
     f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
     f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
+<<<<<<< HEAD
     f.write("#endif // VERSION_GENERATED_GEN_H\n")
+=======
+>>>>>>> audio-bus-effect-fixed
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -97,7 +107,11 @@ def update_version(module_version_string=""):
             gitfolder = module_folder[8:]
 
     if os.path.isfile(os.path.join(gitfolder, "HEAD")):
+<<<<<<< HEAD
         head = open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8").readline().strip()
+=======
+        head = open_utf8(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
+>>>>>>> audio-bus-effect-fixed
         if head.startswith("ref: "):
             head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
@@ -105,8 +119,12 @@ def update_version(module_version_string=""):
         else:
             githash = head
 
+<<<<<<< HEAD
     fhash.write('#define VERSION_HASH "' + githash + '"\n')
     fhash.write("#endif // VERSION_HASH_GEN_H\n")
+=======
+    fhash.write('#define VERSION_HASH "' + githash + '"')
+>>>>>>> audio-bus-effect-fixed
     fhash.close()
 
 
@@ -145,6 +163,7 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
 
 def detect_modules(at_path):
     module_list = OrderedDict()  # name : path
+<<<<<<< HEAD
 
     modules_glob = os.path.join(at_path, "*")
     files = glob.glob(modules_glob)
@@ -163,6 +182,26 @@ def detect_modules(at_path):
 def is_module(path):
     return os.path.isdir(path) and os.path.exists(os.path.join(path, "SCsub"))
 
+=======
+
+    modules_glob = os.path.join(at_path, "*")
+    files = glob.glob(modules_glob)
+    files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
+
+    for x in files:
+        if not is_module(x):
+            continue
+        name = os.path.basename(x)
+        path = x.replace("\\", "/")  # win32
+        module_list[name] = path
+
+    return module_list
+
+
+def is_module(path):
+    return os.path.isdir(path) and os.path.exists(os.path.join(path, "SCsub"))
+
+>>>>>>> audio-bus-effect-fixed
 
 def write_modules(module_list):
     includes_cpp = ""
@@ -174,17 +213,21 @@ def write_modules(module_list):
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
+<<<<<<< HEAD
                 preregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 preregister_cpp += "#ifdef MODULE_" + name.upper() + "_HAS_PREREGISTER\n"
                 preregister_cpp += "\tpreregister_" + name + "_types();\n"
                 preregister_cpp += "#endif\n"
                 preregister_cpp += "#endif\n"
+=======
+>>>>>>> audio-bus-effect-fixed
                 register_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 register_cpp += "\tregister_" + name + "_types();\n"
                 register_cpp += "#endif\n"
                 unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 unregister_cpp += "\tunregister_" + name + "_types();\n"
                 unregister_cpp += "#endif\n"
+<<<<<<< HEAD
         except OSError:
             pass
 
@@ -212,6 +255,32 @@ void unregister_module_types() {
         preregister_cpp,
         register_cpp,
         unregister_cpp,
+=======
+        except IOError:
+            pass
+
+    modules_cpp = (
+        """
+// modules.cpp - THIS FILE IS GENERATED, DO NOT EDIT!!!!!!!
+#include "register_module_types.h"
+
+"""
+        + includes_cpp
+        + """
+
+void register_module_types() {
+"""
+        + register_cpp
+        + """
+}
+
+void unregister_module_types() {
+"""
+        + unregister_cpp
+        + """
+}
+"""
+>>>>>>> audio-bus-effect-fixed
     )
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -237,6 +306,7 @@ def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
 
+<<<<<<< HEAD
 def module_check_dependencies(self, module, dependencies):
     """
     Checks if module dependencies are enabled for a given module,
@@ -261,6 +331,8 @@ def module_check_dependencies(self, module, dependencies):
         return True
 
 
+=======
+>>>>>>> audio-bus-effect-fixed
 def use_windows_spawn_fix(self, platform=None):
 
     if os.name != "nt":
@@ -316,6 +388,68 @@ def use_windows_spawn_fix(self, platform=None):
         return rv
 
     self["SPAWN"] = mySpawn
+<<<<<<< HEAD
+=======
+
+
+def split_lib(self, libname, src_list=None, env_lib=None):
+    env = self
+
+    num = 0
+    cur_base = ""
+    max_src = 64
+    list = []
+    lib_list = []
+
+    if src_list is None:
+        src_list = getattr(env, libname + "_sources")
+
+    if type(env_lib) == type(None):
+        env_lib = env
+
+    for f in src_list:
+        fname = ""
+        if type(f) == type(""):
+            fname = env.File(f).path
+        else:
+            fname = env.File(f)[0].path
+        fname = fname.replace("\\", "/")
+        base = "/".join(fname.split("/")[:2])
+        if base != cur_base and len(list) > max_src:
+            if num > 0:
+                lib = env_lib.add_library(libname + str(num), list)
+                lib_list.append(lib)
+                list = []
+            num = num + 1
+        cur_base = base
+        list.append(f)
+
+    lib = env_lib.add_library(libname + str(num), list)
+    lib_list.append(lib)
+
+    lib_base = []
+    env_lib.add_source_files(lib_base, "*.cpp")
+    lib = env_lib.add_library(libname, lib_base)
+    lib_list.insert(0, lib)
+
+    env.Prepend(LIBS=lib_list)
+
+    # When we split modules into arbitrary chunks, we end up with linking issues
+    # due to symbol dependencies split over several libs, which may not be linked
+    # in the required order. We use --start-group and --end-group to tell the
+    # linker that those archives should be searched repeatedly to resolve all
+    # undefined references.
+    # As SCons doesn't give us much control over how inserting libs in LIBS
+    # impacts the linker call, we need to hack our way into the linking commands
+    # LINKCOM and SHLINKCOM to set those flags.
+
+    if "-Wl,--start-group" in env["LINKCOM"] and "-Wl,--start-group" in env["SHLINKCOM"]:
+        # Already added by a previous call, skip.
+        return
+
+    env["LINKCOM"] = str(env["LINKCOM"]).replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
+    env["SHLINKCOM"] = str(env["LINKCOM"]).replace("$_LIBFLAGS", "-Wl,--start-group $_LIBFLAGS -Wl,--end-group")
+>>>>>>> audio-bus-effect-fixed
 
 
 def save_active_platforms(apnames, ap):
@@ -369,6 +503,7 @@ def no_verbose(sys, env):
         colors["red"] = ""
         colors["end"] = ""
 
+<<<<<<< HEAD
     compile_source_message = "{}Compiling {}==> {}$SOURCE{}".format(
         colors["blue"], colors["purple"], colors["yellow"], colors["end"]
     )
@@ -392,6 +527,55 @@ def no_verbose(sys, env):
     )
     java_library_message = "{}Creating Java Archive  {}==> {}$TARGET{}".format(
         colors["red"], colors["purple"], colors["yellow"], colors["end"]
+=======
+    compile_source_message = "%sCompiling %s==> %s$SOURCE%s" % (
+        colors["blue"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    java_compile_source_message = "%sCompiling %s==> %s$SOURCE%s" % (
+        colors["blue"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    compile_shared_source_message = "%sCompiling shared %s==> %s$SOURCE%s" % (
+        colors["blue"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    link_program_message = "%sLinking Program        %s==> %s$TARGET%s" % (
+        colors["red"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    link_library_message = "%sLinking Static Library %s==> %s$TARGET%s" % (
+        colors["red"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    ranlib_library_message = "%sRanlib Library         %s==> %s$TARGET%s" % (
+        colors["red"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    link_shared_library_message = "%sLinking Shared Library %s==> %s$TARGET%s" % (
+        colors["red"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+    )
+    java_library_message = "%sCreating Java Archive  %s==> %s$TARGET%s" % (
+        colors["red"],
+        colors["purple"],
+        colors["yellow"],
+        colors["end"],
+>>>>>>> audio-bus-effect-fixed
     )
 
     env.Append(CXXCOMSTR=[compile_source_message])
@@ -555,6 +739,7 @@ def generate_vs_project(env, num_jobs):
         # in a backslash, so we need to remove this, lest it escape the
         # last double quote off, confusing MSBuild
         env["MSVSBUILDCOM"] = build_commandline(
+<<<<<<< HEAD
             "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
             " tools=!tools! custom_modules=!custom_modules! -j" + str(num_jobs)
         )
@@ -565,6 +750,18 @@ def generate_vs_project(env, num_jobs):
         env["MSVSCLEANCOM"] = build_commandline(
             "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no"
             " target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j" + str(num_jobs)
+=======
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
+            + str(num_jobs)
+        )
+        env["MSVSREBUILDCOM"] = build_commandline(
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration) tools=!tools! vsproj=yes custom_modules=!custom_modules! -j"
+            + str(num_jobs)
+        )
+        env["MSVSCLEANCOM"] = build_commandline(
+            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j"
+            + str(num_jobs)
+>>>>>>> audio-bus-effect-fixed
         )
 
         # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
@@ -591,7 +788,13 @@ def generate_vs_project(env, num_jobs):
             variant=variants,
         )
     else:
+<<<<<<< HEAD
         print("Could not locate Visual Studio batch file to set up the build environment. Not generating VS project.")
+=======
+        print(
+            "Could not locate Visual Studio batch file for setting up the build environment. Not generating VS project."
+        )
+>>>>>>> audio-bus-effect-fixed
 
 
 def precious_program(env, program, sources, **args):
@@ -624,6 +827,7 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
+<<<<<<< HEAD
 def Run(env, function, short_message, subprocess=True):
     output_print = short_message if not env["verbose"] else ""
     if not subprocess:
@@ -632,6 +836,8 @@ def Run(env, function, short_message, subprocess=True):
         return Action(run_in_subprocess(function), output_print)
 
 
+=======
+>>>>>>> audio-bus-effect-fixed
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
     if platform == "osx":
@@ -648,7 +854,11 @@ def detect_darwin_sdk_path(platform, env):
 
     if not env[var_name]:
         try:
+<<<<<<< HEAD
             sdk_path = subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-path"]).strip().decode("utf-8")
+=======
+            sdk_path = decode_utf8(subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-path"]).strip())
+>>>>>>> audio-bus-effect-fixed
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
@@ -656,6 +866,7 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 
+<<<<<<< HEAD
 def is_vanilla_clang(env):
     if not using_clang(env):
         return False
@@ -667,6 +878,8 @@ def is_vanilla_clang(env):
     return not version.startswith("Apple")
 
 
+=======
+>>>>>>> audio-bus-effect-fixed
 def get_compiler_version(env):
     """
     Returns an array of version numbers as ints: [major, minor, patch].
@@ -676,7 +889,11 @@ def get_compiler_version(env):
         # Not using -dumpversion as some GCC distros only return major, and
         # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
         try:
+<<<<<<< HEAD
             version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
+=======
+            version = decode_utf8(subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip())
+>>>>>>> audio-bus-effect-fixed
         except (subprocess.CalledProcessError, OSError):
             print("Couldn't parse CXX environment variable to infer compiler version.")
             return None
@@ -705,10 +922,19 @@ def show_progress(env):
     # Progress reporting is not available in non-TTY environments since it
     # messes with the output (for example, when writing to a file)
     show_progress = env["progress"] and sys.stdout.isatty()
+<<<<<<< HEAD
     node_count = 0
     node_count_max = 0
     node_count_interval = 1
     node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
+=======
+    node_count_data = {
+        "count": 0,
+        "max": 0,
+        "interval": 1,
+        "fname": str(env.Dir("#")) + "/.scons_node_count",
+    }
+>>>>>>> audio-bus-effect-fixed
 
     import time, math
 
@@ -727,10 +953,18 @@ def show_progress(env):
             self.delete(self.file_list())
 
         def __call__(self, node, *args, **kw):
+<<<<<<< HEAD
             nonlocal node_count, node_count_max, node_count_interval, node_count_fname, show_progress
             if show_progress:
                 # Print the progress percentage
                 node_count += node_count_interval
+=======
+            if show_progress:
+                # Print the progress percentage
+                node_count_data["count"] += node_count_data["interval"]
+                node_count = node_count_data["count"]
+                node_count_max = node_count_data["max"]
+>>>>>>> audio-bus-effect-fixed
                 if node_count_max > 0 and node_count <= node_count_max:
                     screen.write("\r[%3d%%] " % (node_count * 100 / node_count_max))
                     screen.flush()
@@ -798,6 +1032,7 @@ def show_progress(env):
             return total_size
 
     def progress_finish(target, source, env):
+<<<<<<< HEAD
         nonlocal node_count, progressor
         with open(node_count_fname, "w") as f:
             f.write("%d\n" % node_count)
@@ -806,6 +1041,15 @@ def show_progress(env):
     try:
         with open(node_count_fname) as f:
             node_count_max = int(f.readline())
+=======
+        with open(node_count_data["fname"], "w") as f:
+            f.write("%d\n" % node_count_data["count"])
+        progressor.delete(progressor.file_list())
+
+    try:
+        with open(node_count_data["fname"]) as f:
+            node_count_data["max"] = int(f.readline())
+>>>>>>> audio-bus-effect-fixed
     except:
         pass
 
@@ -814,7 +1058,11 @@ def show_progress(env):
     # cache directory to a size not larger than cache_limit.
     cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
     progressor = cache_progress(cache_directory, cache_limit)
+<<<<<<< HEAD
     Progress(progressor, interval=node_count_interval)
+=======
+    Progress(progressor, interval=node_count_data["interval"])
+>>>>>>> audio-bus-effect-fixed
 
     progress_finish_command = Command("progress_finish", [], progress_finish)
     AlwaysBuild(progress_finish_command)
@@ -825,7 +1073,11 @@ def dump(env):
     from json import dump
 
     def non_serializable(obj):
+<<<<<<< HEAD
         return "<<non-serializable: %s>>" % (type(obj).__qualname__)
+=======
+        return "<<non-serializable: %s>>" % (qualname(type(obj)))
+>>>>>>> audio-bus-effect-fixed
 
     with open(".scons_env.json", "w") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)

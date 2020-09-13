@@ -319,7 +319,10 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
+<<<<<<< HEAD
 	OS::get_singleton()->print("  --single-window                  Use a single window (no separate subwindows).\n");
+=======
+>>>>>>> audio-bus-effect-fixed
 	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0)
@@ -786,6 +789,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get() == "--tablet-driver") {
+			if (I->next()) {
+				tablet_driver = I->next()->get();
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+					if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown tablet driver '%s', aborting.\n", tablet_driver.utf8().get_data());
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--enable-vsync-via-compositor") {
 			window_vsync_via_compositor = true;
 			saw_vsync_via_compositor_override = true;
@@ -942,7 +965,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			};
 
 		} else if (I->get() == "-d" || I->get() == "--debug") {
+<<<<<<< HEAD
 			debug_uri = "local://";
+=======
+			debug_mode = "local";
+>>>>>>> audio-bus-effect-fixed
 			OS::get_singleton()->_debug_stdout = true;
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
@@ -1107,6 +1134,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("logging/file_logging/enable_file_logging.pc", true);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/godot.log");
 	GLOBAL_DEF("logging/file_logging/max_log_files", 5);
+<<<<<<< HEAD
 	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files",
 			PropertyInfo(Variant::INT,
 					"logging/file_logging/max_log_files",
@@ -1114,6 +1142,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"0,20,1,or_greater")); //no negative numbers
 	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
 			GLOBAL_GET("logging/file_logging/enable_file_logging")) {
+=======
+	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files", PropertyInfo(Variant::INT, "logging/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater")); //no negative numbers
+	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) && GLOBAL_GET("logging/file_logging/enable_file_logging")) {
+>>>>>>> audio-bus-effect-fixed
 		// Don't create logs for the project manager as they would be written to
 		// the current working directory, which is inconvenient.
 		String base_path = GLOBAL_GET("logging/file_logging/log_path");
@@ -1162,6 +1194,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		display_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
 
+<<<<<<< HEAD
+=======
+	GLOBAL_DEF("rendering/quality/driver/fallback_to_gles2", false);
+
+	// Assigning here, to be sure that it appears in docs
+	GLOBAL_DEF("rendering/quality/2d/use_nvidia_rect_flicker_workaround", false);
+
+>>>>>>> audio-bus-effect-fixed
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",
 			PropertyInfo(Variant::INT, "display/window/size/width",
@@ -1250,9 +1290,29 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
+<<<<<<< HEAD
 	if (tablet_driver == "") {
 		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
 	}
+=======
+	if (tablet_driver == "") { // specified in project.godot
+		tablet_driver = GLOBAL_DEF_RST("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
+	}
+
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+			OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(i));
+			break;
+		}
+	}
+
+	if (tablet_driver == "") {
+		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
+	}
+
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
+	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
+>>>>>>> audio-bus-effect-fixed
 
 	/* todo restore
     OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
@@ -1506,6 +1566,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	// also init our xr_server from here
 	xr_server = memnew(XRServer);
+
+	// and finally setup this property under visual_server
+	VisualServer::get_singleton()->set_render_loop_enabled(!disable_render_loop);
 
 	register_core_singletons();
 
@@ -1913,16 +1976,24 @@ bool Main::start() {
 		}
 
 		if (script_res->can_instance()) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
 				if (obj) {
 					memdelete(obj);
+<<<<<<< HEAD
 				}
 				ERR_FAIL_V_MSG(false,
 						vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.",
 								script));
+=======
+				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
+>>>>>>> audio-bus-effect-fixed
 			}
 
 			script_loop->set_init_script(script_res);
@@ -2107,9 +2178,15 @@ bool Main::start() {
 			// Append a suffix to the window title to denote that the project is running
 			// from a debug build (including the editor). Since this results in lower performance,
 			// this should be clearly presented to the user.
+<<<<<<< HEAD
 			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
 #else
 			DisplayServer::get_singleton()->window_set_title(appname);
+=======
+			OS::get_singleton()->set_window_title(vformat("%s (DEBUG)", appname));
+#else
+			OS::get_singleton()->set_window_title(appname);
+>>>>>>> audio-bus-effect-fixed
 #endif
 
 			int shadow_atlas_size = GLOBAL_GET("rendering/quality/shadow_atlas/size");
@@ -2424,7 +2501,13 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
+<<<<<<< HEAD
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+=======
+	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+
+	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
+>>>>>>> audio-bus-effect-fixed
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
@@ -2480,9 +2563,14 @@ bool Main::iteration() {
 
 	if (fixed_fps != -1) {
 		return exit;
+<<<<<<< HEAD
 	}
 
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+=======
+
+	OS::get_singleton()->add_frame_delay(OS::get_singleton()->can_draw());
+>>>>>>> audio-bus-effect-fixed
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
@@ -2522,6 +2610,17 @@ void Main::cleanup() {
 
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
+<<<<<<< HEAD
+=======
+
+	if (script_debugger) {
+		if (use_debug_profiler) {
+			script_debugger->profiling_end();
+		}
+
+		memdelete(script_debugger);
+	}
+>>>>>>> audio-bus-effect-fixed
 
 	OS::get_singleton()->delete_main_loop();
 

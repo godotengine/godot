@@ -34,6 +34,7 @@
 
 void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_dontclear) {
 	base_type = p_base;
+<<<<<<< HEAD
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
 	popup_centered_clamped(Size2i(600, 440), 0.8f);
@@ -48,6 +49,18 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 		search_box->clear(); // This will emit text_changed.
 	}
 	search_box->grab_focus();
+=======
+	search_options->set_select_mode(p_enable_multi ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
+	popup_centered_ratio(0.4);
+
+	if (p_dontclear)
+		search_box->select_all();
+	else
+		search_box->clear();
+
+	search_box->grab_focus();
+	_update_search();
+>>>>>>> audio-bus-effect-fixed
 }
 
 void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
@@ -168,6 +181,7 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				search_options->call("_gui_input", k);
 				search_box->accept_event();
 
+<<<<<<< HEAD
 				if (allow_multi_select) {
 					TreeItem *root = search_options->get_root();
 					if (!root->get_children()) {
@@ -187,6 +201,64 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 			} break;
 		}
 	}
+=======
+				TreeItem *root = search_options->get_root();
+				if (!root->get_children())
+					break;
+
+				TreeItem *current = search_options->get_selected();
+
+				TreeItem *item = search_options->get_next_selected(root);
+				while (item) {
+					item->deselect(0);
+					item = search_options->get_next_selected(item);
+				}
+
+				current->select(0);
+			} break;
+		}
+	}
+}
+
+float EditorQuickOpen::_path_cmp(String search, String path) const {
+
+	// Exact match.
+	if (search == path) {
+		return 1.2f;
+	}
+
+	// Substring match, with positive bias for matches close to the end of the path.
+	int pos = path.rfindn(search);
+	if (pos != -1) {
+		return 1.1f + 0.09 / (path.length() - pos + 1);
+	}
+
+	// Similarity.
+	return path.to_lower().similarity(search.to_lower());
+}
+
+void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture> > > &list) {
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_parse_fs(efsd->get_subdir(i), list);
+	}
+
+	String search_text = search_box->get_text();
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		String file = efsd->get_file_path(i);
+		file = file.substr(6, file.length());
+
+		StringName file_type = efsd->get_file_type(i);
+		if (ClassDB::is_parent_class(file_type, base_type) && search_text.is_subsequence_ofi(file)) {
+			Pair<String, Ref<Texture> > pair;
+			pair.first = file;
+			StringName icon_name = search_options->has_icon(file_type, ei) ? file_type : ot;
+			pair.second = search_options->get_icon(icon_name, ei);
+			list.push_back(pair);
+		}
+	}
+>>>>>>> audio-bus-effect-fixed
 }
 
 String EditorQuickOpen::get_selected() const {
@@ -243,6 +315,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	add_child(vbc);
 
 	search_box = memnew(LineEdit);
+<<<<<<< HEAD
 	search_box->connect("text_changed", callable_mp(this, &EditorQuickOpen::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &EditorQuickOpen::_sbox_input));
 	vbc->add_margin_child(TTR("Search:"), search_box);
@@ -254,8 +327,25 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	search_options->add_theme_constant_override("draw_guides", 1);
+=======
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("gui_input", this, "_sbox_input");
+	vbc->add_margin_child(TTR("Search:"), search_box);
+
+	search_options = memnew(Tree);
+	search_options->connect("item_activated", this, "_confirmed");
+	search_options->set_hide_root(true);
+	search_options->set_hide_folding(true);
+	search_options->add_constant_override("draw_guides", 1);
+>>>>>>> audio-bus-effect-fixed
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	get_ok()->set_text(TTR("Open"));
 	set_hide_on_ok(false);
+<<<<<<< HEAD
+=======
+
+	ei = "EditorIcons";
+	ot = "Object";
+>>>>>>> audio-bus-effect-fixed
 }

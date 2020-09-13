@@ -12,6 +12,34 @@ def _spaced(e):
 
 
 def _build_gdnative_api_struct_header(api):
+<<<<<<< HEAD
+=======
+    gdnative_api_init_macro = ["\textern const godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct;"]
+
+    for ext in api["extensions"]:
+        name = ext["name"]
+        gdnative_api_init_macro.append(
+            "\textern const godot_gdnative_ext_{0}_api_struct *_gdnative_wrapper_{0}_api_struct;".format(name)
+        )
+
+    gdnative_api_init_macro.append("\t_gdnative_wrapper_api_struct = options->api_struct;")
+    gdnative_api_init_macro.append(
+        "\tfor (unsigned int i = 0; i < _gdnative_wrapper_api_struct->num_extensions; i++) { "
+    )
+    gdnative_api_init_macro.append("\t\tswitch (_gdnative_wrapper_api_struct->extensions[i]->type) {")
+
+    for ext in api["extensions"]:
+        name = ext["name"]
+        gdnative_api_init_macro.append("\t\t\tcase GDNATIVE_EXT_%s:" % ext["type"])
+        gdnative_api_init_macro.append(
+            "\t\t\t\t_gdnative_wrapper_{0}_api_struct = (godot_gdnative_ext_{0}_api_struct *)"
+            " _gdnative_wrapper_api_struct->extensions[i];".format(name)
+        )
+        gdnative_api_init_macro.append("\t\t\t\tbreak;")
+    gdnative_api_init_macro.append("\t\t}")
+    gdnative_api_init_macro.append("\t}")
+
+>>>>>>> audio-bus-effect-fixed
     out = [
         "/* THIS FILE IS GENERATED DO NOT EDIT */",
         "#ifndef GODOT_GDNATIVE_API_STRUCT_H",
@@ -19,12 +47,21 @@ def _build_gdnative_api_struct_header(api):
         "",
         "#include <gdnative/gdnative.h>",
         "#include <android/godot_android.h>",
+<<<<<<< HEAD
         "#include <xr/godot_xr.h>",
+=======
+        "#include <arvr/godot_arvr.h>",
+>>>>>>> audio-bus-effect-fixed
         "#include <nativescript/godot_nativescript.h>",
         "#include <net/godot_net.h>",
         "#include <pluginscript/godot_pluginscript.h>",
         "#include <videodecoder/godot_videodecoder.h>",
         "",
+<<<<<<< HEAD
+=======
+        "#define GDNATIVE_API_INIT(options) do {  \\\n" + "  \\\n".join(gdnative_api_init_macro) + "  \\\n } while (0)",
+        "",
+>>>>>>> audio-bus-effect-fixed
         "#ifdef __cplusplus",
         'extern "C" {',
         "#endif",
@@ -74,7 +111,11 @@ def _build_gdnative_api_struct_header(api):
 
         ret_val += [
             "typedef struct godot_gdnative_core_"
+<<<<<<< HEAD
             + "{0}_{1}".format(core["version"]["major"], core["version"]["minor"])
+=======
+            + ("{0}_{1}".format(core["version"]["major"], core["version"]["minor"]))
+>>>>>>> audio-bus-effect-fixed
             + "_api_struct {",
             "\tunsigned int type;",
             "\tgodot_gdnative_api_version version;",
@@ -163,7 +204,11 @@ def _build_gdnative_api_struct_source(api):
             "\t{" + str(ext["version"]["major"]) + ", " + str(ext["version"]["minor"]) + "},",
             "\t"
             + (
+<<<<<<< HEAD
                 "nullptr"
+=======
+                "NULL"
+>>>>>>> audio-bus-effect-fixed
                 if not ext["next"]
                 else ("(const godot_gdnative_api_struct *)&" + get_extension_struct_instance_name(name, ext["next"]))
             )
@@ -185,13 +230,21 @@ def _build_gdnative_api_struct_source(api):
 
         ret_val += [
             "extern const godot_gdnative_core_"
+<<<<<<< HEAD
             + "{0}_{1}_api_struct api_{0}_{1}".format(core["version"]["major"], core["version"]["minor"])
+=======
+            + ("{0}_{1}_api_struct api_{0}_{1}".format(core["version"]["major"], core["version"]["minor"]))
+>>>>>>> audio-bus-effect-fixed
             + " = {",
             "\tGDNATIVE_" + core["type"] + ",",
             "\t{" + str(core["version"]["major"]) + ", " + str(core["version"]["minor"]) + "},",
             "\t"
             + (
+<<<<<<< HEAD
                 "nullptr"
+=======
+                "NULL"
+>>>>>>> audio-bus-effect-fixed
                 if not core["next"]
                 else (
                     "(const godot_gdnative_api_struct *)& api_{0}_{1}".format(
@@ -228,6 +281,7 @@ def _build_gdnative_api_struct_source(api):
         "extern const godot_gdnative_core_api_struct api_struct = {",
         "\tGDNATIVE_" + api["core"]["type"] + ",",
         "\t{" + str(api["core"]["version"]["major"]) + ", " + str(api["core"]["version"]["minor"]) + "},",
+<<<<<<< HEAD
         "\t"
         + (
             "nullptr, "
@@ -238,6 +292,9 @@ def _build_gdnative_api_struct_source(api):
                 )
             )
         ),
+=======
+        "\t(const godot_gdnative_api_struct *)&api_1_1,",
+>>>>>>> audio-bus-effect-fixed
         "\t" + str(len(api["extensions"])) + ",",
         "\tgdnative_extensions_pointers,",
     ]
@@ -261,5 +318,75 @@ def build_gdnative_api_struct(target, source, env):
         fd.write(_build_gdnative_api_struct_source(api))
 
 
+<<<<<<< HEAD
+=======
+def _build_gdnative_wrapper_code(api):
+    out = [
+        "/* THIS FILE IS GENERATED DO NOT EDIT */",
+        "",
+        "#include <gdnative/gdnative.h>",
+        "#include <nativescript/godot_nativescript.h>",
+        "#include <pluginscript/godot_pluginscript.h>",
+        "#include <arvr/godot_arvr.h>",
+        "#include <videodecoder/godot_videodecoder.h>",
+        "",
+        "#include <gdnative_api_struct.gen.h>",
+        "",
+        "#ifdef __cplusplus",
+        'extern "C" {',
+        "#endif",
+        "",
+        "godot_gdnative_core_api_struct *_gdnative_wrapper_api_struct = 0;",
+    ]
+
+    for ext in api["extensions"]:
+        name = ext["name"]
+        out.append("godot_gdnative_ext_" + name + "_api_struct *_gdnative_wrapper_" + name + "_api_struct = 0;")
+
+    out += [""]
+
+    for funcdef in api["core"]["api"]:
+        args = ", ".join(["%s%s" % (_spaced(t), n) for t, n in funcdef["arguments"]])
+        out.append("%s%s(%s) {" % (_spaced(funcdef["return_type"]), funcdef["name"], args))
+
+        args = ", ".join(["%s" % n for t, n in funcdef["arguments"]])
+
+        return_line = "\treturn " if funcdef["return_type"] != "void" else "\t"
+        return_line += "_gdnative_wrapper_api_struct->" + funcdef["name"] + "(" + args + ");"
+
+        out.append(return_line)
+        out.append("}")
+        out.append("")
+
+    for ext in api["extensions"]:
+        name = ext["name"]
+        for funcdef in ext["api"]:
+            args = ", ".join(["%s%s" % (_spaced(t), n) for t, n in funcdef["arguments"]])
+            out.append("%s%s(%s) {" % (_spaced(funcdef["return_type"]), funcdef["name"], args))
+
+            args = ", ".join(["%s" % n for t, n in funcdef["arguments"]])
+
+            return_line = "\treturn " if funcdef["return_type"] != "void" else "\t"
+            return_line += "_gdnative_wrapper_" + name + "_api_struct->" + funcdef["name"] + "(" + args + ");"
+
+            out.append(return_line)
+            out.append("}")
+            out.append("")
+
+    out += ["#ifdef __cplusplus", "}", "#endif"]
+
+    return "\n".join(out)
+
+
+def build_gdnative_wrapper_code(target, source, env):
+    with open(source[0], "r") as fd:
+        api = json.load(fd)
+
+    wrapper_file = target[0]
+    with open(wrapper_file, "w") as fd:
+        fd.write(_build_gdnative_wrapper_code(api))
+
+
+>>>>>>> audio-bus-effect-fixed
 if __name__ == "__main__":
     subprocess_main(globals())

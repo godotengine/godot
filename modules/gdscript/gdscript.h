@@ -119,8 +119,12 @@ class GDScript : public Script {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+<<<<<<< HEAD
 	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
+=======
+	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
+>>>>>>> audio-bus-effect-fixed
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
 
@@ -257,6 +261,11 @@ class GDScriptInstance : public ScriptInstance {
 	bool base_ref;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
+<<<<<<< HEAD
+=======
+
+	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
+>>>>>>> audio-bus-effect-fixed
 
 public:
 	virtual Object *get_owner() { return owner; }
@@ -300,6 +309,8 @@ public:
 };
 
 class GDScriptLanguage : public ScriptLanguage {
+	friend class GDScriptFunctionState;
+
 	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;

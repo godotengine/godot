@@ -37,7 +37,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+<<<<<<< HEAD
 import android.view.Surface;
+=======
+>>>>>>> audio-bus-effect-fixed
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -77,6 +80,10 @@ import javax.microedition.khronos.opengles.GL10;
  * 'godot/plugin/v1/[PluginName]/'
  */
 public abstract class GodotPlugin {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	private static final String TAG = GodotPlugin.class.getSimpleName();
 
 	private final Godot godot;
@@ -98,7 +105,11 @@ public abstract class GodotPlugin {
 	 */
 	@Nullable
 	protected Activity getActivity() {
+<<<<<<< HEAD
 		return godot.getActivity();
+=======
+		return godot;
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	/**
@@ -107,7 +118,11 @@ public abstract class GodotPlugin {
 	 * This method is invoked on the render thread.
 	 */
 	public final void onRegisterPluginWithGodotNative() {
+<<<<<<< HEAD
 		nativeRegisterSingleton(getPluginName());
+=======
+		nativeRegisterSingleton(getPluginName(), this);
+>>>>>>> audio-bus-effect-fixed
 
 		Class clazz = getClass();
 		Method[] methods = clazz.getDeclaredMethods();
@@ -219,6 +234,7 @@ public abstract class GodotPlugin {
 	public void onGLSurfaceCreated(GL10 gl, EGLConfig config) {}
 
 	/**
+<<<<<<< HEAD
 	 * Invoked once per frame on the Vulkan thread after the frame is drawn.
 	 */
 	public void onVkDrawFrame() {}
@@ -235,6 +251,8 @@ public abstract class GodotPlugin {
 	public void onVkSurfaceCreated(Surface surface) {}
 
 	/**
+=======
+>>>>>>> audio-bus-effect-fixed
 	 * Returns the name of the plugin.
 	 * <p>
 	 * This value must match the one listed in the plugin '<meta-data>' manifest entry.
@@ -335,7 +353,11 @@ public abstract class GodotPlugin {
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
 	 */
+<<<<<<< HEAD
 	private native void nativeRegisterSingleton(String p_name);
+=======
+	public static native void nativeRegisterSingleton(String p_name, Object object);
+>>>>>>> audio-bus-effect-fixed
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.
@@ -344,7 +366,11 @@ public abstract class GodotPlugin {
 	 * @param p_ret Return type of the registered method
 	 * @param p_params Method parameters types
 	 */
+<<<<<<< HEAD
 	private native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
+=======
+	public static native void nativeRegisterMethod(String p_sname, String p_name, String p_ret, String[] p_params);
+>>>>>>> audio-bus-effect-fixed
 
 	/**
 	 * Used to register gdnative libraries bundled by the plugin.

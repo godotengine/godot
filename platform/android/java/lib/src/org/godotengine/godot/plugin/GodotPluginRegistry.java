@@ -32,7 +32,10 @@ package org.godotengine.godot.plugin;
 
 import org.godotengine.godot.Godot;
 
+<<<<<<< HEAD
 import android.app.Activity;
+=======
+>>>>>>> audio-bus-effect-fixed
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -52,6 +55,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Registry used to load and access the registered Godot Android plugins.
  */
 public final class GodotPluginRegistry {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	private static final String TAG = GodotPluginRegistry.class.getSimpleName();
 
 	private static final String GODOT_PLUGIN_V1_NAME_PREFIX = "org.godotengine.plugin.v1.";
@@ -122,11 +129,17 @@ public final class GodotPluginRegistry {
 
 	private void loadPlugins(Godot godot) {
 		try {
+<<<<<<< HEAD
 			final Activity activity = godot.getActivity();
 			ApplicationInfo appInfo = activity
 											  .getPackageManager()
 											  .getApplicationInfo(activity.getPackageName(),
 													  PackageManager.GET_META_DATA);
+=======
+			ApplicationInfo appInfo = godot
+											  .getPackageManager()
+											  .getApplicationInfo(godot.getPackageName(), PackageManager.GET_META_DATA);
+>>>>>>> audio-bus-effect-fixed
 			Bundle metaData = appInfo.metaData;
 			if (metaData == null || metaData.isEmpty()) {
 				return;

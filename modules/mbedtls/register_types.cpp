@@ -43,6 +43,10 @@ void register_mbedtls_types() {
 }
 
 void unregister_mbedtls_types() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
 	StreamPeerMbedTLS::finalize_ssl();

@@ -57,6 +57,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 		return;
 	}
 
+<<<<<<< HEAD
 	// get some Godot method pointers...
 	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()V");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
@@ -78,6 +79,26 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
+=======
+	// get some method pointers...
+	_on_video_init = p_env->GetMethodID(cls, "onVideoInit", "()V");
+	_restart = p_env->GetMethodID(cls, "restart", "()V");
+	_finish = p_env->GetMethodID(cls, "forceQuit", "()V");
+	_set_keep_screen_on = p_env->GetMethodID(cls, "setKeepScreenOn", "(Z)V");
+	_alert = p_env->GetMethodID(cls, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_get_GLES_version_code = p_env->GetMethodID(cls, "getGLESVersionCode", "()I");
+	_get_clipboard = p_env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
+	_set_clipboard = p_env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
+	_request_permission = p_env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
+	_request_permissions = p_env->GetMethodID(cls, "requestPermissions", "()Z");
+	_get_granted_permissions = p_env->GetMethodID(cls, "getGrantedPermissions", "()[Ljava/lang/String;");
+	_init_input_devices = p_env->GetMethodID(cls, "initInputDevices", "()V");
+	_get_surface = p_env->GetMethodID(cls, "getSurface", "()Landroid/view/Surface;");
+	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
+	_vibrate = p_env->GetMethodID(cls, "vibrate", "(I)V");
+	_get_input_fallback_mapping = p_env->GetMethodID(cls, "getInputFallbackMapping", "()Ljava/lang/String;");
+	_on_godot_main_loop_started = p_env->GetMethodID(cls, "onGodotMainLoopStarted", "()V");
+>>>>>>> audio-bus-effect-fixed
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -119,7 +140,11 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 
 void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 	if (_on_godot_main_loop_started) {
+<<<<<<< HEAD
 		if (p_env == nullptr) {
+=======
+		if (p_env == NULL) {
+>>>>>>> audio-bus-effect-fixed
 			p_env = ThreadAndroid::get_env();
 		}
 	}

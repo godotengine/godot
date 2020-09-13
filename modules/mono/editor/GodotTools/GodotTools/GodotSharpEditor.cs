@@ -30,8 +30,13 @@ namespace GodotTools
         private AcceptDialog aboutDialog;
         private CheckBox aboutDialogCheckBox;
 
+<<<<<<< HEAD
         private Button bottomPanelBtn;
         private Button toolBarBuildButton;
+=======
+        private ToolButton bottomPanelBtn;
+        private ToolButton toolBarButton;
+>>>>>>> audio-bus-effect-fixed
 
         public GodotIdeManager GodotIdeManager { get; private set; }
 
@@ -128,7 +133,11 @@ namespace GodotTools
         {
             menuPopup.RemoveItem(menuPopup.GetItemIndex((int)MenuOptions.CreateSln));
             bottomPanelBtn.Show();
+<<<<<<< HEAD
             toolBarBuildButton.Show();
+=======
+            toolBarButton.Show();
+>>>>>>> audio-bus-effect-fixed
         }
 
         private void _ShowAboutDialog()
@@ -164,6 +173,34 @@ namespace GodotTools
             Instance.BottomPanel.BuildProjectPressed();
         }
 
+        private void _FileSystemDockFileMoved(string file, string newFile)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+            {
+                ProjectUtils.RenameItemInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file), ProjectSettings.GlobalizePath(newFile));
+            }
+        }
+
+        private void _FileSystemDockFileRemoved(string file)
+        {
+            if (Path.GetExtension(file) == Internal.CSharpLanguageExtension)
+                ProjectUtils.RemoveItemFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                    ProjectSettings.GlobalizePath(file));
+        }
+
+        private void _FileSystemDockFolderMoved(string oldFolder, string newFolder)
+        {
+            ProjectUtils.RenameItemsToNewFolderInProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder), ProjectSettings.GlobalizePath(newFolder));
+        }
+
+        private void _FileSystemDockFolderRemoved(string oldFolder)
+        {
+            ProjectUtils.RemoveItemsInFolderFromProjectChecked(GodotSharpDirs.ProjectCsProjPath, "Compile",
+                ProjectSettings.GlobalizePath(oldFolder));
+        }
+
         public override void _Notification(int what)
         {
             base._Notification(what);
@@ -178,6 +215,13 @@ namespace GodotTools
                     // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
                     aboutDialog.Exclusive = false;
                 }
+
+                var fileSystemDock = GetEditorInterface().GetFileSystemDock();
+
+                fileSystemDock.Connect("files_moved", this, nameof(_FileSystemDockFileMoved));
+                fileSystemDock.Connect("file_removed", this, nameof(_FileSystemDockFileRemoved));
+                fileSystemDock.Connect("folder_moved", this, nameof(_FileSystemDockFolderMoved));
+                fileSystemDock.Connect("folder_removed", this, nameof(_FileSystemDockFolderRemoved));
             }
         }
 
@@ -461,6 +505,7 @@ namespace GodotTools
 
                 // CheckBox in main container
                 aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
+<<<<<<< HEAD
                 aboutDialogCheckBox.Toggled += enabled =>
                 {
                     bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
@@ -471,13 +516,25 @@ namespace GodotTools
             }
 
             toolBarBuildButton = new Button
+=======
+                aboutDialogCheckBox.Connect("toggled", this, nameof(_ToggleAboutDialogOnStart));
+                aboutVBox.AddChild(aboutDialogCheckBox);
+            }
+
+            toolBarButton = new ToolButton
+>>>>>>> audio-bus-effect-fixed
             {
                 Text = "Build",
                 HintTooltip = "Build solution",
                 FocusMode = Control.FocusModeEnum.None
             };
+<<<<<<< HEAD
             toolBarBuildButton.PressedSignal += _BuildSolutionPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, toolBarBuildButton);
+=======
+            toolBarButton.Connect("pressed", this, nameof(_BuildSolutionPressed));
+            AddControlToContainer(CustomControlContainer.Toolbar, toolBarButton);
+>>>>>>> audio-bus-effect-fixed
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
@@ -486,11 +543,19 @@ namespace GodotTools
             else
             {
                 bottomPanelBtn.Hide();
+<<<<<<< HEAD
                 toolBarBuildButton.Hide();
                 menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
             }
 
             menuPopup.IdPressed += _MenuOptionPressed;
+=======
+                toolBarButton.Hide();
+                menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
+            }
+
+            menuPopup.Connect("id_pressed", this, nameof(_MenuOptionPressed));
+>>>>>>> audio-bus-effect-fixed
 
             // External editor settings
             EditorDef("mono/editor/external_editor", ExternalEditorId.None);

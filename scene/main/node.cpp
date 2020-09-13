@@ -1237,8 +1237,16 @@ void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 	ERR_FAIL_COND_MSG(p_sibling == this, "Can't add sibling '" + p_sibling->get_name() + "' to itself."); // adding to itself!
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
 
+<<<<<<< HEAD
 	get_parent()->add_child(p_sibling, p_legible_unique_name);
 	get_parent()->move_child(p_sibling, this->get_index() + 1);
+=======
+	if (p_node->data.parent == this) {
+		move_child(p_child, p_node->get_position_in_parent() + 1);
+	} else {
+		WARN_PRINTS("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
+	}
+>>>>>>> audio-bus-effect-fixed
 }
 
 void Node::_propagate_validate_owner() {
@@ -2239,6 +2247,10 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 // because re-targeting of connections from some descendant to another is not possible
 // if the emitter node comes later in tree order than the receiver
 void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if ((this != p_original) && !(p_original->is_a_parent_of(this))) {
 		return;
 	}
@@ -2246,6 +2258,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 	List<const Node *> process_list;
 	process_list.push_back(this);
 	while (!process_list.empty()) {
+<<<<<<< HEAD
 		const Node *n = process_list.front()->get();
 		process_list.pop_front();
 
@@ -2279,6 +2292,39 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 					if (!copy->is_connected(E->get().signal.get_name(), copy_callable)) {
 						copy->connect(E->get().signal.get_name(), copy_callable, E->get().binds, E->get().flags);
 					}
+=======
+
+		const Node *n = process_list.front()->get();
+		process_list.pop_front();
+
+		List<Connection> conns;
+		n->get_all_signal_connections(&conns);
+
+		for (List<Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().flags & CONNECT_PERSIST) {
+				//user connected
+				NodePath p = p_original->get_path_to(n);
+				Node *copy = p_copy->get_node(p);
+
+				Node *target = Object::cast_to<Node>(E->get().target);
+				if (!target) {
+					continue;
+				}
+				NodePath ptarget = p_original->get_path_to(target);
+
+				Node *copytarget = target;
+
+				// Attempt to find a path to the duplicate target, if it seems it's not part
+				// of the duplicated and not yet parented hierarchy then at least try to connect
+				// to the same target as the original
+
+				if (p_copy->has_node(ptarget)) {
+					copytarget = p_copy->get_node(ptarget);
+				}
+
+				if (copy && copytarget && !copy->is_connected(E->get().signal, copytarget, E->get().method)) {
+					copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
+>>>>>>> audio-bus-effect-fixed
 				}
 			}
 		}

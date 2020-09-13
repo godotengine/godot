@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Used to draw icons and sprites in a user interface. The texture's placement can be controlled with the [member stretch_mode] property. It can scale, tile, or stay centered inside its bounding rectangle.
+		[b]Note:[/b] You should enable [member flip_v] when using a TextureRect to display a [ViewportTexture]. Alternatively, you can enable [member Viewport.render_target_v_flip] on the Viewport. Otherwise, the image will appear upside down.
 	</description>
 	<tutorials>
 	</tutorials>

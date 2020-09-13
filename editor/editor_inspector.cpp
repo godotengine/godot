@@ -818,11 +818,18 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 	//help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
+<<<<<<< HEAD
 	String text;
 	PackedStringArray slices = p_text.split("::", false);
 	if (!slices.empty()) {
 		String property_name = slices[0].strip_edges();
 		text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
+=======
+	Vector<String> slices = p_text.split("::", false);
+	if (!slices.empty()) {
+		String property_name = slices[0].strip_edges();
+		String text = TTR("Property:") + " [u][b]" + property_name + "[/b][/u]";
+>>>>>>> audio-bus-effect-fixed
 
 		if (slices.size() > 1) {
 			String property_doc = slices[1].strip_edges();
@@ -830,7 +837,11 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 				text += "\n" + property_doc;
 			}
 		}
+<<<<<<< HEAD
 		help_bit->set_text(text);
+=======
+		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	return help_bit;
@@ -1050,7 +1061,11 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 	help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
+<<<<<<< HEAD
 	PackedStringArray slices = p_text.split("::", false);
+=======
+	Vector<String> slices = p_text.split("::", false);
+>>>>>>> audio-bus-effect-fixed
 	if (!slices.empty()) {
 		String property_name = slices[0].strip_edges();
 		String text = "[u][b]" + property_name + "[/b][/u]";
@@ -1061,7 +1076,11 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 				text += "\n" + property_doc;
 			}
 		}
+<<<<<<< HEAD
 		help_bit->set_text(text); //hack so it uses proper theme once inside scene
+=======
+		help_bit->call_deferred("set_text", text); //hack so it uses proper theme once inside scene
+>>>>>>> audio-bus-effect-fixed
 	}
 
 	return help_bit;
@@ -1735,7 +1754,11 @@ void EditorInspector::update_tree() {
 				cat = cat.capitalize();
 			}
 
+<<<<<<< HEAD
 			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1) {
+=======
+			if (!filter.is_subsequence_ofi(cat) && !filter.is_subsequence_ofi(name) && property_prefix.to_lower().find(filter.to_lower()) == -1)
+>>>>>>> audio-bus-effect-fixed
 				continue;
 			}
 		}
@@ -1833,7 +1856,11 @@ void EditorInspector::update_tree() {
 						// Likely a theme property.
 						for (int i = 0; i < F->get().theme_properties.size(); i++) {
 							if (F->get().theme_properties[i].name == slices[1]) {
+<<<<<<< HEAD
 								descr = DTR(F->get().theme_properties[i].description);
+=======
+								descr = F->get().theme_properties[i].description.strip_edges();
+>>>>>>> audio-bus-effect-fixed
 								break;
 							}
 						}

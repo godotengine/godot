@@ -347,7 +347,14 @@ private:
 
 	bool context_menu_enabled;
 	bool shortcut_keys_enabled;
+<<<<<<< HEAD
 	bool virtual_keyboard_enabled = true;
+=======
+
+	bool virtual_keyboard_enabled = true;
+
+	int executing_line;
+>>>>>>> audio-bus-effect-fixed
 
 	void _generate_context_menu();
 

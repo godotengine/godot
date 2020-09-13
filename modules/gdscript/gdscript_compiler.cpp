@@ -1453,9 +1453,19 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 
 				gen->pop_temporary();
 
+<<<<<<< HEAD
 				if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
+=======
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
+							codegen.opcodes.push_back(cf->body_else->line);
+							codegen.current_line = cf->body_else->line;
+
+							Error err2 = _parse_block(codegen, cf->body_else, p_stack_level, p_break_addr, p_continue_addr);
+							if (err2)
+								return err2;
+>>>>>>> audio-bus-effect-fixed
 
 				gen->end_match();
 			} break;

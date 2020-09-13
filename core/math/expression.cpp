@@ -895,7 +895,11 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_OP_BIT_INVERT;
 
 				return OK;
+<<<<<<< HEAD
 			}
+=======
+			};
+>>>>>>> audio-bus-effect-fixed
 			case '\'':
 			case '"': {
 				String str;
@@ -1061,11 +1065,18 @@ Error Expression::_get_token(Token &r_token) {
 
 					r_token.type = TK_CONSTANT;
 
+<<<<<<< HEAD
 					if (is_float) {
 						r_token.value = num.to_float();
 					} else {
 						r_token.value = num.to_int();
 					}
+=======
+					if (is_float)
+						r_token.value = num.to_double();
+					else
+						r_token.value = num.to_int64();
+>>>>>>> audio-bus-effect-fixed
 					return OK;
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {

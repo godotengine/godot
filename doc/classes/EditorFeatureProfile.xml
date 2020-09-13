@@ -135,6 +135,7 @@
 		<constant name="FEATURE_SCENE_TREE" value="3" enum="Feature">
 			Scene tree editing. If this feature is disabled, the Scene tree dock will still be visible but will be read-only.
 		</constant>
+<<<<<<< HEAD
 		<constant name="FEATURE_NODE_DOCK" value="4" enum="Feature">
 			The Node dock. If this feature is disabled, signals and groups won't be visible and modifiable from the editor.
 		</constant>
@@ -143,6 +144,16 @@
 		</constant>
 		<constant name="FEATURE_IMPORT_DOCK" value="6" enum="Feature">
 			The Import dock. If this feature is disabled, the Import dock won't be visible.
+=======
+		<constant name="FEATURE_IMPORT_DOCK" value="4" enum="Feature">
+			The Import dock. If this feature is disabled, the Import dock won't be visible.
+		</constant>
+		<constant name="FEATURE_NODE_DOCK" value="5" enum="Feature">
+			The Node dock. If this feature is disabled, signals and groups won't be visible and modifiable from the editor.
+		</constant>
+		<constant name="FEATURE_FILESYSTEM_DOCK" value="6" enum="Feature">
+			The FileSystem dock. If this feature is disabled, the FileSystem dock won't be visible.
+>>>>>>> audio-bus-effect-fixed
 		</constant>
 		<constant name="FEATURE_MAX" value="7" enum="Feature">
 			Represents the size of the [enum Feature] enum.

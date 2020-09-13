@@ -72,6 +72,7 @@ class GDMonoAssembly {
 	MonoAssembly *assembly;
 
 #ifdef GD_MONO_HOT_RELOAD
+<<<<<<< HEAD
 	uint64_t modified_time = 0;
 #endif
 
@@ -81,6 +82,17 @@ class GDMonoAssembly {
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
 	Map<MonoClass *, GDMonoClass *> cached_raw;
 
+=======
+	uint64_t modified_time;
+#endif
+
+	bool gdobject_class_cache_updated;
+	Map<StringName, GDMonoClass *> gdobject_class_cache;
+
+	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
+	Map<MonoClass *, GDMonoClass *> cached_raw;
+
+>>>>>>> audio-bus-effect-fixed
 	static Vector<String> search_dirs;
 
 	static void assembly_load_hook(MonoAssembly *assembly, void *user_data);
@@ -124,11 +136,15 @@ public:
 	static GDMonoAssembly *load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);
 
+<<<<<<< HEAD
 	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
 			name(p_name),
 			image(p_image),
 			assembly(p_assembly) {
 	}
+=======
+	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly);
+>>>>>>> audio-bus-effect-fixed
 	~GDMonoAssembly();
 };
 

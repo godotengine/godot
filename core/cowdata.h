@@ -253,7 +253,11 @@ Error CowData<T>::resize(int p_size) {
 
 	int current_size = size();
 
+<<<<<<< HEAD
 	if (p_size == current_size) {
+=======
+	if (p_size == current_size)
+>>>>>>> audio-bus-effect-fixed
 		return OK;
 	}
 
@@ -272,6 +276,10 @@ Error CowData<T>::resize(int p_size) {
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
 	if (p_size > current_size) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 		if (alloc_size != current_alloc_size) {
 			if (current_size == 0) {
 				// alloc from scratch
@@ -302,6 +310,10 @@ Error CowData<T>::resize(int p_size) {
 		*_get_size() = p_size;
 
 	} else if (p_size < current_size) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
 			for (uint32_t i = p_size; i < *_get_size(); i++) {

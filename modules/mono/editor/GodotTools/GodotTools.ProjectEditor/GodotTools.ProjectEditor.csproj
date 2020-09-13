@@ -5,7 +5,13 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <PackageReference Include="Microsoft.Build" Version="16.5.0" />
+=======
+    <Reference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build" Version="16.5.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2019.1.3.0" ExcludeAssets="runtime" PrivateAssets="all" />
+>>>>>>> audio-bus-effect-fixed
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>

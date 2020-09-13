@@ -1361,11 +1361,19 @@ void TextEdit::_notification(int p_what) {
 			bool completion_below = false;
 			if (completion_active && completion_options.size() > 0) {
 				// Code completion box.
+<<<<<<< HEAD
 				Ref<StyleBox> csb = get_theme_stylebox("completion");
 				int maxlines = get_theme_constant("completion_lines");
 				int cmax_width = get_theme_constant("completion_max_width") * cache.font->get_char_size('x').x;
 				int scrollw = get_theme_constant("completion_scroll_width");
 				Color scrollc = get_theme_color("completion_scroll_color");
+=======
+				Ref<StyleBox> csb = get_stylebox("completion");
+				int maxlines = get_constant("completion_lines");
+				int cmax_width = get_constant("completion_max_width") * cache.font->get_char_size('x').x;
+				int scrollw = get_constant("completion_scroll_width");
+				Color scrollc = get_color("completion_scroll_color");
+>>>>>>> audio-bus-effect-fixed
 
 				const int completion_options_size = completion_options.size();
 				int lines = MIN(completion_options_size, maxlines);
@@ -1406,7 +1414,11 @@ void TextEdit::_notification(int p_what) {
 
 				completion_rect.size.width = w + 2;
 				completion_rect.size.height = h;
+<<<<<<< HEAD
 				if (completion_options_size <= maxlines) {
+=======
+				if (completion_options_size <= maxlines)
+>>>>>>> audio-bus-effect-fixed
 					scrollw = 0;
 				}
 
@@ -1416,12 +1428,25 @@ void TextEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
 				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options_size - lines);
+<<<<<<< HEAD
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
+=======
+				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
+>>>>>>> audio-bus-effect-fixed
 				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 					int l = line_from + i;
 					ERR_CONTINUE(l < 0 || l >= completion_options_size);
+<<<<<<< HEAD
+=======
+					Color text_color = cache.completion_font_color;
+					for (int j = 0; j < color_regions.size(); j++) {
+						if (completion_options[l].insert_text.begins_with(color_regions[j].begin_key)) {
+							text_color = color_regions[j].color;
+						}
+					}
+>>>>>>> audio-bus-effect-fixed
 					int yofs = (get_row_height() - cache.font->get_height()) / 2;
 					Point2 title_pos(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs);
 
@@ -1543,9 +1568,14 @@ void TextEdit::_notification(int p_what) {
 				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos, get_viewport()->get_window_id());
 			}
 
+<<<<<<< HEAD
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_show(get_text(), get_global_rect(), true);
 			}
+=======
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), true);
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (caret_blink_enabled) {
@@ -1559,9 +1589,14 @@ void TextEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 
+<<<<<<< HEAD
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
+=======
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
+				OS::get_singleton()->hide_virtual_keyboard();
+>>>>>>> audio-bus-effect-fixed
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (has_focus()) {
@@ -1628,6 +1663,59 @@ void TextEdit::_consume_pair_symbol(char32_t ch) {
 	}
 
 	String line = text[cursor.line];
+<<<<<<< HEAD
+=======
+
+	bool in_single_quote = false;
+	bool in_double_quote = false;
+	bool found_comment = false;
+
+	int c = 0;
+	while (c < line.length()) {
+		if (line[c] == '\\') {
+			c++; // Skip quoted anything.
+
+			if (cursor.column == c) {
+				break;
+			}
+		} else if (!in_single_quote && !in_double_quote && line[c] == '#') {
+			found_comment = true;
+			break;
+		} else {
+			if (line[c] == '\'' && !in_double_quote) {
+				in_single_quote = !in_single_quote;
+			} else if (line[c] == '"' && !in_single_quote) {
+				in_double_quote = !in_double_quote;
+			}
+		}
+
+		c++;
+
+		if (cursor.column == c) {
+			break;
+		}
+	}
+
+	// Do not need to duplicate quotes while in comments
+	if (found_comment) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
+	// Disallow inserting duplicated quotes while already in string
+	if ((in_single_quote || in_double_quote) && (ch == '"' || ch == '\'')) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+
+		return;
+	}
+
+	insert_text_at_cursor(ch_pair);
+	cursor_set_column(cursor_position_to_move);
+}
+>>>>>>> audio-bus-effect-fixed
 
 	bool in_single_quote = false;
 	bool in_double_quote = false;
@@ -6788,7 +6876,11 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
 	GLOBAL_DEF("gui/timers/text_edit_idle_detect_sec", 3);
+<<<<<<< HEAD
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::FLOAT, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
+=======
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/text_edit_idle_detect_sec", PropertyInfo(Variant::REAL, "gui/timers/text_edit_idle_detect_sec", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater")); // No negative numbers.
+>>>>>>> audio-bus-effect-fixed
 	GLOBAL_DEF("gui/common/text_edit_undo_stack_max_size", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/common/text_edit_undo_stack_max_size", PropertyInfo(Variant::INT, "gui/common/text_edit_undo_stack_max_size", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
 }
@@ -6860,7 +6952,11 @@ TextEdit::TextEdit() {
 	current_op.type = TextOperation::TYPE_NONE;
 	undo_enabled = true;
 	undo_stack_max_size = GLOBAL_GET("gui/common/text_edit_undo_stack_max_size");
+<<<<<<< HEAD
 	undo_stack_pos = nullptr;
+=======
+	undo_stack_pos = NULL;
+>>>>>>> audio-bus-effect-fixed
 	setting_text = false;
 	last_dblclk = 0;
 	current_op.version = 0;

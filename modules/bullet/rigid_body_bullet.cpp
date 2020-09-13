@@ -897,13 +897,31 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 }
 
 void RigidBodyBullet::reload_space_override_modificator() {
+<<<<<<< HEAD
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
+=======
+	// Make sure that kinematic bodies have their total gravity calculated
+	if (!is_active() && PhysicsServer::BODY_MODE_KINEMATIC != mode)
+>>>>>>> audio-bus-effect-fixed
 		return;
 	}
 
+<<<<<<< HEAD
 	Vector3 newGravity;
 	real_t newLinearDamp = MAX(0.0, linearDamp);
 	real_t newAngularDamp = MAX(0.0, angularDamp);
+=======
+	Vector3 newGravity(0.0, 0.0, 0.0);
+	real_t newLinearDamp = MAX(0.0, linearDamp);
+	real_t newAngularDamp = MAX(0.0, angularDamp);
+
+	AreaBullet *currentArea;
+	// Variable used to calculate new gravity for gravity point areas, it is pointed by currentGravity pointer
+	Vector3 support_gravity(0, 0, 0);
+
+	bool stopped = false;
+	for (int i = areaWhereIamCount - 1; (0 <= i) && !stopped; --i) {
+>>>>>>> audio-bus-effect-fixed
 
 	bool stopped = false;
 	for (int i = 0; i < areaWhereIamCount && !stopped; i += 1) {
@@ -962,7 +980,11 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				newAngularDamp += currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
+<<<<<<< HEAD
 			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
+=======
+			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
+>>>>>>> audio-bus-effect-fixed
 				/// This area replaces any gravity/damp, even the default one, and
 				/// stops taking into account the rest of the areas.
 				newGravity = support_gravity;
@@ -970,7 +992,11 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				newAngularDamp = currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
+<<<<<<< HEAD
 			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
+=======
+			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
+>>>>>>> audio-bus-effect-fixed
 				/// This area replaces any gravity/damp calculated so far, but keeps
 				/// calculating the rest of the areas, down to the default one.
 				newGravity = support_gravity;

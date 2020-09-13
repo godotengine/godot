@@ -65,6 +65,17 @@
 				Returns the shortest distance from the plane to the position [code]point[/code].
 			</description>
 		</method>
+<<<<<<< HEAD
+=======
+		<method name="get_any_point">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the center of the plane.
+				This method is deprecated, please use [method center] instead.
+			</description>
+		</method>
+>>>>>>> audio-bus-effect-fixed
 		<method name="has_point">
 			<return type="bool">
 			</return>

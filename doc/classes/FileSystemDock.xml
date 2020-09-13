@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<<<<<<< HEAD
 <class name="FileSystemDock" inherits="VBoxContainer" version="4.0">
+=======
+<class name="FileSystemDock" inherits="VBoxContainer" version="3.2">
+>>>>>>> audio-bus-effect-fixed
 	<brief_description>
 	</brief_description>
 	<description>
@@ -10,11 +14,19 @@
 		<method name="can_drop_data_fw" qualifiers="const">
 			<return type="bool">
 			</return>
+<<<<<<< HEAD
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<argument index="2" name="from" type="Control">
+=======
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+>>>>>>> audio-bus-effect-fixed
 			</argument>
 			<description>
 			</description>
@@ -22,11 +34,19 @@
 		<method name="drop_data_fw">
 			<return type="void">
 			</return>
+<<<<<<< HEAD
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="data" type="Variant">
 			</argument>
 			<argument index="2" name="from" type="Control">
+=======
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+>>>>>>> audio-bus-effect-fixed
 			</argument>
 			<description>
 			</description>
@@ -34,9 +54,15 @@
 		<method name="get_drag_data_fw">
 			<return type="Variant">
 			</return>
+<<<<<<< HEAD
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="from" type="Control">
+=======
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Control">
+>>>>>>> audio-bus-effect-fixed
 			</argument>
 			<description>
 			</description>
@@ -44,7 +70,11 @@
 		<method name="navigate_to_path">
 			<return type="void">
 			</return>
+<<<<<<< HEAD
 			<argument index="0" name="path" type="String">
+=======
+			<argument index="0" name="arg0" type="String">
+>>>>>>> audio-bus-effect-fixed
 			</argument>
 			<description>
 			</description>
@@ -90,7 +120,11 @@
 			</description>
 		</signal>
 		<signal name="instance">
+<<<<<<< HEAD
 			<argument index="0" name="files" type="PackedStringArray">
+=======
+			<argument index="0" name="files" type="PoolStringArray">
+>>>>>>> audio-bus-effect-fixed
 			</argument>
 			<description>
 			</description>

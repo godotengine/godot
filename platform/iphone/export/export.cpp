@@ -72,6 +72,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildgrp;
 	};
 	struct ExportArchitecture {
+
 		String name;
 		bool is_default = false;
 
@@ -264,8 +265,11 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
 
+<<<<<<< HEAD
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "launch_screens/generate_missing"), false));
 
+=======
+>>>>>>> audio-bus-effect-fixed
 	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
 	}
@@ -1170,9 +1174,14 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+<<<<<<< HEAD
 		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
 		}
+=======
+		for (int j = 0; j < project_static_libs.size(); j++)
+			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+>>>>>>> audio-bus-effect-fixed
 		err = _export_additional_assets(p_out_dir, project_static_libs, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
@@ -1459,7 +1468,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	// Copy project static libs to the project
+<<<<<<< HEAD
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+=======
+	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
+>>>>>>> audio-bus-effect-fixed
 	for (int i = 0; i < export_plugins.size(); i++) {
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
 		for (int j = 0; j < project_static_libs.size(); j++) {
@@ -1467,7 +1480,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			String dest_lib_file_path = dest_dir + static_lib_path.get_file();
 			Error lib_copy_err = tmp_app_path->copy(static_lib_path, dest_lib_file_path);
 			if (lib_copy_err != OK) {
+<<<<<<< HEAD
 				ERR_PRINT("Can't copy '" + static_lib_path + "'.");
+=======
+				ERR_PRINTS("Can't copy '" + static_lib_path + "'.");
+>>>>>>> audio-bus-effect-fixed
 				memdelete(tmp_app_path);
 				return lib_copy_err;
 			}
@@ -1494,6 +1511,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String launch_image_path = dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/";
 	String splash_image_path = dest_dir + binary_name + "/Images.xcassets/SplashImage.imageset/";
 
+<<<<<<< HEAD
+=======
+	bool use_storyboard = p_preset->get("storyboard/use_launch_screen_storyboard");
+
+	String launch_image_path = dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/";
+	String splash_image_path = dest_dir + binary_name + "/Images.xcassets/SplashImage.imageset/";
+
+>>>>>>> audio-bus-effect-fixed
 	DirAccess *launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	if (!launch_screen_da) {

@@ -17,7 +17,7 @@ namespace GodotTools.BuildLogger
             if (null == Parameters)
                 throw new LoggerException("Log directory was not set.");
 
-            var parameters = Parameters.Split(new[] { ';' });
+            var parameters = Parameters.Split(new[] {';'});
 
             string logDir = parameters[0];
 
@@ -189,7 +189,11 @@ namespace GodotTools.BuildLogger
     {
         public static string CsvEscape(this string value, char delimiter = ',')
         {
+<<<<<<< HEAD
             bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
+=======
+            bool hasSpecialChar = value.IndexOfAny(new[] {'\"', '\n', '\r', delimiter}) != -1;
+>>>>>>> audio-bus-effect-fixed
 
             if (hasSpecialChar)
                 return "\"" + value.Replace("\"", "\"\"") + "\"";

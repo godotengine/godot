@@ -11,9 +11,16 @@
 	<methods>
 	</methods>
 	<members>
+<<<<<<< HEAD
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" override="true" default="true" />
+=======
+		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
+			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
+			[b]Note:[/b] Enabling this property doesn't affect the Close or Cancel buttons' behavior in dialogs that inherit from this class. As a workaround, you can use [method WindowDialog.get_close_button] or [method ConfirmationDialog.get_cancel] and hide the buttons in question by setting their [member CanvasItem.visible] property to [code]false[/code].
+		</member>
+>>>>>>> audio-bus-effect-fixed
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" override="true" default="true" />
 	</members>

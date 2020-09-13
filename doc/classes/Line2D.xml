@@ -84,7 +84,11 @@
 		<member name="joint_mode" type="int" setter="set_joint_mode" getter="get_joint_mode" enum="Line2D.LineJointMode" default="0">
 			The style for the points between the start and the end.
 		</member>
+<<<<<<< HEAD
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
+=======
+		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" default="PoolVector2Array(  )">
+>>>>>>> audio-bus-effect-fixed
 			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">

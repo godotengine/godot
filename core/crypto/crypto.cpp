@@ -72,8 +72,12 @@ Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
 	if (_create) {
 		return _create();
+<<<<<<< HEAD
 	}
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
+=======
+	ERR_FAIL_V_MSG(NULL, "Crypto is not available when the mbedtls module is disabled.");
+>>>>>>> audio-bus-effect-fixed
 }
 
 void Crypto::load_default_certificates(String p_path) {
@@ -86,10 +90,16 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_random_bytes", "size"), &Crypto::generate_random_bytes);
 	ClassDB::bind_method(D_METHOD("generate_rsa", "size"), &Crypto::generate_rsa);
 	ClassDB::bind_method(D_METHOD("generate_self_signed_certificate", "key", "issuer_name", "not_before", "not_after"), &Crypto::generate_self_signed_certificate, DEFVAL("CN=myserver,O=myorganisation,C=IT"), DEFVAL("20140101000000"), DEFVAL("20340101000000"));
+<<<<<<< HEAD
 	ClassDB::bind_method(D_METHOD("sign", "hash_type", "hash", "key"), &Crypto::sign);
 	ClassDB::bind_method(D_METHOD("verify", "hash_type", "hash", "signature", "key"), &Crypto::verify);
 	ClassDB::bind_method(D_METHOD("encrypt", "key", "plaintext"), &Crypto::encrypt);
 	ClassDB::bind_method(D_METHOD("decrypt", "key", "ciphertext"), &Crypto::decrypt);
+=======
+}
+
+Crypto::Crypto() {
+>>>>>>> audio-bus-effect-fixed
 }
 
 /// Resource loader/saver

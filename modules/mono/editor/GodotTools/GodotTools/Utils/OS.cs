@@ -73,6 +73,7 @@ namespace GodotTools.Utils
             return names.Any(p => p.Equals(GetPlatformName(), StringComparison.OrdinalIgnoreCase));
         }
 
+<<<<<<< HEAD
         private static readonly IEnumerable<string> LinuxBSDPlatforms =
             new[] {Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD};
 
@@ -80,6 +81,8 @@ namespace GodotTools.Utils
             new[] {Names.OSX, Names.Server, Names.Haiku, Names.Android, Names.iOS}
                 .Concat(LinuxBSDPlatforms).ToArray();
 
+=======
+>>>>>>> audio-bus-effect-fixed
         private static readonly Lazy<bool> _isWindows = new Lazy<bool>(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isOSX = new Lazy<bool>(() => IsOS(Names.OSX));
         private static readonly Lazy<bool> _isLinuxBSD = new Lazy<bool>(() => IsAnyOS(LinuxBSDPlatforms));
@@ -100,6 +103,12 @@ namespace GodotTools.Utils
         public static bool IsAndroid => _isAndroid.Value;
         public static bool IsiOS => _isiOS.Value;
         public static bool IsHTML5 => _isHTML5.Value;
+<<<<<<< HEAD
+=======
+
+        private static readonly string[] UnixLikePlatforms = {Names.OSX, Names.X11, Names.Server, Names.Haiku, Names.Android, Names.iOS};
+
+>>>>>>> audio-bus-effect-fixed
         public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';

@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python3
 
 import fnmatch
 import os
@@ -53,6 +53,7 @@ msgstr ""
 """
 
 
+<<<<<<< HEAD
 def _write_message(msgctx, msg, msg_plural, location):
     global main_po
     main_po += "#: " + location + "\n"
@@ -81,14 +82,21 @@ def _add_additional_location(msgctx, msg, location):
 
 
 def _write_translator_comment(msgctx, msg, translator_comment):
+=======
+def _write_translator_comment(msg, translator_comment):
+>>>>>>> audio-bus-effect-fixed
     if translator_comment == "":
         return
 
     global main_po
+<<<<<<< HEAD
     if msgctx != "":
         msg_pos = main_po.find('\nmsgctxt "' + msgctx + '"\nmsgid "' + msg + '"')
     else:
         msg_pos = main_po.find('\nmsgid "' + msg + '"')
+=======
+    msg_pos = main_po.find('\nmsgid "' + msg + '"')
+>>>>>>> audio-bus-effect-fixed
 
     # If it's a new message, just append comment to the end of PO file.
     if msg_pos == -1:
@@ -183,7 +191,11 @@ def process_file(f, fname):
 
     global main_po, unique_str, unique_loc
 
+<<<<<<< HEAD
     patterns = ['RTR("', 'TTR("', 'TTRC("', 'TTRN("', 'RTRN("']
+=======
+    patterns = ['RTR("', 'TTR("', 'TTRC("']
+>>>>>>> audio-bus-effect-fixed
 
     l = f.readline()
     lc = 1
@@ -211,7 +223,10 @@ def process_file(f, fname):
         pos = 0
 
         while not reading_translator_comment and pos >= 0:
+<<<<<<< HEAD
             # Loop until a pattern is found. If not, next line.
+=======
+>>>>>>> audio-bus-effect-fixed
             pos = l.find(patterns[idx], pos)
             if pos == -1:
                 if idx < len(patterns) - 1:
@@ -226,6 +241,7 @@ def process_file(f, fname):
                 msg += l[pos]
                 pos += 1
 
+<<<<<<< HEAD
             # Read plural.
             msg_plural = ""
             if patterns[idx] in ['TTRN("', 'RTRN("']:
@@ -254,11 +270,14 @@ def process_file(f, fname):
                     pos += 1
 
             # File location.
+=======
+>>>>>>> audio-bus-effect-fixed
             location = os.path.relpath(fname).replace("\\", "/")
             if line_nb:
                 location += ":" + str(lc)
 
             # Write translator comment.
+<<<<<<< HEAD
             _write_translator_comment(msgctx, msg, translator_comment)
             translator_comment = ""
 
@@ -282,6 +301,24 @@ def process_file(f, fname):
                 elif not location in unique_loc[msg]:
                     _add_additional_location(msgctx, msg, location)
                     unique_loc[msg].append(location)
+=======
+            _write_translator_comment(msg, translator_comment)
+            translator_comment = ""
+
+            if not msg in unique_str:
+                main_po += "#: " + location + "\n"
+                main_po += 'msgid "' + msg + '"\n'
+                main_po += 'msgstr ""\n\n'
+                unique_str.append(msg)
+                unique_loc[msg] = [location]
+            elif not location in unique_loc[msg]:
+                # Add additional location to previous occurrence too
+                msg_pos = main_po.find('\nmsgid "' + msg + '"')
+                if msg_pos == -1:
+                    print("Someone apparently thought writing Python was as easy as GDScript. Ping Akien.")
+                main_po = main_po[:msg_pos] + " " + location + main_po[msg_pos:]
+                unique_loc[msg].append(location)
+>>>>>>> audio-bus-effect-fixed
 
         l = f.readline()
         lc += 1

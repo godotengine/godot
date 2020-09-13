@@ -30,6 +30,8 @@
 
 package org.godotengine.godot.utils;
 
+import org.godotengine.godot.Godot;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageInfo;
@@ -48,6 +50,8 @@ import java.util.List;
  * @author Cagdas Caglak <cagdascaglak@gmail.com>
  */
 public final class PermissionsUtil {
+	private static final String TAG = PermissionsUtil.class.getSimpleName();
+
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;

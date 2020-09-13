@@ -132,8 +132,13 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform();
+<<<<<<< HEAD
             interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.Lerp(destinationScale, weight));
             interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
+=======
+            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, weight).Normalized(), sourceScale.LinearInterpolate(destinationScale, weight));
+            interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, weight);
+>>>>>>> audio-bus-effect-fixed
 
             return interpolated;
         }

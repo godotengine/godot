@@ -323,10 +323,20 @@ public:
 	struct AwaitNode : public ExpressionNode {
 		ExpressionNode *to_await = nullptr;
 
+<<<<<<< HEAD
 		AwaitNode() {
 			type = AWAIT;
 		}
 	};
+=======
+		ClassNode *parent_class;
+		BlockNode *parent_block;
+		List<Node *> statements;
+		Map<StringName, LocalVarNode *> variables;
+		bool has_return = false;
+		bool can_break = false;
+		bool can_continue = false;
+>>>>>>> audio-bus-effect-fixed
 
 	struct BinaryOpNode : public ExpressionNode {
 		enum OpType {
@@ -352,6 +362,7 @@ public:
 			OP_COMP_GREATER_EQUAL,
 		};
 
+<<<<<<< HEAD
 		OpType operation;
 		Variant::Operator variant_op = Variant::OP_MAX;
 		ExpressionNode *left_operand = nullptr;
@@ -359,6 +370,17 @@ public:
 
 		BinaryOpNode() {
 			type = BINARY_OPERATOR;
+=======
+		//the following is useful for code completion
+		List<BlockNode *> sub_blocks;
+		int end_line;
+		BlockNode() {
+			if_condition = NULL;
+			type = TYPE_BLOCK;
+			end_line = -1;
+			parent_block = NULL;
+			parent_class = NULL;
+>>>>>>> audio-bus-effect-fixed
 		}
 	};
 
@@ -833,11 +855,31 @@ public:
 			IdentifierNode *attribute;
 		};
 
+<<<<<<< HEAD
 		bool is_attribute = false;
 
 		SubscriptNode() {
 			type = SUBSCRIPT;
 		}
+=======
+	enum CompletionType {
+		COMPLETION_NONE,
+		COMPLETION_BUILT_IN_TYPE_CONSTANT,
+		COMPLETION_GET_NODE,
+		COMPLETION_FUNCTION,
+		COMPLETION_IDENTIFIER,
+		COMPLETION_EXTENDS,
+		COMPLETION_PARENT_FUNCTION,
+		COMPLETION_METHOD,
+		COMPLETION_CALL_ARGUMENTS,
+		COMPLETION_RESOURCE_PATH,
+		COMPLETION_INDEX,
+		COMPLETION_VIRTUAL_FUNC,
+		COMPLETION_YIELD,
+		COMPLETION_ASSIGN,
+		COMPLETION_TYPE_HINT,
+		COMPLETION_TYPE_HINT_INDEX,
+>>>>>>> audio-bus-effect-fixed
 	};
 
 	struct SuiteNode : public Node {
@@ -1027,6 +1069,7 @@ public:
 		}
 	};
 
+<<<<<<< HEAD
 	enum CompletionType {
 		COMPLETION_NONE,
 		COMPLETION_ANNOTATION, // Annotation (following @).
@@ -1052,6 +1095,64 @@ public:
 		COMPLETION_TYPE_NAME, // Name of type (after :).
 		COMPLETION_TYPE_NAME_OR_VOID, // Same as TYPE_NAME, but allows void (in function return type).
 	};
+=======
+	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
+#ifdef DEBUG_ENABLED
+	void _add_warning(int p_code, int p_line = -1, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
+	void _add_warning(int p_code, int p_line, const Vector<String> &p_symbols);
+#endif // DEBUG_ENABLED
+	bool _recover_from_completion();
+
+	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
+	bool _enter_indent_block(BlockNode *p_block = NULL);
+	bool _parse_newline();
+	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
+	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
+	Node *_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false);
+	bool _reduce_export_var_type(Variant &p_value, int p_line = 0);
+
+	PatternNode *_parse_pattern(bool p_static);
+	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
+	void _transform_match_statment(MatchNode *p_match_statement);
+	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node *> &p_bindings);
+
+	void _parse_block(BlockNode *p_block, bool p_static);
+	void _parse_extends(ClassNode *p_class);
+	void _parse_class(ClassNode *p_class);
+	bool _end_statement();
+	void _set_end_statement_error(String p_name);
+
+	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
+	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
+	DataType _resolve_type(const DataType &p_source, int p_line);
+	DataType _type_from_variant(const Variant &p_value) const;
+	DataType _type_from_property(const PropertyInfo &p_property, bool p_nil_is_variant = true) const;
+	DataType _type_from_gdtype(const GDScriptDataType &p_gdtype) const;
+	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
+	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
+	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
+	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type, bool *r_is_const = nullptr) const;
+	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
+	Node *_get_default_value_for_type(const DataType &p_type, int p_line = -1);
+
+	DataType _reduce_node_type(Node *p_node);
+	DataType _reduce_function_call_type(const OperatorNode *p_call);
+	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line, bool p_is_indexing);
+	void _check_class_level_types(ClassNode *p_class);
+	void _check_class_blocks_types(ClassNode *p_class);
+	void _check_function_types(FunctionNode *p_function);
+	void _check_block_types(BlockNode *p_block);
+	_FORCE_INLINE_ void _mark_line_as_safe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->insert(p_line);
+#endif // DEBUG_ENABLED
+	}
+	_FORCE_INLINE_ void _mark_line_as_unsafe(int p_line) const {
+#ifdef DEBUG_ENABLED
+		if (safe_lines) safe_lines->erase(p_line);
+#endif // DEBUG_ENABLED
+	}
+>>>>>>> audio-bus-effect-fixed
 
 	struct CompletionContext {
 		CompletionType type = COMPLETION_NONE;

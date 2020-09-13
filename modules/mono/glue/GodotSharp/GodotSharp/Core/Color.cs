@@ -187,6 +187,36 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Returns a color according to the standardized name, with the
+        /// specified alpha value. Supported color names are the same as
+        /// the constants defined in <see cref="Colors"/>.
+        /// </summary>
+        /// <param name="name">The name of the color.</param>
+        /// <param name="alpha">The alpha (transparency) component represented on the range of 0 to 1. Default: 1.</param>
+        /// <returns>The constructed color.</returns>
+        public static Color ColorN(string name, float alpha = 1f)
+        {
+            name = name.Replace(" ", String.Empty);
+            name = name.Replace("-", String.Empty);
+            name = name.Replace("_", String.Empty);
+            name = name.Replace("'", String.Empty);
+            name = name.Replace(".", String.Empty);
+            name = name.ToLower();
+
+            if (!Colors.namedColors.ContainsKey(name))
+            {
+                throw new ArgumentOutOfRangeException($"Invalid Color Name: {name}");
+            }
+
+            Color color = Colors.namedColors[name];
+            color.a = alpha;
+            return color;
+        }
+
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// Access color components using their index.
         /// </summary>
         /// <value>`[0]` is equivalent to `.r`, `[1]` is equivalent to `.g`, `[2]` is equivalent to `.b`, `[3]` is equivalent to `.a`.</value>
@@ -231,6 +261,93 @@ namespace Godot
         }
 
         /// <summary>
+<<<<<<< HEAD
+=======
+        /// Converts a color to HSV values. This is equivalent to using each of
+        /// the `h`/`s`/`v` properties, but much more efficient.
+        /// </summary>
+        /// <param name="hue">Output parameter for the HSV hue.</param>
+        /// <param name="saturation">Output parameter for the HSV saturation.</param>
+        /// <param name="value">Output parameter for the HSV value.</param>
+        public void ToHsv(out float hue, out float saturation, out float value)
+        {
+            float max = (float)Mathf.Max(r, Mathf.Max(g, b));
+            float min = (float)Mathf.Min(r, Mathf.Min(g, b));
+
+            float delta = max - min;
+
+            if (delta == 0)
+            {
+                hue = 0;
+            }
+            else
+            {
+                if (r == max)
+                    hue = (g - b) / delta; // Between yellow & magenta
+                else if (g == max)
+                    hue = 2 + (b - r) / delta; // Between cyan & yellow
+                else
+                    hue = 4 + (r - g) / delta; // Between magenta & cyan
+
+                hue /= 6.0f;
+
+                if (hue < 0)
+                    hue += 1.0f;
+            }
+
+            saturation = max == 0 ? 0 : 1f - 1f * min / max;
+            value = max;
+        }
+
+        /// <summary>
+        /// Constructs a color from an HSV profile, with values on the
+        /// range of 0 to 1. This is equivalent to using each of
+        /// the `h`/`s`/`v` properties, but much more efficient.
+        /// </summary>
+        /// <param name="hue">The HSV hue, typically on the range of 0 to 1.</param>
+        /// <param name="saturation">The HSV saturation, typically on the range of 0 to 1.</param>
+        /// <param name="value">The HSV value (brightness), typically on the range of 0 to 1.</param>
+        /// <param name="alpha">The alpha (transparency) value, typically on the range of 0 to 1.</param>
+        /// <returns>The constructed color.</returns>
+        public static Color FromHsv(float hue, float saturation, float value, float alpha = 1.0f)
+        {
+            if (saturation == 0)
+            {
+                // acp_hromatic (grey)
+                return new Color(value, value, value, alpha);
+            }
+
+            int i;
+            float f, p, q, t;
+
+            hue *= 6.0f;
+            hue %= 6f;
+            i = (int)hue;
+
+            f = hue - i;
+            p = value * (1 - saturation);
+            q = value * (1 - saturation * f);
+            t = value * (1 - saturation * (1 - f));
+
+            switch (i)
+            {
+                case 0: // Red is the dominant color
+                    return new Color(value, t, p, alpha);
+                case 1: // Green is the dominant color
+                    return new Color(q, value, p, alpha);
+                case 2:
+                    return new Color(p, value, t, alpha);
+                case 3: // Blue is the dominant color
+                    return new Color(p, q, value, alpha);
+                case 4:
+                    return new Color(t, p, value, alpha);
+                default: // (5) Red is the dominant color
+                    return new Color(value, p, q, alpha);
+            }
+        }
+
+        /// <summary>
+>>>>>>> audio-bus-effect-fixed
         /// Returns a new color resulting from blending this color over another.
         /// If the color is opaque, the result is also opaque.
         /// The second color may have a range of alpha values.
@@ -321,7 +438,11 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
+<<<<<<< HEAD
         public Color Lerp(Color to, float weight)
+=======
+        public Color LinearInterpolate(Color to, float weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Color
             (
@@ -339,7 +460,11 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
+<<<<<<< HEAD
         public Color Lerp(Color to, Color weight)
+=======
+        public Color LinearInterpolate(Color to, Color weight)
+>>>>>>> audio-bus-effect-fixed
         {
             return new Color
             (
@@ -355,8 +480,13 @@ namespace Godot
         /// (each byte represents a component of the ABGR profile).
         /// ABGR is the reversed version of the default format.
         /// </summary>
+<<<<<<< HEAD
         /// <returns>A uint representing this color in ABGR32 format.</returns>
         public uint ToAbgr32()
+=======
+        /// <returns>An int representing this color in ABGR32 format.</returns>
+        public int ToAbgr32()
+>>>>>>> audio-bus-effect-fixed
         {
             uint c = (byte)Math.Round(a * 255);
             c <<= 8;
@@ -371,11 +501,19 @@ namespace Godot
 
         /// <summary>
         /// Returns the color's 64-bit integer in ABGR format
+<<<<<<< HEAD
         /// (each word represents a component of the ABGR profile).
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A ulong representing this color in ABGR64 format.</returns>
         public ulong ToAbgr64()
+=======
+        /// (each byte represents a component of the ABGR profile).
+        /// ABGR is the reversed version of the default format.
+        /// </summary>
+        /// <returns>An int representing this color in ABGR64 format.</returns>
+        public long ToAbgr64()
+>>>>>>> audio-bus-effect-fixed
         {
             ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
@@ -393,8 +531,13 @@ namespace Godot
         /// (each byte represents a component of the ARGB profile).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
+<<<<<<< HEAD
         /// <returns>A uint representing this color in ARGB32 format.</returns>
         public uint ToArgb32()
+=======
+        /// <returns>An int representing this color in ARGB32 format.</returns>
+        public int ToArgb32()
+>>>>>>> audio-bus-effect-fixed
         {
             uint c = (byte)Math.Round(a * 255);
             c <<= 8;
@@ -412,8 +555,13 @@ namespace Godot
         /// (each word represents a component of the ARGB profile).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
+<<<<<<< HEAD
         /// <returns>A ulong representing this color in ARGB64 format.</returns>
         public ulong ToArgb64()
+=======
+        /// <returns>A long representing this color in ARGB64 format.</returns>
+        public long ToArgb64()
+>>>>>>> audio-bus-effect-fixed
         {
             ulong c = (ushort)Math.Round(a * 65535);
             c <<= 16;
@@ -431,8 +579,13 @@ namespace Godot
         /// (each byte represents a component of the RGBA profile).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
+<<<<<<< HEAD
         /// <returns>A uint representing this color in RGBA32 format.</returns>
         public uint ToRgba32()
+=======
+        /// <returns>An int representing this color in RGBA32 format.</returns>
+        public int ToRgba32()
+>>>>>>> audio-bus-effect-fixed
         {
             uint c = (byte)Math.Round(r * 255);
             c <<= 8;
@@ -450,8 +603,13 @@ namespace Godot
         /// (each word represents a component of the RGBA profile).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
+<<<<<<< HEAD
         /// <returns>A ulong representing this color in RGBA64 format.</returns>
         public ulong ToRgba64()
+=======
+        /// <returns>A long representing this color in RGBA64 format.</returns>
+        public long ToRgba64()
+>>>>>>> audio-bus-effect-fixed
         {
             ulong c = (ushort)Math.Round(r * 65535);
             c <<= 16;
@@ -517,8 +675,13 @@ namespace Godot
         /// Constructs a color from a 32-bit integer
         /// (each byte represents a component of the RGBA profile).
         /// </summary>
+<<<<<<< HEAD
         /// <param name="rgba">The uint representing the color.</param>
         public Color(uint rgba)
+=======
+        /// <param name="rgba">The int representing the color.</param>
+        public Color(int rgba)
+>>>>>>> audio-bus-effect-fixed
         {
             a = (rgba & 0xFF) / 255.0f;
             rgba >>= 8;
@@ -533,8 +696,13 @@ namespace Godot
         /// Constructs a color from a 64-bit integer
         /// (each word represents a component of the RGBA profile).
         /// </summary>
+<<<<<<< HEAD
         /// <param name="rgba">The ulong representing the color.</param>
         public Color(ulong rgba)
+=======
+        /// <param name="rgba">The long representing the color.</param>
+        public Color(long rgba)
+>>>>>>> audio-bus-effect-fixed
         {
             a = (rgba & 0xFFFF) / 65535.0f;
             rgba >>= 16;
@@ -755,6 +923,7 @@ namespace Godot
                     hue = 4 + (r - g) / delta; // Between magenta & cyan
                 }
 
+<<<<<<< HEAD
                 hue /= 6.0f;
 
                 if (hue < 0)
@@ -774,6 +943,16 @@ namespace Godot
             if (character >= '0' && character <= '9')
             {
                 return character - '0';
+=======
+                if (i == 0)
+                {
+                    ig += v * 16;
+                }
+                else
+                {
+                    ig += v;
+                }
+>>>>>>> audio-bus-effect-fixed
             }
             else if (character >= 'a' && character <= 'f')
             {
@@ -826,6 +1005,16 @@ namespace Godot
             }
 
             if (color[0] == '#')
+<<<<<<< HEAD
+=======
+            {
+                color = color.Substring(1, color.Length - 1);
+            }
+
+            bool alpha;
+
+            switch (color.Length)
+>>>>>>> audio-bus-effect-fixed
             {
                 color = color.Substring(1);
             }
@@ -834,7 +1023,55 @@ namespace Godot
             int len = color.Length;
             if (!(len == 3 || len == 4 || len == 6 || len == 8))
             {
+<<<<<<< HEAD
                 return false;
+=======
+                if (ParseCol8(color, 0) < 0)
+                {
+                    return false;
+                }
+            }
+
+            int from = alpha ? 2 : 0;
+
+            if (ParseCol8(color, from + 0) < 0)
+                return false;
+            if (ParseCol8(color, from + 2) < 0)
+                return false;
+            if (ParseCol8(color, from + 4) < 0)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns a color constructed from integer red, green, blue, and alpha channels.
+        /// Each channel should have 8 bits of information ranging from 0 to 255.
+        /// </summary>
+        /// <param name="r8">The red component represented on the range of 0 to 255.</param>
+        /// <param name="g8">The green component represented on the range of 0 to 255.</param>
+        /// <param name="b8">The blue component represented on the range of 0 to 255.</param>
+        /// <param name="a8">The alpha (transparency) component represented on the range of 0 to 255.</param>
+        /// <returns>The constructed color.</returns>
+        public static Color Color8(byte r8, byte g8, byte b8, byte a8 = 255)
+        {
+            return new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
+        }
+
+        /// <summary>
+        /// Constructs a color from the HTML hexadecimal color string in RGBA format.
+        /// </summary>
+        /// <param name="rgba">A string for the HTML hexadecimal representation of this color.</param>
+        public Color(string rgba)
+        {
+            if (rgba.Length == 0)
+            {
+                r = 0f;
+                g = 0f;
+                b = 0f;
+                a = 1.0f;
+                return;
+>>>>>>> audio-bus-effect-fixed
             }
 
             // Check if each hex digit is valid.

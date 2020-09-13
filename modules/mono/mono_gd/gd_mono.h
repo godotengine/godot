@@ -204,7 +204,11 @@ public:
 	UnhandledExceptionPolicy get_unhandled_exception_policy() const { return unhandled_exception_policy; }
 
 	// Do not use these, unless you know what you're doing
+<<<<<<< HEAD
 	void add_assembly(int32_t p_domain_id, GDMonoAssembly *p_assembly);
+=======
+	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);
+>>>>>>> audio-bus-effect-fixed
 	GDMonoAssembly *get_loaded_assembly(const String &p_name);
 
 	_FORCE_INLINE_ bool is_runtime_initialized() const { return runtime_initialized && !mono_runtime_is_shutting_down() /* stays true after shutdown finished */; }

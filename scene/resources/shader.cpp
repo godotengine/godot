@@ -120,11 +120,32 @@ void Shader::get_default_texture_param_list(List<StringName> *r_textures) const 
 	}
 }
 
+void Shader::set_custom_defines(const String &p_defines) {
+	if (shader_custom_defines == p_defines) {
+		return;
+	}
+
+	if (!shader_custom_defines.empty()) {
+		VS::get_singleton()->shader_remove_custom_define(shader, shader_custom_defines);
+	}
+
+	shader_custom_defines = p_defines;
+	VS::get_singleton()->shader_add_custom_define(shader, shader_custom_defines);
+}
+
+String Shader::get_custom_defines() const {
+	return shader_custom_defines;
+}
+
 bool Shader::is_text_shader() const {
 	return true;
 }
 
 bool Shader::has_param(const StringName &p_param) const {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	return params_cache.has("shader_param/" + p_param);
 }
 
@@ -140,9 +161,13 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture"), &Shader::set_default_texture_param);
 	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
 
+	ClassDB::bind_method(D_METHOD("set_custom_defines", "custom_defines"), &Shader::set_custom_defines);
+	ClassDB::bind_method(D_METHOD("get_custom_defines"), &Shader::get_custom_defines);
+
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "custom_defines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_custom_defines", "get_custom_defines");
 
 	BIND_ENUM_CONSTANT(MODE_SPATIAL);
 	BIND_ENUM_CONSTANT(MODE_CANVAS_ITEM);

@@ -12,8 +12,13 @@
 		Call [method accept_event] so no other node receives the event. Once you accepted an input, it becomes handled so [method Node._unhandled_input] will not process it.
 		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
 		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
+<<<<<<< HEAD
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can override the theme with the inspector.
 		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
+=======
+		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_*_override[/code] methods, like [method add_font_override]. You can override the theme with the inspector.
+		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use [method get_color], [method get_constant], [method get_font], [method get_icon], [method get_stylebox], and the [code]add_*_override[/code] methods provided by this class.
+>>>>>>> audio-bus-effect-fixed
 	</description>
 	<tutorials>
 		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
@@ -103,11 +108,19 @@
 				[b]Example of overriding a label's color and resetting it later:[/b]
 				[codeblock]
 				# Override the child node "MyLabel"'s font color to orange.
+<<<<<<< HEAD
 				$MyLabel.add_theme_color_override("font_color", Color(1, 0.5, 0))
 
 				# Reset the color by creating a new node to get the default value:
 				var default_label_color = Label.new().get_theme_color("font_color")
 				$MyLabel.add_theme_color_override("font_color", default_label_color)
+=======
+				$MyLabel.add_color_override("font_color", Color(1, 0.5, 0))
+
+				# Reset the color by creating a new node to get the default value:
+				var default_label_color = Label.new().get_color("font_color")
+				$MyLabel.add_color_override("font_color", default_label_color)
+>>>>>>> audio-bus-effect-fixed
 				[/codeblock]
 			</description>
 		</method>
@@ -169,6 +182,7 @@
 				# The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
 				# Resources are shared across instances, so we need to duplicate it
 				# to avoid modifying the appearance of all other buttons.
+<<<<<<< HEAD
 				var new_stylebox_normal = $MyButton.get_theme_stylebox("normal").duplicate()
 				new_stylebox_normal.border_width_top = 3
 				new_stylebox_normal.border_color = Color(0, 1, 0.5)
@@ -176,6 +190,15 @@
 
 				# Remove the stylebox override:
 				$MyButton.add_theme_stylebox_override("normal", null)
+=======
+				var new_stylebox_normal = $MyButton.get_stylebox("normal").duplicate()
+				new_stylebox_normal.border_width_top = 3
+				new_stylebox_normal.border_color = Color(0, 1, 0.5)
+				$MyButton.add_stylebox_override("normal", new_stylebox_normal)
+
+				# Remove the stylebox override:
+				$MyButton.add_stylebox_override("normal", null)
+>>>>>>> audio-bus-effect-fixed
 				[/codeblock]
 			</description>
 		</method>

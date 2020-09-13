@@ -71,6 +71,10 @@ void BroadPhase2DHashGrid::_unpair_attempt(Element *p_elem, Element *p_with) {
 
 void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 	for (Map<Element *, PairData *>::Element *E = p_elem->paired.front(); E; E = E->next()) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 		bool physical_collision = p_elem->aabb.intersects(E->key()->aabb);
 		bool logical_collision = p_elem->owner->test_collision_mask(E->key()->owner);
 
@@ -321,6 +325,7 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 	Element &e = E->get();
 
 	if (p_aabb != e.aabb) {
+<<<<<<< HEAD
 		if (p_aabb != Rect2()) {
 			_enter_grid(&e, p_aabb, e._static);
 		}
@@ -332,6 +337,26 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 
 	_check_motion(&e);
 }
+=======
+
+		if (p_aabb != Rect2()) {
+
+			_enter_grid(&e, p_aabb, e._static);
+		}
+
+		if (e.aabb != Rect2()) {
+
+			_exit_grid(&e, e.aabb, e._static);
+		}
+
+		e.aabb = p_aabb;
+	}
+
+	_check_motion(&e);
+}
+
+void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
+>>>>>>> audio-bus-effect-fixed
 
 void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);

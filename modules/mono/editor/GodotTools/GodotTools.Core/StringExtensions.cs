@@ -36,6 +36,7 @@ namespace GodotTools.Core
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
+<<<<<<< HEAD
             if (!rooted)
                 return path;
 
@@ -47,6 +48,9 @@ namespace GodotTools.Core
             }
 
             return Path.DirectorySeparatorChar + path;
+=======
+            return rooted ? Path.DirectorySeparatorChar + path : path;
+>>>>>>> audio-bus-effect-fixed
         }
 
         private static readonly string DriveRoot = Path.GetPathRoot(Environment.CurrentDirectory);

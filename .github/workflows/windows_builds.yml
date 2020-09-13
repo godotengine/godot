@@ -4,7 +4,11 @@ on: [push, pull_request]
 # Global Cache Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
+<<<<<<< HEAD
   GODOT_BASE_BRANCH: master
+=======
+  GODOT_BASE_BRANCH: 3.2
+>>>>>>> audio-bus-effect-fixed
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
 
@@ -14,7 +18,11 @@ jobs:
     runs-on: "windows-latest"
 
     # Windows Editor - checkout with the plugin
+<<<<<<< HEAD
     name: Editor (target=release_debug, tools=yes, tests=yes)
+=======
+    name: Editor (target=release_debug, tools=yes)
+>>>>>>> audio-bus-effect-fixed
 
     steps:
     - uses: actions/checkout@v2
@@ -54,12 +62,16 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
+<<<<<<< HEAD
         scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes tests=yes target=release_debug
 
     # Execute unit tests for the editor
     - name: Unit Tests
       run: |
         ./bin/godot.windows.opt.tools.64.exe --test
+=======
+        scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes target=release_debug
+>>>>>>> audio-bus-effect-fixed
 
 # Build Product Upload (tested and working)
 # sorry this is disabled until github can give us some more space as we would hit our limit very quickly

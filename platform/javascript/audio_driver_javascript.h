@@ -36,8 +36,15 @@
 class AudioDriverJavaScript : public AudioDriver {
 	float *internal_buffer = nullptr;
 
+<<<<<<< HEAD
 	int _driver_id = 0;
 	int buffer_length = 0;
+=======
+	float *internal_buffer;
+
+	int _driver_id;
+	int buffer_length;
+>>>>>>> audio-bus-effect-fixed
 
 public:
 	static bool is_available();

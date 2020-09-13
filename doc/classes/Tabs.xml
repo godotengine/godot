@@ -274,6 +274,7 @@
 		<theme_item name="button_pressed" type="StyleBox">
 			Background of the close button when it's being pressed.
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="close" type="Texture2D">
 			The icon for the close button (see [member tab_close_display_policy]).
 		</theme_item>
@@ -281,6 +282,15 @@
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
 		</theme_item>
 		<theme_item name="decrement_highlight" type="Texture2D">
+=======
+		<theme_item name="close" type="Texture">
+			The icon for the close button (see [member tab_close_display_policy]).
+		</theme_item>
+		<theme_item name="decrement" type="Texture">
+			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="decrement_highlight" type="Texture">
+>>>>>>> audio-bus-effect-fixed
 			Icon for the left arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
 		<theme_item name="font" type="Font">
@@ -298,8 +308,16 @@
 		<theme_item name="hseparation" type="int" default="4">
 			The horizontal separation between the tabs.
 		</theme_item>
+<<<<<<< HEAD
 		<theme_item name="increment" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
+=======
+		<theme_item name="increment" type="Texture">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
+		</theme_item>
+		<theme_item name="increment_highlight" type="Texture">
+			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
+>>>>>>> audio-bus-effect-fixed
 		</theme_item>
 		<theme_item name="increment_highlight" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
@@ -314,6 +332,11 @@
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
 			The style of the currently selected tab.
+<<<<<<< HEAD
+=======
+		</theme_item>
+		<theme_item name="top_margin" type="int" default="24">
+>>>>>>> audio-bus-effect-fixed
 		</theme_item>
 	</theme_items>
 </class>

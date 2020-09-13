@@ -42,6 +42,7 @@ namespace Godot.Collections
 
             foreach (object element in collection)
                 Add(element);
+<<<<<<< HEAD
         }
 
         public Array(params object[] array) : this()
@@ -51,6 +52,8 @@ namespace Godot.Collections
                 throw new NullReferenceException($"Parameter '{nameof(array)} cannot be null.'");
             }
             safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor_MonoArray(array));
+=======
+>>>>>>> audio-bus-effect-fixed
         }
 
         internal Array(ArraySafeHandle handle)

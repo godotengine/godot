@@ -81,17 +81,27 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 
 StringName GDMonoClass::get_namespace() const {
 	GDMonoClass *nesting_class = get_nesting_class();
+<<<<<<< HEAD
 	if (!nesting_class) {
 		return namespace_name;
 	}
+=======
+	if (!nesting_class)
+		return namespace_name;
+>>>>>>> audio-bus-effect-fixed
 	return nesting_class->get_namespace();
 }
 
 String GDMonoClass::get_name_for_lookup() const {
 	GDMonoClass *nesting_class = get_nesting_class();
+<<<<<<< HEAD
 	if (!nesting_class) {
 		return class_name;
 	}
+=======
+	if (!nesting_class)
+		return class_name;
+>>>>>>> audio-bus-effect-fixed
 	return nesting_class->get_name_for_lookup() + "/" + class_name;
 }
 
@@ -286,9 +296,18 @@ bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
 }
 
 bool GDMonoClass::has_public_parameterless_ctor() {
+<<<<<<< HEAD
 	GDMonoMethod *ctor = get_method(".ctor", 0);
 	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
 }
+=======
+
+	GDMonoMethod *ctor = get_method(".ctor", 0);
+	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
+}
+
+GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
+>>>>>>> audio-bus-effect-fixed
 
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -352,11 +371,18 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
 
+<<<<<<< HEAD
 	if (!method) {
 		return nullptr;
 	}
 
 	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, nullptr);
+=======
+	if (!method)
+		return NULL;
+
+	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, NULL);
+>>>>>>> audio-bus-effect-fixed
 
 	return get_method(method);
 }

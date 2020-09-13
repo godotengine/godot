@@ -72,6 +72,11 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	Popup *popup = get_popup();
+<<<<<<< HEAD
+=======
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+>>>>>>> audio-bus-effect-fixed
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		Point2 pos(mb->get_position().x, mb->get_position().y);
@@ -227,7 +232,11 @@ void TabContainer::_notification(int p_what) {
 
 			// Find the width of the header area.
 			Popup *popup = get_popup();
+<<<<<<< HEAD
 			if (popup) {
+=======
+			if (popup)
+>>>>>>> audio-bus-effect-fixed
 				header_width -= menu->get_width();
 			}
 			if (buttons_visible_cache) {
@@ -289,7 +298,11 @@ void TabContainer::_notification(int p_what) {
 			int header_width = size.width - side_margin * 2;
 			int header_height = _get_top_margin();
 			Popup *popup = get_popup();
+<<<<<<< HEAD
 			if (popup) {
+=======
+			if (popup)
+>>>>>>> audio-bus-effect-fixed
 				header_width -= menu->get_width();
 			}
 
@@ -446,7 +459,11 @@ void TabContainer::_on_theme_changed() {
 }
 
 void TabContainer::_repaint() {
+<<<<<<< HEAD
 	Ref<StyleBox> sb = get_theme_stylebox("panel");
+=======
+	Ref<StyleBox> sb = get_stylebox("panel");
+>>>>>>> audio-bus-effect-fixed
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
@@ -795,7 +812,12 @@ TabContainer::TabAlign TabContainer::get_tab_align() const {
 }
 
 void TabContainer::set_tabs_visible(bool p_visible) {
+<<<<<<< HEAD
 	if (p_visible == tabs_visible) {
+=======
+
+	if (p_visible == tabs_visible)
+>>>>>>> audio-bus-effect-fixed
 		return;
 	}
 
@@ -804,7 +826,11 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 		Control *c = tabs[i];
+<<<<<<< HEAD
 		if (p_visible) {
+=======
+		if (p_visible)
+>>>>>>> audio-bus-effect-fixed
 			c->set_margin(MARGIN_TOP, _get_top_margin());
 		} else {
 			c->set_margin(MARGIN_TOP, 0);
@@ -955,12 +981,20 @@ Size2 TabContainer::get_minimum_size() const {
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
 	Popup *popup = Object::cast_to<Popup>(p_popup);
+<<<<<<< HEAD
 	popup_obj_id = popup ? popup->get_instance_id() : ObjectID();
+=======
+	popup_obj_id = popup ? popup->get_instance_id() : 0;
+>>>>>>> audio-bus-effect-fixed
 	update();
 }
 
 Popup *TabContainer::get_popup() const {
+<<<<<<< HEAD
 	if (popup_obj_id.is_valid()) {
+=======
+	if (popup_obj_id) {
+>>>>>>> audio-bus-effect-fixed
 		Popup *popup = Object::cast_to<Popup>(ObjectDB::get_instance(popup_obj_id));
 		if (popup) {
 			return popup;
@@ -968,10 +1002,17 @@ Popup *TabContainer::get_popup() const {
 #ifdef DEBUG_ENABLED
 			ERR_PRINT("Popup assigned to TabContainer is gone!");
 #endif
+<<<<<<< HEAD
 			popup_obj_id = ObjectID();
 		}
 	}
 	return nullptr;
+=======
+			popup_obj_id = 0;
+		}
+	}
+	return NULL;
+>>>>>>> audio-bus-effect-fixed
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
@@ -1055,6 +1096,10 @@ TabContainer::TabContainer() {
 	previous = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
+<<<<<<< HEAD
+=======
+	popup_obj_id = 0;
+>>>>>>> audio-bus-effect-fixed
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
 	use_hidden_tabs_for_min_size = false;

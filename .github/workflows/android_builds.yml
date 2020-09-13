@@ -3,7 +3,11 @@ on: [push, pull_request]
 
 # Global Cache Settings
 env:
+<<<<<<< HEAD
   GODOT_BASE_BRANCH: master
+=======
+  GODOT_BASE_BRANCH: 3.2
+>>>>>>> audio-bus-effect-fixed
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -18,7 +22,10 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+<<<<<<< HEAD
           sudo rm -f /etc/apt/sources.list.d/*
+=======
+>>>>>>> audio-bus-effect-fixed
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 

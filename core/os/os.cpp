@@ -40,7 +40,11 @@
 
 #include <stdarg.h>
 
+<<<<<<< HEAD
 OS *OS::singleton = nullptr;
+=======
+OS *OS::singleton = NULL;
+>>>>>>> audio-bus-effect-fixed
 uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
@@ -166,6 +170,11 @@ bool OS::is_stdout_verbose() const {
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
+<<<<<<< HEAD
+=======
+
+void OS::dump_memory_to_file(const char *p_file) {
+>>>>>>> audio-bus-effect-fixed
 
 void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
@@ -184,7 +193,35 @@ static void _OS_printres(Object *p_obj) {
 		_OSPRF->store_line(str);
 	} else {
 		print_line(str);
+<<<<<<< HEAD
 	}
+=======
+}
+
+bool OS::has_virtual_keyboard() const {
+
+	return false;
+}
+
+void OS::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+}
+
+void OS::hide_virtual_keyboard() {
+}
+
+int OS::get_virtual_keyboard_height() const {
+	return 0;
+}
+
+void OS::set_cursor_shape(CursorShape p_shape) {
+}
+
+OS::CursorShape OS::get_cursor_shape() const {
+	return CURSOR_ARROW;
+}
+
+void OS::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+>>>>>>> audio-bus-effect-fixed
 }
 
 void OS::print_all_resources(String p_to_file) {
@@ -361,6 +398,82 @@ bool OS::can_use_threads() const {
 #endif
 }
 
+<<<<<<< HEAD
+=======
+OS::MouseMode OS::get_mouse_mode() const {
+
+	return MOUSE_MODE_VISIBLE;
+}
+
+OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
+
+	return LATIN_KEYBOARD_QWERTY;
+}
+
+int OS::keyboard_get_layout_count() const {
+	return 0;
+}
+
+int OS::keyboard_get_current_layout() const {
+	return -1;
+}
+
+void OS::keyboard_set_current_layout(int p_index) {}
+
+String OS::keyboard_get_layout_language(int p_index) const {
+	return "";
+}
+
+String OS::keyboard_get_layout_name(int p_index) const {
+	return "";
+}
+
+bool OS::is_joy_known(int p_device) {
+	return true;
+}
+
+String OS::get_joy_guid(int p_device) const {
+	return "Default Joypad";
+}
+
+void OS::set_context(int p_context) {
+}
+
+OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = NULL;
+
+void OS::set_use_vsync(bool p_enable) {
+	_use_vsync = p_enable;
+	if (switch_vsync_function) { //if a function was set, use function
+		switch_vsync_function(p_enable);
+	} else { //otherwise just call here
+		_set_use_vsync(p_enable);
+	}
+}
+
+bool OS::is_vsync_enabled() const {
+
+	return _use_vsync;
+}
+
+void OS::set_vsync_via_compositor(bool p_enable) {
+	_vsync_via_compositor = p_enable;
+}
+
+bool OS::is_vsync_via_compositor_enabled() const {
+	return _vsync_via_compositor;
+}
+
+OS::PowerState OS::get_power_state() {
+	return POWERSTATE_UNKNOWN;
+}
+int OS::get_power_seconds_left() {
+	return -1;
+}
+int OS::get_power_percent_left() {
+	return -1;
+}
+
+>>>>>>> audio-bus-effect-fixed
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 	has_server_feature_callback = p_callback;
 }
@@ -453,11 +566,19 @@ PackedStringArray OS::get_connected_midi_inputs() {
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 	}
 
+<<<<<<< HEAD
 	PackedStringArray list;
+=======
+	PoolStringArray list;
+>>>>>>> audio-bus-effect-fixed
 	ERR_FAIL_V_MSG(list, vformat("MIDI input isn't supported on %s.", OS::get_singleton()->get_name()));
 }
 
 void OS::open_midi_inputs() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->open();
 	} else {
@@ -466,6 +587,10 @@ void OS::open_midi_inputs() {
 }
 
 void OS::close_midi_inputs() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	if (MIDIDriver::get_singleton()) {
 		MIDIDriver::get_singleton()->close();
 	} else {
@@ -512,6 +637,25 @@ OS::OS() {
 	void *volatile stack_bottom;
 
 	singleton = this;
+<<<<<<< HEAD
+=======
+	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
+	low_processor_usage_mode = false;
+	low_processor_usage_mode_sleep_usec = 10000;
+	_verbose_stdout = false;
+	_debug_stdout = false;
+	_no_window = false;
+	_exit_code = 0;
+	_orientation = SCREEN_LANDSCAPE;
+
+	_render_thread_mode = RENDER_THREAD_SAFE;
+
+	_allow_hidpi = false;
+	_allow_layered = false;
+	_stack_bottom = (void *)(&stack_bottom);
+
+	_logger = NULL;
+>>>>>>> audio-bus-effect-fixed
 
 	_stack_bottom = (void *)(&stack_bottom);
 

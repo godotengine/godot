@@ -82,6 +82,10 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		mHasSelection = selection;
 	}
 
+	public void setSelection(boolean selection) {
+		mHasSelection = selection;
+	}
+
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
 	// ===========================================================
@@ -98,8 +102,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
+<<<<<<< HEAD
 					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, true);
 					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, false);
+=======
+					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+>>>>>>> audio-bus-effect-fixed
 
 					if (mHasSelection) {
 						mHasSelection = false;
@@ -127,8 +136,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 						// Return keys are handled through action events
 						continue;
 					}
+<<<<<<< HEAD
 					GodotLib.key(0, 0, key, true);
 					GodotLib.key(0, 0, key, false);
+=======
+					GodotLib.key(0, key, true);
+					GodotLib.key(0, key, false);
+>>>>>>> audio-bus-effect-fixed
 				}
 			}
 		});
@@ -153,10 +167,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			// Enter key has been pressed
+<<<<<<< HEAD
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, true);
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, false);
 
 			mRenderView.getView().requestFocus();
+=======
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, true);
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, false);
+
+			this.mView.requestFocus();
+>>>>>>> audio-bus-effect-fixed
 			return true;
 		}
 		return false;

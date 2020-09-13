@@ -213,6 +213,7 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
 
 	Error err;
+<<<<<<< HEAD
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
@@ -231,6 +232,26 @@ Error PacketPeerUDP::connect_to_host(const IP_Address &p_host, int p_port) {
 		ERR_FAIL_V_MSG(FAILED, "Unable to connect");
 	}
 
+=======
+
+	if (!_sock->is_open()) {
+		IP::Type ip_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+		err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
+		_sock->set_blocking_enabled(false);
+	}
+
+	err = _sock->connect_to_host(p_host, p_port);
+
+	// I see no reason why we should get ERR_BUSY (wouldblock/eagain) here.
+	// This is UDP, so connect is only used to tell the OS to which socket
+	// it shuold deliver packets when multiple are bound on the same address/port.
+	if (err != OK) {
+		close();
+		ERR_FAIL_V_MSG(FAILED, "Unable to connect");
+	}
+
+>>>>>>> audio-bus-effect-fixed
 	connected = true;
 
 	peer_addr = p_host;
@@ -304,6 +325,23 @@ Error PacketPeerUDP::_poll() {
 
 	return OK;
 }
+<<<<<<< HEAD
+=======
+
+Error PacketPeerUDP::store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size) {
+	if (rb.space_left() < p_buf_size + 24) {
+		return ERR_OUT_OF_MEMORY;
+	}
+	rb.write(p_ip.get_ipv6(), 16);
+	rb.write((uint8_t *)&p_port, 4);
+	rb.write((uint8_t *)&p_buf_size, 4);
+	rb.write(p_buf, p_buf_size);
+	++queue_count;
+	return OK;
+}
+
+bool PacketPeerUDP::is_listening() const {
+>>>>>>> audio-bus-effect-fixed
 
 Error PacketPeerUDP::store_packet(IP_Address p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size) {
 	if (rb.space_left() < p_buf_size + 24) {
@@ -330,6 +368,10 @@ int PacketPeerUDP::get_packet_port() const {
 }
 
 void PacketPeerUDP::set_dest_address(const IP_Address &p_address, int p_port) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 	ERR_FAIL_COND_MSG(connected, "Destination address cannot be set for connected sockets");
 	peer_addr = p_address;
 	peer_port = p_port;
@@ -351,6 +393,16 @@ void PacketPeerUDP::_bind_methods() {
 }
 
 PacketPeerUDP::PacketPeerUDP() :
+<<<<<<< HEAD
+=======
+		packet_port(0),
+		queue_count(0),
+		peer_port(0),
+		connected(false),
+		blocking(true),
+		broadcast(false),
+		udp_server(nullptr),
+>>>>>>> audio-bus-effect-fixed
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }

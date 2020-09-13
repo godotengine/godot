@@ -259,10 +259,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String last_plugin_names;
 	uint64_t last_custom_build_time = 0;
 	volatile bool plugins_changed;
+<<<<<<< HEAD
 	Mutex plugins_lock;
 	Vector<Device> devices;
 	volatile bool devices_changed;
 	Mutex device_lock;
+=======
+	Mutex *plugins_lock;
+	Vector<Device> devices;
+	volatile bool devices_changed;
+	Mutex *device_lock;
+>>>>>>> audio-bus-effect-fixed
 	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 
@@ -276,7 +283,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				if (!ea->plugins_changed) {
 					Vector<PluginConfig> loaded_plugins = get_plugins();
 
+<<<<<<< HEAD
 					MutexLock lock(ea->plugins_lock);
+=======
+					ea->plugins_lock->lock();
+>>>>>>> audio-bus-effect-fixed
 
 					if (ea->plugins.size() != loaded_plugins.size()) {
 						ea->plugins_changed = true;
@@ -288,6 +299,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 						}
 					}
+<<<<<<< HEAD
 
 					if (ea->plugins_changed) {
 						ea->plugins = loaded_plugins;
@@ -295,6 +307,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				}
 			}
 
+=======
+
+					if (ea->plugins_changed) {
+						ea->plugins = loaded_plugins;
+					}
+
+					ea->plugins_lock->unlock();
+				}
+			}
+
+>>>>>>> audio-bus-effect-fixed
 			// Check for devices updates
 			String adb = EditorSettings::get_singleton()->get("export/android/adb");
 			if (FileAccess::exists(adb)) {
@@ -832,6 +855,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 		bool focus_awareness = p_preset->get("xr_features/focus_awareness");
+<<<<<<< HEAD
+=======
+
+		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
+>>>>>>> audio-bus-effect-fixed
 
 		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
@@ -1008,6 +1036,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								feature_names.push_back("oculus.software.handtracking");
 								feature_required_list.push_back(hand_tracking_index == 2);
 								feature_versions.push_back(-1); // no version attribute should be added.
+<<<<<<< HEAD
+=======
+
+								if (perms.find("com.oculus.permission.HAND_TRACKING") == -1) {
+									perms.push_back("com.oculus.permission.HAND_TRACKING");
+								}
+>>>>>>> audio-bus-effect-fixed
 							}
 						}
 
@@ -1297,11 +1332,18 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		if (p_utf8) {
 			uint8_t byte = p_bytes[offset];
+<<<<<<< HEAD
 			if (byte & 0x80) {
 				offset += 2;
 			} else {
 				offset += 1;
 			}
+=======
+			if (byte & 0x80)
+				offset += 2;
+			else
+				offset += 1;
+>>>>>>> audio-bus-effect-fixed
 			byte = p_bytes[offset];
 			offset++;
 			if (byte & 0x80) {
@@ -1554,7 +1596,10 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
+<<<<<<< HEAD
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_template/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), 0));
+=======
+>>>>>>> audio-bus-effect-fixed
 
 		Vector<PluginConfig> plugins_configs = get_plugins();
 		for (int i = 0; i < plugins_configs.size(); i++) {
@@ -1617,7 +1662,11 @@ public:
 		return logo;
 	}
 
+<<<<<<< HEAD
 	virtual bool should_update_export_options() override {
+=======
+	virtual bool should_update_export_options() {
+>>>>>>> audio-bus-effect-fixed
 		bool export_options_changed = plugins_changed;
 		if (export_options_changed) {
 			// don't clear unless we're reporting true, to avoid race
@@ -1625,6 +1674,11 @@ public:
 		}
 		return export_options_changed;
 	}
+<<<<<<< HEAD
+=======
+
+	virtual bool poll_export() {
+>>>>>>> audio-bus-effect-fixed
 
 	virtual bool poll_export() override {
 		bool dc = devices_changed;
@@ -1681,6 +1735,10 @@ public:
 
 		// Export_temp APK.
 		if (ep.step("Exporting APK...", 0)) {
+<<<<<<< HEAD
+=======
+			device_lock->unlock();
+>>>>>>> audio-bus-effect-fixed
 			return ERR_SKIP;
 		}
 
@@ -1941,6 +1999,23 @@ public:
 			err += etc_error;
 		}
 
+<<<<<<< HEAD
+=======
+		// The GodotPaymentV3 module was converted to the external GodotGooglePlayBilling plugin in Godot 3.2.2,
+		// this check helps users to notice the change to ensure that they change their settings.
+		String modules = ProjectSettings::get_singleton()->get("android/modules");
+		if (modules.find("org/godotengine/godot/GodotPaymentV3") != -1) {
+			bool godot_google_play_billing_enabled = p_preset->get("plugins/GodotGooglePlayBilling");
+			if (!godot_google_play_billing_enabled) {
+				valid = false;
+				err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
+						   "Replace it with the first-party \"GodotGooglePlayBilling\" plugin.\n"
+						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotGooglePlayBilling\".");
+				err += "\n";
+			}
+		}
+
+>>>>>>> audio-bus-effect-fixed
 		// Ensure that `Use Custom Build` is enabled if a plugin is selected.
 		String enabled_plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 		bool custom_build_enabled = p_preset->get("custom_template/use_custom_build");
@@ -1975,6 +2050,7 @@ public:
 			}
 		}
 
+<<<<<<< HEAD
 		if (int(p_preset->get("custom_template/export_format")) == 1 && /*AAB*/
 				!bool(p_preset->get("custom_template/use_custom_build"))) {
 			valid = false;
@@ -1982,6 +2058,8 @@ public:
 			err += "\n";
 		}
 
+=======
+>>>>>>> audio-bus-effect-fixed
 		r_error = err;
 		return valid;
 	}
@@ -2013,8 +2091,37 @@ public:
 		last_custom_build_time = OS::get_singleton()->get_unix_time();
 		last_plugin_names = plugin_names;
 
+<<<<<<< HEAD
 		return have_plugins_changed || first_build;
 	}
+=======
+			String new_file;
+			{
+				FileAccessRef f = FileAccess::open("res://android/build/build.gradle", FileAccess::READ);
+				if (f) {
+
+					while (!f->eof_reached()) {
+						String l = f->get_line();
+
+						bool append_line = false;
+						if (l.begins_with("//CHUNK_")) {
+							String text = l.replace_first("//CHUNK_", "");
+							int begin_pos = text.find("_BEGIN");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "//CHUNK_" + text + "_END";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+>>>>>>> audio-bus-effect-fixed
 
 	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 		int version_code = p_preset->get("version/code");
@@ -2030,6 +2137,7 @@ public:
 		return err;
 	}
 
+<<<<<<< HEAD
 	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags) {
 		String cmdline = p_preset->get("command_line/extra_args");
 		Vector<String> command_line_strings = cmdline.strip_edges().split(" ");
@@ -2039,9 +2147,44 @@ public:
 				i--;
 			}
 		}
+=======
+									//add chunk lines
+									if (gradle_sections.has(text)) {
+										for (List<String>::Element *E = gradle_sections[text].front(); E; E = E->next()) {
+											new_file += E->get() + "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+						} else if (l.begins_with("//DIR_")) {
+							String text = l.replace_first("//DIR_", "");
+							int begin_pos = text.find("_BEGIN");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "//DIR_" + text + "_END";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+>>>>>>> audio-bus-effect-fixed
 
 		gen_export_flags(command_line_strings, p_flags);
 
+<<<<<<< HEAD
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		if (apk_expansion) {
 			String fullpath = get_apk_expansion_fullpath(p_preset, p_path);
@@ -2089,6 +2232,41 @@ public:
 				r_command_line_flags.resize(base + 4 + length);
 				encode_uint32(length, &r_command_line_flags.write[base]);
 				copymem(&r_command_line_flags.write[base + 4], command_line_argument.ptr(), length);
+=======
+								if (!found) {
+									ERR_PRINTS("No end marker found in build.gradle for dir: " + text);
+									f->seek(pos);
+								} else {
+									//add chunk lines
+									if (directory_paths.has(text)) {
+										for (List<String>::Element *E = directory_paths[text].front(); E; E = E->next()) {
+											new_file += ",'" + E->get().replace("'", "\'") + "'";
+											new_file += "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+						} else {
+							append_line = true;
+						}
+
+						if (append_line) {
+							if (f->eof_reached()) {
+								new_file += l;
+							} else {
+								new_file += l + "\n";
+							}
+						}
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 		}
 	}
@@ -2112,16 +2290,46 @@ public:
 			password = p_preset->get("keystore/debug_password");
 			user = p_preset->get("keystore/debug_user");
 
+<<<<<<< HEAD
 			if (keystore.empty()) {
 				keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 				password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 			}
+=======
+			String new_file;
+			{
+				FileAccessRef f = FileAccess::open("res://android/build/AndroidManifest.xml", FileAccess::READ);
+				if (f) {
+
+					while (!f->eof_reached()) {
+						String l = f->get_line();
+
+						bool append_line = false;
+						if (l.begins_with("<!--CHUNK_")) {
+							String text = l.replace_first("<!--CHUNK_", "");
+							int begin_pos = text.find("_BEGIN-->");
+							if (begin_pos != -1) {
+								text = text.substr(0, begin_pos);
+								text = text.to_upper(); //just in case
+
+								String end_marker = "<!--CHUNK_" + text + "_END-->";
+								size_t pos = f->get_position();
+								bool found = false;
+								while (!f->eof_reached()) {
+									l = f->get_line();
+									if (l.begins_with(end_marker)) {
+										found = true;
+										break;
+									}
+								}
+>>>>>>> audio-bus-effect-fixed
 
 			if (ep.step("Signing debug APK...", 103)) {
 				return ERR_SKIP;
 			}
 
+<<<<<<< HEAD
 		} else {
 			keystore = release_keystore;
 			password = release_password;
@@ -2129,6 +2337,57 @@ public:
 
 			if (ep.step("Signing release APK...", 103)) {
 				return ERR_SKIP;
+=======
+								if (!found) {
+									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
+									f->seek(pos);
+								} else {
+									//add chunk lines
+									if (manifest_sections.has(text)) {
+										for (List<String>::Element *E = manifest_sections[text].front(); E; E = E->next()) {
+											new_file += E->get() + "\n";
+										}
+									}
+									if (f->eof_reached()) {
+										new_file += end_marker;
+									} else {
+										new_file += end_marker + "\n";
+									}
+								}
+							} else {
+								append_line = true;
+							}
+
+						} else if (l.strip_edges().begins_with("<application")) {
+							String last_tag = "android:icon=\"@mipmap/icon\"";
+							int last_tag_pos = l.find(last_tag);
+							if (last_tag_pos == -1) {
+								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
+								append_line = true;
+							} else {
+								String base = l.substr(0, last_tag_pos + last_tag.length());
+								if (manifest_sections.has("application_attribs")) {
+									for (List<String>::Element *E = manifest_sections["application_attribs"].front(); E; E = E->next()) {
+										String to_add = E->get().strip_edges();
+										base += " " + to_add + " ";
+									}
+								}
+								base += ">\n";
+								new_file += base;
+							}
+						} else {
+							append_line = true;
+						}
+
+						if (append_line) {
+							new_file += l;
+							if (!f->eof_reached()) {
+								new_file += "\n";
+							}
+						}
+					}
+				}
+>>>>>>> audio-bus-effect-fixed
 			}
 		}
 
@@ -2137,6 +2396,7 @@ public:
 			return ERR_FILE_CANT_OPEN;
 		}
 
+<<<<<<< HEAD
 		List<String> args;
 		args.push_back("-digestalg");
 		args.push_back("SHA-256");
@@ -2179,6 +2439,32 @@ public:
 		}
 		return OK;
 	}
+=======
+	inline bool is_clean_build_required(Vector<PluginConfig> enabled_plugins) {
+		String plugin_names = get_plugins_names(enabled_plugins);
+		bool first_build = last_custom_build_time == 0;
+		bool have_plugins_changed = false;
+
+		if (!first_build) {
+			have_plugins_changed = plugin_names != last_plugin_names;
+			if (!have_plugins_changed) {
+				for (int i = 0; i < enabled_plugins.size(); i++) {
+					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
+						have_plugins_changed = true;
+						break;
+					}
+				}
+			}
+		}
+
+		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_plugin_names = plugin_names;
+
+		return have_plugins_changed || first_build;
+	}
+
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
+>>>>>>> audio-bus-effect-fixed
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
@@ -2296,10 +2582,17 @@ public:
 			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
 			bool clean_build_required = is_clean_build_required(enabled_plugins);
 
+			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
+			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
+			bool clean_build_required = is_clean_build_required(enabled_plugins);
+
 			List<String> cmdline;
 			if (clean_build_required) {
 				cmdline.push_back("clean");
 			}
+<<<<<<< HEAD
 
 			String build_type = p_debug ? "Debug" : "Release";
 			if (export_format == 1) {
@@ -2314,6 +2607,10 @@ public:
 			cmdline.push_back("-Pexport_version_code=" + version_code); // argument to specify the version code.
 			cmdline.push_back("-Pexport_version_name=" + version_name); // argument to specify the version name.
 			cmdline.push_back("-Pexport_enabled_abis=" + enabled_abi_string); // argument to specify enabled ABIs.
+=======
+			cmdline.push_back("build");
+			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
+>>>>>>> audio-bus-effect-fixed
 			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
 			cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
 			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
@@ -2422,6 +2719,44 @@ public:
 
 		String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
+<<<<<<< HEAD
+=======
+		String release_keystore = p_preset->get("keystore/release");
+		String release_username = p_preset->get("keystore/release_user");
+		String release_password = p_preset->get("keystore/release_password");
+
+		Vector<String> enabled_abis = get_enabled_abis(p_preset);
+
+		String project_icon_path = ProjectSettings::get_singleton()->get("application/config/icon");
+
+		// Prepare images to be resized for the icons. If some image ends up being uninitialized, the default image from the export template will be used.
+		Ref<Image> launcher_icon_image;
+		Ref<Image> launcher_adaptive_icon_foreground_image;
+		Ref<Image> launcher_adaptive_icon_background_image;
+
+		launcher_icon_image.instance();
+		launcher_adaptive_icon_foreground_image.instance();
+		launcher_adaptive_icon_background_image.instance();
+
+		// Regular icon: user selection -> project icon -> default.
+		String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_icon_image) != OK) {
+			ImageLoader::load_image(project_icon_path, launcher_icon_image);
+		}
+
+		// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+		if (path.empty() || ImageLoader::load_image(path, launcher_adaptive_icon_foreground_image) != OK) {
+			launcher_adaptive_icon_foreground_image = launcher_icon_image;
+		}
+
+		// Adaptive background: user selection -> default.
+		path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+		if (!path.empty()) {
+			ImageLoader::load_image(path, launcher_adaptive_icon_background_image);
+		}
+
+>>>>>>> audio-bus-effect-fixed
 		Vector<String> invalid_abis(enabled_abis);
 		while (ret == UNZ_OK) {
 			//get filename
@@ -2515,6 +2850,21 @@ public:
 			EditorNode::add_io_error("Missing libraries in the export template for the selected architectures: " + unsupported_arch + ".\n" +
 									 "Please build a template with all required libraries, or uncheck the missing architectures in the export preset.");
 			CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
+<<<<<<< HEAD
+=======
+		}
+
+		if (ep.step("Adding files...", 1)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		}
+		Error err = OK;
+		Vector<String> cl = cmdline.strip_edges().split(" ");
+		for (int i = 0; i < cl.size(); i++) {
+			if (cl[i].strip_edges().length() == 0) {
+				cl.remove(i);
+				i--;
+			}
+>>>>>>> audio-bus-effect-fixed
 		}
 
 		if (ep.step("Adding files...", 1)) {
@@ -2674,6 +3024,11 @@ public:
 		run_icon->create_from_image(img);
 
 		devices_changed = true;
+<<<<<<< HEAD
+=======
+
+		plugins_lock = Mutex::create();
+>>>>>>> audio-bus-effect-fixed
 		plugins_changed = true;
 		quit_request = false;
 		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
@@ -2682,6 +3037,11 @@ public:
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
 		Thread::wait_to_finish(check_for_changes_thread);
+<<<<<<< HEAD
+=======
+		memdelete(plugins_lock);
+		memdelete(device_lock);
+>>>>>>> audio-bus-effect-fixed
 		memdelete(check_for_changes_thread);
 	}
 };

@@ -4,7 +4,11 @@
 		Represents the output shader parameters within the visual shader graph.
 	</brief_description>
 	<description>
+<<<<<<< HEAD
 		This visual shader node is present in all shader graphs in form of "Output" block with multiple output value ports.
+=======
+		This visual shader node is present in all shader graphs in form of "Output" block with mutliple output value ports.
+>>>>>>> audio-bus-effect-fixed
 	</description>
 	<tutorials>
 	</tutorials>

@@ -144,6 +144,10 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 	// Add symbols for staticaly linked libraries on iOS
 	if (p_features.has("iOS")) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> audio-bus-effect-fixed
 		bool should_fake_dynamic = false;
 
 		List<String> entry_keys;
@@ -171,7 +175,11 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 			String entry_lib_path = config->get_value("entry", key);
 			if (entry_lib_path.begins_with("res://") && entry_lib_path.ends_with(".a")) {
 				// If we find static library that was used for export
+<<<<<<< HEAD
 				// we should add a fake lookup table.
+=======
+				// we should add a fake loopup table.
+>>>>>>> audio-bus-effect-fixed
 				// In case of dynamic library being used,
 				// this symbols will not cause any issues with library loading.
 				should_fake_dynamic = true;
