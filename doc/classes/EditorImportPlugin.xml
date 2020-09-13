@@ -7,7 +7,8 @@
 		EditorImportPlugins provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers. Register your [EditorPlugin] with [method EditorPlugin.add_import_plugin].
 		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extensions] and [method get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].godot/imported[/code] directory.
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		tool
 		extends EditorImportPlugin
 
@@ -39,14 +40,76 @@
 		    var file = File.new()
 		    if file.open(source_file, File.READ) != OK:
 		        return FAILED
-
-		    var mesh = Mesh.new()
-		    # Fill the Mesh with data read in "file", left as an exercise to the reader
+		    var mesh = ArrayMesh.new()
+		    # Fill the Mesh with data read in "file", left as an exercise to the reader.
 
 		    var filename = save_path + "." + get_save_extension()
 		    ResourceSaver.save(filename, mesh)
 		    return OK
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System;
+
+		public class MySpecialPlugin : EditorImportPlugin
+		{
+		    public override String GetImporterName()
+		    {
+		        return "my.special.plugin";
+		    }
+
+		    public override String GetVisibleName()
+		    {
+		        return "Special Mesh Importer";
+		    }
+
+		    public override Godot.Collections.Array GetRecognizedExtensions()
+		    {
+		        return new Godot.Collections.Array{"special", "spec"};
+		    }
+
+		    public override String GetSaveExtension()
+		    {
+		        return "mesh";
+		    }
+
+		    public override String GetResourceType()
+		    {
+		        return "Mesh";
+		    }
+
+		    public override int GetPresetCount()
+		    {
+		        return 1;
+		    }
+
+		    public override String GetPresetName(int i)
+		    {
+		        return "Default";
+		    }
+
+		    public override Godot.Collections.Array GetImportOptions(int i)
+		    {
+		        return new Godot.Collections.Array{new Godot.Collections.Dictionary{{"name", "myOption"}, {"defaultValue", false}}};
+		    }
+
+		    public override int Import(String sourceFile, String savePath, Godot.Collections.Dictionary options, Godot.Collections.Array platformVariants, Godot.Collections.Array  genFiles)
+		    {
+		        var file = new File();
+		        if (file.Open(sourceFile, File.ModeFlags.Read) != Error.Ok)
+		        {
+		            return (int)Error.Failed;
+		        }
+
+		        var mesh = new ArrayMesh();
+		        // Fill the Mesh with data read in "file", left as an exercise to the reader.
+		        String filename = savePath + "." + GetSaveExtension();
+		        ResourceSaver.Save(filename, mesh);
+		        return (int)Error.Ok;
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
@@ -84,14 +147,28 @@
 			</argument>
 			<description>
 				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func get_option_visibility(option, options):
 				    # Only show the lossy quality setting if the compression mode is set to "Lossy".
 				    if option == "compress/lossy_quality" and options.has("compress/mode"):
-				        return int(options["compress/mode"]) == COMPRESS_LOSSY
+				        return int(options["compress/mode"]) == COMPRESS_LOSSY # This is a constant that you set
 
 				    return true
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public void GetOptionVisibility(string option, Godot.Collections.Dictionary options)
+				{
+				    // Only show the lossy quality setting if the compression mode is set to "Lossy".
+				    if (option == "compress/lossyQuality" &amp;&amp; options.Contains("compress/mode"))
+				    {
+				        return (int)options["compress/mode"] == COMPRESS_LOSSY; // This is a constant you set
+				    }
+
+				    return true;
+				}
+				[/csharp]
+				[/codeblocks]
 				Return [code]true[/code] to make all options always visible.
 			</description>
 		</method>

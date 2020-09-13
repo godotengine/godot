@@ -7,21 +7,46 @@
 		An expression can be made of any arithmetic operation, built-in math function call, method call of a passed instance, or built-in type construction call.
 		An example expression text using the built-in math functions could be [code]sqrt(pow(3, 2) + pow(4, 2))[/code].
 		In the following example we use a [LineEdit] node to write our expression and show the result.
-		[codeblock]
-		onready var expression = Expression.new()
+		[codeblocks]
+		[gdscript]
+		var expression = Expression.new()
 
 		func _ready():
 		    $LineEdit.connect("text_entered", self, "_on_text_entered")
 
 		func _on_text_entered(command):
-		    var error = expression.parse(command, [])
+		    var error = expression.parse(command)
 		    if error != OK:
 		        print(expression.get_error_text())
 		        return
-		    var result = expression.execute([], null, true)
+		    var result = expression.execute()
 		    if not expression.has_execute_failed():
 		        $LineEdit.text = str(result)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public Expression expression = new Expression();
+
+		public override void _Ready()
+		{
+		    GetNode("LineEdit").Connect("text_entered", this, nameof(OnTextEntered));
+		}
+
+		private void OnTextEntered(string command)
+		{
+		    Error error = expression.Parse(command);
+		    if (error != Error.Ok)
+		    {
+		        GD.Print(expression.GetErrorText());
+		        return;
+		    }
+		    object result = expression.Execute();
+		    if (!expression.HasExecuteFailed())
+		    {
+		        GetNode&lt;LineEdit&gt;("LineEdit").Text = result.ToString();
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
