@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace GodotTools.Core
 {
@@ -35,7 +36,17 @@ namespace GodotTools.Core
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
-            return rooted ? Path.DirectorySeparatorChar + path : path;
+            if (!rooted)
+                return path;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string maybeDrive = parts[0];
+                if (maybeDrive.Length == 2 && maybeDrive[1] == ':')
+                    return path; // Already has drive letter
+            }
+
+            return Path.DirectorySeparatorChar + path;
         }
 
         private static readonly string DriveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
@@ -49,7 +60,7 @@ namespace GodotTools.Core
 
         public static string ToSafeDirName(this string dirName, bool allowDirSeparator = false)
         {
-            var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
+            var invalidChars = new List<string> {":", "*", "?", "\"", "<", ">", "|"};
 
             if (allowDirSeparator)
             {
