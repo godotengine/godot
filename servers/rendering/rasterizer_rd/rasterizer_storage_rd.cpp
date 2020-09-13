@@ -3208,9 +3208,9 @@ Vector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 
 		Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 		Vector<float> ret;
-		ret.resize(multimesh->instances);
+		ret.resize(multimesh->instances * multimesh->stride_cache);
 		{
-			float *w = multimesh->data_cache.ptrw();
+			float *w = ret.ptrw();
 			const uint8_t *r = buffer.ptr();
 			copymem(w, r, buffer.size());
 		}
