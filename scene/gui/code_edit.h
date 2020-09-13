@@ -36,6 +36,22 @@
 class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
 
+public:
+	/* Keep enum in sync with:                                           */
+	/* /core/object/script_language.h - ScriptCodeCompletionOption::Kind */
+	enum CodeCompletionKind {
+		KIND_CLASS,
+		KIND_FUNCTION,
+		KIND_SIGNAL,
+		KIND_VARIABLE,
+		KIND_MEMBER,
+		KIND_ENUM,
+		KIND_CONSTANT,
+		KIND_NODE_PATH,
+		KIND_FILE_PATH,
+		KIND_PLAIN_TEXT,
+	};
+
 private:
 	/* Main Gutter */
 	enum MainGutterType {
@@ -144,14 +160,43 @@ private:
 	void _clear_delimiters(DelimiterType p_type);
 	TypedArray<String> _get_delimiters(DelimiterType p_type) const;
 
+	/* Code Completion */
+	bool code_completion_enabled = false;
+	bool code_completion_forced = false;
+
+	int code_completion_max_width = 0;
+	int code_completion_max_lines = 7;
+	int code_completion_scroll_width = 0;
+	Color code_completion_scroll_color = Color(0, 0, 0, 0);
+	Color code_completion_background_color = Color(0, 0, 0, 0);
+	Color code_completion_selected_color = Color(0, 0, 0, 0);
+	Color code_completion_existing_color = Color(0, 0, 0, 0);
+
+	bool code_completion_active = false;
+	Vector<ScriptCodeCompletionOption> code_completion_options;
+	int code_completion_line_ofs = 0;
+	int code_completion_current_selected = 0;
+	int code_completion_longest_line = 0;
+	Rect2i code_completion_rect;
+
+	Set<String> code_completion_prefixes;
+	List<ScriptCodeCompletionOption> code_completion_option_submitted;
+	List<ScriptCodeCompletionOption> code_completion_option_sources;
+	String code_completion_base;
+
+	void _filter_code_completion_candidates();
+
 	void _lines_edited_from(int p_from_line, int p_to_line);
 
 protected:
+	void _gui_input(const Ref<InputEvent> &p_gui_input) override;
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
 	/* Main Gutter */
 	void set_draw_breakpoints_gutter(bool p_draw);
 	bool is_drawing_breakpoints_gutter() const;
@@ -217,8 +262,33 @@ public:
 	Point2 get_delimiter_start_position(int p_line, int p_column) const;
 	Point2 get_delimiter_end_position(int p_line, int p_column) const;
 
+	/* Code Completion */
+	void set_code_completion_enabled(bool p_enable);
+	bool is_code_completion_enabled() const;
+
+	void set_code_completion_prefixes(const TypedArray<String> &p_prefixes);
+	TypedArray<String> get_code_completion_prefixes() const;
+
+	String get_text_for_code_completion() const;
+
+	void request_code_completion(bool p_force = false);
+
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const RES &p_icon = RES(), const Variant &p_value = Variant::NIL);
+	void update_code_completion_options(bool p_forced = false);
+
+	TypedArray<Dictionary> get_code_completion_options() const;
+	Dictionary get_code_completion_option(int p_index) const;
+
+	int get_code_completion_selected_index() const;
+	void set_code_completion_selected_index(int p_index);
+
+	void confirm_code_completion(bool p_replace = false);
+	void cancel_code_completion();
+
 	CodeEdit();
 	~CodeEdit();
 };
+
+VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
 
 #endif // CODEEDIT_H

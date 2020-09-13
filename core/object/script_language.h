@@ -242,6 +242,8 @@ public:
 };
 
 struct ScriptCodeCompletionOption {
+	/* Keep enum in Sync with:                               */
+	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
 	enum Kind {
 		KIND_CLASS,
 		KIND_FUNCTION,
