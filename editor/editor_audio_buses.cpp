@@ -155,7 +155,7 @@ void EditorAudioBus::_notification(int p_what) {
 				}
 			}
 
-			if (effects->is_anything_selected() && !effects->has_focus()){
+			if (effects->is_anything_selected() && !effects->has_focus()) {
 				effects->deselect_all();
 			}
 		} break;
