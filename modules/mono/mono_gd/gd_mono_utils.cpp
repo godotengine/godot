@@ -146,12 +146,6 @@ void detach_current_thread() {
 	mono_thread_detach(mono_thread);
 }
 
-void detach_current_thread(MonoThread *p_mono_thread) {
-	ERR_FAIL_COND(!GDMono::get_singleton()->is_runtime_initialized());
-	ERR_FAIL_NULL(p_mono_thread);
-	mono_thread_detach(p_mono_thread);
-}
-
 MonoThread *get_current_thread() {
 	return mono_thread_current();
 }
@@ -174,6 +168,11 @@ uint32_t new_weak_gchandle(MonoObject *p_object) {
 
 void free_gchandle(uint32_t p_gchandle) {
 	mono_gchandle_free(p_gchandle);
+}
+
+void ensure_thread_attach() {
+	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get()))
+		attach_current_thread();
 }
 
 void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc) {
@@ -661,18 +660,6 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 }
 
 } // namespace Marshal
-
-ScopeThreadAttach::ScopeThreadAttach() {
-	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
-		mono_thread = GDMonoUtils::attach_current_thread();
-	}
-}
-
-ScopeThreadAttach::~ScopeThreadAttach() {
-	if (unlikely(mono_thread)) {
-		GDMonoUtils::detach_current_thread(mono_thread);
-	}
-}
 
 StringName get_native_godot_class_name(GDMonoClass *p_class) {
 	MonoObject *native_name_obj = p_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(nullptr);

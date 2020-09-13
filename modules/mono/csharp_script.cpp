@@ -583,7 +583,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	if (!gdmono->is_runtime_initialized() || !GDMono::get_singleton()->get_core_api_assembly() || !GDMonoCache::cached_data.corlib_cache_updated) {
 		return Vector<StackInfo>();
@@ -615,7 +615,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 	_recursion_flag_ = true;
 	SCOPE_EXIT { _recursion_flag_ = false; };
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoException *exc = nullptr;
 
@@ -724,7 +724,7 @@ struct CSharpScriptDepSort {
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 		reload_assemblies(false);
 	}
 #endif
@@ -741,7 +741,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 		reload_assemblies(p_soft_reload);
 	}
 #endif
@@ -1496,7 +1496,7 @@ void CSharpLanguage::refcount_incremented_instance_binding(Object *p_object) {
 	}
 
 	if (ref_owner->reference_get_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 
 		// The reference count was increased after the managed side was the only one referencing our owner.
 		// This means the owner is being referenced again by the unmanaged side,
@@ -1535,7 +1535,7 @@ bool CSharpLanguage::refcount_decremented_instance_binding(Object *p_object) {
 	}
 
 	if (refcount == 1 && !gchandle.is_released() && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 
 		// If owner owner is no longer referenced by the unmanaged side,
 		// the managed instance takes responsibility of deleting the owner when GCed.
@@ -1586,7 +1586,7 @@ Object *CSharpInstance::get_owner() {
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoObject *mono_object = get_mono_object();
 	ERR_FAIL_NULL_V(mono_object, false);
@@ -1640,7 +1640,7 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	ERR_FAIL_COND_V(!script.is_valid(), false);
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoObject *mono_object = get_mono_object();
 	ERR_FAIL_NULL_V(mono_object, false);
@@ -1765,7 +1765,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	ERR_FAIL_COND(!script.is_valid());
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoObject *mono_object = get_mono_object();
 	ERR_FAIL_NULL(mono_object);
@@ -1813,7 +1813,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 		return false;
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	GDMonoClass *top = script->script_class;
 
@@ -1831,7 +1831,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(!script.is_valid(), Variant());
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoObject *mono_object = get_mono_object();
 
@@ -2028,7 +2028,7 @@ void CSharpInstance::refcount_incremented() {
 	Reference *ref_owner = Object::cast_to<Reference>(owner);
 
 	if (ref_owner->reference_get_count() > 1 && gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 
 		// The reference count was increased after the managed side was the only one referencing our owner.
 		// This means the owner is being referenced again by the unmanaged side,
@@ -2052,7 +2052,7 @@ bool CSharpInstance::refcount_decremented() {
 	int refcount = ref_owner->reference_get_count();
 
 	if (refcount == 1 && !gchandle.is_weak()) { // The managed side also holds a reference, hence 1 instead of 0
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 
 		// If owner owner is no longer referenced by the unmanaged side,
 		// the managed instance takes responsibility of deleting the owner when GCed.
@@ -2111,7 +2111,7 @@ MultiplayerAPI::RPCMode CSharpInstance::get_rset_mode(const StringName &p_variab
 }
 
 void CSharpInstance::notification(int p_notification) {
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
 		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
@@ -2175,7 +2175,7 @@ void CSharpInstance::_call_notification(int p_notification) {
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	MonoObject *mono_object = get_mono_object();
 
@@ -2220,7 +2220,7 @@ CSharpInstance::CSharpInstance(const Ref<CSharpScript> &p_script) :
 }
 
 CSharpInstance::~CSharpInstance() {
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	destructing_script_instance = true;
 
@@ -2385,7 +2385,7 @@ bool CSharpScript::_update_exports() {
 	if (exports_invalidated)
 #endif
 	{
-		GD_MONO_SCOPE_THREAD_ATTACH;
+		GD_MONO_ENSURE_THREAD_ATTACH;
 
 		changed = true;
 
@@ -2566,7 +2566,7 @@ void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_nati
 	_signals.clear();
 	event_signals.clear();
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	GDMonoClass *top = p_class;
 	while (top && top != p_native_class) {
@@ -2876,7 +2876,7 @@ Variant CSharpScript::call(const StringName &p_method, const Variant **p_args, i
 		return Variant();
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	GDMonoClass *top = script_class;
 
@@ -3140,7 +3140,7 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	ERR_FAIL_NULL_V(native, Variant());
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	Object *owner = ClassDB::instance(NATIVE_GDMONOCLASS_NAME(native));
 
@@ -3183,7 +3183,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 		}
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	Callable::CallError unchecked_error;
 	return _create_instance(nullptr, 0, p_this, Object::cast_to<Reference>(p_this) != nullptr, unchecked_error);
@@ -3228,7 +3228,7 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 		return;
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	// TODO: Filter out things unsuitable for explicit calls, like constructors.
 	const Vector<GDMonoMethod *> &methods = script_class->get_all_methods();
@@ -3242,7 +3242,7 @@ bool CSharpScript::has_method(const StringName &p_method) const {
 		return false;
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	return script_class->has_fetched_method_unknown_params(p_method);
 }
@@ -3252,7 +3252,7 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 		return MethodInfo();
 	}
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	GDMonoClass *top = script_class;
 
@@ -3277,7 +3277,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	ERR_FAIL_COND_V(!p_keep_state && has_instances, ERR_ALREADY_IN_USE);
 
-	GD_MONO_SCOPE_THREAD_ATTACH;
+	GD_MONO_ENSURE_THREAD_ATTACH;
 
 	GDMonoAssembly *project_assembly = GDMono::get_singleton()->get_project_assembly();
 

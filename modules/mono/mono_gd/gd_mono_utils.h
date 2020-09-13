@@ -81,9 +81,9 @@ MonoObject *unmanaged_get_managed(Object *unmanaged);
 void set_main_thread(MonoThread *p_thread);
 MonoThread *attach_current_thread();
 void detach_current_thread();
-void detach_current_thread(MonoThread *p_mono_thread);
 MonoThread *get_current_thread();
 bool is_thread_attached();
+void ensure_thread_attach();
 
 uint32_t new_strong_gchandle(MonoObject *p_object);
 uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
@@ -147,14 +147,6 @@ uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &
 
 void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
-struct ScopeThreadAttach {
-	ScopeThreadAttach();
-	~ScopeThreadAttach();
-
-private:
-	MonoThread *mono_thread = nullptr;
-};
-
 StringName get_native_godot_class_name(GDMonoClass *p_class);
 
 } // namespace GDMonoUtils
@@ -170,10 +162,8 @@ StringName get_native_godot_class_name(GDMonoClass *p_class);
 	_runtime_invoke_count_ref -= 1; \
 	((void)0)
 
-#define GD_MONO_SCOPE_THREAD_ATTACH                                   \
-	GDMonoUtils::ScopeThreadAttach __gdmono__scope__thread__attach__; \
-	(void)__gdmono__scope__thread__attach__;                          \
-	((void)0)
+#define GD_MONO_ENSURE_THREAD_ATTACH \
+	GDMonoUtils::ensure_thread_attach();
 
 #ifdef DEBUG_ENABLED
 #define GD_MONO_ASSERT_THREAD_ATTACHED              \
