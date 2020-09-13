@@ -71,8 +71,6 @@ private:
 		Map<int, InputPort> input_ports;
 		Map<int, Port> output_ports;
 		VBoxContainer *preview_box;
-		Control *custom_editor;
-		int editor_pos;
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -88,8 +86,6 @@ public:
 	void set_connections(List<VisualShader::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
-	void register_custom_editor(int p_node_id, Control *p_custom_editor);
-	void register_editor_pos(int p_node_id, int p_pos);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
