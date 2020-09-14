@@ -369,24 +369,19 @@
 			<description>
 				Returns the floating-point modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
-				var i = -6
-				while i &lt; 5:
-				    prints(i, fposmod(i, 3))
-				    i += 1
+				for i in 7:
+				    var x = 0.5 * i - 1.5
+				    print("%4.1f %4.1f %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
 				Produces:
 				[codeblock]
-				-6 0
-				-5 1
-				-4 2
-				-3 0
-				-2 1
-				-1 2
-				0 0
-				1 1
-				2 2
-				3 0
-				4 1
+				-1.5 -0.0  0.0
+				-1.0 -1.0  0.5
+				-0.5 -0.5  1.0
+				 0.0  0.0  0.0
+				 0.5  0.5  0.5
+				 1.0  1.0  1.0
+				 1.5  0.0  0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -771,24 +766,18 @@
 			<description>
 				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
-				var i = -6
-				while i &lt; 5:
-				    prints(i, posmod(i, 3))
-				    i += 1
+				for i in range(-3, 4):
+				    print("%2.0f %2.0f %2.0f" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Produces:
 				[codeblock]
-				-6 0
-				-5 1
-				-4 2
-				-3 0
-				-2 1
-				-1 2
-				0 0
-				1 1
-				2 2
-				3 0
-				4 1
+				-3  0  0
+				-2 -2  1
+				-1 -1  2
+				 0  0  0
+				 1  1  1
+				 2  2  2
+				 3  0  0
 				[/codeblock]
 			</description>
 		</method>
@@ -991,27 +980,15 @@
 			<description>
 				Returns an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial, final-1, increment).
 				[codeblock]
-				for i in range(4):
-				    print(i)
-				for i in range(2, 5):
-				    print(i)
-				for i in range(0, 6, 2):
-				    print(i)
+				print(range(4))
+				print(range(2, 5))
+				print(range(0, 6, 2))
 				[/codeblock]
 				Output:
 				[codeblock]
-				0
-				1
-				2
-				3
-
-				2
-				3
-				4
-
-				0
-				2
-				4
+				[0, 1, 2, 3]
+				[2, 3, 4]
+				[0, 2, 4]
 				[/codeblock]
 			</description>
 		</method>
