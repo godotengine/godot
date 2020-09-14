@@ -117,6 +117,15 @@ struct VariantCaster<const T &> {
 // Object enum casts must go here
 VARIANT_ENUM_CAST(Object::ConnectFlags);
 
+// Custom object casting.
+#define VARIANT_OBJECT_CAST(m_obj)                                    \
+	template <>                                                       \
+	struct VariantCaster<m_obj *> {                                   \
+		static _FORCE_INLINE_ m_obj *cast(const Variant &p_variant) { \
+			return (m_obj *)p_variant.operator Object *();            \
+		}                                                             \
+	};
+
 template <typename T>
 struct VariantObjectClassChecker {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
