@@ -3122,6 +3122,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 		Light *light = r_ris.item_group_light;
 		bool light_used = false;
+		bool light_scissor = false;
 		VS::CanvasLightMode mode = VS::CANVAS_LIGHT_MODE_ADD;
 
 		// we leave this set to 1, 1, 1, 1 if using software because the colors are baked into the vertices
@@ -3210,11 +3211,16 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 				if (!bdata.settings_scissor_lights || r_ris.current_clip) {
 					render_joined_item_commands(p_bij, NULL, reclip, material_ptr, true);
 				} else {
-					bool scissor = _light_scissor_begin(p_bij.bounding_rect, light->xform_cache, light->rect_cache);
-					render_joined_item_commands(p_bij, NULL, reclip, material_ptr, true);
-					if (scissor) {
-						glDisable(GL_SCISSOR_TEST);
+					bool new_light_scissor = _light_scissor_set(p_bij.bounding_rect, light->xform_cache, light->rect_cache);
+					if (new_light_scissor != light_scissor) {
+						if (new_light_scissor) {
+							glEnable(GL_SCISSOR_TEST);
+						} else {
+							glDisable(GL_SCISSOR_TEST);
+						}
+						light_scissor = new_light_scissor;
 					}
+					render_joined_item_commands(p_bij, NULL, reclip, material_ptr, true);
 				}
 
 				state.using_light = NULL;
@@ -3224,6 +3230,10 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 		}
 
 		if (light_used) {
+
+			if (light_scissor) {
+				glDisable(GL_SCISSOR_TEST);
+			}
 
 			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_LIGHTING, false);
 			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_SHADOWS, false);
@@ -3306,7 +3316,7 @@ bool RasterizerCanvasGLES2::_light_find_intersection(const Rect2 &p_item_rect, c
 	return true;
 }
 
-bool RasterizerCanvasGLES2::_light_scissor_begin(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const {
+bool RasterizerCanvasGLES2::_light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const {
 
 	float area_item = p_item_rect.size.x * p_item_rect.size.y; // double check these are always positive
 
@@ -3318,7 +3328,7 @@ bool RasterizerCanvasGLES2::_light_scissor_begin(const Rect2 &p_item_rect, const
 	Rect2 cliprect;
 	if (!_light_find_intersection(p_item_rect, p_light_xform, p_light_rect, cliprect)) {
 		// should not really occur .. but just in case
-		cliprect = Rect2(0, 0, 0, 0);
+		return false;
 	} else {
 		// some conditions not to scissor
 		// determine the area (fill rate) that will be saved
@@ -3331,11 +3341,10 @@ bool RasterizerCanvasGLES2::_light_scissor_begin(const Rect2 &p_item_rect, const
 		}
 	}
 
-	glEnable(GL_SCISSOR_TEST);
 	int y = storage->frame.current_rt->height - (cliprect.position.y + cliprect.size.y);
 	if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP])
 		y = cliprect.position.y;
-	glScissor(cliprect.position.x, y, cliprect.size.width, cliprect.size.height);
+	glScissor(cliprect.position.x, y, cliprect.size.width + 0.5, cliprect.size.height + 0.5);
 
 	return true;
 }

@@ -350,7 +350,7 @@ private:
 
 	// light scissoring
 	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
-	bool _light_scissor_begin(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const;
+	bool _light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const;
 	void _calculate_scissor_threshold_area();
 
 	// no need to compile these in in release, they are unneeded outside the editor and only add to executable size
