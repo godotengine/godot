@@ -395,7 +395,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Removes a given entry from the object's metadata.
+				Removes a given entry from the object's metadata. See also [method set_meta].
 			</description>
 		</method>
 		<method name="set">
@@ -464,7 +464,8 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Adds or changes a given entry in the object's metadata. Metadata are serialized, and can take any [Variant] value.
+				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
+				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code].
 			</description>
 		</method>
 		<method name="set_script">
