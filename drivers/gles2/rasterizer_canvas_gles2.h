@@ -316,7 +316,6 @@ private:
 	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	void render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris);
 	void record_items(Item *p_item_list, int p_z);
-	void join_items(Item *p_item_list, int p_z);
 	void join_sorted_items();
 	bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
 	void render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material, bool p_lit);
