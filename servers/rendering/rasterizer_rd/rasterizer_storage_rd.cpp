@@ -1256,6 +1256,10 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			}
 			material->shader_type = new_type;
 		}
+
+		for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
+			shader->data->set_default_texture_param(E->key(), E->get());
+		}
 	}
 
 	if (shader->data) {
@@ -1292,7 +1296,9 @@ void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const S
 	} else {
 		shader->default_texture_parameter.erase(p_name);
 	}
-
+	if (shader->data) {
+		shader->data->set_default_texture_param(p_name, p_texture);
+	}
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
 		Material *material = E->get();
 		_material_queue_update(material, false, true);
