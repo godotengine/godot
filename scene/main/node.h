@@ -217,6 +217,12 @@ protected:
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
+	// Custom iterator for traversing children via script.
+	int _iter_idx;
+	Variant _iter_init(const Array &p_iter);
+	Variant _iter_next(const Array &p_iter);
+	Variant _iter_get(const Variant &p_iter);
+
 public:
 	enum {
 

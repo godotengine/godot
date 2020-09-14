@@ -989,6 +989,20 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 	data.name = p_name;
 }
 
+Variant Node::_iter_init(const Array &p_iter) {
+	_iter_idx = 0;
+	return _iter_idx < data.children.size();
+}
+
+Variant Node::_iter_next(const Array &p_iter) {
+	_iter_idx++;
+	return _iter_idx < data.children.size();
+}
+
+Variant Node::_iter_get(const Variant &p_iter) {
+	return data.children[_iter_idx];
+}
+
 String Node::invalid_character = ". : @ / \"";
 
 bool Node::_validate_node_name(String &p_name) {
@@ -2908,6 +2922,10 @@ void Node::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_configuration_warning"));
+
+	ClassDB::bind_method(D_METHOD("_iter_init"), &Node::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"), &Node::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"), &Node::_iter_next);
 }
 
 String Node::_get_name_num_separator() {
