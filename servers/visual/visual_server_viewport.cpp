@@ -136,29 +136,34 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 					tsize *= cl->scale;
 
 					Vector2 offset = tsize / 2.0;
-					cl->rect_cache = Rect2(-offset + cl->texture_offset, tsize);
+					Rect2 light_rect = Rect2(-offset + cl->texture_offset, tsize);
 					cl->xform_cache = xf * cl->xform;
+					//computing these upfront to avoid having to do so on every intersection test
+					cl->global_rect_pts_cache[0] = cl->xform_cache.xform(light_rect.position);
+					cl->global_rect_pts_cache[1] = cl->xform_cache.xform(Vector2(light_rect.position.x + light_rect.size.x, light_rect.position.y));
+					cl->global_rect_pts_cache[2] = cl->xform_cache.xform(Vector2(light_rect.position.x, light_rect.position.y + light_rect.size.y));
+					cl->global_rect_pts_cache[3] = cl->xform_cache.xform(Vector2(light_rect.position.x + light_rect.size.x, light_rect.position.y + light_rect.size.y));
 
-					if (clip_rect.intersects_transformed(cl->xform_cache, cl->rect_cache)) {
+					if (clip_rect.intersects_transformed(cl->xform_cache, cl->global_rect_pts_cache)) {
 
 						cl->filter_next_ptr = lights;
 						lights = cl;
 						cl->texture_cache = NULL;
 						Transform2D scale;
-						scale.scale(cl->rect_cache.size);
-						scale.elements[2] = cl->rect_cache.position;
+						scale.scale(light_rect.size);
+						scale.elements[2] = light_rect.position;
 						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
 						cl->light_shader_pos = cl->xform_cache[2];
 						if (cl->shadow_buffer.is_valid()) {
 
 							cl->shadows_next_ptr = lights_with_shadow;
 							if (lights_with_shadow == NULL) {
-								shadow_rect = cl->xform_cache.xform(cl->rect_cache);
+								shadow_rect = cl->xform_cache.xform(light_rect);
 							} else {
-								shadow_rect = shadow_rect.merge(cl->xform_cache.xform(cl->rect_cache));
+								shadow_rect = shadow_rect.merge(cl->xform_cache.xform(light_rect));
 							}
 							lights_with_shadow = cl;
-							cl->radius_cache = cl->rect_cache.size.length();
+							cl->radius_cache = light_rect.size.length();
 						}
 						if (cl->mode == VS::CANVAS_LIGHT_MODE_MASK) {
 							cl->mask_next_ptr = lights_with_mask;

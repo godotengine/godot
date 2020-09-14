@@ -638,7 +638,7 @@ public:
 		float shadow_smooth;
 
 		void *texture_cache; // implementation dependent
-		Rect2 rect_cache;
+		Vector2 global_rect_pts_cache[4];
 		Transform2D xform_cache;
 		float radius_cache; //used for shadow far plane
 		CameraMatrix shadow_matrix_cache;

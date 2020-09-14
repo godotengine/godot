@@ -2360,7 +2360,7 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 					// Note that with the above test, it is possible to also include a bound check.
 					// Tests so far have indicated better performance without it, but there may be reason to change this at a later stage,
 					// so I leave the line here for reference:
-					// && p_ci->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
+					// && p_ci->global_rect_cache.intersects_transformed(light->xform_cache, light->global_rect_pts_cache)) {
 
 					light_bitfield |= light_bit;
 
@@ -2736,7 +2736,7 @@ void RasterizerCanvasGLES2::_canvas_render_item(Item *p_ci, RenderItemState &r_r
 
 		while (light) {
 
-			if (p_ci->light_mask & light->item_mask && r_ris.item_group_z >= light->z_min && r_ris.item_group_z <= light->z_max && p_ci->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
+			if (p_ci->light_mask & light->item_mask && r_ris.item_group_z >= light->z_min && r_ris.item_group_z <= light->z_max && p_ci->global_rect_cache.intersects_transformed(light->xform_cache, light->global_rect_pts_cache)) {
 
 				//intersects this light
 
@@ -3137,7 +3137,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 			// note that the r_ris.item_group_z will be out of date because we are using deferred rendering till canvas_render_items_end()
 			// so we have to test z against the stored value in the joined item
-			if (ci->light_mask & light->item_mask && p_bij.z_index >= light->z_min && p_bij.z_index <= light->z_max && p_bij.bounding_rect.intersects_transformed(light->xform_cache, light->rect_cache)) {
+			if (ci->light_mask & light->item_mask && p_bij.z_index >= light->z_min && p_bij.z_index <= light->z_max && p_bij.bounding_rect.intersects_transformed(light->xform_cache, light->global_rect_pts_cache)) {
 
 				//intersects this light
 
@@ -3211,7 +3211,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 				if (!bdata.settings_scissor_lights || r_ris.current_clip) {
 					render_joined_item_commands(p_bij, NULL, reclip, material_ptr, true);
 				} else {
-					bool new_light_scissor = _light_scissor_set(p_bij.bounding_rect, light->xform_cache, light->rect_cache);
+					bool new_light_scissor = _light_scissor_set(p_bij.bounding_rect, light->xform_cache, light->global_rect_pts_cache);
 					if (new_light_scissor != light_scissor) {
 						if (new_light_scissor) {
 							glEnable(GL_SCISSOR_TEST);
@@ -3282,20 +3282,11 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	}
 }
 
-bool RasterizerCanvasGLES2::_light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const {
-	// transform light to world space (note this is done in the earlier intersection test, so could
-	// be made more efficient)
-	Vector2 pts[4] = {
-		p_light_xform.xform(p_light_rect.position),
-		p_light_xform.xform(Vector2(p_light_rect.position.x + p_light_rect.size.x, p_light_rect.position.y)),
-		p_light_xform.xform(Vector2(p_light_rect.position.x, p_light_rect.position.y + p_light_rect.size.y)),
-		p_light_xform.xform(Vector2(p_light_rect.position.x + p_light_rect.size.x, p_light_rect.position.y + p_light_rect.size.y)),
-	};
-
+bool RasterizerCanvasGLES2::_light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Vector2 (&p_light_global_rect_pts)[4], Rect2 &r_cliprect) const {
 	// calculate the light bound rect in world space
-	Rect2 lrect(pts[0].x, pts[0].y, 0, 0);
+	Rect2 lrect(p_light_global_rect_pts[0].x, p_light_global_rect_pts[0].y, 0, 0);
 	for (int n = 1; n < 4; n++) {
-		lrect.expand_to(pts[n]);
+		lrect.expand_to(p_light_global_rect_pts[n]);
 	}
 
 	// intersection between the 2 rects
@@ -3316,7 +3307,7 @@ bool RasterizerCanvasGLES2::_light_find_intersection(const Rect2 &p_item_rect, c
 	return true;
 }
 
-bool RasterizerCanvasGLES2::_light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const {
+bool RasterizerCanvasGLES2::_light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Vector2 (&p_light_global_rect_pts)[4]) const {
 
 	float area_item = p_item_rect.size.x * p_item_rect.size.y; // double check these are always positive
 
@@ -3326,7 +3317,7 @@ bool RasterizerCanvasGLES2::_light_scissor_set(const Rect2 &p_item_rect, const T
 	}
 
 	Rect2 cliprect;
-	if (!_light_find_intersection(p_item_rect, p_light_xform, p_light_rect, cliprect)) {
+	if (!_light_find_intersection(p_item_rect, p_light_xform, p_light_global_rect_pts, cliprect)) {
 		// should not really occur .. but just in case
 		return false;
 	} else {

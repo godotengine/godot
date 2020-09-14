@@ -213,7 +213,7 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 		RasterizerCanvas::Light *light = p_masked_lights;
 		while (light) {
 
-			if ((p_canvas_layer_id >= light->layer_min) && (p_canvas_layer_id <= light->layer_max) && (ci->light_mask & light->item_mask) && (p_z >= light->z_min) && (p_z <= light->z_max) && (ci->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache))) {
+			if ((p_canvas_layer_id >= light->layer_min) && (p_canvas_layer_id <= light->layer_max) && (ci->light_mask & light->item_mask) && (p_z >= light->z_min) && (p_z <= light->z_max) && (ci->global_rect_cache.intersects_transformed(light->xform_cache, light->global_rect_pts_cache))) {
 				ci->light_masked = true;
 			}
 

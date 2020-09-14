@@ -95,8 +95,6 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 
 bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
 
-	//SAT intersection between local and transformed rect2
-
 	Vector2 xf_points[4] = {
 		p_xform.xform(p_rect.position),
 		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y)),
@@ -104,17 +102,24 @@ bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_re
 		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y + p_rect.size.y)),
 	};
 
+	return intersects_transformed(p_xform, xf_points);
+}
+
+bool Rect2::intersects_transformed(const Transform2D &p_xform, const Vector2 (&p_xf_points)[4]) const {
+
+	//SAT intersection between local and transformed rect2
+
 	real_t low_limit;
 
 	//base rect2 first (faster)
 
-	if (xf_points[0].y > position.y)
+	if (p_xf_points[0].y > position.y)
 		goto next1;
-	if (xf_points[1].y > position.y)
+	if (p_xf_points[1].y > position.y)
 		goto next1;
-	if (xf_points[2].y > position.y)
+	if (p_xf_points[2].y > position.y)
 		goto next1;
-	if (xf_points[3].y > position.y)
+	if (p_xf_points[3].y > position.y)
 		goto next1;
 
 	return false;
@@ -123,26 +128,25 @@ next1:
 
 	low_limit = position.y + size.y;
 
-	if (xf_points[0].y < low_limit)
+	if (p_xf_points[0].y < low_limit)
 		goto next2;
-	if (xf_points[1].y < low_limit)
+	if (p_xf_points[1].y < low_limit)
 		goto next2;
-	if (xf_points[2].y < low_limit)
+	if (p_xf_points[2].y < low_limit)
 		goto next2;
-	if (xf_points[3].y < low_limit)
+	if (p_xf_points[3].y < low_limit)
 		goto next2;
 
 	return false;
 
 next2:
 
-	if (xf_points[0].x > position.x)
+	if (p_xf_points[0].x > position.x) goto next3;
+	if (p_xf_points[1].x > position.x)
 		goto next3;
-	if (xf_points[1].x > position.x)
+	if (p_xf_points[2].x > position.x)
 		goto next3;
-	if (xf_points[2].x > position.x)
-		goto next3;
-	if (xf_points[3].x > position.x)
+	if (p_xf_points[3].x > position.x)
 		goto next3;
 
 	return false;
@@ -151,13 +155,13 @@ next3:
 
 	low_limit = position.x + size.x;
 
-	if (xf_points[0].x < low_limit)
+	if (p_xf_points[0].x < low_limit)
 		goto next4;
-	if (xf_points[1].x < low_limit)
+	if (p_xf_points[1].x < low_limit)
 		goto next4;
-	if (xf_points[2].x < low_limit)
+	if (p_xf_points[2].x < low_limit)
 		goto next4;
-	if (xf_points[3].x < low_limit)
+	if (p_xf_points[3].x < low_limit)
 		goto next4;
 
 	return false;
@@ -186,18 +190,18 @@ next4:
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	real_t maxb = p_xform.elements[0].dot(xf_points[0]);
+	real_t maxb = p_xform.elements[0].dot(p_xf_points[0]);
 	real_t minb = maxb;
 
-	dp = p_xform.elements[0].dot(xf_points[1]);
+	dp = p_xform.elements[0].dot(p_xf_points[1]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[0].dot(xf_points[2]);
+	dp = p_xform.elements[0].dot(p_xf_points[2]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[0].dot(xf_points[3]);
+	dp = p_xform.elements[0].dot(p_xf_points[3]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
@@ -221,18 +225,18 @@ next4:
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	maxb = p_xform.elements[1].dot(xf_points[0]);
+	maxb = p_xform.elements[1].dot(p_xf_points[0]);
 	minb = maxb;
 
-	dp = p_xform.elements[1].dot(xf_points[1]);
+	dp = p_xform.elements[1].dot(p_xf_points[1]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[1].dot(xf_points[2]);
+	dp = p_xform.elements[1].dot(p_xf_points[2]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[1].dot(xf_points[3]);
+	dp = p_xform.elements[1].dot(p_xf_points[3]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 

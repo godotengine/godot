@@ -349,8 +349,8 @@ private:
 	bool _sort_items_match(const BSortItem &p_a, const BSortItem &p_b) const;
 
 	// light scissoring
-	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
-	bool _light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const;
+	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Vector2 (&p_light_global_rect_pts)[4], Rect2 &r_cliprect) const;
+	bool _light_scissor_set(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Vector2 (&p_light_global_rect_pts)[4]) const;
 	void _calculate_scissor_threshold_area();
 
 	// no need to compile these in in release, they are unneeded outside the editor and only add to executable size
