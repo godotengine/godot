@@ -580,8 +580,8 @@ void GDScriptByteCodeGenerator::write_endif() {
 }
 
 void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Address &p_list) {
-	int counter_pos = increase_stack() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
-	int container_pos = increase_stack() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	int counter_pos = add_temporary() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+	int container_pos = add_temporary() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
 
 	current_breaks_to_patch.push_back(List<int>());
 
@@ -629,7 +629,9 @@ void GDScriptByteCodeGenerator::write_endfor() {
 	}
 	current_breaks_to_patch.pop_back();
 
-	current_stack_size -= 2; // Remove loop temporaries.
+	// Remove loop temporaries.
+	pop_temporary();
+	pop_temporary();
 }
 
 void GDScriptByteCodeGenerator::start_while_condition() {
