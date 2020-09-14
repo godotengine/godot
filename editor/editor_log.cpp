@@ -79,7 +79,15 @@ void EditorLog::_clear_request() {
 }
 
 void EditorLog::_copy_request() {
-	log->selection_copy();
+	String text = log->get_selected_text();
+
+	if (text == "") {
+		text = log->get_text();
+	}
+
+	if (text != "") {
+		DisplayServer::get_singleton()->clipboard_set(text);
+	}
 }
 
 void EditorLog::clear() {
