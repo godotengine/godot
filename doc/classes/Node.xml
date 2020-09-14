@@ -525,7 +525,7 @@
 				    ┠╴Menu
 				    ┃  ┠╴Label
 				    ┃  ┖╴Camera2D
-				    ┖-SplashScreen
+				    ┖╴SplashScreen
 				       ┖╴Camera2D
 				[/codeblock]
 			</description>
