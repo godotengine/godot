@@ -475,6 +475,7 @@ public:
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
+	String get_selected_text();
 	void selection_copy();
 
 	Error parse_bbcode(const String &p_bbcode);
