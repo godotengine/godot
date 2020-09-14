@@ -65,12 +65,14 @@ def configure(env):
         env.Append(CCFLAGS=["/MD"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["/Zi"])
         env.Append(CCFLAGS=["/MDd"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     ## Compiler configuration

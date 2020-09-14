@@ -6198,7 +6198,9 @@ EditorNode::EditorNode() {
 #else
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KEY_MASK_SHIFT | KEY_F11), SETTINGS_TOGGLE_FULLSCREEN);
 #endif
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) && defined(WINDOWS_SUBSYSTEM_CONSOLE)
+	// The console can only be toggled if the application was built for the console subsystem,
+	// not the GUI subsystem.
 	p->add_item(TTR("Toggle System Console"), SETTINGS_TOGGLE_CONSOLE);
 #endif
 	p->add_separator();
