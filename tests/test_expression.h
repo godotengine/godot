@@ -148,6 +148,20 @@ TEST_CASE("[Expression] Scientific notation") {
 			"The expression should return the expected result.");
 }
 
+TEST_CASE("[Expression] Underscored numeric literals") {
+	Expression expression;
+
+	CHECK_MESSAGE(
+			expression.parse("1_000_000") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("1_000.000") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0xff_99_00") == OK,
+			"The expression should parse successfully.");
+}
+
 TEST_CASE("[Expression] Built-in functions") {
 	Expression expression;
 
