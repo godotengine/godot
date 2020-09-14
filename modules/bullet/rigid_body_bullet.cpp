@@ -849,8 +849,8 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 		} else {
 			if (areasWhereIam[i]->get_spOv_priority() > p_area->get_spOv_priority()) {
 				// The position was found, just shift all elements
-				for (int j = i; j < areaWhereIamCount; ++j) {
-					areasWhereIam[j + 1] = areasWhereIam[j];
+				for (int j = areaWhereIamCount; j > i; j--) {
+					areasWhereIam[j] = areasWhereIam[j - 1];
 				}
 				areasWhereIam[i] = p_area;
 				break;
