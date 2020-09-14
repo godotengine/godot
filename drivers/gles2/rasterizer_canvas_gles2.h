@@ -129,7 +129,12 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 	// batch item may represent 1 or more items
 	struct BItemJoined {
-		uint32_t first_item_ref;
+		union {
+			uint32_t first_item_ref;
+			Item *single_item;
+		};
+		// >= 1: standard case, first_item_ref is valid
+		// 0: joining disabled, single_item is valid (this BItemJoined is used as an adapter to a single item)
 		uint32_t num_item_refs;
 
 		Rect2 bounding_rect;
@@ -143,7 +148,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
-		bool use_hardware_transform() const { return num_item_refs == 1; }
+		bool use_hardware_transform() const { return num_item_refs <= 1; }
 	};
 
 	struct BItemRef {

@@ -1662,8 +1662,10 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 
 void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material, bool p_lit) {
 
+	bool is_real_joined_item = p_bij.num_item_refs > 0;
+
 	Item *item = 0;
-	Item *first_item = bdata.item_refs[p_bij.first_item_ref].item;
+	Item *first_item = is_real_joined_item ? bdata.item_refs[p_bij.first_item_ref].item : p_bij.single_item;
 
 	FillState fill_state;
 	fill_state.reset();
@@ -1676,15 +1678,20 @@ void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij
 		fill_state.extra_matrix_sent = true;
 	}
 
-	for (unsigned int i = 0; i < p_bij.num_item_refs; i++) {
-		const BItemRef &ref = bdata.item_refs[p_bij.first_item_ref + i];
-		item = ref.item;
-
-		if (!p_lit) {
-			// if not lit we use the complex calculated final modulate
-			fill_state.final_modulate = ref.final_modulate;
+	unsigned int count = is_real_joined_item ? p_bij.num_item_refs : 1;
+	for (unsigned int i = 0; i < count; i++) {
+		if (is_real_joined_item) {
+			const BItemRef &ref = bdata.item_refs[p_bij.first_item_ref + i];
+			item = ref.item;
+			if (!p_lit) {
+				// if not lit we use the complex calculated final modulate
+				fill_state.final_modulate = ref.final_modulate;
+			} else {
+				// if lit we ignore canvas modulate and just use the item modulate
+				fill_state.final_modulate = item->final_modulate;
+			}
 		} else {
-			// if lit we ignore canvas modulate and just use the item modulate
+			item = first_item;
 			fill_state.final_modulate = item->final_modulate;
 		}
 
@@ -2045,6 +2052,12 @@ void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, L
 	_render_item_state.item_group_base_transform = p_base_transform;
 	_render_item_state.light_region.reset();
 
+	if (!bdata.settings_max_join_item_commands) {
+		// if joining is disabled, let's assume worst case for these since they are normally found during joining
+		bdata.joined_item_batch_flags = RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING;
+		return;
+	}
+
 	// batch break must be preserved over the different z indices,
 	// to prevent joining to an item on a previous index if not allowed
 	_render_item_state.join_batch_break = false;
@@ -2074,7 +2087,8 @@ void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, L
 }
 
 void RasterizerCanvasGLES2::canvas_render_items_end() {
-	if (!bdata.settings_use_batching) {
+	// either if the batching pipeline or just joining is disabled, items have already been rendered by now
+	if (!(bdata.settings_use_batching && bdata.settings_max_join_item_commands)) {
 		return;
 	}
 
@@ -2097,10 +2111,20 @@ void RasterizerCanvasGLES2::canvas_render_items_end() {
 }
 
 void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
-	// stage 1 : join similar items, so that their state changes are not repeated,
-	// and commands from joined items can be batched together
 	if (bdata.settings_use_batching) {
-		record_items(p_item_list, p_z);
+		if (bdata.settings_max_join_item_commands) {
+			// stage 1 : join similar items, so that their state changes are not repeated,
+			// and commands from joined items can be batched together
+			record_items(p_item_list, p_z);
+		} else {
+			// if joining is disabled, we take a fast path to rendering, without a recording stage
+#ifdef DEBUG_ENABLED
+			if (bdata.diagnose_frame) {
+				bdata.frame_string += "items\n";
+			}
+#endif
+			canvas_render_items_implementation(p_item_list, p_z, p_modulate, p_light, p_base_transform);
+		}
 		return;
 	}
 
@@ -2128,8 +2152,27 @@ void RasterizerCanvasGLES2::canvas_render_items_implementation(Item *p_item_list
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
 
 	if (bdata.settings_use_batching) {
-		for (int j = 0; j < bdata.items_joined.size(); j++) {
-			render_joined_item(bdata.items_joined[j], ris);
+		if (bdata.settings_max_join_item_commands) {
+			for (int j = 0; j < bdata.items_joined.size(); j++) {
+				render_joined_item(bdata.items_joined[j], ris);
+			}
+		} else {
+			// since not joining, adapt each single item as a joined item to do direct render
+
+			BItemJoined bij;
+			bij.num_item_refs = 0;
+			bij.flags = RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING;
+
+			while (p_item_list) {
+
+				Item *ci = p_item_list;
+				bij.single_item = ci;
+				bij.bounding_rect = ci->global_rect_cache;
+				bij.z_index = p_z;
+
+				render_joined_item(bij, ris);
+				p_item_list = p_item_list->next;
+			}
 		}
 	} else {
 		while (p_item_list) {
@@ -2822,7 +2865,11 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 #ifdef DEBUG_ENABLED
 	if (bdata.diagnose_frame) {
-		bdata.frame_string += "\tjoined_item " + itos(p_bij.num_item_refs) + " refs\n";
+		if (p_bij.num_item_refs) {
+			bdata.frame_string += "\tjoined_item " + itos(p_bij.num_item_refs) + " refs\n";
+		} else {
+			bdata.frame_string += "\tsingle_item\n";
+		}
 		if (p_bij.z_index != 0) {
 			bdata.frame_string += "\t\t(z " + itos(p_bij.z_index) + ")\n";
 		}
@@ -2834,7 +2881,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	state.canvas_texscreen_used = false;
 
 	// all the joined items will share the same state with the first item
-	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;
+	Item *ci = p_bij.num_item_refs ? bdata.item_refs[p_bij.first_item_ref].item : p_bij.single_item;
 
 	if (r_ris.current_clip != ci->final_clip_owner) {
 
