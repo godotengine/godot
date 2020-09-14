@@ -135,7 +135,6 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
-static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
 static bool cmdline_tool = false;
@@ -755,7 +754,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--single-window") { // force single window
 
-			single_window = true;
+			OS::get_singleton()->_single_window = true;
 		} else if (I->get() == "-t" || I->get() == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -2131,7 +2130,7 @@ bool Main::start() {
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
 
-		if (single_window || (!project_manager && !editor && embed_subwindows)) {
+		if (OS::get_singleton()->is_single_window() || (!project_manager && !editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
 		}
 		ResourceLoader::add_custom_loaders();
