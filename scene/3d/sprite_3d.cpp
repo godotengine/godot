@@ -397,7 +397,7 @@ SpriteBase3D::SpriteBase3D() {
 
 	mesh = VisualServer::get_singleton()->mesh_create();
 
-	PoolVector2Array mesh_vertices;
+	PoolVector3Array mesh_vertices;
 	PoolVector3Array mesh_normals;
 	PoolRealArray mesh_tangents;
 	PoolColorArray mesh_colors;
@@ -418,7 +418,7 @@ SpriteBase3D::SpriteBase3D() {
 		mesh_tangents.write()[i * 4 + 3] = 0.0;
 		mesh_colors.write()[i] = Color(1.0, 1.0, 1.0, 1.0);
 		mesh_uvs.write()[i] = Vector2(0.0, 0.0);
-		mesh_vertices.write()[i] = Vector2(0.0, 0.0);
+		mesh_vertices.write()[i] = Vector3(0.0, 0.0, 0.0);
 	}
 
 	Array mesh_array;
@@ -592,7 +592,9 @@ void Sprite3D::_draw() {
 			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
 		}
 
-		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &vertices[i], sizeof(float) * 2);
+		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
+
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
@@ -957,8 +959,9 @@ void AnimatedSprite3D::_draw() {
 			float v_uv[2] = { uvs[i].x, uvs[i].y };
 			copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TEX_UV]], v_uv, 8);
 		}
+		float v_vertex[3] = { vtx.x, vtx.y, vtx.z };
 
-		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &vertices[i], sizeof(float) * 2);
+		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_VERTEX]], &v_vertex, sizeof(float) * 3);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_NORMAL]], v_normal, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_TANGENT]], v_tangent, 4);
 		copymem(&write_buffer[i * mesh_stride + mesh_surface_offsets[VS::ARRAY_COLOR]], v_color, 4);
