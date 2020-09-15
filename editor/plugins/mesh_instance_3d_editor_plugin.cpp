@@ -410,6 +410,14 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 	if (get_tree()->get_edited_scene_root() == node) {
 		owner = node;
 	}
+	NodePath skeleton_path = node->get_skeleton_path();
+	if (!skeleton_path.is_absolute()) {
+		Vector<StringName> parts;
+		parts.push_back("..");
+		parts.append_array(skeleton_path.get_names());
+		skeleton_path = NodePath(parts, false);
+		ERR_PRINT("path is " + skeleton_path);
+	}
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -417,6 +425,7 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 
 	ur->add_do_method(node, "add_child", mi);
 	ur->add_do_method(mi, "set_owner", owner);
+	ur->add_do_method(mi, "set_skeleton_path", skeleton_path);
 
 	ur->add_do_reference(mi);
 	ur->add_undo_method(node, "remove_child", mi);
