@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleEmit" inherits="VisualShaderNode" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="VisualShaderNodeParticleEmit.EmitFlags" default="31">
+		</member>
+	</members>
+	<constants>
+		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_ROT_SCALE" value="2" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
+		</constant>
+	</constants>
+</class>

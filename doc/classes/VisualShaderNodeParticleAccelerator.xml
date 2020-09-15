@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleAccelerator" inherits="VisualShaderNodeOutput" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="VisualShaderNodeParticleAccelerator.Mode" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="MODE_LINEAR" value="0" enum="Mode">
+		</constant>
+		<constant name="MODE_RADIAL" value="1" enum="Mode">
+		</constant>
+		<constant name="MODE_TANGENTIAL" value="2" enum="Mode">
+		</constant>
+		<constant name="MODE_MAX" value="3" enum="Mode">
+		</constant>
+	</constants>
+</class>

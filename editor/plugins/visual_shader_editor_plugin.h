@@ -142,9 +142,11 @@ class VisualShaderEditor : public VBoxContainer {
 	Button *preview_shader;
 
 	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standart;
+	OptionButton *edit_type_standard;
 	OptionButton *edit_type_particles;
 	OptionButton *edit_type_sky;
+	CheckBox *custom_mode_box;
+	bool custom_mode_enabled = false;
 
 	bool pending_update_preview;
 	bool shader_error;
@@ -189,7 +191,9 @@ class VisualShaderEditor : public VBoxContainer {
 	enum ParticlesTypeFlags {
 		TYPE_FLAGS_EMIT = 1,
 		TYPE_FLAGS_PROCESS = 2,
-		TYPE_FLAGS_END = 4
+		TYPE_FLAGS_COLLIDE = 4,
+		TYPE_FLAGS_EMIT_CUSTOM = 8,
+		TYPE_FLAGS_PROCESS_CUSTOM = 16,
 	};
 
 	enum SkyTypeFlags {
@@ -385,6 +389,7 @@ class VisualShaderEditor : public VBoxContainer {
 	Ref<VisualShaderGraphPlugin> graph_plugin;
 
 	void _mode_selected(int p_id);
+	void _custom_mode_toggled(bool p_enabled);
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);

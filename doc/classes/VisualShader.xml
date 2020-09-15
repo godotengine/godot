@@ -222,15 +222,19 @@
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
 			A shader for light calculations.
 		</constant>
-		<constant name="TYPE_EMIT" value="3" enum="Type">
+		<constant name="TYPE_START" value="3" enum="Type">
 		</constant>
 		<constant name="TYPE_PROCESS" value="4" enum="Type">
 		</constant>
-		<constant name="TYPE_END" value="5" enum="Type">
+		<constant name="TYPE_COLLIDE" value="5" enum="Type">
 		</constant>
-		<constant name="TYPE_SKY" value="6" enum="Type">
+		<constant name="TYPE_START_CUSTOM" value="6" enum="Type">
 		</constant>
-		<constant name="TYPE_MAX" value="7" enum="Type">
+		<constant name="TYPE_PROCESS_CUSTOM" value="7" enum="Type">
+		</constant>
+		<constant name="TYPE_SKY" value="8" enum="Type">
+		</constant>
+		<constant name="TYPE_MAX" value="9" enum="Type">
 			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
