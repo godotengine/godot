@@ -215,26 +215,20 @@
 		<member name="ssao_ao_channel_affect" type="float" setter="set_ssao_ao_channel_affect" getter="get_ssao_ao_channel_affect" default="0.0">
 			The screen-space ambient occlusion intensity on materials that have an AO texture defined. Values higher than [code]0[/code] will make the SSAO effect visible in areas darkened by AO textures.
 		</member>
-		<member name="ssao_bias" type="float" setter="set_ssao_bias" getter="get_ssao_bias" default="0.01">
-			The screen-space ambient occlusion bias. This should be kept high enough to prevent "smooth" curves from being affected by ambient occlusion.
-		</member>
-		<member name="ssao_blur" type="int" setter="set_ssao_blur" getter="get_ssao_blur" enum="Environment.SSAOBlur" default="3">
-			The screen-space ambient occlusion blur quality. See [enum SSAOBlur] for possible values.
-		</member>
-		<member name="ssao_edge_sharpness" type="float" setter="set_ssao_edge_sharpness" getter="get_ssao_edge_sharpness" default="4.0">
-			The screen-space ambient occlusion edge sharpness.
-		</member>
 		<member name="ssao_enabled" type="bool" setter="set_ssao_enabled" getter="is_ssao_enabled" default="false">
 			If [code]true[/code], the screen-space ambient occlusion effect is enabled. This darkens objects' corners and cavities to simulate ambient light not reaching the entire object as in real life. This works well for small, dynamic objects, but baked lighting or ambient occlusion textures will do a better job at displaying ambient occlusion on large static objects. This is a costly effect and should be disabled first when running into performance issues.
 		</member>
 		<member name="ssao_intensity" type="float" setter="set_ssao_intensity" getter="get_ssao_intensity" default="1.0">
-			The primary screen-space ambient occlusion intensity. See also [member ssao_radius].
+			The strength of the SSAO effect. Higher values result in darker SSAO while lower values soften the SSAO.
+		</member>
+		<member name="ssao_levels" type="int" setter="set_ssao_levels" getter="get_ssao_levels" default="3">
+			The number of SSAO scales to use. A higher value results in SSAO over a greater distance at the cost of more performance.
 		</member>
 		<member name="ssao_light_affect" type="float" setter="set_ssao_direct_light_affect" getter="get_ssao_direct_light_affect" default="0.0">
 			The screen-space ambient occlusion intensity in direct light. In real life, ambient occlusion only applies to indirect light, which means its effects can't be seen in direct light. Values higher than [code]0[/code] will make the SSAO effect visible in direct light.
 		</member>
-		<member name="ssao_radius" type="float" setter="set_ssao_radius" getter="get_ssao_radius" default="1.0">
-			The primary screen-space ambient occlusion radius.
+		<member name="ssao_rejection_radius" type="float" setter="set_ssao_rejection_radius" getter="get_ssao_rejection_radius" default="2.5">
+			The distance over which the SSAO effect fades. A larger value spreads the occlusion check over a greater distance which can be useful to get a stronger SSAO effect. However, if it is too high, you will start to notice a dark "halo" around objects. It is best to keep this value as low as possible.
 		</member>
 		<member name="tonemap_exposure" type="float" setter="set_tonemap_exposure" getter="get_tonemap_exposure" default="1.0">
 			The default exposure used for tonemapping.
@@ -331,18 +325,6 @@
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
-		</constant>
-		<constant name="SSAO_BLUR_DISABLED" value="0" enum="SSAOBlur">
-			No blur for the screen-space ambient occlusion effect (fastest).
-		</constant>
-		<constant name="SSAO_BLUR_1x1" value="1" enum="SSAOBlur">
-			1×1 blur for the screen-space ambient occlusion effect.
-		</constant>
-		<constant name="SSAO_BLUR_2x2" value="2" enum="SSAOBlur">
-			2×2 blur for the screen-space ambient occlusion effect.
-		</constant>
-		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
-			3×3 blur for the screen-space ambient occlusion effect. Increases the radius of the blur for a smoother look, but can result in checkerboard-like artifacts.
 		</constant>
 		<constant name="SDFGI_CASCADES_4" value="0" enum="SDFGICascades">
 		</constant>
