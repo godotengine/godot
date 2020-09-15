@@ -1208,8 +1208,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (drop_mode_flags && drop_mode_over == p_item) {
 				Rect2 r = cell_rect;
+				bool has_parent = p_item->get_children() != nullptr;
 
-				if (drop_mode_section == -1 || drop_mode_section == 0) {
+				if (drop_mode_section == -1 || has_parent || drop_mode_section == 0) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), cache.drop_position_color);
 				}
 
@@ -1218,7 +1219,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x + r.size.x - 1, r.position.y, 1, r.size.y), cache.drop_position_color);
 				}
 
-				if (drop_mode_section == 1 || drop_mode_section == 0) {
+				if ((drop_mode_section == 1 && !has_parent) || drop_mode_section == 0) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), cache.drop_position_color);
 				}
 			}
