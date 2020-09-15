@@ -918,154 +918,330 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness) {
-	//minify first
-	ssao.minify_push_constant.orthogonal = p_projection.is_orthogonal();
-	ssao.minify_push_constant.z_near = p_projection.get_z_near();
-	ssao.minify_push_constant.z_far = p_projection.get_z_far();
-	ssao.minify_push_constant.pixel_size[0] = 1.0 / p_depth_buffer_size.x;
-	ssao.minify_push_constant.pixel_size[1] = 1.0 / p_depth_buffer_size.y;
-	ssao.minify_push_constant.source_size[0] = p_depth_buffer_size.x;
-	ssao.minify_push_constant.source_size[1] = p_depth_buffer_size.y;
+void RasterizerEffectsRD::_compute_ssao(RD::ComputeListID p_compute_list, RID p_destination, RID p_depth_buffer, const float p_tan_half_fov_h, int p_width, int p_height, int p_depth, float p_rejection_radius, float p_intensity, bool p_use_full_samples) {
+	const float sample_thickness[12] = {
+		Math::sqrt(1.0f - 0.2f * 0.2f),
+		Math::sqrt(1.0f - 0.4f * 0.4f),
+		Math::sqrt(1.0f - 0.6f * 0.6f),
+		Math::sqrt(1.0f - 0.8f * 0.8f),
+		Math::sqrt(1.0f - 0.2f * 0.2f - 0.2f * 0.2f),
+		Math::sqrt(1.0f - 0.2f * 0.2f - 0.4f * 0.4f),
+		Math::sqrt(1.0f - 0.2f * 0.2f - 0.6f * 0.6f),
+		Math::sqrt(1.0f - 0.2f * 0.2f - 0.8f * 0.8f),
+		Math::sqrt(1.0f - 0.4f * 0.4f - 0.4f * 0.4f),
+		Math::sqrt(1.0f - 0.4f * 0.4f - 0.6f * 0.6f),
+		Math::sqrt(1.0f - 0.4f * 0.4f - 0.8f * 0.8f),
+		Math::sqrt(1.0f - 0.6f * 0.6f - 0.6f * 0.6f)
+	};
+
+	// Here we compute multipliers that convert the center depth value into (the reciprocal of)
+	// sphere thicknesses at each sample location.  This assumes a maximum sample radius of 5
+	// units, but since a sphere has no thickness at its extent, we don't need to sample that far
+	// out.  Only samples whole integer offsets with distance less than 25 are used.  This means
+	// that there is no sample at (3, 4) because its distance is exactly 25 (and has a thickness of 0.)
+
+	// The shaders are set up to sample a circular region within a 5-pixel radius.
+	const float screenspace_diameter = 10.0f;
+
+	// SphereDiameter = CenterDepth * thickness_multiplier.  This will compute the thickness of a sphere centered
+	// at a specific depth.  The ellipsoid scale can stretch a sphere into an ellipsoid, which changes the
+	// characteristics of the AO.
+	// tan_half_fov_h:  Radius of sphere in depth units if its center lies at Z = 1
+	// screenspace_diameter:  Diameter of sample sphere in pixel units
+	// screenspace_diameter / p_width:  Ratio of the screen width that the sphere actually covers
+	// Note about the "2.0f * ":  Diameter = 2 * Radius
+	float thickness_multiplier = 2.0f * p_tan_half_fov_h * screenspace_diameter / p_width;
+
+	if (p_depth == 1) {
+		thickness_multiplier *= 2.0f;
+	}
+
+	// This will transform a depth value from [0, thickness] to [0, 1].
+	float inverse_range_factor = 1.0f / thickness_multiplier;
+
+	// The thicknesses are smaller for all off-center samples of the sphere.  Compute thicknesses relative
+	// to the center sample.
+	ssao.ssao_render_push_constant.inv_thickness_table[0] = inverse_range_factor / sample_thickness[0];
+	ssao.ssao_render_push_constant.inv_thickness_table[1] = inverse_range_factor / sample_thickness[1];
+	ssao.ssao_render_push_constant.inv_thickness_table[2] = inverse_range_factor / sample_thickness[2];
+	ssao.ssao_render_push_constant.inv_thickness_table[3] = inverse_range_factor / sample_thickness[3];
+	ssao.ssao_render_push_constant.inv_thickness_table[4] = inverse_range_factor / sample_thickness[4];
+	ssao.ssao_render_push_constant.inv_thickness_table[5] = inverse_range_factor / sample_thickness[5];
+	ssao.ssao_render_push_constant.inv_thickness_table[6] = inverse_range_factor / sample_thickness[6];
+	ssao.ssao_render_push_constant.inv_thickness_table[7] = inverse_range_factor / sample_thickness[7];
+	ssao.ssao_render_push_constant.inv_thickness_table[8] = inverse_range_factor / sample_thickness[8];
+	ssao.ssao_render_push_constant.inv_thickness_table[9] = inverse_range_factor / sample_thickness[9];
+	ssao.ssao_render_push_constant.inv_thickness_table[10] = inverse_range_factor / sample_thickness[10];
+	ssao.ssao_render_push_constant.inv_thickness_table[11] = inverse_range_factor / sample_thickness[11];
+
+	// These are the weights that are multiplied against the samples because not all samples are
+	// equally important.  The farther the sample is from the center location, the less they matter.
+	// We use the thickness of the sphere to determine the weight.  The scalars in front are the number
+	// of samples with this weight because we sum the samples together before multiplying by the weight,
+	// so as an aggregate all of those samples matter more.  After generating this table, the weights
+	// are normalized.
+	ssao.ssao_render_push_constant.sample_weight_table[0] = 4.0f * sample_thickness[0]; // Axial
+	ssao.ssao_render_push_constant.sample_weight_table[1] = 4.0f * sample_thickness[1]; // Axial
+	ssao.ssao_render_push_constant.sample_weight_table[2] = 4.0f * sample_thickness[2]; // Axial
+	ssao.ssao_render_push_constant.sample_weight_table[3] = 4.0f * sample_thickness[3]; // Axial
+	ssao.ssao_render_push_constant.sample_weight_table[4] = 4.0f * sample_thickness[4]; // Diagonal
+	ssao.ssao_render_push_constant.sample_weight_table[5] = 8.0f * sample_thickness[5]; // L-shaped
+	ssao.ssao_render_push_constant.sample_weight_table[6] = 8.0f * sample_thickness[6]; // L-shaped
+	ssao.ssao_render_push_constant.sample_weight_table[7] = 8.0f * sample_thickness[7]; // L-shaped
+	ssao.ssao_render_push_constant.sample_weight_table[8] = 4.0f * sample_thickness[8]; // Diagonal
+	ssao.ssao_render_push_constant.sample_weight_table[9] = 8.0f * sample_thickness[9]; // L-shaped
+	ssao.ssao_render_push_constant.sample_weight_table[10] = 8.0f * sample_thickness[10]; // L-shaped
+	ssao.ssao_render_push_constant.sample_weight_table[11] = 4.0f * sample_thickness[11]; // Diagonal
+
+	// If we aren't using all of the samples, delete their weights before we normalize.
+	if (!p_use_full_samples) {
+		ssao.ssao_render_push_constant.sample_weight_table[0] = 0.0f;
+		ssao.ssao_render_push_constant.sample_weight_table[2] = 0.0f;
+		ssao.ssao_render_push_constant.sample_weight_table[5] = 0.0f;
+		ssao.ssao_render_push_constant.sample_weight_table[7] = 0.0f;
+		ssao.ssao_render_push_constant.sample_weight_table[9] = 0.0f;
+	}
+
+	// Normalize the weights by dividing by the sum of all weights
+	float total_weight = 0.0f;
+	for (int i = 0; i < 12; ++i) {
+		total_weight += ssao.ssao_render_push_constant.sample_weight_table[i];
+	}
+
+	for (int i = 0; i < 12; ++i) {
+		ssao.ssao_render_push_constant.sample_weight_table[i] /= total_weight;
+	}
+
+	ssao.ssao_render_push_constant.texel_size[0] = 1.0f / float(p_width);
+	ssao.ssao_render_push_constant.texel_size[1] = 1.0f / float(p_height);
+	ssao.ssao_render_push_constant.rejection_fadeoff = 1.0f / -p_rejection_radius;
+	ssao.ssao_render_push_constant.intensity = p_intensity;
+	ssao.ssao_render_push_constant.intensity = p_intensity;
+
+	RID render_uniform_set = RID();
+	bool uniform_set_needs_update = false;
+
+	if (ssao.render_uniform_set_cache.has(p_depth_buffer)) {
+		render_uniform_set = ssao.render_uniform_set_cache[p_depth_buffer];
+		if (!RD::get_singleton()->uniform_set_is_valid(render_uniform_set)) {
+			uniform_set_needs_update = true;
+		}
+	} else {
+		uniform_set_needs_update = true;
+	}
+
+	if (uniform_set_needs_update) {
+		Vector<RD::Uniform> uniforms;
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.binding = 0;
+		u.ids.push_back(ssao.render_sampler);
+		u.ids.push_back(p_depth_buffer);
+		uniforms.push_back(u);
+
+		render_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssao.ssao_render_shader.version_get_shader(ssao.ssao_render_shader_version, 0), 0);
+		texture_to_compute_uniform_set_cache[p_depth_buffer] = render_uniform_set;
+	}
+
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, render_uniform_set, 0);
+
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_uniform_set_from_image(p_destination), 1);
+
+	int x_groups = (p_width + 7) / 8;
+	int y_groups = (p_height + 7) / 8;
+	int z_groups = p_depth;
+
+	if (z_groups == 1) {
+		x_groups = (p_width + 15) / 16;
+		y_groups = (p_height + 15) / 16;
+	}
+
+	RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssao.ssao_render_push_constant, sizeof(SSAORenderPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch(p_compute_list, x_groups, y_groups, z_groups);
+}
+
+void RasterizerEffectsRD::_upsample_ssao(RD::ComputeListID p_compute_list, RID p_destination, RID p_hi_res_depth, RID p_lo_res_depth, RID p_interleaved_ao, RID p_high_quality_ao, RID p_hi_res_ao, int p_low_width, int p_low_height, int p_high_width, int p_high_height, int p_screen_width, float p_noise_tolerance, float p_blur_tolerance, float p_upscale_tolerance) {
+	SSAOMode pipeline = SSAO_MAX;
+	if (p_hi_res_ao == RID()) {
+		pipeline = p_high_quality_ao == RID() ? SSAO_BLUR_UPSCALE : SSAO_BLUR_UPSCALE_MIN;
+	} else {
+		pipeline = p_high_quality_ao == RID() ? SSAO_BLUR_UPSCALE_BLEND : SSAO_BLUR_UPSCALE_MIN_BLEND;
+	}
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(p_compute_list, ssao.pipelines[pipeline]);
+
+	float blur_tolerance = 1.0f - powf(10.0f, p_blur_tolerance) * float(p_screen_width) / float(p_low_width);
+	blur_tolerance *= blur_tolerance;
+	float upsample_tolerance = powf(10.0f, p_upscale_tolerance);
+	float noise_filter_weight = 1.0f / (powf(10.0f, p_noise_tolerance) + upsample_tolerance);
+
+	ssao.upsample_push_constant.inv_low_resolution[0] = 1.0 / float(p_low_width);
+	ssao.upsample_push_constant.inv_low_resolution[1] = 1.0 / float(p_low_height);
+	ssao.upsample_push_constant.inv_high_resolution[0] = 1.0 / float(p_high_width);
+	ssao.upsample_push_constant.inv_high_resolution[1] = 1.0 / float(p_high_height);
+	ssao.upsample_push_constant.noise_filter_strength = noise_filter_weight;
+	ssao.upsample_push_constant.step_size = float(p_screen_width) / float(p_low_width);
+	ssao.upsample_push_constant.blur_tolerance = blur_tolerance;
+	ssao.upsample_push_constant.upsample_tolerance = upsample_tolerance;
+
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_compute_uniform_set_from_texture(p_lo_res_depth), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_compute_uniform_set_from_texture(p_hi_res_depth), 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_compute_uniform_set_from_texture(p_interleaved_ao), 2);
+	RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_uniform_set_from_image(p_destination), 3);
+
+	if (p_high_quality_ao != RID()) {
+		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_compute_uniform_set_from_texture(p_high_quality_ao), 4);
+	}
+
+	if (p_hi_res_ao != RID()) {
+		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, _get_compute_uniform_set_from_texture(p_hi_res_ao), 5);
+	}
+
+	int x_groups = ((p_high_width + 17) / 16);
+	int y_groups = ((p_high_height + 17) / 16);
+
+	RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssao.upsample_push_constant, sizeof(SSAOUpsamplePushConstant));
+
+	RD::get_singleton()->compute_list_dispatch(p_compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_add_barrier(p_compute_list);
+}
+
+// Implementation comes from Microsofts DirectX samples miniengine here https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/SSAO.cpp
+void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, const Size2i &p_depth_buffer_size, const Vector<RID> &depth_mipmaps, RID p_linear_z, const Vector<RID> &p_tiled_depth_mipmaps, const Vector<RID> &p_ao_slices, const Vector<RID> &p_high_quality_ao_slices, const Vector<RID> &p_filtered_ao_slices, RID p_ao_full, const CameraMatrix &p_projection, float p_noise_tolerance, float p_blur_tolerance, float p_upsample_tolerance, float p_rejection_radius, float p_intensity, int p_levels, RS::EnvironmentSSAOQuality p_quality, bool p_full_samples) {
+	ssao.downsample1_push_constant.orthogonal = p_projection.is_orthogonal();
+	ssao.downsample1_push_constant.z_near = p_projection.get_z_near();
+	ssao.downsample1_push_constant.z_far = p_projection.get_z_far();
+
+	const int buffer_width1 = (p_depth_buffer_size.x + 1) / 2;
+	const int buffer_width2 = (p_depth_buffer_size.x + 3) / 4;
+	const int buffer_width3 = (p_depth_buffer_size.x + 7) / 8;
+	const int buffer_width4 = (p_depth_buffer_size.x + 15) / 16;
+	const int buffer_width5 = (p_depth_buffer_size.x + 31) / 32;
+	const int buffer_width6 = (p_depth_buffer_size.x + 63) / 64;
+	const int buffer_height1 = (p_depth_buffer_size.y + 1) / 2;
+	const int buffer_height2 = (p_depth_buffer_size.y + 3) / 4;
+	const int buffer_height3 = (p_depth_buffer_size.y + 7) / 8;
+	const int buffer_height4 = (p_depth_buffer_size.y + 15) / 16;
+	const int buffer_height5 = (p_depth_buffer_size.y + 31) / 32;
+	const int buffer_height6 = (p_depth_buffer_size.y + 63) / 64;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 	/* FIRST PASS */
-	// Minify the depth buffer.
+	// Downsample the depth buffer.
+	{
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_DOWNSAMPLE1]);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_linear_z), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[0]), 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_tiled_depth_mipmaps[0]), 3);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[1]), 4);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_tiled_depth_mipmaps[1]), 5);
 
-	for (int i = 0; i < depth_mipmaps.size(); i++) {
-		if (i == 0) {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_MINIFY_FIRST]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 0);
-		} else {
-			if (i == 1) {
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_MINIFY_MIPMAP]);
-			}
+		int x_groups = (buffer_width4 * 8 + 7) / 8;
+		int y_groups = (buffer_height4 * 8 + 7) / 8;
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[i - 1]), 0);
-		}
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[i]), 1);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.downsample1_push_constant, sizeof(SSAODownsample1PushConstant));
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.minify_push_constant, sizeof(SSAOMinifyPushConstant));
-		// shrink after set
-		ssao.minify_push_constant.source_size[0] = MAX(1, ssao.minify_push_constant.source_size[0] >> 1);
-		ssao.minify_push_constant.source_size[1] = MAX(1, ssao.minify_push_constant.source_size[1] >> 1);
+		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+	if (p_levels > 2) {
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_DOWNSAMPLE2]);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[1]), 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[2]), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_tiled_depth_mipmaps[2]), 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(depth_mipmaps[3]), 3);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_tiled_depth_mipmaps[3]), 4);
 
-		int x_groups = (ssao.minify_push_constant.source_size[0] - 1) / 8 + 1;
-		int y_groups = (ssao.minify_push_constant.source_size[1] - 1) / 8 + 1;
+		int x_groups = (buffer_width6 * 8 + 7) / 8;
+		int y_groups = (buffer_height6 * 8 + 7) / 8;
 
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 	}
 
 	/* SECOND PASS */
-	// Gather samples
+	// compute AO for each level used
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[(SSAO_GATHER_LOW + p_quality) + (p_half_size ? 4 : 0)]);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_mipmaps_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_ao1), 1);
-	if (!p_half_size) {
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 2);
+	{
+		const float fov_tangent = 0.5 / p_projection.matrix[0][0];
+
+		if (p_levels > 3) {
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER1]);
+			_compute_ssao(compute_list, p_filtered_ao_slices[3], p_tiled_depth_mipmaps[3], fov_tangent, buffer_width6, buffer_height6, 16, p_rejection_radius, p_intensity, p_full_samples);
+			if (p_quality >= RS::ENV_SSAO_QUALITY_LOW) {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER2]);
+				_compute_ssao(compute_list, p_high_quality_ao_slices[3], depth_mipmaps[3], fov_tangent, buffer_width4, buffer_height4, 1, p_rejection_radius, p_intensity, p_full_samples);
+			}
+		}
+		if (p_levels > 2) {
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER1]);
+			_compute_ssao(compute_list, p_filtered_ao_slices[2], p_tiled_depth_mipmaps[2], fov_tangent, buffer_width5, buffer_height5, 16, p_rejection_radius, p_intensity, p_full_samples);
+			if (p_quality >= RS::ENV_SSAO_QUALITY_MEDIUM) {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER2]);
+				_compute_ssao(compute_list, p_high_quality_ao_slices[2], depth_mipmaps[2], fov_tangent, buffer_width3, buffer_height3, 1, p_rejection_radius, p_intensity, p_full_samples);
+			}
+		}
+		if (p_levels > 1) {
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER1]);
+			_compute_ssao(compute_list, p_filtered_ao_slices[1], p_tiled_depth_mipmaps[1], fov_tangent, buffer_width4, buffer_height4, 16, p_rejection_radius, p_intensity, p_full_samples);
+			if (p_quality >= RS::ENV_SSAO_QUALITY_HIGH) {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER2]);
+				_compute_ssao(compute_list, p_high_quality_ao_slices[1], depth_mipmaps[1], fov_tangent, buffer_width2, buffer_height2, 1, p_rejection_radius, p_intensity, p_full_samples);
+			}
+		}
+		{
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER1]);
+			_compute_ssao(compute_list, p_filtered_ao_slices[0], p_tiled_depth_mipmaps[0], fov_tangent, buffer_width3, buffer_height3, 16, p_rejection_radius, p_intensity, p_full_samples);
+			if (p_quality >= RS::ENV_SSAO_QUALITY_ULTRA) {
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_RENDER2]);
+				_compute_ssao(compute_list, p_high_quality_ao_slices[0], depth_mipmaps[0], fov_tangent, buffer_width1, buffer_height1, 1, p_rejection_radius, p_intensity, p_full_samples);
+			}
+		}
 	}
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_normal_buffer), 3);
-
-	ssao.gather_push_constant.screen_size[0] = p_depth_buffer_size.x;
-	ssao.gather_push_constant.screen_size[1] = p_depth_buffer_size.y;
-	if (p_half_size) {
-		ssao.gather_push_constant.screen_size[0] >>= 1;
-		ssao.gather_push_constant.screen_size[1] >>= 1;
-	}
-	ssao.gather_push_constant.z_far = p_projection.get_z_far();
-	ssao.gather_push_constant.z_near = p_projection.get_z_near();
-	ssao.gather_push_constant.orthogonal = p_projection.is_orthogonal();
-
-	ssao.gather_push_constant.proj_info[0] = -2.0f / (ssao.gather_push_constant.screen_size[0] * p_projection.matrix[0][0]);
-	ssao.gather_push_constant.proj_info[1] = -2.0f / (ssao.gather_push_constant.screen_size[1] * p_projection.matrix[1][1]);
-	ssao.gather_push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
-	ssao.gather_push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
-	//ssao.gather_push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
-	//ssao.gather_push_constant.proj_info[3] = -(1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
-
-	ssao.gather_push_constant.radius = p_radius;
-
-	ssao.gather_push_constant.proj_scale = float(p_projection.get_pixels_per_meter(ssao.gather_push_constant.screen_size[0]));
-	ssao.gather_push_constant.bias = p_bias;
-	ssao.gather_push_constant.intensity_div_r6 = p_intensity / pow(p_radius, 6.0f);
-
-	ssao.gather_push_constant.pixel_size[0] = 1.0 / p_depth_buffer_size.x;
-	ssao.gather_push_constant.pixel_size[1] = 1.0 / p_depth_buffer_size.y;
-
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.gather_push_constant, sizeof(SSAOGatherPushConstant));
-
-	int x_groups = (ssao.gather_push_constant.screen_size[0] - 1) / 8 + 1;
-	int y_groups = (ssao.gather_push_constant.screen_size[1] - 1) / 8 + 1;
-
-	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 	/* THIRD PASS */
-	// Blur horizontal
+	// blend and upsample levels for final result
 
-	ssao.blur_push_constant.edge_sharpness = p_edge_sharpness;
-	ssao.blur_push_constant.filter_scale = p_blur;
-	ssao.blur_push_constant.screen_size[0] = ssao.gather_push_constant.screen_size[0];
-	ssao.blur_push_constant.screen_size[1] = ssao.gather_push_constant.screen_size[1];
-	ssao.blur_push_constant.z_far = p_projection.get_z_far();
-	ssao.blur_push_constant.z_near = p_projection.get_z_near();
-	ssao.blur_push_constant.orthogonal = p_projection.is_orthogonal();
-	ssao.blur_push_constant.axis[0] = 1;
-	ssao.blur_push_constant.axis[1] = 0;
+	{
+		RID NextSRV = p_filtered_ao_slices[3];
 
-	if (p_blur != RS::ENV_SSAO_BLUR_DISABLED) {
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[p_half_size ? SSAO_BLUR_PASS_HALF : SSAO_BLUR_PASS]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_ao1), 0);
-		if (p_half_size) {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_mipmaps_texture), 1);
+		if (p_levels > 3) {
+			_upsample_ssao(compute_list, p_ao_slices[2], depth_mipmaps[2], depth_mipmaps[3], NextSRV, p_quality >= RS::ENV_SSAO_QUALITY_LOW ? p_high_quality_ao_slices[3] : RID(),
+					p_filtered_ao_slices[2], buffer_width4, buffer_height4, buffer_width3, buffer_height3, p_depth_buffer_size.x,
+					p_noise_tolerance, p_blur_tolerance, p_upsample_tolerance);
+
+			NextSRV = p_ao_slices[2];
 		} else {
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 1);
+			NextSRV = p_filtered_ao_slices[2];
 		}
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_ao2), 3);
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant));
+		if (p_levels > 2) {
+			_upsample_ssao(compute_list, p_ao_slices[1], depth_mipmaps[1], depth_mipmaps[2], NextSRV, p_quality >= RS::ENV_SSAO_QUALITY_MEDIUM ? p_high_quality_ao_slices[2] : RID(),
+					p_filtered_ao_slices[1], buffer_width3, buffer_height3, buffer_width2, buffer_height2, p_depth_buffer_size.x,
+					p_noise_tolerance, p_blur_tolerance, p_upsample_tolerance);
 
-		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
+			NextSRV = p_ao_slices[1];
+		} else {
+			NextSRV = p_filtered_ao_slices[1];
+		}
 
-		/* THIRD PASS */
-		// Blur vertical
+		if (p_levels > 1) {
+			_upsample_ssao(compute_list, p_ao_slices[0], depth_mipmaps[0], depth_mipmaps[1], NextSRV, p_quality >= RS::ENV_SSAO_QUALITY_HIGH ? p_high_quality_ao_slices[1] : RID(),
+					p_filtered_ao_slices[0], buffer_width2, buffer_height2, buffer_width1, buffer_height1, p_depth_buffer_size.x,
+					p_noise_tolerance, p_blur_tolerance, p_upsample_tolerance);
 
-		ssao.blur_push_constant.axis[0] = 0;
-		ssao.blur_push_constant.axis[1] = 1;
+			NextSRV = p_ao_slices[0];
+		} else {
+			NextSRV = p_filtered_ao_slices[0];
+		}
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_ao2), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_ao1), 3);
-
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant));
-
-		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
-	}
-	if (p_half_size) { //must upscale
-
-		/* FOURTH PASS */
-		// upscale if half size
-		//back to full size
-		ssao.blur_push_constant.screen_size[0] = p_depth_buffer_size.x;
-		ssao.blur_push_constant.screen_size[1] = p_depth_buffer_size.y;
-
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssao.pipelines[SSAO_BLUR_UPSCALE]);
-
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_ao1), 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_upscale_buffer), 3);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 1);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_mipmaps_texture), 2);
-
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant)); //not used but set anyway
-
-		x_groups = (p_depth_buffer_size.x - 1) / 8 + 1;
-		y_groups = (p_depth_buffer_size.y - 1) / 8 + 1;
-
-		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+		_upsample_ssao(compute_list, p_ao_full, p_linear_z, depth_mipmaps[0], NextSRV, p_quality >= RS::ENV_SSAO_QUALITY_ULTRA ? p_high_quality_ao_slices[0] : RID(),
+				RID(), buffer_width1, buffer_height1, p_depth_buffer_size.x, p_depth_buffer_size.y, p_depth_buffer_size.x,
+				p_noise_tolerance, p_blur_tolerance, p_upsample_tolerance);
 	}
 
 	RD::get_singleton()->compute_list_end();
@@ -1448,54 +1624,67 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	}
 
 	{
+		RD::SamplerState ssao_sampler;
+		ssao_sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+		ssao_sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
+		ssao_sampler.max_lod = 0;
+		ssao_sampler.border_color = RD::SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		ssao_sampler.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		ssao_sampler.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		ssao_sampler.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+
+		ssao.render_sampler = RD::get_singleton()->sampler_create(ssao_sampler);
 		// Initialize ssao
 		uint32_t pipeline = 0;
 		{
 			Vector<String> ssao_modes;
-			ssao_modes.push_back("\n#define MINIFY_START\n");
 			ssao_modes.push_back("\n");
 
-			ssao.minify_shader.initialize(ssao_modes);
+			ssao.downsample1_shader.initialize(ssao_modes);
 
-			ssao.minify_shader_version = ssao.minify_shader.version_create();
+			ssao.downsample1_shader_version = ssao.downsample1_shader.version_create();
 
-			for (int i = 0; i <= SSAO_MINIFY_MIPMAP; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.minify_shader.version_get_shader(ssao.minify_shader_version, i));
+			ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.downsample1_shader.version_get_shader(ssao.downsample1_shader_version, 0));
+			pipeline++;
+		}
+		{
+			Vector<String> ssao_modes;
+			ssao_modes.push_back("\n");
+
+			ssao.downsample2_shader.initialize(ssao_modes);
+
+			ssao.downsample2_shader_version = ssao.downsample2_shader.version_create();
+
+			ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.downsample2_shader.version_get_shader(ssao.downsample2_shader_version, 0));
+			pipeline++;
+		}
+		{
+			Vector<String> ssao_modes;
+			ssao_modes.push_back("\n#define INTERLEAVE_RESULT\n");
+			ssao_modes.push_back("\n");
+
+			ssao.ssao_render_shader.initialize(ssao_modes);
+
+			ssao.ssao_render_shader_version = ssao.ssao_render_shader.version_create();
+
+			for (int i = SSAO_RENDER1; i <= SSAO_RENDER2; i++) {
+				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.ssao_render_shader.version_get_shader(ssao.ssao_render_shader_version, i - SSAO_RENDER1));
 				pipeline++;
 			}
 		}
 		{
 			Vector<String> ssao_modes;
-			ssao_modes.push_back("\n#define SSAO_QUALITY_LOW\n");
 			ssao_modes.push_back("\n");
-			ssao_modes.push_back("\n#define SSAO_QUALITY_HIGH\n");
-			ssao_modes.push_back("\n#define SSAO_QUALITY_ULTRA\n");
-			ssao_modes.push_back("\n#define SSAO_QUALITY_LOW\n#define USE_HALF_SIZE\n");
-			ssao_modes.push_back("\n#define USE_HALF_SIZE\n");
-			ssao_modes.push_back("\n#define SSAO_QUALITY_HIGH\n#define USE_HALF_SIZE\n");
-			ssao_modes.push_back("\n#define SSAO_QUALITY_ULTRA\n#define USE_HALF_SIZE\n");
+			ssao_modes.push_back("\n#define COMBINE_LOWER_RESOLUTIONS\n");
+			ssao_modes.push_back("\n#define BLEND_WITH_HIGHER_RESOLUTION\n");
+			ssao_modes.push_back("\n#define COMBINE_LOWER_RESOLUTIONS\n#define BLEND_WITH_HIGHER_RESOLUTION\n");
 
-			ssao.gather_shader.initialize(ssao_modes);
+			ssao.upsample_shader.initialize(ssao_modes);
 
-			ssao.gather_shader_version = ssao.gather_shader.version_create();
+			ssao.upsample_shader_version = ssao.upsample_shader.version_create();
 
-			for (int i = SSAO_GATHER_LOW; i <= SSAO_GATHER_ULTRA_HALF; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.gather_shader.version_get_shader(ssao.gather_shader_version, i - SSAO_GATHER_LOW));
-				pipeline++;
-			}
-		}
-		{
-			Vector<String> ssao_modes;
-			ssao_modes.push_back("\n#define MODE_FULL_SIZE\n");
-			ssao_modes.push_back("\n");
-			ssao_modes.push_back("\n#define MODE_UPSCALE\n");
-
-			ssao.blur_shader.initialize(ssao_modes);
-
-			ssao.blur_shader_version = ssao.blur_shader.version_create();
-
-			for (int i = SSAO_BLUR_PASS; i <= SSAO_BLUR_UPSCALE; i++) {
-				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.blur_shader.version_get_shader(ssao.blur_shader_version, i - SSAO_BLUR_PASS));
+			for (int i = SSAO_BLUR_UPSCALE; i <= SSAO_BLUR_UPSCALE_MIN_BLEND; i++) {
+				ssao.pipelines[pipeline] = RD::get_singleton()->compute_pipeline_create(ssao.upsample_shader.version_get_shader(ssao.upsample_shader_version, i - SSAO_BLUR_UPSCALE));
 
 				pipeline++;
 			}
@@ -1737,6 +1926,7 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 
 	RD::get_singleton()->free(default_sampler);
 	RD::get_singleton()->free(default_mipmap_sampler);
+	RD::get_singleton()->free(ssao.render_sampler);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
@@ -1752,9 +1942,10 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
 	sort.shader.version_free(sort.shader_version);
 	specular_merge.shader.version_free(specular_merge.shader_version);
-	ssao.blur_shader.version_free(ssao.blur_shader_version);
-	ssao.gather_shader.version_free(ssao.gather_shader_version);
-	ssao.minify_shader.version_free(ssao.minify_shader_version);
+	ssao.upsample_shader.version_free(ssao.upsample_shader_version);
+	ssao.ssao_render_shader.version_free(ssao.ssao_render_shader_version);
+	ssao.downsample1_shader.version_free(ssao.downsample1_shader_version);
+	ssao.downsample2_shader.version_free(ssao.downsample2_shader_version);
 	ssr.shader.version_free(ssr.shader_version);
 	ssr_filter.shader.version_free(ssr_filter.shader_version);
 	ssr_scale.shader.version_free(ssr_scale.shader_version);

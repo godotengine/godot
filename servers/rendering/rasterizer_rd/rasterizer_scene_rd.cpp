@@ -3100,22 +3100,25 @@ RS::EnvironmentSSRRoughnessQuality RasterizerSceneRD::environment_get_ssr_roughn
 	return ssr_roughness_quality;
 }
 
-void RasterizerSceneRD::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {
+void RasterizerSceneRD::environment_set_ssao(RID p_env, bool p_enable, float p_rejection_radius, float p_intensity, int p_levels, float p_light_affect, float p_ao_channel_affect) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ssao_enabled = p_enable;
-	env->ssao_radius = p_radius;
+
+	env->ssao_rejection_radius = p_rejection_radius;
 	env->ssao_intensity = p_intensity;
-	env->ssao_bias = p_bias;
+	env->ssao_levels = p_levels;
 	env->ssao_direct_light_affect = p_light_affect;
 	env->ssao_ao_channel_affect = p_ao_channel_affect;
-	env->ssao_blur = p_blur;
 }
 
-void RasterizerSceneRD::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) {
+void RasterizerSceneRD::environment_set_ssao_settings(RS::EnvironmentSSAOQuality p_quality, bool p_full_samples, float p_noise_tolerance, float p_blur_tolerance, float p_upsample_tolerance) {
 	ssao_quality = p_quality;
-	ssao_half_size = p_half_size;
+	ssao_full_samples = p_full_samples;
+	ssao_noise_tolerance = Math::lerp(-8.0f, 0.0f, p_noise_tolerance);
+	ssao_blur_tolerance = Math::lerp(-8.0f, -1.0f, p_blur_tolerance);
+	ssao_upsample_tolerance = Math::lerp(-12.0f, -1.0f, p_upsample_tolerance);
 }
 
 bool RasterizerSceneRD::environment_is_ssao_enabled(RID p_env) const {
@@ -5035,21 +5038,33 @@ void RasterizerSceneRD::_free_render_buffer_data(RenderBuffers *rb) {
 		rb->luminance.current = RID();
 	}
 
-	if (rb->ssao.ao[0].is_valid()) {
-		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao[0]);
-		if (rb->ssao.ao[1].is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao[1]);
+	if (rb->ssao.ao_full.is_valid()) {
+		RD::get_singleton()->free(rb->ssao.ao_full);
+		RD::get_singleton()->free(rb->ssao.linear_depth);
+		rb->ssao.ao_full = RID();
+		rb->ssao.linear_depth = RID();
+
+		for (int i = 0; i < rb->ssao.depth_slices.size(); i++) {
+			RD::get_singleton()->free(rb->ssao.depth_slices[i]);
 		}
-		if (rb->ssao.ao_full.is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao_full);
+		for (int i = 0; i < rb->ssao.depth_tiled_slices.size(); i++) {
+			RD::get_singleton()->free(rb->ssao.depth_tiled_slices[i]);
+		}
+		for (int i = 0; i < rb->ssao.ao_slices.size(); i++) {
+			RD::get_singleton()->free(rb->ssao.ao_slices[i]);
+		}
+		for (int i = 0; i < rb->ssao.filtered_ao_slices.size(); i++) {
+			RD::get_singleton()->free(rb->ssao.filtered_ao_slices[i]);
+		}
+		for (int i = 0; i < rb->ssao.high_quality_ao_slices.size(); i++) {
+			RD::get_singleton()->free(rb->ssao.high_quality_ao_slices[i]);
 		}
 
-		rb->ssao.depth = RID();
-		rb->ssao.ao[0] = RID();
-		rb->ssao.ao[1] = RID();
-		rb->ssao.ao_full = RID();
 		rb->ssao.depth_slices.clear();
+		rb->ssao.depth_tiled_slices.clear();
+		rb->ssao.ao_slices.clear();
+		rb->ssao.filtered_ao_slices.clear();
+		rb->ssao.high_quality_ao_slices.clear();
 	}
 
 	if (rb->ssr.blur_radius[0].is_valid()) {
@@ -5148,64 +5163,117 @@ void RasterizerSceneRD::_process_ssao(RID p_render_buffers, RID p_environment, R
 
 	RENDER_TIMESTAMP("Process SSAO");
 
-	if (rb->ssao.ao[0].is_valid() && rb->ssao.ao_full.is_valid() != ssao_half_size) {
-		RD::get_singleton()->free(rb->ssao.depth);
-		RD::get_singleton()->free(rb->ssao.ao[0]);
-		if (rb->ssao.ao[1].is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao[1]);
-		}
-		if (rb->ssao.ao_full.is_valid()) {
-			RD::get_singleton()->free(rb->ssao.ao_full);
-		}
+	int size_x = rb->width;
+	int size_y = rb->height;
+	const int buffer_widths[6] = {
+		(size_x + 1) / 2,
+		(size_x + 3) / 4,
+		(size_x + 7) / 8,
+		(size_x + 15) / 16,
+		(size_x + 31) / 32,
+		(size_x + 63) / 64
+	};
+	const int buffer_heights[6] = {
+		(size_y + 1) / 2,
+		(size_y + 3) / 4,
+		(size_y + 7) / 8,
+		(size_y + 15) / 16,
+		(size_y + 31) / 32,
+		(size_y + 63) / 64
+	};
 
-		rb->ssao.depth = RID();
-		rb->ssao.ao[0] = RID();
-		rb->ssao.ao[1] = RID();
-		rb->ssao.ao_full = RID();
-		rb->ssao.depth_slices.clear();
-	}
-
-	if (!rb->ssao.ao[0].is_valid()) {
-		//allocate depth slices
+	if (!rb->ssao.ao_full.is_valid()) {
+		//allocate SSAO buffers
 
 		{
-			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
-			tf.width = rb->width / 2;
-			tf.height = rb->height / 2;
-			tf.mipmaps = Image::get_image_required_mipmaps(tf.width, tf.height, Image::FORMAT_RF) + 1;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			for (uint32_t i = 0; i < tf.mipmaps; i++) {
-				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rb->ssao.depth, 0, i);
+			for (uint32_t i = 0; i < 4; i++) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+				tf.width = buffer_widths[i];
+				tf.height = buffer_heights[i];
+				tf.mipmaps = 1;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				RID slice = RD::get_singleton()->texture_create(tf, RD::TextureView());
 				rb->ssao.depth_slices.push_back(slice);
+			}
+		}
+
+		{
+			for (uint32_t i = 2; i < 6; i++) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R16_SFLOAT;
+				tf.type = RD::TEXTURE_TYPE_2D_ARRAY;
+				tf.array_layers = 16;
+				tf.width = buffer_widths[i];
+				tf.height = buffer_heights[i];
+				tf.mipmaps = 1;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				RID slice = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				rb->ssao.depth_tiled_slices.push_back(slice);
+			}
+		}
+
+		{
+			for (uint32_t i = 0; i < 3; i++) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R8_UNORM;
+				tf.width = buffer_widths[i];
+				tf.height = buffer_heights[i];
+				tf.mipmaps = 1;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				RID slice = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				rb->ssao.ao_slices.push_back(slice);
+			}
+		}
+
+		{
+			for (uint32_t i = 0; i < 4; i++) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R8_UNORM;
+				tf.width = buffer_widths[i];
+				tf.height = buffer_heights[i];
+				tf.mipmaps = 1;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				RID slice = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				rb->ssao.high_quality_ao_slices.push_back(slice);
+			}
+		}
+
+		{
+			for (uint32_t i = 0; i < 4; i++) {
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R8_UNORM;
+				tf.width = buffer_widths[i];
+				tf.height = buffer_heights[i];
+				tf.mipmaps = 1;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				RID slice = RD::get_singleton()->texture_create(tf, RD::TextureView());
+				rb->ssao.filtered_ao_slices.push_back(slice);
 			}
 		}
 
 		{
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8_UNORM;
-			tf.width = ssao_half_size ? rb->width / 2 : rb->width;
-			tf.height = ssao_half_size ? rb->height / 2 : rb->height;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-			rb->ssao.ao[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			rb->ssao.ao[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		}
-
-		if (ssao_half_size) {
-			//upsample texture
-			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_R8_UNORM;
-			tf.width = rb->width;
-			tf.height = rb->height;
+			tf.width = size_x;
+			tf.height = size_y;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 			rb->ssao.ao_full = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		}
+
+		{
+			RD::TextureFormat tf;
+			tf.format = RD::DATA_FORMAT_R16_UNORM;
+			tf.width = size_x;
+			tf.height = size_y;
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+			rb->ssao.linear_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 
 		_render_buffers_uniform_set_changed(p_render_buffers);
 	}
 
-	storage->get_effects()->generate_ssao(rb->depth_texture, p_normal_buffer, Size2i(rb->width, rb->height), rb->ssao.depth, rb->ssao.depth_slices, rb->ssao.ao[0], rb->ssao.ao_full.is_valid(), rb->ssao.ao[1], rb->ssao.ao_full, env->ssao_intensity, env->ssao_radius, env->ssao_bias, p_projection, ssao_quality, env->ssao_blur, env->ssao_blur_edge_sharpness);
+	storage->get_effects()->generate_ssao(rb->depth_texture, Size2i(size_x, size_y), rb->ssao.depth_slices, rb->ssao.linear_depth, rb->ssao.depth_tiled_slices, rb->ssao.ao_slices, rb->ssao.high_quality_ao_slices, rb->ssao.filtered_ao_slices, rb->ssao.ao_full, p_projection, ssao_noise_tolerance, ssao_blur_tolerance, ssao_upsample_tolerance, env->ssao_rejection_radius, env->ssao_intensity, env->ssao_levels, ssao_quality, ssao_full_samples);
 }
 
 void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_buffers, RID p_environment, RID p_camera_effects, const CameraMatrix &p_projection) {
@@ -5370,9 +5438,9 @@ void RasterizerSceneRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_s
 		}
 	}
 
-	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ssao.ao[0].is_valid()) {
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb->ssao.ao_full.is_valid()) {
 		Size2 rtsize = storage->render_target_get_size(rb->render_target);
-		RID ao_buf = rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
+		RID ao_buf = rb->ssao.ao_full;
 		effects->copy_to_fb_rect(ao_buf, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2(Vector2(), rtsize), false, true);
 	}
 
@@ -5548,7 +5616,7 @@ RID RasterizerSceneRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 
-	return rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
+	return rb->ssao.ao_full;
 }
 
 RID RasterizerSceneRD::render_buffers_get_gi_probe_buffer(RID p_render_buffers) {
@@ -8334,7 +8402,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_shape"))));
 	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter"));
-	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
+	environment_set_ssao_settings(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/ssao/quality"))), GLOBAL_GET("rendering/ssao/full_samples"), GLOBAL_GET("rendering/ssao/noise_tolerance"), GLOBAL_GET("rendering/ssao/blur_tolerance"), GLOBAL_GET("rendering/ssao/upsample_tolerance"));
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_enabled");
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_amount");
 	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_limit");

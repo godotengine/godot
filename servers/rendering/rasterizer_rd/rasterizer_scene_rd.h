@@ -736,13 +736,11 @@ private:
 		/// SSAO
 
 		bool ssao_enabled = false;
-		float ssao_radius = 1;
-		float ssao_intensity = 1;
-		float ssao_bias = 0.01;
+		float ssao_rejection_radius = 2.5;
+		float ssao_intensity = 1.0;
+		int ssao_levels = 3;
 		float ssao_direct_light_affect = 0.0;
 		float ssao_ao_channel_affect = 0.0;
-		float ssao_blur_edge_sharpness = 4.0;
-		RS::EnvironmentSSAOBlur ssao_blur = RS::ENV_SSAO_BLUR_3x3;
 
 		/// SSR
 		///
@@ -766,7 +764,11 @@ private:
 	};
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
-	bool ssao_half_size = false;
+	bool ssao_full_samples = false;
+	float ssao_noise_tolerance = -3.0;
+	float ssao_blur_tolerance = -5.0;
+	float ssao_upsample_tolerance = -7.0;
+
 	bool glow_bicubic_upscale = false;
 	bool glow_high_quality = false;
 	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGNESS_QUALITY_LOW;
@@ -848,10 +850,13 @@ private:
 		} luminance;
 
 		struct SSAO {
-			RID depth;
 			Vector<RID> depth_slices;
-			RID ao[2];
-			RID ao_full; //when using half-size
+			Vector<RID> depth_tiled_slices;
+			Vector<RID> filtered_ao_slices;
+			Vector<RID> ao_slices;
+			Vector<RID> high_quality_ao_slices;
+			RID linear_depth;
+			RID ao_full;
 		} ssao;
 
 		struct SSR {
@@ -1554,8 +1559,8 @@ public:
 	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size);
 
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance);
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
-	void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size);
+	void environment_set_ssao(RID p_env, bool p_enable, float p_rejection_radius, float p_intensity, int p_levels, float p_light_affect, float p_ao_channel_affect);
+	void environment_set_ssao_settings(RS::EnvironmentSSAOQuality p_quality, bool p_full_samples, float p_noise_tolerance, float p_blur_tolerance, float p_upsample_tolerance);
 	bool environment_is_ssao_enabled(RID p_env) const;
 	float environment_get_ssao_ao_affect(RID p_env) const;
 	float environment_get_ssao_light_affect(RID p_env) const;

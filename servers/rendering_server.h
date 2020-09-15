@@ -858,23 +858,17 @@ public:
 
 	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
 
-	enum EnvironmentSSAOBlur {
-		ENV_SSAO_BLUR_DISABLED,
-		ENV_SSAO_BLUR_1x1,
-		ENV_SSAO_BLUR_2x2,
-		ENV_SSAO_BLUR_3x3,
-	};
-
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) = 0;
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_rejection_radius, float p_intensity, int p_levels, float p_light_affect, float p_ao_channel_affect) = 0;
 
 	enum EnvironmentSSAOQuality {
+		ENV_SSAO_QUALITY_VERY_LOW,
 		ENV_SSAO_QUALITY_LOW,
 		ENV_SSAO_QUALITY_MEDIUM,
 		ENV_SSAO_QUALITY_HIGH,
 		ENV_SSAO_QUALITY_ULTRA,
 	};
 
-	virtual void environment_set_ssao_quality(EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
+	virtual void environment_set_ssao_settings(EnvironmentSSAOQuality p_quality, bool p_full_samples, float p_noise_tolerance, float p_blur_tolerance, float p_upsample_tolerance) = 0;
 
 	enum EnvironmentSDFGICascades {
 		ENV_SDFGI_CASCADES_4,
@@ -1392,7 +1386,6 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentReflectionSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
-VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOBlur);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
 VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBlurQuality);

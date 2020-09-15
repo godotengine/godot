@@ -2042,15 +2042,26 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	ERR_FAIL_COND_V_MSG(p_slice_type == TEXTURE_SLICE_3D && src_texture->type != TEXTURE_TYPE_3D, RID(),
 			"Can only create a 3D slice from a 3D texture");
 
+	ERR_FAIL_COND_V_MSG(p_slice_type == TEXTURE_SLICE_2D_ARRAY && (src_texture->type != TEXTURE_TYPE_2D_ARRAY), RID(),
+			"Can only create an array slice from a 2D array mipmap");
+
 	//create view
 
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, src_texture->layers, RID());
 
+	int slice_layers = 1;
+	if (p_slice_type == TEXTURE_SLICE_2D_ARRAY) {
+		ERR_FAIL_COND_V_MSG(p_layer != 0, RID(), "layer must be 0 when obtaining a 2D array mipmap slice");
+		slice_layers = src_texture->layers;
+	} else if (p_slice_type == TEXTURE_SLICE_CUBEMAP) {
+		slice_layers = 6;
+	}
+
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
 	texture.mipmaps = 1;
-	texture.layers = p_slice_type == TEXTURE_SLICE_CUBEMAP ? 6 : 1;
+	texture.layers = slice_layers;
 	texture.base_mipmap = p_mipmap;
 	texture.base_layer = p_layer;
 
@@ -2071,6 +2082,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	};
 
 	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : (p_slice_type == TEXTURE_SLICE_3D ? VK_IMAGE_VIEW_TYPE_3D : view_types[texture.type]);
+
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
@@ -2104,7 +2116,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
 	image_view_create_info.subresourceRange.levelCount = 1;
-	image_view_create_info.subresourceRange.layerCount = p_slice_type == TEXTURE_SLICE_CUBEMAP ? 6 : 1;
+	image_view_create_info.subresourceRange.layerCount = slice_layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 
 	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {

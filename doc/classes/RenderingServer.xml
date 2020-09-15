@@ -779,19 +779,15 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="radius" type="float">
+			<argument index="2" name="rejection_radius" type="float">
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>
-			<argument index="4" name="bias" type="float">
+			<argument index="4" name="levels" type="int">
 			</argument>
 			<argument index="5" name="light_affect" type="float">
 			</argument>
 			<argument index="6" name="ao_channel_affect" type="float">
-			</argument>
-			<argument index="7" name="blur" type="int" enum="RenderingServer.EnvironmentSSAOBlur">
-			</argument>
-			<argument index="8" name="bilateral_sharpness" type="float">
 			</argument>
 			<description>
 			</description>
@@ -3487,29 +3483,20 @@
 		</constant>
 		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
 		</constant>
-		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
-			Disables the blur set for SSAO. Will make SSAO look noisier.
+		<constant name="ENV_SSAO_QUALITY_VERY_LOW" value="0" enum="EnvironmentSSAOQuality">
+			Does not mix any additional high quality SSAO levels.
 		</constant>
-		<constant name="ENV_SSAO_BLUR_1x1" value="1" enum="EnvironmentSSAOBlur">
-			Perform a 1x1 blur on the SSAO output.
+		<constant name="ENV_SSAO_QUALITY_LOW" value="1" enum="EnvironmentSSAOQuality">
+			Mixes a high quality level with the 4th SSAO level if [member Environment.ssao_levels] is set to 4.
 		</constant>
-		<constant name="ENV_SSAO_BLUR_2x2" value="2" enum="EnvironmentSSAOBlur">
-			Performs a 2x2 blur on the SSAO output.
+		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="2" enum="EnvironmentSSAOQuality">
+			Mixes high quality levels with the 3rd and 4th SSAO levels if [member Environment.ssao_levels] is 3 or 4.
 		</constant>
-		<constant name="ENV_SSAO_BLUR_3x3" value="3" enum="EnvironmentSSAOBlur">
-			Performs a 3x3 blur on the SSAO output. Use this for smoothest SSAO.
+		<constant name="ENV_SSAO_QUALITY_HIGH" value="3" enum="EnvironmentSSAOQuality">
+			Mixes high quality levels with the 2nd, 3rd, and 4th SSAO levels if [member Environment.ssao_levels] is 2 or greater.
 		</constant>
-		<constant name="ENV_SSAO_QUALITY_LOW" value="0" enum="EnvironmentSSAOQuality">
-			Lowest quality of screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_MEDIUM" value="1" enum="EnvironmentSSAOQuality">
-			Medium quality screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
-			High quality screen space ambient occlusion.
-		</constant>
-		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
+		<constant name="ENV_SSAO_QUALITY_ULTRA" value="4" enum="EnvironmentSSAOQuality">
+			Mixes high quality levels with all SSAO levels.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
 		</constant>
