@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationTreePlayer" inherits="Node" version="3.2">
 	<brief_description>
-		Animation player that uses a node graph for blending animations.
+		[i]Deprecated.[/i] Animation player that uses a node graph for blending animations. Superseded by [AnimationTree].
 	</brief_description>
 	<description>
-		A node graph tool for blending multiple animations bound to an [AnimationPlayer]. Especially useful for animating characters or other skeleton-based rigs. It can combine several animations to form a desired pose.
+		[i]Deprecated.[/i] A node graph tool for blending multiple animations bound to an [AnimationPlayer]. Especially useful for animating characters or other skeleton-based rigs. It can combine several animations to form a desired pose.
 		It takes [Animation]s from an [AnimationPlayer] node and mixes them depending on the graph.
+		See [AnimationTree] for a more full-featured replacement of this node.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
