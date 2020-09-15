@@ -384,6 +384,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Ogg samples now have an icon in the editor, like WAV samples.
 - Camera2D drag margins are now disabled by default.
   - If porting a project from Godot 3.1 where drag margins were used, these must be enabled manually again.
+- The Camera2D Offset property now ignores the Limit property.
+  - To get the old behavior back, move the camera itself instead of changing the offset.
 - `Camera.project_position()` now requires a second `depth` argument to determine the distance of the point from the camera.
   - To get the old behavior back, pass the Camera's `near` property value as the second argument.
 - `Skeleton.set_bone_global_pose()` was replaced by `Skeleton.set_bone_global_pose_override()`.
