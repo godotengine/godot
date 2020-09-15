@@ -43,8 +43,8 @@
 #define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
 #define PEM_END_CRT "-----END CERTIFICATE-----\n"
 
-#include "mbedtls/pem.h"
 #include <mbedtls/debug.h>
+#include <mbedtls/pem.h>
 
 CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);
@@ -294,20 +294,15 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 
 	unsigned char buf[4096];
 	memset(buf, 0, 4096);
-	Ref<X509CertificateMbedTLS> out;
-	out.instance();
-	mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
-
-	int err = mbedtls_x509_crt_parse(&(out->cert), buf, 4096);
-	if (err != 0) {
-		mbedtls_mpi_free(&serial);
-		mbedtls_x509write_crt_free(&crt);
-		ERR_PRINT("Generated invalid certificate: " + itos(err));
-		return nullptr;
-	}
-
+	int ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg);
 	mbedtls_mpi_free(&serial);
 	mbedtls_x509write_crt_free(&crt);
+	ERR_FAIL_COND_V_MSG(ret != 0, nullptr, "Failed to generate certificate: " + itos(ret));
+	buf[4095] = '\0'; // Make sure strlen can't fail.
+
+	Ref<X509CertificateMbedTLS> out;
+	out.instance();
+	out->load_from_memory(buf, strlen((char *)buf) + 1); // Use strlen to find correct output size.
 	return out;
 }
 
