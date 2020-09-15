@@ -742,8 +742,9 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 	Node *dst = static_cast<Node *>(cToEdit.target);
 
 	if (src && dst) {
+		const String &signalname = cToEdit.signal;
 		connect_dialog->set_title(TTR("Edit Connection:") + cToEdit.signal);
-		connect_dialog->popup_centered();
+		connect_dialog->popup_dialog(signalname);
 		connect_dialog->init(cToEdit, true);
 	}
 }
