@@ -4012,23 +4012,25 @@ void TextEdit::adjust_viewport_to_cursor() {
 	}
 	visible_width -= 20; // Give it a little more space.
 
-	if (!is_wrap_enabled()) {
-		// Adjust x offset.
-		int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
+	if (first_draw) {
+		if (!is_wrap_enabled()) {
+			// Adjust x offset.
+			int cursor_x = get_column_x_offset(cursor.column, text[cursor.line]);
 
-		if (cursor_x > (cursor.x_ofs + visible_width)) {
-			cursor.x_ofs = cursor_x - visible_width + 1;
-		}
+			if (cursor_x > (cursor.x_ofs + visible_width)) {
+				cursor.x_ofs = cursor_x - visible_width + 1;
+			}
 
-		if (cursor_x < cursor.x_ofs) {
-			cursor.x_ofs = cursor_x;
+			if (cursor_x < cursor.x_ofs) {
+				cursor.x_ofs = cursor_x;
+			}
+		} else {
+			cursor.x_ofs = 0;
 		}
-	} else {
-		cursor.x_ofs = 0;
+		h_scroll->set_value(cursor.x_ofs);
+
+		update();
 	}
-	h_scroll->set_value(cursor.x_ofs);
-
-	update();
 }
 
 void TextEdit::center_viewport_to_cursor() {
