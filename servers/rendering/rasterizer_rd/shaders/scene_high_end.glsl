@@ -2717,7 +2717,7 @@ FRAGMENT_SHADER_CODE
 #if defined(AO_USED)
 
 	if (scene_data.ssao_enabled && scene_data.ssao_ao_affect > 0.0) {
-		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
+		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), gl_FragCoord.xy * scene_data.screen_pixel_size).r;
 		ao = mix(ao, min(ao, ssao), scene_data.ssao_ao_affect);
 		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
 	}
@@ -2729,7 +2729,7 @@ FRAGMENT_SHADER_CODE
 #else
 
 	if (scene_data.ssao_enabled) {
-		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
+		float ao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), gl_FragCoord.xy * scene_data.screen_pixel_size).r;
 		ambient_light = mix(scene_data.ao_color.rgb, ambient_light, ao);
 		float ao_light_affect = mix(1.0, ao, scene_data.ssao_light_affect);
 		specular_light = mix(scene_data.ao_color.rgb, specular_light, ao_light_affect);
