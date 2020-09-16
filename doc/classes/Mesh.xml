@@ -44,7 +44,7 @@
 			<return type="AABB">
 			</return>
 			<description>
-				Returns the smallest [AABB] enclosing this mesh. Not affected by [code]custom_aabb[/code].
+				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code]. See also [method VisualInstance3D.get_transformed_aabb].
 				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
 			</description>
 		</method>
