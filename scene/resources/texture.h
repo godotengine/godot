@@ -299,6 +299,8 @@ class LargeTexture : public Texture2D {
 	GDCLASS(LargeTexture, Texture2D);
 	RES_BASE_EXTENSION("largetex");
 
+	bool _get_draw_region(const Point2 &p_offset, const Size2 &p_size, const Size2 &p_scale, const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
+
 protected:
 	struct Piece {
 		Point2 offset;
