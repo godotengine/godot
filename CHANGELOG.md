@@ -4,6 +4,191 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.2.3] - 2020-09-17
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-3) for details.
+
+### Added
+
+- Android: Add option to enable high precision float in GLES2
+- C#: Add Visual Studio support
+- HTML5: Improvements and bugfixes backported from the `master` branch
+  * Note: This PR adds threads support, but as this support is still [disabled in many browsers](https://caniuse.com/#feat=sharedarraybuffer) due to security concerns, the option is not enabled by default. Build HTML5 templates with `threads_enabled=yes` to test it.
+- Input: Support SDL2 half axes and inverted axes mappings
+- iOS: Add support of iOS's dynamic libraries to GDNative
+- iOS: Add methods to embed a framework
+- LineEdit: Add option to disable virtual keyboard for LineEdit
+- macOS: Implement confined mouse mode
+- macOS: Implement seamless display scaling
+- Rendering: Allow nearest neighbor lookup when using mipmaps
+
+### Changed
+
+- C#: New `csproj` style with backport of Godot.NET.Sdk
+  - This change breaks forward compatibility, C# projects opened in 3.2.3 will no longer work with 3.2.2 or earlier. Backup your project files before upgrading.
+- GDScript: Auto completion enhanced for extends and class level identifier
+- HTML5: Implement HTML5 cancel/ok button swap on Windows
+- Physics: Better damping implementation for Bullet rigid bodies
+  - This makes the behavior of the GodotPhysics and Bullet backends consistent, and more user-friendly with Bullet. If you're using damping with the Bullet backend, you may need to adjust some properties to restore the behavior from 3.2.2 or earlier (see [GH-42051](https://github.com/godotengine/godot/issues/42051#issuecomment-692132877)).
+- Project Settings: Enable file logging by default on desktops to help with troubleshooting
+- Script editor: Don't open dominant script in external editor
+- Sprite3D: Use mesh instead of immediate for drawing Sprite3D
+
+### Fixed
+
+- Android: Fix Return key events in LineEdit & TextEdit on Android
+- C#: Fix crash when pass null in print array in `GD.Print`
+- C#: Fix restore not called when building game projects
+- C#: Fix potential crash with nested classes
+- C#: Fix endless reload loop if project has unicode chars
+- Core: Fix debugger error when Dictionary key is a freed Object
+- Core: Fix leaked ObjectRCs on object Variant reassignment
+- GLES2: Fixed mesh data access errors in GLES2
+- GLES2: Batching - Fix `FORCE_REPEAT` not being set properly on npot hardware
+- GLES3: Force depth prepass when using alpha prepass
+- GLES3: Fix OpenGL error when generating radiance
+- HTML5: More fixes, audio fallback, fixed FPS
+- IK: Fixed SkeletonIK not working with scaled skeletons
+- Import: Fix custom tracks causing issues on reimport
+- Import: Fix upstream stb_vorbis regression causing crashes with some OGG files
+- iOS: Fix for iOS touch recognition
+- iOS: Fix possible crash on exit when leaking translation remappings
+- macOS: Add support for the Apple Silicon (ARM64) build target
+  - ARM64 binaries are not included in macOS editor or template builds yet. It's going to take some time before our [dependencies and toolchains](https://github.com/godotengine/godot-build-scripts/pull/10) are updated to support it.
+- macOS: Set correct external file attributes, and creation time
+- macOS: Refocus last key window after `OS::alert` is closed
+- macOS: Fix crash of failed `fork`
+- Networking: Fix `UDPServer` and `DTLSServer` on Windows compatibility
+- Particles: Fix 2D Particle velocity with directed emission mask
+- PathFollow3D: Fix repeated updates of PathFollow3D Transform
+- Physics: Trigger broadphase update when changing collision layer/mask
+- Physics: Fix laxist collision detection on one way shapes
+- Physics: Properly pass safe margin on initialization (fixes jitter in GodotPhysics backend)
+- Project Settings: Fix overriding compression related settings
+- Rendering: Fixed images in black margins
+- Rendering: Properly calculate Polygon2D AABB with skeleton
+- RichTextLabel: Fix RichTextLabel fill alignment regression
+- RichTextLabel: Fix `center` alignment bug
+- Shaders: Fix specular `render_mode` for Visual Shaders
+- SkeletonIK: Fix calling `reload_goal()` when starting IK with `start(true)`
+- TileSet: Fix potential crash when editing polygons
+- Tree: Fix crash when hovering columns after removing a column
+- Windows: DirectInput: Use correct joypad ID
+- Thirdparty library updates: mbedtls 2.16.8, stb_vorbis 1.20, wslay 1.1.1
+
+## [3.2.2] - 2020-06-26
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-2) for details.
+
+### Added
+
+- 2D: Expose the `cell_size` affecting `VisibilityNotifier2D` precision
+- 2D: Add `MODULATE` builtin to canvas item shaders
+- Android: Add signal support to Godot Android plugins
+- AStar: Implements `estimate_cost`/`compute_cost` for AStar2D
+- C#: Add iOS support
+- C#: Allow debugging exported games
+- Debug: Add a suffix to the window title when running from a debug build
+- Editor: Add rotation widget to 3D viewport
+- Editor: Add editor freelook navigation scheme settings
+- Editor: Allow duplicating files when holding Control
+- GLES2: Add 2D batch rendering across items
+- GLES3: Add Nvidia `draw_rect` flickering workaround
+- GLES2/GLES3: Add support for OpenGL external textures
+- Input: Add keyboard layout enumeration / set / get functions
+- macOS: Enable signing of DMG and ZIP'ed exports
+- Networking: DTLS support + optional ENet encryption
+- Object: Add `has_signal` method
+- RichTextLabel: Add option to fit height to contents
+- Shaders: Add shader time scaling
+- Windows: Add tablet driver selection (WinTab, Windows Ink)
+
+### Changed
+
+- Android: Re-architecture of the plugin system
+- Android: The `GodotPayments` plugin was moved to an external first-party plugin using the Google Play Billing library
+- Core: Ensure COWData does not always reallocate on resize
+- Core: Better handling of `Variant`s pointing to released `Object`s
+- Editor: Account for file deletion and renaming in Export Presets
+- Editor: Improved go-to definition (Ctrl + Click) in script editor
+- Files: Improve UX of drive letters
+- HTML5: Switch key detection from `keyCode` to `code`
+- HTML5: Use 2-phase setup in JavaScript
+- Import: Add support for glTF lights
+- Input: Fix joypad GUID conversion to match new SDL format on OSX and Windows
+- Language Server: Switch the GDScript LSP from WebSocket to TCP, compatible with more external editors
+- Main: Improve the low processor mode sleep precision
+- Physics: Normalize up direction vector in `move_and_slide()`
+- UWP: Renamed the "Windows Universal" export preset to "UWP", to avoid confusion
+- Windows: Make stack size on Windows match Linux and macOS
+
+### Fixed
+
+- Android: Fix `LineEdit` virtual keyboard issues
+- AStar: Make `get_closest_point()` deterministic for equidistant points
+- Audio: Fix volume interpolation in positional audio nodes
+- C#: Sync csproj when files are changed from the FileSystem dock
+- C#: Replace uses of old Configuration and update old csprojs
+- C#: Revert marshalling of IDictionary/IEnumerable implementing types
+- C#: Fix inherited scene not inheriting parent's exported properties
+- C#: Fix exported values not updated in the remote inspector
+- Core: Fixed false positives in the culling system
+- Core: Fix leaks and crashes in `OAHashMap`
+- CSG: Various bug fixes
+- GDNative: Fix Variant size on 32-bit platforms
+- GDScript: Fix leaked objects when game ends with yields in progress
+- GDScript: Fix object leaks caused by unfulfilled yields
+- GDScript: Various bugs fixed in the parser
+- GLES2: Avoid unnecessary material rebind when using skeleton
+- GLES2/GLES3: Reset texture flags after radiance map generation
+- HTML5: Implement audio buffer size calculation, should fix iOS Safari audio issues
+- Image: Fixing wrong blending rect methods
+- Image: Fix upscaling image with bilinear interpolation option specified
+- Import: Fix changing the import type of multiple files at once
+- Import: Respect 'mesh compression' editor import option in Assimp and glTF importers
+- Input: Various fixes for touch pen input
+- macOS: Ignore process serial number argument passed by macOS Gatekeeper
+- macOS: Fix exports losing executable permission when unzipped
+- Particles: Fix uninitialized memory in CPUParticles and CPUParticles2D
+- Physics: Make soft body completely stiff to attachment point
+- Physics: Test collision mask before creating constraint pair in Godot physics broadphase 2D and 3D
+- RegEx: Enable Unicode support for RegEx class
+- RichTextLabel: Fix alignment bug with `[center]` and `[right]` tags
+- Skeleton: Fix IK rotation issue
+- VR: Fix aspect ratio on HMD projection matrix
+- Windows: Fix certain characters being recognized as special keys when using the US international layout
+- Windows: Fix quoting arguments with special characters in `OS.execute()`
+- Windows: Do not probe joypads if `DirectInput` cannot be initializer
+- Windows: Fix overflow condition with QueryPerformanceCounter
+
+## [3.2.1] - 2020-03-10
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-2-1) for details.
+
+### Added
+
+- Skin: Add support for named binds
+
+### Changed
+
+- TileSet: Hide TileSet properties from Inspector, fixing OOM crash on huge tilesets
+
+### Fixed
+
+- Android: Fix double tap pressed event regression
+- Android: Fix LineEdit virtual keyboard inputs
+- Bullet: Fix detection of concave shape in Area
+- Camera2D: Fix inverted use of Camera2D `offset_v`
+- Debugger: Fix crash inspecting freed objects
+- Expression: Fix parsing integers as 32-bit
+- HTML5: Fix `EMWSClient::get_connection_status()`
+- HTML5: Fix touch events support with Emscripten 1.39.5+
+- macOS: Fix gamepad disconnection callback on macOS Catalina
+- Particles: Fix undefined behavior with atan in GPU Particles
+- Video: Workaround WebM playback bug after AudioServer latency fixes
+- Windows: Fix UPNP regression after upstream update
+- Windows: Disable NetSocket address reuse
+
 ## [3.2] - 2020-01-29
 
 ### Added
