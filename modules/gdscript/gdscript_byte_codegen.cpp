@@ -179,6 +179,241 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 }
 
 void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
+#define IF_TYPE(m_type_a, m_type_b)                                                                                       \
+	if (p_left_operand.type.kind == GDScriptDataType::BUILTIN && p_left_operand.type.builtin_type == Variant::m_type_a && \
+			p_right_operand.type.kind == GDScriptDataType::BUILTIN && p_right_operand.type.builtin_type == Variant::m_type_b)
+
+#define IF_TYPE_UNARY(m_type_a) \
+	if (p_left_operand.type.kind == GDScriptDataType::BUILTIN && p_left_operand.type.builtin_type == Variant::m_type_a)
+
+#define APPEND_BINARY_OPERANDS() \
+	append(p_left_operand);      \
+	append(p_right_operand);     \
+	append(p_target)
+
+#define APPEND_UNARY_OPERANDS() \
+	append(p_left_operand);     \
+	append(p_target)
+
+#define OP_BINARY_CASE(m_type_a, m_type_b, m_op)                           \
+	IF_TYPE(m_type_a, m_type_b) {                                          \
+		append(GDScriptFunction::OPCODE_##m_op##_##m_type_a##_##m_type_b); \
+		APPEND_BINARY_OPERANDS();                                          \
+		return;                                                            \
+	}
+
+#define OP_UNARY_CASE(m_type, m_op)                         \
+	IF_TYPE_UNARY(m_type) {                                 \
+		append(GDScriptFunction::OPCODE_##m_op##_##m_type); \
+		APPEND_UNARY_OPERANDS();                            \
+		return;                                             \
+	}
+
+#define OP_BINARY_CASE(m_type_a, m_type_b, m_op)                           \
+	IF_TYPE(m_type_a, m_type_b) {                                          \
+		append(GDScriptFunction::OPCODE_##m_op##_##m_type_a##_##m_type_b); \
+		APPEND_BINARY_OPERANDS();                                          \
+		return;                                                            \
+	}
+
+#define NUMBER_OP_CASE(m_op)         \
+	OP_BINARY_CASE(INT, INT, m_op)   \
+	OP_BINARY_CASE(INT, FLOAT, m_op) \
+	OP_BINARY_CASE(FLOAT, INT, m_op) \
+	OP_BINARY_CASE(FLOAT, FLOAT, m_op)
+
+#define VEC_OP_CASE(m_op)                    \
+	OP_BINARY_CASE(VECTOR2, VECTOR2, m_op)   \
+	OP_BINARY_CASE(VECTOR2I, VECTOR2I, m_op) \
+	OP_BINARY_CASE(VECTOR3, VECTOR3, m_op)   \
+	OP_BINARY_CASE(VECTOR3I, VECTOR3I, m_op)
+
+#define VEC_NUMBER_CASE(m_op, m_vec)   \
+	OP_BINARY_CASE(INT, m_vec, m_op)   \
+	OP_BINARY_CASE(FLOAT, m_vec, m_op) \
+	OP_BINARY_CASE(m_vec, INT, m_op)   \
+	OP_BINARY_CASE(m_vec, FLOAT, m_op)
+
+#define ARRAYS_OP_CASE(m_op)                                         \
+	OP_BINARY_CASE(ARRAY, ARRAY, m_op)                               \
+	OP_BINARY_CASE(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, m_op)       \
+	OP_BINARY_CASE(PACKED_INT32_ARRAY, PACKED_INT32_ARRAY, m_op)     \
+	OP_BINARY_CASE(PACKED_INT64_ARRAY, PACKED_INT64_ARRAY, m_op)     \
+	OP_BINARY_CASE(PACKED_FLOAT32_ARRAY, PACKED_FLOAT32_ARRAY, m_op) \
+	OP_BINARY_CASE(PACKED_FLOAT64_ARRAY, PACKED_FLOAT64_ARRAY, m_op) \
+	OP_BINARY_CASE(PACKED_STRING_ARRAY, PACKED_STRING_ARRAY, m_op)   \
+	OP_BINARY_CASE(PACKED_VECTOR2_ARRAY, PACKED_VECTOR2_ARRAY, m_op) \
+	OP_BINARY_CASE(PACKED_VECTOR3_ARRAY, PACKED_VECTOR3_ARRAY, m_op) \
+	OP_BINARY_CASE(PACKED_COLOR_ARRAY, PACKED_COLOR_ARRAY, m_op)
+
+#define CASE_OP_EQUAL(m_type, m_op_type)                       \
+	IF_TYPE(m_type, m_type) {                                  \
+		append(GDScriptFunction::OPCODE_OP_EQUAL_##m_op_type); \
+		APPEND_BINARY_OPERANDS();                              \
+		return;                                                \
+	}
+
+#define CASE_OP_NOT_EQUAL(m_type, m_op_type)                       \
+	IF_TYPE(m_type, m_type) {                                      \
+		append(GDScriptFunction::OPCODE_OP_NOT_EQUAL_##m_op_type); \
+		APPEND_BINARY_OPERANDS();                                  \
+		return;                                                    \
+	}
+
+#define CASE_ALL_TYPES(m_macro)                          \
+	m_macro(BOOL, BOOL);                                 \
+	m_macro(INT, INT);                                   \
+	m_macro(FLOAT, FLOAT);                               \
+	m_macro(STRING, STRING);                             \
+	m_macro(VECTOR2, VECTOR2);                           \
+	m_macro(VECTOR2I, VECTOR2I);                         \
+	m_macro(VECTOR3, VECTOR3);                           \
+	m_macro(VECTOR3I, VECTOR3I);                         \
+	m_macro(TRANSFORM2D, TRANSFORM2D);                   \
+	m_macro(PLANE, PLANE);                               \
+	m_macro(QUAT, QUAT);                                 \
+	m_macro(AABB, AABB);                                 \
+	m_macro(BASIS, BASIS);                               \
+	m_macro(TRANSFORM, TRANSFORM);                       \
+	m_macro(COLOR, COLOR);                               \
+	m_macro(STRING_NAME, STRING_NAME);                   \
+	m_macro(_RID, RID);                                  \
+	m_macro(OBJECT, OBJECT);                             \
+	m_macro(CALLABLE, CALLABLE);                         \
+	m_macro(SIGNAL, SIGNAL);                             \
+	m_macro(DICTIONARY, DICTIONARY);                     \
+	m_macro(ARRAY, ARRAY);                               \
+	m_macro(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY);       \
+	m_macro(PACKED_INT32_ARRAY, PACKED_INT32_ARRAY);     \
+	m_macro(PACKED_INT64_ARRAY, PACKED_INT64_ARRAY);     \
+	m_macro(PACKED_FLOAT32_ARRAY, PACKED_FLOAT32_ARRAY); \
+	m_macro(PACKED_FLOAT64_ARRAY, PACKED_FLOAT64_ARRAY); \
+	m_macro(PACKED_STRING_ARRAY, PACKED_STRING_ARRAY);   \
+	m_macro(PACKED_VECTOR2_ARRAY, PACKED_VECTOR2_ARRAY); \
+	m_macro(PACKED_VECTOR3_ARRAY, PACKED_VECTOR3_ARRAY); \
+	m_macro(PACKED_COLOR_ARRAY, PACKED_COLOR_ARRAY)
+
+	bool is_unary = p_operator == Variant::OP_NEGATE || p_operator == Variant::OP_NOT || p_operator == Variant::OP_BIT_NEGATE;
+
+	if (p_left_operand.type.has_type && (p_right_operand.type.has_type || is_unary)) {
+		switch (p_operator) {
+			case Variant::OP_ADD:
+				NUMBER_OP_CASE(OP_ADD)
+				VEC_OP_CASE(OP_ADD)
+				ARRAYS_OP_CASE(OP_CONCAT)
+				OP_BINARY_CASE(QUAT, QUAT, OP_ADD)
+				OP_BINARY_CASE(COLOR, COLOR, OP_ADD)
+				OP_BINARY_CASE(STRING, STRING, OP_CONCAT)
+				break;
+			case Variant::OP_SUBTRACT:
+				NUMBER_OP_CASE(OP_SUBTRACT)
+				VEC_OP_CASE(OP_SUBTRACT)
+				OP_BINARY_CASE(QUAT, QUAT, OP_SUBTRACT)
+				OP_BINARY_CASE(COLOR, COLOR, OP_SUBTRACT)
+				break;
+			case Variant::OP_MULTIPLY:
+				NUMBER_OP_CASE(OP_MULTIPLY)
+				VEC_OP_CASE(OP_MULTIPLY)
+				VEC_NUMBER_CASE(OP_MULTIPLY, QUAT)
+				OP_BINARY_CASE(QUAT, VECTOR3, OP_MULTIPLY)
+				VEC_NUMBER_CASE(OP_MULTIPLY, VECTOR2)
+				VEC_NUMBER_CASE(OP_MULTIPLY, VECTOR2I)
+				VEC_NUMBER_CASE(OP_MULTIPLY, VECTOR3)
+				VEC_NUMBER_CASE(OP_MULTIPLY, VECTOR3I)
+				VEC_NUMBER_CASE(OP_MULTIPLY, COLOR)
+				break;
+			case Variant::OP_MODULE:
+				OP_BINARY_CASE(INT, INT, OP_MODULO)
+				break;
+			case Variant::OP_NEGATE:
+				OP_UNARY_CASE(INT, OP_NEGATE)
+				OP_UNARY_CASE(FLOAT, OP_NEGATE)
+				OP_UNARY_CASE(VECTOR2, OP_NEGATE)
+				OP_UNARY_CASE(VECTOR2I, OP_NEGATE)
+				OP_UNARY_CASE(VECTOR3, OP_NEGATE)
+				OP_UNARY_CASE(VECTOR3I, OP_NEGATE)
+				OP_UNARY_CASE(QUAT, OP_NEGATE)
+				OP_UNARY_CASE(COLOR, OP_NEGATE)
+				break;
+			case Variant::OP_BIT_NEGATE:
+				OP_UNARY_CASE(INT, OP_BIT_NEGATE)
+				break;
+			case Variant::OP_BIT_AND:
+				OP_BINARY_CASE(INT, INT, OP_BIT_AND)
+				break;
+			case Variant::OP_BIT_OR:
+				OP_BINARY_CASE(INT, INT, OP_BIT_OR)
+				break;
+			case Variant::OP_BIT_XOR:
+				OP_BINARY_CASE(INT, INT, OP_BIT_XOR)
+				break;
+			case Variant::OP_SHIFT_LEFT:
+				IF_TYPE(INT, INT) {
+					append(GDScriptFunction::OPCODE_OP_SHIFT_LEFT);
+					APPEND_BINARY_OPERANDS();
+					return;
+				}
+				break;
+			case Variant::OP_SHIFT_RIGHT:
+				IF_TYPE(INT, INT) {
+					append(GDScriptFunction::OPCODE_OP_SHIFT_RIGHT);
+					APPEND_BINARY_OPERANDS();
+					return;
+				}
+				break;
+			case Variant::OP_NOT:
+				append(GDScriptFunction::OPCODE_OP_NOT);
+				APPEND_UNARY_OPERANDS();
+				return;
+			case Variant::OP_AND:
+				append(GDScriptFunction::OPCODE_OP_AND);
+				APPEND_BINARY_OPERANDS();
+				return;
+			case Variant::OP_OR:
+				append(GDScriptFunction::OPCODE_OP_OR);
+				APPEND_BINARY_OPERANDS();
+				return;
+			case Variant::OP_EQUAL:
+				CASE_ALL_TYPES(CASE_OP_EQUAL)
+				OP_BINARY_CASE(INT, FLOAT, OP_EQUAL)
+				OP_BINARY_CASE(FLOAT, INT, OP_EQUAL)
+				OP_BINARY_CASE(STRING, STRING_NAME, OP_EQUAL)
+				OP_BINARY_CASE(STRING_NAME, STRING, OP_EQUAL)
+				OP_BINARY_CASE(STRING, NODE_PATH, OP_EQUAL)
+				OP_BINARY_CASE(NODE_PATH, STRING, OP_EQUAL)
+				break;
+			case Variant::OP_NOT_EQUAL:
+				CASE_ALL_TYPES(CASE_OP_NOT_EQUAL)
+				OP_BINARY_CASE(INT, FLOAT, OP_NOT_EQUAL)
+				OP_BINARY_CASE(FLOAT, INT, OP_NOT_EQUAL)
+				OP_BINARY_CASE(STRING, STRING_NAME, OP_NOT_EQUAL)
+				OP_BINARY_CASE(STRING_NAME, STRING, OP_NOT_EQUAL)
+				OP_BINARY_CASE(STRING, NODE_PATH, OP_NOT_EQUAL)
+				OP_BINARY_CASE(NODE_PATH, STRING, OP_NOT_EQUAL)
+				break;
+			case Variant::OP_LESS:
+				OP_BINARY_CASE(BOOL, BOOL, OP_LESS)
+				NUMBER_OP_CASE(OP_LESS)
+				VEC_OP_CASE(OP_LESS)
+				break;
+			case Variant::OP_LESS_EQUAL:
+				NUMBER_OP_CASE(OP_LESS_EQUAL)
+				VEC_OP_CASE(OP_LESS_EQUAL)
+				break;
+			case Variant::OP_GREATER:
+				OP_BINARY_CASE(BOOL, BOOL, OP_GREATER)
+				NUMBER_OP_CASE(OP_GREATER)
+				VEC_OP_CASE(OP_GREATER)
+				break;
+			case Variant::OP_GREATER_EQUAL:
+				NUMBER_OP_CASE(OP_GREATER_EQUAL)
+				VEC_OP_CASE(OP_GREATER_EQUAL)
+				break;
+			default:
+				break;
+		}
+	}
+
 	append(GDScriptFunction::OPCODE_OPERATOR);
 	append(p_operator);
 	append(p_left_operand);

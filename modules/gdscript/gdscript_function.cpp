@@ -31,6 +31,7 @@
 #include "gdscript_function.h"
 
 #include "core/os/os.h"
+#include "core/variant_internal.h"
 #include "gdscript.h"
 #include "gdscript_functions.h"
 
@@ -188,49 +189,190 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 	return err_text;
 }
 
+#define OPCODE_OP_NUMBER(m_op)              \
+	OPCODE_OP_##m_op##_INT_INT,             \
+			&&OPCODE_OP_##m_op##_INT_FLOAT, \
+			&&OPCODE_OP_##m_op##_FLOAT_INT, \
+			&&OPCODE_OP_##m_op##_FLOAT_FLOAT
+
+#define OPCODE_OP_VECTOR(m_op)                      \
+	OPCODE_OP_##m_op##_VECTOR2_VECTOR2,             \
+			&&OPCODE_OP_##m_op##_VECTOR2I_VECTOR2I, \
+			&&OPCODE_OP_##m_op##_VECTOR3_VECTOR3,   \
+			&&OPCODE_OP_##m_op##_VECTOR3I_VECTOR3I
+
+#define OPCODE_OP_ARRAYS(m_op)                                              \
+	OPCODE_OP_##m_op##_ARRAY_ARRAY,                                         \
+			&&OPCODE_OP_##m_op##_PACKED_BYTE_ARRAY_PACKED_BYTE_ARRAY,       \
+			&&OPCODE_OP_##m_op##_PACKED_INT32_ARRAY_PACKED_INT32_ARRAY,     \
+			&&OPCODE_OP_##m_op##_PACKED_INT64_ARRAY_PACKED_INT64_ARRAY,     \
+			&&OPCODE_OP_##m_op##_PACKED_FLOAT32_ARRAY_PACKED_FLOAT32_ARRAY, \
+			&&OPCODE_OP_##m_op##_PACKED_FLOAT64_ARRAY_PACKED_FLOAT64_ARRAY, \
+			&&OPCODE_OP_##m_op##_PACKED_STRING_ARRAY_PACKED_STRING_ARRAY,   \
+			&&OPCODE_OP_##m_op##_PACKED_VECTOR2_ARRAY_PACKED_VECTOR2_ARRAY, \
+			&&OPCODE_OP_##m_op##_PACKED_VECTOR3_ARRAY_PACKED_VECTOR3_ARRAY, \
+			&&OPCODE_OP_##m_op##_PACKED_COLOR_ARRAY_PACKED_COLOR_ARRAY
+
+#define OPCODE_OP_TYPE_NUMBER(m_op, m_type)      \
+	OPCODE_OP_##m_op##_##m_type##_##m_type,      \
+			&&OPCODE_OP_##m_op##_##m_type##_INT, \
+			&&OPCODE_OP_##m_op##_##m_type##_FLOAT
+
+#define OPCODE_OP_TYPE_NUMBER_REV(m_op, m_type) \
+	OPCODE_OP_##m_op##_INT_##m_type,            \
+			&&OPCODE_OP_##m_op##_FLOAT_##m_type
+
+#define OPCODE_ALL_TYPES(m_op)                      \
+	OPCODE_##m_op##_BOOL,                           \
+			&&OPCODE_##m_op##_INT,                  \
+			&&OPCODE_##m_op##_FLOAT,                \
+			&&OPCODE_##m_op##_STRING,               \
+			&&OPCODE_##m_op##_VECTOR2,              \
+			&&OPCODE_##m_op##_VECTOR2I,             \
+			&&OPCODE_##m_op##_VECTOR3,              \
+			&&OPCODE_##m_op##_VECTOR3I,             \
+			&&OPCODE_##m_op##_TRANSFORM2D,          \
+			&&OPCODE_##m_op##_PLANE,                \
+			&&OPCODE_##m_op##_QUAT,                 \
+			&&OPCODE_##m_op##_AABB,                 \
+			&&OPCODE_##m_op##_BASIS,                \
+			&&OPCODE_##m_op##_TRANSFORM,            \
+			&&OPCODE_##m_op##_COLOR,                \
+			&&OPCODE_##m_op##_STRING_NAME,          \
+			&&OPCODE_##m_op##_RID,                  \
+			&&OPCODE_##m_op##_OBJECT,               \
+			&&OPCODE_##m_op##_CALLABLE,             \
+			&&OPCODE_##m_op##_SIGNAL,               \
+			&&OPCODE_##m_op##_DICTIONARY,           \
+			&&OPCODE_##m_op##_ARRAY,                \
+			&&OPCODE_##m_op##_PACKED_BYTE_ARRAY,    \
+			&&OPCODE_##m_op##_PACKED_INT32_ARRAY,   \
+			&&OPCODE_##m_op##_PACKED_INT64_ARRAY,   \
+			&&OPCODE_##m_op##_PACKED_FLOAT32_ARRAY, \
+			&&OPCODE_##m_op##_PACKED_FLOAT64_ARRAY, \
+			&&OPCODE_##m_op##_PACKED_STRING_ARRAY,  \
+			&&OPCODE_##m_op##_PACKED_VECTOR2_ARRAY, \
+			&&OPCODE_##m_op##_PACKED_VECTOR3_ARRAY, \
+			&&OPCODE_##m_op##_PACKED_COLOR_ARRAY
+
 #if defined(__GNUC__)
-#define OPCODES_TABLE                         \
-	static const void *switch_table_ops[] = { \
-		&&OPCODE_OPERATOR,                    \
-		&&OPCODE_EXTENDS_TEST,                \
-		&&OPCODE_IS_BUILTIN,                  \
-		&&OPCODE_SET,                         \
-		&&OPCODE_GET,                         \
-		&&OPCODE_SET_NAMED,                   \
-		&&OPCODE_GET_NAMED,                   \
-		&&OPCODE_SET_MEMBER,                  \
-		&&OPCODE_GET_MEMBER,                  \
-		&&OPCODE_ASSIGN,                      \
-		&&OPCODE_ASSIGN_TRUE,                 \
-		&&OPCODE_ASSIGN_FALSE,                \
-		&&OPCODE_ASSIGN_TYPED_BUILTIN,        \
-		&&OPCODE_ASSIGN_TYPED_NATIVE,         \
-		&&OPCODE_ASSIGN_TYPED_SCRIPT,         \
-		&&OPCODE_CAST_TO_BUILTIN,             \
-		&&OPCODE_CAST_TO_NATIVE,              \
-		&&OPCODE_CAST_TO_SCRIPT,              \
-		&&OPCODE_CONSTRUCT,                   \
-		&&OPCODE_CONSTRUCT_ARRAY,             \
-		&&OPCODE_CONSTRUCT_DICTIONARY,        \
-		&&OPCODE_CALL,                        \
-		&&OPCODE_CALL_RETURN,                 \
-		&&OPCODE_CALL_ASYNC,                  \
-		&&OPCODE_CALL_BUILT_IN,               \
-		&&OPCODE_CALL_SELF_BASE,              \
-		&&OPCODE_AWAIT,                       \
-		&&OPCODE_AWAIT_RESUME,                \
-		&&OPCODE_JUMP,                        \
-		&&OPCODE_JUMP_IF,                     \
-		&&OPCODE_JUMP_IF_NOT,                 \
-		&&OPCODE_JUMP_TO_DEF_ARGUMENT,        \
-		&&OPCODE_RETURN,                      \
-		&&OPCODE_ITERATE_BEGIN,               \
-		&&OPCODE_ITERATE,                     \
-		&&OPCODE_ASSERT,                      \
-		&&OPCODE_BREAKPOINT,                  \
-		&&OPCODE_LINE,                        \
-		&&OPCODE_END                          \
-	};                                        \
+#define OPCODES_TABLE                                    \
+	static const void *switch_table_ops[] = {            \
+		&&OPCODE_OPERATOR,                               \
+		&&OPCODE_OP_NUMBER(ADD),                         \
+		&&OPCODE_OP_VECTOR(ADD),                         \
+		&&OPCODE_OP_ADD_QUAT_QUAT,                       \
+		&&OPCODE_OP_ADD_COLOR_COLOR,                     \
+		&&OPCODE_OP_CONCAT_STRING_STRING,                \
+		&&OPCODE_OP_ARRAYS(CONCAT),                      \
+		&&OPCODE_OP_NUMBER(SUBTRACT),                    \
+		&&OPCODE_OP_VECTOR(SUBTRACT),                    \
+		&&OPCODE_OP_SUBTRACT_QUAT_QUAT,                  \
+		&&OPCODE_OP_SUBTRACT_COLOR_COLOR,                \
+		&&OPCODE_OP_NUMBER(MULTIPLY),                    \
+		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_TRANSFORM2D,    \
+		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_VECTOR2,        \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, QUAT),         \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, QUAT),     \
+		&&OPCODE_OP_MULTIPLY_QUAT_VECTOR3,               \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2),      \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2),  \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2I),     \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2I), \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3),      \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3),  \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3I),     \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3I), \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, COLOR),        \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, COLOR),    \
+		&&OPCODE_OP_NUMBER(DIVIDE),                      \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2),        \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2I),       \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3),        \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3I),       \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, COLOR),          \
+		&&OPCODE_OP_DIVIDE_QUAT_FLOAT,                   \
+		&&OPCODE_OP_MODULO_INT_INT,                      \
+		&&OPCODE_OP_NEGATE_INT,                          \
+		&&OPCODE_OP_NEGATE_FLOAT,                        \
+		&&OPCODE_OP_NEGATE_VECTOR2,                      \
+		&&OPCODE_OP_NEGATE_VECTOR2I,                     \
+		&&OPCODE_OP_NEGATE_VECTOR3,                      \
+		&&OPCODE_OP_NEGATE_VECTOR3I,                     \
+		&&OPCODE_OP_NEGATE_QUAT,                         \
+		&&OPCODE_OP_NEGATE_COLOR,                        \
+		&&OPCODE_OP_BIT_NEGATE_INT,                      \
+		&&OPCODE_OP_BIT_AND_INT_INT,                     \
+		&&OPCODE_OP_BIT_OR_INT_INT,                      \
+		&&OPCODE_OP_BIT_XOR_INT_INT,                     \
+		&&OPCODE_OP_SHIFT_LEFT,                          \
+		&&OPCODE_OP_SHIFT_RIGHT,                         \
+		&&OPCODE_OP_NOT,                                 \
+		&&OPCODE_OP_AND,                                 \
+		&&OPCODE_OP_OR,                                  \
+		&&OPCODE_ALL_TYPES(OP_EQUAL),                    \
+		&&OPCODE_OP_EQUAL_INT_FLOAT,                     \
+		&&OPCODE_OP_EQUAL_FLOAT_INT,                     \
+		&&OPCODE_OP_EQUAL_STRING_STRING_NAME,            \
+		&&OPCODE_OP_EQUAL_STRING_NAME_STRING,            \
+		&&OPCODE_OP_EQUAL_STRING_NODE_PATH,              \
+		&&OPCODE_OP_EQUAL_NODE_PATH_STRING,              \
+		&&OPCODE_ALL_TYPES(OP_NOT_EQUAL),                \
+		&&OPCODE_OP_NOT_EQUAL_INT_FLOAT,                 \
+		&&OPCODE_OP_NOT_EQUAL_FLOAT_INT,                 \
+		&&OPCODE_OP_NOT_EQUAL_STRING_STRING_NAME,        \
+		&&OPCODE_OP_NOT_EQUAL_STRING_NAME_STRING,        \
+		&&OPCODE_OP_NOT_EQUAL_STRING_NODE_PATH,          \
+		&&OPCODE_OP_NOT_EQUAL_NODE_PATH_STRING,          \
+		&&OPCODE_OP_LESS_BOOL_BOOL,                      \
+		&&OPCODE_OP_NUMBER(LESS),                        \
+		&&OPCODE_OP_VECTOR(LESS),                        \
+		&&OPCODE_OP_NUMBER(LESS_EQUAL),                  \
+		&&OPCODE_OP_VECTOR(LESS_EQUAL),                  \
+		&&OPCODE_OP_GREATER_BOOL_BOOL,                   \
+		&&OPCODE_OP_NUMBER(GREATER),                     \
+		&&OPCODE_OP_VECTOR(GREATER),                     \
+		&&OPCODE_OP_NUMBER(GREATER_EQUAL),               \
+		&&OPCODE_OP_VECTOR(GREATER_EQUAL),               \
+		&&OPCODE_EXTENDS_TEST,                           \
+		&&OPCODE_IS_BUILTIN,                             \
+		&&OPCODE_SET,                                    \
+		&&OPCODE_GET,                                    \
+		&&OPCODE_SET_NAMED,                              \
+		&&OPCODE_GET_NAMED,                              \
+		&&OPCODE_SET_MEMBER,                             \
+		&&OPCODE_GET_MEMBER,                             \
+		&&OPCODE_ASSIGN,                                 \
+		&&OPCODE_ASSIGN_TRUE,                            \
+		&&OPCODE_ASSIGN_FALSE,                           \
+		&&OPCODE_ASSIGN_TYPED_BUILTIN,                   \
+		&&OPCODE_ASSIGN_TYPED_NATIVE,                    \
+		&&OPCODE_ASSIGN_TYPED_SCRIPT,                    \
+		&&OPCODE_CAST_TO_BUILTIN,                        \
+		&&OPCODE_CAST_TO_NATIVE,                         \
+		&&OPCODE_CAST_TO_SCRIPT,                         \
+		&&OPCODE_CONSTRUCT,                              \
+		&&OPCODE_CONSTRUCT_ARRAY,                        \
+		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
+		&&OPCODE_CALL,                                   \
+		&&OPCODE_CALL_RETURN,                            \
+		&&OPCODE_CALL_ASYNC,                             \
+		&&OPCODE_CALL_BUILT_IN,                          \
+		&&OPCODE_CALL_SELF_BASE,                         \
+		&&OPCODE_AWAIT,                                  \
+		&&OPCODE_AWAIT_RESUME,                           \
+		&&OPCODE_JUMP,                                   \
+		&&OPCODE_JUMP_IF,                                \
+		&&OPCODE_JUMP_IF_NOT,                            \
+		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                   \
+		&&OPCODE_RETURN,                                 \
+		&&OPCODE_ITERATE_BEGIN,                          \
+		&&OPCODE_ITERATE,                                \
+		&&OPCODE_ASSERT,                                 \
+		&&OPCODE_BREAKPOINT,                             \
+		&&OPCODE_LINE,                                   \
+		&&OPCODE_END                                     \
+	};                                                   \
 	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
@@ -418,6 +560,300 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	bool awaited = false;
 #endif
 
+// Helpers for VariantInternal methods in macros.
+#define OP_GET_BOOL get_bool
+#define OP_GET_INT get_int
+#define OP_GET_FLOAT get_float
+#define OP_GET_VECTOR2 get_vector2
+#define OP_GET_VECTOR2I get_vector2i
+#define OP_GET_VECTOR3 get_vector3
+#define OP_GET_VECTOR3I get_vector3i
+#define OP_GET_QUAT get_quat
+#define OP_GET_COLOR get_color
+#define OP_GET_STRING get_string
+#define OP_GET_STRING_NAME get_string_name
+#define OP_GET_NODE_PATH get_node_path
+#define OP_GET_CALLABLE get_callable
+#define OP_GET_SIGNAL get_signal
+#define OP_GET_ARRAY get_array
+#define OP_GET_DICTIONARY get_dictionary
+#define OP_GET_PACKED_BYTE_ARRAY get_byte_array
+#define OP_GET_PACKED_INT32_ARRAY get_int32_array
+#define OP_GET_PACKED_INT64_ARRAY get_int64_array
+#define OP_GET_PACKED_FLOAT32_ARRAY get_float32_array
+#define OP_GET_PACKED_FLOAT64_ARRAY get_float64_array
+#define OP_GET_PACKED_STRING_ARRAY get_string_array
+#define OP_GET_PACKED_VECTOR2_ARRAY get_vector2_array
+#define OP_GET_PACKED_VECTOR3_ARRAY get_vector3_array
+#define OP_GET_PACKED_COLOR_ARRAY get_color_array
+#define OP_GET_TRANSFORM get_transform
+#define OP_GET_TRANSFORM2D get_transform2d
+#define OP_GET_PLANE get_plane
+#define OP_GET_AABB get_aabb
+#define OP_GET_BASIS get_basis
+#define OP_GET_RID get_rid
+
+#define OPCODE_OP_NAMED(m_op_name, m_op, m_type_a, m_type_b, m_type_dst)                                                                  \
+	OPCODE(OPCODE_##m_op_name) {                                                                                                          \
+		CHECK_SPACE(4);                                                                                                                   \
+		GET_VARIANT_PTR(a, 1);                                                                                                            \
+		GET_VARIANT_PTR(b, 2);                                                                                                            \
+		GET_VARIANT_PTR(dst, 3);                                                                                                          \
+		VariantInternal::initialize(dst, Variant::m_type_dst);                                                                            \
+		*VariantInternal::OP_GET_##m_type_dst(dst) = *VariantInternal::OP_GET_##m_type_a(a) m_op * VariantInternal::OP_GET_##m_type_b(b); \
+		ip += 4;                                                                                                                          \
+	}                                                                                                                                     \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_MATH_TYPE(m_op_name, m_op, m_type_a, m_type_b, m_type_dst) \
+	OPCODE_OP_NAMED(OP_##m_op_name##_##m_type_a##_##m_type_b, m_op, m_type_a, m_type_b, m_type_dst)
+
+#define OPCODE_OP_CALL_TYPE(m_op_name, m_func, m_type_a, m_type_b, m_type_dst)                                                              \
+	OPCODE(OPCODE_OP_##m_op_name##_##m_type_a##_##m_type_b) {                                                                               \
+		CHECK_SPACE(4);                                                                                                                     \
+		GET_VARIANT_PTR(a, 1);                                                                                                              \
+		GET_VARIANT_PTR(b, 2);                                                                                                              \
+		GET_VARIANT_PTR(dst, 3);                                                                                                            \
+		VariantInternal::initialize(dst, Variant::m_type_dst);                                                                              \
+		*VariantInternal::OP_GET_##m_type_dst(dst) = VariantInternal::OP_GET_##m_type_a(a)->m_func(*VariantInternal::OP_GET_##m_type_b(b)); \
+		ip += 4;                                                                                                                            \
+	}                                                                                                                                       \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_NO_INIT_TYPE(m_op_name, m_op, m_type_a, m_type_b)                                 \
+	OPCODE(OPCODE_OP_##m_op_name##_##m_type_a##_##m_type_b) {                                       \
+		CHECK_SPACE(4);                                                                             \
+		GET_VARIANT_PTR(a, 1);                                                                      \
+		GET_VARIANT_PTR(b, 2);                                                                      \
+		GET_VARIANT_PTR(dst, 3);                                                                    \
+		*dst = *VariantInternal::OP_GET_##m_type_a(a) m_op * VariantInternal::OP_GET_##m_type_b(b); \
+		ip += 4;                                                                                    \
+	}                                                                                               \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_MATH_NUMBER(m_op_name, m_op)               \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, INT, INT, INT);     \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, INT, FLOAT, FLOAT); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, FLOAT, INT, FLOAT); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, FLOAT, FLOAT, FLOAT)
+
+#define OPCODE_OP_MATH_VECTOR(m_op_name, m_op)                          \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR2, VECTOR2, VECTOR2);    \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR2I, VECTOR2I, VECTOR2I); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR3, VECTOR3, VECTOR3);    \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR3I, VECTOR3I, VECTOR3I)
+
+#define OPCODE_OP_MATH_WITH_NUMBERS(m_op_name, m_op, m_type)      \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, m_type, m_type, m_type); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, m_type, INT, m_type);    \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, m_type, FLOAT, m_type);
+
+#define OPCODE_OP_MATH_WITH_NUMBERS_REV(m_op_name, m_op, m_type) \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, INT, m_type, m_type);   \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, FLOAT, m_type, m_type)
+
+#define OPCODE_OP_CONCAT_ARRAYS(m_type, m_vec_type)                                       \
+	OPCODE(OPCODE_OP_CONCAT_##m_type##_ARRAY_##m_type##_ARRAY) {                          \
+		CHECK_SPACE(4);                                                                   \
+		GET_VARIANT_PTR(a, 1);                                                            \
+		GET_VARIANT_PTR(b, 2);                                                            \
+		GET_VARIANT_PTR(dst, 3);                                                          \
+		const Vector<m_vec_type> &array_a = *VariantInternal::OP_GET_##m_type##_ARRAY(a); \
+		const Vector<m_vec_type> &array_b = *VariantInternal::OP_GET_##m_type##_ARRAY(b); \
+		Vector<m_vec_type> sum = array_a;                                                 \
+		sum.append_array(array_b);                                                        \
+		*dst = sum;                                                                       \
+		ip += 4;                                                                          \
+	}                                                                                     \
+	DISPATCH_OPCODE
+
+#define OPCODE_ARRAYS_MACRO(m_macro)  \
+	m_macro(PACKED_BYTE, uint8_t);    \
+	m_macro(PACKED_INT32, int32_t);   \
+	m_macro(PACKED_INT64, int64_t);   \
+	m_macro(PACKED_FLOAT32, float);   \
+	m_macro(PACKED_FLOAT64, double);  \
+	m_macro(PACKED_STRING, String);   \
+	m_macro(PACKED_VECTOR2, Vector2); \
+	m_macro(PACKED_VECTOR3, Vector3); \
+	m_macro(PACKED_COLOR, Color)
+
+#define OPCODE_ALL_TYPES_BUT_OBJECT_MACRO(m_macro) \
+	m_macro(BOOL);                                 \
+	m_macro(INT);                                  \
+	m_macro(FLOAT);                                \
+	m_macro(STRING);                               \
+	m_macro(VECTOR2);                              \
+	m_macro(VECTOR2I);                             \
+	m_macro(VECTOR3);                              \
+	m_macro(VECTOR3I);                             \
+	m_macro(TRANSFORM2D);                          \
+	m_macro(PLANE);                                \
+	m_macro(QUAT);                                 \
+	m_macro(AABB);                                 \
+	m_macro(BASIS);                                \
+	m_macro(TRANSFORM);                            \
+	m_macro(COLOR);                                \
+	m_macro(STRING_NAME);                          \
+	m_macro(RID);                                  \
+	m_macro(CALLABLE);                             \
+	m_macro(SIGNAL);                               \
+	m_macro(DICTIONARY)
+
+#define OPCODE_OP_UNARY(m_op_name, m_op, m_type)                                             \
+	OPCODE(OPCODE_OP_##m_op_name##_##m_type) {                                               \
+		CHECK_SPACE(3);                                                                      \
+		GET_VARIANT_PTR(a, 1);                                                               \
+		GET_VARIANT_PTR(dst, 2);                                                             \
+		VariantInternal::initialize(dst, Variant::m_type);                                   \
+		*VariantInternal::OP_GET_##m_type(dst) = m_op * VariantInternal::OP_GET_##m_type(a); \
+		ip += 3;                                                                             \
+	}                                                                                        \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_LOGIC_UNARY(m_op_name, m_op)                   \
+	OPCODE(OPCODE_OP_##m_op_name) {                              \
+		CHECK_SPACE(3);                                          \
+		GET_VARIANT_PTR(a, 1);                                   \
+		GET_VARIANT_PTR(dst, 2);                                 \
+		VariantInternal::initialize(dst, Variant::BOOL);         \
+		*VariantInternal::get_bool(dst) = m_op(a->booleanize()); \
+		ip += 3;                                                 \
+	}                                                            \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_LOGIC_BINARY(m_op_name, m_op)                                 \
+	OPCODE(OPCODE_OP_##m_op_name) {                                             \
+		CHECK_SPACE(4);                                                         \
+		GET_VARIANT_PTR(a, 1);                                                  \
+		GET_VARIANT_PTR(b, 2);                                                  \
+		GET_VARIANT_PTR(dst, 3);                                                \
+		VariantInternal::initialize(dst, Variant::BOOL);                        \
+		*VariantInternal::get_bool(dst) = a->booleanize() m_op b->booleanize(); \
+		ip += 4;                                                                \
+	}                                                                           \
+	DISPATCH_OPCODE
+
+#define OPCODE_EQUAL_TYPE(m_type) \
+	OPCODE_OP_NAMED(OP_EQUAL_##m_type, ==, m_type, m_type, BOOL)
+
+#define OPCODE_EQUAL_TYPES(m_type_a, m_type_b) \
+	OPCODE_OP_MATH_TYPE(EQUAL, ==, m_type_a, m_type_b, BOOL)
+
+#define OPCODE_NOT_EQUAL_TYPE(m_type) \
+	OPCODE_OP_NAMED(OP_NOT_EQUAL_##m_type, !=, m_type, m_type, BOOL)
+
+#define OPCODE_NOT_EQUAL_TYPES(m_type_a, m_type_b) \
+	OPCODE_OP_MATH_TYPE(NOT_EQUAL, !=, m_type_a, m_type_b, BOOL)
+
+#define OP_ARRAYS_OP_BODY_TEST(m_type, m_vec_type, m_op, m_res_if_less)               \
+	const Vector<m_vec_type> &array_a = *VariantInternal::OP_GET_##m_type##_ARRAY(a); \
+	const Vector<m_vec_type> &array_b = *VariantInternal::OP_GET_##m_type##_ARRAY(b); \
+	int a_len = array_a.size();                                                       \
+	if (a_len < array_b.size()) {                                                     \
+		*VariantInternal::get_bool(dst) = m_res_if_less;                              \
+	} else {                                                                          \
+		bool passed = true;                                                           \
+		const m_vec_type *ra = array_a.ptr();                                         \
+		const m_vec_type *rb = array_b.ptr();                                         \
+		for (int i = 0; i < a_len; i++) {                                             \
+			if (ra[i] m_op rb[i]) {                                                   \
+				passed = false;                                                       \
+				break;                                                                \
+			}                                                                         \
+		}                                                                             \
+		*VariantInternal::get_bool(dst) = passed;                                     \
+	}
+
+#define OP_ARRAY_OP_BODY_TEST(m_op, m_res_if_less)        \
+	const Array *array_a = VariantInternal::get_array(a); \
+	const Array *array_b = VariantInternal::get_array(b); \
+	int a_len = array_a->size();                          \
+	if (a_len < array_b->size()) {                        \
+		*VariantInternal::get_bool(dst) = m_res_if_less;  \
+	} else {                                              \
+		bool passed = true;                               \
+		for (int i = 0; i < a_len; i++) {                 \
+			if ((*array_a)[i] m_op(*array_b)[i]) {        \
+				passed = false;                           \
+				break;                                    \
+			}                                             \
+		}                                                 \
+		*VariantInternal::get_bool(dst) = passed;         \
+	}
+
+#define OP_OBJECT_EQUAL_BODY_TEST(m_not)                                                             \
+	bool equal = false;                                                                              \
+	if (b->get_type() == Variant::NIL) {                                                             \
+		equal = a->get_type() == Variant::NIL || (a->operator Object *() == nullptr);                \
+	} else {                                                                                         \
+		equal = a->get_type() != Variant::NIL && (a->operator Object *() == b->operator Object *()); \
+	}                                                                                                \
+	*VariantInternal::get_bool(dst) m_not equal;
+
+#define OPCODE_OP_COMPARISON_BODY(m_op_name, m_body)     \
+	OPCODE(OPCODE_OP_##m_op_name) {                      \
+		CHECK_SPACE(4);                                  \
+		GET_VARIANT_PTR(a, 1);                           \
+		GET_VARIANT_PTR(b, 2);                           \
+		GET_VARIANT_PTR(dst, 3);                         \
+		VariantInternal::initialize(dst, Variant::BOOL); \
+		m_body                                           \
+				ip += 4;                                 \
+	}                                                    \
+	DISPATCH_OPCODE
+
+#define OPCODE_OP_EQUAL_ARRAYS(m_op_name, m_type, m_vec_type) \
+	OPCODE_OP_COMPARISON_BODY(m_op_name##_##m_type##_ARRAY, OP_ARRAYS_OP_BODY_TEST(m_type, m_vec_type, !=, false))
+
+#define OPCODE_OP_NOT_EQUAL_ARRAYS(m_op_name, m_type, m_vec_type) \
+	OPCODE_OP_COMPARISON_BODY(m_op_name##_##m_type##_ARRAY, OP_ARRAYS_OP_BODY_TEST(m_type, m_vec_type, ==, false))
+
+#define OPCODE_ARRAYS_COMPARISON_MACRO(m_op_name, m_macro) \
+	m_macro(m_op_name, PACKED_BYTE, uint8_t);              \
+	m_macro(m_op_name, PACKED_INT32, int32_t);             \
+	m_macro(m_op_name, PACKED_INT64, int64_t);             \
+	m_macro(m_op_name, PACKED_FLOAT32, float);             \
+	m_macro(m_op_name, PACKED_FLOAT64, double);            \
+	m_macro(m_op_name, PACKED_STRING, String);             \
+	m_macro(m_op_name, PACKED_VECTOR2, Vector2);           \
+	m_macro(m_op_name, PACKED_VECTOR3, Vector3);           \
+	m_macro(m_op_name, PACKED_COLOR, Color)
+
+#define OPCODE_OP_COMP_NUMBER(m_op_name, m_op)              \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, INT, INT, BOOL);   \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, INT, FLOAT, BOOL); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, FLOAT, INT, BOOL); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, FLOAT, FLOAT, BOOL)
+
+#define OPCODE_OP_COMP_VECTOR(m_op_name, m_op)                      \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR2, VECTOR2, BOOL);   \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR2I, VECTOR2I, BOOL); \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR3, VECTOR3, BOOL);   \
+	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR3I, VECTOR3I, BOOL)
+
+#ifdef DEBUG_ENABLED
+#define OPCODE_OP_SHIFT_ERR err_text = "Cannot shift less than 0 or more than 64 bits.";
+#else
+#define OPCODE_OP_SHIFT_ERR
+#endif
+#define OPCODE_OP_SHIFT(m_op_name, m_op)                                                                  \
+	OPCODE(OPCODE_OP_##m_op_name) {                                                                       \
+		CHECK_SPACE(4);                                                                                   \
+		GET_VARIANT_PTR(a, 1);                                                                            \
+		GET_VARIANT_PTR(b, 2);                                                                            \
+		GET_VARIANT_PTR(dst, 3);                                                                          \
+		int b_int = *VariantInternal::get_int(b);                                                         \
+		if (b_int < 0 || b_int >= 64) {                                                                   \
+			OPCODE_OP_SHIFT_ERR                                                                           \
+			OPCODE_BREAK;                                                                                 \
+		}                                                                                                 \
+		VariantInternal::initialize(dst, Variant::INT);                                                   \
+		*VariantInternal::get_int(dst) = *VariantInternal::get_int(a) m_op * VariantInternal::get_int(b); \
+		ip += 4;                                                                                          \
+	}                                                                                                     \
+	DISPATCH_OPCODE
+
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
 		int last_opcode = _code_ptr[ip];
@@ -460,6 +896,149 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				ip += 5;
 			}
 			DISPATCH_OPCODE;
+
+			// Typed operations.
+			// Addition.
+			OPCODE_OP_MATH_NUMBER(ADD, +);
+			OPCODE_OP_MATH_VECTOR(ADD, +);
+			OPCODE_OP_MATH_TYPE(ADD, +, QUAT, QUAT, QUAT);
+			OPCODE_OP_MATH_TYPE(ADD, +, COLOR, COLOR, COLOR);
+			OPCODE_OP_NO_INIT_TYPE(CONCAT, +, STRING, STRING);
+			OPCODE(OPCODE_OP_CONCAT_ARRAY_ARRAY) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(a, 1);
+				GET_VARIANT_PTR(b, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				const Array &array_a = *VariantInternal::get_array(a);
+				const Array &array_b = *VariantInternal::get_array(b);
+				int asize = array_a.size();
+				int bsize = array_b.size();
+				Array sum;
+				sum.resize(asize + bsize);
+				for (int i = 0; i < asize; i++) {
+					sum[i] = array_a[i];
+				}
+				for (int i = 0; i < bsize; i++) {
+					sum[i + asize] = array_b[i];
+				}
+
+				*dst = sum;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_ARRAYS_MACRO(OPCODE_OP_CONCAT_ARRAYS);
+			// Subraction.
+			OPCODE_OP_MATH_NUMBER(SUBTRACT, -);
+			OPCODE_OP_MATH_VECTOR(SUBTRACT, -);
+			OPCODE_OP_MATH_TYPE(SUBTRACT, -, QUAT, QUAT, QUAT);
+			OPCODE_OP_MATH_TYPE(SUBTRACT, -, COLOR, COLOR, COLOR);
+			// Multiplication.
+			OPCODE_OP_MATH_NUMBER(MULTIPLY, *);
+			OPCODE_OP_MATH_TYPE(MULTIPLY, *, TRANSFORM2D, TRANSFORM2D, TRANSFORM2D);
+			OPCODE_OP_CALL_TYPE(MULTIPLY, xform, TRANSFORM2D, VECTOR2, VECTOR2);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, QUAT);
+			OPCODE_OP_MATH_TYPE(MULTIPLY, *, QUAT, VECTOR3, QUAT);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, QUAT);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, VECTOR2);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, VECTOR2I);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, VECTOR3);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, VECTOR3I);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, VECTOR2);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, VECTOR2I);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, VECTOR3);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, VECTOR3I);
+			OPCODE_OP_MATH_WITH_NUMBERS(MULTIPLY, *, COLOR);
+			OPCODE_OP_MATH_WITH_NUMBERS_REV(MULTIPLY, *, COLOR);
+			// Division.
+			OPCODE_OP_MATH_NUMBER(DIVIDE, /);
+			OPCODE_OP_MATH_WITH_NUMBERS(DIVIDE, /, VECTOR2);
+			OPCODE_OP_MATH_WITH_NUMBERS(DIVIDE, /, VECTOR2I);
+			OPCODE_OP_MATH_WITH_NUMBERS(DIVIDE, /, VECTOR3);
+			OPCODE_OP_MATH_WITH_NUMBERS(DIVIDE, /, VECTOR3I);
+			OPCODE_OP_MATH_WITH_NUMBERS(DIVIDE, /, COLOR);
+			OPCODE_OP_MATH_TYPE(DIVIDE, /, QUAT, FLOAT, QUAT);
+			// Modulo.
+			OPCODE_OP_MATH_TYPE(MODULO, %, INT, INT, INT);
+			// Unary operators.
+			OPCODE_OP_UNARY(NEGATE, -, INT);
+			OPCODE_OP_UNARY(NEGATE, -, FLOAT);
+			OPCODE_OP_UNARY(NEGATE, -, VECTOR2);
+			OPCODE_OP_UNARY(NEGATE, -, VECTOR2I);
+			OPCODE_OP_UNARY(NEGATE, -, VECTOR3);
+			OPCODE_OP_UNARY(NEGATE, -, VECTOR3I);
+			OPCODE_OP_UNARY(NEGATE, -, QUAT);
+			OPCODE_OP_UNARY(NEGATE, -, COLOR);
+			// Bitwise operators.
+			OPCODE_OP_UNARY(BIT_NEGATE, ~, INT);
+			OPCODE_OP_MATH_TYPE(BIT_AND, &, INT, INT, INT);
+			OPCODE_OP_MATH_TYPE(BIT_OR, |, INT, INT, INT);
+			OPCODE_OP_MATH_TYPE(BIT_XOR, ^, INT, INT, INT);
+			OPCODE_OP_SHIFT(SHIFT_LEFT, <<);
+			OPCODE_OP_SHIFT(SHIFT_RIGHT, >>);
+			// Logic operators.
+			OPCODE_OP_LOGIC_UNARY(NOT, !);
+			OPCODE_OP_LOGIC_BINARY(AND, &&);
+			OPCODE_OP_LOGIC_BINARY(OR, ||);
+			// Comparison operators.
+			// Equal.
+			OPCODE_ALL_TYPES_BUT_OBJECT_MACRO(OPCODE_EQUAL_TYPE);
+			OPCODE_ARRAYS_COMPARISON_MACRO(EQUAL, OPCODE_OP_EQUAL_ARRAYS);
+			OPCODE_OP_COMPARISON_BODY(EQUAL_ARRAY, OP_ARRAY_OP_BODY_TEST(!=, false));
+			OPCODE_OP_COMPARISON_BODY(EQUAL_OBJECT, OP_OBJECT_EQUAL_BODY_TEST(=));
+			OPCODE_EQUAL_TYPES(INT, FLOAT);
+			OPCODE_EQUAL_TYPES(FLOAT, INT);
+			OPCODE_EQUAL_TYPES(STRING, STRING_NAME);
+			OPCODE_EQUAL_TYPES(STRING_NAME, STRING);
+			OPCODE_EQUAL_TYPES(STRING, NODE_PATH);
+			OPCODE_EQUAL_TYPES(NODE_PATH, STRING);
+			// Not equal.
+			OPCODE_ALL_TYPES_BUT_OBJECT_MACRO(OPCODE_NOT_EQUAL_TYPE);
+			OPCODE_ARRAYS_COMPARISON_MACRO(NOT_EQUAL, OPCODE_OP_NOT_EQUAL_ARRAYS);
+			OPCODE_OP_COMPARISON_BODY(NOT_EQUAL_ARRAY, OP_ARRAY_OP_BODY_TEST(==, false));
+			OPCODE_OP_COMPARISON_BODY(NOT_EQUAL_OBJECT, OP_OBJECT_EQUAL_BODY_TEST(= !));
+			OPCODE_NOT_EQUAL_TYPES(INT, FLOAT);
+			OPCODE_NOT_EQUAL_TYPES(FLOAT, INT);
+			OPCODE_NOT_EQUAL_TYPES(STRING, STRING_NAME);
+			OPCODE_NOT_EQUAL_TYPES(STRING_NAME, STRING);
+			OPCODE_NOT_EQUAL_TYPES(STRING, NODE_PATH);
+			OPCODE_NOT_EQUAL_TYPES(NODE_PATH, STRING);
+			// Less than.
+			OPCODE(OPCODE_OP_LESS_BOOL_BOOL) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(a, 1);
+				GET_VARIANT_PTR(b, 2);
+				GET_VARIANT_PTR(dst, 3);
+				VariantInternal::initialize(dst, Variant::BOOL);
+				bool ba = *VariantInternal::get_bool(a);
+				bool bb = *VariantInternal::get_bool(b);
+				*VariantInternal::get_bool(dst) = !ba && bb;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_OP_COMP_NUMBER(LESS, <);
+			OPCODE_OP_COMP_VECTOR(LESS, <);
+			// Less than or equal to.
+			OPCODE_OP_COMP_NUMBER(LESS_EQUAL, <=);
+			OPCODE_OP_COMP_VECTOR(LESS_EQUAL, <=);
+			// Greater than.
+			OPCODE(OPCODE_OP_GREATER_BOOL_BOOL) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(a, 1);
+				GET_VARIANT_PTR(b, 2);
+				GET_VARIANT_PTR(dst, 3);
+				VariantInternal::initialize(dst, Variant::BOOL);
+				bool ba = *VariantInternal::get_bool(a);
+				bool bb = *VariantInternal::get_bool(b);
+				*VariantInternal::get_bool(dst) = ba && !bb;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_OP_COMP_NUMBER(GREATER, >);
+			OPCODE_OP_COMP_VECTOR(GREATER, >);
+			// Greater than or equal to.
+			OPCODE_OP_COMP_NUMBER(GREATER_EQUAL, >=);
+			OPCODE_OP_COMP_VECTOR(GREATER_EQUAL, >=);
 
 			OPCODE(OPCODE_EXTENDS_TEST) {
 				CHECK_SPACE(4);
@@ -1590,6 +2169,43 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	return retvalue;
 }
 
+#undef OPCODE_OP_NUMBER
+#undef OPCODE_OP_VECTOR
+#undef OPCODE_OP_ARRAYS
+#undef OPCODE_OP_TYPE_NUMBER
+#undef OPCODE_OP_TYPE_NUMBER_REV
+#undef OPCODE_ALL_TYPES
+
+#undef OP_GET_INT
+#undef OP_GET_FLOAT
+#undef OP_GET_VECTOR2
+#undef OP_GET_VECTOR2I
+#undef OP_GET_VECTOR3
+#undef OP_GET_VECTOR3I
+#undef OP_GET_QUAT
+#undef OP_GET_COLOR
+#undef OP_GET_STRING
+#undef OP_GET_ARRAY
+#undef OP_GET_BYTE_ARRAY
+#undef OP_GET_INT32_ARRAY
+#undef OP_GET_INT64_ARRAY
+#undef OP_GET_FLOAT32_ARRAY
+#undef OP_GET_FLOAT64_ARRAY
+#undef OP_GET_STRING_ARRAY
+#undef OP_GET_VECTOR2_ARRAY
+#undef OP_GET_VECTOR3_ARRAY
+#undef OP_GET_COLOR_ARRAY
+#undef OP_GET_TRANSFORM
+#undef OP_GET_TRANSFORM2D
+#undef OPCODE_OP_MATH_TYPE
+#undef OPCODE_OP_CALL_TYPE
+#undef OPCODE_OP_NO_INIT_TYPE
+#undef OPCODE_OP_MATH_NUMBER
+#undef OPCODE_OP_MATH_VECTOR
+#undef OPCODE_OP_MATH_WITH_NUMBERS
+#undef OPCODE_OP_MATH_WITH_NUMBERS_REV
+#undef OPCODE_OP_CONCAT_ARRAYS
+
 const int *GDScriptFunction::get_code() const {
 	return _code_ptr;
 }
@@ -2376,6 +2992,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 1;
 			} break;
+			default:
+				break; // FIXME: Remove default case when disassembler is complete.
 		}
 
 		ip += incr;

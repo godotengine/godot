@@ -38,7 +38,10 @@
 class VariantInternal {
 public:
 	// Set type.
-	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) { v->type = p_type; }
+	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
+		v->clear();
+		v->type = p_type;
+	}
 
 	// Atomic types.
 	_FORCE_INLINE_ static bool *get_bool(Variant *v) { return &v->_data._bool; }

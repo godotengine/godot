@@ -155,10 +155,175 @@ struct GDScriptDataType {
 	GDScriptDataType() {}
 };
 
+#define OPCODE_OP_NUMBER(m_op)            \
+	OPCODE_OP_##m_op##_INT_INT,           \
+			OPCODE_OP_##m_op##_INT_FLOAT, \
+			OPCODE_OP_##m_op##_FLOAT_INT, \
+			OPCODE_OP_##m_op##_FLOAT_FLOAT
+
+#define OPCODE_OP_VECTOR(m_op)                    \
+	OPCODE_OP_##m_op##_VECTOR2_VECTOR2,           \
+			OPCODE_OP_##m_op##_VECTOR2I_VECTOR2I, \
+			OPCODE_OP_##m_op##_VECTOR3_VECTOR3,   \
+			OPCODE_OP_##m_op##_VECTOR3I_VECTOR3I
+
+#define OPCODE_OP_ARRAYS(m_op)                                            \
+	OPCODE_OP_##m_op##_ARRAY_ARRAY,                                       \
+			OPCODE_OP_##m_op##_PACKED_BYTE_ARRAY_PACKED_BYTE_ARRAY,       \
+			OPCODE_OP_##m_op##_PACKED_INT32_ARRAY_PACKED_INT32_ARRAY,     \
+			OPCODE_OP_##m_op##_PACKED_INT64_ARRAY_PACKED_INT64_ARRAY,     \
+			OPCODE_OP_##m_op##_PACKED_FLOAT32_ARRAY_PACKED_FLOAT32_ARRAY, \
+			OPCODE_OP_##m_op##_PACKED_FLOAT64_ARRAY_PACKED_FLOAT64_ARRAY, \
+			OPCODE_OP_##m_op##_PACKED_STRING_ARRAY_PACKED_STRING_ARRAY,   \
+			OPCODE_OP_##m_op##_PACKED_VECTOR2_ARRAY_PACKED_VECTOR2_ARRAY, \
+			OPCODE_OP_##m_op##_PACKED_VECTOR3_ARRAY_PACKED_VECTOR3_ARRAY, \
+			OPCODE_OP_##m_op##_PACKED_COLOR_ARRAY_PACKED_COLOR_ARRAY
+
+#define OPCODE_OP_TYPE_NUMBER(m_op, m_type)    \
+	OPCODE_OP_##m_op##_##m_type##_##m_type,    \
+			OPCODE_OP_##m_op##_##m_type##_INT, \
+			OPCODE_OP_##m_op##_##m_type##_FLOAT
+
+#define OPCODE_OP_TYPE_NUMBER_REV(m_op, m_type) \
+	OPCODE_OP_##m_op##_INT_##m_type,            \
+			OPCODE_OP_##m_op##_FLOAT_##m_type
+
+#define OPCODE_ALL_TYPES(m_op)                    \
+	OPCODE_##m_op##_BOOL,                         \
+			OPCODE_##m_op##_INT,                  \
+			OPCODE_##m_op##_FLOAT,                \
+			OPCODE_##m_op##_STRING,               \
+			OPCODE_##m_op##_VECTOR2,              \
+			OPCODE_##m_op##_VECTOR2I,             \
+			OPCODE_##m_op##_VECTOR3,              \
+			OPCODE_##m_op##_VECTOR3I,             \
+			OPCODE_##m_op##_TRANSFORM2D,          \
+			OPCODE_##m_op##_PLANE,                \
+			OPCODE_##m_op##_QUAT,                 \
+			OPCODE_##m_op##_AABB,                 \
+			OPCODE_##m_op##_BASIS,                \
+			OPCODE_##m_op##_TRANSFORM,            \
+			OPCODE_##m_op##_COLOR,                \
+			OPCODE_##m_op##_STRING_NAME,          \
+			OPCODE_##m_op##_RID,                  \
+			OPCODE_##m_op##_OBJECT,               \
+			OPCODE_##m_op##_CALLABLE,             \
+			OPCODE_##m_op##_SIGNAL,               \
+			OPCODE_##m_op##_DICTIONARY,           \
+			OPCODE_##m_op##_ARRAY,                \
+			OPCODE_##m_op##_PACKED_BYTE_ARRAY,    \
+			OPCODE_##m_op##_PACKED_INT32_ARRAY,   \
+			OPCODE_##m_op##_PACKED_INT64_ARRAY,   \
+			OPCODE_##m_op##_PACKED_FLOAT32_ARRAY, \
+			OPCODE_##m_op##_PACKED_FLOAT64_ARRAY, \
+			OPCODE_##m_op##_PACKED_STRING_ARRAY,  \
+			OPCODE_##m_op##_PACKED_VECTOR2_ARRAY, \
+			OPCODE_##m_op##_PACKED_VECTOR3_ARRAY, \
+			OPCODE_##m_op##_PACKED_COLOR_ARRAY
+
 class GDScriptFunction {
 public:
 	enum Opcode {
 		OPCODE_OPERATOR,
+
+		// Typed operators.
+		// Addition.
+		OPCODE_OP_NUMBER(ADD),
+		OPCODE_OP_VECTOR(ADD),
+		OPCODE_OP_ADD_QUAT_QUAT,
+		OPCODE_OP_ADD_COLOR_COLOR,
+		OPCODE_OP_CONCAT_STRING_STRING,
+		OPCODE_OP_ARRAYS(CONCAT),
+		// Subtraction.
+		OPCODE_OP_NUMBER(SUBTRACT),
+		OPCODE_OP_VECTOR(SUBTRACT),
+		OPCODE_OP_SUBTRACT_QUAT_QUAT,
+		OPCODE_OP_SUBTRACT_COLOR_COLOR,
+		// Multiplication.
+		OPCODE_OP_NUMBER(MULTIPLY),
+		OPCODE_OP_MULTIPLY_TRANSFORM2D_TRANSFORM2D,
+		OPCODE_OP_MULTIPLY_TRANSFORM2D_VECTOR2,
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, QUAT),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, QUAT),
+		OPCODE_OP_MULTIPLY_QUAT_VECTOR3,
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2),
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2I),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2I),
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3),
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3I),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3I),
+		OPCODE_OP_TYPE_NUMBER(MULTIPLY, COLOR),
+		OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, COLOR),
+		// Division.
+		OPCODE_OP_NUMBER(DIVIDE),
+		OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2),
+		OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2I),
+		OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3),
+		OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3I),
+		OPCODE_OP_TYPE_NUMBER(DIVIDE, COLOR),
+		OPCODE_OP_DIVIDE_QUAT_FLOAT,
+		// Modulo.
+		OPCODE_OP_MODULO_INT_INT,
+		// Unary operators.
+		// Negate.
+		OPCODE_OP_NEGATE_INT,
+		OPCODE_OP_NEGATE_FLOAT,
+		OPCODE_OP_NEGATE_VECTOR2,
+		OPCODE_OP_NEGATE_VECTOR2I,
+		OPCODE_OP_NEGATE_VECTOR3,
+		OPCODE_OP_NEGATE_VECTOR3I,
+		OPCODE_OP_NEGATE_QUAT,
+		OPCODE_OP_NEGATE_COLOR,
+		// Positive does nothing, so it's not an operator.
+		// Bitwise operators.
+		OPCODE_OP_BIT_NEGATE_INT,
+		OPCODE_OP_BIT_AND_INT_INT,
+		OPCODE_OP_BIT_OR_INT_INT,
+		OPCODE_OP_BIT_XOR_INT_INT,
+		OPCODE_OP_SHIFT_LEFT,
+		OPCODE_OP_SHIFT_RIGHT,
+		// Logic operators.
+		OPCODE_OP_NOT,
+		OPCODE_OP_AND,
+		OPCODE_OP_OR,
+		// Comparison operators.
+		OPCODE_ALL_TYPES(OP_EQUAL),
+		// Equal.
+		// Numbers can be swapped.
+		OPCODE_OP_EQUAL_INT_FLOAT,
+		OPCODE_OP_EQUAL_FLOAT_INT,
+		// String is compatible with NodePath and StringName.
+		OPCODE_OP_EQUAL_STRING_STRING_NAME,
+		OPCODE_OP_EQUAL_STRING_NAME_STRING,
+		OPCODE_OP_EQUAL_STRING_NODE_PATH,
+		OPCODE_OP_EQUAL_NODE_PATH_STRING,
+		// Not equal.
+		OPCODE_ALL_TYPES(OP_NOT_EQUAL),
+		// Numbers can be swapped.
+		OPCODE_OP_NOT_EQUAL_INT_FLOAT,
+		OPCODE_OP_NOT_EQUAL_FLOAT_INT,
+		// String is compatible with NodePath and StringName.
+		OPCODE_OP_NOT_EQUAL_STRING_STRING_NAME,
+		OPCODE_OP_NOT_EQUAL_STRING_NAME_STRING,
+		OPCODE_OP_NOT_EQUAL_STRING_NODE_PATH,
+		OPCODE_OP_NOT_EQUAL_NODE_PATH_STRING,
+		// Less than.
+		OPCODE_OP_LESS_BOOL_BOOL,
+		OPCODE_OP_NUMBER(LESS),
+		OPCODE_OP_VECTOR(LESS),
+		// Less than or equal to.
+		OPCODE_OP_NUMBER(LESS_EQUAL),
+		OPCODE_OP_VECTOR(LESS_EQUAL),
+		// Greater than.
+		OPCODE_OP_GREATER_BOOL_BOOL,
+		OPCODE_OP_NUMBER(GREATER),
+		OPCODE_OP_VECTOR(GREATER),
+		// Greater than or equal to.
+		OPCODE_OP_NUMBER(GREATER_EQUAL),
+		OPCODE_OP_VECTOR(GREATER_EQUAL),
+
 		OPCODE_EXTENDS_TEST,
 		OPCODE_IS_BUILTIN,
 		OPCODE_SET,
@@ -198,6 +363,13 @@ public:
 		OPCODE_LINE,
 		OPCODE_END
 	};
+
+#undef OPCODE_OP_NUMBER
+#undef OPCODE_OP_VECTOR
+#undef OPCODE_OP_ARRAYS
+#undef OPCODE_OP_TYPE_NUMBER
+#undef OPCODE_OP_TYPE_NUMBER_REV
+#undef OPCODE_ALL_TYPES
 
 	enum Address {
 		ADDR_BITS = 24,
