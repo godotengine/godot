@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InterpolatedCamera" inherits="Camera" version="3.2">
 	<brief_description>
-		Camera which moves toward another node.
+		[i]Deprecated.[/i] Camera which moves toward another node.
 	</brief_description>
 	<description>
-		InterpolatedCamera is a [Camera] which smoothly moves to match a target node's position and rotation.
+		[i]Deprecated (will be removed in Godot 4.0).[/i] InterpolatedCamera is a [Camera] which smoothly moves to match a target node's position and rotation.
 		If it is not [member enabled] or does not have a valid target set, InterpolatedCamera acts like a normal Camera.
 	</description>
 	<tutorials>
