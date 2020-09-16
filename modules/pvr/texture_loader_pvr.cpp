@@ -215,10 +215,12 @@ static void _compress_pvrtc4(Image *p_img) {
 			int ofs, size, w, h;
 			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
+			void *dst = (void *)bm.GetData();
+			copymem(dst, &r[ofs], size);
+			Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
 			for (int j = 0; j < size / 4; j++) {
-				Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
-				/* red and Green colors are swapped.  */
-				new (dp) Javelin::ColorRgba<unsigned char>(r[ofs + 4 * j + 2], r[ofs + 4 * j + 1], r[ofs + 4 * j], r[ofs + 4 * j + 3]);
+				/* red and blue colors are swapped.  */
+				SWAP(dp[j].r, dp[j].b);
 			}
 			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::PvrTcEncoder::EncodeRgba4Bpp(&wr[ofs], bm);

@@ -265,6 +265,7 @@ public:
 	virtual Ref<Texture> get_run_icon() const { return get_logo(); }
 
 	String test_etc2() const; //generic test for etc2 since most platforms use it
+	String test_etc2_or_pvrtc() const; // test for etc2 or pvrtc support for iOS
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
