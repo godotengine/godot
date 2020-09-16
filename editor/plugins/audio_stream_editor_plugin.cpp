@@ -37,29 +37,32 @@
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY) {
-		AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
-	}
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
+		} break;
 
-	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
-		_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
-		_preview->set_color(get_theme_color("dark_color_2", "Editor"));
-		set_color(get_theme_color("dark_color_1", "Editor"));
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
+			_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
+			_preview->set_color(get_theme_color("dark_color_2", "Editor"));
+			set_color(get_theme_color("dark_color_1", "Editor"));
 
-		_indicator->update();
-		_preview->update();
-	}
+			_indicator->update();
+			_preview->update();
+		} break;
 
-	if (p_what == NOTIFICATION_PROCESS) {
-		_current = _player->get_playback_position();
-		_indicator->update();
-	}
+		case NOTIFICATION_PROCESS: {
+			_current = _player->get_playback_position();
+			_indicator->update();
+		} break;
 
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (!is_visible_in_tree()) {
-			_stop();
-		}
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible_in_tree()) {
+				_stop();
+			}
+		} break;
 	}
 }
 
@@ -79,9 +82,8 @@ void AudioStreamEditor::_draw_preview() {
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
-		int idx = i;
-		lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		lines.write[i * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+		lines.write[i * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 	}
 
 	Vector<Color> color;
@@ -109,6 +111,10 @@ void AudioStreamEditor::_play() {
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		set_process(false);
 	} else {
+		if (_current >= _player->get_stream()->get_length()) {
+			_current = 0;
+		}
+
 		_player->play(_current);
 		_play_button->set_icon(get_theme_icon("Pause", "EditorIcons"));
 		set_process(true);
@@ -124,11 +130,13 @@ void AudioStreamEditor::_stop() {
 }
 
 void AudioStreamEditor::_on_finished() {
+	// _current is always less than _player->get_playback_position() when this signal is emitted.
+	// Update _current here, and reset the playback indicator in _play instead.
+
 	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
-	if (_current == _player->get_stream()->get_length()) {
-		_current = 0;
-		_indicator->update();
-	}
+	_current = _player->get_playback_position();
+	_indicator->update();
+	set_process(false);
 }
 
 void AudioStreamEditor::_draw_indicator() {
