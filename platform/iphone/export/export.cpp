@@ -160,9 +160,8 @@ public:
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-	if (driver == "GLES2") {
-		r_features->push_back("etc");
-	} else if (driver == "Vulkan") {
+	r_features->push_back("pvrtc");
+	if (driver == "Vulkan") {
 		// FIXME: Review if this is correct.
 		r_features->push_back("etc2");
 	}
@@ -1649,7 +1648,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
-	String etc_error = test_etc2();
+	String etc_error = test_etc2_or_pvrtc();
 	if (etc_error != String()) {
 		valid = false;
 		err += etc_error;

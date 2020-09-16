@@ -1406,6 +1406,20 @@ String EditorExportPlatform::test_etc2() const {
 	return String();
 }
 
+String EditorExportPlatform::test_etc2_or_pvrtc() const {
+	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2");
+	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc");
+
+	if (driver == "GLES2" && !pvrtc_supported) {
+		return TTR("Target platform requires 'PVRTC' texture compression for GLES2. Enable 'Import Pvrtc' in Project Settings.");
+	} else if (driver == "Vulkan" && !etc2_supported && !pvrtc_supported) {
+		// FIXME: Review if this is true for Vulkan.
+		return TTR("Target platform requires 'ETC2' or 'PVRTC' texture compression for Vulkan. Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings.");
+	}
+	return String();
+}
+
 int EditorExport::get_export_preset_count() const {
 	return export_presets.size();
 }
