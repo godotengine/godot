@@ -1315,6 +1315,7 @@ uint32_t LargeTexture::get_flags() const {
 
 int LargeTexture::add_piece(const Point2 &p_offset, const Ref<Texture> &p_texture) {
 
+	ERR_FAIL_COND_V(p_texture == this, -1);
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Piece p;
 	p.offset = p_offset;
@@ -1389,6 +1390,10 @@ Ref<Image> LargeTexture::to_image() const {
 	for (int i = 0; i < pieces.size(); i++) {
 
 		Ref<Image> src_img = pieces[i].texture->get_data();
+		// TODO
+		if (!src_img.is_valid()) {
+			continue;
+		}
 		img->blit_rect(src_img, Rect2(0, 0, src_img->get_width(), src_img->get_height()), pieces[i].offset);
 	}
 
@@ -1415,65 +1420,97 @@ void LargeTexture::_bind_methods() {
 
 void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	for (int i = 0; i < pieces.size(); i++) {
+	if (size.x == 0 || size.y == 0) {
+		return;
+	}
 
-		// TODO
-		pieces[i].texture->draw(p_canvas_item, pieces[i].offset + p_pos, p_modulate, p_transpose, p_normal_map);
+	Rect2 region(Point2(), size);
+
+	for (int i = 0; i < pieces.size(); i++) {
+		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
+		if (!region.intersects(rect)) {
+			continue;
+		}
+		Rect2 src_rect = region.clip(rect);
+		src_rect.position = -Point2(MIN(pieces[i].offset.x, 0), MIN(pieces[i].offset.y, 0));
+		Rect2 dst_rect(Point2(MAX(pieces[i].offset.x, 0), MAX(pieces[i].offset.y, 0)), src_rect.size);
+
+		pieces[i].texture->draw_rect_region(p_canvas_item, dst_rect, src_rect, p_modulate, p_transpose, p_normal_map, false);
 	}
 }
 
 void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
 	//tiling not supported for this
-	if (size.x == 0 || size.y == 0)
+	if (size.x == 0 || size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / size;
+	Rect2 rect(Point2(), size);
 
 	for (int i = 0; i < pieces.size(); i++) {
-
-		// TODO
-		pieces[i].texture->draw_rect(p_canvas_item, Rect2(pieces[i].offset * scale + p_rect.position, pieces[i].texture->get_size() * scale), false, p_modulate, p_transpose, p_normal_map);
+		Rect2 src_rect;
+		Rect2 dst_rect;
+		if (!_get_draw_region(pieces[i].offset, pieces[i].texture->get_size(), scale, p_rect, rect, dst_rect, src_rect)) {
+			continue;
+		}
+		pieces[i].texture->draw_rect_region(p_canvas_item, dst_rect, src_rect, p_modulate, p_transpose, p_normal_map, false);
 	}
 }
 void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
 	//tiling not supported for this
-	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0)
+	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0) {
 		return;
+	}
 
 	Size2 scale = p_rect.size / p_src_rect.size;
 
 	for (int i = 0; i < pieces.size(); i++) {
-
-		// TODO
-		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
-		if (!p_src_rect.intersects(rect))
+		Rect2 src_rect;
+		Rect2 dst_rect;
+		if (!_get_draw_region(pieces[i].offset, pieces[i].texture->get_size(), scale, p_rect, p_src_rect, dst_rect, src_rect)) {
 			continue;
-		Rect2 local = p_src_rect.clip(rect);
-		Rect2 target = local;
-		target.size *= scale;
-		target.position = p_rect.position + (p_src_rect.position + rect.position) * scale;
-		local.position -= rect.position;
-		pieces[i].texture->draw_rect_region(p_canvas_item, target, local, p_modulate, p_transpose, p_normal_map, false);
+		}
+		pieces[i].texture->draw_rect_region(p_canvas_item, dst_rect, src_rect, p_modulate, p_transpose, p_normal_map, false);
 	}
+}
+
+bool LargeTexture::_get_draw_region(const Point2 &p_offset, const Size2 &p_size, const Size2 &p_scale, const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+	Rect2 rect(p_offset, p_size);
+	if (!p_src_rect.intersects(rect)) {
+		return false;
+	}
+
+	r_src_rect = p_src_rect.clip(rect);
+	r_src_rect.position = -Point2(MIN(p_offset.x, 0), MIN(p_offset.y, 0));
+
+	r_rect = Rect2(Point2(MAX(p_offset.x, 0), MAX(p_offset.y, 0)), r_src_rect.size * p_scale);
+	Point2 start = ((r_rect.position - size / 2) * p_scale.sign() + size / 2) * p_scale.abs(); // flip
+	Point2 end = start + r_rect.size;
+	r_rect.position = p_rect.position + Point2(MIN(start.x, end.x), MIN(start.y, end.y)); // top-left of draw region
+
+	return true;
 }
 
 bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
 
+	if (size.x == 0 || size.y == 0) {
+		return true;
+	}
+
 	for (int i = 0; i < pieces.size(); i++) {
-
-		// TODO
-		if (!pieces[i].texture.is_valid())
+		if (!pieces[i].texture.is_valid()) {
 			continue;
-
+		}
 		Rect2 rect(pieces[i].offset, pieces[i].texture->get_size());
-		if (rect.has_point(Point2(p_x, p_y))) {
-			return pieces[i].texture->is_pixel_opaque(p_x - rect.position.x, p_y - rect.position.y);
+		if (rect.has_point(Point2(p_x, p_y)) && pieces[i].texture->is_pixel_opaque(p_x - rect.position.x, p_y - rect.position.y)) {
+			return true;
 		}
 	}
 
-	return true;
+	return false;
 }
 
 LargeTexture::LargeTexture() {
