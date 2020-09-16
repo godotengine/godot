@@ -227,21 +227,8 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	f->store_8('S');
 	f->store_8('T'); //godot streamable texture
 
-	bool resize_to_po2 = false;
-
-	if (p_compress_mode == COMPRESS_VIDEO_RAM && p_force_po2_for_compressed && (p_mipmaps || p_texture_flags & Texture::FLAG_REPEAT)) {
-		resize_to_po2 = true;
-		f->store_16(next_power_of_2(p_image->get_width()));
-		f->store_16(p_image->get_width());
-		f->store_16(next_power_of_2(p_image->get_height()));
-		f->store_16(p_image->get_height());
-	} else {
-		f->store_16(p_image->get_width());
-		f->store_16(0);
-		f->store_16(p_image->get_height());
-		f->store_16(0);
-	}
-	f->store_32(p_texture_flags);
+	int orig_width = p_image->get_width();
+	int orig_height = p_image->get_height();
 
 	uint32_t format = 0;
 
@@ -262,6 +249,12 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
+
+			f->store_16(orig_width);
+			f->store_16(0);
+			f->store_16(orig_height);
+			f->store_16(0);
+			f->store_32(p_texture_flags);
 
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
@@ -292,6 +285,13 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 		} break;
 		case COMPRESS_LOSSY: {
+
+			f->store_16(orig_width);
+			f->store_16(0);
+			f->store_16(orig_height);
+			f->store_16(0);
+			f->store_32(p_texture_flags);
+
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
 				image->generate_mipmaps();
@@ -322,9 +322,15 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_VIDEO_RAM: {
 
 			Ref<Image> image = p_image->duplicate();
-			if (resize_to_po2) {
-				image->resize_to_po2();
+
+			if (p_force_po2_for_compressed || p_mipmaps || p_texture_flags & Texture::FLAG_REPEAT) {
+				if (p_vram_compression == Image::COMPRESS_PVRTC4 || p_vram_compression == Image::COMPRESS_ETC) {
+					// we don't need to resize image there, because encoder will resize it by more proper way
+				} else {
+					image->resize_to_po2();
+				}
 			}
+
 			if (p_mipmaps) {
 				image->generate_mipmaps(p_force_normal);
 			}
@@ -342,6 +348,13 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 				image->compress(p_vram_compression, csource, p_lossy_quality);
 			}
 
+			// save image dimensions after compressing, because the compressor can resize it
+			f->store_16(image->get_width());
+			f->store_16(orig_width);
+			f->store_16(image->get_height());
+			f->store_16(orig_height);
+			f->store_32(p_texture_flags);
+
 			format |= image->get_format();
 
 			f->store_32(format);
@@ -352,6 +365,12 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 			f->store_buffer(r.ptr(), dl);
 		} break;
 		case COMPRESS_UNCOMPRESSED: {
+
+			f->store_16(orig_width);
+			f->store_16(0);
+			f->store_16(orig_height);
+			f->store_16(0);
+			f->store_32(p_texture_flags);
 
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
