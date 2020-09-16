@@ -54,7 +54,7 @@ complete -c godot -l quit -d "Quit after the first iteration"
 complete -c godot -s l -l language -d "Use a specific locale (<locale> being a two-letter code)" -x
 complete -c godot -l path -d "Path to a project (<directory> must contain a 'project.godot' file)" -r
 complete -c godot -s u -l upwards -d "Scan folders upwards for project.godot file"
-complete -c godot -l main-pack -d "Path to a pack (.pck) file to load" -r
+complete -c godot -l main-pack -d "Path to a pack (.pck/.zip) file to load" -r
 complete -c godot -l render-thread -d "Set the render thread mode" -x -a "unsafe safe separate"
 complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] address)" -x
 complete -c godot -l remote-fs-password -d "Password for remote filesystem" -x
