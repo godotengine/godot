@@ -227,7 +227,9 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
+#ifdef MODULE_FREETYPE_ENABLED
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
+#endif
 
 static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
 static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
@@ -245,8 +247,10 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	resource_loader_dynamic_font.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_dynamic_font);
+#endif
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
@@ -727,10 +731,12 @@ void register_scene_types() {
 
 	ClassDB::register_class<TextFile>();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ClassDB::register_class<DynamicFontData>();
 	ClassDB::register_class<DynamicFont>();
 
 	DynamicFont::initialize_dynamic_fonts();
+#endif
 
 	ClassDB::register_virtual_class<StyleBox>();
 	ClassDB::register_class<StyleBoxEmpty>();
@@ -952,8 +958,10 @@ void unregister_scene_types() {
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	ResourceLoader::remove_resource_format_loader(resource_loader_dynamic_font);
 	resource_loader_dynamic_font.unref();
+#endif
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
@@ -964,7 +972,9 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();
 
+#ifdef MODULE_FREETYPE_ENABLED
 	DynamicFont::finish_dynamic_fonts();
+#endif
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
 	resource_saver_text.unref();
