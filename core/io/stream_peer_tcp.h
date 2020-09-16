@@ -55,8 +55,9 @@ protected:
 	Status status = STATUS_NONE;
 	IP_Address peer_host;
 	uint16_t peer_port = 0;
+	uint16_t client_port = 0;
 
-	Error _connect(const String &p_address, int p_port);
+	Error _connect(const String &p_address, int p_port, int c_port = 0);
 	Error _poll_connection();
 	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
 	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
@@ -64,12 +65,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port);
+	void accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint16_t p_port); // Kept 'uint16_t p_port' since it is only being used internally.
 
-	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
+	Error connect_to_host(const IP_Address &p_host, int p_port, int c_port = 0);
 	bool is_connected_to_host() const;
 	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
+	int get_connected_port() const;
+	int get_client_port() const;
 	void disconnect_from_host();
 
 	int get_available_bytes() const override;
