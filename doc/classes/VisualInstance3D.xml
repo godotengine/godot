@@ -13,7 +13,7 @@
 			<return type="AABB">
 			</return>
 			<description>
-				Returns the [AABB] (also known as the bounding box) for this [VisualInstance3D].
+				Returns the [AABB] (also known as the bounding box) for this [VisualInstance3D]. See also [method get_transformed_aabb].
 			</description>
 		</method>
 		<method name="get_base" qualifiers="const">
@@ -44,7 +44,7 @@
 			</return>
 			<description>
 				Returns the transformed [AABB] (also known as the bounding box) for this [VisualInstance3D].
-				Transformed in this case means the [AABB] plus the position, rotation, and scale of the [Node3D]'s [Transform].
+				Transformed in this case means the [AABB] plus the position, rotation, and scale of the [Node3D]'s [Transform]. See also [method get_aabb].
 			</description>
 		</method>
 		<method name="set_base">
