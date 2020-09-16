@@ -4,7 +4,8 @@
 		[VideoStream] resource for Ogg Theora videos.
 	</brief_description>
 	<description>
-		[VideoStream] resource handling the [url=https://www.theora.org/]Ogg Theora[/url] video format with [code].ogv[/code] extension.
+		[VideoStream] resource handling the [url=https://www.theora.org/]Ogg Theora[/url] video format with [code].ogv[/code] extension. The Theora codec is less efficient than [VideoStreamWebm]'s VP8 and VP9, but it requires less CPU resources to decode. The Theora codec is decoded on the CPU.
+		[b]Note:[/b] While Ogg Theora videos can also have an [code].ogg[/code] extension, you will have to rename the extension to [code].ogv[/code] to use those videos within Godot.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,7 +23,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
-				Sets the Ogg Theora video file that this [VideoStreamTheora] resource handles. The [code]file[/code] name should have the [code].o[/code] extension.
+				Sets the Ogg Theora video file that this [VideoStreamTheora] resource handles. The [code]file[/code] name should have the [code].ogv[/code] extension.
 			</description>
 		</method>
 	</methods>
