@@ -683,35 +683,49 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 
-Point2i DisplayServerX11::screen_get_position(int p_screen) const {
-	_THREAD_SAFE_METHOD_
+Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
+	Rect2i rect(0, 0, 0, 0);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
 	}
 
-	// Using Xinerama Extension
+	ERR_FAIL_COND_V(p_screen < 0, rect);
+
+	// Using Xinerama Extension.
 	int event_base, error_base;
-	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) {
-		return Point2i(0, 0);
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+
+		// Check if screen is valid.
+		if (p_screen < count) {
+			rect.position.x = xsi[p_screen].x_org;
+			rect.position.y = xsi[p_screen].y_org;
+			rect.size.width = xsi[p_screen].width;
+			rect.size.height = xsi[p_screen].height;
+		} else {
+			ERR_PRINT("Invalid screen index: " + itos(p_screen) + "(count: " + itos(count) + ").");
+		}
+
+		if (xsi) {
+			XFree(xsi);
+		}
 	}
 
-	int count;
-	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
+	return rect;
+}
 
-	// Check if screen is valid
-	ERR_FAIL_INDEX_V(p_screen, count, Point2i(0, 0));
+Point2i DisplayServerX11::screen_get_position(int p_screen) const {
+	_THREAD_SAFE_METHOD_
 
-	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
-
-	XFree(xsi);
-
-	return position;
+	return _screen_get_rect(p_screen).position;
 }
 
 Size2i DisplayServerX11::screen_get_size(int p_screen) const {
-	return screen_get_usable_rect(p_screen).size;
+	_THREAD_SAFE_METHOD_
+
+	return _screen_get_rect(p_screen).size;
 }
 
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
@@ -1011,22 +1025,31 @@ void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	int count = get_screen_count();
+	if (count < 2) {
+		// Early exit with single monitor.
+		return 0;
+	}
+
+	ERR_FAIL_COND_V(!windows.has(p_window), 0);
 	const WindowData &wd = windows[p_window];
 
-	int x, y;
-	Window child;
-	XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+	const Rect2i window_rect(wd.position, wd.size);
 
-	int count = get_screen_count();
+	// Find which monitor has the largest overlap with the given window.
+	int screen_index = 0;
+	int max_area = 0;
 	for (int i = 0; i < count; i++) {
-		Point2i pos = screen_get_position(i);
-		Size2i size = screen_get_size(i);
-		if ((x >= pos.x && x < pos.x + size.width) && (y >= pos.y && y < pos.y + size.height)) {
-			return i;
+		Rect2i screen_rect = _screen_get_rect(i);
+		Rect2i intersection = screen_rect.intersection(window_rect);
+		int area = intersection.get_area();
+		if (area > max_area) {
+			max_area = area;
+			screen_index = i;
 		}
 	}
-	return 0;
+
+	return screen_index;
 }
 
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
