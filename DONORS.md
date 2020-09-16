@@ -14,7 +14,6 @@ generous deed immortalized in the next stable release of Godot Engine.
 
     Gamblify <https://www.gamblify.com>
     Heroic Labs <https://heroiclabs.com>
-    Interblock <http://interblockgaming.com>
 
 ## Gold sponsors
 
