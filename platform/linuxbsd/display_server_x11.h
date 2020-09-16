@@ -187,6 +187,8 @@ class DisplayServerX11 : public DisplayServer {
 
 	bool _refresh_device_info();
 
+	Rect2i _screen_get_rect(int p_screen) const;
+
 	unsigned int _get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void _flush_mouse_motion();
