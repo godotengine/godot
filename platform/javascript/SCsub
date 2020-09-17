@@ -8,6 +8,7 @@ javascript_files = [
     "javascript_eval.cpp",
     "javascript_main.cpp",
     "os_javascript.cpp",
+    "api/javascript_tools_editor_plugin.cpp",
 ]
 
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
