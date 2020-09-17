@@ -56,19 +56,6 @@ void EditorHelp::_init_colors() {
 	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 }
 
-void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
-	if (!is_visible_in_tree()) {
-		return;
-	}
-
-	Ref<InputEventKey> k = p_ev;
-
-	if (k.is_valid() && k->get_control() && k->get_keycode() == KEY_F) {
-		search->grab_focus();
-		search->select_all();
-	}
-}
-
 void EditorHelp::_search(bool p_search_previous) {
 	if (p_search_previous) {
 		find_bar->search_prev();
@@ -1599,7 +1586,6 @@ void EditorHelp::set_scroll(int p_scroll) {
 void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_list_select", &EditorHelp::_class_list_select);
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
-	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 

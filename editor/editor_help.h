@@ -158,8 +158,6 @@ class EditorHelp : public VBoxContainer {
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
 
-	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
-
 	String _fix_constant(const String &p_constant) const;
 
 protected:
