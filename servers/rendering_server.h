@@ -39,6 +39,7 @@
 #include "core/typed_array.h"
 #include "core/variant.h"
 #include "servers/display_server.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
@@ -1310,6 +1311,8 @@ public:
 	virtual void call_set_use_vsync(bool p_enable) = 0;
 
 	virtual bool is_low_end() const = 0;
+
+	RenderingDevice *create_local_rendering_device() const;
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
