@@ -110,7 +110,10 @@ class SceneTreeDock : public VBoxContainer {
 	Button *button_create_script;
 	Button *button_detach_script;
 
+	Button *button_2d;
 	Button *button_3d;
+	Button *button_ui;
+	Button *button_custom;
 
 	HBoxContainer *button_hb;
 	Button *edit_local, *edit_remote;

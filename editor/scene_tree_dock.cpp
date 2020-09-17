@@ -1115,7 +1115,7 @@ void SceneTreeDock::_notification(int p_what) {
 			beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
 			node_shortcuts->add_child(beginner_node_shortcuts);
 
-			Button *button_2d = memnew(Button);
+			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
 			button_2d->set_text(TTR("2D Scene"));
 			button_2d->set_icon(get_theme_icon("Node2D", "EditorIcons"));
@@ -1127,7 +1127,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_3d->set_icon(get_theme_icon("Node3D", "EditorIcons"));
 			button_3d->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_CREATE_3D_SCENE, false));
 
-			Button *button_ui = memnew(Button);
+			button_ui = memnew(Button);
 			beginner_node_shortcuts->add_child(button_ui);
 			button_ui->set_text(TTR("User Interface"));
 			button_ui->set_icon(get_theme_icon("Control", "EditorIcons"));
@@ -1137,7 +1137,7 @@ void SceneTreeDock::_notification(int p_what) {
 			favorite_node_shortcuts->set_name("FavoriteNodeShortcuts");
 			node_shortcuts->add_child(favorite_node_shortcuts);
 
-			Button *button_custom = memnew(Button);
+			button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
 			button_custom->set_text(TTR("Other Node"));
 			button_custom->set_icon(get_theme_icon("Add", "EditorIcons"));
@@ -1160,6 +1160,10 @@ void SceneTreeDock::_notification(int p_what) {
 			button_instance->set_icon(get_theme_icon("Instance", "EditorIcons"));
 			button_create_script->set_icon(get_theme_icon("ScriptCreate", "EditorIcons"));
 			button_detach_script->set_icon(get_theme_icon("ScriptRemove", "EditorIcons"));
+			button_2d->set_icon(get_theme_icon("Node2D", "EditorIcons"));
+			button_3d->set_icon(get_theme_icon("Node3D", "EditorIcons"));
+			button_ui->set_icon(get_theme_icon("Control", "EditorIcons"));
+			button_custom->set_icon(get_theme_icon("Add", "EditorIcons"));
 
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
