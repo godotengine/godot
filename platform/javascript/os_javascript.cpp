@@ -176,6 +176,7 @@ Size2 OS_JavaScript::get_window_size() const {
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
 
+#ifndef TOOLS_ENABLED
 	if (video_mode.fullscreen) {
 		window_maximized = p_enabled;
 		set_window_fullscreen(false);
@@ -193,6 +194,7 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 		emscripten_enter_soft_fullscreen(canvas_id.utf8().get_data(), &strategy);
 		window_maximized = p_enabled;
 	}
+#endif
 }
 
 bool OS_JavaScript::is_window_maximized() const {
@@ -942,10 +944,14 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		set_window_per_pixel_transparency_enabled(true);
 	}
 
+#ifdef TOOLS_ENABLED
+	bool gles3 = false;
+#else
 	bool gles3 = true;
 	if (p_video_driver == VIDEO_DRIVER_GLES2) {
 		gles3 = false;
 	}
+#endif
 
 	bool gl_initialization_error = false;
 
