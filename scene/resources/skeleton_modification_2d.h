@@ -129,7 +129,7 @@ public:
 	void set_enabled(bool p_enabled);
 	bool get_enabled();
 
-	SkeletonModificationStack2D *get_modification_stack();
+	Ref<SkeletonModificationStack2D> get_modification_stack();
 	void set_is_setup(bool p_setup);
 	bool get_is_setup() const;
 
@@ -485,7 +485,8 @@ class SkeletonModification2DTwoBoneIK : public SkeletonModification2D {
 private:
 	NodePath target_node;
 	ObjectID target_node_cache;
-	float target_minimum_distance = 6;
+	float target_minimum_distance = 0;
+	float target_maximum_distance = 0;
 	bool flip_bend_direction = false;
 
 	NodePath joint_one_bone2d_node;
@@ -516,6 +517,8 @@ public:
 
 	void set_target_minimum_distance(float p_minimum_distance);
 	float get_target_minimum_distance() const;
+	void set_target_maximum_distance(float p_maximum_distance);
+	float get_target_maximum_distance() const;
 	void set_flip_bend_direction(bool p_flip_direction);
 	bool get_flip_bend_direction() const;
 

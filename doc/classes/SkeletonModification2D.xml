@@ -25,6 +25,14 @@
 				Takes a angle and clamps it so it is within the passed-in [code]min[/code] and [code]max[/code] range. [code]invert[/code] will inversely clamp the angle, clamping it to the range outside of the given bounds.
 			</description>
 		</method>
+		<method name="draw_editor_gizmo" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+				Used for drawing [b]editor-only[/b] modification gizmos. This function will only be called in the Godot editor and can be overriden to draw custom gizmos.
+				[b]Note[/b]: You will need to use the Skeleton2D from [method SkeletonModificationStack2D.get_skeleton] and it's draw functions, as the [SkeletonModification2D] resource cannot draw on its own.
+			</description>
+		</method>
 		<method name="execute" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -32,6 +40,13 @@
 			</argument>
 			<description>
 				Executes the given modification. This is where the modification performs whatever function it is designed to do.
+			</description>
+		</method>
+		<method name="get_editor_draw_gizmo" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether this modification will call [method draw_editor_gizmo] in the Godot editor to draw modification-specific gizmos.
 			</description>
 		</method>
 		<method name="get_is_setup" qualifiers="const">
@@ -46,6 +61,15 @@
 			</return>
 			<description>
 				Returns the [SkeletonModificationStack2D] that this modification is bound to. Through the modification stack, you can access the Skeleton3D the modification is operating on.
+			</description>
+		</method>
+		<method name="set_editor_draw_gizmo">
+			<return type="void">
+			</return>
+			<argument index="0" name="draw_gizmo" type="bool">
+			</argument>
+			<description>
+				Sets whether this modification will call [method draw_editor_gizmo] in the Godot editor to draw modification-specific gizmos.
 			</description>
 		</method>
 		<method name="set_is_setup">

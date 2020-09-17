@@ -24,42 +24,6 @@
 				Returns the index of the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
-		<method name="get_joint_one_constraint_angle_invert" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the first bone in the TwoBoneIK modification is inverted.
-			</description>
-		</method>
-		<method name="get_joint_one_constraint_angle_max" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the maximum angle the first bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="get_joint_one_constraint_angle_min" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the minimum angle the first bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="get_joint_one_constraint_in_localspace" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the first bone in the TwoBoneIK modification are calculated in localspace.
-			</description>
-		</method>
-		<method name="get_joint_one_enable_constraint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the first bone in the TwoBoneIK modification are enabled.
-				[b]Note[/b]: Constraints are purely visual and not taken into account by the modification. This means that the modification may not find a solution when constraints are enabled, even if a solution may be possible.
-			</description>
-		</method>
 		<method name="get_joint_two_bone2d_node" qualifiers="const">
 			<return type="NodePath">
 			</return>
@@ -72,42 +36,6 @@
 			</return>
 			<description>
 				Returns the index of the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
-			</description>
-		</method>
-		<method name="get_joint_two_constraint_angle_invert" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the second bone in the TwoBoneIK modification is inverted.
-			</description>
-		</method>
-		<method name="get_joint_two_constraint_angle_max" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the maximum angle the second bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="get_joint_two_constraint_angle_min" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-				Returns the minimum angle the second bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="get_joint_two_constraint_in_localspace" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the second bone in the TwoBoneIK modification are calculated in localspace.
-			</description>
-		</method>
-		<method name="get_joint_two_enable_constraint" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the constraints applied to the second bone in the TwoBoneIK modification are enabled.
-				[b]Note[/b]: Constraints are purely visual and not taken into account by the modification. This means that the modification may not find a solution when constraints are enabled, even if a solution may be possible.
 			</description>
 		</method>
 		<method name="set_joint_one_bone2d_node">
@@ -128,53 +56,6 @@
 				Sets the index of the [Bone2D] node that is being used as the first bone in the TwoBoneIK modification.
 			</description>
 		</method>
-		<method name="set_joint_one_constraint_angle_invert">
-			<return type="void">
-			</return>
-			<argument index="0" name="invert" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the first bone in the TwoBoneIK modification is inverted.
-				An inverted joint constraint only constraints the joint to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
-			</description>
-		</method>
-		<method name="set_joint_one_constraint_angle_max">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
-			<description>
-				Sets the maximum angle the first bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="set_joint_one_constraint_angle_min">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
-			<description>
-				Sets the minimum angle the first bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="set_joint_one_constraint_in_localspace">
-			<return type="void">
-			</return>
-			<argument index="0" name="in_localspace" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the first bone in the TwoBoneIK modification are calculated in localspace.
-			</description>
-		</method>
-		<method name="set_joint_one_enable_constraint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable_constraint" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the first bone in the TwoBoneIK modification are enabled.
-				[b]Note[/b]: Constraints are purely visual and not taken into account by the modification. This means that the modification may not find a solution when constraints are enabled, even if a solution may be possible.
-			</description>
-		</method>
 		<method name="set_joint_two_bone2d_node">
 			<return type="void">
 			</return>
@@ -193,60 +74,16 @@
 				Sets the index of the [Bone2D] node that is being used as the second bone in the TwoBoneIK modification.
 			</description>
 		</method>
-		<method name="set_joint_two_constraint_angle_invert">
-			<return type="void">
-			</return>
-			<argument index="0" name="invert" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the second bone in the TwoBoneIK modification is inverted.
-				An inverted joint constraint only constraints the joint to the angles [i]outside of[/i] the inputted minimum and maximum angles. For this reason, it is referred to as an inverted joint constraint, as it constraints the joint to the outside of the inputted values.
-			</description>
-		</method>
-		<method name="set_joint_two_constraint_angle_max">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
-			<description>
-				Sets the maximum angle the second bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="set_joint_two_constraint_angle_min">
-			<return type="void">
-			</return>
-			<argument index="0" name="angle" type="float">
-			</argument>
-			<description>
-				Sets the minimum angle the second bone in the TwoBoneIK modification take rotate to, if constraints are enabled for this bone.
-			</description>
-		</method>
-		<method name="set_joint_two_constraint_in_localspace">
-			<return type="void">
-			</return>
-			<argument index="0" name="in_localspace" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the second bone in the TwoBoneIK modification are calculated in localspace.
-			</description>
-		</method>
-		<method name="set_joint_two_enable_constraint">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable_constraint" type="bool">
-			</argument>
-			<description>
-				Sets whether the constraints applied to the second bone in the TwoBoneIK modification are enabled.
-				[b]Note[/b]: Constraints are purely visual and not taken into account by the modification. This means that the modification may not find a solution when constraints are enabled, even if a solution may be possible.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="flip_bend_direction" type="bool" setter="set_flip_bend_direction" getter="get_flip_bend_direction" default="false">
 			When [code]true[/code], the bones in the modification will blend outward as opposed to inwards when contracting. When [code]false[/code], the bones will bend inwards when contracting.
 		</member>
-		<member name="target_minimum_distance" type="float" setter="set_target_minimum_distance" getter="get_target_minimum_distance" default="6.0">
-			The minimum distance the target can be at. If the target is closer than this distance, the modification will solve as if it's at this minimum distance.
+		<member name="target_maximum_distance" type="float" setter="set_target_maximum_distance" getter="get_target_maximum_distance" default="0.0">
+			The maximum distance the target can be at. If the target is farther than this distance, the modification will solve as if it's at this maximum distance. When set to [code]0[/code], the modification will solve without distance constraints.
+		</member>
+		<member name="target_minimum_distance" type="float" setter="set_target_minimum_distance" getter="get_target_minimum_distance" default="0.0">
+			The minimum distance the target can be at. If the target is closer than this distance, the modification will solve as if it's at this minimum distance. When set to [code]0[/code], the modification will solve without distance constraints.
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the TwoBoneIK modification. This node is what the modification will use when bending the [Bone2D] nodes.

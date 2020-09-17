@@ -315,6 +315,11 @@ void SkeletonModification2D::setup_modification(SkeletonModificationStack2D *p_s
 }
 
 void SkeletonModification2D::draw_editor_gizmo() {
+	if (get_script_instance()) {
+		if (get_script_instance()->has_method("draw_editor_gizmo")) {
+			get_script_instance()->call("draw_editor_gizmo");
+		}
+	}
 }
 
 bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_message) {
@@ -436,7 +441,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *operation_bon
 
 		if (constraint_inverted) {
 			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
-					(Math_PI * 2) - arc_angle_max, arc_angle_min, 32, bone_ik_color, 1.0);
+					arc_angle_min + (Math_PI * 2), arc_angle_max, 32, bone_ik_color, 1.0);
 		} else {
 			stack->skeleton->draw_arc(Vector2(0, 0), operation_bone->get_length(),
 					arc_angle_min, arc_angle_max, 32, bone_ik_color, 1.0);
@@ -451,7 +456,7 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *operation_bon
 	}
 }
 
-SkeletonModificationStack2D *SkeletonModification2D::get_modification_stack() {
+Ref<SkeletonModificationStack2D> SkeletonModification2D::get_modification_stack() {
 	return stack;
 }
 
@@ -474,7 +479,9 @@ int SkeletonModification2D::get_execution_mode() const {
 void SkeletonModification2D::set_editor_draw_gizmo(bool p_draw_gizmo) {
 	editor_draw_gizmo = p_draw_gizmo;
 #ifdef TOOLS_ENABLED
-	stack->set_editor_gizmos_dirty(true);
+	if (is_setup) {
+		stack->set_editor_gizmos_dirty(true);
+	}
 #endif // TOOLS_ENABLED
 }
 
@@ -485,6 +492,7 @@ bool SkeletonModification2D::get_editor_draw_gizmo() const {
 void SkeletonModification2D::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("execute", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("setup_modification", PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D")));
+	BIND_VMETHOD(MethodInfo("draw_editor_gizmo"));
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);
@@ -494,6 +502,8 @@ void SkeletonModification2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_execution_mode", "execution_mode"), &SkeletonModification2D::set_execution_mode);
 	ClassDB::bind_method(D_METHOD("get_execution_mode"), &SkeletonModification2D::get_execution_mode);
 	ClassDB::bind_method(D_METHOD("clamp_angle", "angle", "min", "max", "invert"), &SkeletonModification2D::clamp_angle);
+	ClassDB::bind_method(D_METHOD("set_editor_draw_gizmo", "draw_gizmo"), &SkeletonModification2D::set_editor_draw_gizmo);
+	ClassDB::bind_method(D_METHOD("get_editor_draw_gizmo"), &SkeletonModification2D::get_editor_draw_gizmo);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
@@ -2701,10 +2711,15 @@ void SkeletonModification2DTwoBoneIK::execute(float delta) {
 	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
 	bool override_angles_due_to_out_of_range = false;
 
+	if (joint_one_to_target < target_minimum_distance) {
+		joint_one_to_target = target_minimum_distance;
+	}
+	if (joint_one_to_target > target_maximum_distance && target_maximum_distance > 0.0) {
+		joint_one_to_target = target_maximum_distance;
+	}
+
 	if (bone_one_length + bone_two_length < joint_one_to_target) {
 		override_angles_due_to_out_of_range = true;
-	} else if (joint_one_to_target < target_minimum_distance) {
-		joint_one_to_target = target_minimum_distance;
 	}
 
 	if (!override_angles_due_to_out_of_range) {
@@ -2716,8 +2731,12 @@ void SkeletonModification2DTwoBoneIK::execute(float delta) {
 			angle_1 = -angle_1;
 		}
 
-		joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
-		joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+		if (isnan(angle_0) || isnan(angle_1)) {
+			// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
+		} else {
+			joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+			joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+		}
 	} else {
 		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
 		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
@@ -2877,6 +2896,15 @@ float SkeletonModification2DTwoBoneIK::get_target_minimum_distance() const {
 	return target_minimum_distance;
 }
 
+void SkeletonModification2DTwoBoneIK::set_target_maximum_distance(float p_distance) {
+	ERR_FAIL_COND_MSG(p_distance < 0, "Target maximum distance cannot be less than zero!");
+	target_maximum_distance = p_distance;
+}
+
+float SkeletonModification2DTwoBoneIK::get_target_maximum_distance() const {
+	return target_maximum_distance;
+}
+
 void SkeletonModification2DTwoBoneIK::set_flip_bend_direction(bool p_flip_direction) {
 	flip_bend_direction = p_flip_direction;
 
@@ -2963,6 +2991,8 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_target_minimum_distance", "minimum_distance"), &SkeletonModification2DTwoBoneIK::set_target_minimum_distance);
 	ClassDB::bind_method(D_METHOD("get_target_minimum_distance"), &SkeletonModification2DTwoBoneIK::get_target_minimum_distance);
+	ClassDB::bind_method(D_METHOD("set_target_maximum_distance", "maximum_distance"), &SkeletonModification2DTwoBoneIK::set_target_maximum_distance);
+	ClassDB::bind_method(D_METHOD("get_target_maximum_distance"), &SkeletonModification2DTwoBoneIK::get_target_maximum_distance);
 	ClassDB::bind_method(D_METHOD("set_flip_bend_direction", "flip_direction"), &SkeletonModification2DTwoBoneIK::set_flip_bend_direction);
 	ClassDB::bind_method(D_METHOD("get_flip_bend_direction"), &SkeletonModification2DTwoBoneIK::get_flip_bend_direction);
 
@@ -2977,7 +3007,8 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_NONE, ""), "set_target_minimum_distance", "get_target_minimum_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_RANGE, "0, 100000000, 0.01"), "set_target_minimum_distance", "get_target_minimum_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_maximum_distance", PROPERTY_HINT_NONE, "0, 100000000, 0.01"), "set_target_maximum_distance", "get_target_maximum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_bend_direction", PROPERTY_HINT_NONE, ""), "set_flip_bend_direction", "get_flip_bend_direction");
 	ADD_GROUP("", "");
 }
