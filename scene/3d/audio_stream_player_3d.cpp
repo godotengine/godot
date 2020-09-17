@@ -381,12 +381,17 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
 			//check if any area is diverting sound into a bus
-
-			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
+			PhysicsDirectSpaceState3D *space_state = nullptr;
+			if (PhysicsServer3D::get_singleton()->space_is_accessible(world_3d->get_space())) {
+				space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
+			}
 
 			PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+			int areas = 0;
+			if (space_state) {
+				areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+			}
 			Area3D *area = nullptr;
 
 			for (int i = 0; i < areas; i++) {

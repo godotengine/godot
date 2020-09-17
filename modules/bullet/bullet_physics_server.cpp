@@ -191,6 +191,11 @@ bool BulletPhysicsServer3D::space_is_active(RID p_space) const {
 	return -1 != active_spaces.find(space);
 }
 
+bool BulletPhysicsServer3D::space_is_accessible(RID p_space) const {
+	SpaceBullet *space = space_owner.getornull(p_space);
+	return (space != nullptr);
+}
+
 void BulletPhysicsServer3D::space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) {
 	SpaceBullet *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);

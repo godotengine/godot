@@ -106,6 +106,7 @@ public:
 	virtual RID space_create() override;
 	virtual void space_set_active(RID p_space, bool p_active) override;
 	virtual bool space_is_active(RID p_space) const override;
+	virtual bool space_is_accessible(RID p_space) const override;
 
 	/// Not supported
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) override;

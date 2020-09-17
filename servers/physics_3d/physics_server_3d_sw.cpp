@@ -158,6 +158,17 @@ bool PhysicsServer3DSW::space_is_active(RID p_space) const {
 	return active_spaces.has(space);
 }
 
+bool PhysicsServer3DSW::space_is_accessible(RID p_space) const {
+	Space3DSW *space = space_owner.getornull(p_space);
+	if (!space) {
+		return false;
+	}
+	if (!doing_sync || space->is_locked()) {
+		return false;
+	}
+	return true;
+}
+
 void PhysicsServer3DSW::space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) {
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);
