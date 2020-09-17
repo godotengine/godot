@@ -123,7 +123,7 @@ MenuButton::MenuButton() {
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_process_unhandled_key_input(true);
-	set_enabled_focus_mode(FOCUS_NONE);
+	set_focus_mode(FOCUS_NONE);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);

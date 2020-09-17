@@ -479,22 +479,24 @@ void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 		return;
 	}
 
-	if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT) {
-		viewport->update();
-	}
+	if (k.is_valid()) {
+		if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT) {
+			viewport->update();
+		}
 
-	if (k->is_pressed() && !k->get_control() && !k->is_echo()) {
-		if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
-			// Multiply the grid size
-			grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
-			viewport->update();
-		} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
-			// Divide the grid size
-			Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
-			if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
-				grid_step_multiplier--;
+		if (k->is_pressed() && !k->get_control() && !k->is_echo()) {
+			if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
+				// Multiply the grid size
+				grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
+				viewport->update();
+			} else if ((grid_snap_active || show_grid) && divide_grid_step_shortcut.is_valid() && divide_grid_step_shortcut->is_shortcut(p_ev)) {
+				// Divide the grid size
+				Point2 new_grid_step = grid_step * Math::pow(2.0, grid_step_multiplier - 1);
+				if (new_grid_step.x >= 1.0 && new_grid_step.y >= 1.0) {
+					grid_step_multiplier--;
+				}
+				viewport->update();
 			}
-			viewport->update();
 		}
 	}
 }
