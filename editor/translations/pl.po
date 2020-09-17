@@ -92,7 +92,7 @@ msgstr "Nieprawidłowy indeks we właściwości \"%s\" węzła %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Niepoprawny nazwany indeks \"%s\" dla bazowego typu %s"
+msgstr "Niepoprawnie nazwany indeks \"%s\" dla bazowego typu %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
