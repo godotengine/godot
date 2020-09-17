@@ -580,7 +580,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 	}
 }
 
-void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorAssetLibrary::_unhandled_key_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
@@ -1281,7 +1281,7 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
+	ClassDB::bind_method("_unhandled_key_input", &EditorAssetLibrary::_unhandled_key_input);
 
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
@@ -1454,7 +1454,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	description = nullptr;
 
 	set_process(true);
-	set_process_unhandled_input(true);
+	set_process_unhandled_key_input(true); // Global shortcuts since there is no main element to be focused.
 
 	downloads_scroll = memnew(ScrollContainer);
 	downloads_scroll->set_enable_h_scroll(true);

@@ -162,12 +162,14 @@ EditorLog::EditorLog() {
 	hb->add_child(copybutton);
 	copybutton->set_text(TTR("Copy"));
 	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
+	copybutton->set_shortcut_context(this);
 	copybutton->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
 	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
+	clearbutton->set_shortcut_context(this);
 	clearbutton->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
 
 	log = memnew(RichTextLabel);

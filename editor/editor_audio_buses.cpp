@@ -531,12 +531,6 @@ void EditorAudioBus::_effect_add(int p_which) {
 }
 
 void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
-		accept_event();
-		emit_signal("delete_request");
-	}
-
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 		Vector2 pos = Vector2(mb->get_position().x, mb->get_position().y);
@@ -803,12 +797,6 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hbc->add_child(bypass);
 	hbc->add_spacer();
 
-	bus_options = memnew(MenuButton);
-	bus_options->set_h_size_flags(SIZE_SHRINK_END);
-	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
-	bus_options->set_tooltip(TTR("Bus options"));
-	hbc->add_child(bus_options);
-
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
@@ -931,9 +919,16 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		effect_options->set_item_icon(effect_options->get_item_count() - 1, icon);
 	}
 
+	bus_options = memnew(MenuButton);
+	bus_options->set_shortcut_context(this);
+	bus_options->set_h_size_flags(SIZE_SHRINK_END);
+	bus_options->set_anchor(MARGIN_RIGHT, 0.0);
+	bus_options->set_tooltip(TTR("Bus options"));
+	hbc->add_child(bus_options);
+
 	bus_popup = bus_options->get_popup();
-	bus_popup->add_item(TTR("Duplicate"));
-	bus_popup->add_item(TTR("Delete"));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KEY_MASK_CMD | KEY_D));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));

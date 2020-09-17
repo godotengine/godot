@@ -50,6 +50,7 @@ private:
 	bool shortcut_in_tooltip;
 	bool keep_pressed_outside;
 	Ref<Shortcut> shortcut;
+	ObjectID shortcut_context;
 
 	ActionMode action_mode;
 	struct Status {
@@ -75,8 +76,10 @@ protected:
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void _gui_input(Ref<InputEvent> p_event);
-	virtual void _unhandled_input(Ref<InputEvent> p_event);
+	virtual void _unhandled_key_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
+
+	bool _is_focus_owner_in_shorcut_context() const;
 
 public:
 	enum DrawMode {
@@ -121,6 +124,9 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
+
+	void set_shortcut_context(Node *p_node);
+	Node *get_shortcut_context() const;
 
 	BaseButton();
 	~BaseButton();
