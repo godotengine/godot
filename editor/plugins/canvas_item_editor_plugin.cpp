@@ -5722,6 +5722,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_hb->add_child(zoom_minus);
 	zoom_minus->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_minus));
 	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS));
+	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(Button);
@@ -5734,6 +5735,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
+	zoom_reset->set_shortcut_context(this);
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_align(Button::TextAlign::ALIGN_CENTER);
 	// Prevent the button's size from changing when the text size changes
@@ -5744,6 +5746,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_hb->add_child(zoom_plus);
 	zoom_plus->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_plus));
 	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL)); // Usually direct access key for PLUS
+	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	updating_scroll = false;
@@ -5755,6 +5758,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	select_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), KEY_Q));
+	select_button->set_shortcut_context(this);
 	select_button->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate") + "\n" + TTR("Alt+Drag: Move") + "\n" + TTR("Press 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).") + "\n" + TTR("Alt+RMB: Depth list selection"));
 
 	hb->add_child(memnew(VSeparator));
@@ -5765,6 +5769,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	move_button->set_toggle_mode(true);
 	move_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), KEY_W));
+	move_button->set_shortcut_context(this);
 	move_button->set_tooltip(TTR("Move Mode"));
 
 	rotate_button = memnew(Button);
@@ -5773,6 +5778,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	rotate_button->set_toggle_mode(true);
 	rotate_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), KEY_E));
+	rotate_button->set_shortcut_context(this);
 	rotate_button->set_tooltip(TTR("Rotate Mode"));
 
 	scale_button = memnew(Button);
@@ -5781,6 +5787,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	scale_button->set_toggle_mode(true);
 	scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), KEY_S));
+	scale_button->set_shortcut_context(this);
 	scale_button->set_tooltip(TTR("Scale Mode"));
 
 	hb->add_child(memnew(VSeparator));
@@ -5805,6 +5812,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	pan_button->set_toggle_mode(true);
 	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), KEY_G));
+	pan_button->set_shortcut_context(this);
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
 	ruler_button = memnew(Button);
@@ -5813,6 +5821,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	ruler_button->set_toggle_mode(true);
 	ruler_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select), make_binds(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTR("Ruler Mode"), KEY_R));
+	ruler_button->set_shortcut_context(this);
 	ruler_button->set_tooltip(TTR("Ruler Mode"));
 
 	hb->add_child(memnew(VSeparator));
@@ -5824,6 +5833,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	smart_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
 	smart_snap_button->set_tooltip(TTR("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTR("Use Smart Snap"), KEY_MASK_SHIFT | KEY_S));
+	smart_snap_button->set_shortcut_context(this);
 
 	grid_snap_button = memnew(Button);
 	grid_snap_button->set_flat(true);
@@ -5832,8 +5842,10 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	grid_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
 	grid_snap_button->set_tooltip(TTR("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTR("Use Grid Snap"), KEY_MASK_SHIFT | KEY_G));
+	grid_snap_button->set_shortcut_context(this);
 
 	snap_config_menu = memnew(MenuButton);
+	snap_config_menu->set_shortcut_context(this);
 	hb->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
 	snap_config_menu->set_tooltip(TTR("Snapping Options"));
@@ -5893,6 +5905,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(memnew(VSeparator));
 
 	skeleton_menu = memnew(MenuButton);
+	skeleton_menu->set_shortcut_context(this);
 	hb->add_child(skeleton_menu);
 	skeleton_menu->set_tooltip(TTR("Skeleton Options"));
 	skeleton_menu->set_switch_on_hover(true);
@@ -5921,6 +5934,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
+	view_menu->set_shortcut_context(this);
 	view_menu->set_text(TTR("View"));
 	hb->add_child(view_menu);
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
@@ -5945,6 +5959,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_P), PREVIEW_CANVAS_SCALE);
 
 	presets_menu = memnew(MenuButton);
+	presets_menu->set_shortcut_context(this);
 	presets_menu->set_text(TTR("Layout"));
 	hb->add_child(presets_menu);
 	presets_menu->hide();
@@ -5978,6 +5993,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_loc_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_POS));
 	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
+
 	key_rot_button = memnew(Button);
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_flat(true);
@@ -5986,6 +6002,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_ROT));
 	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
+
 	key_scale_button = memnew(Button);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_flat(true);
@@ -5993,23 +6010,27 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_SCALE));
 	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
+
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert keys (based on mask)."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTR("Insert Key"), KEY_INSERT));
+	key_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_insert_button);
+
 	key_auto_insert_button = memnew(Button);
 	key_auto_insert_button->set_flat(true);
 	key_auto_insert_button->set_toggle_mode(true);
 	key_auto_insert_button->set_focus_mode(FOCUS_NONE);
-	//key_auto_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
 	key_auto_insert_button->set_tooltip(TTR("Auto insert keys when objects are translated, rotated or scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
 	key_auto_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_auto_insert_key", TTR("Auto Insert Key")));
+	key_auto_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_auto_insert_button);
 
 	animation_menu = memnew(MenuButton);
+	animation_menu->set_shortcut_context(this);
 	animation_menu->set_tooltip(TTR("Animation Key and Pose Options"));
 	animation_hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));

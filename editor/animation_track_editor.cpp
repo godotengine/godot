@@ -5565,6 +5565,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	main_panel = memnew(PanelContainer);
+	main_panel->set_focus_mode(FOCUS_ALL); // allow panel to have focus so that shortcuts work as expected.
 	add_child(main_panel);
 	main_panel->set_v_size_flags(SIZE_EXPAND_FILL);
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
@@ -5698,6 +5699,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->set_zoom(zoom);
 
 	edit = memnew(MenuButton);
+	edit->set_shortcut_context(this);
 	edit->set_text(TTR("Edit"));
 	edit->set_flat(false);
 	edit->set_disabled(true);
@@ -5710,12 +5712,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD | KEY_D), EDIT_DUPLICATE_SELECTION);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selection_transposed", TTR("Duplicate Transposed"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_D), EDIT_DUPLICATE_TRANSPOSED);
-	edit->get_popup()->set_item_shortcut_disabled(edit->get_popup()->get_item_index(EDIT_DUPLICATE_SELECTION), true);
-	edit->get_popup()->set_item_shortcut_disabled(edit->get_popup()->get_item_index(EDIT_DUPLICATE_TRANSPOSED), true);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), KEY_DELETE), EDIT_DELETE_SELECTION);
-	edit->get_popup()->set_item_shortcut_disabled(edit->get_popup()->get_item_index(EDIT_DELETE_SELECTION), true);
-	//this shortcut will be checked from the track itself. so no need to enable it here (will conflict with scenetree dock)
 
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KEY_MASK_CMD | KEY_RIGHT), EDIT_GOTO_NEXT_STEP);

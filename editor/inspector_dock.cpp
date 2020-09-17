@@ -554,6 +554,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	node_info_hb->add_child(editor_path);
 
 	object_menu = memnew(MenuButton);
+	object_menu->set_shortcut_context(this);
 	object_menu->set_icon(get_theme_icon("Tools", "EditorIcons"));
 	node_info_hb->add_child(object_menu);
 	object_menu->set_tooltip(TTR("Object properties."));
