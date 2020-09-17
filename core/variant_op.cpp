@@ -1031,6 +1031,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					case FLOAT: {
 						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._float);
 					}
+					case INT: {
+						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._int);
+					}
 					default:
 						_RETURN_FAIL;
 				}
@@ -1062,8 +1065,64 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				}
 			}
 
-			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, INT, *, _int);
-			DEFAULT_OP_NUM_VEC(math, OP_MULTIPLY, FLOAT, *, _float);
+			CASE_TYPE(math, OP_MULTIPLY, INT) {
+				if (p_b.type == INT) {
+					_RETURN(p_a._data._int * p_b._data._int);
+				}
+				if (p_b.type == FLOAT) {
+					_RETURN(p_a._data._int * p_b._data._float);
+				}
+				if (p_b.type == VECTOR2) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Vector2 *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR3) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Vector3 *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR2I) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Vector2i *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR3I) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Vector3i *>(p_b._data._mem));
+				}
+				if (p_b.type == QUAT) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Quat *>(p_b._data._mem));
+				}
+				if (p_b.type == COLOR) {
+					_RETURN(p_a._data._int * *reinterpret_cast<const Color *>(p_b._data._mem));
+				}
+
+				_RETURN_FAIL
+			}
+
+			CASE_TYPE(math, OP_MULTIPLY, FLOAT) {
+				if (p_b.type == INT) {
+					_RETURN(p_a._data._float * p_b._data._int);
+				}
+				if (p_b.type == FLOAT) {
+					_RETURN(p_a._data._float * p_b._data._float);
+				}
+				if (p_b.type == VECTOR2) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Vector2 *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR3) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Vector3 *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR2I) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Vector2i *>(p_b._data._mem));
+				}
+				if (p_b.type == VECTOR3I) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Vector3i *>(p_b._data._mem));
+				}
+				if (p_b.type == QUAT) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Quat *>(p_b._data._mem));
+				}
+				if (p_b.type == COLOR) {
+					_RETURN(p_a._data._float * *reinterpret_cast<const Color *>(p_b._data._mem));
+				}
+
+				_RETURN_FAIL
+			}
+
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2, *, Vector2);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2I, *, Vector2i);
 			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3, *, Vector3);

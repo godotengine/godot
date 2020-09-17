@@ -234,4 +234,8 @@ bool Color::operator<(const Color &p_color) const {
 	}
 }
 
+_FORCE_INLINE_ Color operator*(const real_t &p_real, const Color &p_color) {
+	return p_color * p_real;
+}
+
 #endif // COLOR_H
