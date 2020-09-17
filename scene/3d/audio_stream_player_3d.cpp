@@ -387,11 +387,16 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			//check if any area is diverting sound into a bus
 
+			// when paused, godot physics can return NULL for space_state
 			PhysicsDirectSpaceState *space_state = PhysicsServer::get_singleton()->space_get_direct_state(world->get_space());
 
 			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+			int areas = 0;
+			if (space_state) {
+				areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
+			}
+
 			Area *area = NULL;
 
 			for (int i = 0; i < areas; i++) {
