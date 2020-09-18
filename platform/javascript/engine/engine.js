@@ -33,6 +33,7 @@ Function('return this')()['Engine'] = (function() {
 		this.resizeCanvasOnStart = false;
 		this.onExecute = null;
 		this.onExit = null;
+		this.persistentPaths = [];
 	};
 
 	Engine.prototype.init = /** @param {string=} basePath */ function(basePath) {
@@ -56,12 +57,14 @@ Function('return this')()['Engine'] = (function() {
 			config['locateFile'] = Utils.createLocateRewrite(loadPath);
 			config['instantiateWasm'] = Utils.createInstantiatePromise(loadPromise);
 			Godot(config).then(function(module) {
-				me.rtenv = module;
-				if (unloadAfterInit) {
-					unload();
-				}
-				resolve();
-				config = null;
+				module['initFS'](me.persistentPaths).then(function(fs_err) {
+					me.rtenv = module;
+					if (unloadAfterInit) {
+						unload();
+					}
+					resolve();
+					config = null;
+				});
 			});
 		});
 		return initPromise;
@@ -220,6 +223,10 @@ Function('return this')()['Engine'] = (function() {
 		this.rtenv['copyToFS'](path, buffer);
 	};
 
+	Engine.prototype.setPersistentPaths = function(persistentPaths) {
+		this.persistentPaths = persistentPaths;
+	};
+
 	// Closure compiler exported engine methods.
 	/** @export */
 	Engine['isWebGLAvailable'] = Utils.isWebGLAvailable;
@@ -241,5 +248,6 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['setOnExecute'] = Engine.prototype.setOnExecute;
 	Engine.prototype['setOnExit'] = Engine.prototype.setOnExit;
 	Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
+	Engine.prototype['setPersistentPaths'] = Engine.prototype.setPersistentPaths;
 	return Engine;
 })();

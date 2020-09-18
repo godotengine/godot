@@ -44,8 +44,7 @@ class OS_JavaScript : public OS_Unix {
 
 	bool finalizing = false;
 	bool idb_available = false;
-	int64_t sync_wait_time = -1;
-	int64_t last_sync_check_time = -1;
+	bool idb_needs_sync = false;
 
 	static void main_loop_callback();
 
@@ -62,6 +61,8 @@ protected:
 	bool _check_internal_feature_support(const String &p_feature) override;
 
 public:
+	bool idb_is_syncing = false;
+
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
