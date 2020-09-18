@@ -328,7 +328,7 @@ MONO_AOT_MODE_LAST = 1000,
             if (lipoExitCode != 0)
                 throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
 
-            // TODO: Add the AOT lib and interpreter libs as device only to supress warnings when targeting the simulator
+            // TODO: Add the AOT lib and interpreter libs as device only to suppress warnings when targeting the simulator
 
             // Add the fat AOT static library to the Xcode project
             exporter.AddIosProjectStaticLib(fatOutputFilePath);

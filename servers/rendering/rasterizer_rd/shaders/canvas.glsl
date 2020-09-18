@@ -101,7 +101,7 @@ void main() {
 				offset += 1;
 			} else {
 				instance_color = vec4(texelFetch(instancing_buffer, offset + 0), texelFetch(instancing_buffer, offset + 1), texelFetch(instancing_buffer, offset + 2), texelFetch(instancing_buffer, offset + 3));
-				offser += 4;
+				offset += 4;
 			}
 
 			color *= instance_color;

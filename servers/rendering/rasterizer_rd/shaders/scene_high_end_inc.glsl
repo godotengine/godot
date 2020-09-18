@@ -252,7 +252,7 @@ layout(set = 1, binding = 0) uniform textureCube radiance_cubemap;
 
 #endif
 
-/* Set 2, Reflection and Shadow Atlases (view dependant) */
+/* Set 2, Reflection and Shadow Atlases (view dependent) */
 
 layout(set = 2, binding = 0) uniform textureCubeArray reflection_atlas;
 

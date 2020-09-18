@@ -146,7 +146,7 @@
 	<members>
 		<member name="accept_gzip" type="bool" setter="set_accept_gzip" getter="is_accepting_gzip" default="true">
 			If [code]true[/code], this header will be added to each request: [code]Accept-Encoding: gzip, deflate[/code] telling servers that it's okay to compress response bodies.
-			Any Reponse body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [code]request_completed[/code].
+			Any Response body declaring a [code]Content-Encoding[/code] of either [code]gzip[/code] or [code]deflate[/code] will then be automatically decompressed, and the uncompressed bytes will be delivered via [code]request_completed[/code].
 			If the user has specified their own [code]Accept-Encoding[/code] header, then no header will be added regaurdless of [code]accept_gzip[/code].
 			If [code]false[/code] no header will be added, and no decompression will be performed on response bodies. The raw bytes of the response body will be returned via [code]request_completed[/code].
 		</member>

@@ -439,7 +439,7 @@ def configure_mingw(env):
     else:
         env.Append(LIBS=["cfgmgr32"])
 
-    ## TODO !!! Reenable when OpenGLES Rendering Device is implemented !!!
+    ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
     # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
     env.Append(LIBS=["opengl32"])
 

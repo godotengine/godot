@@ -1286,7 +1286,7 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 
 		if (p_parameter->default_value != nullptr) {
 			if (!is_type_compatible(result, p_parameter->default_value->get_datatype())) {
-				push_error(vformat(R"(Type of default value for parameter "%s" (%s) is not compatible with paremeter type (%s).)", p_parameter->identifier->name, p_parameter->default_value->get_datatype().to_string(), p_parameter->datatype_specifier->get_datatype().to_string()), p_parameter->default_value);
+				push_error(vformat(R"(Type of default value for parameter "%s" (%s) is not compatible with parameter type (%s).)", p_parameter->identifier->name, p_parameter->default_value->get_datatype().to_string(), p_parameter->datatype_specifier->get_datatype().to_string()), p_parameter->default_value);
 			} else if (p_parameter->default_value->get_datatype().is_variant()) {
 				mark_node_unsafe(p_parameter);
 			}

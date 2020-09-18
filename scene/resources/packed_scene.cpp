@@ -848,7 +848,7 @@ Error SceneState::pack(Node *p_scene) {
 	Map<Node *, int> node_map;
 	Map<Node *, int> nodepath_map;
 
-	//if using scene inheritance, pack the scene it inherits from
+	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
 		String path = scene->get_scene_inherited_state()->get_path();
 		Ref<PackedScene> instance = ResourceLoader::load(path);
@@ -856,8 +856,8 @@ Error SceneState::pack(Node *p_scene) {
 			base_scene_idx = _vm_get_variant(instance, variant_map);
 		}
 	}
-	//instanced, only direct sub-scnes are supported of course
 
+	// Instanced, only direct sub-scenes are supported of course.
 	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map);
 	if (err) {
 		clear();
