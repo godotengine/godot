@@ -46,7 +46,8 @@ class Math {
 public:
 	Math() {} // useless to instance
 
-	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
+	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
+	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -283,8 +284,8 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_MAX; }
+	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
 
 	static double random(double from, double to);
 	static float random(float from, float to);
