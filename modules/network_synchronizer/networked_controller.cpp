@@ -1050,10 +1050,8 @@ int PlayerController::notify_input_checked(uint32_t p_input_id) {
 	}
 
 #ifdef DEBUG_ENABLED
-	// Unreachable, because the next input have always the next `p_input_id`
-	// at this point.
-	CRASH_COND(frames_snapshot.empty());
-	CRASH_COND((p_input_id + 1) != frames_snapshot.front().id);
+	// Unreachable, because the next input have always the next `p_input_id` or empty.
+	CRASH_COND(frames_snapshot.empty() == false && (p_input_id + 1) != frames_snapshot.front().id);
 #endif
 
 	// Make sure the remaining inputs are 0 sized, if not streaming can't be paused.
