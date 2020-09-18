@@ -1,47 +1,27 @@
 /* ******************************************************************
-   huff0 huffman decoder,
-   part of Finite State Entropy library
-   Copyright (C) 2013-present, Yann Collet.
-
-   BSD 2-Clause License (http://www.opensource.org/licenses/bsd-license.php)
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-
-       * Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-       * Redistributions in binary form must reproduce the above
-   copyright notice, this list of conditions and the following disclaimer
-   in the documentation and/or other materials provided with the
-   distribution.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    You can contact the author at :
-    - FSE+HUF source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ * huff0 huffman decoder,
+ * part of Finite State Entropy library
+ * Copyright (c) 2013-2020, Yann Collet, Facebook, Inc.
+ *
+ *  You can contact the author at :
+ *  - FSE+HUF source repository : https://github.com/Cyan4973/FiniteStateEntropy
+ *
+ * This source code is licensed under both the BSD-style license (found in the
+ * LICENSE file in the root directory of this source tree) and the GPLv2 (found
+ * in the COPYING file in the root directory of this source tree).
+ * You may select, at your option, one of the above-listed licenses.
 ****************************************************************** */
 
 /* **************************************************************
 *  Dependencies
 ****************************************************************/
 #include <string.h>     /* memcpy, memset */
-#include "compiler.h"
-#include "bitstream.h"  /* BIT_* */
-#include "fse.h"        /* to compress headers */
+#include "../common/compiler.h"
+#include "../common/bitstream.h"  /* BIT_* */
+#include "../common/fse.h"        /* to compress headers */
 #define HUF_STATIC_LINKING_ONLY
-#include "huf.h"
-#include "error_private.h"
+#include "../common/huf.h"
+#include "../common/error_private.h"
 
 /* **************************************************************
 *  Macros
@@ -61,9 +41,6 @@
 *  Error Management
 ****************************************************************/
 #define HUF_isError ERR_isError
-#ifndef CHECK_F
-#define CHECK_F(f) { size_t const err_ = (f); if (HUF_isError(err_)) return err_; }
-#endif
 
 
 /* **************************************************************
@@ -181,17 +158,29 @@ size_t HUF_readDTableX1_wksp(HUF_DTable* DTable, const void* src, size_t srcSize
 
     /* fill DTable */
     {   U32 n;
-        for (n=0; n<nbSymbols; n++) {
-            U32 const w = huffWeight[n];
-            U32 const length = (1 << w) >> 1;
-            U32 u;
+        size_t const nEnd = nbSymbols;
+        for (n=0; n<nEnd; n++) {
+            size_t const w = huffWeight[n];
+            size_t const length = (1 << w) >> 1;
+            size_t const uStart = rankVal[w];
+            size_t const uEnd = uStart + length;
+            size_t u;
             HUF_DEltX1 D;
-            D.byte = (BYTE)n; D.nbBits = (BYTE)(tableLog + 1 - w);
-            for (u = rankVal[w]; u < rankVal[w] + length; u++)
-                dt[u] = D;
-            rankVal[w] += length;
-    }   }
-
+            D.byte = (BYTE)n;
+            D.nbBits = (BYTE)(tableLog + 1 - w);
+            rankVal[w] = (U32)uEnd;
+            if (length < 4) {
+                /* Use length in the loop bound so the compiler knows it is short. */
+                for (u = 0; u < length; ++u)
+                    dt[uStart + u] = D;
+            } else {
+                /* Unroll the loop 4 times, we know it is a power of 2. */
+                for (u = uStart; u < uEnd; u += 4) {
+                    dt[u + 0] = D;
+                    dt[u + 1] = D;
+                    dt[u + 2] = D;
+                    dt[u + 3] = D;
+    }   }   }   }
     return iSize;
 }
 
@@ -282,6 +271,7 @@ HUF_decompress4X1_usingDTable_internal_body(
     {   const BYTE* const istart = (const BYTE*) cSrc;
         BYTE* const ostart = (BYTE*) dst;
         BYTE* const oend = ostart + dstSize;
+        BYTE* const olimit = oend - 3;
         const void* const dtPtr = DTable + 1;
         const HUF_DEltX1* const dt = (const HUF_DEltX1*)dtPtr;
 
@@ -306,9 +296,9 @@ HUF_decompress4X1_usingDTable_internal_body(
         BYTE* op2 = opStart2;
         BYTE* op3 = opStart3;
         BYTE* op4 = opStart4;
-        U32 endSignal = BIT_DStream_unfinished;
         DTableDesc const dtd = HUF_getDTableDesc(DTable);
         U32 const dtLog = dtd.tableLog;
+        U32 endSignal = 1;
 
         if (length4 > cSrcSize) return ERROR(corruption_detected);   /* overflow */
         CHECK_F( BIT_initDStream(&bitD1, istart1, length1) );
@@ -317,8 +307,7 @@ HUF_decompress4X1_usingDTable_internal_body(
         CHECK_F( BIT_initDStream(&bitD4, istart4, length4) );
 
         /* up to 16 symbols per loop (4 symbols per stream) in 64-bit mode */
-        endSignal = BIT_reloadDStream(&bitD1) | BIT_reloadDStream(&bitD2) | BIT_reloadDStream(&bitD3) | BIT_reloadDStream(&bitD4);
-        while ( (endSignal==BIT_DStream_unfinished) && (op4<(oend-3)) ) {
+        for ( ; (endSignal) & (op4 < olimit) ; ) {
             HUF_DECODE_SYMBOLX1_2(op1, &bitD1);
             HUF_DECODE_SYMBOLX1_2(op2, &bitD2);
             HUF_DECODE_SYMBOLX1_2(op3, &bitD3);
@@ -335,10 +324,10 @@ HUF_decompress4X1_usingDTable_internal_body(
             HUF_DECODE_SYMBOLX1_0(op2, &bitD2);
             HUF_DECODE_SYMBOLX1_0(op3, &bitD3);
             HUF_DECODE_SYMBOLX1_0(op4, &bitD4);
-            BIT_reloadDStream(&bitD1);
-            BIT_reloadDStream(&bitD2);
-            BIT_reloadDStream(&bitD3);
-            BIT_reloadDStream(&bitD4);
+            endSignal &= BIT_reloadDStreamFast(&bitD1) == BIT_DStream_unfinished;
+            endSignal &= BIT_reloadDStreamFast(&bitD2) == BIT_DStream_unfinished;
+            endSignal &= BIT_reloadDStreamFast(&bitD3) == BIT_DStream_unfinished;
+            endSignal &= BIT_reloadDStreamFast(&bitD4) == BIT_DStream_unfinished;
         }
 
         /* check corruption */
@@ -757,7 +746,6 @@ HUF_decompress1X2_usingDTable_internal_body(
     return dstSize;
 }
 
-
 FORCE_INLINE_TEMPLATE size_t
 HUF_decompress4X2_usingDTable_internal_body(
           void* dst,  size_t dstSize,
@@ -769,6 +757,7 @@ HUF_decompress4X2_usingDTable_internal_body(
     {   const BYTE* const istart = (const BYTE*) cSrc;
         BYTE* const ostart = (BYTE*) dst;
         BYTE* const oend = ostart + dstSize;
+        BYTE* const olimit = oend - (sizeof(size_t)-1);
         const void* const dtPtr = DTable+1;
         const HUF_DEltX2* const dt = (const HUF_DEltX2*)dtPtr;
 
@@ -793,7 +782,7 @@ HUF_decompress4X2_usingDTable_internal_body(
         BYTE* op2 = opStart2;
         BYTE* op3 = opStart3;
         BYTE* op4 = opStart4;
-        U32 endSignal;
+        U32 endSignal = 1;
         DTableDesc const dtd = HUF_getDTableDesc(DTable);
         U32 const dtLog = dtd.tableLog;
 
@@ -804,8 +793,29 @@ HUF_decompress4X2_usingDTable_internal_body(
         CHECK_F( BIT_initDStream(&bitD4, istart4, length4) );
 
         /* 16-32 symbols per loop (4-8 symbols per stream) */
-        endSignal = BIT_reloadDStream(&bitD1) | BIT_reloadDStream(&bitD2) | BIT_reloadDStream(&bitD3) | BIT_reloadDStream(&bitD4);
-        for ( ; (endSignal==BIT_DStream_unfinished) & (op4<(oend-(sizeof(bitD4.bitContainer)-1))) ; ) {
+        for ( ; (endSignal) & (op4 < olimit); ) {
+#if defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
+            HUF_DECODE_SYMBOLX2_2(op1, &bitD1);
+            HUF_DECODE_SYMBOLX2_1(op1, &bitD1);
+            HUF_DECODE_SYMBOLX2_2(op1, &bitD1);
+            HUF_DECODE_SYMBOLX2_0(op1, &bitD1);
+            HUF_DECODE_SYMBOLX2_2(op2, &bitD2);
+            HUF_DECODE_SYMBOLX2_1(op2, &bitD2);
+            HUF_DECODE_SYMBOLX2_2(op2, &bitD2);
+            HUF_DECODE_SYMBOLX2_0(op2, &bitD2);
+            endSignal &= BIT_reloadDStreamFast(&bitD1) == BIT_DStream_unfinished;
+            endSignal &= BIT_reloadDStreamFast(&bitD2) == BIT_DStream_unfinished;
+            HUF_DECODE_SYMBOLX2_2(op3, &bitD3);
+            HUF_DECODE_SYMBOLX2_1(op3, &bitD3);
+            HUF_DECODE_SYMBOLX2_2(op3, &bitD3);
+            HUF_DECODE_SYMBOLX2_0(op3, &bitD3);
+            HUF_DECODE_SYMBOLX2_2(op4, &bitD4);
+            HUF_DECODE_SYMBOLX2_1(op4, &bitD4);
+            HUF_DECODE_SYMBOLX2_2(op4, &bitD4);
+            HUF_DECODE_SYMBOLX2_0(op4, &bitD4);
+            endSignal &= BIT_reloadDStreamFast(&bitD3) == BIT_DStream_unfinished;
+            endSignal &= BIT_reloadDStreamFast(&bitD4) == BIT_DStream_unfinished;
+#else
             HUF_DECODE_SYMBOLX2_2(op1, &bitD1);
             HUF_DECODE_SYMBOLX2_2(op2, &bitD2);
             HUF_DECODE_SYMBOLX2_2(op3, &bitD3);
@@ -822,8 +832,12 @@ HUF_decompress4X2_usingDTable_internal_body(
             HUF_DECODE_SYMBOLX2_0(op2, &bitD2);
             HUF_DECODE_SYMBOLX2_0(op3, &bitD3);
             HUF_DECODE_SYMBOLX2_0(op4, &bitD4);
-
-            endSignal = BIT_reloadDStream(&bitD1) | BIT_reloadDStream(&bitD2) | BIT_reloadDStream(&bitD3) | BIT_reloadDStream(&bitD4);
+            endSignal = (U32)LIKELY(
+                        (BIT_reloadDStreamFast(&bitD1) == BIT_DStream_unfinished)
+                      & (BIT_reloadDStreamFast(&bitD2) == BIT_DStream_unfinished)
+                      & (BIT_reloadDStreamFast(&bitD3) == BIT_DStream_unfinished)
+                      & (BIT_reloadDStreamFast(&bitD4) == BIT_DStream_unfinished));
+#endif
         }
 
         /* check corruption */

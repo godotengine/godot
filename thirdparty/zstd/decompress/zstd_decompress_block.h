@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -16,8 +16,8 @@
  *  Dependencies
  *********************************************************/
 #include <stddef.h>   /* size_t */
-#include "zstd.h"    /* DCtx, and some public functions */
-#include "zstd_internal.h"  /* blockProperties_t, and some public functions */
+#include "../zstd.h"    /* DCtx, and some public functions */
+#include "../common/zstd_internal.h"  /* blockProperties_t, and some public functions */
 #include "zstd_decompress_internal.h"  /* ZSTD_seqSymbol */
 
 

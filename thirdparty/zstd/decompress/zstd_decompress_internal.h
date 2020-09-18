@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -19,8 +19,8 @@
 /*-*******************************************************
  *  Dependencies
  *********************************************************/
-#include "mem.h"             /* BYTE, U16, U32 */
-#include "zstd_internal.h"   /* ZSTD_seqSymbol */
+#include "../common/mem.h"             /* BYTE, U16, U32 */
+#include "../common/zstd_internal.h"   /* ZSTD_seqSymbol */
 
 
 
@@ -95,6 +95,11 @@ typedef enum {
     ZSTD_use_once = 1            /* Use the dictionary once and set to ZSTD_dont_use */
 } ZSTD_dictUses_e;
 
+typedef enum {
+    ZSTD_obm_buffered = 0,  /* Buffer the output */
+    ZSTD_obm_stable = 1     /* ZSTD_outBuffer is stable */
+} ZSTD_outBufferMode_e;
+
 struct ZSTD_DCtx_s
 {
     const ZSTD_seqSymbol* LLTptr;
@@ -147,10 +152,19 @@ struct ZSTD_DCtx_s
     U32 legacyVersion;
     U32 hostageByte;
     int noForwardProgress;
+    ZSTD_outBufferMode_e outBufferMode;
+    ZSTD_outBuffer expectedOutBuffer;
 
     /* workspace */
     BYTE litBuffer[ZSTD_BLOCKSIZE_MAX + WILDCOPY_OVERLENGTH];
     BYTE headerBuffer[ZSTD_FRAMEHEADERSIZE_MAX];
+
+    size_t oversizedDuration;
+
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+    void const* dictContentBeginForFuzzing;
+    void const* dictContentEndForFuzzing;
+#endif
 };  /* typedef'd to ZSTD_DCtx within "zstd.h" */
 
 
@@ -160,7 +174,7 @@ struct ZSTD_DCtx_s
 
 /*! ZSTD_loadDEntropy() :
  *  dict : must point at beginning of a valid zstd dictionary.
- * @return : size of entropy tables read */
+ * @return : size of dictionary header (size of magic number + dict ID + entropy tables) */
 size_t ZSTD_loadDEntropy(ZSTD_entropyDTables_t* entropy,
                    const void* const dict, size_t const dictSize);
 

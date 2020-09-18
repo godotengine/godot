@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -14,7 +14,7 @@
 /*-*************************************
 *  Dependencies
 ***************************************/
-#include "zstd_internal.h"
+#include "../common/zstd_internal.h"
 
 #if defined (__cplusplus)
 extern "C" {
@@ -23,16 +23,6 @@ extern "C" {
 /*-*************************************
 *  Constants
 ***************************************/
-
-/* define "workspace is too large" as this number of times larger than needed */
-#define ZSTD_WORKSPACETOOLARGE_FACTOR 3
-
-/* when workspace is continuously too large
- * during at least this number of times,
- * context's memory usage is considered wasteful,
- * because it's sized to handle a worst case scenario which rarely happens.
- * In which case, resize it down to free some memory */
-#define ZSTD_WORKSPACETOOLARGE_MAXDURATION 128
 
 /* Since the workspace is effectively its own little malloc implementation /
  * arena, when we run under ASAN, we should similarly insert redzones between
@@ -468,7 +458,7 @@ MEM_STATIC void ZSTD_cwksp_init(ZSTD_cwksp* ws, void* start, size_t size) {
 MEM_STATIC size_t ZSTD_cwksp_create(ZSTD_cwksp* ws, size_t size, ZSTD_customMem customMem) {
     void* workspace = ZSTD_malloc(size, customMem);
     DEBUGLOG(4, "cwksp: creating new workspace with %zd bytes", size);
-    RETURN_ERROR_IF(workspace == NULL, memory_allocation);
+    RETURN_ERROR_IF(workspace == NULL, memory_allocation, "NULL pointer!");
     ZSTD_cwksp_init(ws, workspace, size);
     return 0;
 }
