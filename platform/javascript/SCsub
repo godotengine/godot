@@ -66,5 +66,5 @@ env.Zip(
     zip_files,
     ZIPROOT=zip_dir,
     ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
-    ZIPCOMSTR="Archving $SOURCES as $TARGET",
+    ZIPCOMSTR="Archiving $SOURCES as $TARGET",
 )
