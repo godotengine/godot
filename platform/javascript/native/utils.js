@@ -28,6 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+Module['initFS'] = function(persistentPaths) {
+	FS.mkdir('/userfs');
+	FS.mount(IDBFS, {}, '/userfs');
+
+	function createRecursive(dir) {
+		try {
+			FS.stat(dir);
+		} catch (e) {
+			if (e.errno !== ERRNO_CODES.ENOENT) {
+				throw e;
+			}
+			FS.mkdirTree(dir);
+		}
+	}
+
+	persistentPaths.forEach(function(path) {
+		createRecursive(path);
+		FS.mount(IDBFS, {}, path);
+	});
+	return new Promise(function(resolve, reject) {
+		FS.syncfs(true, function(err) {
+			if (err) {
+				Module.idbfs = false;
+				console.log("IndexedDB not available: " + err.message);
+			} else {
+				Module.idbfs = true;
+			}
+			resolve(err);
+		});
+	});
+};
+
 Module['copyToFS'] = function(path, buffer) {
 	var p = path.lastIndexOf("/");
 	var dir = "/";
@@ -37,7 +69,7 @@ Module['copyToFS'] = function(path, buffer) {
 	try {
 		FS.stat(dir);
 	} catch (e) {
-		if (e.errno !== ERRNO_CODES.ENOENT) { // 'ENOENT', see https://github.com/emscripten-core/emscripten/blob/master/system/lib/libc/musl/arch/emscripten/bits/errno.h
+		if (e.errno !== ERRNO_CODES.ENOENT) {
 			throw e;
 		}
 		FS.mkdirTree(dir);

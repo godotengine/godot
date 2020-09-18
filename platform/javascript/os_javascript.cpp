@@ -1119,24 +1119,25 @@ void OS_JavaScript::resume_audio() {
 	}
 }
 
+extern "C" EMSCRIPTEN_KEEPALIVE void _idb_synced() {
+	OS_JavaScript::get_singleton()->idb_is_syncing = false;
+}
+
 bool OS_JavaScript::main_loop_iterate() {
 
-	if (is_userfs_persistent() && sync_wait_time >= 0) {
-		int64_t current_time = get_ticks_msec();
-		int64_t elapsed_time = current_time - last_sync_check_time;
-		last_sync_check_time = current_time;
-
-		sync_wait_time -= elapsed_time;
-
-		if (sync_wait_time < 0) {
-			/* clang-format off */
-			EM_ASM(
-				FS.syncfs(function(error) {
-					if (error) { err('Failed to save IDB file system: ' + error.message); }
-				});
-			);
-			/* clang-format on */
-		}
+	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
+		idb_is_syncing = true;
+		idb_needs_sync = false;
+		/* clang-format off */
+		EM_ASM(
+			FS.syncfs(function(error) {
+				if (error) {
+					err('Failed to save IDB file system: ' + error.message);
+				}
+				ccall("_idb_synced", 'void', [], []);
+			});
+		);
+		/* clang-format on */
 	}
 
 	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
@@ -1174,9 +1175,11 @@ void OS_JavaScript::delete_main_loop() {
 }
 
 void OS_JavaScript::finalize_async() {
+	/* clang-format off */
 	EM_ASM({
 		Module.listeners.clear();
 	});
+	/* clang-format on */
 	if (audio_driver_javascript) {
 		audio_driver_javascript->finish_async();
 	}
@@ -1387,10 +1390,17 @@ int OS_JavaScript::get_power_percent_left() {
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
 
 	OS_JavaScript *os = get_singleton();
-	if (os->is_userfs_persistent() && p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
-		os->last_sync_check_time = OS::get_singleton()->get_ticks_msec();
-		// Wait five seconds in case more files are about to be closed.
-		os->sync_wait_time = 5000;
+
+	if (!(os->is_userfs_persistent() && p_flags & FileAccess::WRITE)) {
+		return; // FS persistence is not working or we are not writing.
+	}
+	bool is_file_persistent = p_file.begins_with("/userfs");
+#ifdef TOOLS_ENABLED
+	// Hack for editor persistence (can we track).
+	is_file_persistent = is_file_persistent || p_file.begins_with("/home/web_user/");
+#endif
+	if (is_file_persistent) {
+		os->idb_needs_sync = true;
 	}
 }
 
@@ -1435,7 +1445,8 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 
 	swap_ok_cancel = false;
 	idb_available = false;
-	sync_wait_time = -1;
+	idb_needs_sync = false;
+	idb_is_syncing = false;
 
 	if (AudioDriverJavaScript::is_available()) {
 		audio_driver_javascript = memnew(AudioDriverJavaScript);
