@@ -40,6 +40,8 @@
 #include <stdint.h>
 #include <algorithm>
 
+#define METADATA_SIZE 1
+
 // Don't go below 2 so to take into account internet latency
 #define MIN_SNAPSHOTS_SIZE 2.0
 
@@ -342,8 +344,9 @@ bool NetworkedController::is_enabled() const {
 	return enabled;
 }
 
-void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer) {
+void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer, uint32_t p_metadata_size_in_bit, uint32_t p_size_in_bit) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
+	inputs_buffer.force_set_size(p_metadata_size_in_bit, p_size_in_bit);
 }
 
 void NetworkedController::set_scene_synchronizer(SceneSynchronizer *p_synchronizer) {
@@ -514,6 +517,7 @@ void ServerController::process(real_t p_delta) {
 	}
 
 	node->get_inputs_buffer_mut().begin_read();
+	node->get_inputs_buffer_mut().seek(METADATA_SIZE);
 	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
 
 	doll_sync(p_delta);
@@ -522,7 +526,7 @@ void ServerController::process(real_t p_delta) {
 	adjust_player_tick_rate(p_delta);
 }
 
-bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSnapshotSkinny &p_snap_b) {
+bool is_remote_frame_A_older(const FrameSnapshot &p_snap_a, const FrameSnapshot &p_snap_b) {
 	return p_snap_a.id < p_snap_b.id;
 }
 
@@ -540,10 +544,10 @@ uint32_t ServerController::get_current_input_id() const {
 
 void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	// The packet is composed as follow:
-	// - The following four bytes for the first input ID.
-	// - Array of inputs:
-	// |-- First byte the amount of times this input is duplicated in the packet.
-	// |-- inputs buffer.
+	// |- The following four bytes for the first input ID.
+	// \- Array of inputs:
+	//      |-- First byte the amount of times this input is duplicated in the packet.
+	//      |-- inputs buffer.
 	//
 	// Let's decode it!
 
@@ -560,6 +564,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	// Contains the entire packet and in turn it will be seek to specific location
 	// so I will not need to copy chunk of the packet data.
 	DataBuffer pir;
+	pir.begin_read();
 	pir.get_buffer_mut().get_bytes_mut() = p_data;
 	// TODO this is for 3.2
 	//pir.get_buffer_mut().resize_in_bytes(data_len);
@@ -572,12 +577,17 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 		ofs += 1;
 
 		// Validate input
-		pir.seek(ofs * 8);
-		const int input_size_in_bits = node->call("count_input_size", &pir);
+		const int input_buffer_offset_bit = ofs * 8;
+		pir.force_set_size(input_buffer_offset_bit, (data_len - ofs) * 8);
+		pir.seek(input_buffer_offset_bit);
+		// Read metadata
+		const bool has_data = pir.read_bool();
+
+		const int input_size_in_bits = (has_data ? int(node->call("count_input_size", &pir)) : 0) + METADATA_SIZE;
 		// Pad to 8 bits.
-		const int input_size =
+		const int input_size_padded =
 				Math::ceil((static_cast<float>(input_size_in_bits)) / 8.0);
-		ERR_FAIL_COND_MSG(ofs + input_size > data_len, "The arrived packet size doesn't meet the expected size.");
+		ERR_FAIL_COND_MSG(ofs + input_size_padded > data_len, "The arrived packet size doesn't meet the expected size.");
 
 		// The input is valid, populate the buffer.
 		for (int sub = 0; sub <= duplication; sub += 1) {
@@ -587,8 +597,9 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 			if (current_input_buffer_id != UINT32_MAX && current_input_buffer_id >= input_id)
 				continue;
 
-			FrameSnapshotSkinny rfs;
+			FrameSnapshot rfs;
 			rfs.id = input_id;
+			rfs.buffer_size_bit = input_size_in_bits;
 
 			const bool found = std::binary_search(
 					snapshots.begin(),
@@ -597,11 +608,11 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 					is_remote_frame_A_older);
 
 			if (!found) {
-				rfs.inputs_buffer.get_bytes_mut().resize(input_size);
+				rfs.inputs_buffer.get_bytes_mut().resize(input_size_padded);
 				copymem(
 						rfs.inputs_buffer.get_bytes_mut().ptrw(),
 						p_data.ptr() + ofs,
-						input_size);
+						input_size_padded);
 
 				snapshots.push_back(rfs);
 
@@ -611,7 +622,7 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 		}
 
 		// We can now advance the offset.
-		ofs += input_size;
+		ofs += input_size_padded;
 	}
 
 	ERR_FAIL_COND_MSG(ofs != data_len, "At the end was detected that the arrived packet has an unexpected size.");
@@ -629,10 +640,10 @@ bool ServerController::fetch_next_input() {
 		// As initial packet, anything is good.
 		if (snapshots.empty() == false) {
 			// First input arrived.
-			node->set_inputs_buffer(snapshots.front().inputs_buffer);
+			node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
-			// Start traking the packets from this moment on
+			// Start traking the packets from this moment on.
 			network_tracer.reset();
 		} else {
 			is_new_input = false;
@@ -646,18 +657,26 @@ bool ServerController::fetch_next_input() {
 		const uint32_t next_input_id = current_input_buffer_id + 1;
 
 		if (unlikely(snapshots.empty() == true)) {
-			// The input buffer is empty!
-			is_new_input = false;
-			is_packet_missing = true;
-			ghost_input_count += 1;
-			NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
+			// The input buffer is empty.
+			if (streaming_paused) {
+				// Stream is paused, assume buffer is void.
+				node->set_inputs_buffer(BitArray(METADATA_SIZE), METADATA_SIZE, 0);
+				is_new_input = true;
+				current_input_buffer_id = next_input_id;
+			} else {
+				// Packet is just missing.
+				is_new_input = false;
+				is_packet_missing = true;
+				ghost_input_count += 1;
+				NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
+			}
 
 		} else {
 			// The input buffer is not empty, search the new input.
 			if (next_input_id == snapshots.front().id) {
 				// Wow, the next input is perfect!
-
-				node->set_inputs_buffer(snapshots.front().inputs_buffer);
+				node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
+				streaming_paused = streaming_paused && (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
 				current_input_buffer_id = snapshots.front().id;
 				snapshots.pop_front();
 
@@ -706,7 +725,7 @@ bool ServerController::fetch_next_input() {
 				const uint32_t ghost_packet_id = next_input_id + ghost_input_count;
 
 				bool recovered = false;
-				FrameSnapshotSkinny pi;
+				FrameSnapshot pi;
 
 				DataBuffer pir_A = node->get_inputs_buffer();
 
@@ -725,12 +744,14 @@ bool ServerController::fetch_next_input() {
 						// client.
 
 						DataBuffer pir_B(pi.inputs_buffer);
+						pir_B.force_set_size(METADATA_SIZE, pi.buffer_size_bit - METADATA_SIZE);
 
 						pir_A.begin_read();
+						pir_A.seek(METADATA_SIZE);
 						pir_B.begin_read();
+						pir_B.seek(METADATA_SIZE);
 
-						const bool is_meaningful = pir_A.get_buffer_size() != pir_B.get_buffer_size() || node->call("are_inputs_different", &pir_A, &pir_B);
-
+						const bool is_meaningful = node->call("are_inputs_different", &pir_A, &pir_B);
 						if (is_meaningful) {
 							break;
 						}
@@ -738,7 +759,8 @@ bool ServerController::fetch_next_input() {
 				}
 
 				if (recovered) {
-					node->set_inputs_buffer(pi.inputs_buffer);
+					node->set_inputs_buffer(pi.inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
+					streaming_paused = streaming_paused && (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
 					current_input_buffer_id = pi.id;
 					ghost_input_count = 0;
 					NET_DEBUG_PRINT("Packet recovered");
@@ -757,6 +779,14 @@ bool ServerController::fetch_next_input() {
 	}
 
 	return is_new_input;
+}
+
+void ServerController::notify_send_state() {
+	// If the notified input is a void buffer, the client is allowed to pause
+	// the input streaming. So missing packets are just handled as void inputs.
+	if (node->get_inputs_buffer().size() == 0) {
+		streaming_paused = true;
+	}
 }
 
 void ServerController::doll_sync(real_t p_delta) {
@@ -790,7 +820,7 @@ void ServerController::doll_sync(real_t p_delta) {
 			peers[i].collect_timer = MAX(0.0, peers[i].collect_timer);
 
 			if (epoch_state_collected == false) {
-				epoch_state_data.begin_write();
+				epoch_state_data.begin_write(0);
 				epoch_state_data.add_int(epoch, DataBuffer::COMPRESSION_LEVEL_1);
 				node->call("collect_epoch_data", &epoch_state_data);
 				epoch_state_data.dry();
@@ -949,6 +979,7 @@ void PlayerController::process(real_t p_delta) {
 	if (unlikely(node->is_enabled() == false)) {
 		return;
 	}
+
 	// We need to know if we can accept a new input because in case of bad
 	// internet connection we can't keep accumulating inputs forever
 	// otherwise the server will differ too much from the client and we
@@ -958,24 +989,38 @@ void PlayerController::process(real_t p_delta) {
 	if (accept_new_inputs) {
 		current_input_id = input_buffers_counter;
 		input_buffers_counter += 1;
-		node->get_inputs_buffer_mut().begin_write();
+
+		node->get_inputs_buffer_mut().begin_write(METADATA_SIZE);
+
+		node->get_inputs_buffer_mut().seek(1);
 		node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
+
+		// Set metadata data.
+		node->get_inputs_buffer_mut().seek(0);
+		if (node->get_inputs_buffer().size() > 0) {
+			node->get_inputs_buffer_mut().add_bool(true);
+			streaming_paused = false;
+		} else {
+			node->get_inputs_buffer_mut().add_bool(false);
+		}
 	} else {
 		NET_DEBUG_WARN("It's not possible to accept new inputs. Is this lagging?");
 	}
 
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();
+	node->get_inputs_buffer_mut().seek(METADATA_SIZE); // Skip meta.
 
 	// The physics process is always emitted, because we still need to simulate
 	// the character motion even if we don't store the player inputs.
-	node->call("controller_process", p_delta, &node->get_inputs_buffer_mut());
+	node->call("controller_process", p_delta, &node->get_inputs_buffer());
 
 	if (accept_new_inputs) {
 		store_input_buffer(current_input_id);
-		send_frame_input_buffer_to_server();
+		if (streaming_paused == false) {
+			send_frame_input_buffer_to_server();
+		}
 	}
-
 	node->player_set_has_new_input(accept_new_inputs);
 }
 
@@ -989,12 +1034,39 @@ int PlayerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_pe
 }
 
 int PlayerController::notify_input_checked(uint32_t p_input_id) {
-	// Remove inputs.
+	if (frames_snapshot.empty() || p_input_id < frames_snapshot.front().id || p_input_id > frames_snapshot.back().id) {
+		// The received p_input_id is not known, so nothing to do.
+		NET_DEBUG_ERR("The received snapshot, with input id: " + itos(p_input_id) + " is not known. This is a bug or someone is trying to hack.");
+		return frames_snapshot.size();
+	}
+
+	// Remove inputs prior to the known one. We may still need the known one
+	// when the stream is paused.
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
+		if (frames_snapshot.front().id == p_input_id) {
+			streaming_paused = (frames_snapshot.front().buffer_size_bit - METADATA_SIZE) <= 0;
+		}
 		frames_snapshot.pop_front();
 	}
-	// Unreachable, because the next input have always the next `p_input_id` or empty.
-	CRASH_COND(frames_snapshot.empty() == false && (p_input_id + 1) != frames_snapshot.front().id);
+
+#ifdef DEBUG_ENABLED
+	// Unreachable, because the next input have always the next `p_input_id`
+	// at this point.
+	CRASH_COND(frames_snapshot.empty());
+	CRASH_COND((p_input_id + 1) != frames_snapshot.front().id);
+#endif
+
+	// Make sure the remaining inputs are 0 sized, if not streaming can't be paused.
+	if (streaming_paused) {
+		for (auto it = frames_snapshot.begin(); it != frames_snapshot.end(); it += 1) {
+			if ((it->buffer_size_bit - METADATA_SIZE) > 0) {
+				// Streaming can't be paused.
+				streaming_paused = false;
+				break;
+			}
+		}
+	}
+
 	return frames_snapshot.size();
 }
 
@@ -1023,7 +1095,9 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i < frames_snapshot.size()) {
 		DataBuffer ib(frames_snapshot[i].inputs_buffer);
+		ib.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		ib.begin_read();
+		ib.seek(METADATA_SIZE);
 		node->call("controller_process", p_delta, &ib);
 		return (i + 1) < frames_snapshot.size();
 	} else {
@@ -1043,6 +1117,7 @@ void PlayerController::store_input_buffer(uint32_t p_id) {
 	FrameSnapshot inputs;
 	inputs.id = p_id;
 	inputs.inputs_buffer = node->get_inputs_buffer().get_buffer();
+	inputs.buffer_size_bit = node->get_inputs_buffer().size() + METADATA_SIZE;
 	inputs.similarity = UINT32_MAX;
 	frames_snapshot.push_back(inputs);
 }
@@ -1052,7 +1127,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	// - The following four bytes for the first input ID.
 	// - Array of inputs:
 	// |-- First byte the amount of times this input is duplicated in the packet.
-	// |-- input buffer.
+	// |-- Input buffer.
 
 	const size_t inputs_count = MIN(frames_snapshot.size(), static_cast<size_t>(node->get_max_redundant_inputs() + 1));
 	CRASH_COND(inputs_count < 1); // Unreachable
@@ -1091,11 +1166,14 @@ void PlayerController::send_frame_input_buffer_to_server() {
 				if (frames_snapshot[i].similarity == UINT32_MAX) {
 					// This input was never compared, let's do it now.
 					DataBuffer pir_B(frames_snapshot[i].inputs_buffer);
+					pir_B.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 
 					pir_A.begin_read();
+					pir_A.seek(METADATA_SIZE);
 					pir_B.begin_read();
+					pir_B.seek(METADATA_SIZE);
 
-					const bool are_different = pir_A.get_buffer_size() != pir_B.get_buffer_size() || node->call("are_inputs_different", &pir_A, &pir_B);
+					const bool are_different = node->call("are_inputs_different", &pir_A, &pir_B);
 					is_similar = are_different == false;
 
 				} else if (frames_snapshot[i].similarity == previous_input_similarity) {
@@ -1152,6 +1230,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			previous_buffer_size = buffer_size;
 
 			pir_A.get_buffer_mut() = frames_snapshot[i].inputs_buffer;
+			pir_A.force_set_size(METADATA_SIZE, frames_snapshot[i].buffer_size_bit - METADATA_SIZE);
 		}
 	}
 
@@ -1388,7 +1467,7 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 }
 
 void NoNetController::process(real_t p_delta) {
-	node->get_inputs_buffer_mut().begin_write();
+	node->get_inputs_buffer_mut().begin_write(0); // No need of meta in this case.
 	node->call("collect_inputs", p_delta, &node->get_inputs_buffer_mut());
 	node->get_inputs_buffer_mut().dry();
 	node->get_inputs_buffer_mut().begin_read();

@@ -941,7 +941,8 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 		// node->get_network_master() to get the peer.
 		ERR_CONTINUE_MSG(nd == nullptr, "This should never happen. Likely there is a bug.");
 
-		if (unlikely(static_cast<NetworkedController *>(nd->node)->is_enabled() == false)) {
+		NetworkedController *controller = static_cast<NetworkedController *>(nd->node);
+		if (unlikely(controller->is_enabled() == false)) {
 			continue;
 		}
 
@@ -961,6 +962,7 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 			controller_generate_snapshot(nd, false, snap);
 		}
 
+		controller->get_server_controller()->notify_send_state();
 		scene_synchronizer->rpc_id(*peer_it.key, "_rpc_send_state", snap);
 	}
 
@@ -1043,10 +1045,11 @@ void ServerSynchronizer::generate_snapshot_node_data(
 	const bool node_has_changes = p_force_full_snapshot || (change != nullptr && change->vars.empty() == false);
 
 	if (p_node_data->is_controller) {
-		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node_data->node);
-		CRASH_COND(controller == nullptr); // Unreachable
+		NetworkedController *controller = static_cast<NetworkedController *>(p_node_data->node);
 
 		// TODO make sure to skip un-active controllers_node_data.
+		//  This may no more needed, since the interpolator got integrated and
+		//  the only time the controller is sync is when it's needed.
 		if (likely(controller->get_current_input_id() != UINT32_MAX)) {
 			// This is a controller, always sync it.
 			r_snapshot_data.push_back(snap_node_data);
@@ -1212,11 +1215,9 @@ void ClientSynchronizer::on_node_removed(SceneSynchronizer::NodeData *p_node_dat
 void ClientSynchronizer::store_snapshot() {
 	NetworkedController *controller = static_cast<NetworkedController *>(player_controller_node_data->node);
 
-	if (client_snapshots.size() > 0) {
-		if (controller->get_current_input_id() <= client_snapshots.back().input_id) {
-			NET_DEBUG_WARN("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snapshots.back().input_id) + ". This snapshot is not stored.");
-			return;
-		}
+	if (client_snapshots.size() > 0 && controller->get_current_input_id() <= client_snapshots.back().input_id) {
+		NET_DEBUG_ERR("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snapshots.back().input_id) + ". This snapshot is not stored.");
+		return;
 	}
 
 	client_snapshots.push_back(SceneSynchronizer::Snapshot());
@@ -1253,7 +1254,13 @@ void ClientSynchronizer::store_controllers_snapshot(
 	if (r_snapshot_storage.empty() == false) {
 		// Make sure the snapshots are stored in order.
 		const uint32_t last_stored_input_id = r_snapshot_storage.back().input_id;
-		ERR_FAIL_COND_MSG(p_snapshot.input_id <= last_stored_input_id, "This doll snapshot (with ID: " + itos(p_snapshot.input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
+		if (p_snapshot.input_id == last_stored_input_id) {
+			// Update the snapshot.
+			r_snapshot_storage.back() = p_snapshot;
+			return;
+		} else {
+			ERR_FAIL_COND_MSG(p_snapshot.input_id < last_stored_input_id, "This snapshot (with ID: " + itos(p_snapshot.input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
+		}
 	}
 
 	r_snapshot_storage.push_back(p_snapshot);
@@ -1277,22 +1284,27 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (client_snapshots.empty() == false) {
+		// The SceneSynchronizer and the PlayerController are always in sync.
+		CRASH_COND(client_snapshots.back().input_id != player_controller->last_known_input());
+	}
+#endif
+
 	// Find the best recoverable input_id.
 	uint32_t checkable_input_id = UINT32_MAX;
-	if (player_controller->last_known_input() != UINT32_MAX && player_controller->get_stored_input_id(-1) != UINT32_MAX) {
-		// Find the best snapshot to recover from the one already
-		// processed.
-		if (client_snapshots.empty() == false) {
-			for (
-					auto s_snap = server_snapshots.rbegin();
-					checkable_input_id == UINT32_MAX && s_snap != client_snapshots.rend();
-					++s_snap) {
-				for (auto c_snap = client_snapshots.begin(); c_snap != client_snapshots.end(); ++c_snap) {
-					if (c_snap->input_id == s_snap->input_id) {
-						// Server snapshot also found on client, can be checked.
-						checkable_input_id = c_snap->input_id;
-						break;
-					}
+	// Find the best snapshot to recover from the one already
+	// processed.
+	if (client_snapshots.empty() == false) {
+		for (
+				auto s_snap = server_snapshots.rbegin();
+				checkable_input_id == UINT32_MAX && s_snap != server_snapshots.rend();
+				++s_snap) {
+			for (auto c_snap = client_snapshots.begin(); c_snap != client_snapshots.end(); ++c_snap) {
+				if (c_snap->input_id == s_snap->input_id) {
+					// Server snapshot also found on client, can be checked.
+					checkable_input_id = c_snap->input_id;
+					break;
 				}
 			}
 		}
@@ -1455,7 +1467,11 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 		scene_synchronizer->rewinding_in_progress = true;
 		const int remaining_inputs = player_controller->notify_input_checked(checkable_input_id);
+#ifdef DEBUG_ENABLED
+		// Unreachable because the SceneSynchronizer and the PlayerController
+		// have the same stored data at this point.
 		CRASH_COND(client_snapshots.size() != size_t(remaining_inputs));
+#endif
 
 		bool has_next = false;
 		for (int i = 0; i < remaining_inputs; i += 1) {
@@ -1778,7 +1794,7 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
-	if (last_received_snapshot.input_id == UINT32_MAX) {
+	if (unlikely(last_received_snapshot.input_id == UINT32_MAX)) {
 		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + player_controller_node_data->node->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;

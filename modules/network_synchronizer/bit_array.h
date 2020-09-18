@@ -42,6 +42,7 @@ class BitArray {
 
 public:
 	BitArray() {}
+	BitArray(uint32_t p_initial_size_in_bit);
 	BitArray(Vector<uint8_t> p_bytes);
 
 	const Vector<uint8_t> &get_bytes() const {

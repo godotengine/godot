@@ -36,6 +36,8 @@
 
 #include "core/io/marshalls.h"
 
+// TODO improve the allocation mechanism.
+
 void DataBuffer::_bind_methods() {
 	BIND_CONSTANT(DATA_TYPE_BOOL);
 	BIND_CONSTANT(DATA_TYPE_INT);
@@ -53,6 +55,8 @@ void DataBuffer::_bind_methods() {
 	BIND_CONSTANT(COMPRESSION_LEVEL_1);
 	BIND_CONSTANT(COMPRESSION_LEVEL_2);
 	BIND_CONSTANT(COMPRESSION_LEVEL_3);
+
+	ClassDB::bind_method(D_METHOD("size"), &DataBuffer::size);
 
 	ClassDB::bind_method(D_METHOD("add_bool", "value"), &DataBuffer::add_bool);
 	ClassDB::bind_method(D_METHOD("add_int", "value", "compression_level"), &DataBuffer::add_int, DEFVAL(COMPRESSION_LEVEL_1));
@@ -104,42 +108,64 @@ void DataBuffer::_bind_methods() {
 }
 
 DataBuffer::DataBuffer() :
-		Object(),
-		bit_offset(0),
-		is_reading(true) {}
+		Object() {}
 
 DataBuffer::DataBuffer(const DataBuffer &p_other) :
 		Object(),
+		metadata_size(p_other.metadata_size),
 		bit_offset(p_other.bit_offset),
+		bit_size(p_other.bit_size),
 		is_reading(p_other.is_reading),
 		buffer(p_other.buffer) {}
 
 DataBuffer::DataBuffer(const BitArray &p_buffer) :
 		Object(),
+		metadata_size(0),
 		bit_offset(0),
+		bit_size(p_buffer.size_in_bits()),
 		is_reading(true),
 		buffer(p_buffer) {}
 
-int DataBuffer::get_buffer_size() const {
-	return buffer.get_bytes().size();
-}
-
-void DataBuffer::begin_write() {
+void DataBuffer::begin_write(int p_metadata_size) {
+	metadata_size = p_metadata_size;
+	bit_size = 0;
 	bit_offset = 0;
 	is_reading = false;
 }
 
 void DataBuffer::dry() {
-	buffer.resize_in_bits(bit_offset);
+	buffer.resize_in_bits(metadata_size + bit_size);
 }
 
 void DataBuffer::seek(int p_bits) {
-	ERR_FAIL_COND(buffer.size_in_bits() < p_bits);
+	ERR_FAIL_COND((metadata_size + bit_size) < p_bits);
 	bit_offset = p_bits;
 }
 
+void DataBuffer::force_set_size(int p_metadata_bit_size, int p_bit_size) {
+	ERR_FAIL_COND_MSG(buffer.size_in_bits() < (p_metadata_bit_size + p_bit_size), "The buffer is smaller than the new given size.");
+	metadata_size = p_metadata_bit_size;
+	bit_size = p_bit_size;
+}
+
+int DataBuffer::get_metadata_size() const {
+	return metadata_size;
+}
+
+int DataBuffer::size() const {
+	return bit_size;
+}
+
+int DataBuffer::total_size() const {
+	return bit_size + metadata_size;
+}
+
+int DataBuffer::get_bit_offset() const {
+	return bit_offset;
+}
+
 void DataBuffer::skip(int p_bits) {
-	ERR_FAIL_COND(buffer.size_in_bits() < bit_offset + p_bits);
+	ERR_FAIL_COND((metadata_size + bit_size) < (bit_offset + p_bits));
 	bit_offset += p_bits;
 }
 
@@ -156,6 +182,11 @@ bool DataBuffer::add_bool(bool p_input) {
 	make_room_in_bits(bits);
 	buffer.store_bits(bit_offset, p_input, bits);
 	bit_offset += bits;
+
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
 
 	return p_input;
 }
@@ -189,6 +220,11 @@ int64_t DataBuffer::add_int(int64_t p_input, CompressionLevel p_compression_leve
 	make_room_in_bits(bits);
 	buffer.store_bits(bit_offset, value, bits);
 	bit_offset += bits;
+
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
 
 	if (bits == 8) {
 		return static_cast<int8_t>(value);
@@ -273,6 +309,11 @@ real_t DataBuffer::add_unit_real(real_t p_input, CompressionLevel p_compression_
 	buffer.store_bits(bit_offset, compressed_val, bits);
 	bit_offset += bits;
 
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
+
 	return decompress_unit_float(compressed_val, max_value);
 }
 
@@ -350,6 +391,11 @@ Vector2 DataBuffer::add_normalized_vector2(Vector2 p_input, CompressionLevel p_c
 	const real_t decompressed_angle = (decompress_unit_float(compressed_angle, max_value) * Math_TAU) - Math_PI;
 	const real_t x = Math::cos(decompressed_angle);
 	const real_t y = Math::sin(decompressed_angle);
+
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
 
 	return Vector2(x, y) * is_not_zero;
 }
@@ -443,6 +489,11 @@ Vector3 DataBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p_c
 	const real_t decompressed_x_axis = decompress_unit_float(compressed_x_axis, max_value);
 	const real_t decompressed_y_axis = decompress_unit_float(compressed_y_axis, max_value);
 	const real_t decompressed_z_axis = decompress_unit_float(compressed_z_axis, max_value);
+
+#ifdef DEBUG_ENABLED
+	// Can't never happen because the buffer size is correctly handled.
+	CRASH_COND((metadata_size + bit_size) > buffer.size_in_bits() && bit_offset > buffer.size_in_bits());
+#endif
 
 	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);
 }
@@ -681,6 +732,14 @@ double DataBuffer::decompress_unit_float(uint64_t p_value, double p_scale_factor
 
 void DataBuffer::make_room_in_bits(int p_dim) {
 	const int array_min_dim = bit_offset + p_dim;
-	if (array_min_dim > buffer.size_in_bits())
+	if (array_min_dim > buffer.size_in_bits()) {
 		buffer.resize_in_bits(array_min_dim);
+	}
+
+	if (array_min_dim > metadata_size) {
+		const int new_bit_size = array_min_dim - metadata_size;
+		if (new_bit_size > bit_size) {
+			bit_size = new_bit_size;
+		}
+	}
 }

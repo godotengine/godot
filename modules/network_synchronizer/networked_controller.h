@@ -230,7 +230,7 @@ public:
 	bool is_enabled() const;
 
 public:
-	void set_inputs_buffer(const BitArray &p_new_buffer);
+	void set_inputs_buffer(const BitArray &p_new_buffer, uint32_t p_metadata_size_in_bit, uint32_t p_size_in_bit);
 
 	void set_scene_synchronizer(SceneSynchronizer *p_synchronizer);
 	SceneSynchronizer *get_scene_synchronizer() const;
@@ -257,14 +257,10 @@ private:
 	virtual void _notification(int p_what);
 };
 
-struct FrameSnapshotSkinny {
-	uint32_t id;
-	BitArray inputs_buffer;
-};
-
 struct FrameSnapshot {
 	uint32_t id;
 	BitArray inputs_buffer;
+	uint32_t buffer_size_bit;
 	uint32_t similarity;
 };
 
@@ -297,7 +293,8 @@ struct ServerController : public Controller {
 	real_t client_tick_additional_speed = 0.0;
 	real_t additional_speed_notif_timer = 0.0;
 	NetworkTracer network_tracer;
-	std::deque<FrameSnapshotSkinny> snapshots;
+	std::deque<FrameSnapshot> snapshots;
+	bool streaming_paused = false;
 
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;
@@ -319,6 +316,8 @@ struct ServerController : public Controller {
 
 	/// Fetch the next inputs, returns true if the input is new.
 	bool fetch_next_input();
+
+	void notify_send_state();
 
 	void doll_sync(real_t p_delta);
 
@@ -344,6 +343,7 @@ struct PlayerController : public Controller {
 	uint32_t input_buffers_counter;
 	real_t time_bank;
 	real_t tick_additional_speed;
+	bool streaming_paused = false;
 
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;

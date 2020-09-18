@@ -149,8 +149,10 @@ public:
 	};
 
 private:
-	int bit_offset;
-	bool is_reading;
+	int metadata_size = 0;
+	int bit_offset = 0;
+	int bit_size = 0;
+	bool is_reading = false;
 	BitArray buffer;
 
 public:
@@ -168,17 +170,28 @@ public:
 		return buffer;
 	}
 
-	// Returns the buffer size in bytes
-	int get_buffer_size() const;
-
 	/// Begin write.
-	void begin_write();
+	void begin_write(int p_metadata_size);
 
 	/// Make sure the buffer takes least space possible.
 	void dry();
 
-	/// Seek to bit.
+	/// Seek the offset to a specific bit. Seek to a bit greater than the actual
+	/// size is not allowed.
 	void seek(int p_bits);
+
+	/// Set the bit size and the metadata size.
+	void force_set_size(int p_metadata_bit_size, int p_bit_size);
+
+	/// Returns the metadata size in bits.
+	int get_metadata_size() const;
+	/// Returns the buffer size in bits
+	int size() const;
+	/// Total size in bits.
+	int total_size() const;
+
+	/// Returns the bit offset.
+	int get_bit_offset() const;
 
 	/// Skip n bits.
 	void skip(int p_bits);
