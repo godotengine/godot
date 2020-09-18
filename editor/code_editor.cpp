@@ -731,20 +731,10 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
 	if (magnify_gesture.is_valid()) {
-		/*
-		Ref<DynamicFont> font = text_editor->get_theme_font("font");
+		font_size = text_editor->get_theme_font_size("font_size");
+		font_size *= powf(magnify_gesture->get_factor(), 0.25);
 
-		if (font.is_valid()) {
-			if (font->get_size() != (int)font_size) {
-				font_size = font->get_size();
-			}
-
-			font_size *= powf(magnify_gesture->get_factor(), 0.25);
-
-			_add_font_size((int)font_size - font->get_size());
-		}
-		*/
-		//TODO move size to draw functions
+		_add_font_size((int)font_size - text_editor->get_theme_font_size("font_size"));
 		return;
 	}
 
@@ -767,15 +757,23 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 void CodeTextEditor::_zoom_in() {
 	font_resize_val += MAX(EDSCALE, 1.0f);
+	_zoom_changed();
 }
 
 void CodeTextEditor::_zoom_out() {
 	font_resize_val -= MAX(EDSCALE, 1.0f);
+	_zoom_changed();
+}
+
+void CodeTextEditor::_zoom_changed() {
+	if (font_resize_timer->get_time_left() == 0) {
+		font_resize_timer->start();
+	}
 }
 
 void CodeTextEditor::_reset_zoom() {
-	font_resize_val = 1.0f;
-	//TODO MOVE size to draw functions
+	EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
+	text_editor->add_theme_font_size_override("font_size", 14 * EDSCALE);
 }
 
 void CodeTextEditor::_line_col_changed() {
@@ -882,6 +880,24 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOp
 			break;
 	}
 	return tex;
+}
+
+void CodeTextEditor::_font_resize_timeout() {
+	if (_add_font_size(font_resize_val)) {
+		font_resize_val = 0;
+	}
+}
+
+bool CodeTextEditor::_add_font_size(int p_delta) {
+	int old_size = text_editor->get_theme_font_size("font_size");
+	int new_size = CLAMP(old_size + p_delta, 8 * EDSCALE, 96 * EDSCALE);
+
+	if (new_size != old_size) {
+		EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
+		text_editor->add_theme_font_size_override("font_size", new_size);
+	}
+
+	return true;
 }
 
 void CodeTextEditor::update_editor_settings() {
@@ -1479,6 +1495,31 @@ void CodeTextEditor::_on_settings_change() {
 
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
 
+	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	switch (ot_mode) {
+		case 1: { // Disable ligatures.
+			text_editor->clear_opentype_features();
+			text_editor->set_opentype_feature("calt", 0);
+		} break;
+		case 2: { // Custom.
+			text_editor->clear_opentype_features();
+			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+			Dictionary ftrs;
+			for (int i = 0; i < subtag.size(); i++) {
+				Vector<String> subtag_a = subtag[i].split("=");
+				if (subtag_a.size() == 2) {
+					text_editor->set_opentype_feature(subtag_a[0], subtag_a[1].to_int());
+				} else if (subtag_a.size() == 1) {
+					text_editor->set_opentype_feature(subtag_a[0], 1);
+				}
+			}
+		} break;
+		default: { // Default.
+			text_editor->clear_opentype_features();
+			text_editor->set_opentype_feature("calt", 1);
+		} break;
+	}
+
 	// Auto brace completion.
 	text_editor->set_auto_brace_completion(
 			EDITOR_GET("text_editor/completion/auto_brace_complete"));
@@ -1663,6 +1704,31 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	int ot_mode = EditorSettings::get_singleton()->get("interface/editor/code_font_contextual_ligatures");
+	switch (ot_mode) {
+		case 1: { // Disable ligatures.
+			text_editor->clear_opentype_features();
+			text_editor->set_opentype_feature("calt", 0);
+		} break;
+		case 2: { // Custom.
+			text_editor->clear_opentype_features();
+			Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_opentype_features")).split(",");
+			Dictionary ftrs;
+			for (int i = 0; i < subtag.size(); i++) {
+				Vector<String> subtag_a = subtag[i].split("=");
+				if (subtag_a.size() == 2) {
+					text_editor->set_opentype_feature(subtag_a[0], subtag_a[1].to_int());
+				} else if (subtag_a.size() == 1) {
+					text_editor->set_opentype_feature(subtag_a[0], 1);
+				}
+			}
+		} break;
+		default: { // Default.
+			text_editor->clear_opentype_features();
+			text_editor->set_opentype_feature("calt", 1);
+		} break;
+	}
+
 	// Added second so it opens at the bottom, so it won't shift the entire text editor when opening.
 	find_replace_bar = memnew(FindReplaceBar);
 	add_child(find_replace_bar);
@@ -1764,6 +1830,11 @@ CodeTextEditor::CodeTextEditor() {
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
+	font_resize_timer = memnew(Timer);
+	add_child(font_resize_timer);
+	font_resize_timer->set_one_shot(true);
+	font_resize_timer->set_wait_time(0.07);
+	font_resize_timer->connect("timeout", callable_mp(this, &CodeTextEditor::_font_resize_timeout));
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeTextEditor::_on_settings_change));
 }
