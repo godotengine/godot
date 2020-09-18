@@ -34,6 +34,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 /**
@@ -43,13 +45,18 @@ import androidx.fragment.app.FragmentActivity;
  * within an Android app.
  */
 public abstract class FullScreenGodotApp extends FragmentActivity {
-	protected Godot godotFragment;
+	@Nullable
+	private Godot godotFragment;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
-		godotFragment = new Godot();
+		godotFragment = initGodotInstance();
+		if (godotFragment == null) {
+			throw new IllegalStateException("Godot instance must be non-null.");
+		}
+
 		getSupportFragmentManager().beginTransaction().replace(R.id.godot_fragment_container, godotFragment).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss();
 	}
 
@@ -75,5 +82,18 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 			return true;
 		}
 		return super.onKeyMultiple(inKeyCode, repeatCount, event);
+	}
+
+	/**
+	 * Used to initialize the Godot fragment instance in {@link FullScreenGodotApp#onCreate(Bundle)}.
+	 */
+	@NonNull
+	protected Godot initGodotInstance() {
+		return new Godot();
+	}
+
+	@Nullable
+	protected final Godot getGodotFragment() {
+		return godotFragment;
 	}
 }
