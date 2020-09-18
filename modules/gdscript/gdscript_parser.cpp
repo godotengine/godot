@@ -1042,7 +1042,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 		if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 			break; // Allow trailing comma.
 		}
-		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifer for enum key.)")) {
+		if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for enum key.)")) {
 			EnumNode::Value item;
 			item.identifier = parse_identifier();
 			item.parent_enum = enum_node;
@@ -2516,7 +2516,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	if (match(GDScriptTokenizer::Token::LITERAL)) {
 		if (previous.literal.get_type() != Variant::STRING) {
-			push_error(R"(Expect node path as string or identifer after "$".)");
+			push_error(R"(Expect node path as string or identifier after "$".)");
 			return nullptr;
 		}
 		GetNodeNode *get_node = alloc_node<GetNodeNode>();
@@ -2539,7 +2539,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 		} while (match(GDScriptTokenizer::Token::SLASH));
 		return get_node;
 	} else {
-		push_error(R"(Expect node path as string or identifer after "$".)");
+		push_error(R"(Expect node path as string or identifier after "$".)");
 		return nullptr;
 	}
 }

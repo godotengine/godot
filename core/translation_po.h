@@ -42,7 +42,7 @@ class TranslationPO : public Translation {
 	// TLDR: Maps context to a list of source strings and translated strings. In PO terms, maps msgctxt to a list of msgid and msgstr.
 	// The first key corresponds to context, and the second key (of the contained HashMap) corresponds to source string.
 	// The value Vector<StringName> in the second map stores the translated strings. Index 0, 1, 2 matches msgstr[0], msgstr[1], msgstr[2]... in the case of plurals.
-	// Otherwise index 0 mathes to msgstr in a singular translation.
+	// Otherwise index 0 matches to msgstr in a singular translation.
 	// Strings without context have "" as first key.
 	HashMap<StringName, HashMap<StringName, Vector<StringName>>> translation_map;
 

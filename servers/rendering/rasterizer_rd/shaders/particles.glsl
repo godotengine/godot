@@ -147,7 +147,7 @@ bool emit_particle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, u
 	while(attempts-- > 0) {
 	    dst_index = dst_particles.particle_count;
 	    if (dst_index == dst_particles.particle_max) {
-		return false; //cant emit anymore
+		return false; //can't emit anymore
 	    }
 
 	    if (atomicCompSwap(dst_particles.particle_count, dst_index, dst_index +1 ) != dst_index) {

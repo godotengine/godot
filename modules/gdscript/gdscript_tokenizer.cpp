@@ -578,7 +578,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 }
 
 void GDScriptTokenizer::newline(bool p_make_token) {
-	// Don't overwrite previous newline, nor create if we want a line contination.
+	// Don't overwrite previous newline, nor create if we want a line continuation.
 	if (p_make_token && !pending_newline && !line_continuation) {
 		Token newline(Token::NEWLINE);
 		newline.start_line = line;

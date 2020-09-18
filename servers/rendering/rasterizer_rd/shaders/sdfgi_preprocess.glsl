@@ -103,7 +103,7 @@ dispatch_data;
 struct ProcessVoxel {
 	uint position; //xyz 7 bit packed, extra 11 bits for neigbours
 	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
-	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbous
+	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
 	//total neighbours: 26
 };
@@ -136,7 +136,7 @@ dispatch_data;
 struct ProcessVoxel {
 	uint position; //xyz 7 bit packed, extra 11 bits for neigbours
 	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neibhbours
-	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbous
+	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
 	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
 	//total neighbours: 26
 };
@@ -274,7 +274,7 @@ void main() {
 
 #ifdef MODE_JUMPFLOOD
 
-	//regular jumpflood, efficent for large steps, inefficient for small steps
+	//regular jumpflood, efficient for large steps, inefficient for small steps
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
 
 	vec3 posf = vec3(pos);
