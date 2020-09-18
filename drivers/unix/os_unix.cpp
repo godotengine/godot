@@ -48,7 +48,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
@@ -477,7 +477,7 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
