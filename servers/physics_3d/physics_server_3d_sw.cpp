@@ -174,7 +174,7 @@ real_t PhysicsServer3DSW::space_get_param(RID p_space, SpaceParameter p_param) c
 PhysicsDirectSpaceState3D *PhysicsServer3DSW::space_get_direct_state(RID p_space) {
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, nullptr);
-	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -888,7 +888,7 @@ int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_t
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
-	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1287,7 +1287,6 @@ void PhysicsServer3DSW::set_active(bool p_active) {
 };
 
 void PhysicsServer3DSW::init() {
-	doing_sync = true;
 	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step3DSW);
@@ -1302,8 +1301,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	doing_sync = false;
 
 	last_step = p_step;
 	PhysicsDirectBodyState3DSW::singleton->step = p_step;
@@ -1326,8 +1323,6 @@ void PhysicsServer3DSW::flush_queries() {
 	if (!active) {
 		return;
 	}
-
-	doing_sync = true;
 
 	flushing_queries = true;
 
