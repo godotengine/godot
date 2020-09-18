@@ -485,7 +485,7 @@ void main() {
 
 		//get depth at cell pos
 		float z = get_depth_at_pos(fog_cell_size.z, i);
-		//get distance from previos pos
+		//get distance from previous pos
 		float d = abs(prev_z - z);
 		//compute exinction based on beer's
 		float extinction = t * exp(-d * fog.a);

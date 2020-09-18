@@ -681,7 +681,7 @@ LIGHT_SHADER_CODE
 
 #ifndef USE_NO_SHADOWS
 
-// Produces cheap white noise, optmized for window-space
+// Produces cheap white noise, optimized for window-space
 // Comes from: https://www.shadertoy.com/view/4djSRW
 // Copyright: Dave Hoskins, MIT License
 float quick_hash(vec2 pos) {

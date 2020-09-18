@@ -336,7 +336,7 @@ void main() {
 
 #ifdef MODE_STORE
 
-	// converting to octahedral in this step is requiered because
+	// converting to octahedral in this step is required because
 	// octahedral is much faster to read from the screen than spherical harmonics,
 	// despite the very slight quality loss
 
@@ -512,7 +512,7 @@ void main() {
 			imageStore(lightprobe_average_scroll_texture, dst_pos, value);
 		}
 	} else if (params.cascade < params.max_cascades - 1) {
-		//cant scroll, must look for position in parent cascade
+		//can't scroll, must look for position in parent cascade
 
 		//to global coords
 		float probe_cell_size = float(params.grid_size.x / float(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;

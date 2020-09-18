@@ -88,7 +88,7 @@
   <PropertyGroup>
     <!-- ExportDebug also defines DEBUG like Debug does. -->
     <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
-    <!-- Debug defines TOOLS to differenciate between Debug and ExportDebug configurations. -->
+    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
 
     <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
