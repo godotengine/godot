@@ -160,6 +160,12 @@ private:
 	void _clear_delimiters(DelimiterType p_type);
 	TypedArray<String> _get_delimiters(DelimiterType p_type) const;
 
+	/* Code Hint */
+	String code_hint = "";
+
+	bool code_hint_draw_below = true;
+	int code_hint_xpos = -0xFFFF;
+
 	/* Code Completion */
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
@@ -261,6 +267,10 @@ public:
 
 	Point2 get_delimiter_start_position(int p_line, int p_column) const;
 	Point2 get_delimiter_end_position(int p_line, int p_column) const;
+
+	/* Code hint */
+	void set_code_hint(const String &p_hint);
+	void set_code_hint_draw_below(bool p_below);
 
 	/* Code Completion */
 	void set_code_completion_enabled(bool p_enable);
