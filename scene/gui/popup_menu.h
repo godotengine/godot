@@ -105,7 +105,7 @@ class PopupMenu : public Popup {
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
-	bool invalidated_click;
+	uint64_t popup_time_msec = 0;
 	bool hide_on_item_selection;
 	bool hide_on_checkable_item_selection;
 	bool hide_on_multistate_item_selection;
