@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -61,9 +61,7 @@ ZSTD_compressBlock_fast_generic(
     const BYTE* ip1;
     const BYTE* anchor = istart;
     const U32   endIndex = (U32)((size_t)(istart - base) + srcSize);
-    const U32   maxDistance = 1U << cParams->windowLog;
-    const U32   validStartIndex = ms->window.dictLimit;
-    const U32   prefixStartIndex = (endIndex - validStartIndex > maxDistance) ? endIndex - maxDistance : validStartIndex;
+    const U32   prefixStartIndex = ZSTD_getLowestPrefixIndex(ms, endIndex, cParams->windowLog);
     const BYTE* const prefixStart = base + prefixStartIndex;
     const BYTE* const iend = istart + srcSize;
     const BYTE* const ilimit = iend - HASH_READ_SIZE;
@@ -74,12 +72,21 @@ ZSTD_compressBlock_fast_generic(
     DEBUGLOG(5, "ZSTD_compressBlock_fast_generic");
     ip0 += (ip0 == prefixStart);
     ip1 = ip0 + 1;
-    {   U32 const maxRep = (U32)(ip0 - prefixStart);
+    {   U32 const current = (U32)(ip0 - base);
+        U32 const windowLow = ZSTD_getLowestPrefixIndex(ms, current, cParams->windowLog);
+        U32 const maxRep = current - windowLow;
         if (offset_2 > maxRep) offsetSaved = offset_2, offset_2 = 0;
         if (offset_1 > maxRep) offsetSaved = offset_1, offset_1 = 0;
     }
 
     /* Main Search Loop */
+#ifdef __INTEL_COMPILER
+    /* From intel 'The vector pragma indicates that the loop should be
+     * vectorized if it is legal to do so'. Can be used together with
+     * #pragma ivdep (but have opted to exclude that because intel
+     * warns against using it).*/
+    #pragma vector always
+#endif
     while (ip1 < ilimit) {   /* < instead of <=, because check at ip0+2 */
         size_t mLength;
         BYTE const* ip2 = ip0 + 2;
@@ -91,19 +98,25 @@ ZSTD_compressBlock_fast_generic(
         U32 const current1 = (U32)(ip1-base);
         U32 const matchIndex0 = hashTable[h0];
         U32 const matchIndex1 = hashTable[h1];
-        BYTE const* repMatch = ip2-offset_1;
+        BYTE const* repMatch = ip2 - offset_1;
         const BYTE* match0 = base + matchIndex0;
         const BYTE* match1 = base + matchIndex1;
         U32 offcode;
+
+#if defined(__aarch64__)
+        PREFETCH_L1(ip0+256);
+#endif
+
         hashTable[h0] = current0;   /* update hash table */
         hashTable[h1] = current1;   /* update hash table */
 
         assert(ip0 + 1 == ip1);
 
         if ((offset_1 > 0) & (MEM_read32(repMatch) == MEM_read32(ip2))) {
-            mLength = ip2[-1] == repMatch[-1] ? 1 : 0;
+            mLength = (ip2[-1] == repMatch[-1]) ? 1 : 0;
             ip0 = ip2 - mLength;
             match0 = repMatch - mLength;
+            mLength += 4;
             offcode = 0;
             goto _match;
         }
@@ -128,19 +141,18 @@ _offset: /* Requires: ip0, match0 */
         offset_2 = offset_1;
         offset_1 = (U32)(ip0-match0);
         offcode = offset_1 + ZSTD_REP_MOVE;
-        mLength = 0;
+        mLength = 4;
         /* Count the backwards match length */
         while (((ip0>anchor) & (match0>prefixStart))
              && (ip0[-1] == match0[-1])) { ip0--; match0--; mLength++; } /* catch up */
 
 _match: /* Requires: ip0, match0, offcode */
         /* Count the forward length */
-        mLength += ZSTD_count(ip0+mLength+4, match0+mLength+4, iend) + 4;
+        mLength += ZSTD_count(ip0+mLength, match0+mLength, iend);
         ZSTD_storeSeq(seqStore, (size_t)(ip0-anchor), anchor, iend, offcode, mLength-MINMATCH);
         /* match found */
         ip0 += mLength;
         anchor = ip0;
-        ip1 = ip0 + 1;
 
         if (ip0 <= ilimit) {
             /* Fill Table */
@@ -148,19 +160,18 @@ _match: /* Requires: ip0, match0, offcode */
             hashTable[ZSTD_hashPtr(base+current0+2, hlog, mls)] = current0+2;  /* here because current+2 could be > iend-8 */
             hashTable[ZSTD_hashPtr(ip0-2, hlog, mls)] = (U32)(ip0-2-base);
 
-            while ( ((ip0 <= ilimit) & (offset_2>0))  /* offset_2==0 means offset_2 is invalidated */
-                 && (MEM_read32(ip0) == MEM_read32(ip0 - offset_2)) ) {
-                /* store sequence */
-                size_t const rLength = ZSTD_count(ip0+4, ip0+4-offset_2, iend) + 4;
-                { U32 const tmpOff = offset_2; offset_2 = offset_1; offset_1 = tmpOff; } /* swap offset_2 <=> offset_1 */
-                hashTable[ZSTD_hashPtr(ip0, hlog, mls)] = (U32)(ip0-base);
-                ip0 += rLength;
-                ip1 = ip0 + 1;
-                ZSTD_storeSeq(seqStore, 0 /*litLen*/, anchor, iend, 0 /*offCode*/, rLength-MINMATCH);
-                anchor = ip0;
-                continue;   /* faster when present (confirmed on gcc-8) ... (?) */
-            }
-        }
+            if (offset_2 > 0) { /* offset_2==0 means offset_2 is invalidated */
+                while ( (ip0 <= ilimit) && (MEM_read32(ip0) == MEM_read32(ip0 - offset_2)) ) {
+                    /* store sequence */
+                    size_t const rLength = ZSTD_count(ip0+4, ip0+4-offset_2, iend) + 4;
+                    { U32 const tmpOff = offset_2; offset_2 = offset_1; offset_1 = tmpOff; } /* swap offset_2 <=> offset_1 */
+                    hashTable[ZSTD_hashPtr(ip0, hlog, mls)] = (U32)(ip0-base);
+                    ip0 += rLength;
+                    ZSTD_storeSeq(seqStore, 0 /*litLen*/, anchor, iend, 0 /*offCode*/, rLength-MINMATCH);
+                    anchor = ip0;
+                    continue;   /* faster when present (confirmed on gcc-8) ... (?) */
+        }   }   }
+        ip1 = ip0 + 1;
     }
 
     /* save reps for next block */
@@ -387,7 +398,7 @@ static size_t ZSTD_compressBlock_fast_extDict_generic(
     const BYTE* const ilimit = iend - 8;
     U32 offset_1=rep[0], offset_2=rep[1];
 
-    DEBUGLOG(5, "ZSTD_compressBlock_fast_extDict_generic");
+    DEBUGLOG(5, "ZSTD_compressBlock_fast_extDict_generic (offset_1=%u)", offset_1);
 
     /* switch to "regular" variant if extDict is invalidated due to maxDistance */
     if (prefixStartIndex == dictStartIndex)
@@ -404,6 +415,7 @@ static size_t ZSTD_compressBlock_fast_extDict_generic(
         const BYTE* const repBase = repIndex < prefixStartIndex ? dictBase : base;
         const BYTE* const repMatch = repBase + repIndex;
         hashTable[h] = current;   /* update hash table */
+        DEBUGLOG(7, "offset_1 = %u , current = %u", offset_1, current);
         assert(offset_1 <= current +1);   /* check repIndex */
 
         if ( (((U32)((prefixStartIndex-1) - repIndex) >= 3) /* intentional underflow */ & (repIndex > dictStartIndex))
