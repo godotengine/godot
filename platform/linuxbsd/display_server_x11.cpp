@@ -3575,7 +3575,12 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	xrandr_handle = dlopen("libXrandr.so.2", RTLD_LAZY);
 	if (!xrandr_handle) {
 		err = dlerror();
-		fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
+		// For some arcane reason, NetBSD now ships libXrandr.so.3 while the rest of the world has libXrandr.so.2...
+		// In case this happens for other X11 platforms in the future, let's give it a try too before failing.
+		xrandr_handle = dlopen("libXrandr.so.3", RTLD_LAZY);
+		if (!xrandr_handle) {
+			fprintf(stderr, "could not load libXrandr.so.2, Error: %s\n", err);
+		}
 	} else {
 		XRRQueryVersion(x11_display, &xrandr_major, &xrandr_minor);
 		if (((xrandr_major << 8) | xrandr_minor) >= 0x0105) {
