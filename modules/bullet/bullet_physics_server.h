@@ -397,7 +397,6 @@ public:
 
 	virtual void init() override;
 	virtual void step(float p_deltaTime) override;
-	virtual void sync() override;
 	virtual void flush_queries() override;
 	virtual void finish() override;
 
