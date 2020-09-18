@@ -159,6 +159,57 @@ void CodeEdit::_notification(int p_what) {
 					draw_rect(Rect2(code_completion_rect.position.x + code_completion_rect.size.width, code_completion_rect.position.y + o * code_completion_rect.size.y, scroll_width, code_completion_rect.size.y * r), code_completion_scroll_color);
 				}
 			}
+
+			/* Code hint */
+			if (caret_visible && code_hint != "" && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
+				const Ref<Font> font = cache.font;
+				const int font_height = font->get_height(cache.font_size);
+				Ref<StyleBox> sb = get_theme_stylebox("panel", "TooltipPanel");
+				Color font_color = get_theme_color("font_color", "TooltipLabel");
+
+				Vector<String> code_hint_lines = code_hint.split("\n");
+				int line_count = code_hint_lines.size();
+
+				int max_width = 0;
+				for (int i = 0; i < line_count; i++) {
+					max_width = MAX(max_width, font->get_string_size(code_hint_lines[i], cache.font_size).x);
+				}
+				Size2 minsize = sb->get_minimum_size() + Size2(max_width, line_count * font_height + (cache.line_spacing * line_count - 1));
+
+				int offset = font->get_string_size(code_hint_lines[0].substr(0, code_hint_lines[0].find(String::chr(0xFFFF))), cache.font_size).x;
+				if (code_hint_xpos == -0xFFFF) {
+					code_hint_xpos = get_caret_draw_pos().x - offset;
+				}
+				Point2 hint_ofs = Vector2(code_hint_xpos, get_caret_draw_pos().y);
+				if (code_hint_draw_below) {
+					hint_ofs.y += cache.line_spacing / 2.0f;
+				} else {
+					hint_ofs.y -= (minsize.y + row_height) - cache.line_spacing;
+				}
+
+				draw_style_box(sb, Rect2(hint_ofs, minsize));
+
+				int line_spacing = 0;
+				for (int i = 0; i < line_count; i++) {
+					const String &line = code_hint_lines[i];
+
+					int begin = 0;
+					int end = 0;
+					if (line.find(String::chr(0xFFFF)) != -1) {
+						begin = font->get_string_size(line.substr(0, line.find(String::chr(0xFFFF))), cache.font_size).x;
+						end = font->get_string_size(line.substr(0, line.rfind(String::chr(0xFFFF))), cache.font_size).x;
+					}
+
+					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent() + font_height * i + line_spacing);
+					round_ofs = round_ofs.round();
+					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HALIGN_LEFT, -1, cache.font_size, font_color);
+					if (end > 0) {
+						Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + line_spacing - 1);
+						draw_line(b, b + Vector2(end - begin, 0), font_color);
+					}
+					line_spacing += cache.line_spacing;
+				}
+			}
 		} break;
 	}
 }
@@ -196,6 +247,7 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 		cancel_code_completion();
+		set_code_hint("");
 	}
 
 	Ref<InputEventKey> k = p_gui_input;
@@ -205,12 +257,8 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	if (!k->is_pressed()) {
-		return;
-	}
-
-	// If a modifier has been pressed, and nothing else, return.
-	if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT || k->get_keycode() == KEY_META) {
+	/* If a modifier has been pressed, and nothing else, return. */
+	if (!k->is_pressed() || k->get_keycode() == KEY_CTRL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT || k->get_keycode() == KEY_META) {
 		return;
 	}
 
@@ -296,6 +344,29 @@ void CodeEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (!update_code_completion) {
 			cancel_code_completion();
 		}
+	}
+
+	/* MISC */
+	if (k->is_action("ui_cancel", true)) {
+		set_code_hint("");
+		accept_event();
+		return;
+	}
+	if (allow_unicode_handling && k->get_unicode() == ')') {
+		set_code_hint("");
+	}
+
+	/* Remove shift otherwise actions will not match. */
+	k = k->duplicate();
+	k->set_shift_pressed(false);
+
+	if (k->is_action("ui_text_caret_up", true) ||
+			k->is_action("ui_text_caret_down", true) ||
+			k->is_action("ui_text_caret_line_start", true) ||
+			k->is_action("ui_text_caret_line_end", true) ||
+			k->is_action("ui_text_caret_page_up", true) ||
+			k->is_action("ui_text_caret_page_down", true)) {
+		set_code_hint("");
 	}
 
 	TextEdit::_gui_input(p_gui_input);
@@ -698,6 +769,18 @@ Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
 	return end_position;
 }
 
+/* Code hint */
+void CodeEdit::set_code_hint(const String &p_hint) {
+	code_hint = p_hint;
+	code_hint_xpos = -0xFFFF;
+	update();
+}
+
+void CodeEdit::set_code_hint_draw_below(bool p_below) {
+	code_hint_draw_below = p_below;
+	update();
+}
+
 /* Code Completion */
 void CodeEdit::set_code_completion_enabled(bool p_enable) {
 	code_completion_enabled = p_enable;
@@ -1040,6 +1123,10 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_delimiter_start_postion", "line", "column"), &CodeEdit::get_delimiter_start_position);
 	ClassDB::bind_method(D_METHOD("get_delimiter_end_postion", "line", "column"), &CodeEdit::get_delimiter_end_position);
+
+	/* Code hint */
+	ClassDB::bind_method(D_METHOD("set_code_hint", "code_hint"), &CodeEdit::set_code_hint);
+	ClassDB::bind_method(D_METHOD("set_code_hint_draw_below", "draw_below"), &CodeEdit::set_code_hint_draw_below);
 
 	/* Code Completion */
 	BIND_ENUM_CONSTANT(KIND_CLASS);

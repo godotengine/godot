@@ -1824,9 +1824,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	update_settings();
 
-	code_editor->get_text_editor()->set_callhint_settings(
-			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EditorSettings::get_singleton()->get("text_editor/completion/callhint_tooltip_offset"));
+	code_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	code_editor->get_text_editor()->set_select_identifiers_on_hover(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);

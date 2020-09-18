@@ -329,11 +329,6 @@ private:
 
 	bool next_operation_is_complex = false;
 
-	bool callhint_below = false;
-	Vector2 callhint_offset;
-	String completion_hint = "";
-	int completion_hint_offset = 0;
-
 	String search_text;
 	uint32_t search_flags = 0;
 	int search_result_line = 0;
@@ -427,7 +422,6 @@ private:
 	PopupMenu *menu_ctl;
 
 	void _clear();
-	void _cancel_code_hint();
 
 	int _calculate_spaces_till_next_left_indent(int column);
 	int _calculate_spaces_till_next_right_indent(int column);
@@ -666,10 +660,6 @@ public:
 		brace_matching_enabled = p_enabled;
 		update();
 	}
-	inline void set_callhint_settings(bool below, Vector2 offset) {
-		callhint_below = below;
-		callhint_offset = offset;
-	}
 	void set_auto_indent(bool p_auto_indent);
 
 	void center_viewport_to_cursor();
@@ -797,8 +787,6 @@ public:
 	bool is_hiding_enabled() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName &p_function, const Variant &p_udata);
-
-	void set_code_hint(const String &p_hint);
 
 	void set_select_identifiers_on_hover(bool p_enable);
 	bool is_selecting_identifiers_on_hover_enabled() const;

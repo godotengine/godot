@@ -1564,9 +1564,7 @@ void CodeTextEditor::_on_settings_change() {
 			EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	// Call hint settings.
-	text_editor->set_callhint_settings(
-			EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"),
-			EDITOR_GET("text_editor/completion/callhint_tooltip_offset"));
+	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }

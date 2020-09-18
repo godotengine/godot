@@ -2210,8 +2210,6 @@ void TextEdit::_move_cursor_up(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-
-	_cancel_code_hint();
 }
 
 void TextEdit::_move_cursor_down(bool p_select) {
@@ -2234,8 +2232,6 @@ void TextEdit::_move_cursor_down(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-
-	_cancel_code_hint();
 }
 
 void TextEdit::_move_cursor_to_line_start(bool p_select) {
@@ -2275,8 +2271,6 @@ void TextEdit::_move_cursor_to_line_start(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-
-	completion_hint = "";
 }
 
 void TextEdit::_move_cursor_to_line_end(bool p_select) {
@@ -2302,7 +2296,6 @@ void TextEdit::_move_cursor_to_line_end(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-	completion_hint = "";
 }
 
 void TextEdit::_move_cursor_page_up(bool p_select) {
@@ -2319,8 +2312,6 @@ void TextEdit::_move_cursor_page_up(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-
-	completion_hint = "";
 }
 
 void TextEdit::_move_cursor_page_down(bool p_select) {
@@ -2337,8 +2328,6 @@ void TextEdit::_move_cursor_page_down(bool p_select) {
 	if (p_select) {
 		_post_shift_selection();
 	}
-
-	completion_hint = "";
 }
 
 void TextEdit::_backspace(bool p_word, bool p_all_to_left) {
@@ -2487,11 +2476,6 @@ void TextEdit::_handle_unicode_character(uint32_t unicode, bool p_had_selection)
 	}
 
 	const char32_t chr[2] = { (char32_t)unicode, 0 };
-
-	// Clear completion hint when function closed
-	if (completion_hint != "" && unicode == ')') {
-		completion_hint = "";
-	}
 
 	if (auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 		_consume_pair_symbol(chr[0]);
@@ -3067,7 +3051,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		// MISC.
-
 		if (k->is_action("ui_menu", true)) {
 			if (context_menu_enabled) {
 				menu->set_position(get_screen_transform().xform(_get_cursor_pixel_pos()));
@@ -3081,14 +3064,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 		if (k->is_action("ui_text_toggle_insert_mode", true)) {
 			set_insert_mode(!insert_mode);
-			accept_event();
-			return;
-		}
-		if (k->is_action("ui_cancel", true)) {
-			if (completion_hint != "") {
-				completion_hint = "";
-				update();
-			}
 			accept_event();
 			return;
 		}
@@ -5510,7 +5485,6 @@ void TextEdit::undo() {
 	if (undo_stack_pos->get().type == TextOperation::TYPE_REMOVE) {
 		cursor_set_line(undo_stack_pos->get().to_line, false);
 		cursor_set_column(undo_stack_pos->get().to_column);
-		_cancel_code_hint();
 	} else {
 		cursor_set_line(undo_stack_pos->get().from_line, false);
 		cursor_set_column(undo_stack_pos->get().from_column);
@@ -5784,17 +5758,6 @@ void TextEdit::set_v_scroll_speed(float p_speed) {
 
 float TextEdit::get_v_scroll_speed() const {
 	return v_scroll_speed;
-}
-
-void TextEdit::_cancel_code_hint() {
-	completion_hint = "";
-	update();
-}
-
-void TextEdit::set_code_hint(const String &p_hint) {
-	completion_hint = p_hint;
-	completion_hint_offset = -0xFFFF;
-	update();
 }
 
 String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
