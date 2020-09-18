@@ -29,16 +29,16 @@
 /*************************************************************************/
 
 #include "thread_posix.h"
-#include "core/script_language.h"
 
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
+
+#include "core/os/memory.h"
+#include "core/safe_refcount.h"
+#include "core/script_language.h"
 
 #ifdef PTHREAD_BSD_SET_NAME
 #include <pthread_np.h>
 #endif
-
-#include "core/os/memory.h"
-#include "core/safe_refcount.h"
 
 static void _thread_id_key_destr_callback(void *p_value) {
 	memdelete(static_cast<Thread::ID *>(p_value));
@@ -126,6 +126,8 @@ Error ThreadPosix::set_name_func_posix(const String &p_name) {
 #ifdef PTHREAD_BSD_SET_NAME
 	pthread_set_name_np(running_thread, p_name.utf8().get_data());
 	int err = 0; // Open/FreeBSD ignore errors in this function
+#elif defined(PTHREAD_NETBSD_SET_NAME)
+	int err = pthread_setname_np(running_thread, "%s", const_cast<char *>(p_name.utf8().get_data()));
 #else
 	int err = pthread_setname_np(running_thread, p_name.utf8().get_data());
 #endif // PTHREAD_BSD_SET_NAME
