@@ -534,13 +534,28 @@ def generate_vs_project(env, num_jobs):
             common_build_prefix = [
                 'cmd /V /C set "plat=$(PlatformTarget)"',
                 '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                'set "tools=yes"',
+                'set "tools=%s"' % env["tools"],
                 '(if "$(Configuration)"=="release" (set "tools=no"))',
-                'set "custom_modules=%s"' % env["custom_modules"],
                 'call "' + batch_file + '" !plat!',
             ]
 
-            result = " ^& ".join(common_build_prefix + [commands])
+            # windows allows us to have spaces in paths, so we need
+            # to double quote off the directory. However, the path ends
+            # in a backslash, so we need to remove this, lest it escape the
+            # last double quote off, confusing MSBuild
+            common_build_postfix = [
+                "--directory=\"$(ProjectDir.TrimEnd('\\'))\"",
+                "platform=windows",
+                "target=$(Configuration)",
+                "progress=no",
+                "tools=!tools!",
+                "-j%s" % num_jobs,
+            ]
+
+            if env["custom_modules"]:
+                common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+            result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
             return result
 
         env.AddToVSProject(env.core_sources)
@@ -550,22 +565,9 @@ def generate_vs_project(env, num_jobs):
         env.AddToVSProject(env.servers_sources)
         env.AddToVSProject(env.editor_sources)
 
-        # windows allows us to have spaces in paths, so we need
-        # to double quote off the directory. However, the path ends
-        # in a backslash, so we need to remove this, lest it escape the
-        # last double quote off, confusing MSBuild
-        env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! custom_modules=!custom_modules! -j" + str(num_jobs)
-        )
-        env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! custom_modules=!custom_modules! vsproj=yes -j" + str(num_jobs)
-        )
-        env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no"
-            " target=$(Configuration) tools=!tools! custom_modules=!custom_modules! -j" + str(num_jobs)
-        )
+        env["MSVSBUILDCOM"] = build_commandline("scons")
+        env["MSVSREBUILDCOM"] = build_commandline("scons vsproj=yes")
+        env["MSVSCLEANCOM"] = build_commandline("scons --clean")
 
         # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
         # required for Visual Studio to understand that it needs to generate an NMAKE
