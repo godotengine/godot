@@ -157,6 +157,11 @@ private:
 
 	void _editor_settings_changed();
 
+	void _move_cursor_left(bool p_select, bool p_move_by_word = false);
+	void _move_cursor_right(bool p_select, bool p_move_by_word = false);
+	void _backspace(bool p_word = false);
+	void _delete(bool p_word = false);
+
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 

@@ -436,6 +436,23 @@ private:
 	int _calculate_spaces_till_next_left_indent(int column);
 	int _calculate_spaces_till_next_right_indent(int column);
 
+	// Methods used in shortcuts
+	void _new_line(bool p_split_current = true, bool p_above = false);
+	void _move_cursor_left(bool p_select, bool p_move_by_word = false);
+	void _move_cursor_right(bool p_select, bool p_move_by_word = false);
+	void _move_cursor_up(bool p_select);
+	void _move_cursor_down(bool p_select);
+	void _move_cursor_to_line_start(bool p_select);
+	void _move_cursor_to_line_end(bool p_select);
+	void _move_cursor_page_up(bool p_select);
+	void _move_cursor_page_down(bool p_select);
+	void _backspace(bool p_word = false, bool p_all_to_left = false);
+	void _delete(bool p_word = false, bool p_all_to_right = false);
+	void _delete_selection();
+	void _move_cursor_document_start(bool p_select);
+	void _move_cursor_document_end(bool p_select);
+	void _handle_unicode_character(uint32_t unicode, bool p_had_selection, bool p_update_auto_complete);
+
 protected:
 	struct Cache {
 		Ref<Texture2D> tab_icon;

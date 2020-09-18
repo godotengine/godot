@@ -32,6 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/core_string_names.h"
+#include "core/input/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
@@ -1039,16 +1040,33 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 }
 
+void ProjectSettings::_add_builtin_input_map() {
+	Array events;
+
+	OrderedHashMap<StringName, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+	for (OrderedHashMap<StringName, List<Ref<InputEvent>>>::Element E = builtins.front(); E; E = E.next()) {
+		Array events;
+
+		// Convert list of input events into array
+		for (List<Ref<InputEvent>>::Element *I = E.get().front(); I; I = I->next()) {
+			events.push_back(I->get());
+		}
+
+		Dictionary action;
+		action["deadzone"] = Variant(0.5f);
+		action["events"] = events;
+
+		String action_name = "input/" + E.key();
+		GLOBAL_DEF(action_name, action);
+		input_presets.push_back(action_name);
+	}
+}
+
 ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
 
 	singleton = this;
-
-	Array events;
-	Dictionary action;
-	Ref<InputEventKey> key;
-	Ref<InputEventJoypadButton> joyb;
 
 	GLOBAL_DEF("application/config/name", "");
 	GLOBAL_DEF("application/config/description", "");
@@ -1076,163 +1094,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
 
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_ENTER);
-	events.push_back(key);
-	key.instance();
-	key->set_keycode(KEY_KP_ENTER);
-	events.push_back(key);
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_A);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_accept", action);
-	input_presets.push_back("input/ui_accept");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_SPACE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_Y);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_select", action);
-	input_presets.push_back("input/ui_select");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_ESCAPE);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_B);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_cancel", action);
-	input_presets.push_back("input/ui_cancel");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_focus_next", action);
-	input_presets.push_back("input/ui_focus_next");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_TAB);
-	key->set_shift(true);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_focus_prev", action);
-	input_presets.push_back("input/ui_focus_prev");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_LEFT);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_LEFT);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_left", action);
-	input_presets.push_back("input/ui_left");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_RIGHT);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_RIGHT);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_right", action);
-	input_presets.push_back("input/ui_right");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_UP);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_UP);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_up", action);
-	input_presets.push_back("input/ui_up");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_DOWN);
-	events.push_back(key);
-	joyb.instance();
-	joyb->set_button_index(JOY_BUTTON_DPAD_DOWN);
-	events.push_back(joyb);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_down", action);
-	input_presets.push_back("input/ui_down");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_PAGEUP);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_page_up", action);
-	input_presets.push_back("input/ui_page_up");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_PAGEDOWN);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_page_down", action);
-	input_presets.push_back("input/ui_page_down");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_HOME);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_home", action);
-	input_presets.push_back("input/ui_home");
-
-	action = Dictionary();
-	action["deadzone"] = Variant(0.5f);
-	events = Array();
-	key.instance();
-	key->set_keycode(KEY_END);
-	events.push_back(key);
-	action["events"] = events;
-	GLOBAL_DEF("input/ui_end", action);
-	input_presets.push_back("input/ui_end");
+	_add_builtin_input_map();
 
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::STRING, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
 	custom_prop_info["rendering/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");

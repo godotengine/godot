@@ -33,6 +33,7 @@
 
 #include "core/input/input_event.h"
 #include "core/object.h"
+#include "core/ordered_hash_map.h"
 
 class InputMap : public Object {
 	GDCLASS(InputMap, Object);
@@ -52,7 +53,8 @@ public:
 private:
 	static InputMap *singleton;
 
-	mutable Map<StringName, Action> input_map;
+	mutable OrderedHashMap<StringName, Action> input_map;
+	OrderedHashMap<String, List<Ref<InputEvent>>> default_builtin_cache;
 
 	List<Ref<InputEvent>>::Element *_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
 
@@ -80,9 +82,12 @@ public:
 	bool event_is_action(const Ref<InputEvent> &p_event, const StringName &p_action) const;
 	bool event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool *p_pressed = nullptr, float *p_strength = nullptr) const;
 
-	const Map<StringName, Action> &get_action_map() const;
+	const OrderedHashMap<StringName, Action> &get_action_map() const;
 	void load_from_project_settings();
 	void load_default();
+
+	// Use an Ordered Map so insertion order is preserved. We want the elements to be 'grouped' somewhat.
+	OrderedHashMap<StringName, List<Ref<InputEvent>>> get_builtins();
 
 	InputMap();
 };

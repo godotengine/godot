@@ -507,8 +507,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Thread::_main_thread_id = Thread::get_caller_id();
 
-	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);
+	globals = memnew(ProjectSettings);
 
 	register_core_settings(); //here globals is present
 
