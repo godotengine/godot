@@ -151,6 +151,7 @@ class CodeTextEditor : public VBoxContainer {
 	Timer *idle;
 	Timer *code_complete_timer;
 
+	Timer *font_resize_timer;
 	int font_resize_val;
 	real_t font_size;
 
@@ -163,11 +164,14 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_font();
 	void _complete_request();
 	Ref<Texture2D> _get_completion_icon(const ScriptCodeCompletionOption &p_option);
+	void _font_resize_timeout();
+	bool _add_font_size(int p_delta);
 
 	void _input(const Ref<InputEvent> &event);
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();
+	void _zoom_changed();
 	void _reset_zoom();
 
 	Color completion_font_color;
