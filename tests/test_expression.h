@@ -66,7 +66,7 @@ TEST_CASE("[Expression] Integer arithmetic") {
 			"Integer / integer division should parse successfully.");
 	CHECK_MESSAGE(
 			int(expression.execute()) == 2,
-			"Integer / integer divsion should return the expected result.");
+			"Integer / integer division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("2 * (6 + 14) / 2 - 5") == OK,
@@ -98,21 +98,21 @@ TEST_CASE("[Expression] Floating-point arithmetic") {
 			"Float / integer division should parse successfully.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(float(expression.execute()), 0.3),
-			"Float / integer divsion should return the expected result.");
+			"Float / integer division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("3 / 10.0") == OK,
 			"Basic integer / float division should parse successfully.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(float(expression.execute()), 0.3),
-			"Basic integer / float divsion should return the expected result.");
+			"Basic integer / float division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("3.0 / 10.0") == OK,
 			"Float / float division should parse successfully.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(float(expression.execute()), 0.3),
-			"Float / float divsion should return the expected result.");
+			"Float / float division should return the expected result.");
 
 	CHECK_MESSAGE(
 			expression.parse("2.5 * (6.0 + 14.25) / 2.0 - 5.12345") == OK,

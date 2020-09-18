@@ -66,9 +66,8 @@
 			</argument>
 			<description>
 				Returns a new [PackedByteArray] with the data decompressed. Set the compression mode using one of [enum File.CompressionMode]'s constants. [b]This method only accepts gzip and deflate compression modes.[/b]
-				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate it's output buffer multiple times while decompressing, where as [code]decompress[/code] knows it's output buffer size from the begining.
-
-				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that ammount in bytes, then an error will be returned.
+				This method is potentially slower than [code]decompress[/code], as it may have to re-allocate it's output buffer multiple times while decompressing, where as [code]decompress[/code] knows it's output buffer size from the beginning.
+				GZIP has a maximal compression ratio of 1032:1, meaning it's very possible for a small compressed payload to decompress to a potentially very large output. To guard against this, you may provide a maximum size this function is allowed to allocate in bytes via [code]max_output_size[/code]. Passing -1 will allow for unbounded output. If any positive value is passed, and the decompression exceeds that amount in bytes, then an error will be returned.
 			</description>
 		</method>
 		<method name="empty">
@@ -89,21 +88,21 @@
 			<return type="String">
 			</return>
 			<description>
-				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not vaild UTF-16 string.
+				Converts UTF-16 encoded array to [String]. If the BOM is missing, system endianness is assumed. Returns empty string if source array is not valid UTF-16 string.
 			</description>
 		</method>
 		<method name="get_string_from_utf32">
 			<return type="String">
 			</return>
 			<description>
-				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not vaild UTF-32 string.
+				Converts UTF-32 encoded array to [String]. System endianness is assumed. Returns empty string if source array is not valid UTF-32 string.
 			</description>
 		</method>
 		<method name="get_string_from_utf8">
 			<return type="String">
 			</return>
 			<description>
-				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not vaild UTF-8 string.
+				Converts UTF-8 encoded array to [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred. Returns empty string if source array is not valid UTF-8 string.
 			</description>
 		</method>
 		<method name="has">
