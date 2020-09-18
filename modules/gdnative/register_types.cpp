@@ -174,7 +174,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 			String entry_lib_path = config->get_value("entry", key);
 			if (entry_lib_path.begins_with("res://") && entry_lib_path.ends_with(".a")) {
 				// If we find static library that was used for export
-				// we should add a fake loopup table.
+				// we should add a fake lookup table.
 				// In case of dynamic library being used,
 				// this symbols will not cause any issues with library loading.
 				should_fake_dynamic = true;

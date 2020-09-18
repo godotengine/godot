@@ -2320,7 +2320,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 void ScriptEditorDebugger::_tab_changed(int p_tab) {
 	if (tabs->get_tab_title(p_tab) == TTR("Video RAM")) {
-		// "Video RAM" tab was clicked, refresh the data it's dislaying when entering the tab.
+		// "Video RAM" tab was clicked, refresh the data it's displaying when entering the tab.
 		_video_mem_request();
 	}
 }

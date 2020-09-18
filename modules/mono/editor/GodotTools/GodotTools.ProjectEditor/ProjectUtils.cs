@@ -374,7 +374,7 @@ namespace GodotTools.ProjectEditor
             // Add comment about Microsoft.NET.Sdk properties disabled during migration
 
             GetElement(xDoc, name: "EnableDefaultCompileItems", value: "false", parentName: "PropertyGroup")
-                .AddBeforeSelf(new XComment("The following properties were overriden during migration to prevent errors.\n" +
+                .AddBeforeSelf(new XComment("The following properties were overridden during migration to prevent errors.\n" +
                                             "    Enabling them may require other manual changes to the project and its files."));
 
             void RemoveNamespace(XElement element)

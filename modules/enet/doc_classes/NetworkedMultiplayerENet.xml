@@ -134,7 +134,7 @@
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
 		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
-			Enable or disable certiticate verification when [member use_dtls] [code]true[/code].
+			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
 		</member>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
 		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">

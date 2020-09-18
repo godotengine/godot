@@ -95,7 +95,7 @@ void BoxContainer::_resort() {
 	}
 
 	stretch_avail += stretch_diff; //available stretch space.
-	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
+	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
 	bool has_stretched = false;

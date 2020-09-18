@@ -473,7 +473,7 @@ Error HTTPClient::poll() {
 						}
 					}
 
-					// This is a HEAD request, we wont receive anything.
+					// This is a HEAD request, we won't receive anything.
 					if (head_request) {
 						body_size = 0;
 						body_left = 0;
