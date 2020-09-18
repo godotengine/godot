@@ -86,6 +86,7 @@
 			<argument index="1" name="base_path" type="String">
 			</argument>
 			<description>
+				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
 			</description>
 		</method>
 		<method name="register_syntax_highlighter">
