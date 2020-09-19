@@ -761,7 +761,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 				push_error(R"(Expected type after ":")");
 				return nullptr;
 			}
-		} else if (check((GDScriptTokenizer::Token::EQUAL))) {
+		} else if (check(GDScriptTokenizer::Token::EQUAL)) {
 			// Infer type.
 			variable->infer_datatype = true;
 		} else {
@@ -769,14 +769,24 @@ GDScriptParser::VariableNode *GDScriptParser::parse_variable(bool p_allow_proper
 				make_completion_context(COMPLETION_PROPERTY_DECLARATION_OR_TYPE, variable);
 				if (check(GDScriptTokenizer::Token::IDENTIFIER)) {
 					// Check if get or set.
-					if (current.get_identifier() == "get" || current.get_identifier() == "set") {
+					if (current.get_identifier() != "get" && current.get_identifier() != "set") {
+						variable->datatype_specifier = parse_type();
+						if (match(GDScriptTokenizer::Token::COLON)) {
+							if (check(GDScriptTokenizer::Token::NEWLINE)) {
+								advance();
+								return parse_property(variable, true);
+							} else {
+								return parse_property(variable, false);
+							}
+						}
+					} else {
 						return parse_property(variable, false);
 					}
 				}
+			} else {
+				// Parse type.
+				variable->datatype_specifier = parse_type();
 			}
-
-			// Parse type.
-			variable->datatype_specifier = parse_type();
 		}
 	}
 
