@@ -171,7 +171,8 @@ private:
 
 	// Glow
 	bool glow_enabled = false;
-	int glow_levels = (1 << 2) | (1 << 4);
+	Vector<float> glow_levels;
+	bool glow_normalize_levels = false;
 	float glow_intensity = 0.8;
 	float glow_strength = 1.0;
 	float glow_mix = 0.05;
@@ -332,8 +333,10 @@ public:
 	// Glow
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
-	void set_glow_level_enabled(int p_level, bool p_enabled);
-	bool is_glow_level_enabled(int p_level) const;
+	void set_glow_level(int p_level, float p_intensity);
+	float get_glow_level(int p_level) const;
+	void set_glow_normalized(bool p_normalized);
+	bool is_glow_normalized() const;
 	void set_glow_intensity(float p_intensity);
 	float get_glow_intensity() const;
 	void set_glow_strength(float p_strength);

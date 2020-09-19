@@ -175,14 +175,16 @@ class RasterizerEffectsRD {
 		uint32_t tonemapper;
 
 		uint32_t glow_texture_size[2];
-
 		float glow_intensity;
-		uint32_t glow_level_flags;
+		uint32_t pad3;
+
 		uint32_t glow_mode;
+		float glow_levels[7];
 
 		float exposure;
 		float white;
 		float auto_exposure_grey;
+		uint32_t pad2;
 
 		float pixel_size[2];
 		uint32_t use_fxaa;
@@ -607,7 +609,7 @@ public:
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst = false);
-	void gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
+	void gaussian_glow(RID p_source_rd_texture, RID p_back_texture, const Size2i &p_size, float p_strength = 1.0, bool p_high_quality = false, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 	void make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size);
@@ -627,7 +629,7 @@ public:
 
 		GlowMode glow_mode = GLOW_MODE_ADD;
 		float glow_intensity = 1.0;
-		uint32_t glow_level_flags = 0;
+		float glow_levels[7] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 };
 		Vector2i glow_texture_size;
 		bool glow_use_bicubic_upscale = false;
 		RID glow_texture;

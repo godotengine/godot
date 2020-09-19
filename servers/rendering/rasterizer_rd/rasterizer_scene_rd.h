@@ -721,7 +721,7 @@ private:
 		/// Glow
 
 		bool glow_enabled = false;
-		int glow_levels = (1 << 2) | (1 << 4);
+		Vector<float> glow_levels;
 		float glow_intensity = 0.8;
 		float glow_strength = 1.0;
 		float glow_bloom = 0.0;
@@ -1530,7 +1530,7 @@ public:
 
 	bool is_environment(RID p_env) const;
 
-	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap);
+	void environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap);
 	void environment_glow_set_use_bicubic_upscale(bool p_enable);
 	void environment_glow_set_use_high_quality(bool p_enable);
 
