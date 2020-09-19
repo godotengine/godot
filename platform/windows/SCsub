@@ -26,10 +26,10 @@ prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGS
 
 # Microsoft Visual Studio Project Generation
 if env["vsproj"]:
-    env.vs_srcs = env.vs_srcs + ["platform/windows/" + res_file]
-    env.vs_srcs = env.vs_srcs + ["platform/windows/godot.natvis"]
+    env.vs_srcs += ["platform/windows/" + res_file]
+    env.vs_srcs += ["platform/windows/godot.natvis"]
     for x in common_win:
-        env.vs_srcs = env.vs_srcs + ["platform/windows/" + str(x)]
+        env.vs_srcs += ["platform/windows/" + str(x)]
 
 if not os.getenv("VCINSTALLDIR"):
     if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
