@@ -718,7 +718,7 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="level_flags" type="int">
+			<argument index="2" name="levels" type="PackedFloat32Array">
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>

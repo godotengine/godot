@@ -37,12 +37,14 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	uvec2 glow_texture_size;
 
 	float glow_intensity;
-	uint glow_level_flags;
+	uint pad3;
 	uint glow_mode;
+	float glow_levels[7];
 
 	float exposure;
 	float white;
 	float auto_exposure_grey;
+	uint pad2;
 
 	vec2 pixel_size;
 	bool use_fxaa;
@@ -186,32 +188,32 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	vec3 glow = vec3(0.0f);
 
-	if (bool(params.glow_level_flags & (1 << 0))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb;
+	if (params.glow_levels[0] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels[0];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 1))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
+	if (params.glow_levels[1] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levels[1];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 2))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
+	if (params.glow_levels[2] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levels[2];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 3))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
+	if (params.glow_levels[3] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levels[3];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 4))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
+	if (params.glow_levels[4] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levels[4];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 5))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
+	if (params.glow_levels[5] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levels[5];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 6))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
+	if (params.glow_levels[6] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
 	}
 
 	return glow;

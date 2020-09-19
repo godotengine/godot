@@ -581,7 +581,7 @@ public:
 	BIND9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
 	BIND2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
-	BIND11(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
+	BIND11(environment_set_glow, RID, bool, Vector<float>, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
 	BIND1(environment_glow_set_use_bicubic_upscale, bool)
 	BIND1(environment_glow_set_use_high_quality, bool)
 

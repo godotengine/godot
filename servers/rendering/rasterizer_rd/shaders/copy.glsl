@@ -58,12 +58,20 @@ layout(rgba8, set = 3, binding = 0) uniform restrict writeonly image2D dest_buff
 layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_buffer;
 #endif
 
+#ifdef MODE_GAUSSIAN_GLOW
+shared vec4 local_cache[256];
+shared vec4 temp_cache[128];
+#endif
+
 void main() {
 	// Pixel being shaded
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+
+#ifndef MODE_GAUSSIAN_GLOW // Glow needs the extra threads
 	if (any(greaterThanEqual(pos, params.section.zw))) { //too large, do nothing
 		return;
 	}
+#endif
 
 #ifdef MODE_MIPMAP
 
@@ -104,70 +112,69 @@ void main() {
 
 #ifdef MODE_GAUSSIAN_GLOW
 
-	//Glow uses larger sigma 1 for a more rounded blur effect
+	// First pass copy texture into 16x16 local memory for every 8x8 thread block
+	vec2 quad_center_uv = clamp(vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
+	uint dest_index = gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y * 2 * 16;
 
-#define GLOW_ADD(m_ofs, m_mult)                                                             \
-	{                                                                                       \
-		ivec2 ofs = base_pos + m_ofs;                                                       \
-		if (all(greaterThanEqual(ofs, section_begin)) && all(lessThan(ofs, section_end))) { \
-			color += texelFetch(source_color, ofs, 0) * m_mult;                             \
-		}                                                                                   \
+	if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
+		vec2 quad_offset_uv = clamp((vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.0)) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
+
+		local_cache[dest_index] = (textureLod(source_color, quad_center_uv, 0) + textureLod(source_color, quad_offset_uv, 0)) * 0.5;
+		local_cache[dest_index + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.z, 0.0), 0)) * 0.5;
+		local_cache[dest_index + 16] = (textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0) + textureLod(source_color, quad_offset_uv + vec2(0.0, 1.0 / params.section.w), 0)) * 0.5;
+		local_cache[dest_index + 16 + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.zw), 0)) * 0.5;
+	} else {
+		local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
+		local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
+		local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
+		local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
 	}
 
+	memoryBarrierShared();
+	barrier();
+
+	// Horizontal pass. Needs to copy into 8x16 chunk of local memory so vertical pass has full resolution
+	uint read_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * 32 + 4;
+	vec4 color_top = vec4(0.0);
+	color_top += local_cache[read_index] * 0.174938;
+	color_top += local_cache[read_index + 1] * 0.165569;
+	color_top += local_cache[read_index + 2] * 0.140367;
+	color_top += local_cache[read_index + 3] * 0.106595;
+	color_top += local_cache[read_index - 1] * 0.165569;
+	color_top += local_cache[read_index - 2] * 0.140367;
+	color_top += local_cache[read_index - 3] * 0.106595;
+
+	vec4 color_bottom = vec4(0.0);
+	color_bottom += local_cache[read_index + 16] * 0.174938;
+	color_bottom += local_cache[read_index + 1 + 16] * 0.165569;
+	color_bottom += local_cache[read_index + 2 + 16] * 0.140367;
+	color_bottom += local_cache[read_index + 3 + 16] * 0.106595;
+	color_bottom += local_cache[read_index - 1 + 16] * 0.165569;
+	color_bottom += local_cache[read_index - 2 + 16] * 0.140367;
+	color_bottom += local_cache[read_index - 3 + 16] * 0.106595;
+
+	// rotate samples to take advantage of cache coherency
+	uint write_index = gl_LocalInvocationID.y * 2 + gl_LocalInvocationID.x * 16;
+
+	temp_cache[write_index] = color_top;
+	temp_cache[write_index + 1] = color_bottom;
+
+	memoryBarrierShared();
+	barrier();
+
+	// Vertical pass
+	uint index = gl_LocalInvocationID.y + gl_LocalInvocationID.x * 16 + 4;
 	vec4 color = vec4(0.0);
 
-	if (bool(params.flags & FLAG_HORIZONTAL)) {
-		ivec2 base_pos = ((pos + params.section.xy) << 1) + ivec2(1);
-		ivec2 section_begin = params.section.xy << 1;
-		ivec2 section_end = section_begin + (params.section.zw << 1);
+	color += temp_cache[index] * 0.174938;
+	color += temp_cache[index + 1] * 0.165569;
+	color += temp_cache[index + 2] * 0.140367;
+	color += temp_cache[index + 3] * 0.106595;
+	color += temp_cache[index - 1] * 0.165569;
+	color += temp_cache[index - 2] * 0.140367;
+	color += temp_cache[index - 3] * 0.106595;
 
-		if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
-			//Sample from two lines to capture single pixel features
-			GLOW_ADD(ivec2(0, 0), 0.152781);
-			GLOW_ADD(ivec2(1, 0), 0.144599);
-			GLOW_ADD(ivec2(2, 0), 0.122589);
-			GLOW_ADD(ivec2(3, 0), 0.093095);
-			GLOW_ADD(ivec2(4, 0), 0.063327);
-			GLOW_ADD(ivec2(-1, 0), 0.144599);
-			GLOW_ADD(ivec2(-2, 0), 0.122589);
-			GLOW_ADD(ivec2(-3, 0), 0.093095);
-			GLOW_ADD(ivec2(-4, 0), 0.063327);
-
-			GLOW_ADD(ivec2(0, 1), 0.152781);
-			GLOW_ADD(ivec2(1, 1), 0.144599);
-			GLOW_ADD(ivec2(2, 1), 0.122589);
-			GLOW_ADD(ivec2(3, 1), 0.093095);
-			GLOW_ADD(ivec2(4, 1), 0.063327);
-			GLOW_ADD(ivec2(-1, 1), 0.144599);
-			GLOW_ADD(ivec2(-2, 1), 0.122589);
-			GLOW_ADD(ivec2(-3, 1), 0.093095);
-			GLOW_ADD(ivec2(-4, 1), 0.063327);
-			color *= 0.5;
-		} else {
-			GLOW_ADD(ivec2(0, 0), 0.174938);
-			GLOW_ADD(ivec2(1, 0), 0.165569);
-			GLOW_ADD(ivec2(2, 0), 0.140367);
-			GLOW_ADD(ivec2(3, 0), 0.106595);
-			GLOW_ADD(ivec2(-1, 0), 0.165569);
-			GLOW_ADD(ivec2(-2, 0), 0.140367);
-			GLOW_ADD(ivec2(-3, 0), 0.106595);
-		}
-
-		color *= params.glow_strength;
-	} else {
-		ivec2 base_pos = pos + params.section.xy;
-		ivec2 section_begin = params.section.xy;
-		ivec2 section_end = section_begin + params.section.zw;
-
-		GLOW_ADD(ivec2(0, 0), 0.288713);
-		GLOW_ADD(ivec2(0, 1), 0.233062);
-		GLOW_ADD(ivec2(0, 2), 0.122581);
-		GLOW_ADD(ivec2(0, -1), 0.233062);
-		GLOW_ADD(ivec2(0, -2), 0.122581);
-		color *= params.glow_strength;
-	}
-
-#undef GLOW_ADD
+	color *= params.glow_strength;
 
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 #ifdef GLOW_USE_AUTO_EXPOSURE
