@@ -79,7 +79,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-	unzFile zfile;
+	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;
