@@ -318,6 +318,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_ios.name = "iOS";
 		platform_ios.entries.push_back("armv7");
 		platform_ios.entries.push_back("arm64");
+		platform_ios.entries.push_back("x86_64");
 		// iOS can use both Static and Dynamic libraries.
 		// Frameworks is actually a folder with files.
 		platform_ios.library_extension = "*.framework; Framework, *.xcframework; Binary Framework, *.a; Static Library, *.dylib; Dynamic Library";
