@@ -176,11 +176,11 @@
 		<method name="set_cell_region">
 			<return type="void">
 			</return>
-			<argument index="0" name="start" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="start" type="Vector2">
 			</argument>
-			<argument index="1" name="end" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="end" type="Vector2">
 			</argument>
-			<argument index="2" name="tile" type="int" default="-1">
+			<argument index="2" name="tile" type="int">
 			</argument>
 			<argument index="3" name="flip_x" type="bool" default="false">
 			</argument>
@@ -191,7 +191,7 @@
 			<argument index="6" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Sets the tiles in the given region.
+				Assigns the tile of id [code]tile[/code] to all cells in the rectangular region defined by [code]start[/code] and [code]end[/code].
 				An index of [code]-1[/code] clears the region.
 				Optionally, the tile can also be flipped, transposed, or given autotile coordinates. The autotile coordinate refers to the column and row of the subtile.
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.

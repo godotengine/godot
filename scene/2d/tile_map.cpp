@@ -894,8 +894,28 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 }
 
 void TileMap::set_cell_region(const Vector2 &p_start, const Vector2 &p_end, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
-	for (int x = p_start.x; x <= p_end.x; x++) {
-		for (int y = p_start.y; y <= p_end.y; y++) {
+	int lower_x, higher_x;
+
+	if (p_start.x < p_end.x) {
+		lower_x = p_start.x;
+		higher_x = p_end.x;
+	} else {
+		lower_x = p_end.x;
+		higher_x = p_start.x;
+	}
+
+	int lower_y, higher_y;
+
+	if (p_start.y < p_end.y) {
+		lower_y = p_start.y;
+		higher_y = p_end.y;
+	} else {
+		lower_y = p_end.y;
+		higher_y = p_start.y;
+	}
+
+	for (int x = lower_x; x <= higher_x; x++) {
+		for (int y = lower_y; y <= higher_y; y++) {
 			set_cell(x, y, p_tile, p_flip_x, p_flip_y, p_transpose, p_autotile_coord);
 		}
 	}
