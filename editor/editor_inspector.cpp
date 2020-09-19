@@ -2364,6 +2364,11 @@ void EditorInspector::_notification(int p_what) {
 			if (refresh_countdown <= 0) {
 				for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
 					for (List<EditorProperty *>::Element *E = F->get().front(); E; E = E->next()) {
+						// Don't update the property if one of it's children is currently focused.
+						// This prevents the property being editor from being overriden by the current value in update_property().
+						if (get_focus_owner() && E->get()->is_a_parent_of(get_focus_owner())) {
+							continue;
+						}
 						E->get()->update_property();
 						E->get()->update_reload_status();
 					}
