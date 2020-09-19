@@ -32,15 +32,6 @@ else:
 SConscript("png/SCsub")
 SConscript("spirv-reflect/SCsub")
 
-if env["vsproj"]:
-    import os
-
-    path = os.getcwd()
-    # Change directory so the path resolves correctly in the function call.
-    os.chdir("..")
-    env.AddToVSProject(env.drivers_sources)
-    os.chdir(path)
-
 env.add_source_files(env.drivers_sources, "*.cpp")
 
 lib = env.add_library("drivers", env.drivers_sources)
