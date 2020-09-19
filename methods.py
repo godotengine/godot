@@ -5,6 +5,9 @@ import subprocess
 from collections import OrderedDict
 from compat import iteritems, isbasestring, open_utf8, decode_utf8, qualname
 
+from SCons import Node
+from SCons.Script import Glob
+
 
 def add_source_files(self, sources, files, warn_duplicates=True):
     # Convert string to list of absolute paths (including expanding wildcard)
@@ -564,6 +567,35 @@ def generate_cpp_hint_file(filename):
             print("Could not write cpp.hint file.")
 
 
+def glob_recursive(pattern, node="."):
+    results = []
+    for f in Glob(str(node) + "/*", source=True):
+        if type(f) is Node.FS.Dir:
+            results += glob_recursive(pattern, f)
+    results += Glob(str(node) + "/" + pattern, source=True)
+    return results
+
+
+def add_to_vs_project(env, sources):
+    for x in sources:
+        if type(x) == type(""):
+            fname = env.File(x).path
+        else:
+            fname = env.File(x)[0].path
+        pieces = fname.split(".")
+        if len(pieces) > 0:
+            basename = pieces[0]
+            basename = basename.replace("\\\\", "/")
+            if os.path.isfile(basename + ".h"):
+                env.vs_incs += [basename + ".h"]
+            elif os.path.isfile(basename + ".hpp"):
+                env.vs_incs += [basename + ".hpp"]
+            if os.path.isfile(basename + ".c"):
+                env.vs_srcs += [basename + ".c"]
+            elif os.path.isfile(basename + ".cpp"):
+                env.vs_srcs += [basename + ".cpp"]
+
+
 def generate_vs_project(env, num_jobs):
     batch_file = find_visual_c_batch_file(env)
     if batch_file:
@@ -596,12 +628,16 @@ def generate_vs_project(env, num_jobs):
             result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
             return result
 
-        env.AddToVSProject(env.core_sources)
-        env.AddToVSProject(env.main_sources)
-        env.AddToVSProject(env.modules_sources)
-        env.AddToVSProject(env.scene_sources)
-        env.AddToVSProject(env.servers_sources)
-        env.AddToVSProject(env.editor_sources)
+        add_to_vs_project(env, env.core_sources)
+        add_to_vs_project(env, env.drivers_sources)
+        add_to_vs_project(env, env.main_sources)
+        add_to_vs_project(env, env.modules_sources)
+        add_to_vs_project(env, env.scene_sources)
+        add_to_vs_project(env, env.servers_sources)
+        add_to_vs_project(env, env.editor_sources)
+
+        for header in glob_recursive("**/*.h"):
+            env.vs_incs.append(str(header))
 
         env["MSVSBUILDCOM"] = build_commandline("scons")
         env["MSVSREBUILDCOM"] = build_commandline("scons vsproj=yes")
