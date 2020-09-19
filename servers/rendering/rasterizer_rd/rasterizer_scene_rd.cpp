@@ -2933,11 +2933,12 @@ void RasterizerSceneRD::environment_set_tonemap(RID p_env, RS::EnvironmentToneMa
 	env->auto_exp_scale = p_auto_exp_scale;
 }
 
-void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
+void RasterizerSceneRD::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
 	env->glow_enabled = p_enable;
-	env->glow_levels = p_level_flags;
+	env->glow_levels = p_levels;
 	env->glow_intensity = p_intensity;
 	env->glow_strength = p_strength;
 	env->glow_mix = p_mix;
@@ -5245,25 +5246,21 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 	}
 
 	int max_glow_level = -1;
-	int glow_mask = 0;
 
 	if (can_use_effects && env && env->glow_enabled) {
 		/* see that blur textures are allocated */
 
-		if (rb->blur[0].texture.is_null()) {
+		if (rb->blur[1].texture.is_null()) {
 			_allocate_blur_textures(rb);
 			_render_buffers_uniform_set_changed(p_render_buffers);
 		}
 
 		for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
-			if (env->glow_levels & (1 << i)) {
+			if (env->glow_levels[i] > 0.0) {
 				if (i >= rb->blur[1].mipmaps.size()) {
 					max_glow_level = rb->blur[1].mipmaps.size() - 1;
-					glow_mask |= 1 << max_glow_level;
-
 				} else {
 					max_glow_level = i;
-					glow_mask |= (1 << i);
 				}
 			}
 		}
@@ -5277,9 +5274,9 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 				if (env->auto_exposure && rb->luminance.current.is_valid()) {
 					luminance_texture = rb->luminance.current;
 				}
-				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
+				storage->get_effects()->gaussian_glow(rb->texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality, true, env->glow_hdr_luminance_cap, env->exposure, env->glow_bloom, env->glow_hdr_bleed_threshold, env->glow_hdr_bleed_scale, luminance_texture, env->auto_exp_scale);
 			} else {
-				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[0].mipmaps[i + 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
+				storage->get_effects()->gaussian_glow(rb->blur[1].mipmaps[i - 1].texture, rb->blur[1].mipmaps[i].texture, Size2i(vp_w, vp_h), env->glow_strength, glow_high_quality);
 			}
 		}
 	}
@@ -5302,7 +5299,9 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			tonemap.use_glow = true;
 			tonemap.glow_mode = RasterizerEffectsRD::TonemapSettings::GlowMode(env->glow_blend_mode);
 			tonemap.glow_intensity = env->glow_blend_mode == RS::ENV_GLOW_BLEND_MODE_MIX ? env->glow_mix : env->glow_intensity;
-			tonemap.glow_level_flags = glow_mask;
+			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
+				tonemap.glow_levels[i] = env->glow_levels[i];
+			}
 			tonemap.glow_texture_size.x = rb->blur[1].mipmaps[0].width;
 			tonemap.glow_texture_size.y = rb->blur[1].mipmaps[0].height;
 			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
