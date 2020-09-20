@@ -2902,7 +2902,7 @@ void OS_X11::process_xevents() {
 		*/
 	}
 
-	input->flush_accumulated_events();
+	input->flush_buffered_events();
 }
 
 MainLoop *OS_X11::get_main_loop() const {
