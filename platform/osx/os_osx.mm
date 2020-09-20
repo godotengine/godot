@@ -3216,7 +3216,7 @@ void OS_OSX::process_key_events() {
 
 void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event;
-	input->accumulate_input_event(ev);
+	input->parse_input_event(ev);
 }
 
 void OS_OSX::force_process_input() {
