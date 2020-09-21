@@ -4,7 +4,9 @@
 		Axis-Aligned Bounding Box.
 	</brief_description>
 	<description>
-		AABB consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
+		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
 	</description>
 	<tutorials>
 		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
