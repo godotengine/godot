@@ -1388,9 +1388,16 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm the pivot move
-		if ((b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) ||
-				(k.is_valid() && !k->is_pressed() && k->get_scancode() == KEY_V)) {
-			_commit_canvas_item_state(drag_selection, TTR("Move pivot"));
+		if (drag_selection.size() >= 1 &&
+				((b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && tool == TOOL_EDIT_PIVOT) ||
+						(k.is_valid() && !k->is_pressed() && k->get_scancode() == KEY_V))) {
+			_commit_canvas_item_state(
+					drag_selection,
+					vformat(
+							TTR("Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"),
+							drag_selection[0]->get_name(),
+							drag_selection[0]->_edit_get_pivot().x,
+							drag_selection[0]->_edit_get_pivot().y));
 			drag_type = DRAG_NONE;
 			return true;
 		}
@@ -1527,7 +1534,20 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 
 		// Confirms the node rotation
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
-			_commit_canvas_item_state(drag_selection, TTR("Rotate CanvasItem"));
+			if (drag_selection.size() != 1) {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Rotate %d CanvasItems"), drag_selection.size()),
+						true);
+			} else {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Rotate CanvasItem \"%s\" to %d degrees"),
+								drag_selection[0]->get_name(),
+								Math::rad2deg(drag_selection[0]->_edit_get_rotation())),
+						true);
+			}
+
 			if (key_auto_insert_button->is_pressed()) {
 				_insert_animation_keys(false, true, false, true);
 			}
@@ -1670,8 +1690,10 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirms new anchor position
-		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
-			_commit_canvas_item_state(drag_selection, TTR("Move anchor"));
+		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
+			_commit_canvas_item_state(
+					drag_selection,
+					vformat(TTR("Move CanvasItem \"%s\" Anchor"), drag_selection[0]->get_name()));
 			drag_type = DRAG_NONE;
 			return true;
 		}
@@ -1845,8 +1867,31 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm resize
-		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
-			_commit_canvas_item_state(drag_selection, TTR("Resize CanvasItem"));
+		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
+			const Node2D *node2d = Object::cast_to<Node2D>(drag_selection[0]);
+			if (node2d) {
+				// Extends from Node2D.
+				// Node2D doesn't have an actual stored rect size, unlike Controls.
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(
+								TTR("Scale Node2D \"%s\" to (%s, %s)"),
+								drag_selection[0]->get_name(),
+								Math::stepify(drag_selection[0]->_edit_get_scale().x, 0.01),
+								Math::stepify(drag_selection[0]->_edit_get_scale().y, 0.01)),
+						true);
+			} else {
+				// Extends from Control.
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(
+								TTR("Resize Control \"%s\" to (%d, %d)"),
+								drag_selection[0]->get_name(),
+								drag_selection[0]->_edit_get_rect().size.x,
+								drag_selection[0]->_edit_get_rect().size.y),
+						true);
+			}
+
 			if (key_auto_insert_button->is_pressed()) {
 				_insert_animation_keys(false, false, true, true);
 			}
@@ -1967,7 +2012,20 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 		// Confirm resize
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
-			_commit_canvas_item_state(drag_selection, TTR("Scale CanvasItem"));
+			if (drag_selection.size() != 1) {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Scale %d CanvasItems"), drag_selection.size()),
+						true);
+			} else {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Scale CanvasItem \"%s\" to (%s, %s)"),
+								drag_selection[0]->get_name(),
+								Math::stepify(drag_selection[0]->_edit_get_scale().x, 0.01),
+								Math::stepify(drag_selection[0]->_edit_get_scale().y, 0.01)),
+						true);
+			}
 			if (key_auto_insert_button->is_pressed()) {
 				_insert_animation_keys(false, false, true, true);
 			}
@@ -2073,7 +2131,21 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		// Confirm the move (only if it was moved)
 		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
-				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
+				if (drag_selection.size() != 1) {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
+							true);
+				} else {
+					_commit_canvas_item_state(
+							drag_selection,
+							vformat(
+									TTR("Move CanvasItem \"%s\" to (%d, %d)"),
+									drag_selection[0]->get_name(),
+									drag_selection[0]->_edit_get_position().x,
+									drag_selection[0]->_edit_get_position().y),
+							true);
+				}
 			}
 
 			if (key_auto_insert_button->is_pressed()) {
@@ -2196,7 +2268,20 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_LEFT)) &&
 				(!Input::get_singleton()->is_key_pressed(KEY_RIGHT))) {
-			_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
+			if (drag_selection.size() != 1) {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Move %d CanvasItems"), drag_selection.size()),
+						true);
+			} else {
+				_commit_canvas_item_state(
+						drag_selection,
+						vformat(TTR("Move CanvasItem \"%s\" to (%d, %d)"),
+								drag_selection[0]->get_name(),
+								drag_selection[0]->_edit_get_position().x,
+								drag_selection[0]->_edit_get_position().y),
+						true);
+			}
 			drag_type = DRAG_NONE;
 		}
 		viewport->update();
