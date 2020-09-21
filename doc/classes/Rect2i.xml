@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
-		It uses integer coordinates.
+		It uses integer coordinates. If you need floating-point coordinates, use [Rect2] instead.
 	</description>
 	<tutorials>
 		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
