@@ -3490,6 +3490,14 @@ String VisualShaderNodeFloatUniform::generate_code(Shader::Mode p_mode, VisualSh
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 }
 
+bool VisualShaderNodeFloatUniform::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeFloatUniform::is_use_prop_slots() const {
+	return true;
+}
+
 void VisualShaderNodeFloatUniform::set_hint(Hint p_hint) {
 	hint = p_hint;
 	emit_changed();
@@ -3647,6 +3655,14 @@ String VisualShaderNodeIntUniform::generate_global(Shader::Mode p_mode, VisualSh
 
 String VisualShaderNodeIntUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+}
+
+bool VisualShaderNodeIntUniform::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeIntUniform::is_use_prop_slots() const {
+	return true;
 }
 
 void VisualShaderNodeIntUniform::set_hint(Hint p_hint) {
@@ -3823,6 +3839,14 @@ String VisualShaderNodeBooleanUniform::generate_code(Shader::Mode p_mode, Visual
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
 }
 
+bool VisualShaderNodeBooleanUniform::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeBooleanUniform::is_use_prop_slots() const {
+	return true;
+}
+
 void VisualShaderNodeBooleanUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeBooleanUniform::set_default_value_enabled);
 	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeBooleanUniform::is_default_value_enabled);
@@ -3911,6 +3935,10 @@ String VisualShaderNodeColorUniform::generate_code(Shader::Mode p_mode, VisualSh
 	String code = "\t" + p_output_vars[0] + " = " + get_uniform_name() + ".rgb;\n";
 	code += "\t" + p_output_vars[1] + " = " + get_uniform_name() + ".a;\n";
 	return code;
+}
+
+bool VisualShaderNodeColorUniform::is_show_prop_names() const {
+	return true;
 }
 
 void VisualShaderNodeColorUniform::_bind_methods() {
@@ -4012,6 +4040,14 @@ void VisualShaderNodeVec3Uniform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "default_value"), "set_default_value", "get_default_value");
 }
 
+bool VisualShaderNodeVec3Uniform::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeVec3Uniform::is_use_prop_slots() const {
+	return true;
+}
+
 bool VisualShaderNodeVec3Uniform::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
@@ -4102,6 +4138,14 @@ void VisualShaderNodeTransformUniform::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "default_value"), "set_default_value", "get_default_value");
+}
+
+bool VisualShaderNodeTransformUniform::is_show_prop_names() const {
+	return true;
+}
+
+bool VisualShaderNodeTransformUniform::is_use_prop_slots() const {
+	return true;
 }
 
 bool VisualShaderNodeTransformUniform::is_qualifier_supported(Qualifier p_qual) const {

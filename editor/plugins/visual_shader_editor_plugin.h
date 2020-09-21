@@ -71,6 +71,7 @@ private:
 		Map<int, InputPort> input_ports;
 		Map<int, Port> output_ports;
 		VBoxContainer *preview_box;
+		LineEdit *uniform_name;
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -86,11 +87,14 @@ public:
 	void set_connections(List<VisualShader::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
+	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
 	bool is_dirty() const;
 	void make_dirty(bool p_enabled);
+	void update_node(VisualShader::Type p_type, int p_id);
+	void update_node_deferred(VisualShader::Type p_type, int p_node_id);
 	void add_node(VisualShader::Type p_type, int p_id);
 	void remove_node(VisualShader::Type p_type, int p_id);
 	void connect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
@@ -99,10 +103,10 @@ public:
 	void set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position);
 	void set_node_size(VisualShader::Type p_type, int p_id, const Vector2 &p_size);
 	void refresh_node_ports(VisualShader::Type p_type, int p_node);
-	void update_property_editor(VisualShader::Type p_type, int p_node_id);
-	void update_property_editor_deferred(VisualShader::Type p_type, int p_node_id);
 	void set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
+	void update_uniform_refs();
+	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
@@ -241,6 +245,8 @@ class VisualShaderEditor : public VBoxContainer {
 	int custom_node_option_idx;
 	List<String> keyword_list;
 
+	List<VisualShaderNodeUniformRef> uniform_refs;
+
 	void _draw_color_over_button(Object *obj, Color p_color);
 
 	void _add_custom_node(const String &p_path);
@@ -347,7 +353,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool _is_available(int p_mode);
 	void _update_created_node(GraphNode *node);
-	void _update_uniforms();
+	void _update_uniforms(bool p_update_refs);
+	void _update_uniform_refs(Set<String> &p_names);
 
 protected:
 	void _notification(int p_what);
