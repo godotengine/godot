@@ -292,7 +292,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, wwithout printing an error message.
+				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without printing an error message.
 			</description>
 		</method>
 		<method name="push_back">
