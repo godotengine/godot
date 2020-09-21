@@ -242,6 +242,8 @@ public:
 	virtual bool is_generate_input_var(int p_port) const;
 
 	virtual bool is_code_generated() const;
+	virtual bool is_show_prop_names() const;
+	virtual bool is_use_prop_slots() const;
 
 	virtual Vector<StringName> get_editable_properties() const;
 
@@ -454,6 +456,7 @@ protected:
 public:
 	static void add_uniform(const String &p_name, UniformType p_type);
 	static void clear_uniforms();
+	static bool has_uniform(const String &p_name);
 
 public:
 	virtual String get_caption() const override;
@@ -468,6 +471,9 @@ public:
 
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
+
+	void _set_uniform_type(int p_uniform_type);
+	int _get_uniform_type() const;
 
 	int get_uniforms_count() const;
 	String get_uniform_name_by_index(int p_idx) const;
