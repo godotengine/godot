@@ -60,6 +60,9 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tick_speedup_notification_delay", "tick_speedup_notification_delay"), &NetworkedController::set_tick_speedup_notification_delay);
 	ClassDB::bind_method(D_METHOD("get_tick_speedup_notification_delay"), &NetworkedController::get_tick_speedup_notification_delay);
 
+	ClassDB::bind_method(D_METHOD("set_stream_pause_sync_delay", "delay"), &NetworkedController::set_stream_pause_sync_delay);
+	ClassDB::bind_method(D_METHOD("get_stream_pause_sync_delay"), &NetworkedController::get_stream_pause_sync_delay);
+
 	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &NetworkedController::set_network_traced_frames);
 	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &NetworkedController::get_network_traced_frames);
 
@@ -91,6 +94,7 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
+	ClassDB::bind_method(D_METHOD("_rpc_server_stream_paused_sync"), &NetworkedController::_rpc_server_stream_paused_sync);
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
 	ClassDB::bind_method(D_METHOD("_rpc_set_client_enabled"), &NetworkedController::_rpc_set_client_enabled);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_sync_pause"), &NetworkedController::_rpc_doll_notify_sync_pause);
@@ -133,6 +137,7 @@ void NetworkedController::_bind_methods() {
 
 NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_server_stream_paused_sync", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_set_client_enabled", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_sync_pause", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -162,6 +167,14 @@ void NetworkedController::set_tick_speedup_notification_delay(real_t p_delay) {
 
 real_t NetworkedController::get_tick_speedup_notification_delay() const {
 	return tick_speedup_notification_delay;
+}
+
+void NetworkedController::set_stream_pause_sync_delay(real_t p_delay) {
+	stream_pause_sync_delay = p_delay;
+}
+
+real_t NetworkedController::get_stream_pause_sync_delay() const {
+	return stream_pause_sync_delay;
 }
 
 void NetworkedController::set_network_traced_frames(int p_size) {
@@ -366,6 +379,11 @@ void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	static_cast<ServerController *>(controller)->receive_inputs(p_data);
 }
 
+void NetworkedController::_rpc_server_stream_paused_sync(uint32_t p_input_id) {
+	ERR_FAIL_COND(is_server_controller() == false);
+	static_cast<ServerController *>(controller)->stream_paused_sync(p_input_id);
+}
+
 void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(is_player_controller() == false);
 	ERR_FAIL_COND(p_data.size() != 1);
@@ -522,8 +540,10 @@ void ServerController::process(real_t p_delta) {
 
 	doll_sync(p_delta);
 
-	calculates_player_tick_rate(p_delta);
-	adjust_player_tick_rate(p_delta);
+	if (streaming_paused == false) {
+		calculates_player_tick_rate(p_delta);
+		adjust_player_tick_rate(p_delta);
+	}
 }
 
 bool is_remote_frame_A_older(const FrameSnapshot &p_snap_a, const FrameSnapshot &p_snap_b) {
@@ -786,6 +806,13 @@ void ServerController::notify_send_state() {
 	// the input streaming. So missing packets are just handled as void inputs.
 	if (node->get_inputs_buffer().size() == 0) {
 		streaming_paused = true;
+		const uint32_t lki = last_known_input();
+		if (lki == UINT32_MAX) {
+			// No data to establish the size.
+			optimal_difference_amount = MIN_SNAPSHOTS_SIZE;
+		} else {
+			optimal_difference_amount = lki - get_current_input_id();
+		}
 	}
 }
 
@@ -942,11 +969,12 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
-	const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
 
 	additional_speed_notif_timer += p_delta;
 	if (additional_speed_notif_timer >= node->get_tick_speedup_notification_delay()) {
 		additional_speed_notif_timer = 0.0;
+
+		const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
 
 		Vector<uint8_t> packet_data;
 		packet_data.push_back(new_speed);
@@ -956,6 +984,43 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 				"_rpc_send_tick_additional_speed",
 				packet_data);
 	}
+}
+
+void ServerController::stream_paused_sync(uint32_t p_input_id) {
+
+	// TODO also improve this mechanism as for calculates_player_tick_rate.
+
+	optimal_difference_amount *= 0.9; // Reduce by 10%
+	optimal_difference_amount = CLAMP(optimal_difference_amount, MIN_SNAPSHOTS_SIZE, node->get_server_input_storage_size());
+
+	// Make sure there is not too much discrepancy between client and server.
+	const real_t input_delta = real_t(int64_t(get_current_input_id()) - int64_t(p_input_id)) - optimal_difference_amount;
+	const real_t acceleration_level = CLAMP(
+			input_delta / real_t(node->get_missing_snapshots_max_tolerance()),
+			-1.0,
+			1.0);
+
+	// The client speed is determined using an acceleration so to have much
+	// more control over it, and avoid nervous changes.
+	const real_t acc = acceleration_level * node->get_tick_acceleration() * 0.2;
+	const real_t damp = client_tick_additional_speed * -0.9;
+
+	// The damping is fully applyied only if it points in the opposite `acc`
+	// direction.
+	// I want to cut down the oscilations when the target is the same for a while,
+	// but I need to move fast toward new targets when they appear.
+	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
+	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+
+	const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
+
+	Vector<uint8_t> packet_data;
+	packet_data.push_back(new_speed);
+
+	node->rpc_unreliable_id(
+			node->get_network_master(),
+			"_rpc_send_tick_additional_speed",
+			packet_data);
 }
 
 uint32_t ServerController::find_peer(int p_peer) const {
@@ -1019,6 +1084,13 @@ void PlayerController::process(real_t p_delta) {
 		store_input_buffer(current_input_id);
 		if (streaming_paused == false) {
 			send_frame_input_buffer_to_server();
+			streaming_paused_timer = 0.0;
+		} else {
+			streaming_paused_timer += p_delta;
+			if (streaming_paused_timer >= node->get_stream_pause_sync_delay()) {
+				streaming_paused_timer -= node->get_stream_pause_sync_delay();
+				node->rpc_id(1, "_rpc_server_stream_paused_sync", current_input_id);
+			}
 		}
 	}
 	node->player_set_has_new_input(accept_new_inputs);
