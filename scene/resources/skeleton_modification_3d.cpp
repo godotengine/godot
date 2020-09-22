@@ -312,6 +312,11 @@ float SkeletonModification3D::clamp_angle(float angle, float min_bound, float ma
 }
 
 bool SkeletonModification3D::_print_execution_error(bool p_condition, String p_message) {
+	// If the modification is not setup, don't bother printing the error
+	if (!is_setup) {
+		return p_condition;
+	}
+
 	if (p_condition && !execution_error_found) {
 		ERR_PRINT(p_message);
 		execution_error_found = true;
@@ -319,7 +324,7 @@ bool SkeletonModification3D::_print_execution_error(bool p_condition, String p_m
 	return p_condition;
 }
 
-SkeletonModificationStack3D *SkeletonModification3D::get_modification_stack() {
+Ref<SkeletonModificationStack3D> SkeletonModification3D::get_modification_stack() {
 	return stack;
 }
 
@@ -506,7 +511,7 @@ void SkeletonModification3DLookAt::set_bone_index(int p_bone_idx) {
 
 void SkeletonModification3DLookAt::update_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -764,13 +769,34 @@ void SkeletonModification3DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node3D *
 		ERR_FAIL_MSG("CCDIK joint: Unknown axis vector passed for joint" + itos(p_joint_idx) + ". Cannot execute modification!");
 	}
 
-	// TODO: probably needs to be redone so it works with the code above...
 	if (ccdik_data.enable_constraint) {
 		Vector3 rotation_axis;
 		float rotation_angle;
 		bone_trans.basis.get_axis_angle(rotation_axis, rotation_angle);
 
+		// Note: When the axis has a negative direction, the angle is OVER 180 degrees and therefore we need to account for this
+		// when constraining.
+		if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_X) {
+			if (rotation_axis.x < 0) {
+				rotation_angle += Math_PI;
+				rotation_axis = Vector3(1, 0, 0);
+			}
+		} else if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_Y) {
+			if (rotation_axis.y < 0) {
+				rotation_angle += Math_PI;
+				rotation_axis = Vector3(0, 1, 0);
+			}
+		} else if (ccdik_data.ccdik_axis == CCDIK_Axes::AXIS_Z) {
+			if (rotation_axis.z < 0) {
+				rotation_angle += Math_PI;
+				rotation_axis = Vector3(0, 0, 1);
+			}
+		} else {
+			// Should never happen, but...
+			ERR_FAIL_MSG("CCDIK joint: Unknown axis vector passed for joint" + itos(p_joint_idx) + ". Cannot execute modification!");
+		}
 		rotation_angle = clamp_angle(rotation_angle, ccdik_data.constraint_angle_min, ccdik_data.constraint_angle_max, ccdik_data.constraint_angles_invert);
+
 		bone_trans.basis.set_axis_angle(rotation_axis, rotation_angle);
 	}
 
@@ -790,7 +816,7 @@ void SkeletonModification3DCCDIK::setup_modification(SkeletonModificationStack3D
 
 void SkeletonModification3DCCDIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -813,7 +839,7 @@ void SkeletonModification3DCCDIK::update_target_cache() {
 
 void SkeletonModification3DCCDIK::update_tip_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update tip cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1172,7 +1198,7 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 
 	while (target_distance > chain_tolerance) {
 		chain_backwards();
-		chain_apply();
+		chain_forwards();
 
 		// update the target distance
 		target_distance = stack->skeleton->global_pose_to_local_pose(fabrik_data_chain[final_joint_idx].bone_idx, target_global_pose).origin.length();
@@ -1183,6 +1209,8 @@ void SkeletonModification3DFABRIK::execute(float delta) {
 			break;
 		}
 	}
+	chain_apply();
+
 	execution_error_found = false;
 }
 
@@ -1223,9 +1251,28 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 	}
 }
 
+void SkeletonModification3DFABRIK::chain_forwards() {
+	// Set root at the initial position.
+	int origin_bone_idx = fabrik_data_chain[0].bone_idx;
+	Transform root_transform = stack->skeleton->local_pose_to_global_pose(origin_bone_idx, stack->skeleton->get_bone_local_pose_override(origin_bone_idx));
+	root_transform.origin = origin_global_pose.origin;
+	stack->skeleton->set_bone_local_pose_override(origin_bone_idx, stack->skeleton->global_pose_to_local_pose(origin_bone_idx, root_transform), stack->strength, true);
+
+	for (int i = 0; i < fabrik_data_chain.size() - 1; i++) {
+		int current_bone_idx = fabrik_data_chain[i].bone_idx;
+		Transform current_trans = stack->skeleton->local_pose_to_global_pose(current_bone_idx, stack->skeleton->get_bone_local_pose_override(current_bone_idx));
+		int next_bone_idx = fabrik_data_chain[i + 1].bone_idx;
+		Transform next_bone_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
+
+		float length = fabrik_data_chain[i].length / (current_trans.origin - next_bone_trans.origin).length();
+		next_bone_trans.origin = current_trans.origin.lerp(next_bone_trans.origin, length);
+
+		// Apply it back to the skeleton
+		stack->skeleton->set_bone_local_pose_override(next_bone_idx, stack->skeleton->global_pose_to_local_pose(next_bone_idx, next_bone_trans), stack->strength, true);
+	}
+}
+
 void SkeletonModification3DFABRIK::chain_apply() {
-	// NOTE: We do not need a forward pass with this FABRIK, because we reset/undo the joint positions to origin
-	// in this function, after we apply rotation.
 	for (int i = 0; i < fabrik_data_chain.size(); i++) {
 		int current_bone_idx = fabrik_data_chain[i].bone_idx;
 		Transform current_trans = stack->skeleton->get_bone_local_pose_override(current_bone_idx);
@@ -1244,7 +1291,6 @@ void SkeletonModification3DFABRIK::chain_apply() {
 				current_trans.basis = target_global_pose.basis.orthonormalized().scaled(current_trans.basis.get_scale());
 			}
 		} else { // every other bone in the chain...
-
 			int next_bone_idx = fabrik_data_chain[i + 1].bone_idx;
 			Transform next_trans = stack->skeleton->local_pose_to_global_pose(next_bone_idx, stack->skeleton->get_bone_local_pose_override(next_bone_idx));
 
@@ -1279,7 +1325,7 @@ void SkeletonModification3DFABRIK::setup_modification(SkeletonModificationStack3
 
 void SkeletonModification3DFABRIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 	target_node_cache = ObjectID();
@@ -1302,7 +1348,7 @@ void SkeletonModification3DFABRIK::update_target_cache() {
 void SkeletonModification3DFABRIK::update_joint_tip_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint not found");
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update tip cache: modification is not properly setup!");
 		return;
 	}
 	fabrik_data_chain.write[p_joint_idx].tip_node_cache = ObjectID();
@@ -1449,7 +1495,10 @@ void SkeletonModification3DFABRIK::fabrik_joint_auto_calculate_length(int p_join
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(!stack || !stack->skeleton || !is_setup, "Cannot auto calculate joint length: modification is not setup!");
+	if (!stack || !stack->skeleton || !is_setup) {
+		_print_execution_error(true, "Cannot auto calculate joint length: modification is not properly setup!");
+		return;
+	}
 	ERR_FAIL_INDEX_MSG(fabrik_data_chain[p_joint_idx].bone_idx, stack->skeleton->get_bone_count(),
 			"Bone for joint " + itos(p_joint_idx) + " is not set or points to an unknown bone!");
 
@@ -1807,7 +1856,7 @@ void SkeletonModification3DJiggle::setup_modification(SkeletonModificationStack3
 
 void SkeletonModification3DJiggle::update_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2366,7 +2415,7 @@ void SkeletonModification3DTwoBoneIK::setup_modification(SkeletonModificationSta
 
 void SkeletonModification3DTwoBoneIK::update_cache_target() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2389,7 +2438,7 @@ void SkeletonModification3DTwoBoneIK::update_cache_target() {
 
 void SkeletonModification3DTwoBoneIK::update_cache_tip() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update tip cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update tip cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2412,7 +2461,7 @@ void SkeletonModification3DTwoBoneIK::update_cache_tip() {
 
 void SkeletonModification3DTwoBoneIK::update_cache_pole() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update pole cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update pole cache: modification is not properly setup!");
 		return;
 	}
 
