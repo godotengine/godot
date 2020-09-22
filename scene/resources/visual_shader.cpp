@@ -2729,6 +2729,7 @@ void VisualShaderNodeGroupBase::add_input_port(int p_id, int p_type, const Strin
 	}
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
@@ -2753,6 +2754,7 @@ void VisualShaderNodeGroupBase::remove_input_port(int p_id) {
 	}
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 int VisualShaderNodeGroupBase::get_input_port_count() const {
@@ -2797,6 +2799,7 @@ void VisualShaderNodeGroupBase::add_output_port(int p_id, int p_type, const Stri
 	}
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
@@ -2821,6 +2824,7 @@ void VisualShaderNodeGroupBase::remove_output_port(int p_id) {
 	}
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 int VisualShaderNodeGroupBase::get_output_port_count() const {
@@ -2867,6 +2871,7 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 	inputs = inputs.insert(index, itos(p_type));
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 VisualShaderNodeGroupBase::PortType VisualShaderNodeGroupBase::get_input_port_type(int p_id) const {
@@ -2902,6 +2907,7 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 	inputs = inputs.insert(index, p_name);
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 String VisualShaderNodeGroupBase::get_input_port_name(int p_id) const {
@@ -2937,6 +2943,7 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 	outputs = outputs.insert(index, itos(p_type));
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 VisualShaderNodeGroupBase::PortType VisualShaderNodeGroupBase::get_output_port_type(int p_id) const {
@@ -2972,6 +2979,7 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 	outputs = outputs.insert(index, p_name);
 
 	_apply_port_changes();
+	emit_changed();
 }
 
 String VisualShaderNodeGroupBase::get_output_port_name(int p_id) const {
@@ -3082,6 +3090,7 @@ String VisualShaderNodeExpression::get_caption() const {
 
 void VisualShaderNodeExpression::set_expression(const String &p_expression) {
 	expression = p_expression;
+	emit_changed();
 }
 
 String VisualShaderNodeExpression::get_expression() const {
