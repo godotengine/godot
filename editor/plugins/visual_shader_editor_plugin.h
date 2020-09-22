@@ -288,8 +288,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 
-	void _line_edit_changed(const String &p_text, Object *line_edit, int p_node_id);
-	void _line_edit_focus_out(Object *line_edit, int p_node_id);
+	void _uniform_line_edit_changed(const String &p_text, int p_node_id);
+	void _uniform_line_edit_focus_out(Object *line_edit, int p_node_id);
 
 	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
 

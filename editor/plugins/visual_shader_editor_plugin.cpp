@@ -309,8 +309,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		register_uniform_name(p_id, uniform_name);
 		uniform_name->set_text(uniform->get_uniform_name());
 		node->add_child(uniform_name);
-		uniform_name->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_line_edit_changed), varray(uniform_name, p_id));
-		uniform_name->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_line_edit_focus_out), varray(uniform_name, p_id));
+		uniform_name->connect("text_entered", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_uniform_line_edit_changed), varray(p_id));
+		uniform_name->connect("focus_exited", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_uniform_line_edit_focus_out), varray(uniform_name, p_id));
 
 		if (vsnode->get_input_port_count() == 0 && vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			//shortcut
@@ -1420,13 +1420,17 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_line_edit_changed(const String &p_text, Object *line_edit, int p_node_id) {
+void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
 
 	Ref<VisualShaderNodeUniform> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
 	String validated_name = visual_shader->validate_uniform_name(p_text, node);
+
+	if (validated_name == node->get_uniform_name()) {
+		return;
+	}
 
 	undo_redo->create_action(TTR("Set Uniform Name"));
 	undo_redo->add_do_method(node.ptr(), "set_uniform_name", validated_name);
@@ -1444,9 +1448,8 @@ void VisualShaderEditor::_line_edit_changed(const String &p_text, Object *line_e
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_line_edit_focus_out(Object *line_edit, int p_node_id) {
-	String text = Object::cast_to<LineEdit>(line_edit)->get_text();
-	_line_edit_changed(text, line_edit, p_node_id);
+void VisualShaderEditor::_uniform_line_edit_focus_out(Object *line_edit, int p_node_id) {
+	_uniform_line_edit_changed(Object::cast_to<LineEdit>(line_edit)->get_text(), p_node_id);
 }
 
 void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output) {
