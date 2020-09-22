@@ -55,7 +55,8 @@ class Area2Pair2DSW : public Constraint2DSW {
 	Area2DSW *area_b;
 	int shape_a;
 	int shape_b;
-	bool colliding;
+	bool a_colliding_with_b;
+	bool b_colliding_with_a;
 
 public:
 	bool setup(real_t p_step);

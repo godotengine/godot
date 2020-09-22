@@ -186,7 +186,11 @@ public:
 	void set_pickable(bool p_pickable) { pickable = p_pickable; }
 	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
-	_FORCE_INLINE_ bool test_collision_mask(CollisionObject2DSW *p_other) const {
+	_FORCE_INLINE_ bool mask_has_layer(CollisionObject2DSW *p_other) const {
+		return collision_mask & p_other->collision_layer;
+	}
+
+	_FORCE_INLINE_ bool interacts_with(CollisionObject2DSW *p_other) const {
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 

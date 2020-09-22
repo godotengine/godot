@@ -184,10 +184,6 @@ public:
 
 	virtual void on_collision_filters_change() = 0;
 
-	_FORCE_INLINE_ bool test_collision_mask(CollisionObjectBullet *p_other) const {
-		return collisionLayer & p_other->collisionMask || p_other->collisionLayer & collisionMask;
-	}
-
 	virtual void reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }

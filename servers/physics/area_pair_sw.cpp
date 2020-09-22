@@ -33,7 +33,7 @@
 
 bool AreaPairSW::setup(real_t p_step) {
 	bool result = false;
-	if (area->test_collision_mask(body) && CollisionSolverSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
+	if (area->interacts_with(body) && CollisionSolverSW::solve_static(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), nullptr, this)) {
 		result = true;
 	}
 
@@ -93,32 +93,38 @@ AreaPairSW::~AreaPairSW() {
 ////////////////////////////////////////////////////
 
 bool Area2PairSW::setup(real_t p_step) {
-	bool result = false;
-	if (area_a->test_collision_mask(area_b) && CollisionSolverSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
-		result = true;
+	bool overlaps = false;
+	if (area_a->interacts_with(area_b) && CollisionSolverSW::solve_static(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), nullptr, this)) {
+		overlaps = true;
 	}
 
-	if (result != colliding) {
-		if (result) {
+	bool a_collides_with_b = overlaps && area_a->mask_has_layer(area_b);
+	bool b_collides_with_a = overlaps && area_b->mask_has_layer(area_a);
+
+	if (a_collides_with_b != a_colliding_with_b) {
+		if (a_collides_with_b) {
 			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
 				area_b->add_area_to_query(area_a, shape_a, shape_b);
 			}
-
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
-				area_a->add_area_to_query(area_b, shape_b, shape_a);
-			}
-
-		} else {
+		} else { // a no longer colliding with b
 			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
 				area_b->remove_area_from_query(area_a, shape_a, shape_b);
 			}
+		}
+		a_colliding_with_b = a_collides_with_b;
+	}
 
+	if (b_collides_with_a != b_colliding_with_a) {
+		if (b_collides_with_a) {
+			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
+				area_a->add_area_to_query(area_b, shape_b, shape_a);
+			}
+		} else { // b no longer colliding with a
 			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
 				area_a->remove_area_from_query(area_b, shape_b, shape_a);
 			}
 		}
-
-		colliding = result;
+		b_colliding_with_a = b_collides_with_a;
 	}
 
 	return false; //never do any post solving
@@ -132,20 +138,19 @@ Area2PairSW::Area2PairSW(AreaSW *p_area_a, int p_shape_a, AreaSW *p_area_b, int 
 	area_b = p_area_b;
 	shape_a = p_shape_a;
 	shape_b = p_shape_b;
-	colliding = false;
+	a_colliding_with_b = false;
+	b_colliding_with_a = false;
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }
 
 Area2PairSW::~Area2PairSW() {
-	if (colliding) {
-		if (area_b->has_area_monitor_callback()) {
-			area_b->remove_area_from_query(area_a, shape_a, shape_b);
-		}
+	if (a_colliding_with_b && area_b->has_area_monitor_callback()) {
+		area_b->remove_area_from_query(area_a, shape_a, shape_b);
+	}
 
-		if (area_a->has_area_monitor_callback()) {
-			area_a->remove_area_from_query(area_b, shape_b, shape_a);
-		}
+	if (b_colliding_with_a && area_a->has_area_monitor_callback()) {
+		area_a->remove_area_from_query(area_b, shape_b, shape_a);
 	}
 
 	area_a->remove_constraint(this);
