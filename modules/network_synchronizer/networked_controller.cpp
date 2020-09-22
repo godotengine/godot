@@ -44,6 +44,8 @@
 
 // Don't go below 2 so to take into account internet latency
 #define MIN_SNAPSHOTS_SIZE 2.0
+// Minimum buffer size when the streaming is paused.
+#define MIN_SNAPSHOTS_SIZE_STREAM_PAUSED 6.0
 
 #define MAX_ADDITIONAL_TICK_SPEED 2.0
 
@@ -614,12 +616,22 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 			const uint32_t input_id = first_input_id + inserted_input_count;
 			inserted_input_count += 1;
 
-			if (current_input_buffer_id != UINT32_MAX && current_input_buffer_id >= input_id)
-				continue;
+			if (unlikely(current_input_buffer_id != UINT32_MAX && current_input_buffer_id >= input_id)) {
+				if (likely(streaming_paused == false || last_stream_paused_known_input_id >= input_id || last_sent_state_input_id >= input_id)) {
+					// If the stream is not paused.
+					// If the last stream_pause the client acknowledged is newer than this input_id.
+					// If the last sent state input is newer than this input_id.
+					continue;
+				} else {
+					// While the streaming was paused, the server overshoot the
+					// client input. Bring the server back where the client is.
+					current_input_buffer_id = input_id - 1;
+					NET_DEBUG_ERR("Stream paused input recoverage executed."); // TODO we need this?
+				}
+			}
 
 			FrameSnapshot rfs;
 			rfs.id = input_id;
-			rfs.buffer_size_bit = input_size_in_bits;
 
 			const bool found = std::binary_search(
 					snapshots.begin(),
@@ -627,7 +639,8 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 					rfs,
 					is_remote_frame_A_older);
 
-			if (!found) {
+			if (found == false) {
+				rfs.buffer_size_bit = input_size_in_bits;
 				rfs.inputs_buffer.get_bytes_mut().resize(input_size_padded);
 				copymem(
 						rfs.inputs_buffer.get_bytes_mut().ptrw(),
@@ -637,13 +650,24 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 				snapshots.push_back(rfs);
 
 				// Sort the new inserted snapshot.
-				std::sort(snapshots.begin(), snapshots.end(), is_remote_frame_A_older);
+				std::sort(
+						snapshots.begin(),
+						snapshots.end(),
+						is_remote_frame_A_older);
 			}
 		}
 
 		// We can now advance the offset.
 		ofs += input_size_padded;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (snapshots.empty() == false && current_input_buffer_id != UINT32_MAX) {
+		// At this point is guaranteed that the current_input_buffer_id is never
+		// greater than the first item contained by `snapshots`.
+		CRASH_COND(current_input_buffer_id >= snapshots.front().id);
+	}
+#endif
 
 	ERR_FAIL_COND_MSG(ofs != data_len, "At the end was detected that the arrived packet has an unexpected size.");
 }
@@ -676,27 +700,33 @@ bool ServerController::fetch_next_input() {
 
 		const uint32_t next_input_id = current_input_buffer_id + 1;
 
-		if (unlikely(snapshots.empty() == true)) {
-			// The input buffer is empty.
-			if (streaming_paused) {
-				// Stream is paused, assume buffer is void.
-				node->set_inputs_buffer(BitArray(METADATA_SIZE), METADATA_SIZE, 0);
-				is_new_input = true;
-				current_input_buffer_id = next_input_id;
+		if (unlikely(streaming_paused)) {
+			// Stream is paused.
+			if (snapshots.empty() == false &&
+					snapshots.front().id == next_input_id) {
+				// We have a new input, consider it.
+				streaming_paused = (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
+				node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
+				snapshots.pop_front();
 			} else {
-				// Packet is just missing.
-				is_new_input = false;
-				is_packet_missing = true;
-				ghost_input_count += 1;
-				NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
+				// No inputs, or we are not yet arrived to the client input,
+				// so just pretend the next input is void.
+				node->set_inputs_buffer(BitArray(METADATA_SIZE), METADATA_SIZE, 0);
 			}
+			is_new_input = true;
+			current_input_buffer_id = next_input_id;
+		} else if (unlikely(snapshots.empty() == true)) {
+			// The input buffer is empty; a packet is missing.
+			is_new_input = false;
+			is_packet_missing = true;
+			ghost_input_count += 1;
+			NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
 
 		} else {
 			// The input buffer is not empty, search the new input.
 			if (next_input_id == snapshots.front().id) {
 				// Wow, the next input is perfect!
 				node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
-				streaming_paused = streaming_paused && (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
 				current_input_buffer_id = snapshots.front().id;
 				snapshots.pop_front();
 
@@ -780,7 +810,6 @@ bool ServerController::fetch_next_input() {
 
 				if (recovered) {
 					node->set_inputs_buffer(pi.inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
-					streaming_paused = streaming_paused && (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
 					current_input_buffer_id = pi.id;
 					ghost_input_count = 0;
 					NET_DEBUG_PRINT("Packet recovered");
@@ -798,10 +827,18 @@ bool ServerController::fetch_next_input() {
 		network_tracer.notify_packet_arrived();
 	}
 
+#ifdef DEBUG_ENABLED
+	if (snapshots.empty() == false && current_input_buffer_id != UINT32_MAX) {
+		// At this point is guaranteed that the current_input_buffer_id is never
+		// greater than the first item contained by `snapshots`.
+		CRASH_COND(current_input_buffer_id >= snapshots.front().id);
+	}
+#endif
 	return is_new_input;
 }
 
 void ServerController::notify_send_state() {
+	last_sent_state_input_id = get_current_input_id();
 	// If the notified input is a void buffer, the client is allowed to pause
 	// the input streaming. So missing packets are just handled as void inputs.
 	if (node->get_inputs_buffer().size() == 0) {
@@ -809,7 +846,7 @@ void ServerController::notify_send_state() {
 		const uint32_t lki = last_known_input();
 		if (lki == UINT32_MAX) {
 			// No data to establish the size.
-			optimal_difference_amount = MIN_SNAPSHOTS_SIZE;
+			optimal_difference_amount = 0;
 		} else {
 			optimal_difference_amount = lki - get_current_input_id();
 		}
@@ -990,8 +1027,11 @@ void ServerController::stream_paused_sync(uint32_t p_input_id) {
 
 	// TODO also improve this mechanism as for calculates_player_tick_rate.
 
+	ERR_FAIL_COND_MSG(last_stream_paused_known_input_id >= p_input_id, "The previous received stream paused input_id (" + itos(last_stream_paused_known_input_id) + ") is greater than the current one (" + itos(p_input_id) + ") this must never happen, it's a bug.");
+	last_stream_paused_known_input_id = p_input_id;
+
 	optimal_difference_amount *= 0.9; // Reduce by 10%
-	optimal_difference_amount = CLAMP(optimal_difference_amount, MIN_SNAPSHOTS_SIZE, node->get_server_input_storage_size());
+	optimal_difference_amount = CLAMP(optimal_difference_amount, MIN_SNAPSHOTS_SIZE_STREAM_PAUSED, node->get_server_input_storage_size());
 
 	// Make sure there is not too much discrepancy between client and server.
 	const real_t input_delta = real_t(int64_t(get_current_input_id()) - int64_t(p_input_id)) - optimal_difference_amount;

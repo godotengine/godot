@@ -98,7 +98,7 @@ private:
 	/// Amount of time an inputs is re-sent to each peer.
 	/// Resenging inputs is necessary because the packets may be lost since as
 	/// they are sent in an unreliable way.
-	int max_redundant_inputs = 50;
+	int max_redundant_inputs = 5;
 
 	/// Time in seconds between each `tick_speedup` that the server sends to the
 	/// client.
@@ -269,6 +269,10 @@ struct FrameSnapshot {
 	BitArray inputs_buffer;
 	uint32_t buffer_size_bit;
 	uint32_t similarity;
+
+	bool operator==(const FrameSnapshot &p_other) const {
+		return p_other.id == id;
+	}
 };
 
 struct Controller {
@@ -296,6 +300,8 @@ struct ServerController : public Controller {
 
 	uint32_t current_input_buffer_id = UINT32_MAX;
 	uint32_t ghost_input_count = 0;
+	uint32_t last_stream_paused_known_input_id = 0;
+	uint32_t last_sent_state_input_id = 0;
 	real_t optimal_snapshots_size = 0.0;
 	real_t client_tick_additional_speed = 0.0;
 	real_t additional_speed_notif_timer = 0.0;
