@@ -323,6 +323,10 @@ void SkeletonModification2D::draw_editor_gizmo() {
 }
 
 bool SkeletonModification2D::_print_execution_error(bool p_condition, String p_message) {
+	if (!is_setup) {
+		return p_condition;
+	}
+
 	if (p_condition && !execution_error_found) {
 		ERR_PRINT(p_message);
 		execution_error_found = true;
@@ -678,7 +682,7 @@ void SkeletonModification2DLookAt::draw_editor_gizmo() {
 
 void SkeletonModification2DLookAt::update_bone2d_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -743,7 +747,7 @@ void SkeletonModification2DLookAt::set_bone_index(int p_bone_idx) {
 
 void SkeletonModification2DLookAt::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -903,26 +907,26 @@ bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &
 		ERR_FAIL_INDEX_V(which, ccdik_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			ccdik_joint_set_bone2d_node(which, p_value);
+			set_ccdik_joint_bone2d_node(which, p_value);
 		} else if (what == "bone_index") {
-			ccdik_joint_set_bone_index(which, p_value);
+			set_ccdik_joint_bone_index(which, p_value);
 		} else if (what == "rotate_from_joint") {
-			ccdik_joint_set_rotate_from_joint(which, p_value);
+			set_ccdik_joint_rotate_from_joint(which, p_value);
 		} else if (what == "enable_constraint") {
-			ccdik_joint_set_enable_constraint(which, p_value);
+			set_ccdik_joint_enable_constraint(which, p_value);
 		} else if (what == "constraint_angle_min") {
-			ccdik_joint_set_constraint_angle_min(which, Math::deg2rad(float(p_value)));
+			set_ccdik_joint_constraint_angle_min(which, Math::deg2rad(float(p_value)));
 		} else if (what == "constraint_angle_max") {
-			ccdik_joint_set_constraint_angle_max(which, Math::deg2rad(float(p_value)));
+			set_ccdik_joint_constraint_angle_max(which, Math::deg2rad(float(p_value)));
 		} else if (what == "constraint_angle_invert") {
-			ccdik_joint_set_constraint_angle_invert(which, p_value);
+			set_ccdik_joint_constraint_angle_invert(which, p_value);
 		} else if (what == "constraint_in_localspace") {
-			ccdik_joint_set_constraint_in_localspace(which, p_value);
+			set_ccdik_joint_constraint_in_localspace(which, p_value);
 		}
 
 #ifdef TOOLS_ENABLED
 		if (what.begins_with("editor_draw_gizmo")) {
-			ccdik_joint_set_editor_draw_gizmo(which, p_value);
+			set_ccdik_joint_editor_draw_gizmo(which, p_value);
 		}
 #endif // TOOLS_ENABLED
 
@@ -947,26 +951,26 @@ bool SkeletonModification2DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 		ERR_FAIL_INDEX_V(which, ccdik_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			r_ret = ccdik_joint_get_bone2d_node(which);
+			r_ret = get_ccdik_joint_bone2d_node(which);
 		} else if (what == "bone_index") {
-			r_ret = ccdik_joint_get_bone_index(which);
+			r_ret = get_ccdik_joint_bone_index(which);
 		} else if (what == "rotate_from_joint") {
-			r_ret = ccdik_joint_get_rotate_from_joint(which);
+			r_ret = get_ccdik_joint_rotate_from_joint(which);
 		} else if (what == "enable_constraint") {
-			r_ret = ccdik_joint_get_enable_constraint(which);
+			r_ret = get_ccdik_joint_enable_constraint(which);
 		} else if (what == "constraint_angle_min") {
-			r_ret = Math::rad2deg(ccdik_joint_get_constraint_angle_min(which));
+			r_ret = Math::rad2deg(get_ccdik_joint_constraint_angle_min(which));
 		} else if (what == "constraint_angle_max") {
-			r_ret = Math::rad2deg(ccdik_joint_get_constraint_angle_max(which));
+			r_ret = Math::rad2deg(get_ccdik_joint_constraint_angle_max(which));
 		} else if (what == "constraint_angle_invert") {
-			r_ret = ccdik_joint_get_constraint_angle_invert(which);
+			r_ret = get_ccdik_joint_constraint_angle_invert(which);
 		} else if (what == "constraint_in_localspace") {
-			r_ret = ccdik_joint_get_constraint_in_localspace(which);
+			r_ret = get_ccdik_joint_constraint_in_localspace(which);
 		}
 
 #ifdef TOOLS_ENABLED
 		if (what.begins_with("editor_draw_gizmo")) {
-			r_ret = ccdik_joint_get_editor_draw_gizmo(which);
+			r_ret = get_ccdik_joint_editor_draw_gizmo(which);
 		}
 #endif // TOOLS_ENABLED
 
@@ -1121,7 +1125,7 @@ void SkeletonModification2DCCDIK::draw_editor_gizmo() {
 
 void SkeletonModification2DCCDIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1144,7 +1148,7 @@ void SkeletonModification2DCCDIK::update_target_cache() {
 
 void SkeletonModification2DCCDIK::update_tip_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update tip cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update tip cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1168,7 +1172,7 @@ void SkeletonModification2DCCDIK::update_tip_cache() {
 void SkeletonModification2DCCDIK::ccdik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update CCDIK Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update CCDIK Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1224,7 +1228,7 @@ int SkeletonModification2DCCDIK::get_ccdik_data_chain_length() {
 	return ccdik_data_chain.size();
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	ccdik_joint_update_bone2d_cache(p_joint_idx);
@@ -1232,12 +1236,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_bone2d_node(int p_joint_idx, c
 	_change_notify();
 }
 
-NodePath SkeletonModification2DCCDIK::ccdik_joint_get_bone2d_node(int p_joint_idx) const {
+NodePath SkeletonModification2DCCDIK::get_ccdik_joint_bone2d_node(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), NodePath(), "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].bone2d_node;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_bone_index(int p_joint_idx, int p_bone_idx) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_bone_index(int p_joint_idx, int p_bone_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCCDIK joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
@@ -1260,22 +1264,22 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_bone_index(int p_joint_idx, in
 	_change_notify();
 }
 
-int SkeletonModification2DCCDIK::ccdik_joint_get_bone_index(int p_joint_idx) const {
+int SkeletonModification2DCCDIK::get_ccdik_joint_bone_index(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), -1, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].bone_idx;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].rotate_from_joint = p_rotate_from_joint;
 }
 
-bool SkeletonModification2DCCDIK::ccdik_joint_get_rotate_from_joint(int p_joint_idx) const {
+bool SkeletonModification2DCCDIK::get_ccdik_joint_rotate_from_joint(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].rotate_from_joint;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_enable_constraint(int p_joint_idx, bool p_constraint) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
 	_change_notify();
@@ -1287,12 +1291,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_enable_constraint(int p_joint_
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DCCDIK::ccdik_joint_get_enable_constraint(int p_joint_idx) const {
+bool SkeletonModification2DCCDIK::get_ccdik_joint_enable_constraint(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].enable_constraint;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
 
@@ -1303,12 +1307,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_min(int p_joi
 #endif // TOOLS_ENABLED
 }
 
-float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_min(int p_joint_idx) const {
+float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_min(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), 0.0, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].constraint_angle_min;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
 
@@ -1319,12 +1323,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_max(int p_joi
 #endif // TOOLS_ENABLED
 }
 
-float SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_max(int p_joint_idx) const {
+float SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_max(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), 0.0, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].constraint_angle_max;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
 
@@ -1335,12 +1339,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_invert(int p_
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_invert(int p_joint_idx) const {
+bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_invert(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].constraint_angle_invert;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
 
@@ -1351,12 +1355,12 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_constraint_in_localspace(int p
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DCCDIK::ccdik_joint_get_constraint_in_localspace(int p_joint_idx) const {
+bool SkeletonModification2DCCDIK::get_ccdik_joint_constraint_in_localspace(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].constraint_in_localspace;
 }
 
-void SkeletonModification2DCCDIK::ccdik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
+void SkeletonModification2DCCDIK::set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, ccdik_data_chain.size(), "CCDIK joint out of range!");
 	ccdik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
 
@@ -1367,7 +1371,7 @@ void SkeletonModification2DCCDIK::ccdik_joint_set_editor_draw_gizmo(int p_joint_
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DCCDIK::ccdik_joint_get_editor_draw_gizmo(int p_joint_idx) const {
+bool SkeletonModification2DCCDIK::get_ccdik_joint_editor_draw_gizmo(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, ccdik_data_chain.size(), false, "CCDIK joint out of range!");
 	return ccdik_data_chain[p_joint_idx].editor_draw_gizmo;
 }
@@ -1381,20 +1385,20 @@ void SkeletonModification2DCCDIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ccdik_data_chain_length", "length"), &SkeletonModification2DCCDIK::set_ccdik_data_chain_length);
 	ClassDB::bind_method(D_METHOD("get_ccdik_data_chain_length"), &SkeletonModification2DCCDIK::get_ccdik_data_chain_length);
 
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_bone2d_node", "joint_idx", "bone2d_nodepath"), &SkeletonModification2DCCDIK::ccdik_joint_set_bone2d_node);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_bone2d_node", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_bone2d_node);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DCCDIK::ccdik_joint_set_bone_index);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_bone_index", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_bone_index);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_rotate_from_joint", "joint_idx", "rotate_from_joint"), &SkeletonModification2DCCDIK::ccdik_joint_set_rotate_from_joint);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_rotate_from_joint", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_rotate_from_joint);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_enable_constraint", "joint_idx", "enable_constraint"), &SkeletonModification2DCCDIK::ccdik_joint_set_enable_constraint);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_enable_constraint", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_enable_constraint);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_constraint_angle_min", "joint_idx", "angle_min"), &SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_constraint_angle_min", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_constraint_angle_max", "joint_idx", "angle_max"), &SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_constraint_angle_max", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_set_constraint_angle_invert", "joint_idx", "invert"), &SkeletonModification2DCCDIK::ccdik_joint_set_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("ccdik_joint_get_constraint_angle_invert", "joint_idx"), &SkeletonModification2DCCDIK::ccdik_joint_get_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_bone2d_node", "joint_idx", "bone2d_nodepath"), &SkeletonModification2DCCDIK::set_ccdik_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_bone2d_node", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DCCDIK::set_ccdik_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_bone_index", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_rotate_from_joint", "joint_idx", "rotate_from_joint"), &SkeletonModification2DCCDIK::set_ccdik_joint_rotate_from_joint);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_rotate_from_joint", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_rotate_from_joint);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_enable_constraint", "joint_idx", "enable_constraint"), &SkeletonModification2DCCDIK::set_ccdik_joint_enable_constraint);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_enable_constraint", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_enable_constraint);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_constraint_angle_min", "joint_idx", "angle_min"), &SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_constraint_angle_min", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_constraint_angle_max", "joint_idx", "angle_max"), &SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_constraint_angle_max", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("set_ccdik_joint_constraint_angle_invert", "joint_idx", "invert"), &SkeletonModification2DCCDIK::set_ccdik_joint_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("get_ccdik_joint_constraint_angle_invert", "joint_idx"), &SkeletonModification2DCCDIK::get_ccdik_joint_constraint_angle_invert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "tip_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_tip_node", "get_tip_node");
@@ -1424,28 +1428,28 @@ bool SkeletonModification2DFABRIK::_set(const StringName &p_path, const Variant 
 		ERR_FAIL_INDEX_V(which, fabrik_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			fabrik_joint_set_bone2d_node(which, p_value);
+			set_fabrik_joint_bone2d_node(which, p_value);
 		} else if (what == "bone_index") {
-			fabrik_joint_set_bone_index(which, p_value);
+			set_fabrik_joint_bone_index(which, p_value);
 		} else if (what == "magnet_position") {
-			fabrik_joint_set_magnet_position(which, p_value);
+			set_fabrik_joint_magnet_position(which, p_value);
 		} else if (what == "use_target_rotation") {
-			fabrik_joint_set_use_target_rotation(which, p_value);
+			set_fabrik_joint_use_target_rotation(which, p_value);
 		} else if (what == "enable_constraint") {
-			fabrik_joint_set_enable_constraint(which, p_value);
+			set_fabrik_joint_enable_constraint(which, p_value);
 		} else if (what == "constraint_angle_min") {
-			fabrik_joint_set_constraint_angle_min(which, Math::deg2rad(float(p_value)));
+			set_fabrik_joint_constraint_angle_min(which, Math::deg2rad(float(p_value)));
 		} else if (what == "constraint_angle_max") {
-			fabrik_joint_set_constraint_angle_max(which, Math::deg2rad(float(p_value)));
+			set_fabrik_joint_constraint_angle_max(which, Math::deg2rad(float(p_value)));
 		} else if (what == "constraint_angle_invert") {
-			fabrik_joint_set_constraint_angle_invert(which, p_value);
+			set_fabrik_joint_constraint_angle_invert(which, p_value);
 		} else if (what == "constraint_in_localspace") {
-			fabrik_joint_set_constraint_in_localspace(which, p_value);
+			set_fabrik_joint_constraint_in_localspace(which, p_value);
 		}
 
 #ifdef TOOLS_ENABLED
 		if (what.begins_with("editor_draw_gizmo")) {
-			fabrik_joint_set_editor_draw_gizmo(which, p_value);
+			set_fabrik_joint_editor_draw_gizmo(which, p_value);
 		}
 #endif // TOOLS_ENABLED
 
@@ -1470,28 +1474,28 @@ bool SkeletonModification2DFABRIK::_get(const StringName &p_path, Variant &r_ret
 		ERR_FAIL_INDEX_V(which, fabrik_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			r_ret = fabrik_joint_get_bone2d_node(which);
+			r_ret = get_fabrik_joint_bone2d_node(which);
 		} else if (what == "bone_index") {
-			r_ret = fabrik_joint_get_bone_index(which);
+			r_ret = get_fabrik_joint_bone_index(which);
 		} else if (what == "magnet_position") {
-			r_ret = fabrik_joint_get_magnet_position(which);
+			r_ret = get_fabrik_joint_magnet_position(which);
 		} else if (what == "use_target_rotation") {
-			r_ret = fabrik_joint_get_use_target_rotation(which);
+			r_ret = get_fabrik_joint_use_target_rotation(which);
 		} else if (what == "enable_constraint") {
-			r_ret = fabrik_joint_get_enable_constraint(which);
+			r_ret = get_fabrik_joint_enable_constraint(which);
 		} else if (what == "constraint_angle_min") {
-			r_ret = Math::rad2deg(fabrik_joint_get_constraint_angle_min(which));
+			r_ret = Math::rad2deg(get_fabrik_joint_constraint_angle_min(which));
 		} else if (what == "constraint_angle_max") {
-			r_ret = Math::rad2deg(fabrik_joint_get_constraint_angle_max(which));
+			r_ret = Math::rad2deg(get_fabrik_joint_constraint_angle_max(which));
 		} else if (what == "constraint_angle_invert") {
-			r_ret = fabrik_joint_get_constraint_angle_invert(which);
+			r_ret = get_fabrik_joint_constraint_angle_invert(which);
 		} else if (what == "constraint_in_localspace") {
-			r_ret = fabrik_joint_get_constraint_in_localspace(which);
+			r_ret = get_fabrik_joint_constraint_in_localspace(which);
 		}
 
 #ifdef TOOLS_ENABLED
 		if (what.begins_with("editor_draw_gizmo")) {
-			r_ret = fabrik_joint_get_editor_draw_gizmo(which);
+			r_ret = get_fabrik_joint_editor_draw_gizmo(which);
 		}
 #endif // TOOLS_ENABLED
 
@@ -1773,7 +1777,7 @@ void SkeletonModification2DFABRIK::setup_modification(SkeletonModificationStack2
 
 void SkeletonModification2DFABRIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1813,7 +1817,7 @@ void SkeletonModification2DFABRIK::draw_editor_gizmo() {
 void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update FABRIK Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update FABRIK Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -1860,7 +1864,7 @@ int SkeletonModification2DFABRIK::get_fabrik_data_chain_length() {
 	return fabrik_data_chain.size();
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	fabrik_joint_update_bone2d_cache(p_joint_idx);
@@ -1868,12 +1872,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_bone2d_node(int p_joint_idx,
 	_change_notify();
 }
 
-NodePath SkeletonModification2DFABRIK::fabrik_joint_get_bone2d_node(int p_joint_idx) const {
+NodePath SkeletonModification2DFABRIK::get_fabrik_joint_bone2d_node(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), NodePath(), "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].bone2d_node;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_bone_index(int p_joint_idx, int p_bone_idx) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, int p_bone_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
@@ -1896,32 +1900,32 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_bone_index(int p_joint_idx, 
 	_change_notify();
 }
 
-int SkeletonModification2DFABRIK::fabrik_joint_get_bone_index(int p_joint_idx) const {
+int SkeletonModification2DFABRIK::get_fabrik_joint_bone_index(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), -1, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].bone_idx;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_magnet_position(int p_joint_idx, Vector2 p_magnet_position) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_magnet_position(int p_joint_idx, Vector2 p_magnet_position) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].magnet_position = p_magnet_position;
 }
 
-Vector2 SkeletonModification2DFABRIK::fabrik_joint_get_magnet_position(int p_joint_idx) const {
+Vector2 SkeletonModification2DFABRIK::get_fabrik_joint_magnet_position(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), Vector2(), "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].magnet_position;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_use_target_rotation(int p_joint_idx, bool p_use_target_rotation) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_use_target_rotation(int p_joint_idx, bool p_use_target_rotation) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].use_target_rotation = p_use_target_rotation;
 }
 
-bool SkeletonModification2DFABRIK::fabrik_joint_get_use_target_rotation(int p_joint_idx) const {
+bool SkeletonModification2DFABRIK::get_fabrik_joint_use_target_rotation(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].use_target_rotation;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_enable_constraint(int p_joint_idx, bool p_constraint) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_enable_constraint(int p_joint_idx, bool p_constraint) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].enable_constraint = p_constraint;
 	_change_notify();
@@ -1933,12 +1937,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_enable_constraint(int p_join
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DFABRIK::fabrik_joint_get_enable_constraint(int p_joint_idx) const {
+bool SkeletonModification2DFABRIK::get_fabrik_joint_enable_constraint(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].enable_constraint;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_min = p_angle_min;
 
@@ -1949,12 +1953,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_min(int p_j
 #endif // TOOLS_ENABLED
 }
 
-float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_min(int p_joint_idx) const {
+float SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_min(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), 0.0, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].constraint_angle_min;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_max = p_angle_max;
 
@@ -1965,12 +1969,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_max(int p_j
 #endif // TOOLS_ENABLED
 }
 
-float SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_max(int p_joint_idx) const {
+float SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_max(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), 0.0, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].constraint_angle_max;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_angle_invert = p_invert;
 
@@ -1981,12 +1985,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_invert(int 
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_invert(int p_joint_idx) const {
+bool SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_invert(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].constraint_angle_invert;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].constraint_in_localspace = p_constraint_in_localspace;
 
@@ -1997,12 +2001,12 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_constraint_in_localspace(int
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DFABRIK::fabrik_joint_get_constraint_in_localspace(int p_joint_idx) const {
+bool SkeletonModification2DFABRIK::get_fabrik_joint_constraint_in_localspace(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].constraint_in_localspace;
 }
 
-void SkeletonModification2DFABRIK::fabrik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].editor_draw_gizmo = p_draw_gizmo;
 
@@ -2013,7 +2017,7 @@ void SkeletonModification2DFABRIK::fabrik_joint_set_editor_draw_gizmo(int p_join
 #endif // TOOLS_ENABLED
 }
 
-bool SkeletonModification2DFABRIK::fabrik_joint_get_editor_draw_gizmo(int p_joint_idx) const {
+bool SkeletonModification2DFABRIK::get_fabrik_joint_editor_draw_gizmo(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, fabrik_data_chain.size(), false, "FABRIK joint out of range!");
 	return fabrik_data_chain[p_joint_idx].editor_draw_gizmo;
 }
@@ -2025,22 +2029,22 @@ void SkeletonModification2DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fabrik_data_chain_length", "length"), &SkeletonModification2DFABRIK::set_fabrik_data_chain_length);
 	ClassDB::bind_method(D_METHOD("get_fabrik_data_chain_length"), &SkeletonModification2DFABRIK::get_fabrik_data_chain_length);
 
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_bone2d_node", "joint_idx", "bone2d_nodepath"), &SkeletonModification2DFABRIK::fabrik_joint_set_bone2d_node);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_bone2d_node", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_bone2d_node);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DFABRIK::fabrik_joint_set_bone_index);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_bone_index", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_bone_index);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_magnet_position", "joint_idx", "magnet_position"), &SkeletonModification2DFABRIK::fabrik_joint_set_magnet_position);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_magnet_position", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_magnet_position);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_use_target_rotation", "joint_idx", "use_target_rotation"), &SkeletonModification2DFABRIK::fabrik_joint_set_use_target_rotation);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_use_target_rotation", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_use_target_rotation);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_enable_constraint", "joint_idx", "enable_constraint"), &SkeletonModification2DFABRIK::fabrik_joint_set_enable_constraint);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_enable_constraint", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_enable_constraint);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_constraint_angle_min", "joint_idx", "angle_min"), &SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_constraint_angle_min", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_min);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_constraint_angle_max", "joint_idx", "angle_max"), &SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_constraint_angle_max", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_max);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_set_constraint_angle_invert", "joint_idx", "invert"), &SkeletonModification2DFABRIK::fabrik_joint_set_constraint_angle_invert);
-	ClassDB::bind_method(D_METHOD("fabrik_joint_get_constraint_angle_invert", "joint_idx"), &SkeletonModification2DFABRIK::fabrik_joint_get_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_bone2d_node", "joint_idx", "bone2d_nodepath"), &SkeletonModification2DFABRIK::set_fabrik_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_bone2d_node", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DFABRIK::set_fabrik_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_bone_index", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_magnet_position", "joint_idx", "magnet_position"), &SkeletonModification2DFABRIK::set_fabrik_joint_magnet_position);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_magnet_position", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_magnet_position);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_use_target_rotation", "joint_idx", "use_target_rotation"), &SkeletonModification2DFABRIK::set_fabrik_joint_use_target_rotation);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_use_target_rotation", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_use_target_rotation);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_enable_constraint", "joint_idx", "enable_constraint"), &SkeletonModification2DFABRIK::set_fabrik_joint_enable_constraint);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_enable_constraint", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_enable_constraint);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_min", "joint_idx", "angle_min"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_min", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_min);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_max", "joint_idx", "angle_max"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_max", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_max);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_constraint_angle_invert", "joint_idx", "invert"), &SkeletonModification2DFABRIK::set_fabrik_joint_constraint_angle_invert);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_constraint_angle_invert", "joint_idx"), &SkeletonModification2DFABRIK::get_fabrik_joint_constraint_angle_invert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fabrik_data_chain_length", PROPERTY_HINT_RANGE, "0, 100, 1"), "set_fabrik_data_chain_length", "get_fabrik_data_chain_length");
@@ -2069,21 +2073,21 @@ bool SkeletonModification2DJiggle::_set(const StringName &p_path, const Variant 
 		ERR_FAIL_INDEX_V(which, jiggle_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			jiggle_joint_set_bone2d_node(which, p_value);
+			set_jiggle_joint_bone2d_node(which, p_value);
 		} else if (what == "bone_index") {
-			jiggle_joint_set_bone_index(which, p_value);
+			set_jiggle_joint_bone_index(which, p_value);
 		} else if (what == "override_defaults") {
-			jiggle_joint_set_override(which, p_value);
+			set_jiggle_joint_override(which, p_value);
 		} else if (what == "stiffness") {
-			jiggle_joint_set_stiffness(which, p_value);
+			set_jiggle_joint_stiffness(which, p_value);
 		} else if (what == "mass") {
-			jiggle_joint_set_mass(which, p_value);
+			set_jiggle_joint_mass(which, p_value);
 		} else if (what == "damping") {
-			jiggle_joint_set_damping(which, p_value);
+			set_jiggle_joint_damping(which, p_value);
 		} else if (what == "use_gravity") {
-			jiggle_joint_set_use_gravity(which, p_value);
+			set_jiggle_joint_use_gravity(which, p_value);
 		} else if (what == "gravity") {
-			jiggle_joint_set_gravity(which, p_value);
+			set_jiggle_joint_gravity(which, p_value);
 		}
 		return true;
 	} else {
@@ -2105,21 +2109,21 @@ bool SkeletonModification2DJiggle::_get(const StringName &p_path, Variant &r_ret
 		ERR_FAIL_INDEX_V(which, jiggle_data_chain.size(), false);
 
 		if (what == "bone2d_node") {
-			r_ret = jiggle_joint_get_bone2d_node(which);
+			r_ret = get_jiggle_joint_bone2d_node(which);
 		} else if (what == "bone_index") {
-			r_ret = jiggle_joint_get_bone_index(which);
+			r_ret = get_jiggle_joint_bone_index(which);
 		} else if (what == "override_defaults") {
-			r_ret = jiggle_joint_get_override(which);
+			r_ret = get_jiggle_joint_override(which);
 		} else if (what == "stiffness") {
-			r_ret = jiggle_joint_get_stiffness(which);
+			r_ret = get_jiggle_joint_stiffness(which);
 		} else if (what == "mass") {
-			r_ret = jiggle_joint_get_mass(which);
+			r_ret = get_jiggle_joint_mass(which);
 		} else if (what == "damping") {
-			r_ret = jiggle_joint_get_damping(which);
+			r_ret = get_jiggle_joint_damping(which);
 		} else if (what == "use_gravity") {
-			r_ret = jiggle_joint_get_use_gravity(which);
+			r_ret = get_jiggle_joint_use_gravity(which);
 		} else if (what == "gravity") {
-			r_ret = jiggle_joint_get_gravity(which);
+			r_ret = get_jiggle_joint_gravity(which);
 		}
 		return true;
 	} else {
@@ -2254,11 +2258,11 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 void SkeletonModification2DJiggle::_update_jiggle_joint_data() {
 	for (int i = 0; i < jiggle_data_chain.size(); i++) {
 		if (!jiggle_data_chain[i].override_defaults) {
-			jiggle_joint_set_stiffness(i, stiffness);
-			jiggle_joint_set_mass(i, mass);
-			jiggle_joint_set_damping(i, damping);
-			jiggle_joint_set_use_gravity(i, use_gravity);
-			jiggle_joint_set_gravity(i, gravity);
+			set_jiggle_joint_stiffness(i, stiffness);
+			set_jiggle_joint_mass(i, mass);
+			set_jiggle_joint_damping(i, damping);
+			set_jiggle_joint_use_gravity(i, use_gravity);
+			set_jiggle_joint_gravity(i, gravity);
 		}
 	}
 }
@@ -2286,7 +2290,7 @@ void SkeletonModification2DJiggle::setup_modification(SkeletonModificationStack2
 
 void SkeletonModification2DJiggle::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2310,7 +2314,7 @@ void SkeletonModification2DJiggle::update_target_cache() {
 void SkeletonModification2DJiggle::jiggle_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update Jiggle " + itos(p_joint_idx) + " Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update Jiggle " + itos(p_joint_idx) + " Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2425,7 +2429,7 @@ void SkeletonModification2DJiggle::set_jiggle_data_chain_length(int p_length) {
 	_change_notify();
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
+void SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Jiggle joint out of range!");
 	jiggle_data_chain.write[p_joint_idx].bone2d_node = p_target_node;
 	jiggle_joint_update_bone2d_cache(p_joint_idx);
@@ -2433,12 +2437,12 @@ void SkeletonModification2DJiggle::jiggle_joint_set_bone2d_node(int p_joint_idx,
 	_change_notify();
 }
 
-NodePath SkeletonModification2DJiggle::jiggle_joint_get_bone2d_node(int p_joint_idx) const {
+NodePath SkeletonModification2DJiggle::get_jiggle_joint_bone2d_node(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, jiggle_data_chain.size(), NodePath(), "Jiggle joint out of range!");
 	return jiggle_data_chain[p_joint_idx].bone2d_node;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_bone_index(int p_joint_idx, int p_bone_idx) {
+void SkeletonModification2DJiggle::set_jiggle_joint_bone_index(int p_joint_idx, int p_bone_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, jiggle_data_chain.size(), "Jiggle joint out of range!");
 	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
 
@@ -2461,73 +2465,73 @@ void SkeletonModification2DJiggle::jiggle_joint_set_bone_index(int p_joint_idx, 
 	_change_notify();
 }
 
-int SkeletonModification2DJiggle::jiggle_joint_get_bone_index(int p_joint_idx) const {
+int SkeletonModification2DJiggle::get_jiggle_joint_bone_index(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, jiggle_data_chain.size(), -1, "Jiggle joint out of range!");
 	return jiggle_data_chain[p_joint_idx].bone_idx;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_override(int joint_idx, bool p_override) {
+void SkeletonModification2DJiggle::set_jiggle_joint_override(int joint_idx, bool p_override) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].override_defaults = p_override;
 	_update_jiggle_joint_data();
 	_change_notify();
 }
 
-bool SkeletonModification2DJiggle::jiggle_joint_get_override(int joint_idx) const {
+bool SkeletonModification2DJiggle::get_jiggle_joint_override(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), false);
 	return jiggle_data_chain[joint_idx].override_defaults;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_stiffness(int joint_idx, float p_stiffness) {
+void SkeletonModification2DJiggle::set_jiggle_joint_stiffness(int joint_idx, float p_stiffness) {
 	ERR_FAIL_COND_MSG(p_stiffness < 0, "Stiffness cannot be set to a negative value!");
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].stiffness = p_stiffness;
 }
 
-float SkeletonModification2DJiggle::jiggle_joint_get_stiffness(int joint_idx) const {
+float SkeletonModification2DJiggle::get_jiggle_joint_stiffness(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
 	return jiggle_data_chain[joint_idx].stiffness;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_mass(int joint_idx, float p_mass) {
+void SkeletonModification2DJiggle::set_jiggle_joint_mass(int joint_idx, float p_mass) {
 	ERR_FAIL_COND_MSG(p_mass < 0, "Mass cannot be set to a negative value!");
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].mass = p_mass;
 }
 
-float SkeletonModification2DJiggle::jiggle_joint_get_mass(int joint_idx) const {
+float SkeletonModification2DJiggle::get_jiggle_joint_mass(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
 	return jiggle_data_chain[joint_idx].mass;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_damping(int joint_idx, float p_damping) {
+void SkeletonModification2DJiggle::set_jiggle_joint_damping(int joint_idx, float p_damping) {
 	ERR_FAIL_COND_MSG(p_damping < 0, "Damping cannot be set to a negative value!");
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].damping = p_damping;
 }
 
-float SkeletonModification2DJiggle::jiggle_joint_get_damping(int joint_idx) const {
+float SkeletonModification2DJiggle::get_jiggle_joint_damping(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), -1);
 	return jiggle_data_chain[joint_idx].damping;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_use_gravity(int joint_idx, bool p_use_gravity) {
+void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int joint_idx, bool p_use_gravity) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].use_gravity = p_use_gravity;
 	_change_notify();
 }
 
-bool SkeletonModification2DJiggle::jiggle_joint_get_use_gravity(int joint_idx) const {
+bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), false);
 	return jiggle_data_chain[joint_idx].use_gravity;
 }
 
-void SkeletonModification2DJiggle::jiggle_joint_set_gravity(int joint_idx, Vector2 p_gravity) {
+void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int joint_idx, Vector2 p_gravity) {
 	ERR_FAIL_INDEX(joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[joint_idx].gravity = p_gravity;
 }
 
-Vector2 SkeletonModification2DJiggle::jiggle_joint_get_gravity(int joint_idx) const {
+Vector2 SkeletonModification2DJiggle::get_jiggle_joint_gravity(int joint_idx) const {
 	ERR_FAIL_INDEX_V(joint_idx, jiggle_data_chain.size(), Vector2(0, 0));
 	return jiggle_data_chain[joint_idx].gravity;
 }
@@ -2556,22 +2560,22 @@ void SkeletonModification2DJiggle::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SkeletonModification2DJiggle::get_collision_mask);
 
 	// Jiggle joint data functions
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_bone2d_node", "joint_idx", "bone2d_node"), &SkeletonModification2DJiggle::jiggle_joint_set_bone2d_node);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_bone2d_node", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_bone2d_node);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DJiggle::jiggle_joint_set_bone_index);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_bone_index", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_bone_index);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_override", "joint_idx", "override"), &SkeletonModification2DJiggle::jiggle_joint_set_override);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_override", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_override);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_stiffness", "joint_idx", "stiffness"), &SkeletonModification2DJiggle::jiggle_joint_set_stiffness);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_stiffness", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_stiffness);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_mass", "joint_idx", "mass"), &SkeletonModification2DJiggle::jiggle_joint_set_mass);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_mass", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_mass);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_damping", "joint_idx", "damping"), &SkeletonModification2DJiggle::jiggle_joint_set_damping);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_damping", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_damping);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_use_gravity", "joint_idx", "use_gravity"), &SkeletonModification2DJiggle::jiggle_joint_set_use_gravity);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_use_gravity", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_use_gravity);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_set_gravity", "joint_idx", "gravity"), &SkeletonModification2DJiggle::jiggle_joint_set_gravity);
-	ClassDB::bind_method(D_METHOD("jiggle_joint_get_gravity", "joint_idx"), &SkeletonModification2DJiggle::jiggle_joint_get_gravity);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_bone2d_node", "joint_idx", "bone2d_node"), &SkeletonModification2DJiggle::set_jiggle_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_bone2d_node", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_bone2d_node);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_bone_index", "joint_idx", "bone_idx"), &SkeletonModification2DJiggle::set_jiggle_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_bone_index", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_bone_index);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_override", "joint_idx", "override"), &SkeletonModification2DJiggle::set_jiggle_joint_override);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_override", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_override);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_stiffness", "joint_idx", "stiffness"), &SkeletonModification2DJiggle::set_jiggle_joint_stiffness);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_stiffness", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_stiffness);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_mass", "joint_idx", "mass"), &SkeletonModification2DJiggle::set_jiggle_joint_mass);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_mass", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_mass);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_damping", "joint_idx", "damping"), &SkeletonModification2DJiggle::set_jiggle_joint_damping);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_damping", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_damping);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_use_gravity", "joint_idx", "use_gravity"), &SkeletonModification2DJiggle::set_jiggle_joint_use_gravity);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_use_gravity", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_use_gravity);
+	ClassDB::bind_method(D_METHOD("set_jiggle_joint_gravity", "joint_idx", "gravity"), &SkeletonModification2DJiggle::set_jiggle_joint_gravity);
+	ClassDB::bind_method(D_METHOD("get_jiggle_joint_gravity", "joint_idx"), &SkeletonModification2DJiggle::get_jiggle_joint_gravity);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "jiggle_data_chain_length", PROPERTY_HINT_RANGE, "0,100,1"), "set_jiggle_data_chain_length", "get_jiggle_data_chain_length");
@@ -2791,7 +2795,7 @@ void SkeletonModification2DTwoBoneIK::draw_editor_gizmo() {
 
 void SkeletonModification2DTwoBoneIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update target cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update target cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2814,7 +2818,7 @@ void SkeletonModification2DTwoBoneIK::update_target_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update update joint one Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update joint one Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -2844,7 +2848,7 @@ void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
 
 void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update update joint two Bone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update joint two Bone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -3049,7 +3053,7 @@ bool SkeletonModification2DPhysicalBones::_set(const StringName &p_path, const V
 		ERR_FAIL_INDEX_V(which, physical_bone_chain.size(), false);
 
 		if (what == "nodepath") {
-			physical_bone_set_node(which, p_value);
+			set_physical_bone_node(which, p_value);
 		}
 		return true;
 	}
@@ -3073,7 +3077,7 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 		ERR_FAIL_INDEX_V(which, physical_bone_chain.size(), false);
 
 		if (what == "nodepath") {
-			r_ret = physical_bone_get_node(which);
+			r_ret = get_physical_bone_node(which);
 		}
 		return true;
 	}
@@ -3150,7 +3154,7 @@ void SkeletonModification2DPhysicalBones::setup_modification(SkeletonModificatio
 void SkeletonModification2DPhysicalBones::_physical_bone_update_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Cannot update PhysicalBone2D cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		WARN_PRINT("Cannot update PhysicalBone2D cache: modification is not properly setup!");
+		_print_execution_error(true, "Cannot update PhysicalBone2D cache: modification is not properly setup!");
 		return;
 	}
 
@@ -3255,13 +3259,13 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 	}
 }
 
-void SkeletonModification2DPhysicalBones::physical_bone_set_node(int p_joint_idx, const NodePath &p_nodepath) {
+void SkeletonModification2DPhysicalBones::set_physical_bone_node(int p_joint_idx, const NodePath &p_nodepath) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, physical_bone_chain.size(), "Joint index out of range!");
 	physical_bone_chain.write[p_joint_idx].physical_bone_node = p_nodepath;
 	_physical_bone_update_cache(p_joint_idx);
 }
 
-NodePath SkeletonModification2DPhysicalBones::physical_bone_get_node(int p_joint_idx) const {
+NodePath SkeletonModification2DPhysicalBones::get_physical_bone_node(int p_joint_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_joint_idx, physical_bone_chain.size(), NodePath(), "Joint index out of range!");
 	return physical_bone_chain[p_joint_idx].physical_bone_node;
 }
@@ -3270,8 +3274,8 @@ void SkeletonModification2DPhysicalBones::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physical_bone_chain_length", "length"), &SkeletonModification2DPhysicalBones::set_physical_bone_chain_length);
 	ClassDB::bind_method(D_METHOD("get_physical_bone_chain_length"), &SkeletonModification2DPhysicalBones::get_physical_bone_chain_length);
 
-	ClassDB::bind_method(D_METHOD("physical_bone_set_node", "joint_idx", "physicalbone2d_node"), &SkeletonModification2DPhysicalBones::physical_bone_set_node);
-	ClassDB::bind_method(D_METHOD("physical_bone_get_node", "joint_idx"), &SkeletonModification2DPhysicalBones::physical_bone_get_node);
+	ClassDB::bind_method(D_METHOD("set_physical_bone_node", "joint_idx", "physicalbone2d_node"), &SkeletonModification2DPhysicalBones::set_physical_bone_node);
+	ClassDB::bind_method(D_METHOD("get_physical_bone_node", "joint_idx"), &SkeletonModification2DPhysicalBones::get_physical_bone_node);
 
 	ClassDB::bind_method(D_METHOD("fetch_physical_bones"), &SkeletonModification2DPhysicalBones::fetch_physical_bones);
 	ClassDB::bind_method(D_METHOD("start_simulation", "bones"), &SkeletonModification2DPhysicalBones::start_simulation, DEFVAL(Array()));

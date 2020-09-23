@@ -259,25 +259,25 @@ public:
 	int get_ccdik_data_chain_length();
 	void set_ccdik_data_chain_length(int p_new_length);
 
-	void ccdik_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath ccdik_joint_get_bone2d_node(int p_joint_idx) const;
-	void ccdik_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
-	int ccdik_joint_get_bone_index(int p_joint_idx) const;
+	void set_ccdik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath get_ccdik_joint_bone2d_node(int p_joint_idx) const;
+	void set_ccdik_joint_bone_index(int p_joint_idx, int p_bone_idx);
+	int get_ccdik_joint_bone_index(int p_joint_idx) const;
 
-	void ccdik_joint_set_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint);
-	bool ccdik_joint_get_rotate_from_joint(int p_joint_idx) const;
-	void ccdik_joint_set_enable_constraint(int p_joint_idx, bool p_constraint);
-	bool ccdik_joint_get_enable_constraint(int p_joint_idx) const;
-	void ccdik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min);
-	float ccdik_joint_get_constraint_angle_min(int p_joint_idx) const;
-	void ccdik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max);
-	float ccdik_joint_get_constraint_angle_max(int p_joint_idx) const;
-	void ccdik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert);
-	bool ccdik_joint_get_constraint_angle_invert(int p_joint_idx) const;
-	void ccdik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
-	bool ccdik_joint_get_constraint_in_localspace(int p_joint_idx) const;
-	void ccdik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
-	bool ccdik_joint_get_editor_draw_gizmo(int p_joint_idx) const;
+	void set_ccdik_joint_rotate_from_joint(int p_joint_idx, bool p_rotate_from_joint);
+	bool get_ccdik_joint_rotate_from_joint(int p_joint_idx) const;
+	void set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_constraint);
+	bool get_ccdik_joint_enable_constraint(int p_joint_idx) const;
+	void set_ccdik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min);
+	float get_ccdik_joint_constraint_angle_min(int p_joint_idx) const;
+	void set_ccdik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max);
+	float get_ccdik_joint_constraint_angle_max(int p_joint_idx) const;
+	void set_ccdik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert);
+	bool get_ccdik_joint_constraint_angle_invert(int p_joint_idx) const;
+	void set_ccdik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
+	bool get_ccdik_joint_constraint_in_localspace(int p_joint_idx) const;
+	void set_ccdik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
+	bool get_ccdik_joint_editor_draw_gizmo(int p_joint_idx) const;
 
 	SkeletonModification2DCCDIK();
 	~SkeletonModification2DCCDIK();
@@ -347,27 +347,27 @@ public:
 	int get_fabrik_data_chain_length();
 	void set_fabrik_data_chain_length(int p_new_length);
 
-	void fabrik_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath fabrik_joint_get_bone2d_node(int p_joint_idx) const;
-	void fabrik_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
-	int fabrik_joint_get_bone_index(int p_joint_idx) const;
+	void set_fabrik_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath get_fabrik_joint_bone2d_node(int p_joint_idx) const;
+	void set_fabrik_joint_bone_index(int p_joint_idx, int p_bone_idx);
+	int get_fabrik_joint_bone_index(int p_joint_idx) const;
 
-	void fabrik_joint_set_magnet_position(int p_joint_idx, Vector2 p_magnet_position);
-	Vector2 fabrik_joint_get_magnet_position(int p_joint_idx) const;
-	void fabrik_joint_set_use_target_rotation(int p_joint_idx, bool p_use_target_rotation);
-	bool fabrik_joint_get_use_target_rotation(int p_joint_idx) const;
-	void fabrik_joint_set_enable_constraint(int p_joint_idx, bool p_constraint);
-	bool fabrik_joint_get_enable_constraint(int p_joint_idx) const;
-	void fabrik_joint_set_constraint_angle_min(int p_joint_idx, float p_angle_min);
-	float fabrik_joint_get_constraint_angle_min(int p_joint_idx) const;
-	void fabrik_joint_set_constraint_angle_max(int p_joint_idx, float p_angle_max);
-	float fabrik_joint_get_constraint_angle_max(int p_joint_idx) const;
-	void fabrik_joint_set_constraint_angle_invert(int p_joint_idx, bool p_invert);
-	bool fabrik_joint_get_constraint_angle_invert(int p_joint_idx) const;
-	void fabrik_joint_set_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
-	bool fabrik_joint_get_constraint_in_localspace(int p_joint_idx) const;
-	void fabrik_joint_set_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
-	bool fabrik_joint_get_editor_draw_gizmo(int p_joint_idx) const;
+	void set_fabrik_joint_magnet_position(int p_joint_idx, Vector2 p_magnet_position);
+	Vector2 get_fabrik_joint_magnet_position(int p_joint_idx) const;
+	void set_fabrik_joint_use_target_rotation(int p_joint_idx, bool p_use_target_rotation);
+	bool get_fabrik_joint_use_target_rotation(int p_joint_idx) const;
+	void set_fabrik_joint_enable_constraint(int p_joint_idx, bool p_constraint);
+	bool get_fabrik_joint_enable_constraint(int p_joint_idx) const;
+	void set_fabrik_joint_constraint_angle_min(int p_joint_idx, float p_angle_min);
+	float get_fabrik_joint_constraint_angle_min(int p_joint_idx) const;
+	void set_fabrik_joint_constraint_angle_max(int p_joint_idx, float p_angle_max);
+	float get_fabrik_joint_constraint_angle_max(int p_joint_idx) const;
+	void set_fabrik_joint_constraint_angle_invert(int p_joint_idx, bool p_invert);
+	bool get_fabrik_joint_constraint_angle_invert(int p_joint_idx) const;
+	void set_fabrik_joint_constraint_in_localspace(int p_joint_idx, bool p_constraint_in_localspace);
+	bool get_fabrik_joint_constraint_in_localspace(int p_joint_idx) const;
+	void set_fabrik_joint_editor_draw_gizmo(int p_joint_idx, bool p_draw_gizmo);
+	bool get_fabrik_joint_editor_draw_gizmo(int p_joint_idx) const;
 
 	SkeletonModification2DFABRIK();
 	~SkeletonModification2DFABRIK();
@@ -453,23 +453,23 @@ public:
 	int get_jiggle_data_chain_length();
 	void set_jiggle_data_chain_length(int p_new_length);
 
-	void jiggle_joint_set_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath jiggle_joint_get_bone2d_node(int p_joint_idx) const;
-	void jiggle_joint_set_bone_index(int p_joint_idx, int p_bone_idx);
-	int jiggle_joint_get_bone_index(int p_joint_idx) const;
+	void set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath get_jiggle_joint_bone2d_node(int p_joint_idx) const;
+	void set_jiggle_joint_bone_index(int p_joint_idx, int p_bone_idx);
+	int get_jiggle_joint_bone_index(int p_joint_idx) const;
 
-	void jiggle_joint_set_override(int p_joint_idx, bool p_override);
-	bool jiggle_joint_get_override(int p_joint_idx) const;
-	void jiggle_joint_set_stiffness(int p_joint_idx, float p_stiffness);
-	float jiggle_joint_get_stiffness(int p_joint_idx) const;
-	void jiggle_joint_set_mass(int p_joint_idx, float p_mass);
-	float jiggle_joint_get_mass(int p_joint_idx) const;
-	void jiggle_joint_set_damping(int p_joint_idx, float p_damping);
-	float jiggle_joint_get_damping(int p_joint_idx) const;
-	void jiggle_joint_set_use_gravity(int p_joint_idx, bool p_use_gravity);
-	bool jiggle_joint_get_use_gravity(int p_joint_idx) const;
-	void jiggle_joint_set_gravity(int p_joint_idx, Vector2 p_gravity);
-	Vector2 jiggle_joint_get_gravity(int p_joint_idx) const;
+	void set_jiggle_joint_override(int p_joint_idx, bool p_override);
+	bool get_jiggle_joint_override(int p_joint_idx) const;
+	void set_jiggle_joint_stiffness(int p_joint_idx, float p_stiffness);
+	float get_jiggle_joint_stiffness(int p_joint_idx) const;
+	void set_jiggle_joint_mass(int p_joint_idx, float p_mass);
+	float get_jiggle_joint_mass(int p_joint_idx) const;
+	void set_jiggle_joint_damping(int p_joint_idx, float p_damping);
+	float get_jiggle_joint_damping(int p_joint_idx) const;
+	void set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
+	bool get_jiggle_joint_use_gravity(int p_joint_idx) const;
+	void set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity);
+	Vector2 get_jiggle_joint_gravity(int p_joint_idx) const;
 
 	SkeletonModification2DJiggle();
 	~SkeletonModification2DJiggle();
@@ -570,8 +570,8 @@ public:
 	int get_physical_bone_chain_length();
 	void set_physical_bone_chain_length(int p_new_length);
 
-	void physical_bone_set_node(int p_joint_idx, const NodePath &p_path);
-	NodePath physical_bone_get_node(int p_joint_idx) const;
+	void set_physical_bone_node(int p_joint_idx, const NodePath &p_path);
+	NodePath get_physical_bone_node(int p_joint_idx) const;
 
 	void fetch_physical_bones();
 	void start_simulation(const TypedArray<StringName> &p_bones);

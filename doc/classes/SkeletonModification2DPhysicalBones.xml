@@ -16,7 +16,7 @@
 				Empties the list of [PhysicalBone2D] nodes and populates it will all [PhysicalBone2D] nodes that are children of the [Skeleton2D].
 			</description>
 		</method>
-		<method name="physical_bone_get_node" qualifiers="const">
+		<method name="get_physical_bone_node" qualifiers="const">
 			<return type="NodePath">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -25,7 +25,7 @@
 				Returns the [PhysicalBone2D] node at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="physical_bone_set_node">
+		<method name="set_physical_bone_node">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
