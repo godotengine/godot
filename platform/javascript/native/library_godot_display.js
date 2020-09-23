@@ -78,7 +78,6 @@ mergeInto(LibraryManager.library, GodotDisplayListeners);
  * deferred callbacks won't be able to access the files.
  */
 const GodotDisplayDragDrop = {
-
 	$GodotDisplayDragDrop__deps: ['$FS', '$GodotFS'],
 	$GodotDisplayDragDrop: {
 		promises: [],

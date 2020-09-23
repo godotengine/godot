@@ -38,7 +38,6 @@ class UPNPDevice : public Reference {
 
 public:
 	enum IGDStatus {
-
 		IGD_STATUS_OK,
 		IGD_STATUS_HTTP_ERROR,
 		IGD_STATUS_HTTP_EMPTY,

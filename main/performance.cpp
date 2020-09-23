@@ -93,7 +93,6 @@ float Performance::_get_node_count() const {
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
-
 		"time/fps",
 		"time/process",
 		"time/physics_process",
@@ -195,7 +194,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
 	// ugly
 	static const MonitorType types[MONITOR_MAX] = {
-
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,

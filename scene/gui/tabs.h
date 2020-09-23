@@ -38,7 +38,6 @@ class Tabs : public Control {
 
 public:
 	enum TabAlign {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
@@ -46,7 +45,6 @@ public:
 	};
 
 	enum CloseButtonDisplayPolicy {
-
 		CLOSE_BUTTON_SHOW_NEVER,
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
 		CLOSE_BUTTON_SHOW_ALWAYS,

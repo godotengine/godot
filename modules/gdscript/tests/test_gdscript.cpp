@@ -303,5 +303,4 @@ void test(TestType p_type) {
 	ScriptServer::finish_languages();
 	memdelete(packed_data);
 }
-
 } // namespace TestGDScript

@@ -114,7 +114,6 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 		const char *p_func_text,
 #endif
 		void (T::*p_method)(P...)) {
-
 	typedef CallableCustomMethodPointer<T, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
 #ifdef DEBUG_METHODS_ENABLED
@@ -170,7 +169,6 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 		const char *p_func_text,
 #endif
 		R (T::*p_method)(P...)) {
-
 	typedef CallableCustomMethodPointerRet<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
 #ifdef DEBUG_METHODS_ENABLED
@@ -226,7 +224,6 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 		const char *p_func_text,
 #endif
 		R (T::*p_method)(P...) const) {
-
 	typedef CallableCustomMethodPointerRetC<T, R, P...> CCMP; // Messes with memnew otherwise.
 	CCMP *ccmp = memnew(CCMP(p_instance, p_method));
 #ifdef DEBUG_METHODS_ENABLED

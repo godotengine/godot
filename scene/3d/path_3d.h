@@ -57,7 +57,6 @@ class PathFollow3D : public Node3D {
 
 public:
 	enum RotationMode {
-
 		ROTATION_NONE,
 		ROTATION_Y,
 		ROTATION_XY,

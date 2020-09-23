@@ -1238,7 +1238,6 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 	}
 #if 0
 	if (p_render_buffers.is_valid() && render_buffers_is_sdfgi_enabled(p_render_buffers)) {
-
 		scene_state.ubo.sdfgi_cascade_count = render_buffers_get_sdfgi_cascade_count(p_render_buffers);
 		scene_state.ubo.sdfgi_probe_axis_size = render_buffers_get_sdfgi_cascade_probe_count(p_render_buffers);
 		scene_state.ubo.sdfgi_cascade_probe_size[0] = scene_state.ubo.sdfgi_probe_axis_size - 1; //float version for performance
@@ -1583,7 +1582,6 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 			} break;
 #if 0
 			case RS::INSTANCE_IMMEDIATE: {
-
 				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
 				ERR_CONTINUE(!immediate);
 

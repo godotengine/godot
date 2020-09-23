@@ -313,7 +313,6 @@ public:
 
 	struct Node {
 		enum Type {
-
 			TYPE_NODE,
 			TYPE_JOINT,
 			TYPE_SKELETON, //this bone is not collada, it's added afterwards as optimization

@@ -49,7 +49,6 @@ protected:
 
 public:
 	enum Flags {
-
 		FLAG_ICON = 1,
 		FLAG_CHECKABLE = 2,
 		FLAG_ID = 4,

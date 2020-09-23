@@ -283,7 +283,6 @@ public:
 		}
 	}
 };
-
 } // namespace gdmono
 
 #define _GDMONO_SCOPE_DOMAIN_(m_mono_domain)                      \

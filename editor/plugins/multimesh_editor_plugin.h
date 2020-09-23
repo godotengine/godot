@@ -63,7 +63,6 @@ class MultiMeshEditor : public Control {
 	SpinBox *populate_amount;
 
 	enum Menu {
-
 		MENU_OPTION_POPULATE
 	};
 

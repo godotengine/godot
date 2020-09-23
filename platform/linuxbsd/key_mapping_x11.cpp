@@ -185,7 +185,6 @@ struct _TranslatePair {
 };
 
 static _TranslatePair _scancode_to_keycode[] = {
-
 	{ KEY_ESCAPE, 0x09 },
 	{ KEY_1, 0x0A },
 	{ KEY_2, 0x0B },
@@ -354,7 +353,6 @@ struct _XTranslateUnicodePair {
 };
 
 enum {
-
 	_KEYSYM_MAX = 759
 };
 
@@ -1160,7 +1158,6 @@ struct _XTranslateUnicodePairReverse {
 };
 
 enum {
-
 	_UNICODE_MAX = 750
 };
 

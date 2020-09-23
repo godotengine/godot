@@ -1974,7 +1974,6 @@ TEST_CASE("[GDNative String] humanize_size") {
 	CHECK(u32scmp(godot_string_get_data(&s), U"4.97 GiB") == 0);
 	godot_string_destroy(&s);
 }
-
 } // namespace TestGDNativeString
 
 #endif // TEST_GDNATIVE_STRING_H

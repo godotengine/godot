@@ -198,7 +198,6 @@ class String {
 
 public:
 	enum {
-
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 

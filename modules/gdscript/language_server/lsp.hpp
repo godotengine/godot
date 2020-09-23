@@ -1781,7 +1781,6 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
-
 } // namespace lsp
 
 #endif

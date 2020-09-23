@@ -246,5 +246,4 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 
 	return suggestions;
 }
-
 } // namespace gdmono

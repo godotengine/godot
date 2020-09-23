@@ -38,7 +38,6 @@ class Label : public Control {
 
 public:
 	enum Align {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
@@ -46,7 +45,6 @@ public:
 	};
 
 	enum VAlign {
-
 		VALIGN_TOP,
 		VALIGN_CENTER,
 		VALIGN_BOTTOM,

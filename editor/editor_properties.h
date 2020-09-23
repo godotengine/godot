@@ -595,7 +595,6 @@ class EditorPropertyResource : public EditorProperty {
 	GDCLASS(EditorPropertyResource, EditorProperty);
 
 	enum MenuOption {
-
 		OBJ_MENU_LOAD = 0,
 		OBJ_MENU_EDIT = 1,
 		OBJ_MENU_CLEAR = 2,

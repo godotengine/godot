@@ -1536,5 +1536,4 @@ M_SignalInfo signal_info_to_managed(const Signal &p_signal) {
 	MonoObject *name_string_name_managed = GDMonoUtils::create_managed_from(p_signal.get_name());
 	return { owner_managed, name_string_name_managed };
 }
-
 } // namespace GDMonoMarshal

@@ -41,7 +41,6 @@
 
 class RenderingServerRaster : public RenderingServer {
 	enum {
-
 		MAX_INSTANCE_CULL = 8192,
 		MAX_INSTANCE_LIGHTS = 4,
 		LIGHT_CACHE_DIRTY = -1,

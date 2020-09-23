@@ -32,7 +32,6 @@ namespace {
 static const int config_compressed_size = %d;
 static const int config_uncompressed_size = %d;
 static const unsigned char config_compressed_data[] = { %s };
-
 } // namespace
 
 String get_godot_android_mono_config() {

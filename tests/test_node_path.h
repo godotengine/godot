@@ -167,7 +167,6 @@ TEST_CASE("[NodePath] Empty path") {
 			node_path_empty.is_empty(),
 			"The node path should be considered empty.");
 }
-
 } // namespace TestNodePath
 
 #endif // TEST_NODE_PATH_H

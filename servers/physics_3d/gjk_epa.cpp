@@ -102,7 +102,6 @@ typedef unsigned char	U1;
 
 // MinkowskiDiff
 struct	MinkowskiDiff {
-
 	const Shape3DSW* m_shapes[2];
 
 	Transform transform_A;
@@ -127,7 +126,6 @@ struct	MinkowskiDiff {
 			return ( Support1 ( d ) );
 		} else {
 			return ( Support0 ( d ) );
-
 }
 	}
 };
@@ -281,7 +279,6 @@ struct	GJK
 						}
 					}
 					if(mask==15) { m_status=eStatus::Inside;
-
 }
 				}
 				else
@@ -312,12 +309,10 @@ struct	GJK
 						axis[i]=1;
 						appendvertice(*m_simplex, axis);
 						if(EncloseOrigin()) {	return(true);
-
 }
 						removevertice(*m_simplex);
 						appendvertice(*m_simplex,-axis);
 						if(EncloseOrigin()) {	return(true);
-
 }
 						removevertice(*m_simplex);
 					}
@@ -335,12 +330,10 @@ struct	GJK
 						{
 							appendvertice(*m_simplex, p);
 							if(EncloseOrigin()) {	return(true);
-
 }
 							removevertice(*m_simplex);
 							appendvertice(*m_simplex,-p);
 							if(EncloseOrigin()) {	return(true);
-
 }
 							removevertice(*m_simplex);
 						}
@@ -355,12 +348,10 @@ struct	GJK
 					{
 						appendvertice(*m_simplex,n);
 						if(EncloseOrigin()) {	return(true);
-
 }
 						removevertice(*m_simplex);
 						appendvertice(*m_simplex,-n);
 						if(EncloseOrigin()) {	return(true);
-
 }
 						removevertice(*m_simplex);
 					}
@@ -372,7 +363,6 @@ struct	GJK
 						m_simplex->c[1]->w-m_simplex->c[3]->w,
 						m_simplex->c[2]->w-m_simplex->c[3]->w))>0) {
 						return(true);
-
 }
 				}
 				break;
@@ -580,7 +570,6 @@ struct	GJK
 				face->l[0]	=	nullptr;
 				face->l[1]	=	list.root;
 				if(list.root) { list.root->l[0]=face;
-
 }
 				list.root	=	face;
 				++list.count;
@@ -588,13 +577,10 @@ struct	GJK
 			static inline void		remove(sList& list,sFace* face)
 			{
 				if(face->l[1]) { face->l[1]->l[0]=face->l[0];
-
 }
 				if(face->l[0]) { face->l[0]->l[1]=face->l[1];
-
 }
 				if(face==list.root) { list.root=face->l[1];
-
 }
 				--list.count;
 			}
@@ -616,7 +602,6 @@ struct	GJK
 				GJK::sSimplex&	simplex=*gjk.m_simplex;
 				if((simplex.rank>1)&&gjk.EncloseOrigin())
 				{
-
 					/* Clean up				*/
 					while(m_hull.root)
 					{
@@ -677,7 +662,6 @@ struct	GJK
 										append(m_stock,best);
 										best=findbest();
 										if(best->p>=outer.p) { outer=*best;
-
 }
 									} else { m_status=eStatus::InvalidHull;break; }
 								} else { m_status=eStatus::AccuraryReached;break; }
@@ -711,7 +695,6 @@ struct	GJK
 					m_normal	=	m_normal/nl;
 				} else {
 					m_normal	=	Vector3(1,0,0);
-
 }
 				m_depth	=	0;
 				m_result.rank=1;
@@ -747,10 +730,8 @@ struct	GJK
 						{
 							return(face);
 						} else { m_status=eStatus::NonConvex;
-
 }
 					} else { m_status=eStatus::Degenerated;
-
 }
 					remove(m_hull,face);
 					append(m_stock,face);
@@ -793,7 +774,6 @@ struct	GJK
 						{
 							bind(nf,0,f,e);
 							if(horizon.cf) { bind(horizon.cf,1,nf,2); } else { horizon.ff=nf;
-
 }
 							horizon.cf=nf;
 							++horizon.nf;
@@ -917,7 +897,6 @@ bool Penetration(	const Shape3DSW*	shape0,
 				results.distance		=	-epa.m_depth;
 				return(true);
 			} else { results.status=sResults::EPA_Failed;
-
 }
 		}
 		break;
@@ -948,8 +927,6 @@ bool Penetration(	const Shape3DSW*	shape0,
 #undef EPA_FALLBACK
 #undef EPA_PLANE_EPS
 #undef EPA_INSIDE_EPS
-
-
 } // end of namespace
 
 /* clang-format on */

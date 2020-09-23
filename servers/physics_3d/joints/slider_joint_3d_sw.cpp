@@ -105,7 +105,6 @@ void SliderJoint3DSW::initParams() {
 	m_targetAngMotorVelocity = real_t(0.);
 	m_maxAngMotorForce = real_t(0.);
 	m_accumulatedAngMotorImpulse = real_t(0.0);
-
 } // SliderJointSW::initParams()
 
 //-----------------------------------------------------------------------------
