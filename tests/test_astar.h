@@ -362,7 +362,6 @@ TEST_CASE("[Stress][AStar] Find paths") {
 		CHECK_MESSAGE(match, "Found all paths.");
 	}
 }
-
 } // namespace TestAStar
 
 #endif // TEST_ASTAR_H

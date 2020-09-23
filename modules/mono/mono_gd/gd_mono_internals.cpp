@@ -127,5 +127,4 @@ void unhandled_exception(MonoException *p_exc) {
 #endif
 	}
 }
-
 } // namespace GDMonoInternals

@@ -3733,13 +3733,11 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 }
 #if 0
 bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
-
 	VkDescriptorSetLayoutBinding layout_binding;
 	UniformInfo info;
 
 	switch (reflection.getType()->getBasicType()) {
 		case glslang::EbtSampler: {
-
 			//print_line("DEBUG: IsSampler");
 			if (reflection.getType()->getSampler().dim == glslang::EsdBuffer) {
 				//texture buffers
@@ -3837,13 +3835,10 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 		} break;
 		/*case glslang::EbtReference: {
-
 		} break;*/
 		/*case glslang::EbtAtomicUint: {
-
 		} break;*/
 		default: {
-
 			if (reflection.getType()->getQualifier().hasOffset() || reflection.name.find(".") != std::string::npos) {
 				//member of uniform block?
 				return true;
@@ -6837,7 +6832,6 @@ void RenderingDeviceVulkan::full_barrier() {
 
 #if 0
 void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_framebuffer, ID *p_draw_lists, uint32_t p_draw_list_count, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Variant> &p_clear_colors) {
-
 	VkCommandBuffer frame_cmdbuf = frames[frame].frame_buffer;
 	ERR_FAIL_COND(!frame_cmdbuf);
 
@@ -6866,7 +6860,6 @@ void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_frame
 
 	ID screen_format = screen_get_framebuffer_format();
 	{
-
 		VkCommandBuffer *command_buffers = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer) * p_draw_list_count);
 		uint32_t command_buffer_count = 0;
 
@@ -6890,7 +6883,6 @@ void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_frame
 	}
 
 	vkCmdEndRenderPass(frame_cmdbuf);
-
 }
 #endif
 

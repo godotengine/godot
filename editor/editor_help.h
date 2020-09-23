@@ -91,7 +91,6 @@ class EditorHelp : public VBoxContainer {
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
-
 		PAGE_CLASS_LIST,
 		PAGE_CLASS_DESC,
 		PAGE_CLASS_PREV,

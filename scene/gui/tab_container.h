@@ -38,7 +38,6 @@ class TabContainer : public Container {
 
 public:
 	enum TabAlign {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT

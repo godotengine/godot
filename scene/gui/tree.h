@@ -44,7 +44,6 @@ class TreeItem : public Object {
 
 public:
 	enum TreeCellMode {
-
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range

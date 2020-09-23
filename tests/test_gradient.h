@@ -146,7 +146,6 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 			gradient->get_color_at_offset(0.1).is_equal_approx(Color(1, 0, 0)),
 			"Custom out-of-order gradient should return the expected interpolated value at offset 0.1 after removing point at index 0.");
 }
-
 } // namespace TestGradient
 
 #endif // TEST_GRADIENT_H

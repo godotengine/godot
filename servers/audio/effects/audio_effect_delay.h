@@ -62,7 +62,6 @@ class AudioEffectDelay : public AudioEffect {
 
 	friend class AudioEffectDelayInstance;
 	enum {
-
 		MAX_DELAY_MS = 3000,
 		MAX_TAPS = 2
 	};

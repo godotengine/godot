@@ -357,5 +357,4 @@ MainLoop *test() {
 
 	return nullptr;
 }
-
 } // namespace TestShaderLang

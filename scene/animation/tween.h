@@ -69,7 +69,6 @@ public:
 
 private:
 	enum InterpolateType {
-
 		INTER_PROPERTY,
 		INTER_METHOD,
 		FOLLOW_PROPERTY,

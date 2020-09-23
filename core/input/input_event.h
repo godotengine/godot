@@ -60,7 +60,6 @@ enum ButtonList {
 };
 
 enum JoyButtonList {
-
 	JOY_INVALID_BUTTON = -1,
 
 	// SDL Buttons
@@ -112,7 +111,6 @@ enum JoyButtonList {
 };
 
 enum JoyAxisList {
-
 	JOY_INVALID_AXIS = -1,
 
 	// SDL Axes

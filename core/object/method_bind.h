@@ -34,7 +34,6 @@
 #include "core/variant/binder_common.h"
 
 enum MethodFlags {
-
 	METHOD_FLAG_NORMAL = 1,
 	METHOD_FLAG_EDITOR = 2,
 	METHOD_FLAG_NOSCRIPT = 4,

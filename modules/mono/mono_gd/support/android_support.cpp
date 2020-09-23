@@ -387,7 +387,6 @@ void cleanup() {
 		certStore = nullptr;
 	}
 }
-
 } // namespace support
 } // namespace android
 } // namespace gdmono

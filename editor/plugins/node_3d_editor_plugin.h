@@ -180,7 +180,6 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportRotationControl;
 	enum {
-
 		VIEW_TOP,
 		VIEW_BOTTOM,
 		VIEW_LEFT,
@@ -554,7 +553,6 @@ public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
 
 	enum ToolMode {
-
 		TOOL_MODE_SELECT,
 		TOOL_MODE_MOVE,
 		TOOL_MODE_ROTATE,
@@ -568,7 +566,6 @@ public:
 	};
 
 	enum ToolOptions {
-
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_USE_SNAP,
 		TOOL_OPT_OVERRIDE_CAMERA,
@@ -634,7 +631,6 @@ private:
 	} gizmo;
 
 	enum MenuOption {
-
 		MENU_TOOL_SELECT,
 		MENU_TOOL_MOVE,
 		MENU_TOOL_ROTATE,

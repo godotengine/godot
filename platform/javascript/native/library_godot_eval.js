@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 const GodotEval = {
-
 	godot_js_eval__deps: ['$GodotOS'],
 	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
 		const js_code = UTF8ToString(p_js);
@@ -47,7 +46,6 @@ const GodotEval = {
 		}
 
 		switch (typeof eval_ret) {
-
 			case 'boolean':
 				setValue(p_union_ptr, eval_ret, 'i32');
 				return 1; // BOOL

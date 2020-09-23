@@ -2378,7 +2378,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		//keyboard focus
 		//if (from && p_event->is_pressed() && !p_event->get_alt() && !p_event->get_metakey() && !p_event->key->get_command()) {
-
 		Ref<InputEventKey> k = p_event;
 		//need to check for mods, otherwise any combination of alt/ctrl/shift+<up/down/left/righ/etc> is handled here when it shouldn't be.
 		bool mods = k.is_valid() && (k->get_control() || k->get_alt() || k->get_shift() || k->get_metakey());
@@ -3135,7 +3134,6 @@ Variant Viewport::gui_get_drag_data() const {
 
 String Viewport::get_configuration_warning() const {
 	/*if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
-
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 

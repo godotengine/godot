@@ -203,5 +203,4 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 
 	return OK;
 }
-
 } // namespace PNGDriverCommon

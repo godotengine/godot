@@ -149,7 +149,6 @@ protected:
 
 public:
 	enum {
-
 		NOTIFICATION_UPDATE_SKELETON = 50
 	};
 

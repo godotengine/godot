@@ -64,7 +64,6 @@ public:
 	template <typename F>
 	ScopeExit<F> operator+(F p_exit_func) { return ScopeExit<F>(p_exit_func); }
 };
-
 } // namespace gdmono
 
 #define SCOPE_EXIT \

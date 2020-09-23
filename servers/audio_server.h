@@ -122,7 +122,6 @@ public:
 
 class AudioDriverManager {
 	enum {
-
 		MAX_DRIVERS = 10
 	};
 

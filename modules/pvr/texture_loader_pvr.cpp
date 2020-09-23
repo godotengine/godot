@@ -38,7 +38,6 @@
 static void _pvrtc_decompress(Image *p_img);
 
 enum PVRFLags {
-
 	PVR_HAS_MIPMAPS = 0x00000100,
 	PVR_TWIDDLED = 0x00000200,
 	PVR_NORMAL_MAP = 0x00000400,
@@ -48,7 +47,6 @@ enum PVRFLags {
 	PVR_VOLUME_TEXTURES = 0x00004000,
 	PVR_HAS_ALPHA = 0x00008000,
 	PVR_VFLIP = 0x00010000
-
 };
 
 RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {

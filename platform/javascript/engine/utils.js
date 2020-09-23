@@ -1,5 +1,4 @@
 var Utils = {
-
 	createLocateRewrite: function(execName) {
 		function rw(path) {
 			if (path.endsWith('.worker.js')) {
@@ -38,7 +37,6 @@ var Utils = {
 	},
 
 	isWebGLAvailable: function(majorVersion = 1) {
-
 		var testContext = false;
 		try {
 			var testCanvas = document.createElement('canvas');

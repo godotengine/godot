@@ -141,5 +141,4 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 
 	return OK;
 }
-
 } // namespace GodotSharpExport

@@ -41,7 +41,6 @@ class HTTPClient : public Reference {
 
 public:
 	enum ResponseCode {
-
 		// 1xx informational
 		RESPONSE_CONTINUE = 100,
 		RESPONSE_SWITCHING_PROTOCOLS = 101,
@@ -116,7 +115,6 @@ public:
 	};
 
 	enum Method {
-
 		METHOD_GET,
 		METHOD_HEAD,
 		METHOD_POST,
@@ -131,7 +129,6 @@ public:
 	};
 
 	enum Status {
-
 		STATUS_DISCONNECTED,
 		STATUS_RESOLVING, // Resolving hostname (if passed a hostname)
 		STATUS_CANT_RESOLVE,
@@ -150,7 +147,6 @@ private:
 	static const int HOST_MIN_LEN = 4;
 
 	enum Port {
-
 		PORT_HTTP = 80,
 		PORT_HTTPS = 443,
 

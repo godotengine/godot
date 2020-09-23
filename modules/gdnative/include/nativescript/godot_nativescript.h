@@ -85,7 +85,6 @@ typedef enum {
 } godot_nativescript_property_hint;
 
 typedef enum {
-
 	GODOT_PROPERTY_USAGE_STORAGE = 1,
 	GODOT_PROPERTY_USAGE_EDITOR = 2,
 	GODOT_PROPERTY_USAGE_NETWORK = 4,

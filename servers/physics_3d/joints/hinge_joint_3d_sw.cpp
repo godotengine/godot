@@ -365,7 +365,6 @@ void HingeJoint3DSW::solve(real_t p_step) {
 void	HingeJointSW::updateRHS(real_t	timeStep)
 {
 	(void)timeStep;
-
 }
 
 */

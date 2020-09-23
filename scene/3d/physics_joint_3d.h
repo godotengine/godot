@@ -203,7 +203,6 @@ class ConeTwistJoint3D : public Joint3D {
 
 public:
 	enum Param {
-
 		PARAM_SWING_SPAN,
 		PARAM_TWIST_SPAN,
 		PARAM_BIAS,
@@ -237,7 +236,6 @@ class Generic6DOFJoint3D : public Joint3D {
 
 public:
 	enum Param {
-
 		PARAM_LINEAR_LOWER_LIMIT = PhysicsServer3D::G6DOF_JOINT_LINEAR_LOWER_LIMIT,
 		PARAM_LINEAR_UPPER_LIMIT = PhysicsServer3D::G6DOF_JOINT_LINEAR_UPPER_LIMIT,
 		PARAM_LINEAR_LIMIT_SOFTNESS = PhysicsServer3D::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS,

@@ -32,7 +32,6 @@ var GodotRTCDataChannel = {
 	// Our socket implementation that forwards events to C++.
 	$GodotRTCDataChannel__deps: ['$IDHandler', '$GodotOS'],
 	$GodotRTCDataChannel: {
-
 		connect: function(p_id, p_on_open, p_on_message, p_on_error, p_on_close) {
 			const ref = IDHandler.get(p_id);
 			if (!ref) {
@@ -201,7 +200,6 @@ autoAddDeps(GodotRTCDataChannel, '$GodotRTCDataChannel');
 mergeInto(LibraryManager.library, GodotRTCDataChannel);
 
 var GodotRTCPeerConnection = {
-
 	$GodotRTCPeerConnection__deps: ['$IDHandler', '$GodotOS', '$GodotRTCDataChannel'],
 	$GodotRTCPeerConnection: {
 		onstatechange: function(p_id, p_conn, callback, event) {

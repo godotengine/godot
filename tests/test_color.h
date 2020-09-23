@@ -202,7 +202,6 @@ TEST_CASE("[Color] Manipulation methods") {
 			red.lerp(yellow, 0.5).is_equal_approx(Color(1, 0.5, 0, 0.5)),
 			"Red interpolated with yellow should be orange (with interpolated alpha).");
 }
-
 } // namespace TestColor
 
 #endif // TEST_COLOR_H

@@ -57,7 +57,6 @@ struct SortNetData {
 
 class ScriptServer {
 	enum {
-
 		MAX_LANGUAGES = 16
 	};
 

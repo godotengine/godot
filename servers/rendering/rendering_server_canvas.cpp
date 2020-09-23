@@ -582,7 +582,6 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 		}
 
 		for (int i = 0; i < p_points.size(); i++) {
-
 			Vector2 t;
 			if (i == p_points.size() - 1) {
 				t = prev_t;
@@ -608,7 +607,6 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
 
 			if (pline->triangle_colors.size() > 1) {
-
 				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
 				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
 			}

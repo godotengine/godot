@@ -56,7 +56,6 @@ String abspath(const String &p_path);
 String realpath(const String &p_path);
 
 String relative_to(const String &p_path, const String &p_relative_to);
-
 } // namespace path
 
 #endif // PATH_UTILS_H

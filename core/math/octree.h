@@ -379,7 +379,6 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 
 	if (p_octant->aabb.size.x / OCTREE_DIVISOR < element_size) {
 		//if (p_octant->aabb.size.x*0.5 < element_size) {
-
 		/* at smallest possible size for the element  */
 		typename Element::OctantOwner owner;
 		owner.octant = p_octant;

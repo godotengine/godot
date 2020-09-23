@@ -201,7 +201,6 @@ MonoDomain *gd_initialize_mono_runtime() {
 	return mono_jit_init_version("GodotEngine.RootDomain", runtime_version);
 }
 #endif
-
 } // namespace
 
 void GDMono::add_mono_shared_libs_dir_to_path() {

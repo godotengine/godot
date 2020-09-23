@@ -31,7 +31,6 @@
 #include "ip_address.h"
 /*
 IP_Address::operator Variant() const {
-
 	return operator String();
 }*/
 
