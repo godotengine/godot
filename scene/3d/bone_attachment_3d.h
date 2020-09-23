@@ -71,6 +71,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	String get_configuration_warning() const override;
+
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
 

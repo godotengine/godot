@@ -12,7 +12,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="ccdik_joint_get_bone_index" qualifiers="const">
+		<method name="get_ccdik_joint_bone_index" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -21,7 +21,7 @@
 				Returns the bone index of the bone assigned to the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_get_bone_name" qualifiers="const">
+		<method name="get_ccdik_joint_bone_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -30,7 +30,7 @@
 				Returns the name of the bone that is assigned to the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_get_ccdik_axis" qualifiers="const">
+		<method name="get_ccdik_joint_ccdik_axis" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -39,7 +39,7 @@
 				Returns the integer representing the joint axis of the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_get_enable_joint_constraint" qualifiers="const">
+		<method name="get_ccdik_joint_enable_joint_constraint" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -48,7 +48,7 @@
 				Enables angle constraints to the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_get_joint_constraint_angle_max" qualifiers="const">
+		<method name="get_ccdik_joint_constraint_angle_max" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -57,7 +57,7 @@
 				Returns the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle is in degrees!
 			</description>
 		</method>
-		<method name="ccdik_joint_get_joint_constraint_angle_min" qualifiers="const">
+		<method name="get_ccdik_joint_constraint_angle_min" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -66,16 +66,16 @@
 				Returns the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle is in degrees!
 			</description>
 		</method>
-		<method name="ccdik_joint_get_joint_constraint_invert" qualifiers="const">
+		<method name="get_ccdik_joint_constraint_invert" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
 			</argument>
 			<description>
-				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method ccdik_joint_set_joint_constraint_invert] for details.
+				Returns whether the CCDIK joint at [code]joint_idx[/code] uses an inverted joint constraint. See [method set_ccdik_joint_constraint_invert] for details.
 			</description>
 		</method>
-		<method name="ccdik_joint_set_bone_index">
+		<method name="set_ccdik_joint_bone_index">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -86,7 +86,7 @@
 				Sets the bone index, [code]bone_index[/code], of the CCDIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_name[/code] of the CCDIK joint based on data provided by the linked skeleton.
 			</description>
 		</method>
-		<method name="ccdik_joint_set_bone_name">
+		<method name="set_ccdik_joint_bone_name">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -97,7 +97,7 @@
 				Sets the bone name, [code]bone_name[/code], of the CCDIK joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_index[/code] of the CCDIK joint based on data provided by the linked skeleton.
 			</description>
 		</method>
-		<method name="ccdik_joint_set_ccdik_axis">
+		<method name="set_ccdik_joint_ccdik_axis">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -108,7 +108,7 @@
 				Sets the joint axis of the CCDIK joint at [code]joint_idx[/code] to the passed-in joint axis, [code]axis[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_set_enable_joint_constraint">
+		<method name="set_ccdik_joint_enable_joint_constraint">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -119,7 +119,7 @@
 				Sets whether joint constraints are enabled for the CCDIK joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="ccdik_joint_set_joint_constraint_angle_degrees_max">
+		<method name="set_ccdik_joint_constraint_angle_degrees_max">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -130,7 +130,7 @@
 				Sets the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in degrees!
 			</description>
 		</method>
-		<method name="ccdik_joint_set_joint_constraint_angle_degrees_min">
+		<method name="set_ccdik_joint_constraint_angle_degrees_min">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -141,7 +141,7 @@
 				Sets the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in degrees!
 			</description>
 		</method>
-		<method name="ccdik_joint_set_joint_constraint_angle_max">
+		<method name="set_ccdik_joint_constraint_angle_max">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -152,7 +152,7 @@
 				Sets the maximum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in radians!
 			</description>
 		</method>
-		<method name="ccdik_joint_set_joint_constraint_angle_min">
+		<method name="set_ccdik_joint_constraint_angle_min">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -163,7 +163,7 @@
 				Sets the minimum angle constraint for the joint at [code]joint_idx[/code]. [b]Note:[/b] This angle must be in radians!
 			</description>
 		</method>
-		<method name="ccdik_joint_set_joint_constraint_invert">
+		<method name="set_ccdik_joint_constraint_invert">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
