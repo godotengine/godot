@@ -73,7 +73,7 @@ void BitArray::store_bits(int p_bit_offset, uint64_t p_value, int p_bits) {
 		const int bits_to_write = MIN(bits, 8 - bit_offset % 8);
 		const int bits_to_jump = bit_offset % 8;
 		const int bits_to_skip = 8 - (bits_to_write + bits_to_jump);
-		const int byte_offset = Math::floor(static_cast<float>(bit_offset) / 8.0);
+		const int byte_offset = bit_offset / 8;
 
 		// Clear the bits that we have to write
 		//const uint8_t byte_clear = ~(((0xFF >> bits_to_jump) << (bits_to_jump + bits_to_skip)) >> bits_to_skip);
@@ -108,7 +108,7 @@ uint64_t BitArray::read_bits(int p_bit_offset, int p_bits) const {
 		const int bits_to_read = MIN(bits, 8 - bit_offset % 8);
 		const int bits_to_jump = bit_offset % 8;
 		const int bits_to_skip = 8 - (bits_to_read + bits_to_jump);
-		const int byte_offset = Math::floor(static_cast<float>(bit_offset) / 8.0);
+		const int byte_offset = bit_offset / 8;
 
 		uint8_t byte_mask = 0xFF >> bits_to_jump;
 		byte_mask = byte_mask << (bits_to_skip + bits_to_jump);
@@ -125,7 +125,7 @@ uint64_t BitArray::read_bits(int p_bit_offset, int p_bits) const {
 }
 
 void BitArray::zero() {
-	for (int i = 0; i < bytes.size(); i += 1) {
-		bytes.write[i] = 0;
+	if (bytes.size() > 0) {
+		memset(bytes.ptrw(), 0, sizeof(uint8_t) * bytes.size());
 	}
 }
