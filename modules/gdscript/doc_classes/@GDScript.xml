@@ -818,6 +818,7 @@
 				a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
 				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
@@ -891,6 +892,7 @@
 				[codeblock]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
 				[/codeblock]
+				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning">
