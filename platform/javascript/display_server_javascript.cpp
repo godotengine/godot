@@ -75,7 +75,7 @@ bool DisplayServerJavaScript::check_size_force_redraw() {
 	if (last_width != canvas_width || last_height != canvas_height) {
 		last_width = canvas_width;
 		last_height = canvas_height;
-		// Update the framebuffer size and for redraw.
+		// Update the framebuffer size for redraw.
 		emscripten_set_canvas_element_size(DisplayServerJavaScript::canvas_id, canvas_width, canvas_height);
 		return true;
 	}
@@ -892,15 +892,18 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #define SET_EM_CALLBACK(target, ev, cb)                                  \
 	result = emscripten_set_##ev##_callback(target, nullptr, true, &cb); \
 	EM_CHECK(ev)
+#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
+	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
+	EM_CHECK(ev)
 #define SET_EM_CALLBACK_NOTARGET(ev, cb)                         \
 	result = emscripten_set_##ev##_callback(nullptr, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
+	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
 	SET_EM_CALLBACK(canvas_id, wheel, wheel_callback)
 	SET_EM_CALLBACK(canvas_id, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(canvas_id, touchmove, touchmove_callback)
@@ -918,27 +921,25 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 
 	/* clang-format off */
 	EM_ASM_ARGS({
-		Module.listeners = {};
+		// Bind native event listeners.
+		// Module.listeners, and Module.drop_handler are defined in native/utils.js
 		const canvas = Module['canvas'];
 		const send_window_event = cwrap('send_window_event', null, ['number']);
 		const notifications = arguments;
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
-			Module.listeners[event] = send_window_event.bind(null, notifications[index]);
-			canvas.addEventListener(event, Module.listeners[event]);
+			Module.listeners.add(canvas, event, send_window_event.bind(null, notifications[index]), true);
 		});
 		// Clipboard
 		const update_clipboard = cwrap('update_clipboard', null, ['string']);
-		Module.listeners['paste'] = function(evt) {
+		Module.listeners.add(window, 'paste', function(evt) {
 			update_clipboard(evt.clipboardData.getData('text'));
-		};
-		window.addEventListener('paste', Module.listeners['paste'], false);
-		Module.listeners['dragover'] = function(ev) {
+		}, false);
+		// Drag an drop
+		Module.listeners.add(canvas, 'dragover', function(ev) {
 			// Prevent default behavior (which would try to open the file(s))
 			ev.preventDefault();
-		};
-		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
-		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
-		canvas.addEventListener('drop', Module.listeners['drop'], false);
+		}, false);
+		Module.listeners.add(canvas, 'drop', Module.drop_handler, false);
 	},
 		WINDOW_EVENT_MOUSE_ENTER,
 		WINDOW_EVENT_MOUSE_EXIT,
@@ -952,14 +953,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 
 DisplayServerJavaScript::~DisplayServerJavaScript() {
 	EM_ASM({
-		Object.entries(Module.listeners).forEach(function(kv) {
-			if (kv[0] == 'paste') {
-				window.removeEventListener(kv[0], kv[1], true);
-			} else {
-				Module['canvas'].removeEventListener(kv[0], kv[1]);
-			}
-		});
-		Module.listeners = {};
+		Module.listeners.clear();
 	});
 	//emscripten_webgl_commit_frame();
 	//emscripten_webgl_destroy_context(webgl_ctx);
@@ -1109,7 +1103,11 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
 	last_width = p_size.x;
 	last_height = p_size.y;
-	emscripten_set_canvas_element_size(canvas_id, p_size.x, p_size.y);
+	double scale = EM_ASM_DOUBLE({
+		return window.devicePixelRatio || 1;
+	});
+	emscripten_set_canvas_element_size(canvas_id, p_size.x * scale, p_size.y * scale);
+	emscripten_set_element_css_size(canvas_id, p_size.x, p_size.y);
 }
 
 Size2i DisplayServerJavaScript::window_get_size(WindowID p_window) const {

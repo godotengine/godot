@@ -39,6 +39,17 @@
 static OS_JavaScript *os = nullptr;
 static uint64_t target_ticks = 0;
 
+extern "C" EMSCRIPTEN_KEEPALIVE void _request_quit_callback(char *p_filev[], int p_filec) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (ds) {
+		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
+		Variant *eventp = &event;
+		Variant ret;
+		Callable::CallError ce;
+		ds->window_event_callback.call((const Variant **)&eventp, 1, ret, ce);
+	}
+}
+
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
 	Main::cleanup();
@@ -77,12 +88,27 @@ void main_loop_callback() {
 		/* clang-format on */
 		os->get_main_loop()->finish();
 		os->finalize_async(); // Will add all the async finish functions.
+		/* clang-format off */
 		EM_ASM({
 			Promise.all(Module.async_finish).then(function() {
 				Module.async_finish = [];
+				return new Promise(function(accept, reject) {
+					if (!Module.idbfs) {
+						accept();
+						return;
+					}
+					FS.syncfs(function(error) {
+						if (error) {
+							err('Failed to save IDB file system: ' + error.message);
+						}
+						accept();
+					});
+				});
+			}).then(function() {
 				ccall("cleanup_after_sync", null, []);
 			});
 		});
+		/* clang-format on */
 	}
 }
 
@@ -90,31 +116,8 @@ extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
 	emscripten_set_main_loop(exit_callback, -1, false);
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
-	String idbfs_err = String::utf8(p_idbfs_err);
-	if (!idbfs_err.empty()) {
-		print_line("IndexedDB not available: " + idbfs_err);
-	}
-	os->set_idb_available(idbfs_err.empty());
-	// TODO: Check error return value.
-	Main::setup2(); // Manual second phase.
-	// Ease up compatibility.
-	ResourceLoader::set_abort_on_missing_resources(false);
-	Main::start();
-	os->get_main_loop()->init();
-	// Immediately run the first iteration.
-	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
-	main_loop_callback();
-	emscripten_resume_main_loop();
-}
-
+/// When calling main, it is assumed FS is setup and synced.
 int main(int argc, char *argv[]) {
-	// Create and mount userfs immediately.
-	EM_ASM({
-		FS.mkdir('/userfs');
-		FS.mount(IDBFS, {}, '/userfs');
-	});
-
 	// Configure locale.
 	char locale_ptr[16];
 	/* clang-format off */
@@ -132,26 +135,30 @@ int main(int argc, char *argv[]) {
 	/* clang-format on */
 
 	os = new OS_JavaScript();
+	os->set_idb_available((bool)EM_ASM_INT({ return Module.idbfs }));
 
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
 
-	Main::setup(argv[0], argc - 1, &argv[1], false);
-	emscripten_set_main_loop(main_loop_callback, -1, false);
-	emscripten_pause_main_loop(); // Will need to wait for FS sync.
+	Main::setup(argv[0], argc - 1, &argv[1]);
 
-	// Sync from persistent state into memory and then
-	// run the 'main_after_fs_sync' function.
+	// Ease up compatibility.
+	ResourceLoader::set_abort_on_missing_resources(false);
+
+	Main::start();
+	os->get_main_loop()->init();
+	// Expose method for requesting quit.
 	/* clang-format off */
 	EM_ASM({
-		FS.syncfs(true, function(err) {
-			requestAnimationFrame(function() {
-				ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""]);
-			});
-		});
+		Module['request_quit'] = function() {
+			ccall("_request_quit_callback", null, []);
+		};
 	});
 	/* clang-format on */
+	emscripten_set_main_loop(main_loop_callback, -1, false);
+	// Immediately run the first iteration.
+	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
+	main_loop_callback();
 
 	return 0;
-	// Continued async in main_after_fs_sync() from the syncfs() callback.
 }

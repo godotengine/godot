@@ -44,57 +44,52 @@ class OS_JavaScript : public OS_Unix {
 
 	bool finalizing = false;
 	bool idb_available = false;
-	int64_t sync_wait_time = -1;
-	int64_t last_sync_check_time = -1;
+	bool idb_needs_sync = false;
 
 	static void main_loop_callback();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
 
 protected:
-	virtual void initialize();
+	void initialize() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop);
-	virtual void delete_main_loop();
+	void set_main_loop(MainLoop *p_main_loop) override;
+	void delete_main_loop() override;
 
-	virtual void finalize();
+	void finalize() override;
 
-	virtual bool _check_internal_feature_support(const String &p_feature);
+	bool _check_internal_feature_support(const String &p_feature) override;
 
 public:
+	bool idb_is_syncing = false;
+
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
-	virtual void initialize_joypads();
+	void initialize_joypads() override;
 
-	virtual bool has_touchscreen_ui_hint() const;
-
-	virtual int get_audio_driver_count() const;
-	virtual const char *get_audio_driver_name(int p_driver) const;
-
-	virtual MainLoop *get_main_loop() const;
+	MainLoop *get_main_loop() const override;
 	void finalize_async();
 	bool main_loop_iterate();
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
-	virtual Error kill(const ProcessID &p_pid);
-	virtual int get_process_id() const;
+	Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr) override;
+	Error kill(const ProcessID &p_pid) override;
+	int get_process_id() const override;
 
-	String get_executable_path() const;
-	virtual Error shell_open(String p_uri);
-	virtual String get_name() const;
+	String get_executable_path() const override;
+	Error shell_open(String p_uri) override;
+	String get_name() const override;
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in javascript_main.cpp loop callback instead.
-	virtual void add_frame_delay(bool p_can_draw) {}
-	virtual bool can_draw() const;
+	void add_frame_delay(bool p_can_draw) override {}
 
-	virtual String get_cache_path() const;
-	virtual String get_config_path() const;
-	virtual String get_data_path() const;
-	virtual String get_user_data_dir() const;
+	String get_cache_path() const override;
+	String get_config_path() const override;
+	String get_data_path() const override;
+	String get_user_data_dir() const override;
 
 	void set_idb_available(bool p_idb_available);
-	virtual bool is_userfs_persistent() const;
+	bool is_userfs_persistent() const override;
 
 	void resume_audio();
 	bool is_finalizing() { return finalizing; }
