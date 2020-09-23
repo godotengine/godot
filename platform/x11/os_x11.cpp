@@ -847,7 +847,9 @@ void OS_X11::finalize() {
 	if (xrandr_handle)
 		dlclose(xrandr_handle);
 
-	XUnmapWindow(x11_display, x11_window);
+	if (!OS::get_singleton()->is_no_window_mode_enabled()) {
+		XUnmapWindow(x11_display, x11_window);
+	}
 	XDestroyWindow(x11_display, x11_window);
 
 #if defined(OPENGL_ENABLED)
@@ -3226,6 +3228,12 @@ void OS_X11::swap_buffers() {
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
+
+	if (is_no_window_mode_enabled()) {
+		print_line("ALERT: " + p_title + ": " + p_alert);
+		return;
+	}
+
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
 	String path = get_environment("PATH");

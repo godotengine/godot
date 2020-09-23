@@ -1855,10 +1855,12 @@ void OS_Windows::finalize_core() {
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
 
-	if (!is_no_window_mode_enabled())
-		MessageBoxW(NULL, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
-	else
-		print_line("ALERT: " + p_alert);
+	if (is_no_window_mode_enabled()) {
+		print_line("ALERT: " + p_title + ": " + p_alert);
+		return;
+	}
+
+	MessageBoxW(NULL, p_alert.c_str(), p_title.c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 }
 
 void OS_Windows::set_mouse_mode(MouseMode p_mode) {

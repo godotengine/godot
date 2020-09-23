@@ -197,7 +197,10 @@ Error ContextGL_X11::initialize() {
 
 	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
 	set_class_hint(x11_display, x11_window);
-	XMapWindow(x11_display, x11_window);
+
+	if (!OS::get_singleton()->is_no_window_mode_enabled()) {
+		XMapWindow(x11_display, x11_window);
+	}
 
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);
