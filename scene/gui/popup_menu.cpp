@@ -305,12 +305,14 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 				during_grabbed_click = false;
 				initial_button_mask = 0;
 
-				int over = _get_mouse_over(b->get_position());
-
-				if (invalidated_click) {
-					invalidated_click = false;
+				// Disable clicks under a time threshold to avoid selection right when opening the popup.
+				uint64_t now = OS::get_singleton()->get_ticks_msec();
+				uint64_t diff = now - popup_time_msec;
+				if (diff < 100) {
 					return;
 				}
+
+				int over = _get_mouse_over(b->get_position());
 				if (over < 0) {
 					if (!was_during_grabbed_click) {
 						hide();
@@ -336,13 +338,6 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	if (m.is_valid()) {
 		if (!item_clickable_area.has_point(m->get_position())) {
 			return;
-		}
-
-		if (invalidated_click) {
-			moved += m->get_relative();
-			if (moved.length() > 4) {
-				invalidated_click = false;
-			}
 		}
 
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
@@ -1443,7 +1438,7 @@ void PopupMenu::_bind_methods() {
 
 void PopupMenu::popup(const Rect2 &p_bounds) {
 	moved = Vector2();
-	invalidated_click = true;
+	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	set_as_minsize();
 	Popup::popup(p_bounds);
 }
@@ -1475,7 +1470,6 @@ PopupMenu::PopupMenu() {
 	submenu_over = -1;
 	initial_button_mask = 0;
 	during_grabbed_click = false;
-	invalidated_click = false;
 
 	allow_search = true;
 	search_time_msec = 0;
