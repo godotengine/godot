@@ -664,7 +664,6 @@ public:
 };
 /*
 	enum CubeMapSide {
-
 		CUBEMAP_LEFT,
 		CUBEMAP_RIGHT,
 		CUBEMAP_BOTTOM,

@@ -42,7 +42,6 @@ class IP : public Object {
 
 public:
 	enum ResolverStatus {
-
 		RESOLVER_STATUS_NONE,
 		RESOLVER_STATUS_WAITING,
 		RESOLVER_STATUS_DONE,
@@ -50,7 +49,6 @@ public:
 	};
 
 	enum Type {
-
 		TYPE_NONE = 0,
 		TYPE_IPV4 = 1,
 		TYPE_IPV6 = 2,

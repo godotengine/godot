@@ -168,7 +168,6 @@ Vector<Face3> Mesh::get_faces() const {
 	return Vector<Face3>();
 	/*
 	for (int i=0;i<surfaces.size();i++) {
-
 		if (RenderingServer::get_singleton()->mesh_surface_get_primitive_type( mesh, i ) != RenderingServer::PRIMITIVE_TRIANGLES )
 			continue;
 
@@ -181,12 +180,10 @@ Vector<Face3> Mesh::get_faces() const {
 		bool has_indices;
 
 		if (len>0) {
-
 			indices=RenderingServer::get_singleton()->mesh_surface_get_array(mesh, i,RenderingServer::ARRAY_INDEX);
 			has_indices=true;
 
 		} else {
-
 			len=vertices.size();
 			has_indices=false;
 		}
@@ -210,11 +207,9 @@ Vector<Face3> Mesh::get_faces() const {
 
 
 		for (int i=0;i<len/3;i++) {
-
 			Face3 face;
 
 			for (int j=0;j<3;j++) {
-
 				int idx=i*3+j;
 				face.vertex[j] = has_indices ? verticesptr[ indicesptr[ idx ] ] : verticesptr[idx];
 			}

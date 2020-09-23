@@ -42,7 +42,6 @@ class GPUParticles2DEditorPlugin : public EditorPlugin {
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
 
 	enum {
-
 		MENU_GENERATE_VISIBILITY_RECT,
 		MENU_LOAD_EMISSION_MASK,
 		MENU_CLEAR_EMISSION_MASK,

@@ -105,7 +105,6 @@ private:
 	real_t test_motion_min_contact_depth;
 
 	enum {
-
 		INTERSECTION_QUERY_MAX = 2048
 	};
 

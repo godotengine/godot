@@ -63,7 +63,6 @@ class ResourceSaver {
 
 public:
 	enum SaverFlags {
-
 		FLAG_RELATIVE_PATHS = 1,
 		FLAG_BUNDLE_RESOURCES = 2,
 		FLAG_CHANGE_PATH = 4,

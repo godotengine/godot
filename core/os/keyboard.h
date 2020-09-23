@@ -294,11 +294,9 @@ enum KeyList {
 
 	KEY_DIVISION = 0x00F7,
 	KEY_YDIAERESIS = 0x00FF,
-
 };
 
 enum KeyModifierMask {
-
 	KEY_CODE_MASK = ((1 << 25) - 1), ///< Apply this mask to any keycode to remove modifiers.
 	KEY_MODIFIER_MASK = (0xFF << 24), ///< Apply this mask to isolate modifiers.
 	KEY_MASK_SHIFT = (1 << 25),
@@ -314,7 +312,6 @@ enum KeyModifierMask {
 	KEY_MASK_KPAD = (1 << 29),
 	KEY_MASK_GROUP_SWITCH = (1 << 30)
 	// bit 31 can't be used because variant uses regular 32 bits int as datatype
-
 };
 
 String keycode_get_string(uint32_t p_code);

@@ -98,7 +98,6 @@ enum PropertyHint {
 };
 
 enum PropertyUsageFlags {
-
 	PROPERTY_USAGE_STORAGE = 1,
 	PROPERTY_USAGE_EDITOR = 2,
 	PROPERTY_USAGE_NETWORK = 4,
@@ -406,7 +405,6 @@ class ScriptInstance;
 class Object {
 public:
 	enum ConnectFlags {
-
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
 		CONNECT_ONESHOT = 4,

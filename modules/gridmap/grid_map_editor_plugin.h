@@ -41,12 +41,10 @@ class GridMapEditor : public VBoxContainer {
 	GDCLASS(GridMapEditor, VBoxContainer);
 
 	enum {
-
 		GRID_CURSOR_SIZE = 50
 	};
 
 	enum InputAction {
-
 		INPUT_NONE,
 		INPUT_PAINT,
 		INPUT_ERASE,
@@ -56,7 +54,6 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	enum ClipMode {
-
 		CLIP_DISABLED,
 		CLIP_ABOVE,
 		CLIP_BELOW
@@ -158,7 +155,6 @@ class GridMapEditor : public VBoxContainer {
 	int cursor_rot;
 
 	enum Menu {
-
 		MENU_OPTION_NEXT_LEVEL,
 		MENU_OPTION_PREV_LEVEL,
 		MENU_OPTION_LOCK_VIEW,

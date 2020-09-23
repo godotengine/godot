@@ -271,7 +271,6 @@ static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES
 				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
-
 } // namespace InteropLayout
 
 #pragma pack(push, 1)
@@ -517,7 +516,6 @@ DECL_TYPE_MARSHAL_TEMPLATES(Plane)
 
 #define MARSHALLED_IN(m_type, m_from_ptr) (GDMonoMarshal::marshalled_in_##m_type(m_from_ptr))
 #define MARSHALLED_OUT(m_type, m_from) (GDMonoMarshal::marshalled_out_##m_type(m_from))
-
 } // namespace GDMonoMarshal
 
 #endif // GDMONOMARSHAL_H

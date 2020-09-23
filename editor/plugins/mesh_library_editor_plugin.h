@@ -46,7 +46,6 @@ class MeshLibraryEditor : public Control {
 	int to_erase;
 
 	enum {
-
 		MENU_OPTION_ADD_ITEM,
 		MENU_OPTION_REMOVE_ITEM,
 		MENU_OPTION_UPDATE_FROM_SCENE,

@@ -659,7 +659,6 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 	UNHANDLED_EXCEPTION(exc);
 	return GDMono::get_singleton()->get_class(mono_class_from_mono_type(mono_reflection_type_get_type(reftype)));
 }
-
 } // namespace Marshal
 
 ScopeThreadAttach::ScopeThreadAttach() {
@@ -679,5 +678,4 @@ StringName get_native_godot_class_name(GDMonoClass *p_class) {
 	StringName *ptr = GDMonoMarshal::unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(native_name_obj));
 	return ptr ? *ptr : StringName();
 }
-
 } // namespace GDMonoUtils

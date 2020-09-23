@@ -39,7 +39,6 @@ class RichTextLabel : public Control {
 
 public:
 	enum Align {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,
@@ -47,14 +46,12 @@ public:
 	};
 
 	enum ListType {
-
 		LIST_NUMBERS,
 		LIST_LETTERS,
 		LIST_DOTS
 	};
 
 	enum ItemType {
-
 		ITEM_FRAME,
 		ITEM_TEXT,
 		ITEM_IMAGE,
@@ -344,7 +341,6 @@ private:
 	};
 
 	enum ProcessMode {
-
 		PROCESS_CACHE,
 		PROCESS_DRAW,
 		PROCESS_POINTER

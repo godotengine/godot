@@ -42,7 +42,6 @@ enum class GCHandleType : char {
 	STRONG_HANDLE,
 	WEAK_HANDLE
 };
-
 }
 
 // Manual release of the GC handle must be done when using this struct

@@ -1,5 +1,4 @@
 var Preloader = /** @constructor */ function() {
-
 	var DOWNLOAD_ATTEMPTS_MAX = 4;
 	var progressFunc = null;
 	var lastProgress = { loaded: 0, total: 0 };
@@ -20,9 +19,7 @@ var Preloader = /** @constructor */ function() {
 	}
 
 	function onXHREvent(resolve, reject, file, tracker, ev) {
-
 		if (this.status >= 400) {
-
 			if (this.status < 500 || ++tracker[file].attempts >= DOWNLOAD_ATTEMPTS_MAX) {
 				reject(new Error("Failed loading file '" + file + "': " + this.statusText));
 				this.abort();
@@ -103,7 +100,6 @@ var Preloader = /** @constructor */ function() {
 	};
 
 	var animateProgress = function() {
-
 		var loaded = 0;
 		var total = 0;
 		var totalIsValid = true;

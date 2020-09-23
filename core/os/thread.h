@@ -39,7 +39,6 @@ typedef void (*ThreadCreateCallback)(void *p_userdata);
 class Thread {
 public:
 	enum Priority {
-
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
 		PRIORITY_HIGH

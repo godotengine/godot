@@ -41,7 +41,6 @@ namespace support {
 
 void initialize();
 void cleanup();
-
 } // namespace support
 } // namespace ios
 } // namespace gdmono

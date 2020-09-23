@@ -43,7 +43,6 @@ class TileMapEditor : public VBoxContainer {
 	GDCLASS(TileMapEditor, VBoxContainer);
 
 	enum Tool {
-
 		TOOL_NONE,
 		TOOL_PAINTING,
 		TOOL_ERASING,
@@ -58,7 +57,6 @@ class TileMapEditor : public VBoxContainer {
 	};
 
 	enum Options {
-
 		OPTION_COPY,
 		OPTION_ERASE_SELECTION,
 		OPTION_FIX_INVALID,

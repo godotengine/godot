@@ -41,7 +41,6 @@
 
 #if 0
 class TextureBasisU : public Texture {
-
 	GDCLASS(TextureBasisU, Texture);
 	RES_BASE_EXTENSION("butex");
 
@@ -74,7 +73,6 @@ public:
 
 	TextureBasisU();
 	~TextureBasisU();
-
 };
 
 #endif

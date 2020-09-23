@@ -42,7 +42,6 @@ class StreamPeerTCP : public StreamPeer {
 
 public:
 	enum Status {
-
 		STATUS_NONE,
 		STATUS_CONNECTING,
 		STATUS_CONNECTED,

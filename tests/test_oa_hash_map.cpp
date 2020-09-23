@@ -295,5 +295,4 @@ MainLoop *test() {
 
 	return nullptr;
 }
-
 } // namespace TestOAHashMap

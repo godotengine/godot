@@ -671,7 +671,6 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			}
 			/*
 			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
-
 				if (SL::is_sampler_type(E->get().type)) {
 					continue;
 				}

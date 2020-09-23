@@ -5549,7 +5549,6 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 			}
 			RID shared_tex;
 			{
-
 				RD::TextureView tv;
 				tv.format_override = RD::DATA_FORMAT_R8_UINT;
 				shared_tex = RD::get_singleton()->texture_create_shared(tv, gi_probe->sdf_texture);

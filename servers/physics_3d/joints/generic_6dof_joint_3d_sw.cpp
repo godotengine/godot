@@ -253,7 +253,6 @@ void Generic6DOFJoint3DSW::calculateAngleInfo() {
 	/*
 	if(m_debugDrawer)
 	{
-
 		char buff[300];
 		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
 		m_calculatedAxisAngleDiff[0],

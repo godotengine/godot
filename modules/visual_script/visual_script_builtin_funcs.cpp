@@ -647,7 +647,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 
 /*
 String VisualScriptBuiltinFunc::get_caption() const {
-
 	return "BuiltinFunc";
 }
 

@@ -36,7 +36,6 @@
 class EditorRun {
 public:
 	enum Status {
-
 		STATUS_PLAY,
 		STATUS_PAUSED,
 		STATUS_STOP

@@ -69,7 +69,6 @@ class ShaderEditor : public PanelContainer {
 	GDCLASS(ShaderEditor, PanelContainer);
 
 	enum {
-
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,

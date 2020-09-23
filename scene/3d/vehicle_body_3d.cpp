@@ -634,7 +634,6 @@ VehicleBody3D::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDir
 
 	/* TODO: Why is this code unused?
 	if (body1) {
-
 		Vector3 r0 = frictionPosWorld - body1->get_global_transform().origin;
 		Vector3 c0 = (r0).cross(frictionDirectionWorld);
 		Vector3 vec = s->get_inverse_inertia_tensor().xform_inv(c0).cross(r0);

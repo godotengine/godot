@@ -258,7 +258,6 @@
 		}
 
 		function startEditor(zip) {
-
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 			const persistentPaths = ['/home/web_user/.config', '/home/web_user/projects'];
 
@@ -296,7 +295,6 @@
 			adjustCanvasDimensions();
 
 			setStatusMode = function setStatusMode(mode) {
-
 				if (statusMode === mode || !initializing)
 					return;
 				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
@@ -325,7 +323,6 @@
 			}
 
 			function animateStatusIndeterminate(ms) {
-
 				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
 				if (statusIndeterminate.children[i].style.borderTopColor == '') {
 					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
@@ -336,7 +333,6 @@
 			}
 
 			setStatusNotice = function setStatusNotice(text) {
-
 				while (statusNotice.lastChild) {
 					statusNotice.removeChild(statusNotice.lastChild);
 				}
@@ -348,7 +344,6 @@
 			};
 
 			engine.setProgressFunc((current, total) => {
-
 				if (total > 0) {
 					statusProgressInner.style.width = current/total * 100 + '%';
 					setStatusMode('progress');

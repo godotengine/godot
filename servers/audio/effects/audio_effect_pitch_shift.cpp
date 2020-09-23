@@ -95,14 +95,12 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	expct = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
 	if (gRover == 0) { gRover = inFifoLatency;
-
 }
 
 	/* initialize our static arrays */
 
 	/* main processing loop */
 	for (i = 0; i < numSampsToProcess; i++){
-
 		/* As long as we have not yet collected enough data just read in */
 		gInFIFO[gRover] = indata[i*stride];
 		outdata[i*stride] = gOutFIFO[gRover-inFifoLatency];
@@ -126,7 +124,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* this is the analysis step */
 			for (k = 0; k <= fftFrameSize2; k++) {
-
 				/* de-interlace FFT buffer */
 				real = gFFTworksp[2*k];
 				imag = gFFTworksp[2*k+1];
@@ -146,7 +143,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				qpd = tmp/Math_PI;
 				if (qpd >= 0) { qpd += qpd&1;
 				} else { qpd -= qpd&1;
-
 }
 				tmp -= Math_PI*(double)qpd;
 
@@ -177,7 +173,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 			/* ***************** SYNTHESIS ******************* */
 			/* this is the synthesis step */
 			for (k = 0; k <= fftFrameSize2; k++) {
-
 				/* get magnitude and true frequency from synthesis arrays */
 				magn = gSynMagn[k];
 				tmp = gSynFreq[k];
@@ -205,7 +200,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* zero negative frequencies */
 			for (k = fftFrameSize+2; k < 2*fftFrameSize; k++) { gFFTworksp[k] = 0.;
-
 }
 
 			/* do inverse transform */
@@ -217,7 +211,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				gOutputAccum[k] += 2.*window*gFFTworksp[2*k]/(fftFrameSize2*osamp);
 			}
 			for (k = 0; k < stepSize; k++) { gOutFIFO[k] = gOutputAccum[k];
-
 }
 
 			/* shift accumulator */
@@ -225,13 +218,9 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* move input FIFO */
 			for (k = 0; k < inFifoLatency; k++) { gInFIFO[k] = gInFIFO[k+stepSize];
-
 }
 		}
 	}
-
-
-
 }
 
 
@@ -256,7 +245,6 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 	for (i = 2; i < 2*fftFrameSize-2; i += 2) {
 		for (bitm = 2, j = 0; bitm < 2*fftFrameSize; bitm <<= 1) {
 			if (i & bitm) { j++;
-
 }
 			j <<= 1;
 		}

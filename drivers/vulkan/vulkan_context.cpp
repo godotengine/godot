@@ -1010,7 +1010,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	{
 		const VkAttachmentDescription attachment = {
-
 			/*flags*/ 0,
 			/*format*/ format,
 			/*samples*/ VK_SAMPLE_COUNT_1_BIT,

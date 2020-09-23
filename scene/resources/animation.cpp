@@ -721,7 +721,6 @@ bool Animation::track_get_interpolation_loop_wrap(int p_track) const {
 /*
 template<class T>
 int Animation::_insert_pos(float p_time, T& p_keys) {
-
 	// simple, linear time inset that should be fast enough in reality.
 
 	int idx=p_keys.size();
@@ -734,14 +733,12 @@ int Animation::_insert_pos(float p_time, T& p_keys) {
 			p_keys.insert(idx,T());
 			return idx;
 		} else if (p_keys[idx-1].time == p_time) {
-
 			// condition for replacing.
 			return idx-1;
 		}
 
 		idx--;
 	}
-
 }
 
 */

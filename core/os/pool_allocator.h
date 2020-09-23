@@ -43,7 +43,6 @@
 */
 
 enum {
-
 	POOL_ALLOCATOR_INVALID_ID = -1 ///< default invalid value. use INVALID_ID( id ) to test
 };
 

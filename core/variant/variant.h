@@ -426,7 +426,6 @@ public:
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
-
 		//comparison
 		OP_EQUAL,
 		OP_NOT_EQUAL,

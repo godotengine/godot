@@ -177,7 +177,6 @@ public:
 	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
-
 		SCREEN_LANDSCAPE,
 		SCREEN_PORTRAIT,
 		SCREEN_REVERSE_LANDSCAPE,

@@ -760,9 +760,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	/*
 	@Override public boolean dispatchKeyEvent(KeyEvent event) {
-
 		if (event.getKeyCode()==KeyEvent.KEYCODE_BACK) {
-
 			System.out.printf("** BACK REQUEST!\n");
 
 			GodotLib.quit();

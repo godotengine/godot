@@ -476,7 +476,6 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 	/*
 	if (hover_metric != -1 && frame_metrics[hover_metric].valid) {
-
 		int max_frames = frame_metrics.size();
 		int frame = frame_metrics[hover_metric].frame_number - (frame_metrics[last_metric].frame_number - max_frames + 1);
 		if (frame < 0)
@@ -671,7 +670,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	const Vector<EditorFrameProfiler::Metric::Category> &categories = frame_metrics[0].categories;
 
 	for (int j = 0; j < categories.size(); j++) {
-
 		const EditorFrameProfiler::Metric::Category &c = categories[j];
 		signatures.push_back(c.signature);
 
@@ -688,7 +686,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	int index = last_metric;
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
-
 		++index;
 
 		if (index >= frame_metrics.size()) {
@@ -702,7 +699,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 		const Vector<EditorFrameProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
 		for (int j = 0; j < frame_cat.size(); j++) {
-
 			const EditorFrameProfiler::Metric::Category &c = frame_cat[j];
 			values.write[it++] = String::num_real(c.total_time);
 

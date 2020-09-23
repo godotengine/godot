@@ -49,7 +49,6 @@ class Control : public CanvasItem {
 
 public:
 	enum Anchor {
-
 		ANCHOR_BEGIN = 0,
 		ANCHOR_END = 1
 	};
@@ -67,7 +66,6 @@ public:
 	};
 
 	enum SizeFlags {
-
 		SIZE_FILL = 1,
 		SIZE_EXPAND = 2,
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
@@ -272,7 +270,6 @@ protected:
 
 public:
 	enum {
-
 		/*		NOTIFICATION_DRAW=30,
 		NOTIFICATION_VISIBILITY_CHANGED=38*/
 		NOTIFICATION_RESIZED = 40,

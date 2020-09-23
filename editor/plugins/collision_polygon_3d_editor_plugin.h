@@ -44,7 +44,6 @@ class CollisionPolygon3DEditor : public HBoxContainer {
 
 	UndoRedo *undo_redo;
 	enum Mode {
-
 		MODE_CREATE,
 		MODE_EDIT,
 

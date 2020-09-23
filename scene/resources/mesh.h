@@ -50,13 +50,11 @@ protected:
 
 public:
 	enum {
-
 		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
 		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
 
 	enum ArrayType {
-
 		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
 		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
 		ARRAY_TANGENT = RenderingServer::ARRAY_TANGENT,
@@ -107,7 +105,6 @@ public:
 	};
 
 	enum BlendShapeMode {
-
 		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
 		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
 	};

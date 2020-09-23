@@ -42,7 +42,6 @@ class Camera3D : public Node3D {
 
 public:
 	enum Projection {
-
 		PROJECTION_PERSPECTIVE,
 		PROJECTION_ORTHOGONAL,
 		PROJECTION_FRUSTUM
@@ -103,7 +102,6 @@ protected:
 
 public:
 	enum {
-
 		NOTIFICATION_BECAME_CURRENT = 50,
 		NOTIFICATION_LOST_CURRENT = 51
 	};

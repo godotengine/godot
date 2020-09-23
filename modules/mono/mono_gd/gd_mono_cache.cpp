@@ -316,5 +316,4 @@ void update_godot_api_cache() {
 
 	cached_data.godot_api_cache_updated = true;
 }
-
 } // namespace GDMonoCache

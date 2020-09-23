@@ -38,7 +38,6 @@ struct _KeyCodeText {
 };
 
 static const _KeyCodeText _keycodes[] = {
-
 	/* clang-format off */
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},

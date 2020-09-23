@@ -41,7 +41,6 @@ class AudioEffectStereoEnhanceInstance : public AudioEffectInstance {
 	Ref<AudioEffectStereoEnhance> base;
 
 	enum {
-
 		MAX_DELAY_MS = 50
 	};
 

@@ -100,7 +100,6 @@ public:
 	};
 
 	enum Expecting {
-
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,

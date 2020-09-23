@@ -234,7 +234,6 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 
 		/*MethodBind *mb = ClassDB::get_method(_get_base_type(),function);
 		if (mb) {
-
 			ret = mb->get_argument_info(-1);
 		} else {*/
 

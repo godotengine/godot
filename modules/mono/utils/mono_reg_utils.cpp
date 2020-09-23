@@ -225,7 +225,6 @@ cleanup:
 
 	return msbuild_tools_path;
 }
-
 } // namespace MonoRegUtils
 
 #endif // WINDOWS_ENABLED

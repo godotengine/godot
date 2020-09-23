@@ -262,7 +262,6 @@ public:
 
 #if 0
 	RID texture_create() override {
-
 		DummyTexture *texture = memnew(DummyTexture);
 		ERR_FAIL_COND_V(!texture, RID());
 		return texture_owner.make_rid(texture);
@@ -709,14 +708,11 @@ public:
 	/* LIGHTMAP CAPTURE */
 #if 0
 	struct Instantiable {
-
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
 		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) override {
-
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) override {
-
 				//instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
@@ -725,7 +721,6 @@ public:
 		_FORCE_INLINE_ void instance_remove_deps() override {
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) override {
-
 				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
 				//instances->self()->base_removed();
 				instances = next;
@@ -738,7 +733,6 @@ public:
 	};
 
 	struct LightmapCapture : public Instantiable {
-
 		Vector<LightmapCaptureOctree> octree;
 		AABB bounds;
 		Transform cell_xform;

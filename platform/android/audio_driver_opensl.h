@@ -42,7 +42,6 @@ class AudioDriverOpenSL : public AudioDriver {
 	Mutex mutex;
 
 	enum {
-
 		BUFFER_COUNT = 2
 	};
 

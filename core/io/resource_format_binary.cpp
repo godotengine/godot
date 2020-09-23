@@ -41,7 +41,6 @@
 #define print_bl(m_what) (void)(m_what)
 
 enum {
-
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
 	VARIANT_BOOL = 2,
@@ -90,7 +89,6 @@ enum {
 	FORMAT_VERSION = 3,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
-
 };
 
 void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {

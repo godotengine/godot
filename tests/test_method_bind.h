@@ -159,7 +159,6 @@ TEST_CASE("[MethodBind] check all method binds") {
 
 	memdelete(mbt);
 }
-
 } // namespace TestMethodBind
 
 #endif // TEST_METHOD_BIND_H

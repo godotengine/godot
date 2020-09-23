@@ -699,5 +699,4 @@ MainLoop *test() {
 
 	return nullptr;
 }
-
 } // namespace TestMath

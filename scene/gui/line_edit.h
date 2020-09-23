@@ -39,7 +39,6 @@ class LineEdit : public Control {
 
 public:
 	enum Align {
-
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT,

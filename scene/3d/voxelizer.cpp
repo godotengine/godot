@@ -580,7 +580,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 
 		/*if (bake_light.size()) {
 			for(int i=0;i<6;i++) {
-
 			}
 		}*/
 

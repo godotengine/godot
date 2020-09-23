@@ -127,13 +127,11 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 	int ap_size_limit[MAX_ALLPASS];
 
 	for (int i=0;i<MAX_ALLPASS;i++) {
-
 		AllPass &a=allpass[i];
 		ap_size_limit[i]=a.size-lrintf((float)a.extra_spread_frames*(1.0-params.extra_spread));
 	}
 
 	for (int i=0;i<p_frames;i++) {
-
 		float sample=p_dst[i];
 		float aux,in;
 		float AllPass*ap;

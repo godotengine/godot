@@ -151,7 +151,6 @@ antiAliasing=false
 	CHECK_MESSAGE(file->get_as_utf8_string() == contents,
 			"The saved configuration file should match the expected format.");
 }
-
 } // namespace TestConfigFile
 
 #endif // TEST_CONFIG_FILE_H

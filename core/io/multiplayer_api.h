@@ -102,7 +102,6 @@ public:
 	};
 
 	enum RPCMode {
-
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote

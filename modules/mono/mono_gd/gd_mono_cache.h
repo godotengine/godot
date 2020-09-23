@@ -181,7 +181,6 @@ inline void clear_corlib_cache() {
 inline void clear_godot_api_cache() {
 	cached_data.clear_godot_api_cache();
 }
-
 } // namespace GDMonoCache
 
 #define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)

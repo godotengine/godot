@@ -2635,7 +2635,6 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
     f->debug_get_stack_member_state(*_call_stack[l].line,&locals);
     for( List<Pair<StringName,int> >::Element *E = locals.front();E;E=E->next() ) {
-
 	p_locals->push_back(E->get().first);
 	p_values->push_back(_call_stack[l].stack[E->get().second]);
     }

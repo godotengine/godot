@@ -84,7 +84,6 @@ int sfind(const String &p_text, int p_from) {
 
 	return -1;
 }
-
 } // namespace
 
 String sformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {

@@ -204,7 +204,6 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
@@ -414,7 +413,6 @@ void Sprite3D::_draw() {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
@@ -740,7 +738,6 @@ void AnimatedSprite3D::_draw() {
 	float pixel_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
-
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
 		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,

@@ -194,5 +194,4 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
-
 } // namespace path

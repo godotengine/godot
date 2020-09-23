@@ -282,7 +282,6 @@ TEST_CASE("[Stress][Basis] Euler conversions") {
 		}
 	}
 }
-
 } // namespace TestBasis
 
 #endif

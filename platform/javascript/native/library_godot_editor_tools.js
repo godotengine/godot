@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 const GodotEditorTools = {
-
 	godot_js_editor_download_file__deps: ['$FS'],
 	godot_js_editor_download_file: function(p_path, p_name, p_mime) {
 		const path = UTF8ToString(p_path);

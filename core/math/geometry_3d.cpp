@@ -241,7 +241,6 @@ Vector<Vector<Face3>> Geometry3D::separate_objects(Vector<Face3> p_array) {
 /*** GEOMETRY WRAPPER ***/
 
 enum _CellFlags {
-
 	_CELL_SOLID = 1,
 	_CELL_EXTERIOR = 2,
 	_CELL_STEP_MASK = 0x1C,
@@ -262,7 +261,6 @@ enum _CellFlags {
 	_CELL_PREV_Z_POS = 5 << 5,
 	_CELL_PREV_Z_NEG = 6 << 5,
 	_CELL_PREV_FIRST = 7 << 5,
-
 };
 
 static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, const Vector3 &voxelsize, const Face3 &p_face) {

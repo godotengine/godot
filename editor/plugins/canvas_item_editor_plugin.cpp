@@ -3389,7 +3389,6 @@ void CanvasItemEditor::_draw_selection() {
 
 			if (canvas_item->_edit_use_rect()) {
 				Vector2 pre_drag_endpoints[4] = {
-
 					pre_drag_xform.xform(se->pre_drag_rect.position),
 					pre_drag_xform.xform(se->pre_drag_rect.position + Vector2(se->pre_drag_rect.size.x, 0)),
 					pre_drag_xform.xform(se->pre_drag_rect.position + se->pre_drag_rect.size),

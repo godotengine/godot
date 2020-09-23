@@ -1716,14 +1716,12 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 face_points[4];
 
 			for (int j=0;j<4;j++) {
-
 				float v[3];
 				v[0]=1.0;
 				v[1]=1-2*((j>>1)&1);
 				v[2]=v[1]*(1-2*(j&1));
 
 				for (int k=0;k<3;k++) {
-
 					if (i<3)
 						face_points[j][(i+k)%3]=v[k]*(i>=3?-1:1);
 					else

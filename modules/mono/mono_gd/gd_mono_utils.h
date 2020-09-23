@@ -64,7 +64,6 @@ void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoRefl
 
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
-
 } // namespace Marshal
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {
@@ -156,7 +155,6 @@ private:
 };
 
 StringName get_native_godot_class_name(GDMonoClass *p_class);
-
 } // namespace GDMonoUtils
 
 #define NATIVE_GDMONOCLASS_NAME(m_class) (GDMonoUtils::get_native_godot_class_name(m_class))

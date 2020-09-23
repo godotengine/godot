@@ -133,7 +133,6 @@ TEST_CASE("[OrderedHashMap] Const iteration") {
 		++idx;
 	}
 }
-
 } // namespace TestOrderedHashMap
 
 #endif // TEST_ORDERED_HASH_MAP_H

@@ -3864,7 +3864,6 @@ String String::xml_escape(bool p_escape_quotes) const {
 	}
 	/*
 for (int i=1;i<32;i++) {
-
 	char chr[2]={i,0};
 	str=str.replace(chr,"&#"+String::num(i)+";");
 }*/

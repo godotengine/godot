@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 class RingBuffer {
-
 	constructor(p_buffer, p_state) {
 		this.buffer = p_buffer;
 		this.avail = p_state;

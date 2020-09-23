@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 var GodotWebSocket = {
-
 	// Our socket implementation that forwards events to C++.
 	$GodotWebSocket__deps: ['$IDHandler'],
 	$GodotWebSocket: {

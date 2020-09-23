@@ -439,7 +439,6 @@ TEST_CASE("[Expression] Unusual expressions") {
 	//		int64_t(expression.execute()) == 0,
 	//		"`(-9223372036854775807 - 1) / -1` should return the expected result.");
 }
-
 } // namespace TestExpression
 
 #endif // TEST_EXPRESSION_H

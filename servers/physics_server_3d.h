@@ -259,7 +259,6 @@ public:
 	virtual bool space_is_active(RID p_space) const = 0;
 
 	enum SpaceParameter {
-
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
 		SPACE_PARAM_CONTACT_MAX_SEPARATION,
 		SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,
@@ -578,7 +577,6 @@ public:
 	/* JOINT API */
 
 	enum JointType {
-
 		JOINT_PIN,
 		JOINT_HINGE,
 		JOINT_SLIDER,
@@ -613,7 +611,6 @@ public:
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const = 0;
 
 	enum HingeJointParam {
-
 		HINGE_JOINT_BIAS,
 		HINGE_JOINT_LIMIT_UPPER,
 		HINGE_JOINT_LIMIT_LOWER,
@@ -714,7 +711,6 @@ public:
 	};
 
 	enum G6DOFJointAxisFlag {
-
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
@@ -755,7 +751,6 @@ public:
 	virtual bool is_flushing_queries() const = 0;
 
 	enum ProcessInfo {
-
 		INFO_ACTIVE_OBJECTS,
 		INFO_COLLISION_PAIRS,
 		INFO_ISLAND_COUNT

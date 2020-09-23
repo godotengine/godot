@@ -474,7 +474,6 @@ TEST_CASE("[Stress][CommandQueue] Stress test command queue") {
 	ProjectSettings::get_singleton()->set_setting(COMMAND_QUEUE_SETTING,
 			ProjectSettings::get_singleton()->property_get_revert(COMMAND_QUEUE_SETTING));
 }
-
 } // namespace TestCommandQueue
 
 #endif // !defined(NO_THREADS)

@@ -333,7 +333,6 @@ void BoxShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 			int i_n2 = next2[i];
 
 			static const real_t sign[4][2] = {
-
 				{ -1.0, 1.0 },
 				{ 1.0, 1.0 },
 				{ 1.0, -1.0 },

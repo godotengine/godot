@@ -66,7 +66,6 @@ public:
 	};
 
 	enum Format {
-
 		FORMAT_L8, //luminance
 		FORMAT_LA8, //luminance-alpha
 		FORMAT_R8,
@@ -111,7 +110,6 @@ public:
 
 	static const char *format_names[FORMAT_MAX];
 	enum Interpolation {
-
 		INTERPOLATE_NEAREST,
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
