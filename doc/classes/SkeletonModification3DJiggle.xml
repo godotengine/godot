@@ -25,7 +25,7 @@
 				Returns whether the Jiggle modifier is taking physics colliders into account when solving.
 			</description>
 		</method>
-		<method name="jiggle_joint_get_bone_index" qualifiers="const">
+		<method name="get_jiggle_joint_bone_index" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -34,7 +34,7 @@
 				Returns the bone index of the bone assigned to the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_get_bone_name" qualifiers="const">
+		<method name="get_jiggle_joint_bone_name" qualifiers="const">
 			<return type="String">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -43,7 +43,7 @@
 				Returns the name of the bone that is assigned to the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_get_damping" qualifiers="const">
+		<method name="get_jiggle_joint_damping" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -52,7 +52,7 @@
 				Returns the amount of dampening of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_get_gravity" qualifiers="const">
+		<method name="get_jiggle_joint_gravity" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -61,7 +61,7 @@
 				Returns a [Vector3] representign the amount of gravity the Jiggle joint at [code]joint_idx[/code] is influenced by.
 			</description>
 		</method>
-		<method name="jiggle_joint_get_mass" qualifiers="const">
+		<method name="get_jiggle_joint_mass" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -70,7 +70,7 @@
 				Returns the amount of mass of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_get_override" qualifiers="const">
+		<method name="get_jiggle_joint_override" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -79,7 +79,7 @@
 				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is overriding the default jiggle joint data defined in the modification.
 			</description>
 		</method>
-		<method name="jiggle_joint_get_roll" qualifiers="const">
+		<method name="get_jiggle_joint_roll" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -88,7 +88,7 @@
 				Returns the amount of roll/twist applied to the bone that the Jiggle joint is applied to.
 			</description>
 		</method>
-		<method name="jiggle_joint_get_stiffness" qualifiers="const">
+		<method name="get_jiggle_joint_stiffness" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -97,7 +97,7 @@
 				Returns the stiffness of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_get_use_gravity" qualifiers="const">
+		<method name="get_jiggle_joint_use_gravity" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -106,7 +106,7 @@
 				Returns a boolean that indiciates whether the joint at [code]joint_idx[/code] is using gravity or not.
 			</description>
 		</method>
-		<method name="jiggle_joint_set_bone_index">
+		<method name="set_jiggle_joint_bone_index">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -117,7 +117,7 @@
 				Sets the bone index, [code]bone_index[/code], of the Jiggle joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_name[/code] of the Jiggle joint based on data provided by the [Skeleton3D].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_bone_name">
+		<method name="set_jiggle_joint_bone_name">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -128,7 +128,7 @@
 				Sets the bone name, [code]bone_name[/code], of the Jiggle joint at [code]joint_idx[/code]. When possible, this will also update the [code]bone_index[/code] of the Jiggle joint based on data provided by the [Skeleton3D].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_damping">
+		<method name="set_jiggle_joint_damping">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -139,7 +139,7 @@
 				Sets the amount of dampening of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_gravity">
+		<method name="set_jiggle_joint_gravity">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -150,7 +150,7 @@
 				Sets the gravity vector of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_mass">
+		<method name="set_jiggle_joint_mass">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -161,7 +161,7 @@
 				Sets the of mass of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_override">
+		<method name="set_jiggle_joint_override">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -172,7 +172,7 @@
 				Sets whether the Jiggle joint at [code]joint_idx[/code] should override the default Jiggle joint settings. Setting this to true will make the joint use its own settings rather than the default ones attached to the modification.
 			</description>
 		</method>
-		<method name="jiggle_joint_set_roll">
+		<method name="set_jiggle_joint_roll">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -183,7 +183,7 @@
 				Sets the amount of roll/twist on the bone the Jiggle joint is attached to.
 			</description>
 		</method>
-		<method name="jiggle_joint_set_stiffness">
+		<method name="set_jiggle_joint_stiffness">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
@@ -194,7 +194,7 @@
 				Sets the of stiffness of the Jiggle joint at [code]joint_idx[/code].
 			</description>
 		</method>
-		<method name="jiggle_joint_set_use_gravity">
+		<method name="set_jiggle_joint_use_gravity">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint_idx" type="int">
