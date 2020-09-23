@@ -3870,8 +3870,8 @@ void TileSetPluginAtlasRendering::tilemap_notification(TileMap *p_tile_map, int 
 		} break;
 		case CanvasItem::NOTIFICATION_DRAW: {
 			Ref<TileSet> tile_set = p_tile_map->get_tileset();
-			if (tile_set.is_valid()) {
-				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(p_tile_map->get_canvas_item(), tile_set->is_y_sorting());
+			if (tile_set.is_valid() || p_tile_map->is_y_sort_enabled()) {
+				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(p_tile_map->get_canvas_item(), tile_set->is_y_sorting() || p_tile_map->is_y_sort_enabled());
 			}
 		} break;
 	}

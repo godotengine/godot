@@ -279,6 +279,7 @@ public:
 	int get_effective_quadrant_size() const;
 
 	void update_dirty_quadrants();
+	virtual void set_y_sort_enabled(bool p_enable) override;
 
 	Vector2 map_to_world(const Vector2i &p_pos) const;
 	Vector2i world_to_map(const Vector2 &p_pos) const;
