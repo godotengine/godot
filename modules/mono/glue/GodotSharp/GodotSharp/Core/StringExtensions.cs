@@ -448,7 +448,12 @@ namespace Godot
         // </summary>
         public static bool IsAbsPath(this string instance)
         {
-            return System.IO.Path.IsPathRooted(instance);
+            if (string.IsNullOrEmpty(instance))
+                return false;
+            else if (instance.Length > 1)
+                return instance[0] == '/' || instance[0] == '\\' || instance.Contains(":/") || instance.Contains(":\\");
+            else
+                return instance[0] == '/' || instance[0] == '\\';
         }
 
         // <summary>
@@ -456,7 +461,7 @@ namespace Godot
         // </summary>
         public static bool IsRelPath(this string instance)
         {
-            return !System.IO.Path.IsPathRooted(instance);
+            return !IsAbsPath(instance);
         }
 
         // <summary>
