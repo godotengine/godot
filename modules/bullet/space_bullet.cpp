@@ -705,6 +705,10 @@ void SpaceBullet::check_ghost_overlaps() {
 				goto collision_found;
 			}
 
+			if (!(area->get_collision_layer() & otherObject->get_collision_mask())) {
+				continue;
+			}
+
 			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
 				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable()) {
 					continue;
