@@ -1274,9 +1274,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rtm >= 0 && rtm < 3) {
+#ifdef NO_THREADS
+		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
+#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
+#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
