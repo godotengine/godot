@@ -17,6 +17,7 @@
 		    print("Hello world!")
 		[/codeblock]
 		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
 	</tutorials>
