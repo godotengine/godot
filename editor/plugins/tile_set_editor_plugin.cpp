@@ -3109,6 +3109,7 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 	anchor += tileset->tile_get_region(get_current_tile()).position;
 	anchor += WORKSPACE_MARGIN;
 	Rect2 region(anchor, tile_size);
+	Rect2 tile_region(tileset->tile_get_region(get_current_tile()).position + WORKSPACE_MARGIN, tileset->tile_get_region(get_current_tile()).size);
 	if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
 		region.position = tileset->tile_get_region(get_current_tile()).position + WORKSPACE_MARGIN;
 		region.size = tileset->tile_get_region(get_current_tile()).size;
@@ -3118,6 +3119,7 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 		p.x = Math::snap_scalar_separation(snap_offset.x, snap_step.x, p.x, snap_separation.x);
 		p.y = Math::snap_scalar_separation(snap_offset.y, snap_step.y, p.y, snap_separation.y);
 	}
+
 	if (tools[SHAPE_KEEP_INSIDE_TILE]->is_pressed()) {
 		if (p.x < region.position.x) {
 			p.x = region.position.x;
@@ -3132,6 +3134,20 @@ Vector2 TileSetEditor::snap_point(const Vector2 &point) {
 			p.y = region.position.y + region.size.y;
 		}
 	}
+
+	if (p.x < tile_region.position.x) {
+		p.x = tile_region.position.x;
+	}
+	if (p.y < tile_region.position.y) {
+		p.y = tile_region.position.y;
+	}
+	if (p.x > (tile_region.position.x + tile_region.size.x)) {
+		p.x = (tile_region.position.x + tile_region.size.x);
+	}
+	if (p.y > (tile_region.position.y + tile_region.size.y)) {
+		p.y = (tile_region.position.y + tile_region.size.y);
+	}
+
 	return p;
 }
 
