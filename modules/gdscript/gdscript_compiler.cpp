@@ -1875,7 +1875,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->native = native;
 		} break;
 		case GDScriptDataType::GDSCRIPT: {
-			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
+			Ref<GDScript> base = Ref<Script>(base_type.script_type);
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
