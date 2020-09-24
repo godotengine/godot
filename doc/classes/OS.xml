@@ -234,13 +234,6 @@
 				Returns the number of threads available on the host machine.
 			</description>
 		</method>
-		<method name="get_splash_tick_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time in milliseconds it took for the boot logo to appear.
-			</description>
-		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
 			<return type="int">
 			</return>
