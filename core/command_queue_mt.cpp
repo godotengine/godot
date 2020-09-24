@@ -31,6 +31,7 @@
 #include "command_queue_mt.h"
 
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 void CommandQueueMT::lock() {
 
@@ -107,17 +108,22 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	write_ptr = 0;
 	dealloc_ptr = 0;
 	mutex = Mutex::create();
-	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
+
+	command_mem_size = GLOBAL_DEF_RST("memory/limits/command_queue/multithreading_queue_size_kb", DEFAULT_COMMAND_MEM_SIZE_KB);
+	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/command_queue/multithreading_queue_size_kb", PropertyInfo(Variant::INT, "memory/limits/command_queue/multithreading_queue_size_kb", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"));
+	command_mem_size *= 1024;
+	command_mem = (uint8_t *)memalloc(command_mem_size);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 		sync_sems[i].sem = Semaphore::create();
 		sync_sems[i].in_use = false;
 	}
-	if (p_sync)
+	if (p_sync) {
 		sync = Semaphore::create();
-	else
+	} else {
 		sync = NULL;
+	}
 }
 
 CommandQueueMT::~CommandQueueMT() {
