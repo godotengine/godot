@@ -529,6 +529,7 @@ msgid "Seconds"
 msgstr "Sekunnit"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -707,7 +708,7 @@ msgstr "Huomioi kirjainkoko"
 msgid "Whole Words"
 msgstr "Kokonaisia sanoja"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Korvaa"
 
@@ -899,6 +900,11 @@ msgid "Signals"
 msgstr "Signaalit"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Suodata laattoja"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Oletko varma, että haluat poistaa kaikki kytkennät tältä signaalilta?"
 
@@ -936,7 +942,7 @@ msgid "Recent:"
 msgstr "Viimeaikaiset:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Hae:"
@@ -1627,16 +1633,17 @@ msgid "Scene Tree Editing"
 msgstr "Skenepuun muokkaus"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Tuontitelakka"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Solmutelakka"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Tiedostojärjestelmä- ja tuontitelakat"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Tiedostojärjestelmä"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Tuontitelakka"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1902,7 +1909,7 @@ msgstr "Hakemistot ja tiedostot:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Esikatselu:"
 
@@ -2773,24 +2780,28 @@ msgstr "Julkaise etätestauksen kanssa"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Vietäessä tai julkaistaessa, käynnistettävä ohjelma yrittää ottaa yhteyden "
-"tämän tietokoneen IP-osoitteeseen testaamista varten."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Kevyt käyttöönotto verkkolevyn avulla"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Kun tämä on valittuna, vienti tai julkaisu tuottaa pienimmän mahdollisen "
 "käynnistystiedoston.\n"
@@ -2804,9 +2815,10 @@ msgid "Visible Collision Shapes"
 msgstr "Näytä törmäysmuodot"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Törmäysmuodot ja raycast-solmut (2D ja 3D) ovat näkyvillä peliä ajettaessa "
 "tämän ollessa valittuna."
@@ -2816,38 +2828,43 @@ msgid "Visible Navigation"
 msgstr "Näkyvä navigaatio"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Navigointiverkot ja niiden polygonit ovat näkyvillä peliä ajettaessa tämän "
 "ollessa valittuna."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Synkronoi skenen muutokset"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Tämän ollessa valittuna, kaikki skeneen tehdyt muutokset toteutetaan myös "
 "käynnissä olevassa pelissä.\n"
 "Mikäli peliä ajetaan etälaitteella, on tehokkaampaa käyttää verkkolevyä."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Synkronoi skriptin muutokset"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Jos tämä on valittu, kaikki tallennetut skriptit ladataan uudelleen pelin "
 "käynnistyessä.\n"
@@ -2910,7 +2927,7 @@ msgstr "Ohje"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Hae"
 
@@ -3328,9 +3345,11 @@ msgid "Add Key/Value Pair"
 msgstr "Lisää avain/arvopari"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Käynnistettävää vientipohjaa ei löytynyt tälle alustalle.\n"
 "Lisää sellainen vientivalikosta."
@@ -5100,7 +5119,7 @@ msgid "Bake Lightmaps"
 msgstr "Kehitä Lightmapit"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Esikatselu"
 
@@ -7748,7 +7767,8 @@ msgid "New Animation"
 msgstr "Uusi animaatio"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Nopeus (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10313,11 +10333,18 @@ msgid "Batch Rename"
 msgstr "Niputettu uudelleennimeäminen"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Korvaa: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Etuliite"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Pääte"
 
 #: editor/rename_dialog.cpp
@@ -10365,7 +10392,8 @@ msgid "Per-level Counter"
 msgstr "Per taso -laskuri"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Jos asetettu, laskuri alkaa alusta jokaiselle alisolmujen ryhmälle"
 
 #: editor/rename_dialog.cpp
@@ -10425,7 +10453,8 @@ msgid "Reset"
 msgstr "Palauta"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Säännöllisen lausekkeen virhe"
 
 #: editor/rename_dialog.cpp
@@ -12510,6 +12539,11 @@ msgstr ""
 "GIProbe ei ole tuettu GLES2 näyttöajurissa.\n"
 "Käytä sen sijaan BakedLightmap resurssia."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12816,6 +12850,16 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Tiedostojärjestelmä- ja tuontitelakat"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Vietäessä tai julkaistaessa, käynnistettävä ohjelma yrittää ottaa "
+#~ "yhteyden tämän tietokoneen IP-osoitteeseen testaamista varten."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

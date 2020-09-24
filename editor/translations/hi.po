@@ -528,6 +528,7 @@ msgid "Seconds"
 msgstr "सेकंड"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "एफपीएस"
 
@@ -706,7 +707,7 @@ msgstr "पूंजीकरण मेल करे"
 msgid "Whole Words"
 msgstr "पूरे शब्द"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "बदले"
 
@@ -898,6 +899,11 @@ msgid "Signals"
 msgstr "संकेत"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "फ़िल्टर फ़ाइलें..."
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "क्या आप सुनिश्चित हैं कि आप इस सिग्नल से सभी कनेक्शन हटाना चाहते हैं?"
 
@@ -935,7 +941,7 @@ msgid "Recent:"
 msgstr "हाल ही में किया:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "खोज:"
@@ -1622,16 +1628,17 @@ msgid "Scene Tree Editing"
 msgstr "सीन ट्री एडिटिंग"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "इंपोर्ट डॉक"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "नोड डॉक"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "फाइलसिस्टेम और इंपोर्ट डोक्स"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "फ़ाइल"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "इंपोर्ट डॉक"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1893,7 +1900,7 @@ msgstr "डायरेक्टरिज & फ़ाइले:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "पूर्व दर्शन:"
 
@@ -2754,24 +2761,28 @@ msgstr "रिमोट डिबग के साथ तैनात"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"निर्यात या तैनाती करते समय, परिणामी निष्पादक इस कंप्यूटर के आईपी से जुड़ने का प्रयास करेगा "
-"ताकि डिबग किया जा सके।"
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "नेटवर्क एफएस के साथ छोटे तैनात"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "जब यह विकल्प सक्षम हो जाता है, तो निर्यात या तैनाती न्यूनतम निष्पादित उत्पादन करेगी।\n"
 "नेटवर्क के ऊपर संपादक द्वारा परियोजना से फाइलसिस्टम उपलब्ध कराया जाएगा।\n"
@@ -2783,9 +2794,10 @@ msgid "Visible Collision Shapes"
 msgstr "दृश्यमान टकराव आकार"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "यदि यह विकल्प चालू हो जाता है तो टकराव के आकार और रेकास्ट नोड्स (2डी और 3 डी के लिए) "
 "चल रहे खेल पर दिखाई देंगे।"
@@ -2795,21 +2807,24 @@ msgid "Visible Navigation"
 msgstr "दर्शनीय नेविगेशन"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr "यदि यह विकल्प चालू हो जाता है तो नेविगेशन मेशेस और बहुभुज चल रहे खेल पर दिखाई देंगे।"
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "सिंक सीन बदलता है"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "जब इस विकल्प को चालू किया जाता है, तो संपादक में दृश्य में किए गए किसी भी परिवर्तन को "
 "चल रहे खेल में दोहराया जाएगा।\n"
@@ -2817,15 +2832,17 @@ msgstr ""
 "कुशल होता है।"
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "सिंक स्क्रिप्ट परिवर्तन"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "जब यह विकल्प चालू हो जाएगा, तो सहेजी गई किसी भी स्क्रिप्ट को चल रहे गेम पर फिर से लोड "
 "किया जाएगा।\n"
@@ -2889,7 +2906,7 @@ msgstr "मदद"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "ढूंढें"
 
@@ -3302,9 +3319,11 @@ msgid "Add Key/Value Pair"
 msgstr "कुंजी/मूल्य जोड़ी जोड़ें"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "इस मंच के लिए कोई रननयोग्य निर्यात पूर्व निर्धारित नहीं मिला।\n"
 "कृपया निर्यात मेनू में एक रननेबल प्रीसेट जोड़ें।"
@@ -5035,7 +5054,7 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr ""
 
@@ -7655,7 +7674,7 @@ msgid "New Animation"
 msgstr "एनिमेशन लूप"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+msgid "Speed:"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10122,11 +10141,16 @@ msgid "Batch Rename"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "बदले"
+
+#: editor/rename_dialog.cpp
+msgid "Prefix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+msgid "Suffix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10172,7 +10196,7 @@ msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10231,7 +10255,7 @@ msgid "Reset"
 msgstr "रीसेट आकार"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+msgid "Regular Expression Error:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -12208,6 +12232,11 @@ msgid ""
 "Use a BakedLightmap instead."
 msgstr ""
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12463,6 +12492,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "फाइलसिस्टेम और इंपोर्ट डोक्स"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "निर्यात या तैनाती करते समय, परिणामी निष्पादक इस कंप्यूटर के आईपी से जुड़ने का प्रयास "
+#~ "करेगा ताकि डिबग किया जा सके।"
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "वर्तमान दृश्य कभी नहीं बचाया गया था, कृपया इसे चलाने से पहले बचाने के लिए ।"

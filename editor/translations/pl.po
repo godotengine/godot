@@ -5,8 +5,8 @@
 # 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adam Wolanski <adam.wolanski94@gmail.com>, 2017.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
-# aelspire <aelspire@gmail.com>, 2017, 2019.
-# Daniel Lewan <vision360.daniel@gmail.com>, 2016-2018.
+# aelspire <aelspire@gmail.com>, 2017, 2019, 2020.
+# Daniel Lewan <vision360.daniel@gmail.com>, 2016-2018, 2020.
 # Dariusz Król <rexioweb@gmail.com>, 2018.
 # heya10 <igor.gielzak@gmail.com>, 2017.
 # holistyczny interlokutor <jakubowesmieci@gmail.com>, 2017.
@@ -16,17 +16,17 @@
 # Karol Walasek <coreconviction@gmail.com>, 2016.
 # Maksymilian Świąć <maksymilian.swiac@gmail.com>, 2017-2018.
 # Mietek Szcześniak <ravaging@go2.pl>, 2016.
-# NeverK <neverkoxu@gmail.com>, 2018, 2019.
-# Rafal Brozio <rafal.brozio@gmail.com>, 2016, 2019.
+# NeverK <neverkoxu@gmail.com>, 2018, 2019, 2020.
+# Rafal Brozio <rafal.brozio@gmail.com>, 2016, 2019, 2020.
 # Rafał Ziemniak <synaptykq@gmail.com>, 2017.
 # RM <synaptykq@gmail.com>, 2018, 2020.
 # Sebastian Krzyszkowiak <dos@dosowisko.net>, 2017.
-# Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019.
+# Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019, 2020.
 # siatek papieros <sbigneu@gmail.com>, 2016.
-# Zatherz <zatherz@linux.pl>, 2017.
+# Zatherz <zatherz@linux.pl>, 2017, 2020.
 # Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
-# Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019.
+# Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
 # Nie Powiem <blazek10@tlen.pl>, 2019.
 # Sebastian Hojka <sibibibi1@gmail.com>, 2019.
@@ -42,12 +42,14 @@
 # Adam Jagoda <kontakt@lukasz.xyz>, 2020.
 # Filip Glura <mcmr.slendy@gmail.com>, 2020.
 # Roman Skiba <romanskiba0@gmail.com>, 2020.
+# Piotr Grodzki <ziemniakglados@gmail.com>, 2020.
+# Dzejkop <jakubtrad@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-01 18:42+0000\n"
-"Last-Translator: Roman Skiba <romanskiba0@gmail.com>\n"
+"PO-Revision-Date: 2020-09-22 03:23+0000\n"
+"Last-Translator: Zatherz <zatherz@linux.pl>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -56,7 +58,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -245,7 +247,7 @@ msgstr "Ścieżka krzywej Béziera"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr "Ścieżka audio"
+msgstr "Ścieżka dźwiękowa"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
@@ -347,12 +349,12 @@ msgstr "Przytnij"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "Zawiń"
+msgstr "Zawiń pętlę interpolacji"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Wstaw klucz"
+msgstr "Wprowadź klucz"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
@@ -364,7 +366,7 @@ msgstr "Usuń klucz(e)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Zmień tryb zmiany animacji"
+msgstr "Zmień sposób aktualizacji animacji"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
@@ -384,7 +386,7 @@ msgstr "Utworzyć NOWĄ ścieżkę dla %s i wstawić klucz?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Utworzyć %d NOWYCH ścieżek i wstawić klucze?"
+msgstr "Utworzyć %d NOWYCH ścieżek i dodać klatki kluczowe?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -565,6 +567,7 @@ msgid "Seconds"
 msgstr "sekund"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "klatek na sekundę"
 
@@ -743,7 +746,7 @@ msgstr "Uwzględnij wielkość liter"
 msgid "Whole Words"
 msgstr "Całe słowa"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Zastąp"
 
@@ -935,6 +938,11 @@ msgid "Signals"
 msgstr "Sygnały"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filtruj kafelki"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Na pewno chcesz usunąć wszystkie połączenia z tego sygnału?"
 
@@ -972,7 +980,7 @@ msgid "Recent:"
 msgstr "Ostatnie:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Szukaj:"
@@ -1130,7 +1138,7 @@ msgstr "Zasoby bez jawnych właścicieli:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr "Zmień klucz tablicy"
+msgstr "Zmień klucz słownika"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
@@ -1176,14 +1184,12 @@ msgid "Gold Sponsors"
 msgstr "Złoci sponsorzy"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Srebrni darczyńcy"
+msgstr "Srebrni sponsorzy"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Brązowi darczyńcy"
+msgstr "Brązowi sponsorzy"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1308,7 +1314,7 @@ msgstr "Przełącz ominięcie efektów w magistrali audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
-msgstr "Wybierz szynę wysyłki audio"
+msgstr "Wybierz przesył magistrali audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
@@ -1661,16 +1667,17 @@ msgid "Scene Tree Editing"
 msgstr "Edycja drzewa sceny"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Dok importowania"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Dok węzła"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Doki systemu plików i importowania"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "System plików"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Dok importowania"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1933,7 +1940,7 @@ msgstr "Katalogi i pliki:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Podgląd:"
 
@@ -2808,24 +2815,28 @@ msgstr "Uruchom z użyciem zdalnego debugowania"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Podczas eksportu lub uruchomienia, aplikacja wynikowa spróbuje połączyć się "
-"z adresem IP tego komputera w celu debugowania."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Testuj z sieciowym systemem plików"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Gdy ta opcja jest zaznaczona, eksportowanie utworzy jak najmniejszy plik "
 "wykonywalny.\n"
@@ -2838,9 +2849,10 @@ msgid "Visible Collision Shapes"
 msgstr "Widoczne kształty kolizji"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Kształty kolizji i promienie raycast (2D i 3D) będą widoczne, jeśli ta opcja "
 "będzie zaznaczona."
@@ -2850,23 +2862,26 @@ msgid "Visible Navigation"
 msgstr "Widoczna nawigacja"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Kształty i poligony nawigacyjne będą widoczne, jeśli ta opcja będzie "
 "zaznaczona."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Synchronizuj zmiany w scenie"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Kiedy ta opcja jest włączona, wszystkie zmiany na scenie w edytorze będą "
 "powtórzone w uruchomionej grze.\n"
@@ -2874,15 +2889,17 @@ msgstr ""
 "systemie plików."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Synchronizuj zmiany skryptów"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Kiedy ta opcja jest włączona, każdy zapisany skrypt będzie przeładowany w "
 "uruchomionej grze.\n"
@@ -2946,7 +2963,7 @@ msgstr "Pomoc"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Szukaj"
 
@@ -3103,7 +3120,7 @@ msgstr "Szablonowy pakiet"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr "Wyeksportuj biblioteke"
+msgstr "Wyeksportuj bibliotekę"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
@@ -3216,7 +3233,7 @@ msgstr "Klatka %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Klatki Fizyki %"
+msgstr "Klatka fizyki %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -3362,9 +3379,11 @@ msgid "Add Key/Value Pair"
 msgstr "Dodaj parę klucz/wartość"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Nie znaleziono możliwego do uruchomienia profilu eksportu dla tej "
 "platformy.\n"
@@ -3948,11 +3967,11 @@ msgstr "Importuj oddzielnie obiekty i animacje"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "Importuj wraz z Oddzielnymi Materiałami i Animacjami"
+msgstr "Zaimportuj osobno Materiały+Animacje"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "Importuj wraz z Oddzielnymi Obiektami, Materiałami i Animacjami"
+msgstr "Zaimportuj osobno Obiekty+Materiały+Animacje"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -4075,11 +4094,11 @@ msgstr "Kopiuj zasób"
 
 #: editor/inspector_dock.cpp
 msgid "Make Built-In"
-msgstr "Skrypt wbudowany"
+msgstr "Stwórz wbudowany"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
-msgstr "Utwórz unikalne pod-zasoby"
+msgstr "Utwórz unikalne podzasoby"
 
 #: editor/inspector_dock.cpp
 msgid "Open in Help"
@@ -4501,7 +4520,7 @@ msgstr "Zmień nazwę animacji"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr "Mieszaj następną zmienioną"
+msgstr "Zmieszaj kolejną po zmianach"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
@@ -4541,7 +4560,7 @@ msgstr "Odtwórz zaznaczoną animację od tyłu z aktualnej pozycji. (A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Odtwarzaj zaznaczoną animację od końca. (Shift+A)"
+msgstr "Odtwórz zaznaczoną animację od tyłu z końca. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
@@ -4605,7 +4624,7 @@ msgstr "Poprzedni"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr "Przyszłość"
+msgstr "Następny"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
@@ -4886,7 +4905,7 @@ msgstr "Węzeł Skalowania Czasu"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr "Węzeł TimeSeek"
+msgstr "Węzeł Przewijania w Czasie"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
@@ -4963,8 +4982,7 @@ msgstr "Przekroczenie czasu."
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr ""
-"Zły hash pobranego pliku. Zakładamy, że ktoś przy nim majstrował, lub został "
-"niepoprawnie pobrany."
+"Zła suma kontrolna pobranego pliku. Zakładamy, że ktoś przy nim majstrował."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Expected:"
@@ -5064,7 +5082,7 @@ msgstr "Wszystko"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr "Brak rezultatów dla \"%s\"."
+msgstr "Brak wyników dla \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Import..."
@@ -5136,7 +5154,7 @@ msgid "Bake Lightmaps"
 msgstr "Stwórz Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Podgląd"
 
@@ -5422,7 +5440,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
-msgstr "Alt+PPM: Lista obiektów pod spodem"
+msgstr "Alt+PPM: Wybór listy głębi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7785,7 +7803,8 @@ msgid "New Animation"
 msgstr "Nowa animacja"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Prędkość (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10353,11 +10372,18 @@ msgid "Batch Rename"
 msgstr "Grupowa zmiana nazwy"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Zastąp: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Przedrostek"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Przyrostek"
 
 #: editor/rename_dialog.cpp
@@ -10405,7 +10431,8 @@ msgid "Per-level Counter"
 msgstr "Oddzielny licznik na poziom"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Gdy ustawione, licznik restartuje dla każdej grupy węzłów potomnych"
 
 #: editor/rename_dialog.cpp
@@ -10465,7 +10492,8 @@ msgid "Reset"
 msgstr "Resetuj"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Błąd wyrażenia regularnego"
 
 #: editor/rename_dialog.cpp
@@ -12553,6 +12581,11 @@ msgstr ""
 "GIProbes nie są obsługiwane przez sterownik wideo GLES2.\n"
 "Zamiast tego użyj BakedLightmap."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight z kątem szerszym niż 90 stopni nie może rzucać cieni."
@@ -12855,6 +12888,16 @@ msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Stałe nie mogą być modyfikowane."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Doki systemu plików i importowania"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Podczas eksportu lub uruchomienia, aplikacja wynikowa spróbuje połączyć "
+#~ "się z adresem IP tego komputera w celu debugowania."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""
