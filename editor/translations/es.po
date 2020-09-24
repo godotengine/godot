@@ -50,12 +50,13 @@
 # Pedro J. Estébanez <pedrojrulez@gmail.com>, 2020.
 # paco <pacosoftfree@protonmail.com>, 2020.
 # Jonatan <arandajonatan94@tuta.io>, 2020.
+# ACM <albertocm@tuta.io>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-31 03:47+0000\n"
-"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
+"PO-Revision-Date: 2020-09-12 00:46+0000\n"
+"Last-Translator: ACM <albertocm@tuta.io>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -580,6 +581,7 @@ msgid "Seconds"
 msgstr "Segundos"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -758,7 +760,7 @@ msgstr "Coincidir Mayús./Minús."
 msgid "Whole Words"
 msgstr "Palabras Completas"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Reemplazar"
 
@@ -952,6 +954,11 @@ msgid "Signals"
 msgstr "Señales"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filtrar tiles"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 "¿Estás seguro/a que quieres eliminar todas las conexiones de esta señal?"
@@ -990,7 +997,7 @@ msgid "Recent:"
 msgstr "Recientes:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Buscar:"
@@ -1196,14 +1203,12 @@ msgid "Gold Sponsors"
 msgstr "Patrocinadores Oro"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Donantes Plata"
+msgstr "Patrocinadores Plata"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Donantes Bronce"
+msgstr "Patrocinadores Bronce"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1683,16 +1688,17 @@ msgid "Scene Tree Editing"
 msgstr "Editor del Árbol de Escenas"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Importación"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Nodos"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Sistema de Archivo e Importación"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Sistema de Archivos"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Importación"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1958,7 +1964,7 @@ msgstr "Directorios y Archivos:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Vista Previa:"
 
@@ -2846,24 +2852,28 @@ msgstr "Exportar con Depuración Remota"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Al exportar o distribuir, el ejecutable generado intentará conectarse a la "
-"IP de este equipo para ser depurado."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Exportación Mini con Recursos en Red"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Cuando esta opción está activa, al exportar o publicar se creará un "
 "ejecutable mínimo.\n"
@@ -2876,9 +2886,10 @@ msgid "Visible Collision Shapes"
 msgstr "Ver Formas de Colisión"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Las formas de colisión y los nodos raycast (para 2D y 3D) serán visibles "
 "durante la ejecución del juego si esta opción está activada."
@@ -2888,23 +2899,26 @@ msgid "Visible Navigation"
 msgstr "Navegación Visible"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Las mallas de navegación y los polígonos serán visibles durante la ejecución "
 "del juego si esta opción está activada."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sincronizar cambios de escena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Cuando esta opción este activada, cualquier cambio hecho a la escena en el "
 "editor sera replicado en el juego en ejecución.\n"
@@ -2912,15 +2926,17 @@ msgstr ""
 "sistema de archivos remoto."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Sincronizar Cambios en Scripts"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Cuando esta opción esté activa, cualquier script que se guarde se volverá a "
 "cargar en el juego en ejecución.\n"
@@ -2986,7 +3002,7 @@ msgstr "Ayuda"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Buscar"
 
@@ -3407,9 +3423,11 @@ msgid "Add Key/Value Pair"
 msgstr "Agregar Par Clave/Valor"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "No se ha encontrado ningún preset de exportación ejecutable para esta "
 "plataforma.\n"
@@ -5186,7 +5204,7 @@ msgid "Bake Lightmaps"
 msgstr "Bake Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Vista Previa"
 
@@ -7844,7 +7862,8 @@ msgid "New Animation"
 msgstr "Nueva Animación"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Velocidad (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10419,11 +10438,18 @@ msgid "Batch Rename"
 msgstr "Renombrar por lote"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Reemplazar: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Prefijo"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Sufijo"
 
 #: editor/rename_dialog.cpp
@@ -10471,7 +10497,8 @@ msgid "Per-level Counter"
 msgstr "Contador Por Nivel"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Si esta activo el contador reinicia por cada grupo de nodos hijos"
 
 #: editor/rename_dialog.cpp
@@ -10531,7 +10558,8 @@ msgid "Reset"
 msgstr "Resetear"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Error de Expresión Regular"
 
 #: editor/rename_dialog.cpp
@@ -12638,6 +12666,11 @@ msgstr ""
 "Las GIProbes no están soportadas por el controlador de vídeo GLES2.\n"
 "Usa un BakedLightmap en su lugar."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12950,6 +12983,16 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Sistema de Archivo e Importación"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Al exportar o distribuir, el ejecutable generado intentará conectarse a "
+#~ "la IP de este equipo para ser depurado."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

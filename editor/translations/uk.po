@@ -546,6 +546,7 @@ msgid "Seconds"
 msgstr "Секунди"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "Кадри за секунду"
 
@@ -724,7 +725,7 @@ msgstr "Враховувати регістр"
 msgid "Whole Words"
 msgstr "Цілі слова"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Замінити"
 
@@ -917,6 +918,11 @@ msgid "Signals"
 msgstr "Сигнали"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Фільтрувати плитки"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Ви справді хочете вилучити усі з'єднання з цього сигналу?"
 
@@ -954,7 +960,7 @@ msgid "Recent:"
 msgstr "Нещодавні:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Пошук:"
@@ -1644,16 +1650,17 @@ msgid "Scene Tree Editing"
 msgstr "Редагування ієрархії сцени"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Бічна панель імпортування"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Бічна панель вузлів"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Бічна панель файлової системи та імпортування"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Файлова система"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Бічна панель імпортування"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1917,7 +1924,7 @@ msgstr "Каталоги та файли:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Попередній перегляд:"
 
@@ -2798,24 +2805,28 @@ msgstr "Розгортання за допомогою віддаленого н
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"При експорті або розгортанні, отриманий виконуваний файл буде намагатися "
-"підключитися до IP цього комп'ютера, для налагодження."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Маленьке розгортання з Network File System"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Якщо цей параметр увімкнено, експорт або розгортання дають мінімальний "
 "виконуваний файл.\n"
@@ -2828,9 +2839,10 @@ msgid "Visible Collision Shapes"
 msgstr "Видимі контури зіткнень"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Контури зіткнення та вузли raycast (для 2D та 3D) буде видно в роботі гри, "
 "якщо ця опція увімкнена."
@@ -2840,23 +2852,26 @@ msgid "Visible Navigation"
 msgstr "Видимі навігації"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Навігаційні полісітки та полігони будуть видимі у запущеній грі, якщо ця "
 "опція увімкнена."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Синхронізувати зміни сцени"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Якщо цей параметр увімкнено, будь-які зміни, внесені в сцену в редакторі, "
 "будуть відтворені в роботі гри.\n"
@@ -2864,15 +2879,17 @@ msgstr ""
 "файловою системою."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Синхронізувати зміни в скрипті"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Якщо цей параметр увімкнено, будь-який скрипт, який буде збережений, буде "
 "перезавантажений у поточній грі.\n"
@@ -2936,7 +2953,7 @@ msgstr "Довідка"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Пошук"
 
@@ -3355,9 +3372,11 @@ msgid "Add Key/Value Pair"
 msgstr "Додати пару ключ-значення"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Не знайдено робочий експортер для цієї платформи.\n"
 "Будь ласка, додайте його в меню експорту."
@@ -5129,7 +5148,7 @@ msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Попередній перегляд"
 
@@ -7781,7 +7800,8 @@ msgid "New Animation"
 msgstr "Нова анімація"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Частота (кадри за сек.):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10353,11 +10373,18 @@ msgid "Batch Rename"
 msgstr "Пакетне перейменування"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Замінити: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Префікс"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Суфікс"
 
 #: editor/rename_dialog.cpp
@@ -10405,7 +10432,8 @@ msgid "Per-level Counter"
 msgstr "Лічильник на рівень"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 "Якщо позначено, лічильник перезапускатиметься для кожної групи дочірніх "
 "вузлів"
@@ -10467,7 +10495,8 @@ msgid "Reset"
 msgstr "Скинути"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Помилка у формальному виразі"
 
 #: editor/rename_dialog.cpp
@@ -12566,6 +12595,11 @@ msgstr ""
 "У драйвері GLES2 не передбачено підтримки GIProbes.\n"
 "Скористайтеся замість них BakedLightmap."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight з кутом, який є більшим за 90 градусів, не може давати тіні."
@@ -12874,6 +12908,16 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Бічна панель файлової системи та імпортування"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "При експорті або розгортанні, отриманий виконуваний файл буде намагатися "
+#~ "підключитися до IP цього комп'ютера, для налагодження."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

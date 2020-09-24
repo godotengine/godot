@@ -517,6 +517,7 @@ msgid "Seconds"
 msgstr "วินาที"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "เฟรมเรท"
 
@@ -695,7 +696,7 @@ msgstr "ตรงตามอักษรพิมพ์เล็ก-ใหญ�
 msgid "Whole Words"
 msgstr "ทั้งคำ"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "แทนที่"
 
@@ -884,6 +885,11 @@ msgid "Signals"
 msgstr "สัญญาณ"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "ตัวกรองไทล์"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 
@@ -921,7 +927,7 @@ msgid "Recent:"
 msgstr "ล่าสุด:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "ค้นหา:"
@@ -1609,18 +1615,18 @@ msgstr "แก้ไขผังฉาก"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "Import Dock"
-msgstr "นำเข้า"
-
-#: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
 msgstr "โหมดเคลื่อนย้าย"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "FileSystem and Import Docks"
-msgstr "ระบบไฟล์ และ นำเข้า"
+msgid "FileSystem Dock"
+msgstr "ระบบไฟล์"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Import Dock"
+msgstr "นำเข้า"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1882,7 +1888,7 @@ msgstr "ไฟล์และโฟลเดอร์:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "ตัวอย่าง:"
 
@@ -2734,22 +2740,28 @@ msgstr "ส่งออกพร้อมการแก้ไขจุดบก
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
-msgstr "เมื่อส่งออก โปรแกรมจะพยายามเชื่อมต่อมายังคอมพิวเตอร์เครื่องนี้เพื่อทำการแก้ไขจุดบกพร่อง"
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "ส่งออกโดยใช้ระบบไฟล์เครือข่าย"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "ถ้าเปิดตัวเลือกนี้ ตัวเกมที่ส่งออกจะมีขนาดแค่พอใช้งานได้\n"
 "ตัวเกมจะได้รับระบบไฟล์จากโปรแกรมแก้ไขผ่านเครือข่าย\n"
@@ -2760,9 +2772,10 @@ msgid "Visible Collision Shapes"
 msgstr "ขอบเขตการชนที่มองเห็นได้"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr "รูปทรงกายภาพและรังสี (2D และ 3D) จะมองเห็นได้ขณะเริ่มโปรแกรมถ้าเปิดตัวเลือกนี้"
 
 #: editor/editor_node.cpp
@@ -2770,35 +2783,40 @@ msgid "Visible Navigation"
 msgstr "แสดงการนำทาง"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr "รูปทรงที่มีเส้นนำทางจะมองเห็นได้เมื่อเริ่มโปรแกรมถ้าเปิดตัวเลือกนี้"
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "ซิงค์การเปลี่ยนแปลงฉาก"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "ถ้าเปิดตัวเลือกนี้ โปรแกรมที่รันอยู่จะได้รับการแก้ไขทันที\n"
 "เมื่อใช้กับอุปกรณ์แบบรีโมท จะดีกว่าถ้าเปิดระบบไฟล์เครือข่ายด้วย"
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "ซิงค์การเปลี่ยนแปลงสคริปต์"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "เมื่อเปิดตัวเลือกนี้ สคริปต์ที่บันทึกจะโหลดในเกมทันที\n"
 "ถ้าใช้กับอุปกรณ์รีโมท จะดีกว่าถ้าเปิดระบบไฟล์เครือข่ายด้วย"
@@ -2860,7 +2878,7 @@ msgstr "ช่วยเหลือ"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "ค้นหา"
 
@@ -3261,9 +3279,11 @@ msgid "Add Key/Value Pair"
 msgstr "เพิ่มคู่ของคีย์/ค่า"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "ไม่มีแม่แบบส่งออกที่สามารถรันเกมได้ของแพลตฟอร์มนี้\n"
 "กรุณาเพิ่มแม่แบบส่งออกในเมนูส่งออก"
@@ -5026,7 +5046,7 @@ msgid "Bake Lightmaps"
 msgstr "สร้าง Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "ตัวอย่าง"
 
@@ -7765,7 +7785,8 @@ msgid "New Animation"
 msgstr "แอนิเมชันใหม่"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "ความเร็ว (เฟรม/วินาที):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10301,11 +10322,18 @@ msgid "Batch Rename"
 msgstr "เปลี่ยนชื่อ"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "แทนที่: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "คำนำหน้า"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "คำต่อท้าย"
 
 #: editor/rename_dialog.cpp
@@ -10352,7 +10380,7 @@ msgid "Per-level Counter"
 msgstr "ตัวนับต่อเลเวล"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10413,7 +10441,7 @@ msgstr "รีเซ็ตซูม"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
-msgid "Regular Expression Error"
+msgid "Regular Expression Error:"
 msgstr "แก้ไขสมการ"
 
 #: editor/rename_dialog.cpp
@@ -12430,6 +12458,11 @@ msgstr ""
 "ไดรเวอร์วีดีโอ GLES2 ไม่สนับสนุน GIProbe\n"
 "ใช้ BakedLightmap แทน"
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12711,6 +12744,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#, fuzzy
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "ระบบไฟล์ และ นำเข้า"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "เมื่อส่งออก โปรแกรมจะพยายามเชื่อมต่อมายังคอมพิวเตอร์เครื่องนี้เพื่อทำการแก้ไขจุดบกพร่อง"
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "ฉากปัจจุบันยังไม่ได้บันทึก กรุณาบันทึกก่อนเริ่มโปรแกรม"
