@@ -38,8 +38,7 @@ class MessageQueue {
 	_THREAD_SAFE_CLASS_
 
 	enum {
-
-		DEFAULT_QUEUE_SIZE_KB = 1024
+		DEFAULT_QUEUE_SIZE_KB = 4096
 	};
 
 	enum {
