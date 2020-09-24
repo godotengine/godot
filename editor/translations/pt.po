@@ -1,4 +1,4 @@
-# Portuguese (Portugal) translation of the Godot Engine editor
+# Portuguese translation of the Godot Engine editor
 # Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
@@ -22,9 +22,9 @@ msgstr ""
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2020-09-24 12:43+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
-"Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
-"godot-engine/godot/pt_PT/>\n"
-"Language: pt_PT\n"
+"Language-Team: Portuguese <https://hosted.weblate.org/projects/"
+"godot-engine/godot/pt/>\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
