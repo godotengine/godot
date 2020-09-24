@@ -34,7 +34,7 @@
 
 #include "register_types.h"
 
-#include "input_buffer.h"
+#include "data_buffer.h"
 #include "interpolator.h"
 #include "networked_controller.h"
 #include "scene_synchronizer.h"

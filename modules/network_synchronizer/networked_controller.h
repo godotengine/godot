@@ -36,7 +36,7 @@
 
 #include "core/math/transform.h"
 #include "core/node_path.h"
-#include "input_buffer.h"
+#include "data_buffer.h"
 #include "interpolator.h"
 #include "net_utilities.h"
 #include <deque>

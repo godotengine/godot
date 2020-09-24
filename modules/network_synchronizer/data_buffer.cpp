@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  player_protocol.cpp                                                  */
+/*  data_buffer.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,7 +32,7 @@
 	@author AndreaCatania
 */
 
-#include "input_buffer.h"
+#include "data_buffer.h"
 
 #include "core/io/marshalls.h"
 
