@@ -80,10 +80,6 @@ String OS::get_iso_date_time(bool local) const {
 		   timezone;
 }
 
-uint64_t OS::get_splash_tick_msec() const {
-	return _msec_splash;
-}
-
 double OS::get_unix_time() const {
 	return 0;
 }
