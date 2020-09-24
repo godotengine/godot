@@ -80,7 +80,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
 bool CommandQueueMT::dealloc_one() {
 tryagain:
-	if (dealloc_ptr == write_ptr) {
+	if (dealloc_ptr == (write_ptr_and_epoch >> 1)) {
 		// The queue is empty
 		return false;
 	}
@@ -104,8 +104,8 @@ tryagain:
 
 CommandQueueMT::CommandQueueMT(bool p_sync) {
 
-	read_ptr = 0;
-	write_ptr = 0;
+	read_ptr_and_epoch = 0;
+	write_ptr_and_epoch = 0;
 	dealloc_ptr = 0;
 	mutex = Mutex::create();
 
