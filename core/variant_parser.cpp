@@ -1750,11 +1750,14 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				write(E->get(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 				p_store_string_func(p_store_string_ud, ": ");
 				write(dict[E->get()], p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
-				if (E->next())
+				if (E->next()) {
 					p_store_string_func(p_store_string_ud, ",\n");
+				} else {
+					p_store_string_func(p_store_string_ud, "\n");
+				}
 			}
 
-			p_store_string_func(p_store_string_ud, "\n}");
+			p_store_string_func(p_store_string_ud, "}");
 
 		} break;
 		case Variant::ARRAY: {
