@@ -100,7 +100,7 @@ CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		body_scale(1., 1., 1.),
 		force_shape_reset(false),
 		space(NULL),
-		isTransformChanged(false) {}
+		updated(false) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -188,6 +188,7 @@ void CollisionObjectBullet::on_exit_area(AreaBullet *p_area) {
 
 void CollisionObjectBullet::set_godot_object_flags(int flags) {
 	bt_collision_object->setUserIndex2(flags);
+	updated = true;
 }
 
 int CollisionObjectBullet::get_godot_object_flags() const {
@@ -222,7 +223,7 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 }
 
 void CollisionObjectBullet::notify_transform_changed() {
-	isTransformChanged = true;
+	updated = true;
 }
 
 RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
