@@ -72,7 +72,7 @@ CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
 bool CommandQueueMT::dealloc_one() {
 tryagain:
-	if (dealloc_ptr == write_ptr) {
+	if (dealloc_ptr == (write_ptr_and_epoch >> 1)) {
 		// The queue is empty
 		return false;
 	}
