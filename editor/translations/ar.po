@@ -44,12 +44,13 @@
 # أحمد مصطفى الطبراني <eltabaraniahmed@gmail.com>, 2020.
 # ChemicalInk <aladdinalkhafaji@gmail.com>, 2020.
 # Musab Alasaifer <mousablasefer@gmail.com>, 2020.
+# Yassine Oudjana <y.oudjana@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-20 15:20+0000\n"
-"Last-Translator: أحمد مصطفى الطبراني <eltabaraniahmed@gmail.com>\n"
+"PO-Revision-Date: 2020-09-12 00:46+0000\n"
+"Last-Translator: Yassine Oudjana <y.oudjana@protonmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -562,6 +563,7 @@ msgid "Seconds"
 msgstr "ثواني"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "إطار خلال ثانية"
 
@@ -740,7 +742,7 @@ msgstr "قضية تشابه"
 msgid "Whole Words"
 msgstr "كل الكلمات"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "إستبدال"
 
@@ -931,6 +933,11 @@ msgid "Signals"
 msgstr "الإشارات"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "تنقية البلاطات"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "هل أنت متأكد أنك تود إزالة كل الإتصالات من هذه الإشارة؟"
 
@@ -968,7 +975,7 @@ msgid "Recent:"
 msgstr "الحالي:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "بحث:"
@@ -1172,12 +1179,10 @@ msgid "Gold Sponsors"
 msgstr "الرعاة الذهبيين"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
 msgstr "المانحين الفضيين"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
 msgstr "المانحين البرنزيين"
 
@@ -1657,16 +1662,17 @@ msgid "Scene Tree Editing"
 msgstr "تعديل شجرة المشهد"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "رصيف الاستيراد"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "رصيف العُقد"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "رصيف نظام الملفات و الاستيراد"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "نظام الملفات"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "رصيف الاستيراد"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1928,7 +1934,7 @@ msgstr "الوجهات والملفات:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "إستعراض:"
 
@@ -2719,15 +2725,15 @@ msgstr "حفظ جميع المشاهد"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "تحويل الي..."
+msgstr "تحويل إلى..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "مكتبة المجسم..."
+msgstr "مكتبة مجسّمات..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "مجموعة البلاط..."
+msgstr "مجموعة بلاط..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2741,7 +2747,7 @@ msgstr "إعادة تراجع"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr "ادوات لكل-المشهد او لمشاريع متنوعه."
+msgstr "أدوات مشروع أو مشهد متنوعة."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
@@ -2799,24 +2805,28 @@ msgstr "نشر مع تصحيح الأخطاء عن بعد"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"حينما يتم التصدير أو النشر، ملف التشغيل الناتج سوف يحاول الإتصال إلي عنوان "
-"الأي بي الخاص بهذا الكمبيوتر من أجل تصحيح الأخطاء."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "نشر مصغر مع نظام شبكات الملفات"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "حينما يتم تفعيل هذا الإعداد، التصدير أو النشر سوف ينتج ملف تشغيل بالحد "
 "الأدنى (مبسط).\n"
@@ -2829,9 +2839,10 @@ msgid "Visible Collision Shapes"
 msgstr "أشكال إصطدام ظاهرة"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "أشكال الإصطدام و عُقد الراي كاست (من أجل 2D و 3D) سوف تكون ظاهرة في اللعبة "
 "العاملة إذا كان هذا الإعداد مُفعّل."
@@ -2841,22 +2852,25 @@ msgid "Visible Navigation"
 msgstr "الإنتقال المرئي"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "مجسمات التنقل والأشكال المضلعة سوف تكون ظاهرة حينما يتم تفعيل هذا الإعداد."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "مزامنة تغييرات المشهد"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "حينما يكون هذا الإعداد مُفعل، أي تغيير يحدث في المشهد من خلال المُعدل سوف يتم "
 "تطبيقة في اللعبة العاملة.\n"
@@ -2864,15 +2878,17 @@ msgstr ""
 "الملفات."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "مزامنة تغييرات الكود"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "حينما يكون هذا الإعداد مُفعل، أي نص برمجي يتم حفظه سيتم إعادة تحميله في "
 "اللعبة العاملة.\n"
@@ -2936,7 +2952,7 @@ msgstr "مساعدة"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "بحث"
 
@@ -3351,9 +3367,11 @@ msgid "Add Key/Value Pair"
 msgstr "إضافة زوج مفتاح/قيمة"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "لا يوجد إعداد تصدير مسبق عامل لهذه المنصة.\n"
 "من فضلك أضف إعداد تصدير عامل في قائمة التصدير."
@@ -5114,7 +5132,7 @@ msgid "Bake Lightmaps"
 msgstr "إعداد خرائط الضوء"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "استعراض"
 
@@ -7751,7 +7769,8 @@ msgid "New Animation"
 msgstr "رسومية متحركة جديدة"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "السرعة (إطار ف. ث. FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10313,11 +10332,18 @@ msgid "Batch Rename"
 msgstr "إعادة تسمية الدفعة"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "إستبدال: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "بادئة"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "لاحقة"
 
 #: editor/rename_dialog.cpp
@@ -10365,7 +10391,8 @@ msgid "Per-level Counter"
 msgstr "العداد وفق-المستوى"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "إذا تم تحديده فإن العداد سيعيد البدء لكل مجموعة من العُقد الأبناء"
 
 #: editor/rename_dialog.cpp
@@ -10425,7 +10452,8 @@ msgid "Reset"
 msgstr "إعادة تعيين"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "خطأ ذو علاقة بالتعبير الاعتيادي Regular Expression"
 
 #: editor/rename_dialog.cpp
@@ -12513,6 +12541,11 @@ msgstr ""
 "GIProbes لا يدعم برنامج تشغيل الفيديو GLES2.\n"
 "استخدم BakedLightmap بدلاً من ذلك."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "بقعة الضوء بزاوية أكبر من 90 درجة لا يمكنها إلقاء الظلال."
@@ -12815,6 +12848,16 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "رصيف نظام الملفات و الاستيراد"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "حينما يتم التصدير أو النشر، ملف التشغيل الناتج سوف يحاول الإتصال إلي "
+#~ "عنوان الأي بي الخاص بهذا الكمبيوتر من أجل تصحيح الأخطاء."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "المشهد الحالي لم يتم حفظه. الرجاء حفظ المشهد قبل تشغيله و اختباره."

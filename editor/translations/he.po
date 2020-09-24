@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-08 11:40+0000\n"
+"PO-Revision-Date: 2020-09-24 12:43+0000\n"
 "Last-Translator: Ziv D <wizdavid@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
@@ -248,7 +248,7 @@ msgstr "פונקציות:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "רצועות שמע:"
+msgstr "קטעי שמע:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
@@ -260,7 +260,7 @@ msgstr "החלפת נתיב רצועה"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "הפעל/כבה רצועה."
+msgstr "הפעלת/כיבוי רצועה זו."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -272,7 +272,7 @@ msgstr "מצב אינטרפולציה"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "מצב לולאה Wrap (אינטרפולציה של הסוף עם ההתחלה בלולאה)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -284,7 +284,7 @@ msgstr "זמן (שניות): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "הפעלת/ביטול רצועה"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -317,11 +317,11 @@ msgstr "מעוקב"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "אינטרפולצית לולאה מסוג Clamp"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "אינטרפולצית לולאה מסוג Wrap"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -428,7 +428,7 @@ msgstr "נגן הנפשה אינו יכול להנפיש את עצמו, רק ש�
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "אי אפשר להוסיף רצועה חדשה בלי שורש"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
@@ -467,9 +467,8 @@ msgid "Add Method Track Key"
 msgstr "הוספת רצועות חדשות."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "לא נמצא VariableGet בסקריפט: "
+msgstr "לא נמצאה מתודה בעצם: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -480,9 +479,8 @@ msgid "Clipboard is empty"
 msgstr "לוח העתקה ריק"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "הדבקת משתנים"
+msgstr "הדבקת רצועות"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -491,7 +489,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
+msgstr "אפשרות זו אינה פעילה לעריכת בזייה, כי זאת רק רצועה אחת."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -505,38 +503,44 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"ההנפשה שייכת לסצנה מיובאת, לכן שינויים לרצועות המיובאות לא ישמרו.\n"
+"\n"
+"להפעלת האפשרות להוספת רצועות מותאמות-אישית, יש לקבוע בהגדרות ייבוא של הסצנה "
+"את\n"
+"\"הנפשה > אחסון\" ל-\"קבצים\", להפעיל את \"הנפשה > השאר רצועות מותאמות-אישית"
+"\", ולבסוף לייבא מחדש.\n"
+"דרך אחרת, להשתמש בהגדרות ייבוא אשר מייבאים הנפשות לקבצים נפרדים."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "אזהרה: עריכת הנפשה מיובאת"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr ""
+msgstr "יש לבחור במפרק AnimationPlayer כדי ליצור ולערוך הנפשות."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "הצגת רצועות רק של מפרקים שנבחרו בעץ."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "קיבוץ רצועות לפי מפרק או הצגה כרשימה פשוטה."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "הצמדה"
+msgstr "הצמדה:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "שקופיות ההנפשה"
+msgstr "ערך צעד של הנפשה."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "שניות"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -555,9 +559,8 @@ msgid "Animation properties."
 msgstr "מאפייני ההנפשה."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "העתקת משתנים"
+msgstr "העתקת רצועות"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -722,7 +725,7 @@ msgstr "התאמת רישיות"
 msgid "Whole Words"
 msgstr "מילים שלמות"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "החלף"
 
@@ -918,6 +921,11 @@ msgid "Signals"
 msgstr "אותות"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "מאפייני פריט."
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 
@@ -956,7 +964,7 @@ msgid "Recent:"
 msgstr "אחרונים:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "חיפוש:"
@@ -1644,18 +1652,18 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "Import Dock"
-msgstr "ייבוא"
-
-#: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
 msgstr "שם המפרק:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "FileSystem and Import Docks"
+msgid "FileSystem Dock"
 msgstr "מערכת קבצים"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Import Dock"
+msgstr "ייבוא"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1935,7 +1943,7 @@ msgstr "תיקיות וקבצים:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "תצוגה מקדימה:"
 
@@ -2794,24 +2802,28 @@ msgstr "הטעמה עם ניפוי שגיאות מרחוק"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"בעת ייצוא או הטמעה, קובץ ההפעלה ינסה להתחבר לכתובת ה־IP של המחשב הזה לצורך "
-"ניפוי שגיאות."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "הטמעה קטנה עם מערכת קבצים ברשת"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "כאשר אפשרות זו מופעלת, ייצוא או פריסה יפיקו קובץ הפעלה מינימלי.\n"
 "מערכת הקבצים תסופק מהמיזם על ידי העורך ברשת.\n"
@@ -2823,9 +2835,10 @@ msgid "Visible Collision Shapes"
 msgstr "צורות התנגשות גלויים"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "צורות התנגשויות ומפרקי קרניים (עבור דו ותלת מימד) יהיו גלויים בהרצת המשחק אם "
 "אפשרות זאת מופעלת."
@@ -2835,35 +2848,40 @@ msgid "Visible Navigation"
 msgstr "ניווט גלוי"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr "רשתות ניווט ומצולעים יהיו גלויים בהרצת המשחק אם אפשרות זאת מופעלת."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "סנכרון השינויים בסצנה"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "כאשר אפשרות זו מופעלת, כל השינויים שיבוצעו בסצנה בעורך יוצגו בהרצת המשחק.\n"
 "בשימוש עם מכשיר מרוחק, מערכת קבצים ברשת (NFS) תהיה יעילה יותר ."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "סנכרון השינויים בסקריפט"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "כאשר אפשרות זו מופעלת, כל סקריפט שנשמר יטען מחדש בהרצת המשחק.\n"
 "בשימוש עם מכשיר מרוחק, מערכת קבצים ברשת (NFS) תהיה יעילה יותר ."
@@ -2925,7 +2943,7 @@ msgstr "עזרה"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "חיפוש"
 
@@ -3338,7 +3356,8 @@ msgstr ""
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 
 #: editor/editor_run_script.cpp
@@ -5161,7 +5180,7 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr ""
 
@@ -7879,7 +7898,8 @@ msgid "New Animation"
 msgstr "שם הנפשה חדשה:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "מהירות (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10407,11 +10427,16 @@ msgid "Batch Rename"
 msgstr "שינוי שם"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "להחליף "
+
+#: editor/rename_dialog.cpp
+msgid "Prefix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+msgid "Suffix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10462,7 +10487,7 @@ msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10524,8 +10549,9 @@ msgid "Reset"
 msgstr "איפוס התקריב"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
-msgstr ""
+#, fuzzy
+msgid "Regular Expression Error:"
+msgstr "גרסה נוכחית:"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -12339,12 +12365,14 @@ msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"הנפשת CPUParticles2D מחייבת שימוש ב-CanvasItemMaterial עם \"הנפשת חלקיקים\" "
+"מאופשרת."
 
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
-msgstr ""
+msgstr "יש לספק טקסטורה בצורת האור למאפיין \"טקסטורה\"."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -12360,12 +12388,16 @@ msgid ""
 "A NavigationPolygon resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
 msgstr ""
+"יש להגדיר או ליצור משאב NavigationPolygon כדי שמפרק זה יעבוד. נא לקבוע "
+"מאפיין או לצייר מצולע."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
 "NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
 "node. It only provides navigation data."
 msgstr ""
+"NavigationPolygonInstance חייב להיות ילד או נכד למפרק Navigation2D. הוא מספק "
+"רק נתוני ניווט."
 
 #: scene/2d/parallax_layer.cpp
 msgid ""
@@ -12379,6 +12411,9 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"חלקיקים מבוססי GPU אינם נתמכים על-ידי מנהל ווידאו GLES2.\n"
+"השתמש בצומת CPUParticles2D במקום. למטרה זו האפשרות \"המר לחלקיקים של CPU\" "
+"קיימת."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -12391,6 +12426,8 @@ msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"הנפשת Particles2D מחייבת שימוש ב-CanvasItemMaterial עם \"הנפשת חלקיקים\" "
+"מאופשרת."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -12402,23 +12439,26 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"שינויים בגודל ל-RigidBody2D (במצבי character או rigid) יבוטלו על ידי מנוע "
+"הפיזיקה בזמן ריצה.\n"
+"במקום זאת יש לשנות את גודל צורות ההתנגשות של הצאצאים."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
+msgstr "מאפיין הנתיב חייב להצביע על מפרק Node2D חוקי כדי לעבוד."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
-msgstr ""
+msgstr "שרשרת Bone2D זו אמורה להסתיים במפרק Skeleton2D."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
-msgstr ""
+msgstr "Bone2D עובד רק עם Skeleton2D או Bone2D אחר כמפרק ההורה."
 
 #: scene/2d/skeleton_2d.cpp
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
-msgstr ""
+msgstr "לעצם זו אין תנוחת REST ראויה. עבור למפרק ה-Skeleton2D והגדר אחד."
 
 #: scene/2d/tile_map.cpp
 msgid ""
@@ -12426,44 +12466,45 @@ msgid ""
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
+"TileMap עם שימוש בהורה מאופשר זקוק להורה CollisionObject2D כדי לתת לו צורות. "
+"אנא השתמש בו כצאצא של Area2D, StaticBody2D, RigidBody2D, KinematicBody2D "
+"וכו' כדי לתת להם צורה."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
+"VisibilityEnabler2D פועל בצורה הטובה ביותר בשימוש עם המפרק העליון בסצינה "
+"שנערכה כהורה."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ל־ARVRCamera חייב להיות מפרק ARVROrigin כהורה שלו"
+msgstr "ההורה של ARVRCamera חייב להיות מפרק ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr "ל־ARVRCamera חייב להיות מפרק ARVROrigin כהורה שלו"
+msgstr "ההורה של ARVRController חייב להיות מפרק ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The controller ID must not be 0 or this controller won't be bound to an "
 "actual controller."
-msgstr ""
+msgstr "מזהה הבקר אינו יכול להיות 0 או שבקר זה לא יהיה מחובר לבקר האמיתי."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr "ל־ARVRCamera חייב להיות מפרק ARVROrigin כהורה שלו"
+msgstr "ההורה של ARVRAnchor חייב להיות מפרק ARVROrigin."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The anchor ID must not be 0 or this anchor won't be bound to an actual "
 "anchor."
-msgstr ""
+msgstr "מזהה העוגן אינו יכול להיות 0 או שעוגן זה לא יהיה מחובר לעוגן האמיתי."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr "ARVROrigin דורש מפרק צאצא מסוג ARVRCamera"
+msgstr "ARVROrigin דורש צאצא מסוג ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
@@ -12475,19 +12516,19 @@ msgstr "(זמן שנותר: %d:%02d שנ׳)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
-msgstr ""
+msgstr "מדפיס רשתות: "
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Lights:"
-msgstr ""
+msgstr "מדפיס תאורות:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
-msgstr ""
+msgstr "מסיים הדפסה"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Lighting Meshes: "
-msgstr ""
+msgstr "רשתות תאורה: "
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12495,6 +12536,9 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
+"למפרק זה אין צורה ולכן הוא לא יכול להתנגש או לקיים אינטראקציה עם אובייקטים "
+"אחרים.\n"
+"כדאי להוסיף CollisionShape2D או CollisionPolygon2D כצאצא כדי להגדיר צורה."
 
 #: scene/3d/collision_polygon.cpp
 msgid ""
@@ -12502,6 +12546,9 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionPolygon2D משמש רק להספקת צורת התנגשות למפרק היורש מ-"
+"CollisionObject2D. השימוש בו הוא רק כצאצא של Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D וכו'."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -12513,57 +12560,71 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
+"CollisionShape משמש רק להספקת צורת התנגשות למפרק היורש מ-CollisionObject2D. "
+"השימוש בו הוא רק כצאצא של Area, StaticBody, RigidBody, KinematicBody וכו'."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
-msgstr ""
+msgstr "יש לספק צורה כדי ש-CollisionShape יתפקד. יש ליצור משאב צורה עבורו."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"צורות מישוריות אינן פועלות היטב ויוסרו בגירסאות עתידיות. נא לא להשתמש בהן."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr ""
+msgstr "ConcavePolygonShape לא תומך ב- RigidBody במצב שאינו סטטי."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
+msgstr "שום דבר לא נראה כי לא הוקצאה רשת."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
 "CPUParticles animation requires the usage of a SpatialMaterial whose "
 "Billboard Mode is set to \"Particle Billboard\"."
 msgstr ""
+"אנימציה של CPUParticles מחייבת שימוש ב-SpatialMaterial אשר מצב Billboard שלו "
+"מוגדר ל-\"Particle Billboard\"."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
-msgstr ""
+msgstr "הדפסת רשתות"
 
 #: scene/3d/gi_probe.cpp
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"מנהל הווידאו GLES2 אינו תומך ב- GIProbes.\n"
+"השתמש ב-BakedLightmap במקום."
+
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "SpotLight עם זווית רחבה מ-90 מעלות אינו יכול להטיל צללים."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
+msgstr "יש להגדיר או ליצור משאב NavigationMesh כדי שצומת זה יפעל."
 
 #: scene/3d/navigation_mesh.cpp
 msgid ""
 "NavigationMeshInstance must be a child or grandchild to a Navigation node. "
 "It only provides navigation data."
 msgstr ""
+"NavigationMeshInstance חייב להיות ילד או נכד למפרק Navigation. הוא מספק רק "
+"נתוני ניווט."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12571,28 +12632,34 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"חלקיקים מבוססי GPU אינם נתמכים על-ידי מנהל ווידאו GLES2.\n"
+"השתמש בצומת CPUParticles במקום. למטרה זו האפשרות \"המר לחלקיקים של CPU\" "
+"קיימת."
 
 #: scene/3d/particles.cpp
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
-msgstr ""
+msgstr "שום דבר אינו גלוי כי רשתות לא הוקצו למעברי ההדפסה."
 
 #: scene/3d/particles.cpp
 msgid ""
 "Particles animation requires the usage of a SpatialMaterial whose Billboard "
 "Mode is set to \"Particle Billboard\"."
 msgstr ""
+"אנימציה של חלקיקים מחייבת שימוש ב-SpatialMaterial אשר מצב Billboard שלו "
+"מוגדר ל-\"Particle Billboard\"."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid "PathFollow only works when set as a child of a Path node."
-msgstr "PathFollow2D עובד רק כאשר הוא מוגדר כצאצא של מפרק Path2D."
+msgstr "PathFollow עובד רק כאשר הוא מוגדר כצאצא של מפרק Path."
 
 #: scene/3d/path.cpp
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
+"ROTATION_ORIENTED של PathFollow דורש הפעלה של \"Up Vector\" במשאב העקומה של "
+"Path בהורה שלו."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -12600,16 +12667,21 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"שינויים בגודל ל-RigidBody (במצבי character או rigid) יבוטלו על ידי מנוע "
+"הפיזיקה בזמן ריצה.\n"
+"במקום זאת יש לשנות את גודל צורות ההתנגשות של הצאצאים."
 
 #: scene/3d/remote_transform.cpp
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
+"המאפיין \"Remote Path\" חייב להפנות למפרק חוקי מסוג Spatial או יורש ממנו כדי "
+"לעבוד."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
-msgstr ""
+msgstr "תהיה התעלמות מגוף זה עד שתקבע רשת."
 
 #: scene/3d/soft_body.cpp
 msgid ""
@@ -12617,77 +12689,85 @@ msgid ""
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"שינויים בגודל ל-SoftBody יבוטלו על ידי מנוע הפיזיקה בזמן ריצה.\n"
+"במקום זאת יש לשנות את גודל צורות ההתנגשות של הצאצאים."
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
+"יש ליצור או להגדיר משאב SpriteFrames במאפיין \"Frames\" כדי ש-"
+"AnimatedSprite3D יציג תמוניות."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+"VehicleWheel משמש להספקת מערכת גלגלים ל-VehicleBody. יש להשתמש בו כצאצא של "
+"VehicleBody."
 
 #: scene/3d/world_environment.cpp
 msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment דורש שמאפיין \"Environment\" שלו יכיל סביבה כדי שתהיה השפעה "
+"גלויה."
 
 #: scene/3d/world_environment.cpp
 msgid ""
 "Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
+msgstr "רק WorldEnvironment אחד מותר לכל סצנה (או קבוצה של מופעי סצנות)."
 
 #: scene/3d/world_environment.cpp
 msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
+"ה-WorldEnvironment הזה לא פעיל. הוסף מצלמה (לסצנות תלת ממדיות) או הגדר את "
+"מצב הרקע של סביבה זו ל-Canvas (לסצינות דו-ממדיות)."
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr ""
+msgstr "במפרק 'BlendTree '%s, הנפשה לא נמצאה: '%s'"
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Animation not found: '%s'"
-msgstr "משך ההנפשה (בשניות)."
+msgstr "הנפשה לא נמצאה: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr ""
+msgstr "בצומת '%s', הנפשה לא חוקית: '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "Invalid animation: '%s'."
-msgstr "גודל הגופן שגוי."
+msgstr "הנפשה לא חוקית: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr ""
+msgstr "שום דבר לא מחובר לקלט '%s' של צומת '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "No root AnimationNode for the graph is set."
-msgstr ""
+msgstr "לא נקבע שורש AnimationNode עבור הגרף."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
-msgstr ""
+msgstr "לא נקבע נתיב למפרק AnimationPlayer המכיל הנפשות."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
-msgstr ""
+msgstr "הנתיב שהוגדר ל-AnimationPlayer אינו מוביל למפרק AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr ""
+msgstr "המפרק AnimationPlayer העליון אינו צומת חוקי."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "מפרק זה הוצא משימוש. יש להשתמש ב-AnimationTree במקום."
 
 #: scene/gui/color_picker.cpp
 msgid ""
@@ -12695,27 +12775,29 @@ msgid ""
 "LMB: Set color\n"
 "RMB: Remove preset"
 msgstr ""
+"צבע: #%s\n"
+"לחצן עכבר שמאלי: קביעת צבע\n"
+"לחצן עכבר ימני: הסרת צבע שמור"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the editor window."
-msgstr ""
+msgstr "בחירת צבע מחלון העורך."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw"
-msgstr ""
+msgstr "Raw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "מעבר בין ערכים הקסדצימלים לערכי קוד."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "הוספת הצבע הנוכחי כערכה"
+msgstr "הוספת הצבע הנוכחי לערכת הצבעים."
 
 #: scene/gui/container.cpp
 msgid ""
@@ -12723,20 +12805,24 @@ msgid ""
 "children placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
+"המיכל בפני עצמו אינו משרת מטרה אלא אם כן סקריפט מגדיר את המיקום של צאצאיו.\n"
+"אם אין כוונה להוסיף סקריפט, יש להוסיף במקום זאת מפרק בקרה פשוט."
 
 #: scene/gui/control.cpp
 msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"ה-Hint Tooltip לא יוצג כאשר מסנן העכבר של הבקר נקבע כ-\"Ignore\". כדי לפתור "
+"זאת, יש להגדיר את מסנן העכבר ל-\"Stop\" או \"Pass\"."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr ""
+msgstr "אזהרה!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "נא לאמת…"
+msgstr "נא לאשר…"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -12744,10 +12830,12 @@ msgid ""
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
+"חלונות קופצים מוסתרים כברירת מחדל אלא אם תהיה קריאה ל-popup() או לאחת "
+"מפונקציות popup*(). החלונות יוצגו בזמן עריכה, אך יוסתרו בזמן ריצה."
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr ""
+msgstr "אם \"Exp Edit\" מאופשר, \"Min Value\" חייב להיות גדול מ-0."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -12755,6 +12843,9 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
+"ScrollContainer מיועד לעבודה עם בקר צאצא יחיד.\n"
+"יש להשתמש במיכל כצאצא (VBox, HBox וכו'), או בבקר ולקבוע את הגודל המינימלי "
+"המותאם אישית באופן ידני."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -12765,6 +12856,8 @@ msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
+"לא היתה אפשרות לטעון את הסביבה שנקבעה כברירת המחדל בהגדרות המיזם (Rendering -"
+"> Environment -> Default Environment)."
 
 #: scene/main/viewport.cpp
 msgid ""
@@ -12773,41 +12866,52 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
+"חלון תצוגה זה אינו מוגדר כיעד עיבוד. להצגת התוכן ישירות למסך, יש להפוך אותו "
+"לצאצא של בקר כדי שיקבל גודל. או להפוך אותו ל-RenderTarget ולשייך את המרקם "
+"הפנימי שלו למפרק כלשהו לתצוגה."
 
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
-msgstr ""
+msgstr "גודל חלון התצוגה חייב להיות גדול מ-0 על מנת להציג משהו."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "גודל הגופן שגוי."
+msgstr "מקור לא תקין לתצוגה מקדימה."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "גודל הגופן שגוי."
+msgstr "מקור לא תקין ל-shader."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "גודל הגופן שגוי."
+msgstr "פונקציית השוואה לא חוקית לסוג זה."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
-msgstr ""
+msgstr "השמה לפונקציה."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to uniform."
-msgstr ""
+msgstr "השמה ל-uniform."
 
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
-msgstr ""
+msgstr "ניתן להקצות שינויים רק בפונקצית vertex."
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "אי אפשר לשנות קבועים."
+
+#, fuzzy
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "מערכת קבצים"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "בעת ייצוא או הטמעה, קובץ ההפעלה ינסה להתחבר לכתובת ה־IP של המחשב הזה "
+#~ "לצורך ניפוי שגיאות."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "הסצנה הנוכחית מעולם לא נשמרה, נא לשמור אותה בטרם ההרצה."

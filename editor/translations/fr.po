@@ -606,6 +606,7 @@ msgid "Seconds"
 msgstr "Secondes"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "IPS"
 
@@ -784,7 +785,7 @@ msgstr "Sensible à la casse"
 msgid "Whole Words"
 msgstr "Mots entiers"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Remplacer"
 
@@ -977,6 +978,11 @@ msgid "Signals"
 msgstr "Signaux"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filtrer les tuiles"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Voulez-vous vraiment supprimer toutes les connexions de ce signal ?"
 
@@ -1014,7 +1020,7 @@ msgid "Recent:"
 msgstr "Récents :"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Rechercher :"
@@ -1705,16 +1711,17 @@ msgid "Scene Tree Editing"
 msgstr "Édition de l'arbre de scène"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Dock d'importation"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Dock nœud"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Module d'importation et système de fichiers"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Système de fichiers"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Dock d'importation"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1979,7 +1986,7 @@ msgstr "Répertoires et fichiers :"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Aperçu :"
 
@@ -2872,24 +2879,28 @@ msgstr "Déployer avec le débogage distant"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Lors de l'exportation ou du déploiement, l'exécutable produit tentera de se "
-"connecter à l'adresse IP de cet ordinateur afin de procéder au débogage."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Déploiement minime avec système de fichier réseau"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Lorsque cette option est activée, l'exportation ou le déploiement produira "
 "un exécutable minimal.\n"
@@ -2904,9 +2915,10 @@ msgid "Visible Collision Shapes"
 msgstr "Formes de collision visibles"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Les formes de collision et les nœuds de raycast (pour 2D et 3D) seront "
 "visibles en jeu si cette option est activée."
@@ -2916,23 +2928,26 @@ msgid "Visible Navigation"
 msgstr "Navigation visible"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Les maillages et polygones de navigation seront visibles en jeu si cette "
 "option est activée."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Synchroniser les modifications des scènes"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Lorsque cette option est activée, toutes les modifications apportées à la "
 "scène dans l'éditeur seront reproduites en jeu.\n"
@@ -2940,15 +2955,17 @@ msgstr ""
 "plus efficace avec le système de fichiers réseau."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Synchroniser les modifications des scripts"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Lorsque cette option est activée, tout script enregistré sera de nouveau "
 "chargé pendant le déroulement du jeu.\n"
@@ -3013,7 +3030,7 @@ msgstr "Aide"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Rechercher"
 
@@ -3433,9 +3450,11 @@ msgid "Add Key/Value Pair"
 msgstr "Ajouter une paire clé/valeur"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Aucun préréglage d'exportation exécutable trouvé pour cette plate-forme. \n"
 "Ajoutez un préréglage exécutable dans le menu d'exportation."
@@ -5218,7 +5237,7 @@ msgid "Bake Lightmaps"
 msgstr "Précalculer les lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Aperçu"
 
@@ -7887,7 +7906,8 @@ msgid "New Animation"
 msgstr "Nouvelle animation"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Vitesse (IPS) :"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10469,11 +10489,18 @@ msgid "Batch Rename"
 msgstr "Renommer par lot"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Remplacer : "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Préfixe"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Suffixe"
 
 #: editor/rename_dialog.cpp
@@ -10521,7 +10548,8 @@ msgid "Per-level Counter"
 msgstr "Compteur par niveau"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Si défini, le compteur redémarre pour chaque groupe de nœuds enfant"
 
 #: editor/rename_dialog.cpp
@@ -10581,7 +10609,8 @@ msgid "Reset"
 msgstr "Réinitialiser"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Erreur dans l'expression régulière"
 
 #: editor/rename_dialog.cpp
@@ -12695,6 +12724,11 @@ msgstr ""
 "Les GIProps ne sont pas supporter par le pilote de vidéos GLES2.\n"
 "A la place utilisez une BakedLightMap."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -13011,6 +13045,17 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Module d'importation et système de fichiers"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Lors de l'exportation ou du déploiement, l'exécutable produit tentera de "
+#~ "se connecter à l'adresse IP de cet ordinateur afin de procéder au "
+#~ "débogage."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""
