@@ -330,15 +330,15 @@ class CommandQueueMT {
 	/***** BASE *******/
 
 	enum {
-		COMMAND_MEM_SIZE_KB = 256,
-		COMMAND_MEM_SIZE = COMMAND_MEM_SIZE_KB * 1024,
+		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
 		SYNC_SEMAPHORES = 8
 	};
 
-	uint8_t *command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
+	uint8_t *command_mem = nullptr;
 	uint32_t read_ptr = 0;
 	uint32_t write_ptr = 0;
 	uint32_t dealloc_ptr = 0;
+	uint32_t command_mem_size = 0;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
 	Semaphore *sync = nullptr;
@@ -362,7 +362,7 @@ class CommandQueueMT {
 		} else {
 			// ahead of dealloc_ptr, check that there is room
 
-			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {
+			if ((command_mem_size - write_ptr) < alloc_size + sizeof(uint32_t)) {
 				// no room at the end, wrap down;
 
 				if (dealloc_ptr == 0) { // don't want write_ptr to become dealloc_ptr
@@ -375,7 +375,7 @@ class CommandQueueMT {
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, nullptr);
+				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
