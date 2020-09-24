@@ -182,7 +182,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the vector is normalized, and false otherwise.
+				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="length">
