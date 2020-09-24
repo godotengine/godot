@@ -111,7 +111,7 @@ bool GDScriptCompiler::_create_binary_operator(CodeGen &codegen, const GDScriptP
 	return true;
 }
 
-GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype) const {
+GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner) const {
 	if (!p_datatype.has_type) {
 		return GDScriptDataType();
 	}
@@ -130,12 +130,12 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
-			result.script_type = p_datatype.script_type;
+			result.script_type = Ref<Script>(p_datatype.script_type).ptr();
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::GDSCRIPT: {
 			result.kind = GDScriptDataType::GDSCRIPT;
-			result.script_type = p_datatype.script_type;
+			result.script_type = Ref<Script>(p_datatype.script_type).ptr();
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::CLASS: {
@@ -159,13 +159,19 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 
 			result.kind = GDScriptDataType::GDSCRIPT;
-			result.script_type = script;
+			result.script_type = Ref<Script>(script).ptr();
 			result.native_type = script->get_instance_base_type();
 		} break;
 		default: {
 			ERR_PRINT("Parser bug: converting unresolved type.");
 			return GDScriptDataType();
 		}
+	}
+
+	// Only hold strong reference to the script if it's not the owner of the
+	// element qualified with this type, to avoid cyclic references (leaks).
+	if (result.script_type && result.script_type != p_owner) {
+		result.script_type_ref = Ref<Script>(result.script_type);
 	}
 
 	return result;
@@ -1684,9 +1690,9 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->rpc_mode = p_func->rpc_mode;
 		gdfunc->argument_types.resize(p_func->argument_types.size());
 		for (int i = 0; i < p_func->argument_types.size(); i++) {
-			gdfunc->argument_types.write[i] = _gdtype_from_datatype(p_func->argument_types[i]);
+			gdfunc->argument_types.write[i] = _gdtype_from_datatype(p_func->argument_types[i], p_script);
 		}
-		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
+		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type, p_script);
 	} else {
 		gdfunc->_static = false;
 		gdfunc->rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
@@ -1869,7 +1875,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->native = native;
 		} break;
 		case GDScriptDataType::GDSCRIPT: {
-			Ref<GDScript> base = base_type.script_type;
+			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
@@ -1902,7 +1908,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		minfo.setter = p_class->variables[i].setter;
 		minfo.getter = p_class->variables[i].getter;
 		minfo.rpc_mode = p_class->variables[i].rpc_mode;
-		minfo.data_type = _gdtype_from_datatype(p_class->variables[i].data_type);
+		minfo.data_type = _gdtype_from_datatype(p_class->variables[i].data_type, p_script);
 
 		PropertyInfo prop_info = minfo.data_type;
 		prop_info.name = name;
