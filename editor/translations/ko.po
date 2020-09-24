@@ -23,7 +23,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-31 03:47+0000\n"
+"PO-Revision-Date: 2020-09-16 18:09+0000\n"
 "Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -541,6 +541,7 @@ msgid "Seconds"
 msgstr "초"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "초당 프레임"
 
@@ -719,7 +720,7 @@ msgstr "대소문자 구분"
 msgid "Whole Words"
 msgstr "단어 단위로"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "바꾸기"
 
@@ -912,6 +913,11 @@ msgid "Signals"
 msgstr "시그널"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "타일 필터"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "이 시그널의 모든 연결을 삭제할까요?"
 
@@ -949,7 +955,7 @@ msgid "Recent:"
 msgstr "최근 기록:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "검색:"
@@ -1153,14 +1159,12 @@ msgid "Gold Sponsors"
 msgstr "골드 스폰서"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "실버 기부자"
+msgstr "실버 스폰서"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "브론즈 기부자"
+msgstr "브론즈 스폰서"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1637,16 +1641,17 @@ msgid "Scene Tree Editing"
 msgstr "씬 트리 편집"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "독 가져오기"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "노드 도킹"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "파일 시스템과 가져오기 독"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "파일 시스템"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "독 가져오기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1910,7 +1915,7 @@ msgstr "디렉토리 & 파일:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "미리 보기:"
 
@@ -2780,24 +2785,28 @@ msgstr "원격 디버그와 함께 배포"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"내보내거나 배포할 때, 결과 실행 파일은 디버깅을 위해 이 컴퓨터의 IP와 연결을 "
-"시도할 것입니다."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "네트워크 파일 시스템을 사용하여 작게 배포"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "이 설정을 켜면, 내보내거나 배포할 때 최소한의 실행 파일을 만듭니다.\n"
 "이 경우, 실행 파일이 네트워크 너머에 있는 편집기의 파일 시스템을 사용합니"
@@ -2810,9 +2819,10 @@ msgid "Visible Collision Shapes"
 msgstr "충돌 모양 보이기"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "이 설정을 켜면 게임을 실행하는 동안 (2D와 3D용) Collision 모양과 Raycast 노드"
 "가 보이게 됩니다."
@@ -2822,23 +2832,26 @@ msgid "Visible Navigation"
 msgstr "내비게이션 보이기"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "이 설정을 켜면, 게임을 실행하는 동안 Navigation 메시와 폴리곤이 보이게 됩니"
 "다."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "씬 변경 사항 동기화"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "이 설정이 활성화된 경우, 편집기에서 씬을 수정하면 실행 중인 게임에도 반영됩니"
 "다.\n"
@@ -2846,15 +2859,17 @@ msgstr ""
 "적입니다."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "스크립트 변경 사항 동기화"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "이 설정이 활성화된 경우, 어떤 스크립트든 저장하면 실행중인 게임에도 새로고침"
 "되어 반영됩니다.\n"
@@ -2918,7 +2933,7 @@ msgstr "도움말"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "검색"
 
@@ -3330,9 +3345,11 @@ msgid "Add Key/Value Pair"
 msgstr "키/값 쌍 추가"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "이 플랫폼으로 실행할 수 있는 내보내기 프리셋이 없습니다.\n"
 "내보내기 메뉴에서 실행할 수 있는 프리셋을 추가해주세요."
@@ -5090,7 +5107,7 @@ msgid "Bake Lightmaps"
 msgstr "라이트맵 굽기"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "미리 보기"
 
@@ -7723,7 +7740,8 @@ msgid "New Animation"
 msgstr "새 애니메이션"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "속도 (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10255,11 +10273,18 @@ msgid "Batch Rename"
 msgstr "일괄 이름 바꾸기"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "바꾸기: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "접두사"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "접미사"
 
 #: editor/rename_dialog.cpp
@@ -10307,7 +10332,8 @@ msgid "Per-level Counter"
 msgstr "단계별 카운터"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "설정하면 각 그룹의 자식 노드의 카운터를 다시 시작합니다"
 
 #: editor/rename_dialog.cpp
@@ -10367,7 +10393,8 @@ msgid "Reset"
 msgstr "되돌리기"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "정규 표현식 오류"
 
 #: editor/rename_dialog.cpp
@@ -12415,6 +12442,11 @@ msgstr ""
 "GIProbe는 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
 "대신 BakedLightmap을 사용하세요."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight의 각도를 90도 이상으로 잡게되면 그림자를 투영할 수 없습니다."
@@ -12713,6 +12745,16 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "파일 시스템과 가져오기 독"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "내보내거나 배포할 때, 결과 실행 파일은 디버깅을 위해 이 컴퓨터의 IP와 연결"
+#~ "을 시도할 것입니다."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "현재 씬이 아직 저장되지 않았습니다. 실행하기 전에 저장해주세요."

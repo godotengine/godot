@@ -465,7 +465,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (4dbd05a22f51a2d7462311569b8b0cba0bbe2ac5, 2020)
+- Version: 1.0.0 (e4b7840d9448b7d57a88384ce26143004f3c0c71, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -529,7 +529,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.4 (2019)
+- Version: 1.4.5 (2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

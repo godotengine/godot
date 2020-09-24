@@ -191,7 +191,7 @@ void Label::_notification(int p_what) {
 			while (to && to->char_pos >= 0) {
 
 				taken += to->pixel_width;
-				if (to != from && to->space_count) {
+				if (to->space_count) {
 					spaces += to->space_count;
 				}
 				to = to->next;
@@ -435,6 +435,22 @@ void Label::regenerate_word_cache() {
 				wc->pixel_width = current_word_size;
 				wc->char_pos = word_pos;
 				wc->word_len = i - word_pos;
+				wc->space_count = space_count;
+				current_word_size = 0;
+				space_count = 0;
+			} else if ((i == xl_text.length() || current == '\n') && last != nullptr && space_count != 0) {
+				//in case there are trailing white spaces we add a placeholder word cache with just the spaces
+				WordCache *wc = memnew(WordCache);
+				if (word_cache) {
+					last->next = wc;
+				} else {
+					word_cache = wc;
+				}
+				last = wc;
+
+				wc->pixel_width = 0;
+				wc->char_pos = 0;
+				wc->word_len = 0;
 				wc->space_count = space_count;
 				current_word_size = 0;
 				space_count = 0;

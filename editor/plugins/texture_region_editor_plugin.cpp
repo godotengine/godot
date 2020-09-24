@@ -858,7 +858,7 @@ void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_pro
 
 	if (!is_visible())
 		return;
-	if (p_prop == StringName("atlas") || p_prop == StringName("texture"))
+	if (p_prop == StringName("atlas") || p_prop == StringName("texture") || p_prop == StringName("region"))
 		_edit_region();
 }
 

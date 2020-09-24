@@ -143,32 +143,29 @@ void Gradient::set_points(Vector<Gradient::Point> &p_points) {
 }
 
 void Gradient::set_offset(int pos, const float offset) {
-
-	ERR_FAIL_COND(pos < 0);
-	if (points.size() <= pos)
-		points.resize(pos + 1);
+	ERR_FAIL_INDEX(pos, points.size());
+	_update_sorting();
 	points.write[pos].offset = offset;
 	is_sorted = false;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-float Gradient::get_offset(int pos) const {
+float Gradient::get_offset(int pos) {
 	ERR_FAIL_INDEX_V(pos, points.size(), 0.0);
+	_update_sorting();
 	return points[pos].offset;
 }
 
 void Gradient::set_color(int pos, const Color &color) {
-	ERR_FAIL_COND(pos < 0);
-	if (points.size() <= pos) {
-		points.resize(pos + 1);
-		is_sorted = false;
-	}
+	ERR_FAIL_INDEX(pos, points.size());
+	_update_sorting();
 	points.write[pos].color = color;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
-Color Gradient::get_color(int pos) const {
+Color Gradient::get_color(int pos) {
 	ERR_FAIL_INDEX_V(pos, points.size(), Color());
+	_update_sorting();
 	return points[pos].color;
 }
 

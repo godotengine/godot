@@ -326,6 +326,9 @@ public:
 	template <class T>
 	static Physics2DServer *init_server() {
 
+#ifdef NO_THREADS
+		return memnew(T); // Always single unsafe when no threads are available.
+#else
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
 		if (tm == 0) // single unsafe
 			return memnew(T);
@@ -333,6 +336,7 @@ public:
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
 		else // multi threaded
 			return memnew(Physics2DServerWrapMT(memnew(T), true));
+#endif
 	}
 
 #undef ServerNameWrapMT

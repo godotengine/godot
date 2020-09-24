@@ -62,8 +62,8 @@ void SpinBox::_text_entered(const String &p_string) {
 	Variant value = expr->execute(Array(), NULL, false);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
-		_value_changed(0);
 	}
+	_value_changed(0);
 }
 
 LineEdit *SpinBox::get_line_edit() {

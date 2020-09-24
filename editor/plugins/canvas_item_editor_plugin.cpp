@@ -2488,6 +2488,11 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	// Change the cursor
 	CursorShape c = CURSOR_ARROW;
+	bool should_switch = false;
+	if (drag_selection.size() != 0) {
+		float angle = drag_selection[0]->_edit_get_rotation();
+		should_switch = abs(Math::cos(angle)) < Math_SQRT12;
+	}
 	switch (drag_type) {
 		case DRAG_NONE:
 			switch (tool) {
@@ -2510,21 +2515,37 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		case DRAG_LEFT:
 		case DRAG_RIGHT:
 		case DRAG_V_GUIDE:
-			c = CURSOR_HSIZE;
+			if (should_switch) {
+				c = CURSOR_VSIZE;
+			} else {
+				c = CURSOR_HSIZE;
+			}
 			break;
 		case DRAG_TOP:
 		case DRAG_BOTTOM:
 		case DRAG_H_GUIDE:
-			c = CURSOR_VSIZE;
+			if (should_switch) {
+				c = CURSOR_HSIZE;
+			} else {
+				c = CURSOR_VSIZE;
+			}
 			break;
 		case DRAG_TOP_LEFT:
 		case DRAG_BOTTOM_RIGHT:
 		case DRAG_DOUBLE_GUIDE:
-			c = CURSOR_FDIAGSIZE;
+			if (should_switch) {
+				c = CURSOR_BDIAGSIZE;
+			} else {
+				c = CURSOR_FDIAGSIZE;
+			}
 			break;
 		case DRAG_TOP_RIGHT:
 		case DRAG_BOTTOM_LEFT:
-			c = CURSOR_BDIAGSIZE;
+			if (should_switch) {
+				c = CURSOR_FDIAGSIZE;
+			} else {
+				c = CURSOR_BDIAGSIZE;
+			}
 			break;
 		case DRAG_MOVE:
 			c = CURSOR_MOVE;

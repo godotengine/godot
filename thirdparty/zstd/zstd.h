@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -72,7 +72,7 @@ extern "C" {
 /*------   Version   ------*/
 #define ZSTD_VERSION_MAJOR    1
 #define ZSTD_VERSION_MINOR    4
-#define ZSTD_VERSION_RELEASE  4
+#define ZSTD_VERSION_RELEASE  5
 
 #define ZSTD_VERSION_NUMBER  (ZSTD_VERSION_MAJOR *100*100 + ZSTD_VERSION_MINOR *100 + ZSTD_VERSION_RELEASE)
 ZSTDLIB_API unsigned ZSTD_versionNumber(void);   /**< to check runtime library version */
@@ -274,7 +274,10 @@ typedef enum {
                               * Default level is ZSTD_CLEVEL_DEFAULT==3.
                               * Special: value 0 means default, which is controlled by ZSTD_CLEVEL_DEFAULT.
                               * Note 1 : it's possible to pass a negative compression level.
-                              * Note 2 : setting a level resets all other compression parameters to default */
+                              * Note 2 : setting a level does not automatically set all other compression parameters
+                              *   to default. Setting this will however eventually dynamically impact the compression
+                              *   parameters which have not been manually set. The manually set
+                              *   ones will 'stick'. */
     /* Advanced compression parameters :
      * It's possible to pin down compression parameters to some specific values.
      * In which case, these values are no longer dynamically selected by the compressor */
@@ -519,11 +522,13 @@ typedef enum {
     /* note : additional experimental parameters are also available
      * within the experimental section of the API.
      * At the time of this writing, they include :
-     * ZSTD_c_format
+     * ZSTD_d_format
+     * ZSTD_d_stableOutBuffer
      * Because they are not stable, it's necessary to define ZSTD_STATIC_LINKING_ONLY to access them.
      * note : never ever use experimentalParam? names directly
      */
-     ZSTD_d_experimentalParam1=1000
+     ZSTD_d_experimentalParam1=1000,
+     ZSTD_d_experimentalParam2=1001
 
 } ZSTD_dParameter;
 
@@ -763,7 +768,7 @@ ZSTDLIB_API size_t ZSTD_freeDStream(ZSTD_DStream* zds);
 
 /* This function is redundant with the advanced API and equivalent to:
  *
- *     ZSTD_DCtx_reset(zds);
+ *     ZSTD_DCtx_reset(zds, ZSTD_reset_session_only);
  *     ZSTD_DCtx_refDDict(zds, NULL);
  */
 ZSTDLIB_API size_t ZSTD_initDStream(ZSTD_DStream* zds);
@@ -1263,23 +1268,28 @@ ZSTDLIB_API size_t ZSTD_getSequences(ZSTD_CCtx* zc, ZSTD_Sequence* outSeqs,
 ***************************************/
 
 /*! ZSTD_estimate*() :
- *  These functions make it possible to estimate memory usage of a future
- *  {D,C}Ctx, before its creation.
+ *  These functions make it possible to estimate memory usage
+ *  of a future {D,C}Ctx, before its creation.
  *
- *  ZSTD_estimateCCtxSize() will provide a budget large enough for any
- *  compression level up to selected one. Unlike ZSTD_estimateCStreamSize*(),
- *  this estimate does not include space for a window buffer, so this estimate
- *  is guaranteed to be enough for single-shot compressions, but not streaming
- *  compressions. It will however assume the input may be arbitrarily large,
- *  which is the worst case. If srcSize is known to always be small,
- *  ZSTD_estimateCCtxSize_usingCParams() can provide a tighter estimation.
- *  ZSTD_estimateCCtxSize_usingCParams() can be used in tandem with
- *  ZSTD_getCParams() to create cParams from compressionLevel.
- *  ZSTD_estimateCCtxSize_usingCCtxParams() can be used in tandem with
- *  ZSTD_CCtxParams_setParameter().
+ *  ZSTD_estimateCCtxSize() will provide a memory budget large enough
+ *  for any compression level up to selected one.
+ *  Note : Unlike ZSTD_estimateCStreamSize*(), this estimate
+ *         does not include space for a window buffer.
+ *         Therefore, the estimation is only guaranteed for single-shot compressions, not streaming.
+ *  The estimate will assume the input may be arbitrarily large,
+ *  which is the worst case.
  *
- *  Note: only single-threaded compression is supported. This function will
- *  return an error code if ZSTD_c_nbWorkers is >= 1. */
+ *  When srcSize can be bound by a known and rather "small" value,
+ *  this fact can be used to provide a tighter estimation
+ *  because the CCtx compression context will need less memory.
+ *  This tighter estimation can be provided by more advanced functions
+ *  ZSTD_estimateCCtxSize_usingCParams(), which can be used in tandem with ZSTD_getCParams(),
+ *  and ZSTD_estimateCCtxSize_usingCCtxParams(), which can be used in tandem with ZSTD_CCtxParams_setParameter().
+ *  Both can be used to estimate memory using custom compression parameters and arbitrary srcSize limits.
+ *
+ *  Note 2 : only single-threaded compression is supported.
+ *  ZSTD_estimateCCtxSize_usingCCtxParams() will return an error code if ZSTD_c_nbWorkers is >= 1.
+ */
 ZSTDLIB_API size_t ZSTD_estimateCCtxSize(int compressionLevel);
 ZSTDLIB_API size_t ZSTD_estimateCCtxSize_usingCParams(ZSTD_compressionParameters cParams);
 ZSTDLIB_API size_t ZSTD_estimateCCtxSize_usingCCtxParams(const ZSTD_CCtx_params* params);
@@ -1642,6 +1652,37 @@ ZSTDLIB_API size_t ZSTD_DCtx_setMaxWindowSize(ZSTD_DCtx* dctx, size_t maxWindowS
  * allowing selection between ZSTD_format_e input compression formats
  */
 #define ZSTD_d_format ZSTD_d_experimentalParam1
+/* ZSTD_d_stableOutBuffer
+ * Experimental parameter.
+ * Default is 0 == disabled. Set to 1 to enable.
+ *
+ * Tells the decompressor that the ZSTD_outBuffer will ALWAYS be the same
+ * between calls, except for the modifications that zstd makes to pos (the
+ * caller must not modify pos). This is checked by the decompressor, and
+ * decompression will fail if it ever changes. Therefore the ZSTD_outBuffer
+ * MUST be large enough to fit the entire decompressed frame. This will be
+ * checked when the frame content size is known. The data in the ZSTD_outBuffer
+ * in the range [dst, dst + pos) MUST not be modified during decompression
+ * or you will get data corruption.
+ *
+ * When this flags is enabled zstd won't allocate an output buffer, because
+ * it can write directly to the ZSTD_outBuffer, but it will still allocate
+ * an input buffer large enough to fit any compressed block. This will also
+ * avoid the memcpy() from the internal output buffer to the ZSTD_outBuffer.
+ * If you need to avoid the input buffer allocation use the buffer-less
+ * streaming API.
+ *
+ * NOTE: So long as the ZSTD_outBuffer always points to valid memory, using
+ * this flag is ALWAYS memory safe, and will never access out-of-bounds
+ * memory. However, decompression WILL fail if you violate the preconditions.
+ *
+ * WARNING: The data in the ZSTD_outBuffer in the range [dst, dst + pos) MUST
+ * not be modified during decompression or you will get data corruption. This
+ * is because zstd needs to reference data in the ZSTD_outBuffer to regenerate
+ * matches. Normally zstd maintains its own buffer for this purpose, but passing
+ * this flag tells zstd to use the user provided buffer.
+ */
+#define ZSTD_d_stableOutBuffer ZSTD_d_experimentalParam2
 
 /*! ZSTD_DCtx_setFormat() :
  *  Instruct the decoder context about what kind of data to decode next.
