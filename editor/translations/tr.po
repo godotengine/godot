@@ -51,12 +51,14 @@
 # Ahmet Elgün <ahmetelgn@gmail.com>, 2020.
 # Efruz Yıldırır <efruzyildirir@gmail.com>, 2020.
 # Hazar <duurkak@yandex.com>, 2020.
+# Mutlu ORAN <mutlu.oran66@gmail.com>, 2020.
+# Yusuf Osman YILMAZ <wolfkan4219@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-20 15:20+0000\n"
-"Last-Translator: Hazar <duurkak@yandex.com>\n"
+"PO-Revision-Date: 2020-09-15 07:17+0000\n"
+"Last-Translator: Yusuf Osman YILMAZ <wolfkan4219@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -64,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -574,6 +576,7 @@ msgid "Seconds"
 msgstr "Saniye"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -752,7 +755,7 @@ msgstr "Büyük/Küçük Harf Eşleştir"
 msgid "Whole Words"
 msgstr "Tam Kelimeler"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Değiştir"
 
@@ -944,6 +947,11 @@ msgid "Signals"
 msgstr "Sinyaller"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Döşemelerde Bul"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Bu sinyalden, tüm bağlantıları kaldırmak istediğinizden emin misiniz?"
 
@@ -981,7 +989,7 @@ msgid "Recent:"
 msgstr "Yakın zamanda:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Ara:"
@@ -1671,16 +1679,17 @@ msgid "Scene Tree Editing"
 msgstr "Sahne Ağacı Düzenleme"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Dock İçe Aktar"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Dock Nod"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "DosyaSistemi ve İçe Aktarım"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "DosyaSistemi"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Dock İçe Aktar"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1943,7 +1952,7 @@ msgstr "Dizinler & Dosyalar:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Önizleme:"
 
@@ -1990,7 +1999,7 @@ msgstr "Şundan miras alındı:"
 
 #: editor/editor_help.cpp
 msgid "Description"
-msgstr "Tanım"
+msgstr "Açıklama"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
@@ -2010,7 +2019,7 @@ msgstr "varsayılan:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr "Metotlar"
+msgstr "Yöntemler"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
@@ -2041,8 +2050,9 @@ msgstr ""
 "bulunarak[/url][/color] yardım edebilirsiniz!"
 
 #: editor/editor_help.cpp
+#, fuzzy
 msgid "Method Descriptions"
-msgstr "Metot Açıklamaları"
+msgstr "Yöntem Açıklamaları"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -2819,24 +2829,28 @@ msgstr "Uzaktan Hata Ayıklama ile Dağıt"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Verilen yürütülebilir dosya, dışa aktarılırken veya dağıtıldığında, hata "
-"ayıklanacak şekilde bu bilgisayarın IP'sine bağlanmaya çalışacaktır."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Ağ DS ile Küçük Dağıtım"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, dışa aktarma veya dağıtma çok küçük bir "
 "çalıştırılabilir dosya üretir.\n"
@@ -2849,9 +2863,10 @@ msgid "Visible Collision Shapes"
 msgstr "Görünür Çarpışma Şekilleri"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Bu seçenek açıksa, çalışan oyunda çarpışma şekilleri ve raycast düğümleri "
 "(2B ve 3B için) görünür olacaktır."
@@ -2861,23 +2876,26 @@ msgid "Visible Navigation"
 msgstr "Görünür Yönlendirici"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Bu seçenek açıksa, çalışan oyunda yönlendirici örüntüleri ve çokgenler "
 "görünür olacaktır."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sahne Değişikliklerini Eş Zamanla"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, düzenleyicide bulunan sahnedeki "
 "değişiklikler çalışmakta olan oyununda çoğaltılır.\n"
@@ -2885,15 +2903,17 @@ msgstr ""
 "verimli olur."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Betik Değişikliklerini Eş Zamanla"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Bu seçenek etkinleştirildiğinde, kaydedilen tüm betik çalışan oyunda yeniden "
 "yüklenecektir.\n"
@@ -2957,7 +2977,7 @@ msgstr "Yardım"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Ara"
 
@@ -3376,9 +3396,11 @@ msgid "Add Key/Value Pair"
 msgstr "Anahtar/Değer İkilisini Ekle"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Çalıştırılabilir dışa aktarma önayarı bu platform için bulunamadı.\n"
 "Lütfen dışa aktar menüsünden çalıştırılabilir bir önayar ekleyin."
@@ -5147,7 +5169,7 @@ msgid "Bake Lightmaps"
 msgstr "Işık-Haritalarını Pişir"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Önizleme"
 
@@ -7789,7 +7811,8 @@ msgid "New Animation"
 msgstr "Yeni Animasyon"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Hız (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10352,11 +10375,18 @@ msgid "Batch Rename"
 msgstr "Tümden Yeniden Adlandır"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Değiştir: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Ön Ek"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Son Ek"
 
 #: editor/rename_dialog.cpp
@@ -10404,7 +10434,8 @@ msgid "Per-level Counter"
 msgstr "Seviye Başına Sayaç"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Ayarlanmışsa, sayaç her bir alt düğüm grubu için yeniden başlar"
 
 #: editor/rename_dialog.cpp
@@ -10464,7 +10495,8 @@ msgid "Reset"
 msgstr "Sıfırla"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Düzenli İfade Hatası"
 
 #: editor/rename_dialog.cpp
@@ -12528,6 +12560,11 @@ msgstr ""
 "GIProbes GLES2 video sürücüsü tarafından desteklenmez.\n"
 "Bunun yerine bir BakedLightmap kullanın."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr "90 dereceden geniş açılı SpotIşık gölge oluşturamaz."
@@ -12834,6 +12871,16 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "DosyaSistemi ve İçe Aktarım"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Verilen yürütülebilir dosya, dışa aktarılırken veya dağıtıldığında, hata "
+#~ "ayıklanacak şekilde bu bilgisayarın IP'sine bağlanmaya çalışacaktır."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

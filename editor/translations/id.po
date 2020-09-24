@@ -551,6 +551,7 @@ msgid "Seconds"
 msgstr "Detik"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -729,7 +730,7 @@ msgstr "Kasus Kecocokan"
 msgid "Whole Words"
 msgstr "Semua Kata"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Ganti"
 
@@ -921,6 +922,11 @@ msgid "Signals"
 msgstr "Sinyal"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filter tile"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Anda yakin ingin menghapus semua hubungan dari sinyal ini?"
 
@@ -958,7 +964,7 @@ msgid "Recent:"
 msgstr "Saat ini:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Cari:"
@@ -1648,16 +1654,17 @@ msgid "Scene Tree Editing"
 msgstr "Menyunting Pohon Skena"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Dok Impor"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Dok Node"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Dok Impor dan Berkas Sistem"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Berkas Sistem"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Dok Impor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1921,7 +1928,7 @@ msgstr "Direktori-direktori & File-file:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Pratinjau:"
 
@@ -2801,24 +2808,28 @@ msgstr "Deploy dengan Awakutu Jarak Jauh"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Saat mengekspor atau mendeploy, hasil executable akan mencoba terhubung ke "
-"IP komputer untuk diawakutu."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Deploy Kecil dengan Jaringan FS"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Ketika opsi ini aktif, ekspor atau deploy akan menghasilkan minimal "
 "executable.\n"
@@ -2831,9 +2842,10 @@ msgid "Visible Collision Shapes"
 msgstr "Collision Shapes Terlihat"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Collision shapes dan raycast nodes (untuk 2D dan 3D) akan terlihat pada saat "
 "permainan berjalan jika opsi ini aktif."
@@ -2843,23 +2855,26 @@ msgid "Visible Navigation"
 msgstr "Navigasi Terlihat"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Navigasi meshes dan poligon akan terlihat saat game berjalan jika opsi ini "
 "aktif."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sinkronkan Perubahan Skena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Ketika opsi ini aktif, perubahan yang dibuat pada skena melalui editor akan "
 "direplika pada gim yang sedang berjalan.\n"
@@ -2867,15 +2882,17 @@ msgstr ""
 "berkas sistem jaringan."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Sinkronkan Perubahan Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Ketika opsi ini aktif, perubahan script yang tersimpan akan di muat kembali "
 "pada permainan yang sedang berjalan.\n"
@@ -2939,7 +2956,7 @@ msgstr "Bantuan"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Cari"
 
@@ -3357,9 +3374,11 @@ msgid "Add Key/Value Pair"
 msgstr "Tambahkan pasangan Key/Value"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Tidak ada preset ekspor yang bisa digunakan untuk platform ini.\n"
 "Mohon tambahkan preset yang bisa digunakan di menu ekspor."
@@ -5119,7 +5138,7 @@ msgid "Bake Lightmaps"
 msgstr "Panggang Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Pratinjau"
 
@@ -7766,7 +7785,8 @@ msgid "New Animation"
 msgstr "Animasi Baru"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Kecepatan (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -10341,11 +10361,18 @@ msgid "Batch Rename"
 msgstr "Ubah Nama Massal"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Ganti: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Awalan"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Akhiran"
 
 #: editor/rename_dialog.cpp
@@ -10393,7 +10420,8 @@ msgid "Per-level Counter"
 msgstr "Penghitung per Level"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Jika diatur, penghitung akan dimulai ulang untuk setiap grup node anak"
 
 #: editor/rename_dialog.cpp
@@ -10453,7 +10481,8 @@ msgid "Reset"
 msgstr "Reset"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Kesalahan Ekspresi Reguler"
 
 #: editor/rename_dialog.cpp
@@ -12532,6 +12561,11 @@ msgstr ""
 "GIProbes tidak didukung oleh driver video GLES2.\n"
 "Gunakan BakedLightmap sebagai gantinya."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12830,6 +12864,16 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Dok Impor dan Berkas Sistem"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Saat mengekspor atau mendeploy, hasil executable akan mencoba terhubung "
+#~ "ke IP komputer untuk diawakutu."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""
