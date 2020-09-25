@@ -447,7 +447,12 @@ int DisplayServerX11::mouse_get_button_state() const {
 void DisplayServerX11::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
-	internal_clipboard = p_text;
+	{
+		// The clipboard content can be accessed while polling for events.
+		MutexLock mutex_lock(events_mutex);
+		internal_clipboard = p_text;
+	}
+
 	XSetSelectionOwner(x11_display, XA_PRIMARY, windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), windows[MAIN_WINDOW_ID].x11_window, CurrentTime);
 }
@@ -468,13 +473,13 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 	int format, result;
 	unsigned long len, bytes_left, dummy;
 	unsigned char *data;
-	Window Sown = XGetSelectionOwner(x11_display, p_source);
+	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
 
-	if (Sown == x11_window) {
+	if (selection_owner == x11_window) {
 		return internal_clipboard;
-	};
+	}
 
-	if (Sown != None) {
+	if (selection_owner != None) {
 		{
 			// Block events polling while processing selection events.
 			MutexLock mutex_lock(events_mutex);
@@ -2266,6 +2271,66 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	Input::get_singleton()->accumulate_input_event(k);
 }
 
+void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p_event) {
+	XEvent respond;
+	if (p_event->target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
+			p_event->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
+			p_event->target == XInternAtom(x11_display, "TEXT", 0) ||
+			p_event->target == XA_STRING ||
+			p_event->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
+			p_event->target == XInternAtom(x11_display, "text/plain", 0)) {
+		// Directly using internal clipboard because we know our window
+		// is the owner during a selection request.
+		CharString clip = internal_clipboard.utf8();
+		XChangeProperty(x11_display,
+				p_event->requestor,
+				p_event->property,
+				p_event->target,
+				8,
+				PropModeReplace,
+				(unsigned char *)clip.get_data(),
+				clip.length());
+		respond.xselection.property = p_event->property;
+	} else if (p_event->target == XInternAtom(x11_display, "TARGETS", 0)) {
+		Atom data[7];
+		data[0] = XInternAtom(x11_display, "TARGETS", 0);
+		data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
+		data[2] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
+		data[3] = XInternAtom(x11_display, "TEXT", 0);
+		data[4] = XA_STRING;
+		data[5] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
+		data[6] = XInternAtom(x11_display, "text/plain", 0);
+
+		XChangeProperty(x11_display,
+				p_event->requestor,
+				p_event->property,
+				XA_ATOM,
+				32,
+				PropModeReplace,
+				(unsigned char *)&data,
+				sizeof(data) / sizeof(data[0]));
+		respond.xselection.property = p_event->property;
+
+	} else {
+		char *targetname = XGetAtomName(x11_display, p_event->target);
+		printf("No Target '%s'\n", targetname);
+		if (targetname) {
+			XFree(targetname);
+		}
+		respond.xselection.property = None;
+	}
+
+	respond.xselection.type = SelectionNotify;
+	respond.xselection.display = p_event->display;
+	respond.xselection.requestor = p_event->requestor;
+	respond.xselection.selection = p_event->selection;
+	respond.xselection.target = p_event->target;
+	respond.xselection.time = p_event->time;
+
+	XSendEvent(x11_display, p_event->requestor, True, NoEventMask, &respond);
+	XFlush(x11_display);
+}
+
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
 	WARN_PRINT("Input method stopped");
@@ -2422,6 +2487,15 @@ void DisplayServerX11::_poll_events() {
 					// it has to be ignored and a new one will be received.
 					continue;
 				}
+
+				// Handle selection request events directly in the event thread, because
+				// communication through the x server takes several events sent back and forth
+				// and we don't want to block other programs while processing only one each frame.
+				if (ev.type == SelectionRequest) {
+					_handle_selection_request_event(&(ev.xselectionrequest));
+					continue;
+				}
+
 				polled_events.push_back(ev);
 			}
 		}
@@ -3049,66 +3123,6 @@ void DisplayServerX11::process_events() {
 				// key event is a little complex, so
 				// it will be handled in its own function.
 				_handle_key_event(window_id, (XKeyEvent *)&event, events, event_index);
-			} break;
-			case SelectionRequest: {
-				XSelectionRequestEvent *req;
-				XEvent e, respond;
-				e = event;
-
-				req = &(e.xselectionrequest);
-				if (req->target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
-						req->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-						req->target == XInternAtom(x11_display, "TEXT", 0) ||
-						req->target == XA_STRING ||
-						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-						req->target == XInternAtom(x11_display, "text/plain", 0)) {
-					CharString clip = clipboard_get().utf8();
-					XChangeProperty(x11_display,
-							req->requestor,
-							req->property,
-							req->target,
-							8,
-							PropModeReplace,
-							(unsigned char *)clip.get_data(),
-							clip.length());
-					respond.xselection.property = req->property;
-				} else if (req->target == XInternAtom(x11_display, "TARGETS", 0)) {
-					Atom data[7];
-					data[0] = XInternAtom(x11_display, "TARGETS", 0);
-					data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
-					data[2] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
-					data[3] = XInternAtom(x11_display, "TEXT", 0);
-					data[4] = XA_STRING;
-					data[5] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
-					data[6] = XInternAtom(x11_display, "text/plain", 0);
-
-					XChangeProperty(x11_display,
-							req->requestor,
-							req->property,
-							XA_ATOM,
-							32,
-							PropModeReplace,
-							(unsigned char *)&data,
-							sizeof(data) / sizeof(data[0]));
-					respond.xselection.property = req->property;
-
-				} else {
-					char *targetname = XGetAtomName(x11_display, req->target);
-					printf("No Target '%s'\n", targetname);
-					if (targetname) {
-						XFree(targetname);
-					}
-					respond.xselection.property = None;
-				}
-
-				respond.xselection.type = SelectionNotify;
-				respond.xselection.display = req->display;
-				respond.xselection.requestor = req->requestor;
-				respond.xselection.selection = req->selection;
-				respond.xselection.target = req->target;
-				respond.xselection.time = req->time;
-				XSendEvent(x11_display, req->requestor, True, NoEventMask, &respond);
-				XFlush(x11_display);
 			} break;
 
 			case SelectionNotify:
