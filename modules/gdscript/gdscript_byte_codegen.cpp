@@ -416,9 +416,22 @@ void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant:
 
 	append(GDScriptFunction::OPCODE_OPERATOR);
 	append(p_operator);
-	append(p_left_operand);
-	append(p_right_operand);
-	append(p_target);
+	APPEND_BINARY_OPERANDS();
+
+#undef IF_TYPE
+#undef IF_TYPE_UNARY
+#undef APPEND_BINARY_OPERANDS
+#undef APPEND_UNARY_OPERANDS
+#undef OP_BINARY_CASE
+#undef OP_UNARY_CASE
+#undef OP_BINARY_CASE
+#undef NUMBER_OP_CASE
+#undef VEC_OP_CASE
+#undef VEC_NUMBER_CASE
+#undef ARRAYS_OP_CASE
+#undef CASE_OP_EQUAL
+#undef CASE_OP_NOT_EQUAL
+#undef CASE_ALL_TYPES
 }
 
 void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) {
@@ -538,10 +551,101 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 }
 
 void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address &p_index, const Address &p_source) {
+#define APPEND_GET_OPERANDS() \
+	append(p_source);         \
+	append(p_index);          \
+	append(p_target)
+
+#define IF_TYPE(m_var, m_type) \
+	if (m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == Variant::m_type)
+
+#define IF_CASE(m_src_type, m_idx_type)                                   \
+	IF_TYPE(p_index, m_idx_type) {                                        \
+		append(GDScriptFunction::OPCODE_GET_##m_src_type##_##m_idx_type); \
+		APPEND_GET_OPERANDS();                                            \
+		return;                                                           \
+	}
+
+	if (p_source.type.has_type && p_index.type.has_type) {
+		if (p_source.type.kind == GDScriptDataType::BUILTIN) {
+			switch (p_source.type.builtin_type) {
+				case Variant::STRING:
+					IF_CASE(STRING, INT);
+					IF_CASE(STRING, FLOAT);
+					break;
+				case Variant::VECTOR2:
+					IF_CASE(VECTOR2, INT);
+					IF_CASE(VECTOR2, FLOAT);
+					IF_CASE(VECTOR2, STRING);
+					break;
+				case Variant::VECTOR2I:
+					IF_CASE(VECTOR2I, INT);
+					IF_CASE(VECTOR2I, FLOAT);
+					IF_CASE(VECTOR2I, STRING);
+					break;
+				case Variant::VECTOR3:
+					IF_CASE(VECTOR3, INT);
+					IF_CASE(VECTOR3, FLOAT);
+					IF_CASE(VECTOR3, STRING);
+					break;
+				case Variant::VECTOR3I:
+					IF_CASE(VECTOR3I, INT);
+					IF_CASE(VECTOR3I, FLOAT);
+					IF_CASE(VECTOR3I, STRING);
+					break;
+				case Variant::RECT2:
+					IF_CASE(RECT2, STRING);
+					break;
+				case Variant::RECT2I:
+					IF_CASE(RECT2I, STRING);
+					break;
+				case Variant::TRANSFORM2D:
+					IF_CASE(TRANSFORM2D, INT);
+					IF_CASE(TRANSFORM2D, FLOAT);
+					IF_CASE(TRANSFORM2D, STRING);
+					break;
+				case Variant::TRANSFORM:
+					IF_CASE(TRANSFORM, INT);
+					IF_CASE(TRANSFORM, FLOAT);
+					IF_CASE(TRANSFORM, STRING);
+					break;
+				case Variant::PLANE:
+					IF_CASE(PLANE, STRING);
+					break;
+				case Variant::QUAT:
+					IF_CASE(QUAT, STRING);
+					break;
+				case Variant::AABB:
+					IF_CASE(AABB, STRING);
+					break;
+				case Variant::BASIS:
+					IF_CASE(BASIS, INT);
+					IF_CASE(BASIS, FLOAT);
+					IF_CASE(BASIS, STRING);
+					break;
+				case Variant::COLOR:
+					IF_CASE(COLOR, INT);
+					IF_CASE(COLOR, FLOAT);
+					IF_CASE(COLOR, STRING);
+					break;
+				default:
+					break;
+			}
+		} else {
+			// Source is ojbect.
+			IF_TYPE(p_index, STRING) {
+				append(GDScriptFunction::OPCODE_GET_OBJECT_STRING);
+				APPEND_GET_OPERANDS();
+				return;
+			}
+		}
+	}
 	append(GDScriptFunction::OPCODE_GET);
-	append(p_source);
-	append(p_index);
-	append(p_target);
+	APPEND_GET_OPERANDS();
+
+#undef APPEND_GET_OPERANDS
+#undef IF_TYPE
+#undef IF_CASE
 }
 
 void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
@@ -552,10 +656,53 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 }
 
 void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
+#define APPEND_GET_NAMED_OPERANDS() \
+	append(p_source);               \
+	append(p_name);                 \
+	append(p_target)
+
+#define IF_TYPE(m_var, m_type) \
+	if (m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == Variant::m_type)
+
+#define SOURCE_CASE(m_src_type)                                  \
+	case Variant::m_src_type: {                                  \
+		append(GDScriptFunction::OPCODE_GET_NAMED_##m_src_type); \
+		APPEND_GET_NAMED_OPERANDS();                             \
+		return;                                                  \
+	}
+
+	if (p_source.type.has_type) {
+		if (p_source.type.kind == GDScriptDataType::BUILTIN) {
+			switch (p_source.type.builtin_type) {
+				SOURCE_CASE(VECTOR2)
+				SOURCE_CASE(VECTOR2I)
+				SOURCE_CASE(VECTOR3)
+				SOURCE_CASE(VECTOR3I)
+				SOURCE_CASE(RECT2)
+				SOURCE_CASE(RECT2I)
+				SOURCE_CASE(TRANSFORM)
+				SOURCE_CASE(TRANSFORM2D)
+				SOURCE_CASE(QUAT)
+				SOURCE_CASE(AABB)
+				SOURCE_CASE(PLANE)
+				SOURCE_CASE(BASIS)
+				SOURCE_CASE(COLOR)
+				default:
+					break;
+			}
+		} else {
+			// Source is object.
+			append(GDScriptFunction::OPCODE_GET_NAMED_OBJECT);
+			APPEND_GET_NAMED_OPERANDS();
+			return;
+		}
+	}
 	append(GDScriptFunction::OPCODE_GET_NAMED);
-	append(p_source);
-	append(p_name);
-	append(p_target);
+	APPEND_GET_NAMED_OPERANDS();
+
+#undef APPEND_GET_OPERANDS
+#undef IF_TYPE
+#undef SOURCE_CASE
 }
 
 void GDScriptByteCodeGenerator::write_set_member(const Address &p_value, const StringName &p_name) {

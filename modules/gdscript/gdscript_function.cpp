@@ -30,6 +30,7 @@
 
 #include "gdscript_function.h"
 
+#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "core/variant_internal.h"
 #include "gdscript.h"
@@ -338,8 +339,54 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_IS_BUILTIN,                             \
 		&&OPCODE_SET,                                    \
 		&&OPCODE_GET,                                    \
+		&&OPCODE_GET_STRING_INT,                         \
+		&&OPCODE_GET_STRING_FLOAT,                       \
+		&&OPCODE_GET_VECTOR2_INT,                        \
+		&&OPCODE_GET_VECTOR2_FLOAT,                      \
+		&&OPCODE_GET_VECTOR2_STRING,                     \
+		&&OPCODE_GET_VECTOR2I_INT,                       \
+		&&OPCODE_GET_VECTOR2I_FLOAT,                     \
+		&&OPCODE_GET_VECTOR2I_STRING,                    \
+		&&OPCODE_GET_VECTOR3_INT,                        \
+		&&OPCODE_GET_VECTOR3_FLOAT,                      \
+		&&OPCODE_GET_VECTOR3_STRING,                     \
+		&&OPCODE_GET_VECTOR3I_INT,                       \
+		&&OPCODE_GET_VECTOR3I_FLOAT,                     \
+		&&OPCODE_GET_VECTOR3I_STRING,                    \
+		&&OPCODE_GET_RECT2_STRING,                       \
+		&&OPCODE_GET_RECT2I_STRING,                      \
+		&&OPCODE_GET_TRANSFORM_INT,                      \
+		&&OPCODE_GET_TRANSFORM_FLOAT,                    \
+		&&OPCODE_GET_TRANSFORM_STRING,                   \
+		&&OPCODE_GET_TRANSFORM2D_INT,                    \
+		&&OPCODE_GET_TRANSFORM2D_FLOAT,                  \
+		&&OPCODE_GET_TRANSFORM2D_STRING,                 \
+		&&OPCODE_GET_PLANE_STRING,                       \
+		&&OPCODE_GET_QUAT_STRING,                        \
+		&&OPCODE_GET_AABB_STRING,                        \
+		&&OPCODE_GET_BASIS_INT,                          \
+		&&OPCODE_GET_BASIS_FLOAT,                        \
+		&&OPCODE_GET_BASIS_STRING,                       \
+		&&OPCODE_GET_COLOR_INT,                          \
+		&&OPCODE_GET_COLOR_FLOAT,                        \
+		&&OPCODE_GET_COLOR_STRING,                       \
+		&&OPCODE_GET_OBJECT_STRING,                      \
 		&&OPCODE_SET_NAMED,                              \
 		&&OPCODE_GET_NAMED,                              \
+		&&OPCODE_GET_NAMED_VECTOR2,                      \
+		&&OPCODE_GET_NAMED_VECTOR2I,                     \
+		&&OPCODE_GET_NAMED_VECTOR3,                      \
+		&&OPCODE_GET_NAMED_VECTOR3I,                     \
+		&&OPCODE_GET_NAMED_RECT2,                        \
+		&&OPCODE_GET_NAMED_RECT2I,                       \
+		&&OPCODE_GET_NAMED_TRANSFORM,                    \
+		&&OPCODE_GET_NAMED_TRANSFORM2D,                  \
+		&&OPCODE_GET_NAMED_PLANE,                        \
+		&&OPCODE_GET_NAMED_QUAT,                         \
+		&&OPCODE_GET_NAMED_BASIS,                        \
+		&&OPCODE_GET_NAMED_AABB,                         \
+		&&OPCODE_GET_NAMED_COLOR,                        \
+		&&OPCODE_GET_NAMED_OBJECT,                       \
 		&&OPCODE_SET_MEMBER,                             \
 		&&OPCODE_GET_MEMBER,                             \
 		&&OPCODE_ASSIGN,                                 \
@@ -568,6 +615,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #define OP_GET_VECTOR2I get_vector2i
 #define OP_GET_VECTOR3 get_vector3
 #define OP_GET_VECTOR3I get_vector3i
+#define OP_GET_RECT2 get_rect2
+#define OP_GET_RECT2I get_rect2i
 #define OP_GET_QUAT get_quat
 #define OP_GET_COLOR get_color
 #define OP_GET_STRING get_string
@@ -833,6 +882,46 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	OPCODE_OP_MATH_TYPE(m_op_name, m_op, VECTOR3I, VECTOR3I, BOOL)
 
 #ifdef DEBUG_ENABLED
+#define OPCODE_GET_NUMBER_INDEX_LIMIT(m_type, m_var_type, m_user_type, m_idx_type, m_limit, m_ret_type) \
+	OPCODE(OPCODE_GET_##m_var_type##_##m_idx_type) {                                                    \
+		CHECK_SPACE(3);                                                                                 \
+		GET_VARIANT_PTR(src, 1);                                                                        \
+		GET_VARIANT_PTR(index, 2);                                                                      \
+		GET_VARIANT_PTR(dst, 3);                                                                        \
+		m_type *source = VariantInternal::OP_GET_##m_var_type(src);                                     \
+		int64_t idx = *VariantInternal::OP_GET_##m_idx_type(index);                                     \
+		if (idx < 0) {                                                                                  \
+			idx += m_limit;                                                                             \
+		}                                                                                               \
+		if (idx < 0 || idx >= m_limit) {                                                                \
+			err_text = vformat(R"(Trying to access index "%d" past end of m_user_type.)", idx);         \
+			OPCODE_BREAK;                                                                               \
+		}                                                                                               \
+		VariantInternal::initialize(dst, Variant::m_ret_type);                                          \
+		*VariantInternal::OP_GET_##m_ret_type(dst) = (*source)[idx];                                    \
+		ip += 4;                                                                                        \
+	}                                                                                                   \
+	DISPATCH_OPCODE
+#else
+#define OPCODE_GET_NUMBER_INDEX_LIMIT(m_type, m_var_type, m_user_type, m_idx_type, m_limit, m_ret_type) \
+	OPCODE(OPCODE_GET_##m_var_type##_##m_idx_type) {                                                    \
+		CHECK_SPACE(3);                                                                                 \
+		GET_VARIANT_PTR(src, 1);                                                                        \
+		GET_VARIANT_PTR(index, 2);                                                                      \
+		GET_VARIANT_PTR(dst, 3);                                                                        \
+		m_type *source = VariantInternal::OP_GET_##m_var_type(src);                                     \
+		int64_t idx = *VariantInternal::OP_GET_##m_idx_type(index);                                     \
+		if (idx < 0) {                                                                                  \
+			idx += m_limit;                                                                             \
+		}                                                                                               \
+		VariantInternal::initialize(dst, Variant::m_ret_type);                                          \
+		*VariantInternal::OP_GET_##m_ret_type(dst) = (*source)[idx];                                    \
+		ip += 4;                                                                                        \
+	}                                                                                                   \
+	DISPATCH_OPCODE
+#endif
+
+#ifdef DEBUG_ENABLED
 #define OPCODE_OP_SHIFT_ERR err_text = "Cannot shift less than 0 or more than 64 bits.";
 #else
 #define OPCODE_OP_SHIFT_ERR
@@ -853,6 +942,38 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		ip += 4;                                                                                          \
 	}                                                                                                     \
 	DISPATCH_OPCODE
+
+#define OPCODE_INIT_RESULT(m_type, m_var_type)             \
+	VariantInternal::initialize(dst, Variant::m_var_type); \
+	m_type *result = VariantInternal::OP_GET_##m_var_type(dst)
+
+#define OPCODE_GET_NAMED_START_SINGLE_RET(m_type, m_var_type, m_ret_type, m_ret_var_type) \
+	CHECK_SPACE(4);                                                                       \
+	GET_VARIANT_PTR(src, 1);                                                              \
+	GET_VARIANT_PTR(dst, 3);                                                              \
+	int indexname = _code_ptr[ip + 2];                                                    \
+	GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);                      \
+	const StringName *index = &_global_names_ptr[indexname];                              \
+	m_type *source = VariantInternal::OP_GET_##m_var_type(src);                           \
+	VariantInternal::initialize(dst, Variant::m_ret_var_type);                            \
+	m_ret_type *result = VariantInternal::OP_GET_##m_ret_var_type(dst)
+
+#define OPCODE_GET_NAMED_START(m_type, m_var_type)                   \
+	CHECK_SPACE(4);                                                  \
+	GET_VARIANT_PTR(src, 1);                                         \
+	GET_VARIANT_PTR(dst, 3);                                         \
+	int indexname = _code_ptr[ip + 2];                               \
+	GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count); \
+	const StringName *index = &_global_names_ptr[indexname];         \
+	m_type *source = VariantInternal::OP_GET_##m_var_type(src)
+
+#define OPCODE_GET_NAMED_ERROR()                                                                                                                                                                                               \
+	if (src->has_method(*index)) {                                                                                                                                                                                             \
+		err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "'). Did you mean '." + index->operator String() + "()' or funcref(obj, \"" + index->operator String() + "\") ?"; \
+	} else {                                                                                                                                                                                                                   \
+		err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";                                                                                                            \
+	}                                                                                                                                                                                                                          \
+	OPCODE_BREAK
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1187,6 +1308,569 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			// Typed get.
+			OPCODE(OPCODE_GET_STRING_INT) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				String *str = VariantInternal::get_string(src);
+				int64_t idx = *VariantInternal::get_int(index);
+				if (idx < 0) {
+					idx += str->length();
+				}
+#ifdef DEBUG_ENABLED
+				if (idx < 0 || idx >= str->length()) {
+					err_text = "Trying to access index past end of string.";
+					OPCODE_BREAK;
+				}
+#endif
+				VariantInternal::initialize(dst, Variant::STRING);
+				String *dst_str = VariantInternal::get_string(dst);
+				memnew_placement(dst_str, String(str->substr(idx, 1)));
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_STRING_FLOAT) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				String *str = VariantInternal::get_string(src);
+				int64_t idx = *VariantInternal::get_float(index);
+				if (idx < 0) {
+					idx += str->length();
+				}
+#ifdef DEBUG_ENABLED
+				if (idx < 0 || idx >= str->length()) {
+					err_text = "Trying to access index past end of string.";
+					OPCODE_BREAK;
+				}
+#endif
+				VariantInternal::initialize(dst, Variant::STRING);
+				String *dst_str = VariantInternal::get_string(dst);
+				memnew_placement(dst_str, String(str[idx]));
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector2, VECTOR2, Vector2, INT, 2, FLOAT);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector2, VECTOR2, Vector2, FLOAT, 2, FLOAT);
+			OPCODE(OPCODE_GET_VECTOR2_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Vector2 *source = VariantInternal::get_vector2(src);
+				String idx = *VariantInternal::get_string(index);
+				double result = 0;
+
+				if (idx == "x") {
+					result = source->x;
+				} else if (idx == "y") {
+					result = source->y;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Vector2.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+				VariantInternal::initialize(dst, Variant::FLOAT);
+				*VariantInternal::get_float(dst) = result;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector2i, VECTOR2I, Vector2i, INT, 2, INT);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector2i, VECTOR2I, Vector2i, FLOAT, 2, INT);
+			OPCODE(OPCODE_GET_VECTOR2I_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Vector2i *source = VariantInternal::get_vector2i(src);
+				String idx = *VariantInternal::get_string(index);
+				int result = 0;
+
+				if (idx == "x") {
+					result = source->x;
+				} else if (idx == "y") {
+					result = source->y;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Vector2i.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+				VariantInternal::initialize(dst, Variant::INT);
+				*VariantInternal::get_int(dst) = result;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector3, VECTOR3, Vector3, INT, 3, FLOAT);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector3, VECTOR3, Vector3, FLOAT, 3, FLOAT);
+			OPCODE(OPCODE_GET_VECTOR3_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Vector3 *source = VariantInternal::get_vector3(src);
+				String idx = *VariantInternal::get_string(index);
+				double result = 0;
+
+				if (idx == "x") {
+					result = source->x;
+				} else if (idx == "y") {
+					result = source->y;
+				} else if (idx == "z") {
+					result = source->z;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Vector3.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+				VariantInternal::initialize(dst, Variant::FLOAT);
+				*VariantInternal::get_float(dst) = result;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector3i, VECTOR3I, Vector3i, INT, 3, INT);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Vector3i, VECTOR3I, Vector3i, FLOAT, 3, INT);
+			OPCODE(OPCODE_GET_VECTOR3I_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Vector3i *source = VariantInternal::get_vector3i(src);
+				String idx = *VariantInternal::get_string(index);
+				int result = 0;
+
+				if (idx == "x") {
+					result = source->x;
+				} else if (idx == "y") {
+					result = source->y;
+				} else if (idx == "z") {
+					result = source->z;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Vector3i.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+				VariantInternal::initialize(dst, Variant::INT);
+				*VariantInternal::get_int(dst) = result;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_RECT2_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Rect2 *source = VariantInternal::get_rect2(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR2);
+				Vector2 *result = VariantInternal::get_vector2(dst);
+
+				if (idx == "position") {
+					*result = source->position;
+				} else if (idx == "size") {
+					*result = source->size;
+				} else if (idx == "end") {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Rect2.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_RECT2I_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Rect2i *source = VariantInternal::get_rect2i(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR2I);
+				Vector2i *result = VariantInternal::get_vector2i(dst);
+
+				if (idx == "position") {
+					*result = source->position;
+				} else if (idx == "size") {
+					*result = source->size;
+				} else if (idx == "end") {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Rect2i.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Transform2D, TRANSFORM2D, Transform2D, INT, 3, VECTOR2);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Transform2D, TRANSFORM2D, Transform2D, FLOAT, 3, VECTOR2);
+			OPCODE(OPCODE_GET_TRANSFORM2D_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Transform2D *source = VariantInternal::get_transform2d(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR2);
+				Vector2 *result = VariantInternal::get_vector2(dst);
+
+				if (idx == "x") {
+					*result = source->elements[0];
+				} else if (idx == "y") {
+					*result = source->elements[1];
+				} else if (idx == "origin") {
+					*result = source->elements[2];
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Transform2D.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_TRANSFORM_INT) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Transform *source = VariantInternal::get_transform(src);
+				int64_t idx = *VariantInternal::get_int(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR3);
+				Vector3 *result = VariantInternal::get_vector3(dst);
+
+				if (idx < 0) {
+					idx += 4;
+				}
+#ifdef DEBUG_ENABLED
+				if (idx < 0 || idx >= 4) {
+					err_text = vformat(R"(Trying to access index "%d" past end of m_user_type.)", idx);
+					OPCODE_BREAK;
+				}
+#endif
+				*result = idx == 3 ? source->origin : source->basis.get_axis(idx);
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_TRANSFORM_FLOAT) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Transform *source = VariantInternal::get_transform(src);
+				int64_t idx = *VariantInternal::get_float(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR3);
+				Vector3 *result = VariantInternal::get_vector3(dst);
+
+				if (idx < 0) {
+					idx += 4;
+				}
+#ifdef DEBUG_ENABLED
+				if (idx < 0 || idx >= 4) {
+					err_text = vformat(R"(Trying to access index "%d" past end of Transform.)", idx);
+					OPCODE_BREAK;
+				}
+#endif
+				*result = idx == 3 ? source->origin : source->basis.get_axis(idx);
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_TRANSFORM_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Transform *source = VariantInternal::get_transform(src);
+				String idx = *VariantInternal::get_string(index);
+
+				if (idx == "x") {
+					VariantInternal::initialize(dst, Variant::BASIS);
+					Basis *result = VariantInternal::get_basis(dst);
+					*result = source->basis;
+				} else if (idx == "origin") {
+					VariantInternal::initialize(dst, Variant::VECTOR3);
+					Vector3 *result = VariantInternal::get_vector3(dst);
+					*result = source->origin;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Transform.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_PLANE_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Plane *source = VariantInternal::get_plane(src);
+				String idx = *VariantInternal::get_string(index);
+
+				if (idx == "x") {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.x;
+				} else if (idx == "y") {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.y;
+				} else if (idx == "z") {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.z;
+				} else if (idx == "d") {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->d;
+				} else if (idx == "normal") {
+					VariantInternal::initialize(dst, Variant::VECTOR3);
+					Vector3 *result = VariantInternal::get_vector3(dst);
+					*result = source->normal;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Plane.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_QUAT_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Quat *source = VariantInternal::get_quat(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::FLOAT);
+				double *result = VariantInternal::get_float(dst);
+
+				if (idx == "x") {
+					*result = source->x;
+				} else if (idx == "y") {
+					*result = source->y;
+				} else if (idx == "z") {
+					*result = source->z;
+				} else if (idx == "w") {
+					*result = source->w;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Transform2D.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_AABB_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				AABB *source = VariantInternal::get_aabb(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR3);
+				Vector3 *result = VariantInternal::get_vector3(dst);
+
+				if (idx == "position") {
+					*result = source->position;
+				} else if (idx == "size") {
+					*result = source->size;
+				} else if (idx == "end") {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on AABB.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Basis, BASIS, Basis, INT, 3, VECTOR3);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Basis, BASIS, Basis, FLOAT, 3, VECTOR3);
+			OPCODE(OPCODE_GET_BASIS_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Basis *source = VariantInternal::get_basis(src);
+				String idx = *VariantInternal::get_string(index);
+
+				VariantInternal::initialize(dst, Variant::VECTOR3);
+				Vector3 *result = VariantInternal::get_vector3(dst);
+
+				if (idx == "x") {
+					*result = source->get_axis(0);
+				} else if (idx == "y") {
+					*result = source->get_axis(1);
+				} else if (idx == "z") {
+					*result = source->get_axis(2);
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Basis.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Color, COLOR, Color, INT, 4, FLOAT);
+			OPCODE_GET_NUMBER_INDEX_LIMIT(Color, COLOR, Color, FLOAT, 4, FLOAT);
+			OPCODE(OPCODE_GET_COLOR_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				Color *source = VariantInternal::get_color(src);
+				String idx = *VariantInternal::get_string(index);
+
+				if (idx == "r") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->r;
+				} else if (idx == "g") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->g;
+				} else if (idx == "b") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->b;
+				} else if (idx == "a") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->a;
+				} else if (idx == "h") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_h();
+				} else if (idx == "s") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_s();
+				} else if (idx == "v") {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_v();
+				} else if (idx == "r8") {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = (int)Math::round(source->r * 255.0);
+				} else if (idx == "g8") {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = (int)Math::round(source->g * 255.0);
+				} else if (idx == "b8") {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = (int)Math::round(source->b * 255.0);
+				} else if (idx == "a8") {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = (int)Math::round(source->a * 255.0);
+#ifdef DEBUG_ENABLED
+				} else {
+					err_text = vformat(R"(Cannot access index "%s" on Color.)", idx);
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_OBJECT_STRING) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(index, 2);
+				GET_VARIANT_PTR(dst, 3);
+
+				bool valid = false;
+				Object *source = src->get_validated_object_with_check(valid);
+				valid = !valid; // Since the function returns true if freed.
+				String idx = *VariantInternal::get_string(index);
+
+				if (source && valid) {
+					*dst = source->get(idx, &valid);
+#ifdef DEBUG_ENABLED
+					if (!valid) {
+						err_text = vformat(R"(Cannot access index "%s" on %s.)", idx, source->to_string());
+						OPCODE_BREAK;
+					}
+#endif
+				} else {
+#ifdef DEBUG_ENABLED
+					if (!valid) {
+						err_text = "Trying to get value from a previously freed instance.";
+					} else {
+						err_text = "Trying to get value from a null value.";
+					}
+					OPCODE_BREAK;
+#endif
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_SET_NAMED) {
 				CHECK_SPACE(3);
 
@@ -1242,6 +1926,302 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 				*dst = ret;
 #endif
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_VECTOR2) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Vector2, VECTOR2, double, FLOAT);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->y;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_VECTOR2I) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Vector2i, VECTOR2I, int64_t, INT);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->y;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_VECTOR3) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Vector3, VECTOR3, double, FLOAT);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->y;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_VECTOR3I) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Vector3i, VECTOR3I, int64_t, INT);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->y;
+				} else if (*index == CoreStringNames::singleton->z) {
+					*result = source->z;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_RECT2) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Rect2, RECT2, Vector2, VECTOR2);
+
+				if (*index == CoreStringNames::singleton->position) {
+					*result = source->position;
+				} else if (*index == CoreStringNames::singleton->size) {
+					*result = source->size;
+				} else if (*index == CoreStringNames::singleton->end) {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			OPCODE(OPCODE_GET_NAMED_RECT2I) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Rect2i, RECT2I, Vector2i, VECTOR2I);
+
+				if (*index == CoreStringNames::singleton->position) {
+					*result = source->position;
+				} else if (*index == CoreStringNames::singleton->size) {
+					*result = source->size;
+				} else if (*index == CoreStringNames::singleton->end) {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_TRANSFORM) {
+				OPCODE_GET_NAMED_START(Transform, TRANSFORM);
+
+				if (*index == CoreStringNames::singleton->basis) {
+					VariantInternal::initialize(dst, Variant::BASIS);
+					Basis *result = VariantInternal::get_basis(dst);
+					*result = source->basis;
+				} else if (*index == CoreStringNames::singleton->origin) {
+					VariantInternal::initialize(dst, Variant::VECTOR3);
+					Vector3 *result = VariantInternal::get_vector3(dst);
+					*result = source->origin;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_TRANSFORM2D) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Transform2D, TRANSFORM2D, Vector2, VECTOR2);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->elements[0];
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->elements[1];
+				} else if (*index == CoreStringNames::singleton->origin) {
+					*result = source->elements[2];
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_PLANE) {
+				OPCODE_GET_NAMED_START(Plane, PLANE);
+
+				if (*index == CoreStringNames::singleton->x) {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.y;
+				} else if (*index == CoreStringNames::singleton->z) {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->normal.z;
+				} else if (*index == CoreStringNames::singleton->d) {
+					VariantInternal::initialize(dst, Variant::FLOAT);
+					double *result = VariantInternal::get_float(dst);
+					*result = source->d;
+				} else if (*index == CoreStringNames::singleton->normal) {
+					VariantInternal::initialize(dst, Variant::VECTOR3);
+					Vector3 *result = VariantInternal::get_vector3(dst);
+					*result = source->normal;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_QUAT) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Quat, QUAT, double, FLOAT);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->x;
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->y;
+				} else if (*index == CoreStringNames::singleton->z) {
+					*result = source->z;
+				} else if (*index == CoreStringNames::singleton->w) {
+					*result = source->w;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_AABB) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(AABB, AABB, Vector3, VECTOR3);
+
+				if (*index == CoreStringNames::singleton->position) {
+					*result = source->position;
+				} else if (*index == CoreStringNames::singleton->size) {
+					*result = source->size;
+				} else if (*index == CoreStringNames::singleton->end) {
+					*result = source->size + source->position;
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_BASIS) {
+				OPCODE_GET_NAMED_START_SINGLE_RET(Basis, BASIS, Vector3, VECTOR3);
+
+				if (*index == CoreStringNames::singleton->x) {
+					*result = source->get_axis(0);
+				} else if (*index == CoreStringNames::singleton->y) {
+					*result = source->get_axis(1);
+				} else if (*index == CoreStringNames::singleton->z) {
+					*result = source->get_axis(2);
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_COLOR) {
+				OPCODE_GET_NAMED_START(Color, COLOR);
+
+				if (*index == CoreStringNames::singleton->r) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->r;
+				} else if (*index == CoreStringNames::singleton->g) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->g;
+				} else if (*index == CoreStringNames::singleton->b) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->b;
+				} else if (*index == CoreStringNames::singleton->a) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->a;
+				} else if (*index == CoreStringNames::singleton->r8) {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = int(Math::round(source->r * 255.0));
+				} else if (*index == CoreStringNames::singleton->g8) {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = int(Math::round(source->g * 255.0));
+				} else if (*index == CoreStringNames::singleton->b8) {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = int(Math::round(source->b * 255.0));
+				} else if (*index == CoreStringNames::singleton->a8) {
+					OPCODE_INIT_RESULT(int64_t, INT);
+					*result = int(Math::round(source->a * 255.0));
+				} else if (*index == CoreStringNames::singleton->h) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_h();
+				} else if (*index == CoreStringNames::singleton->s) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_s();
+				} else if (*index == CoreStringNames::singleton->v) {
+					OPCODE_INIT_RESULT(double, FLOAT);
+					*result = source->get_v();
+#ifdef DEBUG_ENABLED
+				} else {
+					OPCODE_GET_NAMED_ERROR();
+#endif
+				}
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_GET_NAMED_OBJECT) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(src, 1);
+				GET_VARIANT_PTR(dst, 3);
+
+				int indexname = _code_ptr[ip + 2];
+
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				const StringName *index = &_global_names_ptr[indexname];
+
+				bool valid = false;
+				Object *source = src->get_validated_object_with_check(valid);
+				valid = !valid; // Since the function returns true if freed.
+
+				if (source && valid) {
+					*dst = source->get(*index, &valid);
+#ifdef DEBUG_ENABLED
+					if (!valid) {
+						err_text = vformat(R"(Cannot access index "%s" on %s.)", *index, source->to_string());
+						OPCODE_BREAK;
+					}
+#endif
+				} else {
+#ifdef DEBUG_ENABLED
+					if (!valid) {
+						err_text = "Trying to get value from a previously freed instance.";
+					} else {
+						err_text = "Trying to get value from a null value.";
+					}
+					OPCODE_BREAK;
+#endif
+				}
+
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
