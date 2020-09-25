@@ -68,6 +68,10 @@ void FuncRef::set_function(const StringName &p_func) {
 	function = p_func;
 }
 
+StringName FuncRef::get_function() {
+	return function;
+}
+
 bool FuncRef::is_valid() const {
 	if (id == 0)
 		return false;
@@ -92,6 +96,7 @@ void FuncRef::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
 	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
+	ClassDB::bind_method(D_METHOD("get_function"), &FuncRef::get_function);
 	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
 }
 
