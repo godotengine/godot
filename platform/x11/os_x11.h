@@ -32,6 +32,7 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "core/local_vector.h"
 #include "core/os/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
@@ -155,7 +156,22 @@ class OS_X11 : public OS_Unix {
 	MouseMode mouse_mode;
 	Point2i center;
 
-	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
+	void _handle_key_event(XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event);
+
+	String _get_clipboard_impl(Atom p_source, Window x11_window, Atom target) const;
+	String _get_clipboard(Atom p_source, Window x11_window) const;
+
+	mutable Mutex *events_mutex;
+	Thread *events_thread = nullptr;
+	bool events_thread_done = false;
+	LocalVector<XEvent> polled_events;
+	static void _poll_events_thread(void *ud);
+	void _poll_events();
+
+	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
+
 	void process_xevents();
 	virtual void delete_main_loop();
 
