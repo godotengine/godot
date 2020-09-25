@@ -204,6 +204,7 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event);
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _clipboard_get(Atom p_source, Window x11_window) const;
