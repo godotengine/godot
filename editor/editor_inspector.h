@@ -294,7 +294,6 @@ class EditorInspector : public ScrollContainer {
 	bool deletable_properties;
 
 	float refresh_countdown;
-	float refresh_interval_cache;
 	bool update_tree_pending;
 	StringName _prop_edited;
 	StringName property_selected;
