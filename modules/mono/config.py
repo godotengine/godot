@@ -32,9 +32,7 @@ def configure(env):
     envvars.Add(BoolVariable("mono_glue", "Build with the Mono glue sources", True))
     envvars.Add(BoolVariable("build_cil", "Build C# solutions", True))
     envvars.Add(
-        BoolVariable(
-            "copy_mono_root", "Make a copy of the Mono installation directory to bundle with the editor", True
-        )
+        BoolVariable("copy_mono_root", "Make a copy of the Mono installation directory to bundle with the editor", True)
     )
 
     # TODO: It would be great if this could be detected automatically instead

@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -qq dos2unix recode clang-format
-          sudo pip3 install git+https://github.com/psf/black@master pygments
+          sudo pip3 install black==20.8b1 pygments
 
       - name: File formatting checks (file_format.sh)
         run: |
