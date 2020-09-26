@@ -675,11 +675,9 @@ float AudioStreamPlayer3D::get_max_db() const {
 }
 
 void AudioStreamPlayer3D::set_tightness(float p_tightness) {
-
 	tightness = p_tightness;
 }
 float AudioStreamPlayer3D::get_tightness() const {
-
 	return tightness;
 }
 
