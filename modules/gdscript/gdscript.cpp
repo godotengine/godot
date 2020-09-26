@@ -2039,8 +2039,15 @@ GDScriptLanguage::~GDScriptLanguage() {
 	}
 
 	// Clear dependencies between scripts, to ensure cyclic references are broken (to avoid leaks at exit).
-	while (script_list.first()) {
-		GDScript *script = script_list.first()->self();
+	SelfList<GDScript> *s = script_list.first();
+	while (s) {
+		GDScript *script = s->self();
+		// This ensures the current script is not released before we can check what's the next one
+		// in the list (we can't get the next upfront because we don't know if the reference breaking
+		// will cause it -or any other after it, for that matter- to be released so the next one
+		// is not the same as before).
+		script->reference();
+
 		for (Map<StringName, GDScriptFunction *>::Element *E = script->member_functions.front(); E; E = E->next()) {
 			GDScriptFunction *func = E->get();
 			for (int i = 0; i < func->argument_types.size(); i++) {
@@ -2051,6 +2058,9 @@ GDScriptLanguage::~GDScriptLanguage() {
 		for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
 			E->get().data_type.script_type_ref = Ref<Script>();
 		}
+
+		s = s->next();
+		script->unreference();
 	}
 
 	singleton = NULL;
