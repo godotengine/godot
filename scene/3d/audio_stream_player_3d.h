@@ -107,6 +107,7 @@ private:
 	float unit_size;
 	float max_db;
 	float pitch_scale;
+    float tightness;
 	bool autoplay;
 	bool stream_paused;
 	bool stream_paused_fade_in;
@@ -160,6 +161,9 @@ public:
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
+    
+	void set_tightness(float p_tightness);
+	float get_tightness() const;
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);

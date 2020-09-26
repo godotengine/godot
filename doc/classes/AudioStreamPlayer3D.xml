@@ -103,6 +103,9 @@
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
 			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
 		</member>
+		<member name="tightness" type="float" setter="set_tightness" getter="get_tightness" default="4.0">
+			How much the sound will "enclose" the listener (more undirected / playing from speakers not facing the source). Lower values enclose more.
+		</member>
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" default="0.0">
 			Base sound level unaffected by dampening, in dB.
 		</member>
