@@ -375,6 +375,30 @@ String InputEventKey::to_string() {
 	}
 }
 
+Ref<InputEventKey> InputEventKey::create_reference(uint32_t p_keycode, uint32_t p_modifier_masks) {
+	Ref<InputEventKey> ie;
+	ie.instance();
+	ie->set_keycode(p_keycode);
+
+	if (p_modifier_masks & KEY_MASK_SHIFT) {
+		ie->set_shift(true);
+	}
+	if (p_modifier_masks & KEY_MASK_ALT) {
+		ie->set_alt(true);
+	}
+	if (p_modifier_masks & KEY_MASK_CTRL) {
+		ie->set_control(true);
+	}
+	if (p_modifier_masks & KEY_MASK_CMD) {
+		ie->set_command(true);
+	}
+	if (p_modifier_masks & KEY_MASK_META) {
+		ie->set_metakey(true);
+	}
+
+	return ie;
+}
+
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
@@ -983,6 +1007,14 @@ String InputEventJoypadButton::as_text() const {
 
 String InputEventJoypadButton::to_string() {
 	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
+}
+
+Ref<InputEventJoypadButton> InputEventJoypadButton::create_reference(int p_btn_index) {
+	Ref<InputEventJoypadButton> ie;
+	ie.instance();
+	ie->set_button_index(p_btn_index);
+
+	return ie;
 }
 
 void InputEventJoypadButton::_bind_methods() {
