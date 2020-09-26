@@ -107,7 +107,7 @@ private:
 	float unit_size;
 	float max_db;
 	float pitch_scale;
-    float tightness;
+	float tightness;
 	bool autoplay;
 	bool stream_paused;
 	bool stream_paused_fade_in;

@@ -1023,7 +1023,7 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	max_db = 3;
 	pitch_scale = 1.0;
-    tightness = 4.0;
+	tightness = 4.0;
 	autoplay = false;
 	setseek = -1;
 	active = false;
