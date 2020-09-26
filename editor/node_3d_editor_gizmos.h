@@ -140,18 +140,6 @@ public:
 	Skeleton3DGizmoPlugin();
 };
 
-class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(PhysicalBone3DGizmoPlugin, EditorNode3DGizmoPlugin);
-
-public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_name() const override;
-	int get_priority() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	PhysicalBone3DGizmoPlugin();
-};
-
 class RayCast3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(RayCast3DGizmoPlugin, EditorNode3DGizmoPlugin);
 

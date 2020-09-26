@@ -216,6 +216,14 @@ public:
 	_FORCE_INLINE_ const Vector3 &get_biased_linear_velocity() const { return biased_linear_velocity; }
 	_FORCE_INLINE_ const Vector3 &get_biased_angular_velocity() const { return biased_angular_velocity; }
 
+	_FORCE_INLINE_ void teleport(const Transform &p_transform) {
+		set_linear_velocity(Vector3());
+		set_angular_velocity(Vector3());
+		set_applied_torque(Vector3());
+		set_applied_force(Vector3());
+		set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform);
+	}
+
 	_FORCE_INLINE_ void apply_central_impulse(const Vector3 &p_impulse) {
 		linear_velocity += p_impulse * _inv_mass;
 	}
@@ -412,6 +420,8 @@ public:
 		body->apply_impulse(p_impulse, p_position);
 	}
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) override { body->apply_torque_impulse(p_impulse); }
+
+	virtual void teleport(const Transform &p_transform) override { body->teleport(p_transform); }
 
 	virtual void set_sleep_state(bool p_sleep) override { body->set_active(!p_sleep); }
 	virtual bool is_sleeping() const override { return !body->is_active(); }

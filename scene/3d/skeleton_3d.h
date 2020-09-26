@@ -74,56 +74,43 @@ private:
 	struct Bone {
 		String name;
 
-		bool enabled;
-		int parent;
-		int sort_index; //used for re-sorting process order
+		bool dirty = true;
 
-		bool disable_rest;
+		bool enabled = true;
+		int parent = -1;
+		int sort_index = -1; //used for re-sorting process order
+
+		bool disable_rest = false;
+
+		// bones current rest bind
 		Transform rest;
 
+		// the current pose
 		Transform pose;
-		Transform pose_global;
 
-		bool custom_pose_enable;
-		Transform custom_pose;
+		// the current global pose (inheriting from parent)
+		// this is the "natural" global pose - without custom poses or override taken into account
+		Transform pose_global_no_override;
 
-		float global_pose_override_amount;
-		bool global_pose_override_reset;
+		real_t global_pose_override_amount = 0.0;
+		bool global_pose_override_reset = false;
 		Transform global_pose_override;
 
-#ifndef _3D_DISABLED
-		PhysicalBone3D *physical_bone;
-		PhysicalBone3D *cache_parent_physical_bone;
-#endif // _3D_DISABLED
+		// the final pose, with custom pose applied or global_pose_override applied
+		Transform pose_global_final;
 
 		List<ObjectID> nodes_bound;
-
-		Bone() {
-			parent = -1;
-			enabled = true;
-			disable_rest = false;
-			custom_pose_enable = false;
-			global_pose_override_amount = 0;
-			global_pose_override_reset = false;
-#ifndef _3D_DISABLED
-			physical_bone = nullptr;
-			cache_parent_physical_bone = nullptr;
-#endif // _3D_DISABLED
-		}
 	};
 
 	Set<SkinReference *> skin_bindings;
 
 	void _skin_changed();
 
-	bool animate_physical_bones;
 	Vector<Bone> bones;
 	Vector<int> process_order;
+
 	bool process_order_dirty;
-
-	void _make_dirty();
 	bool dirty;
-
 	uint64_t version;
 
 	// bind helpers
@@ -140,6 +127,8 @@ private:
 
 	void _update_process_order();
 
+	_FORCE_INLINE_ bool update_bone_pose(Bone &p_bone, const Bone *p_bonesptr) const;
+
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -148,11 +137,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-
-		NOTIFICATION_UPDATE_SKELETON = 50
-	};
-
 	// skeleton creation api
 	void add_bone(const String &p_name);
 	int find_bone(const String &p_name) const;
@@ -173,6 +157,8 @@ public:
 	void set_bone_rest(int p_bone, const Transform &p_rest);
 	Transform get_bone_rest(int p_bone) const;
 	Transform get_bone_global_pose(int p_bone) const;
+	Transform get_bone_global_pose_without_override(int p_bone) const;
+	Transform get_bone_global_rest(int p_bone) const;
 
 	void clear_bones_global_pose_override();
 	void set_bone_global_pose_override(int p_bone, const Transform &p_pose, float p_amount, bool p_persistent = false);
@@ -191,8 +177,7 @@ public:
 	void set_bone_pose(int p_bone, const Transform &p_pose);
 	Transform get_bone_pose(int p_bone) const;
 
-	void set_bone_custom_pose(int p_bone, const Transform &p_custom_pose);
-	Transform get_bone_custom_pose(int p_bone) const;
+	void reset_bone_poses();
 
 	void localize_rests(); // used for loaders and tools
 	int get_process_order(int p_idx);
@@ -203,30 +188,6 @@ public:
 	// Helper functions
 	Transform bone_transform_to_world_transform(Transform p_transform);
 	Transform world_transform_to_bone_transform(Transform p_transform);
-
-#ifndef _3D_DISABLED
-	// Physical bone API
-
-	void set_animate_physical_bones(bool p_animate);
-	bool get_animate_physical_bones() const;
-
-	void bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physical_bone);
-	void unbind_physical_bone_from_bone(int p_bone);
-
-	PhysicalBone3D *get_physical_bone(int p_bone);
-	PhysicalBone3D *get_physical_bone_parent(int p_bone);
-
-private:
-	/// This is a slow API, so it's cached
-	PhysicalBone3D *_get_physical_bone_parent(int p_bone);
-	void _rebuild_physical_bones_cache();
-
-public:
-	void physical_bones_stop_simulation();
-	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
-	void physical_bones_add_collision_exception(RID p_exception);
-	void physical_bones_remove_collision_exception(RID p_exception);
-#endif // _3D_DISABLED
 
 public:
 	Skeleton3D();

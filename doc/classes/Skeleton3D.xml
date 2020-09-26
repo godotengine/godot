@@ -71,15 +71,6 @@
 				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
-		<method name="get_bone_custom_pose" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<description>
-				Returns the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
-			</description>
-		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -87,6 +78,14 @@
 			</argument>
 			<description>
 				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+			</description>
+		</method>
+		<method name="get_bone_global_pose_without_override" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -157,43 +156,6 @@
 				Returns all bones in the skeleton to their rest poses.
 			</description>
 		</method>
-		<method name="physical_bones_add_collision_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="exception" type="RID">
-			</argument>
-			<description>
-				Adds a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
-			</description>
-		</method>
-		<method name="physical_bones_remove_collision_exception">
-			<return type="void">
-			</return>
-			<argument index="0" name="exception" type="RID">
-			</argument>
-			<description>
-				Removes a collision exception to the physical bone.
-				Works just like the [RigidBody3D] node.
-			</description>
-		</method>
-		<method name="physical_bones_start_simulation">
-			<return type="void">
-			</return>
-			<argument index="0" name="bones" type="StringName[]" default="[  ]">
-			</argument>
-			<description>
-				Tells the [PhysicalBone3D] nodes in the Skeleton to start simulating and reacting to the physics world.
-				Optionally, a list of bone names can be passed-in, allowing only the passed-in bones to be simulated.
-			</description>
-		</method>
-		<method name="physical_bones_stop_simulation">
-			<return type="void">
-			</return>
-			<description>
-				Tells the [PhysicalBone3D] nodes in the Skeleton to stop simulating.
-			</description>
-		</method>
 		<method name="register_skin">
 			<return type="SkinReference">
 			</return>
@@ -201,18 +163,6 @@
 			</argument>
 			<description>
 				Binds the given Skin to the Skeleton.
-			</description>
-		</method>
-		<method name="set_bone_custom_pose">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<argument index="1" name="custom_pose" type="Transform">
-			</argument>
-			<description>
-				Sets the custom pose transform, [code]custom_pose[/code], for the bone at [code]bone_idx[/code]. This pose is an addition to the bone rest pose.
-				[b]Note[/b]: The pose transform needs to be in bone space. Use [method world_transform_to_bone_transform] to convert a world transform, like one you can get from a [Node3D], to bone space.
 			</description>
 		</method>
 		<method name="set_bone_disable_rest">
@@ -309,10 +259,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="animate_physical_bones" type="bool" setter="set_animate_physical_bones" getter="get_animate_physical_bones" default="true">
-		</member>
-	</members>
 	<signals>
 		<signal name="pose_updated">
 			<description>
@@ -320,7 +266,5 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
-		</constant>
 	</constants>
 </class>

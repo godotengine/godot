@@ -60,7 +60,10 @@ void Joint3D::_update_joint(bool p_only_free) {
 		return;
 	}
 
-	joint = _configure_joint(body_a, body_b);
+	Transform offset_a, offset_b;
+	compute_body_offsets(offset_a, offset_b, *body_a, body_b);
+
+	joint = _configure_joint(*body_a, offset_a, body_b, offset_b);
 
 	if (!joint.is_valid()) {
 		return;
@@ -157,6 +160,22 @@ void Joint3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }
 
+void Joint3D::compute_body_offsets(Transform &o_offset_a, Transform &o_offset_b, const PhysicsBody3D &p_body_a, const PhysicsBody3D *p_body_b) {
+	Transform gt = get_global_transform();
+	Transform ainv = p_body_a.get_global_transform().affine_inverse();
+
+	o_offset_a = ainv * gt;
+	o_offset_a.orthonormalize();
+	o_offset_b = gt;
+
+	if (p_body_b) {
+		Transform binv = p_body_b->get_global_transform().affine_inverse();
+		o_offset_b = binv * gt;
+	}
+
+	o_offset_b.orthonormalize();
+}
+
 Joint3D::Joint3D() {
 	exclude_from_collision = true;
 	solver_priority = 1;
@@ -191,18 +210,8 @@ float PinJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID PinJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Vector3 pinpos = get_global_transform().origin;
-	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
-	Vector3 local_b;
-
-	if (body_b) {
-		local_b = body_b->get_global_transform().affine_inverse().xform(pinpos);
-	} else {
-		local_b = pinpos;
-	}
-
-	RID j = PhysicsServer3D::get_singleton()->joint_create_pin(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+RID PinJoint3D::_configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) {
+	RID j = PhysicsServer3D::get_singleton()->joint_create_pin(p_body_a.get_rid(), p_offset_a.origin, p_body_b ? p_body_b->get_rid() : RID(), p_offset_b.origin);
 	for (int i = 0; i < 3; i++) {
 		PhysicsServer3D::get_singleton()->pin_joint_set_param(j, PhysicsServer3D::PinJointParam(i), params[i]);
 	}
@@ -306,22 +315,8 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 	return flags[p_flag];
 }
 
-RID HingeJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	Transform ainv = body_a->get_global_transform().affine_inverse();
-
-	Transform local_a = ainv * gt;
-	local_a.orthonormalize();
-	Transform local_b = gt;
-
-	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
-		local_b = binv * gt;
-	}
-
-	local_b.orthonormalize();
-
-	RID j = PhysicsServer3D::get_singleton()->joint_create_hinge(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+RID HingeJoint3D::_configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) {
+	RID j = PhysicsServer3D::get_singleton()->joint_create_hinge(p_body_a.get_rid(), p_offset_a, p_body_b ? p_body_b->get_rid() : RID(), p_offset_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HingeJointParam(i), params[i]);
 	}
@@ -441,22 +436,8 @@ float SliderJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID SliderJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	Transform ainv = body_a->get_global_transform().affine_inverse();
-
-	Transform local_a = ainv * gt;
-	local_a.orthonormalize();
-	Transform local_b = gt;
-
-	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
-		local_b = binv * gt;
-	}
-
-	local_b.orthonormalize();
-
-	RID j = PhysicsServer3D::get_singleton()->joint_create_slider(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+RID SliderJoint3D::_configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) {
+	RID j = PhysicsServer3D::get_singleton()->joint_create_slider(p_body_a.get_rid(), p_offset_a, p_body_b ? p_body_b->get_rid() : RID(), p_offset_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SliderJointParam(i), params[i]);
 	}
@@ -548,25 +529,8 @@ float ConeTwistJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID ConeTwistJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	//Vector3 cone_twistpos = gt.origin;
-	//Vector3 cone_twistdir = gt.basis.get_axis(2);
-
-	Transform ainv = body_a->get_global_transform().affine_inverse();
-
-	Transform local_a = ainv * gt;
-	local_a.orthonormalize();
-	Transform local_b = gt;
-
-	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
-		local_b = binv * gt;
-	}
-
-	local_b.orthonormalize();
-
-	RID j = PhysicsServer3D::get_singleton()->joint_create_cone_twist(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+RID ConeTwistJoint3D::_configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) {
+	RID j = PhysicsServer3D::get_singleton()->joint_create_cone_twist(p_body_a.get_rid(), p_offset_a, p_body_b ? p_body_b->get_rid() : RID(), p_offset_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::ConeTwistJointParam(i), params[i]);
 	}
@@ -888,25 +852,8 @@ void Generic6DOFJoint3D::set_precision(int p_precision) {
 			precision);
 }
 
-RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	//Vector3 cone_twistpos = gt.origin;
-	//Vector3 cone_twistdir = gt.basis.get_axis(2);
-
-	Transform ainv = body_a->get_global_transform().affine_inverse();
-
-	Transform local_a = ainv * gt;
-	local_a.orthonormalize();
-	Transform local_b = gt;
-
-	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
-		local_b = binv * gt;
-	}
-
-	local_b.orthonormalize();
-
-	RID j = PhysicsServer3D::get_singleton()->joint_create_generic_6dof(body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
+RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D &p_body_a, const Transform &p_offset_a, PhysicsBody3D *p_body_b, const Transform &p_offset_b) {
+	RID j = PhysicsServer3D::get_singleton()->joint_create_generic_6dof(p_body_a.get_rid(), p_offset_a, p_body_b ? p_body_b->get_rid() : RID(), p_offset_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, Vector3::AXIS_X, PhysicsServer3D::G6DOFJointAxisParam(i), params_x[i]);
 		PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, Vector3::AXIS_Y, PhysicsServer3D::G6DOFJointAxisParam(i), params_y[i]);

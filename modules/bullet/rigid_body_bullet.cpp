@@ -112,6 +112,10 @@ Transform BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
 }
 
+void BulletPhysicsDirectBodyState3D::teleport(const Transform &p_transform) {
+	body->teleport(p_transform);
+}
+
 void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
 	body->apply_central_force(p_force);
 }
@@ -578,6 +582,9 @@ void RigidBodyBullet::set_state(PhysicsServer3D::BodyState p_state, const Varian
 		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY:
 			set_angular_velocity(p_variant);
 			break;
+		case PhysicsServer3D::BODY_STATE_TELEPORT:
+			teleport(p_variant);
+			break;
 		case PhysicsServer3D::BODY_STATE_SLEEPING:
 			set_activation_state(!bool(p_variant));
 			break;
@@ -787,6 +794,14 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 	Vector3 gVec;
 	B_TO_G(btBody->getAngularVelocity(), gVec);
 	return gVec;
+}
+
+void RigidBodyBullet::teleport(const Transform &p_transform) {
+	set_transform(p_transform);
+
+	btBody->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+	btBody->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+	btBody->clearForces();
 }
 
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {

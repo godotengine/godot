@@ -69,6 +69,8 @@ public:
 	virtual void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_impulse) = 0;
 
+	virtual void teleport(const Transform &p_transform) = 0;
+
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
 
@@ -416,6 +418,7 @@ public:
 		BODY_STATE_TRANSFORM,
 		BODY_STATE_LINEAR_VELOCITY,
 		BODY_STATE_ANGULAR_VELOCITY,
+		BODY_STATE_TELEPORT,
 		BODY_STATE_SLEEPING,
 		BODY_STATE_CAN_SLEEP
 	};

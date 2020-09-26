@@ -46,6 +46,7 @@
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/physics_bone_joint_3d.h"
 #include "scene/3d/physics_joint_3d.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
@@ -1747,139 +1748,6 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<ArrayMesh> m = surface_tool->commit();
 	p_gizmo->add_mesh(m, false, skel->register_skin(Ref<Skin>()));
-}
-
-////
-
-PhysicalBone3DGizmoPlugin::PhysicalBone3DGizmoPlugin() {
-	create_material("joint_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1)));
-}
-
-bool PhysicalBone3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<PhysicalBone3D>(p_spatial) != nullptr;
-}
-
-String PhysicalBone3DGizmoPlugin::get_name() const {
-	return "PhysicalBone3D";
-}
-
-int PhysicalBone3DGizmoPlugin::get_priority() const {
-	return -1;
-}
-
-void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	p_gizmo->clear();
-
-	PhysicalBone3D *physical_bone = Object::cast_to<PhysicalBone3D>(p_gizmo->get_spatial_node());
-
-	if (!physical_bone) {
-		return;
-	}
-
-	Skeleton3D *sk(physical_bone->find_skeleton_parent());
-	if (!sk) {
-		return;
-	}
-
-	PhysicalBone3D *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
-	if (!pb) {
-		return;
-	}
-
-	PhysicalBone3D *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
-	if (!pbp) {
-		return;
-	}
-
-	Vector<Vector3> points;
-
-	switch (physical_bone->get_joint_type()) {
-		case PhysicalBone3D::JOINT_TYPE_PIN: {
-			Joint3DGizmoPlugin::CreatePinJointGizmo(physical_bone->get_joint_offset(), points);
-		} break;
-		case PhysicalBone3D::JOINT_TYPE_CONE: {
-			const PhysicalBone3D::ConeJointData *cjd(static_cast<const PhysicalBone3D::ConeJointData *>(physical_bone->get_joint_data()));
-			Joint3DGizmoPlugin::CreateConeTwistJointGizmo(
-					physical_bone->get_joint_offset(),
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-					cjd->swing_span,
-					cjd->twist_span,
-					&points,
-					&points);
-		} break;
-		case PhysicalBone3D::JOINT_TYPE_HINGE: {
-			const PhysicalBone3D::HingeJointData *hjd(static_cast<const PhysicalBone3D::HingeJointData *>(physical_bone->get_joint_data()));
-			Joint3DGizmoPlugin::CreateHingeJointGizmo(
-					physical_bone->get_joint_offset(),
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-					hjd->angular_limit_lower,
-					hjd->angular_limit_upper,
-					hjd->angular_limit_enabled,
-					points,
-					&points,
-					&points);
-		} break;
-		case PhysicalBone3D::JOINT_TYPE_SLIDER: {
-			const PhysicalBone3D::SliderJointData *sjd(static_cast<const PhysicalBone3D::SliderJointData *>(physical_bone->get_joint_data()));
-			Joint3DGizmoPlugin::CreateSliderJointGizmo(
-					physical_bone->get_joint_offset(),
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-					sjd->angular_limit_lower,
-					sjd->angular_limit_upper,
-					sjd->linear_limit_lower,
-					sjd->linear_limit_upper,
-					points,
-					&points,
-					&points);
-		} break;
-		case PhysicalBone3D::JOINT_TYPE_6DOF: {
-			const PhysicalBone3D::SixDOFJointData *sdofjd(static_cast<const PhysicalBone3D::SixDOFJointData *>(physical_bone->get_joint_data()));
-			Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
-					physical_bone->get_joint_offset(),
-
-					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
-
-					sdofjd->axis_data[0].angular_limit_lower,
-					sdofjd->axis_data[0].angular_limit_upper,
-					sdofjd->axis_data[0].linear_limit_lower,
-					sdofjd->axis_data[0].linear_limit_upper,
-					sdofjd->axis_data[0].angular_limit_enabled,
-					sdofjd->axis_data[0].linear_limit_enabled,
-
-					sdofjd->axis_data[1].angular_limit_lower,
-					sdofjd->axis_data[1].angular_limit_upper,
-					sdofjd->axis_data[1].linear_limit_lower,
-					sdofjd->axis_data[1].linear_limit_upper,
-					sdofjd->axis_data[1].angular_limit_enabled,
-					sdofjd->axis_data[1].linear_limit_enabled,
-
-					sdofjd->axis_data[2].angular_limit_lower,
-					sdofjd->axis_data[2].angular_limit_upper,
-					sdofjd->axis_data[2].linear_limit_lower,
-					sdofjd->axis_data[2].linear_limit_upper,
-					sdofjd->axis_data[2].angular_limit_enabled,
-					sdofjd->axis_data[2].linear_limit_enabled,
-
-					points,
-					&points,
-					&points);
-		} break;
-		default:
-			return;
-	}
-
-	Ref<Material> material = get_material("joint_material", p_gizmo);
-
-	p_gizmo->add_collision_segments(points);
-	p_gizmo->add_lines(points, material);
 }
 
 /////
@@ -4281,10 +4149,36 @@ int Joint3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
+static bool is_bone_joint_type(const Joint3D *p_joint) {
+	if (Object::cast_to<BonePinJoint3D>(p_joint)) {
+		return true;
+	}
+	if (Object::cast_to<BoneHingeJoint3D>(p_joint)) {
+		return true;
+	}
+	if (Object::cast_to<BoneSliderJoint3D>(p_joint)) {
+		return true;
+	}
+	if (Object::cast_to<BoneConeTwistJoint3D>(p_joint)) {
+		return true;
+	}
+	if (Object::cast_to<BoneGeneric6DOFJoint3D>(p_joint)) {
+		return true;
+	}
+
+	return false;
+}
+
 void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Joint3D *joint = Object::cast_to<Joint3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
+
+	// Currently the render position of the Bone Joints doesn't match where the bind point is,
+	// and there is way too much visual noise, so just dont render them for now until fixed.
+	if (is_bone_joint_type(joint)) {
+		return;
+	}
 
 	Node3D *node_body_a = nullptr;
 	if (!joint->get_node_a().is_empty()) {
