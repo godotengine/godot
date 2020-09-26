@@ -161,7 +161,7 @@ public:
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
-    
+
 	void set_tightness(float p_tightness);
 	float get_tightness() const;
 
