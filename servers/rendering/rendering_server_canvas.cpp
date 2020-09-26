@@ -314,6 +314,14 @@ void RenderingServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_col
 	canvas->modulate = p_color;
 }
 
+void RenderingServerCanvas::canvas_set_modulate_if_equal(RID p_canvas, const Color &old_color, const Color &p_color) {
+	Canvas *canvas = canvas_owner.getornull(p_canvas);
+	ERR_FAIL_COND(!canvas);
+	if (canvas->modulate == old_color) {
+		canvas->modulate = p_color;
+	}
+}
+
 void RenderingServerCanvas::canvas_set_disable_scale(bool p_disable) {
 	disable_scale = p_disable;
 }

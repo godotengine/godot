@@ -583,6 +583,19 @@
 				Modulates all colors in the given canvas.
 			</description>
 		</method>
+		<method name="canvas_set_modulate_if_equal">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas" type="RID">
+			</argument>
+			<argument index="1" name="old_color" type="Color">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<description>
+				Sets canvas's modulating color to [code]color[/code], if the existing modulating color equals [code]old_color[/code].
+			</description>
+		</method>
 		<method name="directional_light_create">
 			<return type="RID">
 			</return>
