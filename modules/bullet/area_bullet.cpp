@@ -96,8 +96,14 @@ void AreaBullet::dispatch_callbacks() {
 				otherObj.object->on_exit_area(this);
 				overlappingObjects.remove(i); // Remove after callback
 				break;
+			case OVERLAP_STATE_INSIDE: {
+				if (otherObj.object->getType() == TYPE_RIGID_BODY) {
+					RigidBodyBullet *body = static_cast<RigidBodyBullet *>(otherObj.object);
+					body->scratch_space_override_modificator();
+				}
+				break;
+			}
 			case OVERLAP_STATE_DIRTY:
-			case OVERLAP_STATE_INSIDE:
 				break;
 		}
 	}
@@ -255,6 +261,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 		default:
 			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
+	scratch();
 }
 
 Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
