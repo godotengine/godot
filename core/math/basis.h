@@ -146,9 +146,6 @@ public:
 	}
 
 	bool is_equal_approx(const Basis &p_basis) const;
-	// TODO: Break compatibility in 4.0 by getting rid of this so that it's only an instance method. See also TODO in variant_call.cpp
-	bool is_equal_approx(const Basis &a, const Basis &b) const { return a.is_equal_approx(b); }
-	bool is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon = UNIT_EPSILON) const;
 
 	bool operator==(const Basis &p_matrix) const;
 	bool operator!=(const Basis &p_matrix) const;
@@ -238,7 +235,9 @@ public:
 	void orthonormalize();
 	Basis orthonormalized() const;
 
+#ifdef MATH_CHECKS
 	bool is_symmetric() const;
+#endif
 	Basis diagonalize();
 
 	operator Quat() const { return get_quat(); }
