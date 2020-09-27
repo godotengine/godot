@@ -81,6 +81,7 @@ void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transfo
 				child_items[i]->ysort_xform = p_transform;
 				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
+				child_items[i]->ysort_index = r_index;
 			}
 
 			r_index++;
