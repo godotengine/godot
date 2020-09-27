@@ -1688,6 +1688,21 @@ static void _reset_animation_players(Node *p_node, List<Ref<AnimatedValuesBackup
 }
 
 void EditorNode::_save_scene(String p_file, int idx) {
+	// Imported 3D scenes can't be saved by the Godot editor.
+	// Exit early to avoid displaying a "Requested file format unknown:" alert dialog
+	// when running the project, as running the project saves all opened saves by default.
+	Vector<Ref<EditorSceneFormatImporter>> scene_importers = ResourceImporterScene::get_scene_singleton()->get_importers();
+	for (const Ref<EditorSceneFormatImporter> &scene_importer : scene_importers) {
+		List<String> extensions;
+		scene_importer->get_extensions(&extensions);
+
+		for (const String &extension : extensions) {
+			if (p_file.ends_with("." + extension)) {
+				return;
+			}
+		}
+	}
+
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
