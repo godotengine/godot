@@ -863,10 +863,11 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	ERR_FAIL_COND_V(!p_control, Vector2());
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
-	ERR_FAIL_COND_V(parent_rect.size.x == 0, Vector2());
-	ERR_FAIL_COND_V(parent_rect.size.y == 0, Vector2());
 
-	return (p_control->get_transform().xform(position) - parent_rect.position) / parent_rect.size;
+	Vector2 output = Vector2();
+	output.x = (parent_rect.size.x == 0) ? 0.0 : (p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
+	output.y = (parent_rect.size.y == 0) ? 0.0 : (p_control->get_transform().xform(position).y - parent_rect.position.y) / parent_rect.size.y;
+	return output;
 }
 
 void CanvasItemEditor::_save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state) {
