@@ -50,13 +50,13 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void initialize(Activity activity, Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
-	 * @see Activity#onDestroy()
+	 * @see androidx.fragment.app.Fragment#onDestroy()
 	 */
-	public static native void ondestroy(Godot p_instance);
+	public static native void ondestroy();
 
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
@@ -160,14 +160,14 @@ public class GodotLib {
 	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
 
 	/**
-	 * Invoked when the Android activity resumes.
-	 * @see Activity#onResume()
+	 * Invoked when the Android app resumes.
+	 * @see androidx.fragment.app.Fragment#onResume()
 	 */
 	public static native void focusin();
 
 	/**
-	 * Invoked when the Android activity pauses.
-	 * @see Activity#onPause()
+	 * Invoked when the Android app pauses.
+	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
 
