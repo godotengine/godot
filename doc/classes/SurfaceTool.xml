@@ -38,6 +38,7 @@
 			</argument>
 			<description>
 				Specifies a [Color] for the next vertex to use.
+				[b]Note:[/b] The material must have [member SpatialMaterial.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
 			</description>
 		</method>
 		<method name="add_index">
