@@ -28,7 +28,54 @@ ext.getExportPackageName = { ->
     return appId
 }
 
+ext.getExportVersionCode = { ->
+    String versionCode = project.hasProperty("export_version_code") ? project.property("export_version_code") : ""
+    if (versionCode == null || versionCode.isEmpty()) {
+        versionCode = "1"
+    }
+    return Integer.parseInt(versionCode)
+}
+
+ext.getExportVersionName = { ->
+    String versionName = project.hasProperty("export_version_name") ? project.property("export_version_name") : ""
+    if (versionName == null || versionName.isEmpty()) {
+        versionName = "1.0"
+    }
+    return versionName
+}
+
 final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
+
+// get the list of ABIs the project should be exported to
+ext.getExportEnabledABIs = { ->
+    String enabledABIs = project.hasProperty("export_enabled_abis") ? project.property("export_enabled_abis") : "";
+    if (enabledABIs == null || enabledABIs.isEmpty()) {
+        enabledABIs = "armeabi-v7a|arm64-v8a|x86|x86_64|"
+    }
+    Set<String> exportAbiFilter = [];
+    for (String abi_name : enabledABIs.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+        if (!abi_name.trim().isEmpty()){
+            exportAbiFilter.add(abi_name);
+        }
+    }
+    return exportAbiFilter;
+}
+
+ext.getExportPath = {
+    String exportPath = project.hasProperty("export_path") ? project.property("export_path") : ""
+    if (exportPath == null || exportPath.isEmpty()) {
+        exportPath = "."
+    }
+    return exportPath
+}
+
+ext.getExportFilename = {
+    String exportFilename = project.hasProperty("export_filename") ? project.property("export_filename") : ""
+    if (exportFilename == null || exportFilename.isEmpty()) {
+        exportFilename = "godot_android"
+    }
+    return exportFilename
+}
 
 /**
  * Parse the project properties for the 'plugins_maven_repos' property and return the list

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="godot_project_name_string">godot-project-name-fa</string>
     <string name="text_paused_cellular">آیا می خواهید بر روی اتصال داده همراه دانلود را شروع کنید؟ بر اساس نوع سطح داده شما این ممکن است برای شما هزینه مالی داشته باشد.</string>
     <string name="text_paused_cellular_2">اگر نمی خواهید بر روی اتصال داده همراه دانلود را شروع کنید ، دانلود به صورت خودکار در زمان دسترسی به وای-فای شروع می شود.</string>
     <string name="text_button_resume_cellular">ادامه دانلود</string>
