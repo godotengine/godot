@@ -9,7 +9,6 @@
 		Updating the target properties of animations occurs at process time.
 	</description>
 	<tutorials>
-		<link title="Animations">https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
 		<link title="2D Sprite animation">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
 		<link title="Animation tutorial index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
