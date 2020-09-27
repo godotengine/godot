@@ -3825,12 +3825,12 @@ void CanvasItemEditor::_draw_viewport() {
 
 	_draw_grid();
 	_draw_ruler_tool();
-	_draw_selection();
 	_draw_axis();
 	if (editor->get_edited_scene()) {
 		_draw_locks_and_groups(editor->get_edited_scene());
 		_draw_invisible_nodes_positions(editor->get_edited_scene());
 	}
+	_draw_selection();
 
 	RID ci = viewport->get_canvas_item();
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());
