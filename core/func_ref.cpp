@@ -95,9 +95,12 @@ void FuncRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("call_funcv", "arg_array"), &FuncRef::call_funcv);
 
 	ClassDB::bind_method(D_METHOD("set_instance", "instance"), &FuncRef::set_instance);
+	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
+
 	ClassDB::bind_method(D_METHOD("set_function", "name"), &FuncRef::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &FuncRef::get_function);
-	ClassDB::bind_method(D_METHOD("is_valid"), &FuncRef::is_valid);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "function"), "set_function", "get_function");
 }
 
 FuncRef::FuncRef() :
