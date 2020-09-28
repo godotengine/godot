@@ -128,7 +128,7 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 	if (_find_event(input_map[p_action], p_event)) {
-		return; //already gots
+		return; // Already addded.
 	}
 
 	input_map[p_action].inputs.push_back(p_event);
