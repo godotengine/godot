@@ -52,7 +52,6 @@ class OS {
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
-	uint64_t _msec_splash;
 	bool _no_window = false;
 	int _exit_code = 0;
 	int _orientation;
@@ -220,7 +219,6 @@ public:
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;
-	uint64_t get_splash_tick_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
 
