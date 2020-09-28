@@ -394,6 +394,7 @@ SpriteBase3D::SpriteBase3D() {
 	VS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
 	VS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
 	VS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
+	VS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.98);
 
 	mesh = VisualServer::get_singleton()->mesh_create();
 
