@@ -89,6 +89,11 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		BatchColor col;
 	};
 
+	struct BatchVertexLightAngled : public BatchVertexColored {
+		// must be pod
+		float light_angle;
+	};
+
 	struct Batch {
 		enum CommandType : uint32_t {
 			BT_DEFAULT,
@@ -167,10 +172,13 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		void reset_flush() {
 			batches.reset();
 			batch_textures.reset();
+
 			vertices.reset();
+			light_angles.reset();
 
 			total_quads = 0;
 			total_color_changes = 0;
+			use_light_angles = false;
 		}
 
 		GLuint gl_vertex_buffer;
@@ -182,13 +190,28 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		uint32_t index_buffer_size_units;
 		uint32_t index_buffer_size_bytes;
 
+		// small vertex FVF type - pos and UV.
+		// This will always be written to initially, but can be translated
+		// to larger FVFs if necessary.
 		RasterizerArrayGLES2<BatchVertex> vertices;
-		RasterizerArrayGLES2<BatchVertexColored> vertices_colored;
+
+		// extra data which can be stored during prefilling, for later translation to larger FVFs
+		RasterizerArrayGLES2<float> light_angles;
+
+		// instead of having a different buffer for each vertex FVF type
+		// we have a special array big enough for the biggest FVF
+		// which can have a changeable unit size, and reuse it.
+		RasterizerUnitArrayGLES2 unit_vertices;
+
 		RasterizerArrayGLES2<Batch> batches;
 		RasterizerArrayGLES2<Batch> batches_temp; // used for translating to colored vertex batches
 		RasterizerArray_non_pod_GLES2<BatchTex> batch_textures; // the only reason this is non-POD is because of RIDs
 
+		// flexible vertex format.
+		// all verts have pos and UV.
+		// some have color, some light angles etc.
 		bool use_colored_vertices;
+		bool use_light_angles;
 
 		RasterizerArrayGLES2<BItemJoined> items_joined;
 		RasterizerArrayGLES2<BItemRef> item_refs;
@@ -321,11 +344,12 @@ private:
 	bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
 	void render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material, bool p_lit);
 	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
+
 	bool prefill_joined_item(FillState &r_fill_state, int &r_command_start, Item *p_item, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
+
 	void flush_render_batches(Item *p_first_item, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
 
 	// low level batch funcs
-	void _batch_translate_to_colored();
 	int _batch_find_or_create_tex(const RID &p_texture, const RID &p_normal, bool p_tile, int p_previous_match);
 	RasterizerStorageGLES2::Texture *_get_canvas_texture(const RID &p_texture) const;
 	void _batch_upload_buffers();
@@ -358,6 +382,13 @@ private:
 public:
 	void initialize();
 	RasterizerCanvasGLES2();
+
+private:
+	template <bool SEND_LIGHT_ANGLES>
+	bool prefill_rect(Item::CommandRect *rect, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, Item::Command *const *commands, Item *p_item, bool multiply_final_modulate);
+
+	template <class BATCH_VERTEX_TYPE, bool INCLUDE_LIGHT_ANGLES>
+	void _translate_batches_to_larger_FVF();
 };
 
 //////////////////////////////////////////////////////////////
@@ -490,6 +521,409 @@ inline bool RasterizerCanvasGLES2::_sort_items_match(const BSortItem &p_a, const
 		return false;
 
 	return true;
+}
+
+//////////////////////////////////////////////////////////////
+// TEMPLATE FUNCS
+
+// Translation always involved adding color to the FVF, which enables
+// joining of batches that have different colors.
+// There is a trade off. Non colored verts are smaller so work faster, but
+// there comes a point where it is better to just use colored verts to avoid lots of
+// batches.
+// In addition this can optionally add light angles to the FVF, necessary for normal mapping.
+template <class BATCH_VERTEX_TYPE, bool INCLUDE_LIGHT_ANGLES>
+void RasterizerCanvasGLES2::_translate_batches_to_larger_FVF() {
+
+	// zeros the size and sets up how big each unit is
+	bdata.unit_vertices.prepare(sizeof(BATCH_VERTEX_TYPE));
+	bdata.batches_temp.reset();
+
+	// As the vertices_colored and batches_temp are 'mirrors' of the non-colored version,
+	// the sizes should be equal, and allocations should never fail. Hence the use of debug
+	// asserts to check program flow, these should not occur at runtime unless the allocation
+	// code has been altered.
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+	CRASH_COND(bdata.unit_vertices.max_size() != bdata.vertices.max_size());
+	CRASH_COND(bdata.batches_temp.max_size() != bdata.batches.max_size());
+#endif
+
+	Color curr_col(-1.0, -1.0, -1.0, -1.0);
+
+	Batch *dest_batch = 0;
+
+	const float *source_light_angles = &bdata.light_angles[0];
+
+	// translate the batches into vertex colored batches
+	for (int n = 0; n < bdata.batches.size(); n++) {
+		const Batch &source_batch = bdata.batches[n];
+
+		// does source batch use light angles?
+		const BatchTex &btex = bdata.batch_textures[source_batch.batch_texture_id];
+		bool source_batch_uses_light_angles = btex.RID_normal != RID();
+
+		bool needs_new_batch = true;
+
+		if (dest_batch) {
+			if (dest_batch->type == source_batch.type) {
+				if (source_batch.type == Batch::BT_RECT) {
+					if (dest_batch->batch_texture_id == source_batch.batch_texture_id) {
+						// add to previous batch
+						dest_batch->num_commands += source_batch.num_commands;
+						needs_new_batch = false;
+
+						// create the colored verts (only if not default)
+						int first_vert = source_batch.first_quad * 4;
+						int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
+
+						for (int v = first_vert; v < end_vert; v++) {
+							const BatchVertex &bv = bdata.vertices[v];
+							BATCH_VERTEX_TYPE *cv = (BatchVertexLightAngled *)bdata.unit_vertices.request();
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+							CRASH_COND(!cv);
+#endif
+							cv->pos = bv.pos;
+							cv->uv = bv.uv;
+							cv->col = source_batch.color;
+
+							if (INCLUDE_LIGHT_ANGLES) {
+								// this is required to allow compilation with non light angle vertex.
+								// it should be compiled out.
+								BatchVertexLightAngled *lv = (BatchVertexLightAngled *)cv;
+								if (source_batch_uses_light_angles)
+									lv->light_angle = *source_light_angles++;
+								else
+									lv->light_angle = 0.0f; // dummy, unused in vertex shader (could possibly be left uninitialized, but probably bad idea)
+							}
+						}
+					} // textures match
+				} else {
+					// default
+					// we can still join, but only under special circumstances
+					// does this ever happen? not sure at this stage, but left for future expansion
+					uint32_t source_last_command = source_batch.first_command + source_batch.num_commands;
+					if (source_last_command == dest_batch->first_command) {
+						dest_batch->num_commands += source_batch.num_commands;
+						needs_new_batch = false;
+					} // if the commands line up exactly
+				}
+			} // if both batches are the same type
+
+		} // if dest batch is valid
+
+		if (needs_new_batch) {
+			dest_batch = bdata.batches_temp.request();
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+			CRASH_COND(!dest_batch);
+#endif
+
+			*dest_batch = source_batch;
+
+			// create the colored verts (only if not default)
+			if (source_batch.type != Batch::BT_DEFAULT) {
+				int first_vert = source_batch.first_quad * 4;
+				int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
+
+				for (int v = first_vert; v < end_vert; v++) {
+					const BatchVertex &bv = bdata.vertices[v];
+					BATCH_VERTEX_TYPE *cv = (BatchVertexLightAngled *)bdata.unit_vertices.request();
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+					CRASH_COND(!cv);
+#endif
+					cv->pos = bv.pos;
+					cv->uv = bv.uv;
+					cv->col = source_batch.color;
+
+					if (INCLUDE_LIGHT_ANGLES) {
+						// this is required to allow compilation with non light angle vertex.
+						// it should be compiled out.
+						BatchVertexLightAngled *lv = (BatchVertexLightAngled *)cv;
+						if (source_batch_uses_light_angles)
+							lv->light_angle = *source_light_angles++;
+						else
+							lv->light_angle = 0.0f; // dummy, unused in vertex shader (could possibly be left uninitialized, but probably bad idea)
+					} // if using light angles
+				}
+			}
+		}
+	}
+
+	// copy the temporary batches to the master batch list (this could be avoided but it makes the code cleaner)
+	bdata.batches.copy_from(bdata.batches_temp);
+}
+
+// return true if buffer full up, else return false
+template <bool SEND_LIGHT_ANGLES>
+bool RasterizerCanvasGLES2::prefill_rect(Item::CommandRect *rect, FillState &r_fill_state, int &r_command_start, int command_num, int command_count, Item::Command *const *commands, Item *p_item, bool multiply_final_modulate) {
+	bool change_batch = false;
+
+	// conditions for creating a new batch
+	if (r_fill_state.curr_batch->type != Batch::BT_RECT) {
+		change_batch = true;
+
+		// check for special case if there is only a single or small number of rects,
+		// in which case we will use the legacy default rect renderer
+		// because it is faster for single rects
+
+		// we only want to do this if not a joined item with more than 1 item,
+		// because joined items with more than 1, the command * will be incorrect
+		// NOTE - this is assuming that use_hardware_transform means that it is a non-joined item!!
+		// If that assumption is incorrect this will go horribly wrong.
+		if (bdata.settings_use_single_rect_fallback && r_fill_state.use_hardware_transform) {
+			bool is_single_rect = false;
+			int command_num_next = command_num + 1;
+			if (command_num_next < command_count) {
+				Item::Command *command_next = commands[command_num_next];
+				if ((command_next->type != Item::Command::TYPE_RECT) && (command_next->type != Item::Command::TYPE_TRANSFORM)) {
+					is_single_rect = true;
+				}
+			} else {
+				is_single_rect = true;
+			}
+			// if it is a rect on its own, do exactly the same as the default routine
+			if (is_single_rect) {
+				_prefill_default_batch(r_fill_state, command_num, *p_item);
+				return false;
+			}
+		} // if use hardware transform
+	}
+
+	Color col = rect->modulate;
+	if (multiply_final_modulate) {
+		col *= r_fill_state.final_modulate;
+	}
+
+	// instead of doing all the texture preparation for EVERY rect,
+	// we build a list of texture combinations and do this once off.
+	// This means we have a potentially rather slow step to identify which texture combo
+	// using the RIDs.
+	int old_batch_tex_id = r_fill_state.batch_tex_id;
+	r_fill_state.batch_tex_id = _batch_find_or_create_tex(rect->texture, rect->normal_map, rect->flags & CANVAS_RECT_TILE, old_batch_tex_id);
+
+	//r_fill_state.use_light_angles = send_light_angles;
+	if (SEND_LIGHT_ANGLES)
+		bdata.use_light_angles = true;
+
+	// try to create vertices BEFORE creating a batch,
+	// because if the vertex buffer is full, we need to finish this
+	// function, draw what we have so far, and then start a new set of batches
+
+	// request FOUR vertices at a time, this is more efficient
+	BatchVertex *bvs = bdata.vertices.request(4);
+	if (!bvs) {
+		// run out of space in the vertex buffer .. finish this function and draw what we have so far
+		// return where we got to
+		r_command_start = command_num;
+		return true;
+	}
+
+	// conditions for creating a new batch
+	if (old_batch_tex_id != r_fill_state.batch_tex_id) {
+		change_batch = true;
+	}
+
+	// we need to treat color change separately because we need to count these
+	// to decide whether to switch on the fly to colored vertices.
+	if (!r_fill_state.curr_batch->color.equals(col)) {
+		change_batch = true;
+		bdata.total_color_changes++;
+	}
+
+	if (change_batch) {
+		// put the tex pixel size  in a local (less verbose and can be a register)
+		const BatchTex &batchtex = bdata.batch_textures[r_fill_state.batch_tex_id];
+		batchtex.tex_pixel_size.to(r_fill_state.texpixel_size);
+
+		if (bdata.settings_uv_contract) {
+			r_fill_state.contract_uvs = (batchtex.flags & VS::TEXTURE_FLAG_FILTER) == 0;
+		}
+
+		// need to preserve texpixel_size between items
+		r_fill_state.texpixel_size = r_fill_state.texpixel_size;
+
+		// open new batch (this should never fail, it dynamically grows)
+		r_fill_state.curr_batch = _batch_request_new(false);
+
+		r_fill_state.curr_batch->type = Batch::BT_RECT;
+		r_fill_state.curr_batch->color.set(col);
+		r_fill_state.curr_batch->batch_texture_id = r_fill_state.batch_tex_id;
+		r_fill_state.curr_batch->first_command = command_num;
+		r_fill_state.curr_batch->num_commands = 1;
+		r_fill_state.curr_batch->first_quad = bdata.total_quads;
+	} else {
+		// we could alternatively do the count when closing a batch .. perhaps more efficient
+		r_fill_state.curr_batch->num_commands++;
+	}
+
+	// fill the quad geometry
+	Vector2 mins = rect->rect.position;
+
+	if (r_fill_state.transform_mode == TM_TRANSLATE) {
+		_software_transform_vertex(mins, r_fill_state.transform_combined);
+	}
+
+	Vector2 maxs = mins + rect->rect.size;
+
+	// just aliases
+	BatchVertex *bA = &bvs[0];
+	BatchVertex *bB = &bvs[1];
+	BatchVertex *bC = &bvs[2];
+	BatchVertex *bD = &bvs[3];
+
+	bA->pos.x = mins.x;
+	bA->pos.y = mins.y;
+
+	bB->pos.x = maxs.x;
+	bB->pos.y = mins.y;
+
+	bC->pos.x = maxs.x;
+	bC->pos.y = maxs.y;
+
+	bD->pos.x = mins.x;
+	bD->pos.y = maxs.y;
+
+	// possibility of applying flips here for normal mapping .. but they don't seem to be used
+	if (rect->rect.size.x < 0) {
+		SWAP(bA->pos, bB->pos);
+		SWAP(bC->pos, bD->pos);
+	}
+	if (rect->rect.size.y < 0) {
+		SWAP(bA->pos, bD->pos);
+		SWAP(bB->pos, bC->pos);
+	}
+
+	if (r_fill_state.transform_mode == TM_ALL) {
+		_software_transform_vertex(bA->pos, r_fill_state.transform_combined);
+		_software_transform_vertex(bB->pos, r_fill_state.transform_combined);
+		_software_transform_vertex(bC->pos, r_fill_state.transform_combined);
+		_software_transform_vertex(bD->pos, r_fill_state.transform_combined);
+	}
+
+	// uvs
+	Vector2 src_min;
+	Vector2 src_max;
+	if (rect->flags & CANVAS_RECT_REGION) {
+		src_min = rect->source.position;
+		src_max = src_min + rect->source.size;
+
+		src_min *= r_fill_state.texpixel_size;
+		src_max *= r_fill_state.texpixel_size;
+
+		const float uv_epsilon = bdata.settings_uv_contract_amount;
+
+		// nudge offset for the maximum to prevent precision error on GPU reading into line outside the source rect
+		// this is very difficult to get right.
+		if (r_fill_state.contract_uvs) {
+			src_min.x += uv_epsilon;
+			src_min.y += uv_epsilon;
+			src_max.x -= uv_epsilon;
+			src_max.y -= uv_epsilon;
+		}
+	} else {
+		src_min = Vector2(0, 0);
+		src_max = Vector2(1, 1);
+	}
+
+	// 10% faster calculating the max first
+	Vector2 uvs[4] = {
+		src_min,
+		Vector2(src_max.x, src_min.y),
+		src_max,
+		Vector2(src_min.x, src_max.y),
+	};
+
+	// for encoding in light angle
+	// flips should be optimized out when not being used for light angle.
+	bool flip_h = false;
+	bool flip_v = false;
+
+	if (rect->flags & CANVAS_RECT_TRANSPOSE) {
+		SWAP(uvs[1], uvs[3]);
+	}
+
+	if (rect->flags & CANVAS_RECT_FLIP_H) {
+		SWAP(uvs[0], uvs[1]);
+		SWAP(uvs[2], uvs[3]);
+		flip_h = !flip_h;
+		flip_v = !flip_v;
+	}
+	if (rect->flags & CANVAS_RECT_FLIP_V) {
+		SWAP(uvs[0], uvs[3]);
+		SWAP(uvs[1], uvs[2]);
+		flip_v = !flip_v;
+	}
+
+	bA->uv.set(uvs[0]);
+	bB->uv.set(uvs[1]);
+	bC->uv.set(uvs[2]);
+	bD->uv.set(uvs[3]);
+
+	if (SEND_LIGHT_ANGLES) {
+		// we can either keep the light angles in sync with the verts when writing,
+		// or sync them up during translation. We are syncing in translation.
+		// N.B. There may be batches that don't require light_angles between batches that do.
+		float *angles = bdata.light_angles.request(4);
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+		CRASH_COND(angles == nullptr);
+#endif
+
+		float angle = 0.0f;
+		const float TWO_PI = Math_PI * 2;
+
+		if (r_fill_state.transform_mode != TM_NONE) {
+
+			const Transform2D &tr = r_fill_state.transform_combined;
+
+			// apply to an x axis
+			// the x axis and y axis can be taken directly from the transform (no need to xform identity vectors)
+			Vector2 x_axis(tr.elements[0][0], tr.elements[1][0]);
+
+			// have to do a y axis to check for scaling flips
+			// this is hassle and extra slowness. We could only allow flips via the flags.
+			Vector2 y_axis(tr.elements[0][1], tr.elements[1][1]);
+
+			// has the x / y axis flipped due to scaling?
+			float cross = x_axis.cross(y_axis);
+			if (cross < 0.0f) {
+				flip_v = !flip_v;
+			}
+
+			// passing an angle is smaller than a vector, it can be reconstructed in the shader
+			angle = x_axis.angle();
+
+			// we don't want negative angles, as negative is used to encode flips.
+			// This moves range from -PI to PI to 0 to TWO_PI
+			if (angle < 0.0f)
+				angle += TWO_PI;
+
+		} // if transform needed
+
+		// if horizontal flip, angle is shifted by 180 degrees
+		if (flip_h) {
+			angle += Math_PI;
+
+			// mod to get back to 0 to TWO_PI range
+			angle = fmodf(angle, TWO_PI);
+		}
+
+		// add 1 (to take care of zero floating point error with sign)
+		angle += 1.0f;
+
+		// flip if necessary to indicate a vertical flip in the shader
+		if (flip_v)
+			angle *= -1.0f;
+
+		// light angle must be sent for each vert, instead as a single uniform in the uniform draw method
+		// this has the benefit of enabling batching with light angles.
+		for (int n = 0; n < 4; n++) {
+			angles[n] = angle;
+		}
+	}
+
+	// increment quad count
+	bdata.total_quads++;
+
+	return false;
 }
 
 #endif // RASTERIZERCANVASGLES2_H

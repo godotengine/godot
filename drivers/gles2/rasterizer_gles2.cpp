@@ -407,7 +407,7 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	canvas->_set_texture_rect_mode(true);
 
 	canvas->state.canvas_shader.set_custom_shader(0);
 	canvas->state.canvas_shader.bind();

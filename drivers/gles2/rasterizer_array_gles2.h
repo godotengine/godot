@@ -71,6 +71,75 @@
 
 #include <string.h>
 
+// very simple non-growable array, that keeps track of the size of a 'unit'
+// which can be cast to whatever vertex format FVF required, and is initially
+// created with enough memory to hold the biggest FVF.
+// This allows multiple FVFs to use the same array.
+class RasterizerUnitArrayGLES2 {
+public:
+	RasterizerUnitArrayGLES2() {
+		_list = nullptr;
+		free();
+	}
+	~RasterizerUnitArrayGLES2() { free(); }
+
+	uint8_t *get_unit(unsigned int ui) { return &_list[ui * _unit_size_bytes]; }
+	const uint8_t *get_unit(unsigned int ui) const { return &_list[ui * _unit_size_bytes]; }
+
+	int size() const { return _size; }
+	int max_size() const { return _max_size; }
+
+	void free() {
+		if (_list) {
+			memdelete_arr(_list);
+			_list = 0;
+		}
+		_size = 0;
+		_max_size = 0;
+		_max_size_bytes = 0;
+		_unit_size_bytes = 0;
+	}
+
+	void create(int p_max_size_units, int p_max_unit_size_bytes) {
+		free();
+
+		_max_unit_size_bytes = p_max_unit_size_bytes;
+		_max_size = p_max_size_units;
+		_max_size_bytes = p_max_size_units * p_max_unit_size_bytes;
+
+		if (_max_size_bytes) {
+			_list = memnew_arr(uint8_t, _max_size_bytes);
+		}
+	}
+
+	void prepare(int p_unit_size_bytes) {
+		_unit_size_bytes = p_unit_size_bytes;
+		_size = 0;
+	}
+
+	// several items at a time
+	uint8_t *request(int p_num_items = 1) {
+		int old_size = _size;
+		_size += p_num_items;
+
+		if (_size <= _max_size) {
+			return get_unit(old_size);
+		}
+
+		// revert
+		_size = old_size;
+		return nullptr;
+	}
+
+private:
+	uint8_t *_list;
+	int _size; // in units
+	int _max_size; // in units
+	int _max_size_bytes;
+	int _unit_size_bytes;
+	int _max_unit_size_bytes;
+};
+
 template <class T>
 class RasterizerArrayGLES2 {
 public:

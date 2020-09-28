@@ -52,8 +52,13 @@ void RasterizerCanvasBaseGLES2::light_internal_free(RID p_rid) {
 
 void RasterizerCanvasBaseGLES2::canvas_begin() {
 
-	state.canvas_shader.bind();
 	state.using_transparent_rt = false;
+
+	// always start with light_angle unset
+	state.using_light_angle = false;
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_LIGHT_ANGLE, false);
+	state.canvas_shader.bind();
+
 	int viewport_x, viewport_y, viewport_width, viewport_height;
 
 	if (storage->frame.current_rt) {
@@ -153,6 +158,16 @@ void RasterizerCanvasBaseGLES2::draw_generic_textured_rect(const Rect2 &p_rect, 
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(p_src.position.x, p_src.position.y, p_src.size.x, p_src.size.y));
 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+void RasterizerCanvasBaseGLES2::_set_texture_rect_mode(bool p_texture_rect, bool p_light_angle) {
+	// always set this directly (this could be state checked)
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, p_texture_rect);
+
+	if (state.using_light_angle != p_light_angle) {
+		state.using_light_angle = p_light_angle;
+		state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_LIGHT_ANGLE, p_light_angle);
+	}
 }
 
 RasterizerStorageGLES2::Texture *RasterizerCanvasBaseGLES2::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
@@ -595,12 +610,13 @@ void RasterizerCanvasBaseGLES2::_draw_generic_indices(GLuint p_primitive, const 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs) {
+void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles) {
 
 	static const GLenum prim[5] = { GL_POINTS, GL_POINTS, GL_LINES, GL_TRIANGLES, GL_TRIANGLE_FAN };
 
 	int color_offset = 0;
 	int uv_offset = 0;
+	int light_angle_offset = 0;
 	int stride = 2;
 
 	if (p_colors) {
@@ -613,7 +629,12 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 		stride += 2;
 	}
 
-	float buffer_data[(2 + 2 + 4) * 4];
+	if (p_light_angles) { //light_angles
+		light_angle_offset = stride;
+		stride += 1;
+	}
+
+	float buffer_data[(2 + 2 + 4 + 1) * 4];
 
 	for (int i = 0; i < p_points; i++) {
 		buffer_data[stride * i + 0] = p_vertices[i].x;
@@ -636,6 +657,12 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 		}
 	}
 
+	if (p_light_angles) {
+		for (int i = 0; i < p_points; i++) {
+			buffer_data[stride * i + light_angle_offset + 0] = p_light_angles[i];
+		}
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 #ifndef GLES_OVER_GL
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
@@ -655,8 +682,18 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
 
+	if (p_light_angles) {
+		glVertexAttribPointer(VS::ARRAY_TANGENT, 1, GL_FLOAT, GL_FALSE, stride * sizeof(float), CAST_INT_TO_UCHAR_PTR(light_angle_offset * sizeof(float)));
+		glEnableVertexAttribArray(VS::ARRAY_TANGENT);
+	}
+
 	glDrawArrays(prim[p_points], 0, p_points);
 	storage->info.render._2d_draw_call_count++;
+
+	if (p_light_angles) {
+		// may not be needed
+		glDisableVertexAttribArray(VS::ARRAY_TANGENT);
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -993,7 +1030,7 @@ void RasterizerCanvasBaseGLES2::initialize() {
 
 	state.canvas_shader.init();
 
-	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	_set_texture_rect_mode(true);
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
 	state.canvas_shader.bind();
