@@ -413,6 +413,42 @@ void RasterizerGLES3::register_config() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 }
 
+// returns NULL if no error, or an error string
+const char *RasterizerGLES3::gl_check_for_error(bool p_print_error) {
+	GLenum err = glGetError();
+
+	const char *err_string = nullptr;
+
+	switch (err) {
+		default: {
+			// not recognised
+		} break;
+		case GL_NO_ERROR: {
+		} break;
+		case GL_INVALID_ENUM: {
+			err_string = "GL_INVALID_ENUM";
+		} break;
+		case GL_INVALID_VALUE: {
+			err_string = "GL_INVALID_VALUE";
+		} break;
+		case GL_INVALID_OPERATION: {
+			err_string = "GL_INVALID_OPERATION";
+		} break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: {
+			err_string = "GL_INVALID_FRAMEBUFFER_OPERATION";
+		} break;
+		case GL_OUT_OF_MEMORY: {
+			err_string = "GL_OUT_OF_MEMORY";
+		} break;
+	}
+
+	if (p_print_error && err_string) {
+		print_line(err_string);
+	}
+
+	return err_string;
+}
+
 RasterizerGLES3::RasterizerGLES3() {
 
 	storage = memnew(RasterizerStorageGLES3);

@@ -52,11 +52,13 @@ public:
 
 	struct Data {
 
+		enum { NUM_QUAD_ARRAY_VARIATIONS = 8 };
+
 		GLuint canvas_quad_vertices;
 		GLuint canvas_quad_array;
 
 		GLuint polygon_buffer;
-		GLuint polygon_buffer_quad_arrays[4];
+		GLuint polygon_buffer_quad_arrays[NUM_QUAD_ARRAY_VARIATIONS];
 		GLuint polygon_buffer_pointer_array;
 		GLuint polygon_index_buffer;
 
@@ -78,6 +80,7 @@ public:
 
 		bool using_texture_rect;
 		bool using_ninepatch;
+		bool using_light_angle;
 
 		RID current_tex;
 		RID current_normal;
@@ -127,10 +130,10 @@ public:
 	virtual void canvas_begin();
 	virtual void canvas_end();
 
-	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable, bool p_ninepatch = false);
+	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable, bool p_ninepatch = false, bool p_light_angle = false);
 	_FORCE_INLINE_ RasterizerStorageGLES3::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map, bool p_force = false);
 
-	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs);
+	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs, const float *p_light_angles = nullptr);
 	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const int *p_bones, const float *p_weights);
 	_FORCE_INLINE_ void _draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 	_FORCE_INLINE_ void _draw_generic_indices(GLuint p_primitive, const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
