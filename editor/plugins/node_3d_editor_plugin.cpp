@@ -900,12 +900,15 @@ bool Node3DEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_high
 			}
 
 			float dist = r.distance_to(gt.origin);
+			Vector3 r_dir = (r - gt.origin).normalized();
 
-			if (dist > gs * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gs * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
-				float d = ray_pos.distance_to(r);
-				if (d < col_d) {
-					col_d = d;
-					col_axis = i;
+			if (_get_camera_normal().dot(r_dir) <= 0.005) {
+				if (dist > gs * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gs * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
+					float d = ray_pos.distance_to(r);
+					if (d < col_d) {
+						col_d = d;
+						col_axis = i;
+					}
 				}
 			}
 		}
@@ -3125,6 +3128,14 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RS::SHADOW_CASTING_SETTING_OFF);
 		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
 	}
+
+	// Rotation white outline
+	rotate_gizmo_instance[3] = RS::get_singleton()->instance_create();
+	RS::get_singleton()->instance_set_base(rotate_gizmo_instance[3], spatial_editor->get_rotate_gizmo(3)->get_rid());
+	RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[3], get_tree()->get_root()->get_world_3d()->get_scenario());
+	RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[3], RS::SHADOW_CASTING_SETTING_OFF);
+	RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[3], layer);
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
@@ -3135,6 +3146,8 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 		RS::get_singleton()->free(scale_gizmo_instance[i]);
 		RS::get_singleton()->free(scale_plane_gizmo_instance[i]);
 	}
+	// Rotation white outline
+	RS::get_singleton()->free(rotate_gizmo_instance[3]);
 }
 
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
@@ -3226,6 +3239,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
 		}
+		// Rotation white outline
+		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
 	}
 
@@ -3264,6 +3279,9 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], xform);
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 	}
+	// Rotation white outline
+	RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[3], xform);
+	RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE));
 }
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
@@ -4403,7 +4421,7 @@ void Node3DEditor::select_gizmo_highlight_axis(int p_axis) {
 	for (int i = 0; i < 3; i++) {
 		move_gizmo[i]->surface_set_material(0, i == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
 		move_plane_gizmo[i]->surface_set_material(0, (i + 6) == p_axis ? plane_gizmo_color_hl[i] : plane_gizmo_color[i]);
-		rotate_gizmo[i]->surface_set_material(0, (i + 3) == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
+		rotate_gizmo[i]->surface_set_material(0, (i + 3) == p_axis ? rotate_gizmo_color_hl[i] : rotate_gizmo_color[i]);
 		scale_gizmo[i]->surface_set_material(0, (i + 9) == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
 		scale_plane_gizmo[i]->surface_set_material(0, (i + 12) == p_axis ? plane_gizmo_color_hl[i] : plane_gizmo_color[i]);
 	}
@@ -5287,37 +5305,122 @@ void Node3DEditor::_init_indicators() {
 				Ref<SurfaceTool> surftool = memnew(SurfaceTool);
 				surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
-				Vector3 circle[5] = {
-					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * -0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * -0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * 0.02 + ivec2 * -0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-					ivec * 0.02 + ivec2 * 0.02 + ivec2 * GIZMO_CIRCLE_SIZE,
-				};
+				int n = 128; // number of circle segments
+				int m = 6; // number of thickness segments
 
-				for (int k = 0; k < 64; k++) {
-					Basis ma(ivec, Math_PI * 2 * float(k) / 64);
-					Basis mb(ivec, Math_PI * 2 * float(k + 1) / 64);
+				for (int j = 0; j < n; ++j) {
+					Basis basis = Basis(ivec, (Math_PI * 2.0f * j) / n);
 
-					for (int j = 0; j < 4; j++) {
-						Vector3 points[4] = {
-							ma.xform(circle[j]),
-							mb.xform(circle[j]),
-							mb.xform(circle[j + 1]),
-							ma.xform(circle[j + 1]),
-						};
-						surftool->add_vertex(points[0]);
-						surftool->add_vertex(points[1]);
-						surftool->add_vertex(points[2]);
+					Vector3 vertex = basis.xform(ivec2 * GIZMO_CIRCLE_SIZE);
 
-						surftool->add_vertex(points[0]);
-						surftool->add_vertex(points[2]);
-						surftool->add_vertex(points[3]);
+					for (int k = 0; k < m; ++k) {
+						Vector2 ofs = Vector2(Math::cos((Math_PI * 2.0 * k) / m), Math::sin((Math_PI * 2.0 * k) / m));
+						Vector3 normal = ivec * ofs.x + ivec2 * ofs.y;
+
+						surftool->add_normal(basis.xform(normal));
+						surftool->add_vertex(vertex);
 					}
 				}
 
-				surftool->set_material(mat);
-				surftool->commit(rotate_gizmo[i]);
+				for (int j = 0; j < n; ++j) {
+					for (int k = 0; k < m; ++k) {
+						int current_ring = j * m;
+						int next_ring = ((j + 1) % n) * m;
+						int current_segment = k;
+						int next_segment = (k + 1) % m;
+
+						surftool->add_index(current_ring + next_segment);
+						surftool->add_index(current_ring + current_segment);
+						surftool->add_index(next_ring + current_segment);
+
+						surftool->add_index(next_ring + current_segment);
+						surftool->add_index(next_ring + next_segment);
+						surftool->add_index(current_ring + next_segment);
+					}
+				}
+
+				Ref<Shader> rotate_shader = memnew(Shader);
+
+				rotate_shader->set_code("\n"
+										"shader_type spatial; \n"
+										"render_mode unshaded, depth_test_disabled; \n"
+										"uniform vec4 albedo; \n"
+										"\n"
+										"mat3 orthonormalize(mat3 m) { \n"
+										"	vec3 x = normalize(m[0]); \n"
+										"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
+										"	vec3 z = m[2] - x * dot(x, m[2]); \n"
+										"	z = normalize(z - y * (dot(y,m[2]))); \n"
+										"	return mat3(x,y,z); \n"
+										"} \n"
+										"\n"
+										"void vertex() { \n"
+										"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
+										"	vec3 n = mv * VERTEX; \n"
+										"	float orientation = dot(vec3(0,0,-1),n); \n"
+										"	if (orientation <= 0.005) { \n"
+										"		VERTEX += NORMAL*0.02; \n"
+										"	} \n"
+										"} \n"
+										"\n"
+										"void fragment() { \n"
+										"	ALBEDO = albedo.rgb; \n"
+										"	ALPHA = albedo.a; \n"
+										"}");
+
+				Ref<ShaderMaterial> rotate_mat = memnew(ShaderMaterial);
+				rotate_mat->set_render_priority(Material::RENDER_PRIORITY_MAX);
+				rotate_mat->set_shader(rotate_shader);
+				rotate_mat->set_shader_param("albedo", col);
+				rotate_gizmo_color[i] = rotate_mat;
+
+				Array arrays = surftool->commit_to_arrays();
+				rotate_gizmo[i]->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
+				rotate_gizmo[i]->surface_set_material(0, rotate_mat);
+
+				Ref<ShaderMaterial> rotate_mat_hl = rotate_mat->duplicate();
+				rotate_mat_hl->set_shader_param("albedo", Color(col.r, col.g, col.b, 1.0));
+				rotate_gizmo_color_hl[i] = rotate_mat_hl;
+
+				if (i == 2) { // Rotation white outline
+					Ref<ShaderMaterial> border_mat = rotate_mat->duplicate();
+
+					Ref<Shader> border_shader = memnew(Shader);
+					border_shader->set_code("\n"
+											"shader_type spatial; \n"
+											"render_mode unshaded, depth_test_disabled; \n"
+											"uniform vec4 albedo; \n"
+											"\n"
+											"mat3 orthonormalize(mat3 m) { \n"
+											"	vec3 x = normalize(m[0]); \n"
+											"	vec3 y = normalize(m[1] - x * dot(x, m[1])); \n"
+											"	vec3 z = m[2] - x * dot(x, m[2]); \n"
+											"	z = normalize(z - y * (dot(y,m[2]))); \n"
+											"	return mat3(x,y,z); \n"
+											"} \n"
+											"\n"
+											"void vertex() { \n"
+											"	mat3 mv = orthonormalize(mat3(MODELVIEW_MATRIX)); \n"
+											"	mv = inverse(mv); \n"
+											"	VERTEX += NORMAL*0.008; \n"
+											"	vec3 camera_dir_local = mv * vec3(0,0,1); \n"
+											"	vec3 camera_up_local = mv * vec3(0,1,0); \n"
+											"	mat3 rotation_matrix = mat3(cross(camera_dir_local, camera_up_local), camera_up_local, camera_dir_local); \n"
+											"	VERTEX = rotation_matrix * VERTEX; \n"
+											"} \n"
+											"\n"
+											"void fragment() { \n"
+											"	ALBEDO = albedo.rgb; \n"
+											"	ALPHA = albedo.a; \n"
+											"}");
+
+					border_mat->set_shader(border_shader);
+					border_mat->set_shader_param("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
+
+					rotate_gizmo[3] = Ref<ArrayMesh>(memnew(ArrayMesh));
+					rotate_gizmo[3]->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
+					rotate_gizmo[3]->surface_set_material(0, border_mat);
+				}
 			}
 
 			// Scale
