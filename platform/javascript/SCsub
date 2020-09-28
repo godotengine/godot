@@ -18,6 +18,7 @@ build = env.add_program(build_targets, javascript_files)
 
 js_libraries = [
     "native/http_request.js",
+    "native/library_godot_audio.js",
 ]
 for lib in js_libraries:
     env.Append(LINKFLAGS=["--js-library", env.File(lib).path])

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_javascript.h                                            */
+/*  godot_audio.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,57 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_DRIVER_JAVASCRIPT_H
-#define AUDIO_DRIVER_JAVASCRIPT_H
+#ifndef GODOT_AUDIO_H
+#define GODOT_AUDIO_H
 
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
-#include "servers/audio_server.h"
-
-class AudioDriverJavaScript : public AudioDriver {
-
-private:
-	float *internal_buffer;
-
-	int buffer_length;
-
-	int mix_rate;
-	int channel_count;
-
-public:
-#ifndef NO_THREADS
-	Mutex *mutex;
-	Thread *thread;
-	bool quit;
-	bool needs_process;
-
-	static void _audio_thread_func(void *p_data);
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-	void _js_driver_process();
+#include "stddef.h"
 
-	static bool is_available();
-	void process_capture(float sample);
+extern int godot_audio_is_available();
 
-	static AudioDriverJavaScript *singleton;
+extern int godot_audio_init(int p_mix_rate, int p_latency);
+extern int godot_audio_create_processor(int p_buffer_length, int p_channel_count);
 
-	virtual const char *get_name() const;
+extern void godot_audio_start(float *r_buffer_ptr);
+extern void godot_audio_resume();
+extern void godot_audio_finish_async();
 
-	virtual Error init();
-	virtual void start();
-	void resume();
-	virtual float get_latency();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
-	void finish_async();
+extern float godot_audio_get_latency();
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+extern void godot_audio_capture_start();
+extern void godot_audio_capture_stop();
 
-	AudioDriverJavaScript();
-};
-
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* GODOT_AUDIO_H */
