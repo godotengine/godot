@@ -4959,11 +4959,6 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		box_selection->set_size(rect.size);
 
 		box_select_rect = rect;
-
-		if (get_local_mouse_position().y < 0) {
-			//avoid box selection from going up and lose focus to viewport
-			warp_mouse(Vector2(mm->get_position().x, 0));
-		}
 	}
 }
 
