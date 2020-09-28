@@ -27,6 +27,10 @@
 		<member name="shift" type="bool" setter="set_shift" getter="get_shift" default="false">
 			State of the [kbd]Shift[/kbd] modifier.
 		</member>
+		<member name="store_command" type="bool" setter="set_store_command" getter="is_storing_command" default="true">
+			If [code]true[/code], pressing [kbd]Cmd[/kbd] on macOS or [kbd]Ctrl[/kbd] on all other platforms will both be serialized as [member command]. If [code]false[/code], those same keys will be serialized as [member meta] on macOS and [member control] on all other platforms.
+			This aids with cross-platform compatibility when developing e.g. on Windows for macOS, or vice-versa.
+		</member>
 	</members>
 	<constants>
 	</constants>
