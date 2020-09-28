@@ -55,10 +55,11 @@ void InputMap::_bind_methods() {
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action '" + String(p_action) + "'.");
-	input_map[p_action] = Action();
 	static int last_id = 1;
-	input_map[p_action].id = last_id;
-	input_map[p_action].deadzone = p_deadzone;
+	Action action;
+	action.id = last_id;
+	action.deadzone = p_deadzone;
+	input_map[p_action] = action;
 	last_id++;
 }
 
