@@ -47,6 +47,8 @@ protected:
 
 	virtual int get_drive_count();
 	virtual String get_drive(int p_drive);
+
+	virtual bool is_hidden(const String &p_name);
 };
 
 #endif //UNIX ENABLED
