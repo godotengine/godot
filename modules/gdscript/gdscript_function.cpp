@@ -406,6 +406,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL_ASYNC,                             \
 		&&OPCODE_CALL_BUILT_IN,                          \
 		&&OPCODE_CALL_SELF_BASE,                         \
+		&&OPCODE_CALL_METHOD_BIND,                       \
+		&&OPCODE_CALL_METHOD_BIND_RET,                   \
 		&&OPCODE_AWAIT,                                  \
 		&&OPCODE_AWAIT_RESUME,                           \
 		&&OPCODE_JUMP,                                   \
@@ -2659,6 +2661,97 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				//_call_func(nullptr,base,*methodname,ip,argc,p_instance,stack);
+				ip += argc + 1;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_METHOD_BIND)
+			OPCODE(OPCODE_CALL_METHOD_BIND_RET) {
+				CHECK_SPACE(5);
+				bool call_ret = _code_ptr[ip] == OPCODE_CALL_METHOD_BIND_RET;
+
+				int argc = _code_ptr[ip + 1];
+				GET_VARIANT_PTR(base, 2);
+				int namec = _code_ptr[ip + 3];
+				int nameg = _code_ptr[ip + 4];
+
+				GD_ERR_BREAK(namec < 0 || namec >= _global_names_count);
+				const StringName *classname = &_global_names_ptr[namec];
+				GD_ERR_BREAK(nameg < 0 || nameg >= _global_names_count);
+				const StringName *methodname = &_global_names_ptr[nameg];
+
+				MethodBind *method = ClassDB::get_method(*classname, *methodname);
+
+#ifdef DEBUG_ENABLED
+				bool freed = false;
+				Object *base_obj = base->get_validated_object_with_check(freed);
+				if (freed) {
+					err_text = "Trying to call a function on a previously freed instance.";
+					OPCODE_BREAK;
+				} else if (!base_obj) {
+					err_text = "Trying to call a function on a null value.";
+					OPCODE_BREAK;
+				}
+#else
+				Object *base_obj = base->operator Object *();
+#endif
+
+				GD_ERR_BREAK(argc < 0);
+				ip += 5;
+				CHECK_SPACE(argc + 1);
+				Variant **argptrs = call_args;
+
+				for (int i = 0; i < argc; i++) {
+					GET_VARIANT_PTR(v, i);
+					argptrs[i] = v;
+				}
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				Callable::CallError err;
+				if (call_ret) {
+					GET_VARIANT_PTR(ret, argc);
+					*ret = method->call(base_obj, (const Variant **)argptrs, argc, err);
+				} else {
+					method->call(base_obj, (const Variant **)argptrs, argc, err);
+				}
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+
+				if (err.error != Callable::CallError::CALL_OK) {
+					String methodstr = *methodname;
+					String basestr = _get_var_type(base);
+
+					if (methodstr == "call") {
+						if (argc >= 1) {
+							methodstr = String(*argptrs[0]) + " (via call)";
+							if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+								err.argument += 1;
+							}
+						}
+					} else if (methodstr == "free") {
+						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
+							if (base->is_ref()) {
+								err_text = "Attempted to free a reference.";
+								OPCODE_BREAK;
+							} else if (base->get_type() == Variant::OBJECT) {
+								err_text = "Attempted to free a locked object (calling or emitting).";
+								OPCODE_BREAK;
+							}
+						}
+					}
+					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
+					OPCODE_BREAK;
+				}
+#endif
 				ip += argc + 1;
 			}
 			DISPATCH_OPCODE;

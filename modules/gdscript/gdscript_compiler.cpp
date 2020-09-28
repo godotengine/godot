@@ -430,7 +430,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} else {
 					if (callee->type == GDScriptParser::Node::IDENTIFIER) {
 						// Self function call.
-						if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
+						if (ClassDB::has_method(codegen.script->native->get_name(), call->function_name)) {
+							// Native method, use faster path.
+							GDScriptCodeGenerator::Address self;
+							self.mode = GDScriptCodeGenerator::Address::SELF;
+							const MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
+							gen->write_call_method_bind(result, self, method, arguments);
+						} else if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
 							gen->write_call(result, self, call->function_name, arguments);
@@ -447,6 +453,20 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							}
 							if (within_await) {
 								gen->write_call_async(result, base, call->function_name, arguments);
+							} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
+								// Native method, use faster path.
+								StringName class_name;
+								if (base.type.kind == GDScriptDataType::NATIVE) {
+									class_name = base.type.native_type;
+								} else {
+									class_name = base.type.script_type->get_instance_base_type();
+								}
+								if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+									const MethodBind *method = ClassDB::get_method(class_name, call->function_name);
+									gen->write_call_method_bind(result, base, method, arguments);
+								} else {
+									gen->write_call(result, base, call->function_name, arguments);
+								}
 							} else {
 								gen->write_call(result, base, call->function_name, arguments);
 							}

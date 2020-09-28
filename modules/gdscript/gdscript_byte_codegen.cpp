@@ -856,9 +856,10 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN);
+	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET);
 	append(p_arguments.size());
 	append(p_base);
+	append(p_method->get_instance_class());
 	append(p_method->get_name());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
