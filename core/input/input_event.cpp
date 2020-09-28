@@ -138,6 +138,14 @@ int64_t InputEventFromWindow::get_window_id() const {
 
 ///////////////////////////////////
 
+void InputEventWithModifiers::set_store_command(bool p_enabled) {
+	store_command = p_enabled;
+}
+
+bool InputEventWithModifiers::is_storing_command() const {
+	return store_command;
+}
+
 void InputEventWithModifiers::set_shift(bool p_enabled) {
 	shift = p_enabled;
 }
@@ -186,6 +194,9 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 }
 
 void InputEventWithModifiers::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_store_command", "enable"), &InputEventWithModifiers::set_store_command);
+	ClassDB::bind_method(D_METHOD("is_storing_command"), &InputEventWithModifiers::is_storing_command);
+
 	ClassDB::bind_method(D_METHOD("set_alt", "enable"), &InputEventWithModifiers::set_alt);
 	ClassDB::bind_method(D_METHOD("get_alt"), &InputEventWithModifiers::get_alt);
 
@@ -201,11 +212,34 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_command", "enable"), &InputEventWithModifiers::set_command);
 	ClassDB::bind_method(D_METHOD("get_command"), &InputEventWithModifiers::get_command);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "store_command"), "set_store_command", "is_storing_command");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt"), "set_alt", "get_alt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift"), "set_shift", "get_shift");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "control"), "set_control", "get_control");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta"), "set_metakey", "get_metakey");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command"), "set_command", "get_command");
+}
+
+void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
+	if (store_command) {
+		// If we only want to Store "Command".
+#ifdef APPLE_STYLE_KEYS
+		// Don't store "Meta" on Mac.
+		if (property.name == "meta") {
+			property.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+#else
+		// Don't store "Control".
+		if (property.name == "control") {
+			property.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+#endif
+	} else {
+		// We don't want to store command, only control or meta (on mac).
+		if (property.name == "command") {
+			property.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+	}
 }
 
 ///////////////////////////////////
