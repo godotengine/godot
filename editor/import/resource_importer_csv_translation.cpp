@@ -30,6 +30,7 @@
 
 #include "resource_importer_csv_translation.h"
 
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "core/string/optimized_translation.h"
@@ -131,7 +132,24 @@ Error ResourceImporterCSVTranslation::import(const String &p_source_file, const 
 			xlt = cxl;
 		}
 
-		String save_path = p_source_file.get_basename() + "." + translations[i]->get_locale() + ".translation";
+		// `.substr(6)` strips away the leading "res://".
+		String stripped_path = TranslationServer::TRANSLATION_FILES_PATH.plus_file(p_source_file.get_basename().substr(6));
+		String save_path = stripped_path + "." + translations[i]->get_locale() + ".translation";
+
+		{
+			// Ensure that the destination path exists.
+			// `.substr(6)` strips away the leading "res://".
+			String base_dir = TranslationServer::TRANSLATION_FILES_PATH.plus_file(p_source_file.get_base_dir().substr(6));
+			DirAccess *da = DirAccess::open("res://");
+			if (da->change_dir(base_dir) != OK) {
+				Error err = da->make_dir_recursive(base_dir);
+				if (err || da->change_dir(base_dir) != OK) {
+					memdelete(da);
+					ERR_FAIL_V_MSG(Error::ERR_CANT_CREATE, "Failed to create '" + base_dir + "' folder.");
+				}
+			}
+			memdelete(da);
+		}
 
 		ResourceSaver::save(save_path, xlt);
 		if (r_gen_files) {

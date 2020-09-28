@@ -111,6 +111,7 @@ class TranslationServer : public Object {
 
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
+	inline static const String TRANSLATION_FILES_PATH = "res://.godot/translations";
 
 	void set_enabled(bool p_enabled) { enabled = p_enabled; }
 	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
