@@ -44,7 +44,6 @@ class EditorPlugin;
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
 
-private:
 	_THREAD_SAFE_CLASS_
 
 public:
