@@ -43,6 +43,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "main/splash.gen.h"
 #include "platform/android/export/gradle_export_util.h"
 #include "platform/android/logo.gen.h"
 #include "platform/android/plugin/godot_plugin_config.h"
@@ -198,6 +199,9 @@ static const char *android_perms[] = {
 	"WRITE_USER_DICTIONARY",
 	NULL
 };
+
+static const char *SPLASH_IMAGE_EXPORT_PATH = "res/drawable/splash.png";
+static const char *SPLASH_BG_COLOR_PATH = "res/drawable/splash_bg_color.png";
 
 struct LauncherIcon {
 	const char *export_path;
@@ -1467,6 +1471,18 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		//printf("end\n");
 	}
 
+	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data) {
+		PoolVector<uint8_t> png_buffer;
+		Error err = PNGDriverCommon::image_to_png(p_splash_image, png_buffer);
+		if (err == OK) {
+			p_data.resize(png_buffer.size());
+			memcpy(p_data.ptrw(), png_buffer.read().ptr(), p_data.size());
+		} else {
+			String err_str = String("Failed to convert splash image to png.");
+			WARN_PRINT(err_str.utf8().get_data());
+		}
+	}
+
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data) {
 		Ref<Image> working_image = p_source_image;
 
@@ -1484,6 +1500,35 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			String err_str = String("Failed to convert resized icon (") + p_file_name + ") to png.";
 			WARN_PRINT(err_str.utf8().get_data());
 		}
+	}
+
+	void load_splash_refs(Ref<Image> &splash_image, Ref<Image> &splash_bg_color_image) {
+		// TODO: Figure out how to handle remaining boot splash parameters (e.g: fullsize, filter)
+		String project_splash_path = ProjectSettings::get_singleton()->get("application/boot_splash/image");
+
+		if (!project_splash_path.empty()) {
+			splash_image.instance();
+			const Error err = ImageLoader::load_image(project_splash_path, splash_image);
+			if (err) {
+				splash_image.unref();
+			}
+		}
+
+		if (splash_image.is_null()) {
+			// Use the default
+			splash_image = Ref<Image>(memnew(Image(boot_splash_png)));
+		}
+
+		// Setup the splash bg color
+		bool bg_color_valid;
+		Color bg_color = ProjectSettings::get_singleton()->get("application/boot_splash/bg_color", &bg_color_valid);
+		if (!bg_color_valid) {
+			bg_color = boot_splash_bg_color;
+		}
+
+		splash_bg_color_image.instance();
+		splash_bg_color_image->create(splash_image->get_width(), splash_image->get_height(), false, splash_image->get_format());
+		splash_bg_color_image->fill(bg_color);
 	}
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background) {
@@ -1513,13 +1558,34 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	void store_image(const LauncherIcon launcher_icon, const Vector<uint8_t> &data) {
-		String img_path = launcher_icon.export_path;
-		img_path = img_path.insert(0, "res://android/build/");
+		store_image(launcher_icon.export_path, data);
+	}
+
+	void store_image(const String &export_path, const Vector<uint8_t> &data) {
+		String img_path = export_path.insert(0, "res://android/build/");
 		store_file_at_path(img_path, data);
 	}
 
-	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &main_image,
-			const Ref<Image> &foreground, const Ref<Image> &background) {
+	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
+			const Ref<Image> &splash_image,
+			const Ref<Image> &splash_bg_color_image,
+			const Ref<Image> &main_image,
+			const Ref<Image> &foreground,
+			const Ref<Image> &background) {
+		// Store the splash image
+		if (splash_image.is_valid() && !splash_image->empty()) {
+			Vector<uint8_t> data;
+			_load_image_data(splash_image, data);
+			store_image(SPLASH_IMAGE_EXPORT_PATH, data);
+		}
+
+		// Store the splash bg color image
+		if (splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+			Vector<uint8_t> data;
+			_load_image_data(splash_bg_color_image, data);
+			store_image(SPLASH_BG_COLOR_PATH, data);
+		}
+
 		// Prepare images to be resized for the icons. If some image ends up being uninitialized,
 		// the default image from the export template will be used.
 
@@ -2556,6 +2622,10 @@ public:
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 		Vector<String> enabled_abis = get_enabled_abis(p_preset);
 
+		Ref<Image> splash_image;
+		Ref<Image> splash_bg_color_image;
+		load_splash_refs(splash_image, splash_bg_color_image);
+
 		Ref<Image> main_image;
 		Ref<Image> foreground;
 		Ref<Image> background;
@@ -2608,7 +2678,7 @@ public:
 				EditorNode::add_io_error("Unable to overwrite res://android/build/res/*.xml files with project name");
 			}
 			// Copies the project icon files into the appropriate Gradle project directory.
-			_copy_icons_to_gradle_project(p_preset, main_image, foreground, background);
+			_copy_icons_to_gradle_project(p_preset, splash_image, splash_bg_color_image, main_image, foreground, background);
 			// Write an AndroidManifest.xml file into the Gradle project directory.
 			_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 			_update_custom_build_project();
@@ -2812,6 +2882,17 @@ public:
 			if (file == "resources.arsc") {
 				_fix_resources(p_preset, data);
 			}
+
+			// Process the splash image
+			if (file == SPLASH_IMAGE_EXPORT_PATH && splash_image.is_valid() && !splash_image->empty()) {
+				_load_image_data(splash_image, data);
+			}
+
+			// Process the splash bg color image
+			if (file == SPLASH_BG_COLOR_PATH && splash_bg_color_image.is_valid() && !splash_bg_color_image->empty()) {
+				_load_image_data(splash_bg_color_image, data);
+			}
+
 			for (int i = 0; i < icon_densities_count; ++i) {
 				if (main_image.is_valid() && !main_image->empty()) {
 					if (file == launcher_icons[i].export_path) {

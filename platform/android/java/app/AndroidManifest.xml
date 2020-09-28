@@ -45,7 +45,7 @@
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:theme="@style/GodotAppSplashTheme"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
