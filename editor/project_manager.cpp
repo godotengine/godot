@@ -66,19 +66,24 @@ public:
 		MODE_NEW,
 		MODE_IMPORT,
 		MODE_INSTALL,
-		MODE_RENAME
+		MODE_RENAME,
 	};
 
 private:
 	enum MessageType {
 		MESSAGE_ERROR,
 		MESSAGE_WARNING,
-		MESSAGE_SUCCESS
+		MESSAGE_SUCCESS,
 	};
 
 	enum InputType {
 		PROJECT_PATH,
-		INSTALL_PATH
+		INSTALL_PATH,
+	};
+
+	enum VCSMetadata {
+		VCS_METADATA_NONE,
+		VCS_METADATA_GIT,
 	};
 
 	Mode mode;
@@ -89,6 +94,7 @@ private:
 	Container *path_container;
 	Container *install_path_container;
 	Container *rasterizer_container;
+	HBoxContainer *default_files_container;
 	Ref<ButtonGroup> rasterizer_button_group;
 	Label *msg;
 	LineEdit *project_path;
@@ -98,6 +104,8 @@ private:
 	TextureRect *install_status_rect;
 	FileDialog *fdialog;
 	FileDialog *fdialog_install;
+	OptionButton *vcs_metadata_selection;
+	CheckBox *create_default_environment;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -483,25 +491,49 @@ private:
 					}
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
-					initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
+
+					if (create_default_environment->is_pressed()) {
+						initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
+					}
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
+						FileAccess *f;
+						if (create_default_environment->is_pressed()) {
+							f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
+							if (!f) {
+								set_message(TTR("Couldn't create default_env.tres in project path."), MESSAGE_ERROR);
+							} else {
+								f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+								f->store_line("");
+								f->store_line("[sub_resource type=\"Sky\" id=1]");
+								f->store_line("");
+								f->store_line("[resource]");
+								f->store_line("background_mode = 2");
+								f->store_line("sky = SubResource( 1 )");
+								memdelete(f);
+							}
+						}
 
-						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
-						if (!f) {
-							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
-						} else {
-							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
-							f->store_line("");
-							f->store_line("[sub_resource type=\"Sky\" id=1]");
-							f->store_line("");
-							f->store_line("[resource]");
-							f->store_line("background_mode = 2");
-							f->store_line("sky = SubResource( 1 )");
-							memdelete(f);
+						if (vcs_metadata_selection->get_selected() == VCS_METADATA_GIT) {
+							f = FileAccess::open(dir.plus_file(".gitignore"), FileAccess::WRITE);
+							if (!f) {
+								set_message(TTR("Couldn't create .gitignore in project path."), MESSAGE_ERROR);
+							} else {
+								f->store_line("# Godot 4+ specific ignores");
+								f->store_line(".godot/");
+								memdelete(f);
+							}
+							f = FileAccess::open(dir.plus_file(".gitattributes"), FileAccess::WRITE);
+							if (!f) {
+								set_message(TTR("Couldn't create .gitattributes in project path."), MESSAGE_ERROR);
+							} else {
+								f->store_line("# Normalize EOL for all files that Git considers text files.");
+								f->store_line("* text=auto eol=lf");
+								memdelete(f);
+							}
 						}
 					}
 
@@ -699,6 +731,7 @@ public:
 			install_path_container->hide();
 			install_status_rect->hide();
 			rasterizer_container->hide();
+			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
@@ -720,7 +753,7 @@ public:
 			create_dir->hide();
 
 		} else {
-			fav_dir = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+			fav_dir = EditorSettings::get_singleton()->get("filesystem/project_manager/default_project_path");
 			if (fav_dir != "") {
 				project_path->set_text(fav_dir);
 				fdialog->set_current_dir(fav_dir);
@@ -750,6 +783,7 @@ public:
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
+				default_files_container->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
@@ -758,6 +792,7 @@ public:
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
+				default_files_container->show();
 				project_name->call_deferred("grab_focus");
 				project_name->call_deferred("select_all");
 
@@ -768,6 +803,7 @@ public:
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->hide();
+				default_files_container->hide();
 				project_path->grab_focus();
 			}
 
@@ -910,6 +946,25 @@ public:
 		l->set_valign(Label::VALIGN_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
+
+		default_files_container = memnew(HBoxContainer);
+		vb->add_child(default_files_container);
+		l = memnew(Label);
+		l->set_text(TTR("Version Control Metadata:"));
+		default_files_container->add_child(l);
+		vcs_metadata_selection = memnew(OptionButton);
+		vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
+		vcs_metadata_selection->add_item("None", VCS_METADATA_NONE);
+		vcs_metadata_selection->add_item("Git", VCS_METADATA_GIT);
+		vcs_metadata_selection->select(VCS_METADATA_GIT);
+		default_files_container->add_child(vcs_metadata_selection);
+		Control *spacer = memnew(Control);
+		spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		default_files_container->add_child(spacer);
+		create_default_environment = memnew(CheckBox);
+		create_default_environment->set_text("Create Default Environment");
+		create_default_environment->set_pressed(true);
+		default_files_container->add_child(create_default_environment);
 
 		fdialog = memnew(FileDialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
@@ -2671,7 +2726,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 		scan_dir->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
 		scan_dir->set_title(TTR("Select a Folder to Scan")); // must be after mode or it's overridden
-		scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/directories/default_project_path"));
+		scan_dir->set_current_dir(EditorSettings::get_singleton()->get("filesystem/project_manager/default_project_path"));
 		add_child(scan_dir);
 		scan_dir->connect("dir_selected", callable_mp(this, &ProjectManager::_scan_begin));
 
@@ -2739,7 +2794,7 @@ ProjectManager::ProjectManager() {
 
 	DirAccessRef dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
-	String default_project_path = EditorSettings::get_singleton()->get("filesystem/directories/default_project_path");
+	String default_project_path = EditorSettings::get_singleton()->get("filesystem/project_manager/default_project_path");
 	if (!dir_access->dir_exists(default_project_path)) {
 		Error error = dir_access->make_dir_recursive(default_project_path);
 		if (error != OK) {
@@ -2747,7 +2802,7 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	String autoscan_path = EditorSettings::get_singleton()->get("filesystem/directories/autoscan_project_path");
+	String autoscan_path = EditorSettings::get_singleton()->get("filesystem/project_manager/autoscan_project_path");
 	if (autoscan_path != "") {
 		if (dir_access->dir_exists(autoscan_path)) {
 			_scan_begin(autoscan_path);
