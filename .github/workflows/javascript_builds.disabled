@@ -76,3 +76,9 @@ jobs:
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=javascript target=release tools=no use_closure_compiler=yes
           ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
