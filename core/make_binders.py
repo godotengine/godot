@@ -150,7 +150,7 @@ public:
 		$arg CHECK_ARG(@);
 		$
 #endif
-		$ifret Variant ret = $(instance->*method)($arg, _VC(@)$);
+		$ifret Variant ret = to_variant($(instance->*method)($arg, _VC(@)$)$ifret )$;
 		$ifret return Variant(ret);$
 		$ifnoret return Variant();$
 	}

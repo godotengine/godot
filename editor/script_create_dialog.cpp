@@ -881,7 +881,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	get_ok()->set_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
 	alert->get_label()->set_autowrap(true);
-	alert->get_label()->set_align(Label::ALIGN_CENTER);
+	alert->get_label()->set_align(Label::Align::CENTER);
 	alert->get_label()->set_valign(Label::VALIGN_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
 	add_child(alert);

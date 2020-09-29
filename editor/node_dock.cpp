@@ -129,7 +129,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_valign(Label::VALIGN_CENTER);
-	select_a_node->set_align(Label::ALIGN_CENTER);
+	select_a_node->set_align(Label::Align::CENTER);
 	select_a_node->set_autowrap(true);
 	add_child(select_a_node);
 }

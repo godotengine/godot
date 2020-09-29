@@ -595,7 +595,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	empty_message = memnew(Label);
 	empty_message->set_text(TTR("Add or select a texture on the left panel to edit the tiles bound to it."));
 	empty_message->set_valign(Label::VALIGN_CENTER);
-	empty_message->set_align(Label::ALIGN_CENTER);
+	empty_message->set_align(Label::Align::CENTER);
 	empty_message->set_autowrap(true);
 	empty_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	empty_message->set_v_size_flags(SIZE_EXPAND_FILL);

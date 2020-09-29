@@ -523,7 +523,7 @@ GroupDialog::GroupDialog() {
 	group_empty = memnew(Label());
 	group_empty->set_text(TTR("Empty groups will be automatically removed."));
 	group_empty->set_valign(Label::VALIGN_CENTER);
-	group_empty->set_align(Label::ALIGN_CENTER);
+	group_empty->set_align(Label::Align::CENTER);
 	group_empty->set_autowrap(true);
 	group_empty->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	nodes_to_remove->add_child(group_empty);

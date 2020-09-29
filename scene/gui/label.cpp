@@ -199,14 +199,14 @@ void Label::_notification(int p_what) {
 			float x_ofs = 0;
 
 			switch (align) {
-				case ALIGN_FILL:
-				case ALIGN_LEFT: {
+				case Align::FILL:
+				case Align::LEFT: {
 					x_ofs = style->get_offset().x;
 				} break;
-				case ALIGN_CENTER: {
+				case Align::CENTER: {
 					x_ofs = int(size.width - (taken + spaces * space_w)) / 2;
 				} break;
-				case ALIGN_RIGHT: {
+				case Align::RIGHT: {
 					x_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (taken + spaces * space_w));
 				} break;
 			}
@@ -225,7 +225,7 @@ void Label::_notification(int p_what) {
 				if (from->space_count) {
 					/* spacing */
 					x_ofs += space_w * from->space_count;
-					if (can_fill && align == ALIGN_FILL && spaces) {
+					if (can_fill && align == Align::FILL && spaces) {
 						x_ofs += int((size.width - (taken + space_w * spaces)) / spaces);
 					}
 				}
@@ -652,10 +652,10 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "lines_visible"), &Label::set_max_lines_visible);
 	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &Label::get_max_lines_visible);
 
-	BIND_ENUM_CONSTANT(ALIGN_LEFT);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
-	BIND_ENUM_CONSTANT(ALIGN_FILL);
+	BIND_ENUM_CONSTANT(Align::LEFT);
+	BIND_ENUM_CONSTANT(Align::CENTER);
+	BIND_ENUM_CONSTANT(Align::RIGHT);
+	BIND_ENUM_CONSTANT(Align::FILL);
 
 	BIND_ENUM_CONSTANT(VALIGN_TOP);
 	BIND_ENUM_CONSTANT(VALIGN_CENTER);
