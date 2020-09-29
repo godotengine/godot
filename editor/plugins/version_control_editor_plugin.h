@@ -57,6 +57,8 @@ private:
 	List<StringName> available_addons;
 
 	PopupMenu *version_control_actions;
+	ConfirmationDialog *metadata_dialog;
+	OptionButton *metadata_selection;
 	AcceptDialog *set_up_dialog;
 	VBoxContainer *set_up_vbc;
 	HBoxContainer *set_up_hbc;
@@ -98,6 +100,7 @@ private:
 	RichTextLabel *diff;
 
 	void _populate_available_vcs_names();
+	void _create_vcs_metadata_files();
 	void _selected_a_vcs(int p_id);
 	void _initialize_vcs();
 	void _send_commit_msg();
@@ -121,6 +124,7 @@ protected:
 public:
 	static VersionControlEditorPlugin *get_singleton();
 
+	void popup_vcs_metadata_dialog();
 	void popup_vcs_set_up_dialog(const Control *p_gui_base);
 	void set_version_control_tool_button(Button *p_button) { version_control_dock_button = p_button; }
 

@@ -166,3 +166,24 @@ EditorVCSInterface *EditorVCSInterface::get_singleton() {
 void EditorVCSInterface::set_singleton(EditorVCSInterface *p_singleton) {
 	singleton = p_singleton;
 }
+
+void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir) {
+	if (p_vcs_metadata_type == VCSMetadata::GIT) {
+		FileAccess *f = FileAccess::open(p_dir.plus_file(".gitignore"), FileAccess::WRITE);
+		if (!f) {
+			ERR_FAIL_MSG(TTR("Couldn't create .gitignore in project path."));
+		} else {
+			f->store_line("# Godot 4+ specific ignores");
+			f->store_line(".godot/");
+			memdelete(f);
+		}
+		f = FileAccess::open(p_dir.plus_file(".gitattributes"), FileAccess::WRITE);
+		if (!f) {
+			ERR_FAIL_MSG(TTR("Couldn't create .gitattributes in project path."));
+		} else {
+			f->store_line("# Normalize EOL for all files that Git considers text files.");
+			f->store_line("* text=auto eol=lf");
+			memdelete(f);
+		}
+	}
+}

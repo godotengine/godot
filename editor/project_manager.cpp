@@ -41,6 +41,7 @@
 #include "core/string/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
+#include "editor/editor_vcs_interface.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
@@ -66,19 +67,19 @@ public:
 		MODE_NEW,
 		MODE_IMPORT,
 		MODE_INSTALL,
-		MODE_RENAME
+		MODE_RENAME,
 	};
 
 private:
 	enum MessageType {
 		MESSAGE_ERROR,
 		MESSAGE_WARNING,
-		MESSAGE_SUCCESS
+		MESSAGE_SUCCESS,
 	};
 
 	enum InputType {
 		PROJECT_PATH,
-		INSTALL_PATH
+		INSTALL_PATH,
 	};
 
 	Mode mode;
@@ -89,6 +90,7 @@ private:
 	Container *path_container;
 	Container *install_path_container;
 	Container *rasterizer_container;
+	HBoxContainer *default_files_container;
 	Ref<ButtonGroup> rasterizer_button_group;
 	Label *msg;
 	LineEdit *project_path;
@@ -98,6 +100,8 @@ private:
 	TextureRect *install_status_rect;
 	FileDialog *fdialog;
 	FileDialog *fdialog_install;
+	OptionButton *vcs_metadata_selection;
+	CheckBox *create_default_environment;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -477,28 +481,34 @@ private:
 					initial_settings["rendering/vulkan/rendering/back_end"] = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.png";
-					initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
+
+					if (create_default_environment->is_pressed()) {
+						initial_settings["rendering/environment/defaults/default_environment"] = "res://default_env.tres";
+					}
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						ResourceSaver::save(dir.plus_file("icon.png"), create_unscaled_default_project_icon());
-
-						FileAccess *f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
-						if (!f) {
-							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
-						} else {
-							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=3]");
-							f->store_line("");
-							f->store_line("[sub_resource type=\"Sky\" id=\"1\"]");
-							f->store_line("");
-							f->store_line("[resource]");
-							f->store_line("background_mode = 2");
-							f->store_line("sky = SubResource( \"1\" )");
-							memdelete(f);
+						FileAccess *f;
+						if (create_default_environment->is_pressed()) {
+							f = FileAccess::open(dir.plus_file("default_env.tres"), FileAccess::WRITE);
+							if (!f) {
+								set_message(TTR("Couldn't create default_env.tres in project path."), MESSAGE_ERROR);
+							} else {
+								f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+								f->store_line("");
+								f->store_line("[sub_resource type=\"Sky\" id=\"1\"]");
+								f->store_line("");
+								f->store_line("[resource]");
+								f->store_line("background_mode = 2");
+								f->store_line("sky = SubResource( \"1\" )");
+								memdelete(f);
+							}
 						}
-					}
 
+						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
+					}
 				} else if (mode == MODE_INSTALL) {
 					if (project_path->get_text().ends_with(".zip")) {
 						dir = install_path->get_text();
@@ -693,6 +703,7 @@ public:
 			install_path_container->hide();
 			install_status_rect->hide();
 			rasterizer_container->hide();
+			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
@@ -744,6 +755,7 @@ public:
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
+				default_files_container->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
@@ -752,6 +764,7 @@ public:
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->show();
+				default_files_container->show();
 				project_name->call_deferred(SNAME("grab_focus"));
 				project_name->call_deferred(SNAME("select_all"));
 
@@ -762,6 +775,7 @@ public:
 				name_container->show();
 				install_path_container->hide();
 				rasterizer_container->hide();
+				default_files_container->hide();
 				project_path->grab_focus();
 			}
 
@@ -903,6 +917,25 @@ public:
 		l->set_valign(Label::VALIGN_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rasterizer_container->add_child(l);
+
+		default_files_container = memnew(HBoxContainer);
+		vb->add_child(default_files_container);
+		l = memnew(Label);
+		l->set_text(TTR("Version Control Metadata:"));
+		default_files_container->add_child(l);
+		vcs_metadata_selection = memnew(OptionButton);
+		vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
+		vcs_metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
+		vcs_metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
+		vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+		default_files_container->add_child(vcs_metadata_selection);
+		Control *spacer = memnew(Control);
+		spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		default_files_container->add_child(spacer);
+		create_default_environment = memnew(CheckBox);
+		create_default_environment->set_text("Create Default Environment");
+		create_default_environment->set_pressed(true);
+		default_files_container->add_child(create_default_environment);
 
 		fdialog = memnew(FileDialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);

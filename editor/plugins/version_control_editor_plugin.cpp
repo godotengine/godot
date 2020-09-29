@@ -49,6 +49,11 @@ void VersionControlEditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CHANGE_TYPE_TYPECHANGE);
 }
 
+void VersionControlEditorPlugin::_create_vcs_metadata_files() {
+	String dir = "res://";
+	EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(metadata_selection->get_selected()), dir);
+}
+
 void VersionControlEditorPlugin::_selected_a_vcs(int p_id) {
 	List<StringName> available_addons = get_available_vcs_names();
 	const StringName selected_vcs = set_up_choice->get_item_text(p_id);
@@ -69,6 +74,10 @@ void VersionControlEditorPlugin::_populate_available_vcs_names() {
 
 VersionControlEditorPlugin *VersionControlEditorPlugin::get_singleton() {
 	return singleton ? singleton : memnew(VersionControlEditorPlugin);
+}
+
+void VersionControlEditorPlugin::popup_vcs_metadata_dialog() {
+	metadata_dialog->popup_centered();
 }
 
 void VersionControlEditorPlugin::popup_vcs_set_up_dialog(const Control *p_gui_base) {
@@ -373,6 +382,30 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	staged_files_count = 0;
 
 	version_control_actions = memnew(PopupMenu);
+
+	metadata_dialog = memnew(ConfirmationDialog);
+	metadata_dialog->set_title(TTR("Create Version Control Metadata"));
+	metadata_dialog->set_min_size(Size2(200, 40));
+	version_control_actions->add_child(metadata_dialog);
+
+	VBoxContainer *metadata_vb = memnew(VBoxContainer);
+	HBoxContainer *metadata_hb = memnew(HBoxContainer);
+	metadata_hb->set_custom_minimum_size(Size2(200, 20));
+	Label *l = memnew(Label);
+	l->set_text(TTR("Create VCS metadata files for:"));
+	metadata_hb->add_child(l);
+	metadata_selection = memnew(OptionButton);
+	metadata_selection->set_custom_minimum_size(Size2(100, 20));
+	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
+	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
+	metadata_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_create_vcs_metadata_files));
+	metadata_hb->add_child(metadata_selection);
+	metadata_vb->add_child(metadata_hb);
+	l = memnew(Label);
+	l->set_text(TTR("Existing VCS metadata files will be overwritten."));
+	metadata_vb->add_child(l);
+	metadata_dialog->add_child(metadata_vb);
 
 	set_up_dialog = memnew(AcceptDialog);
 	set_up_dialog->set_title(TTR("Set Up Version Control"));
