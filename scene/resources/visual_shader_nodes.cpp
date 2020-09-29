@@ -5213,7 +5213,7 @@ int VisualShaderNodeMultiplyAdd::get_input_port_count() const {
 }
 
 VisualShaderNodeMultiplyAdd::PortType VisualShaderNodeMultiplyAdd::get_input_port_type(int p_port) const {
-	if (type == TYPE_SCALAR) {
+	if (op_type == OP_TYPE_SCALAR) {
 		return PORT_TYPE_SCALAR;
 	}
 	return PORT_TYPE_VECTOR;
@@ -5235,7 +5235,7 @@ int VisualShaderNodeMultiplyAdd::get_output_port_count() const {
 }
 
 VisualShaderNodeMultiplyAdd::PortType VisualShaderNodeMultiplyAdd::get_output_port_type(int p_port) const {
-	if (type == TYPE_SCALAR) {
+	if (op_type == OP_TYPE_SCALAR) {
 		return PORT_TYPE_SCALAR;
 	} else {
 		return PORT_TYPE_VECTOR;
@@ -5250,10 +5250,10 @@ String VisualShaderNodeMultiplyAdd::generate_code(Shader::Mode p_mode, VisualSha
 	return "\t" + p_output_vars[0] + " = fma(" + p_input_vars[0] + ", " + p_input_vars[1] + ", " + p_input_vars[2] + ");\n";
 }
 
-void VisualShaderNodeMultiplyAdd::set_type(Type p_type) {
-	ERR_FAIL_INDEX((int)p_type, TYPE_MAX);
-	if (p_type != type) {
-		if (p_type == TYPE_SCALAR) {
+void VisualShaderNodeMultiplyAdd::set_op_type(OpType p_op_type) {
+	ERR_FAIL_INDEX((int)p_op_type, OP_TYPE_MAX);
+	if (p_op_type != op_type) {
+		if (p_op_type == OP_TYPE_SCALAR) {
 			set_input_port_default_value(0, 0.0);
 			set_input_port_default_value(1, 0.0);
 			set_input_port_default_value(2, 0.0);
@@ -5263,29 +5263,29 @@ void VisualShaderNodeMultiplyAdd::set_type(Type p_type) {
 			set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
 		}
 	}
-	type = p_type;
+	op_type = p_op_type;
 	emit_changed();
 }
 
-VisualShaderNodeMultiplyAdd::Type VisualShaderNodeMultiplyAdd::get_type() const {
-	return type;
+VisualShaderNodeMultiplyAdd::OpType VisualShaderNodeMultiplyAdd::get_op_type() const {
+	return op_type;
 }
 
 Vector<StringName> VisualShaderNodeMultiplyAdd::get_editable_properties() const {
 	Vector<StringName> props;
-	props.push_back("type");
+	props.push_back("op_type");
 	return props;
 }
 
 void VisualShaderNodeMultiplyAdd::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_type", "type"), &VisualShaderNodeMultiplyAdd::set_type);
-	ClassDB::bind_method(D_METHOD("get_type"), &VisualShaderNodeMultiplyAdd::get_type);
+	ClassDB::bind_method(D_METHOD("set_op_type", "type"), &VisualShaderNodeMultiplyAdd::set_op_type);
+	ClassDB::bind_method(D_METHOD("get_op_type"), &VisualShaderNodeMultiplyAdd::get_op_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, "Scalar,Vector"), "set_type", "get_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector"), "set_op_type", "get_op_type");
 
-	BIND_ENUM_CONSTANT(TYPE_SCALAR);
-	BIND_ENUM_CONSTANT(TYPE_VECTOR);
-	BIND_ENUM_CONSTANT(TYPE_MAX);
+	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR);
+	BIND_ENUM_CONSTANT(OP_TYPE_MAX);
 }
 
 VisualShaderNodeMultiplyAdd::VisualShaderNodeMultiplyAdd() {
