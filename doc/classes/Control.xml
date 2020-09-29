@@ -500,7 +500,7 @@
 			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
-				Returns a [StyleBox] from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
+				Returns a [StyleBox] from assigned [Theme] with the given [code]name[/code] on the current [Control] of the given [code]type[/code]. e.g. calling [code]get_theme_stylebox("panel")[/code] will return the stylebox named "panel" on the current control.
 			</description>
 		</method>
 		<method name="get_tooltip" qualifiers="const">
