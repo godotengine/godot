@@ -312,6 +312,7 @@ class ScriptEditor : public PanelContainer {
 
 	String _get_debug_tooltip(const String &p_text, Node *_se);
 
+	void _save_current_script();
 	void _resave_scripts(const String &p_str);
 	void _reload_scripts();
 
