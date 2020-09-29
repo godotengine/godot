@@ -52,6 +52,7 @@ class DirAccessUnix : public DirAccess {
 
 protected:
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
+	virtual bool is_hidden(const String &p_name);
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing

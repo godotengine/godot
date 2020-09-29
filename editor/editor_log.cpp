@@ -82,8 +82,15 @@ void EditorLog::_clear_request() {
 }
 
 void EditorLog::_copy_request() {
+	String text = log->get_selected_text();
 
-	log->selection_copy();
+	if (text == "") {
+		text = log->get_text();
+	}
+
+	if (text != "") {
+		OS::get_singleton()->set_clipboard(text);
+	}
 }
 
 void EditorLog::clear() {

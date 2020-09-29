@@ -844,10 +844,11 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	ERR_FAIL_COND_V(!p_control, Vector2());
 
 	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
-	ERR_FAIL_COND_V(parent_rect.size.x == 0, Vector2());
-	ERR_FAIL_COND_V(parent_rect.size.y == 0, Vector2());
 
-	return (p_control->get_transform().xform(position) - parent_rect.position) / parent_rect.size;
+	Vector2 output = Vector2();
+	output.x = (parent_rect.size.x == 0) ? 0.0 : (p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
+	output.y = (parent_rect.size.y == 0) ? 0.0 : (p_control->get_transform().xform(position).y - parent_rect.position.y) / parent_rect.size.y;
+	return output;
 }
 
 void CanvasItemEditor::_save_canvas_item_ik_chain(const CanvasItem *p_canvas_item, List<float> *p_bones_length, List<Dictionary> *p_bones_state) {
@@ -3694,12 +3695,12 @@ void CanvasItemEditor::_draw_viewport() {
 
 	_draw_grid();
 	_draw_ruler_tool();
-	_draw_selection();
 	_draw_axis();
 	if (editor->get_edited_scene()) {
 		_draw_locks_and_groups(editor->get_edited_scene());
 		_draw_invisible_nodes_positions(editor->get_edited_scene());
 	}
+	_draw_selection();
 
 	RID ci = viewport->get_canvas_item();
 	VisualServer::get_singleton()->canvas_item_add_set_transform(ci, Transform2D());

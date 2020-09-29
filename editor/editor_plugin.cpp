@@ -242,9 +242,9 @@ String EditorInterface::get_current_path() const {
 	return EditorNode::get_singleton()->get_filesystem_dock()->get_current_path();
 }
 
-void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property) {
+void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property, bool p_inspector_only) {
 
-	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
+	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
 }
 
 EditorFileSystem *EditorInterface::get_resource_file_system() {
@@ -311,7 +311,7 @@ bool EditorInterface::is_distraction_free_mode_enabled() const {
 
 void EditorInterface::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorInterface::inspect_object, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);

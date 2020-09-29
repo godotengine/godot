@@ -392,9 +392,8 @@ def configure(env, env_mono):
             mono_root = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
 
         if tools_enabled:
+            # Only supported for editor builds.
             copy_mono_root_files(env, mono_root)
-        else:
-            print("Ignoring option: 'copy_mono_root'; only available for builds with 'tools' enabled.")
 
 
 def make_template_dir(env, mono_root):

@@ -186,10 +186,10 @@ class EditorAssetLibrary : public PanelContainer {
 	Label *library_loading;
 	Label *library_error;
 	LineEdit *filter;
+	Timer *filter_debounce_timer;
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	Button *search;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;
@@ -284,10 +284,12 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _search(int p_page = 0);
 	void _rerun_search(int p_ignore);
+	void _search_text_changed(const String &p_text = "");
 	void _search_text_entered(const String &p_text = "");
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	void _http_download_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
+	void _filter_debounce_timer_timeout();
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);

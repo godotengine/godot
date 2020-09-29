@@ -794,6 +794,9 @@ void SceneTreeEditor::_renamed() {
 	if (new_name == n->get_name())
 		return;
 
+	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
+	new_name = new_name.strip_edges();
+
 	if (!undo_redo) {
 		n->set_name(new_name);
 		which->set_metadata(0, n->get_path());
