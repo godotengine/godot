@@ -116,6 +116,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"print_debug",
 		"push_error",
 		"push_warning",
+		"uuidv4_text",
 		"var2str",
 		"str2var",
 		"var2bytes",
@@ -816,6 +817,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			String message = *p_args[0];
 			WARN_PRINTS(message);
 			r_ret = Variant();
+		} break;
+		case TEXT_UUIDV4: {
+			r_ret = String::uuidv4_text();
 		} break;
 		case VAR_TO_STR: {
 			VALIDATE_ARG_COUNT(1);
@@ -1939,6 +1943,12 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 			MethodInfo mi(Variant::NIL, "push_warning", PropertyInfo(Variant::STRING, "message"));
 			mi.return_val.type = Variant::NIL;
+			return mi;
+
+		} break;
+		case TEXT_UUIDV4: {
+			MethodInfo mi("uuidv4_text");
+			mi.return_val.type = Variant::STRING;
 			return mi;
 
 		} break;

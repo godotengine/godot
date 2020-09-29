@@ -1256,6 +1256,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="uuidv4_text">
+			<return type="String">
+			</return>
+			<description>
+				Returns a random 128-bit [url=https://en.wikipedia.org/wiki/Universally_unique_identifier]universally unique identifier[/url]. Example returned value: [code]dd10eb87-1596-426f-9e1d-496e8ceea6ed[/code].
+			</description>
+		</method>
 		<method name="var2bytes">
 			<return type="PoolByteArray">
 			</return>

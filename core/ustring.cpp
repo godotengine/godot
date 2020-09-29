@@ -38,6 +38,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/translation.h"
 #include "core/ucaps.h"
@@ -1002,6 +1003,46 @@ const CharType *String::c_str() const {
 	static const CharType zero = 0;
 
 	return size() ? &operator[](0) : &zero;
+}
+
+String String::uuidv4_text() {
+	uint32_t timestamp = OS::get_singleton()->get_unix_time();
+	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+	uint8_t bytes[16] = {
+		// time low
+		(uint8_t)((timestamp)&0xff),
+		(uint8_t)((timestamp << 1) & 0xff),
+		(uint8_t)((timestamp << 2) & 0xff),
+		(uint8_t)((timestamp << 3) & 0xff),
+
+		// time mid
+		(uint8_t)((timestamp << 4) & 0xff),
+		(uint8_t)((timestamp << 5) & 0xff),
+
+		// time high
+		(uint8_t)((timestamp << 6) & 0xff),
+		(uint8_t)((timestamp << 7) & 0xff),
+
+		// clock seq hi
+		(uint8_t)(((ticks << 1) & 0x0f) | 0x40),
+
+		// clock seq low
+		(uint8_t)((ticks)&0xff),
+
+		// node
+		(uint8_t)((Math::rand() & 0x3f) | 0x80),
+		(uint8_t)(Math::rand() & 0xff),
+		(uint8_t)(Math::rand() & 0xff),
+		(uint8_t)(Math::rand() & 0xff),
+		(uint8_t)(Math::rand() & 0xff),
+		(uint8_t)(Math::rand() & 0xff)
+	};
+
+	return String::hex_encode_buffer(bytes, 16)
+			.insert(8, "-")
+			.insert(13, "-")
+			.insert(18, "-")
+			.insert(23, "-");
 }
 
 String String::md5(const uint8_t *p_md5) {
