@@ -1546,9 +1546,24 @@ void VisualShaderEditor::_add_custom_node(const String &p_path) {
 	}
 }
 
-void VisualShaderEditor::_add_texture_node(const String &p_path) {
-	VisualShaderNodeTexture *texture = (VisualShaderNodeTexture *)_add_node(texture_node_option_idx, -1);
-	texture->set_texture(ResourceLoader::load(p_path));
+void VisualShaderEditor::_add_cubemap_node(const String &p_path) {
+	VisualShaderNodeCubemap *cubemap = (VisualShaderNodeCubemap *)_add_node(cubemap_node_option_idx, -1);
+	cubemap->set_cube_map(ResourceLoader::load(p_path));
+}
+
+void VisualShaderEditor::_add_texture2d_node(const String &p_path) {
+	VisualShaderNodeTexture *texture2d = (VisualShaderNodeTexture *)_add_node(texture2d_node_option_idx, -1);
+	texture2d->set_texture(ResourceLoader::load(p_path));
+}
+
+void VisualShaderEditor::_add_texture2d_array_node(const String &p_path) {
+	VisualShaderNodeTexture2DArray *texture2d_array = (VisualShaderNodeTexture2DArray *)_add_node(texture2d_array_node_option_idx, -1);
+	texture2d_array->set_texture_array(ResourceLoader::load(p_path));
+}
+
+void VisualShaderEditor::_add_texture3d_node(const String &p_path) {
+	VisualShaderNodeTexture3D *texture3d = (VisualShaderNodeTexture3D *)_add_node(texture3d_node_option_idx, -1);
+	texture3d->set_texture(ResourceLoader::load(p_path));
 }
 
 VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
@@ -2598,7 +2613,22 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 					} else if (ClassDB::get_parent_class(type) == "Texture2D") {
 						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
 						saved_node_pos_dirty = true;
-						_add_texture_node(arr[i]);
+						_add_texture2d_node(arr[i]);
+						j++;
+					} else if (type == "Texture2DArray") {
+						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_texture2d_array_node(arr[i]);
+						j++;
+					} else if (ClassDB::get_parent_class(type) == "Texture3D") {
+						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_texture3d_node(arr[i]);
+						j++;
+					} else if (type == "Cubemap") {
+						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_cubemap_node(arr[i]);
 						j++;
 					}
 				}
@@ -3207,11 +3237,13 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("IntUniform", "Scalar", "Variables", "VisualShaderNodeIntUniform", TTR("Scalar integer uniform."), -1, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 
 	// TEXTURES
-
+	cubemap_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), -1, -1));
-	texture_node_option_idx = add_options.size();
+	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), -1, -1));
+	texture2d_array_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2DArray", "Textures", "Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), -1, -1, -1, -1, -1));
+	texture3d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture3D", "Textures", "Functions", "VisualShaderNodeTexture3D", TTR("Perform the 3D texture lookup."), -1, -1));
 
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubemapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
