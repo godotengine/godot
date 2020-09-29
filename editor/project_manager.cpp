@@ -475,13 +475,16 @@ private:
 						if (!f) {
 							set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 						} else {
-							f->store_line("[gd_resource type=\"Environment\" load_steps=2 format=2]");
+							f->store_line("[gd_resource type=\"Environment\" load_steps=3 format=2]");
 							f->store_line("");
-							f->store_line("[sub_resource type=\"Sky\" id=1]");
+							f->store_line("[sub_resource type=\"ProceduralSkyMaterial\" id=1]");
+							f->store_line("");
+							f->store_line("[sub_resource type=\"Sky\" id=2]");
+							f->store_line("sky_material = SubResource( 1 )");
 							f->store_line("");
 							f->store_line("[resource]");
 							f->store_line("background_mode = 2");
-							f->store_line("sky = SubResource( 1 )");
+							f->store_line("sky = SubResource( 2 )");
 							memdelete(f);
 						}
 					}
