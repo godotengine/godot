@@ -57,6 +57,12 @@ jobs:
         run: |
           ./bin/godot.osx.opt.tools.64 --test
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
   macos-template:
     runs-on: "macos-latest"
     name: Template (target=release, tools=no)
@@ -99,3 +105,9 @@ jobs:
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=osx target=release tools=no
           ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
