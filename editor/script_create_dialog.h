@@ -50,6 +50,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *error_label;
 	Label *path_error_label;
 	Label *builtin_warning_label;
+	Label *script_name_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
@@ -110,6 +111,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool _validate_parent(const String &p_string);
 	bool _validate_class(const String &p_string);
 	String _validate_path(const String &p_path, bool p_file_must_exist);
+	String _get_class_name() const;
 	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);
