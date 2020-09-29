@@ -3898,6 +3898,12 @@ void CanvasItemEditor::_notification(int p_what) {
 		key_scale_button->set_icon(get_icon("KeyScale", "EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
 		key_auto_insert_button->set_icon(get_icon("AutoKey", "EditorIcons"));
+		// Use a different color for the active autokey icon to make them easier
+		// to distinguish from the other key icons at the top. On a light theme,
+		// the icon will be dark, so we need to lighten it before blending it
+		// with the red color.
+		const Color key_auto_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
+		key_auto_insert_button->add_color_override("icon_color_pressed", key_auto_color.linear_interpolate(Color(1, 0, 0), 0.55));
 		animation_menu->set_icon(get_icon("GuiTabMenuHl", "EditorIcons"));
 
 		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
