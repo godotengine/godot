@@ -32,7 +32,7 @@
 
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
-#import "gl_view.h"
+#import "godot_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
 
@@ -47,16 +47,18 @@ Error _shell_open(String);
 void _set_keep_screen_on(bool p_enabled);
 
 Error _shell_open(String p_uri) {
-	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
+	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
+	NSURL *url = [NSURL URLWithString:urlPath];
+	[urlPath release];
 
-	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]]) {
+	if (![[UIApplication sharedApplication] canOpenURL:url]) {
 		[url release];
 		return ERR_CANT_OPEN;
 	}
 
 	printf("opening url %ls\n", p_uri.c_str());
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:url]];
-	[url release];
+	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+
 	return OK;
 };
 
@@ -81,7 +83,8 @@ CMMotionManager *motionManager;
 bool motionInitialised;
 
 static ViewController *mainViewController = nil;
-+ (ViewController *)getViewController {
+
++ (ViewController *)viewController {
 	return mainViewController;
 }
 
@@ -154,7 +157,7 @@ static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
 			OS::get_singleton()->get_main_loop()->notification(
 					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 
-		[view_controller.view stopAnimation];
+		[view_controller.godotView stopAnimation];
 		if (OS::get_singleton()->native_video_is_playing()) {
 			OSIPhone::get_singleton()->native_video_focus_out();
 		}
@@ -172,7 +175,7 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 			OS::get_singleton()->get_main_loop()->notification(
 					MainLoop::NOTIFICATION_WM_FOCUS_IN);
 
-		[view_controller.view startAnimation];
+		[view_controller.godotView startAnimation];
 		if (OSIPhone::get_singleton()->native_video_is_playing()) {
 			OSIPhone::get_singleton()->native_video_unpause();
 		}
@@ -301,45 +304,6 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_R2, jx);
 			};
 		};
-	} else if (controller.gamepad != nil) {
-		// gamepad is the standard profile with 4 buttons, shoulder buttons and a
-		// D-pad
-		controller.gamepad.valueChangedHandler = ^(GCGamepad *gamepad,
-				GCControllerElement *element) {
-			int joy_id = [self getJoyIdForController:controller];
-
-			if (element == gamepad.buttonA) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
-						gamepad.buttonA.isPressed);
-			} else if (element == gamepad.buttonB) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
-						gamepad.buttonB.isPressed);
-			} else if (element == gamepad.buttonX) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
-						gamepad.buttonX.isPressed);
-			} else if (element == gamepad.buttonY) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
-						gamepad.buttonY.isPressed);
-			} else if (element == gamepad.leftShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
-						gamepad.leftShoulder.isPressed);
-			} else if (element == gamepad.rightShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
-						gamepad.rightShoulder.isPressed);
-			} else if (element == gamepad.dpad) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
-						gamepad.dpad.up.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
-						gamepad.dpad.down.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
-						gamepad.dpad.left.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
-						gamepad.dpad.right.isPressed);
-			};
-		};
-#ifdef ADD_MICRO_GAMEPAD // disabling this for now, only available on iOS 9+,
-		// while we are setting that as the minimum, seems our
-		// build environment doesn't like it
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
 		controller.microGamepad.valueChangedHandler =
@@ -363,8 +327,7 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 								gamepad.dpad.right.isPressed);
 					};
 				};
-#endif
-	};
+	}
 
 	///@TODO need to add support for controller.motion which gives us access to
 	/// the orientation of the device (if supported)
@@ -428,8 +391,7 @@ OS::VideoMode _get_video_mode() {
 };
 
 static int frame_count = 0;
-- (void)drawView:(GLView *)view;
-{
+- (void)drawView:(GodotView *)view {
 
 	switch (frame_count) {
 		case 0: {
@@ -439,7 +401,6 @@ static int frame_count = 0;
 				exit(0);
 			};
 			++frame_count;
-
 		}; break;
 
 		case 1: {
@@ -611,10 +572,10 @@ static int frame_count = 0;
 		return FALSE;
 	};
 
-	// WARNING: We must *always* create the GLView after we have constructed the
-	// OS with iphone_main. This allows the GLView to access project settings so
+	// WARNING: We must *always* create the GodotView after we have constructed the
+	// OS with iphone_main. This allows the GodotView to access project settings so
 	// it can properly initialize the OpenGL context
-	GLView *glView = [[GLView alloc] initWithFrame:rect];
+	GodotView *glView = [[GodotView alloc] initWithFrame:rect];
 	glView.delegate = self;
 
 	view_controller = [[ViewController alloc] init];

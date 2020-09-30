@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_view_gesture_recognizer.h                                         */
+/*  godot_view_gesture_recognizer.h                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// GLViewGestureRecognizer allows iOS gestures to work currectly by
+// GodotViewGestureRecognizer allows iOS gestures to work currectly by
 // emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
 // It catches all gestures incoming to UIView and delays them for 150ms
 // (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)
@@ -37,7 +37,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface GLViewGestureRecognizer : UIGestureRecognizer {
+@interface GodotViewGestureRecognizer : UIGestureRecognizer {
 @private
 
 	// Timer used to delay begin touch message.

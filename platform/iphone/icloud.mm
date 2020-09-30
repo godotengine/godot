@@ -161,7 +161,7 @@ NSObject *variant_to_nsobject(Variant v) {
 		NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 		Dictionary dic = v;
 		Array keys = dic.keys();
-		for (unsigned int i = 0; i < keys.size(); ++i) {
+		for (int i = 0; i < keys.size(); ++i) {
 			NSString *key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
 			NSObject *value = variant_to_nsobject(dic[keys[i]]);
 
@@ -175,7 +175,7 @@ NSObject *variant_to_nsobject(Variant v) {
 	} else if (v.get_type() == Variant::ARRAY) {
 		NSMutableArray *result = [[[NSMutableArray alloc] init] autorelease];
 		Array arr = v;
-		for (unsigned int i = 0; i < arr.size(); ++i) {
+		for (int i = 0; i < arr.size(); ++i) {
 			NSObject *value = variant_to_nsobject(arr[i]);
 			if (value == NULL) {
 				//trying to add something unsupported to the array. cancel the whole array
@@ -215,7 +215,7 @@ Variant ICloud::set_key_values(Variant p_params) {
 
 	Array error_keys;
 
-	for (unsigned int i = 0; i < keys.size(); ++i) {
+	for (int i = 0; i < keys.size(); ++i) {
 		String variant_key = keys[i];
 		Variant variant_value = params[variant_key];
 

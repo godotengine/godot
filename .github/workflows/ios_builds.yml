@@ -47,4 +47,4 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=no platform=iphone target=release tools=no
+          scons -j2 verbose=yes warnings=all werror=yes platform=iphone target=release tools=no

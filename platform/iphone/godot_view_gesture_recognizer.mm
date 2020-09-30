@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_view_gesture_recognizer.mm                                        */
+/*  godot_view_gesture_recognizer.mm                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view_gesture_recognizer.h"
+#import "godot_view_gesture_recognizer.h"
 
 #include "core/project_settings.h"
 
@@ -38,13 +38,13 @@
 // but big enough to allow click to work.
 const CGFloat kGLGestureMovementDistance = 0.5;
 
-@interface GLViewGestureRecognizer ()
+@interface GodotViewGestureRecognizer ()
 
 @property(nonatomic, readwrite, assign) NSTimeInterval delayTimeInterval;
 
 @end
 
-@implementation GLViewGestureRecognizer
+@implementation GodotViewGestureRecognizer
 
 - (instancetype)init {
 	self = [super init];

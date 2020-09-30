@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_view.h                                                            */
+/*  godot_view.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -35,10 +35,10 @@
 #import <OpenGLES/ES1/glext.h>
 #import <UIKit/UIKit.h>
 
-@protocol GLViewDelegate;
-@class GLViewGestureRecognizer;
+@protocol GodotViewDelegate;
+@class GodotViewGestureRecognizer;
 
-@interface GLView : UIView <UIKeyInput> {
+@interface GodotView : UIView <UIKeyInput> {
 @private
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
@@ -63,7 +63,7 @@
 	NSTimeInterval animationInterval;
 
 	// Delegate to do our drawing, called by -drawView, which can be called manually or via the animation timer.
-	id<GLViewDelegate> delegate;
+	id<GodotViewDelegate> delegate;
 
 	// Flag to denote that the -setupView method of a delegate has been called.
 	// Resets to NO whenever the delegate changes.
@@ -72,10 +72,10 @@
 	float screen_scale;
 
 	// Delay gesture recognizer
-	GLViewGestureRecognizer *delayGestureRecognizer;
+	GodotViewGestureRecognizer *delayGestureRecognizer;
 }
 
-@property(nonatomic, assign) id<GLViewDelegate> delegate;
+@property(nonatomic, assign) id<GodotViewDelegate> delegate;
 
 // AVPlayer-related properties
 @property(strong, nonatomic) AVAsset *avAsset;
@@ -112,16 +112,16 @@
 
 @end
 
-@protocol GLViewDelegate <NSObject>
+@protocol GodotViewDelegate <NSObject>
 
 @required
 
 // Draw with OpenGL ES
-- (void)drawView:(GLView *)view;
+- (void)drawView:(GodotView *)view;
 
 @optional
 
 // Called whenever you need to do some initialization before rendering.
-- (void)setupView:(GLView *)view;
+- (void)setupView:(GodotView *)view;
 
 @end

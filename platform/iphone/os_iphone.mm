@@ -30,6 +30,11 @@
 
 #ifdef IPHONE_ENABLED
 
+// System headers are at top
+// to workaround `ambiguous expansion` warning/error
+#import <UIKit/UIKit.h>
+#include <dlfcn.h>
+
 #include "os_iphone.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -46,9 +51,6 @@
 #include "drivers/unix/syslog_logger.h"
 
 #include "semaphore_iphone.h"
-
-#import <UIKit/UIKit.h>
-#include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
 

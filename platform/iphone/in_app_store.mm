@@ -39,6 +39,7 @@ extern "C" {
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
+static NSArray *latestProducts;
 
 @interface SKProduct (LocalizedPrice)
 @property(nonatomic, readonly) NSString *localizedPrice;
@@ -82,6 +83,8 @@ void InAppStore::_bind_methods() {
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
 
 	NSArray *products = response.products;
+	latestProducts = products;
+
 	Dictionary ret;
 	ret["type"] = "product_info";
 	ret["result"] = "ok";
@@ -189,11 +192,9 @@ Error InAppStore::restore_purchases() {
 				int sdk_version = 6;
 
 				if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-
 					NSURL *receiptFileURL = nil;
 					NSBundle *bundle = [NSBundle mainBundle];
 					if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
-
 						// Get the transaction receipt file path location in the app bundle.
 						receiptFileURL = [bundle appStoreReceiptURL];
 
@@ -206,11 +207,11 @@ Error InAppStore::restore_purchases() {
 						// which is still available in iOS 7.
 
 						// Use SKPaymentTransaction's transactionReceipt.
-						receipt = transaction.transactionReceipt;
+						receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 					}
 
 				} else {
-					receipt = transaction.transactionReceipt;
+					receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
 				}
 
 				NSString *receipt_to_send = nil;
@@ -273,7 +274,23 @@ Error InAppStore::purchase(Variant p_params) {
 	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
 
 	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
-	SKPayment *payment = [SKPayment paymentWithProductIdentifier:pid];
+
+	SKProduct *product = nil;
+
+	if (latestProducts) {
+		for (SKProduct *storedProduct in latestProducts) {
+			if ([storedProduct.productIdentifier isEqualToString:pid]) {
+				product = storedProduct;
+				break;
+			}
+		}
+	}
+
+	if (!product) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	SKPayment *payment = [SKPayment paymentWithProduct:product];
 	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
 	[defq addPayment:payment];
 	printf("purchase sent!\n");

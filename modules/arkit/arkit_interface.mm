@@ -42,7 +42,9 @@
 #include "arkit_session_delegate.h"
 
 // just a dirty workaround for now, declare these as globals. I'll probably encapsulate ARSession and associated logic into an mm object and change ARKitInterface to a normal cpp object that consumes it.
+API_AVAILABLE(ios(11.0))
 ARSession *ar_session;
+
 ARKitSessionDelegate *ar_delegate;
 NSTimeInterval last_timestamp;
 
@@ -55,22 +57,28 @@ void ARKitInterface::start_session() {
 	if (initialized) {
 		print_line("Starting ARKit session");
 
-		Class ARWorldTrackingConfigurationClass = NSClassFromString(@"ARWorldTrackingConfiguration");
-		ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfigurationClass new];
+		if (@available(iOS 11, *)) {
+			Class ARWorldTrackingConfigurationClass = NSClassFromString(@"ARWorldTrackingConfiguration");
+			ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfigurationClass new];
 
-		configuration.lightEstimationEnabled = light_estimation_is_enabled;
-		if (plane_detection_is_enabled) {
-			configuration.planeDetection = ARPlaneDetectionVertical | ARPlaneDetectionHorizontal;
-		} else {
-			configuration.planeDetection = 0;
+			configuration.lightEstimationEnabled = light_estimation_is_enabled;
+			if (plane_detection_is_enabled) {
+				if (@available(iOS 11.3, *)) {
+					configuration.planeDetection = ARPlaneDetectionVertical | ARPlaneDetectionHorizontal;
+				} else {
+					configuration.planeDetection = ARPlaneDetectionHorizontal;
+				}
+			} else {
+				configuration.planeDetection = 0;
+			}
+
+			// make sure our camera is on
+			if (feed.is_valid()) {
+				feed->set_active(true);
+			}
+
+			[ar_session runWithConfiguration:configuration];
 		}
-
-		// make sure our camera is on
-		if (feed.is_valid()) {
-			feed->set_active(true);
-		}
-
-		[ar_session runWithConfiguration:configuration];
 	}
 }
 
@@ -84,7 +92,9 @@ void ARKitInterface::stop_session() {
 			feed->set_active(false);
 		}
 
-		[ar_session pause];
+		if (@available(iOS 11.0, *)) {
+			[ar_session pause];
+		}
 	}
 }
 
@@ -162,37 +172,41 @@ int ARKitInterface::get_capabilities() const {
 }
 
 Array ARKitInterface::raycast(Vector2 p_screen_coord) {
-	Array arr;
-	Size2 screen_size = OS::get_singleton()->get_window_size();
-	CGPoint point;
-	point.x = p_screen_coord.x / screen_size.x;
-	point.y = p_screen_coord.y / screen_size.y;
+	if (@available(iOS 11, *)) {
+		Array arr;
+		Size2 screen_size = OS::get_singleton()->get_window_size();
+		CGPoint point;
+		point.x = p_screen_coord.x / screen_size.x;
+		point.y = p_screen_coord.y / screen_size.y;
 
-	///@TODO maybe give more options here, for now we're taking just ARAchors into account that were found during plane detection keeping their size into account
-	NSArray<ARHitTestResult *> *results = [ar_session.currentFrame hittest:point types:ARHitTestResultTypeExistingPlaneUsingExtent];
+		///@TODO maybe give more options here, for now we're taking just ARAchors into account that were found during plane detection keeping their size into account
+		NSArray<ARHitTestResult *> *results = [ar_session.currentFrame hitTest:point types:ARHitTestResultTypeExistingPlaneUsingExtent];
 
-	for (ARHitTestResult *result in results) {
-		Transform transform;
+		for (ARHitTestResult *result in results) {
+			Transform transform;
 
-		matrix_float4x4 m44 = result.worldTransform;
-		transform.basis.elements[0].x = m44.columns[0][0];
-		transform.basis.elements[1].x = m44.columns[0][1];
-		transform.basis.elements[2].x = m44.columns[0][2];
-		transform.basis.elements[0].y = m44.columns[1][0];
-		transform.basis.elements[1].y = m44.columns[1][1];
-		transform.basis.elements[2].y = m44.columns[1][2];
-		transform.basis.elements[0].z = m44.columns[2][0];
-		transform.basis.elements[1].z = m44.columns[2][1];
-		transform.basis.elements[2].z = m44.columns[2][2];
-		transform.origin.x = m44.columns[3][0];
-		transform.origin.y = m44.columns[3][1];
-		transform.origin.z = m44.columns[3][2];
+			matrix_float4x4 m44 = result.worldTransform;
+			transform.basis.elements[0].x = m44.columns[0][0];
+			transform.basis.elements[1].x = m44.columns[0][1];
+			transform.basis.elements[2].x = m44.columns[0][2];
+			transform.basis.elements[0].y = m44.columns[1][0];
+			transform.basis.elements[1].y = m44.columns[1][1];
+			transform.basis.elements[2].y = m44.columns[1][2];
+			transform.basis.elements[0].z = m44.columns[2][0];
+			transform.basis.elements[1].z = m44.columns[2][1];
+			transform.basis.elements[2].z = m44.columns[2][2];
+			transform.origin.x = m44.columns[3][0];
+			transform.origin.y = m44.columns[3][1];
+			transform.origin.z = m44.columns[3][2];
 
-		/* important, NOT scaled to world_scale !! */
-		arr.push_back(transform);
+			/* important, NOT scaled to world_scale !! */
+			arr.push_back(transform);
+		}
+
+		return arr;
+	} else {
+		return Array();
 	}
-
-	return arr;
 }
 
 void ARKitInterface::_bind_methods() {
@@ -221,51 +235,55 @@ bool ARKitInterface::initialize() {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, false);
 
-	if (!initialized) {
-		print_line("initializing ARKit");
+	if (@available(iOS 11, *)) {
+		if (!initialized) {
+			print_line("initializing ARKit");
 
-		// create our ar session and delegate
-		Class ARSessionClass = NSClassFromString(@"ARSession");
-		if (ARSessionClass == Nil) {
-			void *arkit_handle = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_NOW);
-			if (arkit_handle) {
-				ARSessionClass = NSClassFromString(@"ARSession");
-			} else {
-				print_line("ARKit init failed");
-				return false;
+			// create our ar session and delegate
+			Class ARSessionClass = NSClassFromString(@"ARSession");
+			if (ARSessionClass == Nil) {
+				void *arkit_handle = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_NOW);
+				if (arkit_handle) {
+					ARSessionClass = NSClassFromString(@"ARSession");
+				} else {
+					print_line("ARKit init failed");
+					return false;
+				}
 			}
-		}
-		ar_session = [ARSessionClass new];
-		ar_delegate = [ARKitSessionDelegate new];
-		ar_delegate.arkit_interface = this;
-		ar_session.delegate = ar_delegate;
+			ar_session = [ARSessionClass new];
+			ar_delegate = [ARKitSessionDelegate new];
+			ar_delegate.arkit_interface = this;
+			ar_session.delegate = ar_delegate;
 
-		// reset our transform
-		transform = Transform();
+			// reset our transform
+			transform = Transform();
 
-		// make this our primary interface
-		arvr_server->set_primary_interface(this);
+			// make this our primary interface
+			arvr_server->set_primary_interface(this);
 
-		// make sure we have our feed setup
-		if (feed.is_null()) {
-			feed.instance();
-			feed->set_name("ARKit");
+			// make sure we have our feed setup
+			if (feed.is_null()) {
+				feed.instance();
+				feed->set_name("ARKit");
 
-			CameraServer *cs = CameraServer::get_singleton();
-			if (cs != NULL) {
-				cs->add_feed(feed);
+				CameraServer *cs = CameraServer::get_singleton();
+				if (cs != NULL) {
+					cs->add_feed(feed);
+				}
 			}
+			feed->set_active(true);
+
+			// yeah!
+			initialized = true;
+
+			// Start our session...
+			start_session();
 		}
-		feed->set_active(true);
 
-		// yeah!
-		initialized = true;
-
-		// Start our session...
-		start_session();
+		return true;
+	} else {
+		return false;
 	}
-
-	return true;
 }
 
 void ARKitInterface::uninitialize() {
@@ -286,9 +304,12 @@ void ARKitInterface::uninitialize() {
 
 		remove_all_anchors();
 
-		[ar_session release];
+		if (@available(iOS 11.0, *)) {
+			[ar_session release];
+			ar_session = NULL;
+		}
 		[ar_delegate release];
-		ar_session = NULL;
+
 		ar_delegate = NULL;
 		initialized = false;
 		session_was_started = false;
@@ -444,7 +465,15 @@ void ARKitInterface::process() {
 
 				// get some info about our screen and orientation
 				Size2 screen_size = OS::get_singleton()->get_window_size();
-				UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+				UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+
+				if (@available(iOS 13, *)) {
+					orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
+				} else {
+					orientation = [[UIApplication sharedApplication] statusBarOrientation];
+#endif
+				}
 
 				// Grab our camera image for our backbuffer
 				CVPixelBufferRef pixelBuffer = current_frame.capturedImage;
@@ -660,67 +689,76 @@ void ARKitInterface::process() {
 void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
-	ARAnchor *anchor = (ARAnchor *)p_anchor;
+	if (@available(iOS 11.0, *)) {
+		ARAnchor *anchor = (ARAnchor *)p_anchor;
 
-	unsigned char uuid[16];
-	[anchor.identifier getUUIDBytes:uuid];
+		unsigned char uuid[16];
+		[anchor.identifier getUUIDBytes:uuid];
 
-	ARVRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
-	if (tracker != NULL) {
-		// lets update our mesh! (using Arjens code as is for now)
-		// we should also probably limit how often we do this...
+		ARVRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
+		if (tracker != NULL) {
+			// lets update our mesh! (using Arjens code as is for now)
+			// we should also probably limit how often we do this...
 
-		// can we safely cast this?
-		ARPlaneAnchor *planeAnchor = (ARPlaneAnchor *)anchor;
+			// can we safely cast this?
+			ARPlaneAnchor *planeAnchor = (ARPlaneAnchor *)anchor;
 
-		if (planeAnchor.geometry.triangleCount > 0) {
-			Ref<SurfaceTool> surftool;
-			surftool.instance();
-			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
+			if (@available(iOS 11.3, *)) {
+				if (planeAnchor.geometry.triangleCount > 0) {
+					Ref<SurfaceTool> surftool;
+					surftool.instance();
+					surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
-			for (int j = planeAnchor.geometry.triangleCount * 3 - 1; j >= 0; j--) {
-				int16_t index = planeAnchor.geometry.triangleIndices[j];
-				simd_float3 vrtx = planeAnchor.geometry.vertices[index];
-				simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
-				surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
-				surftool->add_color(Color(0.8, 0.8, 0.8));
-				surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
+					for (int j = planeAnchor.geometry.triangleCount * 3 - 1; j >= 0; j--) {
+						int16_t index = planeAnchor.geometry.triangleIndices[j];
+						simd_float3 vrtx = planeAnchor.geometry.vertices[index];
+						simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
+						surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
+						surftool->add_color(Color(0.8, 0.8, 0.8));
+						surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
+					}
+
+					surftool->generate_normals();
+					tracker->set_mesh(surftool->commit());
+				} else {
+					Ref<Mesh> nomesh;
+					tracker->set_mesh(nomesh);
+				}
+			} else {
+				Ref<Mesh> nomesh;
+				tracker->set_mesh(nomesh);
 			}
 
-			surftool->generate_normals();
-			tracker->set_mesh(surftool->commit());
-		} else {
-			Ref<Mesh> nomesh;
-			tracker->set_mesh(nomesh);
+			// Note, this also contains a scale factor which gives us an idea of the size of the anchor
+			// We may extract that in our ARVRAnchor class
+			Basis b;
+			matrix_float4x4 m44 = anchor.transform;
+			b.elements[0].x = m44.columns[0][0];
+			b.elements[1].x = m44.columns[0][1];
+			b.elements[2].x = m44.columns[0][2];
+			b.elements[0].y = m44.columns[1][0];
+			b.elements[1].y = m44.columns[1][1];
+			b.elements[2].y = m44.columns[1][2];
+			b.elements[0].z = m44.columns[2][0];
+			b.elements[1].z = m44.columns[2][1];
+			b.elements[2].z = m44.columns[2][2];
+			tracker->set_orientation(b);
+			tracker->set_rw_position(Vector3(m44.columns[3][0], m44.columns[3][1], m44.columns[3][2]));
 		}
-
-		// Note, this also contains a scale factor which gives us an idea of the size of the anchor
-		// We may extract that in our ARVRAnchor class
-		Basis b;
-		matrix_float4x4 m44 = anchor.transform;
-		b.elements[0].x = m44.columns[0][0];
-		b.elements[1].x = m44.columns[0][1];
-		b.elements[2].x = m44.columns[0][2];
-		b.elements[0].y = m44.columns[1][0];
-		b.elements[1].y = m44.columns[1][1];
-		b.elements[2].y = m44.columns[1][2];
-		b.elements[0].z = m44.columns[2][0];
-		b.elements[1].z = m44.columns[2][1];
-		b.elements[2].z = m44.columns[2][2];
-		tracker->set_orientation(b);
-		tracker->set_rw_position(Vector3(m44.columns[3][0], m44.columns[3][1], m44.columns[3][2]));
 	}
 }
 
 void ARKitInterface::_remove_anchor(void *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
-	ARAnchor *anchor = (ARAnchor *)p_anchor;
+	if (@available(iOS 11.0, *)) {
+		ARAnchor *anchor = (ARAnchor *)p_anchor;
 
-	unsigned char uuid[16];
-	[anchor.identifier getUUIDBytes:uuid];
+		unsigned char uuid[16];
+		[anchor.identifier getUUIDBytes:uuid];
 
-	remove_anchor_for_uuid(uuid);
+		remove_anchor_for_uuid(uuid);
+	}
 }
 
 ARKitInterface::ARKitInterface() {
@@ -728,7 +766,9 @@ ARKitInterface::ARKitInterface() {
 	session_was_started = false;
 	plane_detection_is_enabled = false;
 	light_estimation_is_enabled = false;
-	ar_session = NULL;
+	if (@available(iOS 11.0, *)) {
+		ar_session = NULL;
+	}
 	z_near = 0.01;
 	z_far = 1000.0;
 	projection.set_perspective(60.0, 1.0, z_near, z_far, false);
