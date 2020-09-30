@@ -1412,7 +1412,7 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 }
 
 template <class K>
-int Animation::_find(const Vector<K> &p_keys, float p_time) const {
+int Animation::_find(const Vector<K> &p_keys, float p_time, bool reverse) const {
 	int len = p_keys.size();
 	if (len == 0) {
 		return -2;
@@ -1442,8 +1442,14 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 		}
 	}
 
-	if (keys[middle].time > p_time) {
-		middle--;
+	if (!reverse) {
+		if (keys[middle].time > p_time) {
+			middle--;
+		}
+	} else {
+		if (keys[middle].time < p_time) {
+			middle++;
+		}
 	}
 
 	return middle;
@@ -1584,7 +1590,7 @@ float Animation::_cubic_interpolate(const float &p_pre_a, const float &p_a, cons
 }
 
 template <class T>
-T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const {
+T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool reverse) const {
 	int len = _find(p_keys, length) + 1; // try to find last key (there may be more past the end)
 
 	if (len <= 0) {
@@ -1602,7 +1608,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 		return p_keys[0].value;
 	}
 
-	int idx = _find(p_keys, p_time);
+	int idx = _find(p_keys, p_time, reverse);
 
 	ERR_FAIL_COND_V(idx == -2, T());
 
@@ -1613,22 +1619,40 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 
 	if (loop && p_loop_wrap) {
 		// loop
-		if (idx >= 0) {
-			if ((idx + 1) < len) {
-				next = idx + 1;
-				float delta = p_keys[next].time - p_keys[idx].time;
-				float from = p_time - p_keys[idx].time;
+		if (!reverse) {
+			// no reverse
+			if (idx >= 0) {
+				if (idx < len - 1) {
+					next = idx + 1;
+					float delta = p_keys[next].time - p_keys[idx].time;
+					float from = p_time - p_keys[idx].time;
 
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
+					if (Math::is_zero_approx(delta)) {
+						c = 0;
+					} else {
+						c = from / delta;
+					}
 				} else {
-					c = from / delta;
-				}
+					next = 0;
+					float delta = (length - p_keys[idx].time) + p_keys[next].time;
+					float from = p_time - p_keys[idx].time;
 
+					if (Math::is_zero_approx(delta)) {
+						c = 0;
+					} else {
+						c = from / delta;
+					}
+				}
 			} else {
+				// on loop, behind first key
+				idx = len - 1;
 				next = 0;
-				float delta = (length - p_keys[idx].time) + p_keys[next].time;
-				float from = p_time - p_keys[idx].time;
+				float endtime = (length - p_keys[idx].time);
+				if (endtime < 0) { // may be keys past the end
+					endtime = 0;
+				}
+				float delta = endtime + p_keys[next].time;
+				float from = endtime + p_time;
 
 				if (Math::is_zero_approx(delta)) {
 					c = 0;
@@ -1636,49 +1660,96 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 					c = from / delta;
 				}
 			}
-
 		} else {
-			// on loop, behind first key
-			idx = len - 1;
-			next = 0;
-			float endtime = (length - p_keys[idx].time);
-			if (endtime < 0) { // may be keys past the end
-				endtime = 0;
-			}
-			float delta = endtime + p_keys[next].time;
-			float from = endtime + p_time;
+			// reverse
+			if (idx <= len - 1) {
+				if (idx > 0) {
+					next = idx - 1;
+					float delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
+					float from = (length - p_time) - (length - p_keys[idx].time);
 
-			if (Math::is_zero_approx(delta)) {
-				c = 0;
+					if (Math::is_zero_approx(delta))
+						c = 0;
+					else
+						c = from / delta;
+				} else {
+					next = len - 1;
+					float delta = p_keys[idx].time + (length - p_keys[next].time);
+					float from = (length - p_time) - (length - p_keys[idx].time);
+
+					if (Math::is_zero_approx(delta))
+						c = 0;
+					else
+						c = from / delta;
+				}
 			} else {
-				c = from / delta;
+				// on loop, in front of last key
+				idx = 0;
+				next = len - 1;
+				float endtime = p_keys[idx].time;
+				if (endtime > length) // may be keys past the end
+					endtime = length;
+				float delta = p_keys[next].time - endtime;
+				float from = p_time - endtime;
+
+				if (Math::is_zero_approx(delta))
+					c = 0;
+				else
+					c = from / delta;
 			}
 		}
 
 	} else { // no loop
 
-		if (idx >= 0) {
-			if ((idx + 1) < len) {
-				next = idx + 1;
-				float delta = p_keys[next].time - p_keys[idx].time;
-				float from = p_time - p_keys[idx].time;
+		if (!reverse) {
+			if (idx >= 0) {
+				if (idx < len - 1) {
+					next = idx + 1;
+					float delta = p_keys[next].time - p_keys[idx].time;
+					float from = p_time - p_keys[idx].time;
 
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
+					if (Math::is_zero_approx(delta)) {
+						c = 0;
+					} else {
+						c = from / delta;
+					}
+
 				} else {
-					c = from / delta;
+					next = idx;
 				}
 
 			} else {
-				next = idx;
+				// only allow extending first key to anim start if looping
+				if (loop) {
+					idx = next = 0;
+				} else {
+					result = false;
+				}
 			}
-
 		} else {
-			// only allow extending first key to anim start if looping
-			if (loop) {
-				idx = next = 0;
+			if (idx <= len - 1) {
+				if (idx > 0) {
+					next = idx - 1;
+					float delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
+					float from = (length - p_time) - (length - p_keys[idx].time);
+
+					if (Math::is_zero_approx(delta)) {
+						c = 0;
+					} else {
+						c = from / delta;
+					}
+
+				} else {
+					next = idx;
+				}
+
 			} else {
-				result = false;
+				// only allow extending last key to anim start if looping
+				if (loop) {
+					idx = next = len - 1;
+				} else {
+					result = false;
+				}
 			}
 		}
 	}
@@ -1728,7 +1799,7 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, float p_time, Interpola
 	// do a barrel roll
 }
 
-Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const {
+Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale, bool reverse) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_TRANSFORM, ERR_INVALID_PARAMETER);
@@ -1737,7 +1808,7 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 
 	bool ok = false;
 
-	TransformKey tk = _interpolate(tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok);
+	TransformKey tk = _interpolate(tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok, reverse);
 
 	if (!ok) {
 		return ERR_UNAVAILABLE;
