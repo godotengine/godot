@@ -182,6 +182,7 @@ private:
 		float rotation = 0.0;
 		Vector2 scale = Vector2(1, 1);
 		Vector2 pivot_offset;
+		bool size_warning = true;
 
 		int h_size_flags = SIZE_FILL;
 		int v_size_flags = SIZE_FILL;
@@ -235,6 +236,7 @@ private:
 
 	void _update_minimum_size();
 
+	void _clear_size_warning();
 	void _update_scroll();
 
 	void _compute_offsets(Rect2 p_rect, const float p_anchors[4], float (&r_offsets)[4]);
