@@ -553,7 +553,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string contains a valid IP address.
+				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
 		<method name="json_escape">
