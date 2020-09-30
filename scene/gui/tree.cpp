@@ -1780,7 +1780,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 		/* editing */
 
-		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
+		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : already_selected;
 		String editor_text = c.text;
 
 		switch (c.mode) {
