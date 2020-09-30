@@ -6100,6 +6100,16 @@ static bool _is_completable(char32_t c) {
 	return !_is_symbol(c) || c == '"' || c == '\'';
 }
 
+static bool _is_escaped(int pos, String line) {
+	bool escaped = false;
+	pos--;
+	while (pos >= 0 && line[pos] == '\\') {
+		escaped = !escaped;
+		pos--;
+	}
+	return escaped;
+}
+
 void TextEdit::_update_completion_candidates() {
 	String l = text[cursor.line];
 	int cofs = CLAMP(cursor.column, 0, l.length());
@@ -6111,11 +6121,17 @@ void TextEdit::_update_completion_candidates() {
 	bool inquote = false;
 	int first_quote = -1;
 	int restore_quotes = -1;
+	char32_t current_quote = '"';
 
 	int c = cofs - 1;
 	while (c >= 0) {
 		if (l[c] == '"' || l[c] == '\'') {
-			inquote = !inquote;
+			if (!inquote) {
+				inquote = true;
+				current_quote = l[c];
+			} else if (l[c] == current_quote && !_is_escaped(c, l)) {
+				inquote = false;
+			}
 			if (first_quote == -1) {
 				first_quote = c;
 			}
