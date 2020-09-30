@@ -634,6 +634,7 @@
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
+				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 			</description>
 		</method>
 		<method name="log">
