@@ -108,7 +108,7 @@ public:
 		VS::ScenarioDebugMode debug;
 		RID self;
 
-		Octree<Instance, true> octree;
+		Octree_CL<Instance, true> octree;
 
 		List<Instance *> directional_lights;
 		RID environment;

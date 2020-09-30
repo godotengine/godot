@@ -1174,6 +1174,10 @@
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.17">
+			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.
+			Larger branches can increase performance significantly in some projects.
+		</member>
 		<member name="rendering/quality/subsurface_scattering/follow_surface" type="bool" setter="" getter="" default="false">
 			Improves quality of subsurface scattering, but cost significantly increases.
 		</member>
