@@ -433,6 +433,10 @@ void Control::_resize(const Size2 &p_size) {
 	_size_changed();
 }
 
+void Control::_clear_size_warning() {
+	data.size_warning = false;
+}
+
 //moved theme configuration here, so controls can set up even if still not inside active scene
 
 void Control::add_child_notify(Node *p_child) {
@@ -484,7 +488,9 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_EXIT_TREE: {
 
 			get_viewport()->_gui_remove_control(this);
-
+		} break;
+		case NOTIFICATION_READY: {
+			connect("ready", this, "_clear_size_warning", varray(), CONNECT_DEFERRED | CONNECT_ONESHOT);
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -1829,6 +1835,11 @@ void Control::set_position(const Size2 &p_point, bool p_keep_margins) {
 }
 
 void Control::_set_size(const Size2 &p_size) {
+#ifdef DEBUG_ENABLED
+	if (data.size_warning) {
+		WARN_PRINT("Adjusting the size of Control nodes before they are fully initialized is unreliable. Consider deferring it with set_deferred().");
+	}
+#endif
 	set_size(p_size);
 }
 
@@ -2952,6 +2963,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
 
 	ClassDB::bind_method(D_METHOD("_override_changed"), &Control::_override_changed);
+
+	ClassDB::bind_method(D_METHOD("_clear_size_warning"), &Control::_clear_size_warning);
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
