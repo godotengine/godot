@@ -124,6 +124,9 @@ public:
 		String s = "HTTP/1.1 200 OK\r\n";
 		s += "Connection: Close\r\n";
 		s += "Content-Type: " + ctype + "\r\n";
+		s += "Access-Control-Allow-Origin: *\r\n";
+		s += "Cross-Origin-Opener-Policy: same-origin\r\n";
+		s += "Cross-Origin-Embedder-Policy: require-corp\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
