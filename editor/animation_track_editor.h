@@ -182,6 +182,8 @@ class AnimationTrackEdit : public Control {
 	bool moving_selection;
 	float moving_selection_from_ofs;
 
+	int function_text_mode;
+
 	bool in_group;
 	AnimationTrackEditor *editor;
 
@@ -228,6 +230,8 @@ public:
 	void set_play_position(float p_pos);
 	void update_play_position();
 	void cancel_drop();
+
+	void set_function_text_mode(int p_mode);
 
 	void set_in_group(bool p_enable);
 	void append_to_selection(const Rect2 &p_box, bool p_deselection);
@@ -311,11 +315,15 @@ class AnimationTrackEditor : public VBoxContainer {
 	TextureRect *zoom_icon;
 	Button *snap;
 	OptionButton *snap_mode;
+	Label *function_text_mode_label;
+	OptionButton *function_text_mode_button;
+	int function_text_mode;
 
 	Button *imported_anim_warning;
 	void _show_imported_anim_warning();
 
 	void _snap_mode_changed(int p_mode);
+	void _function_text_mode_changed(int p_mode);
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 

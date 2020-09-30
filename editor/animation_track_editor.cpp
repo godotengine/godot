@@ -2179,21 +2179,24 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		Dictionary d = animation->track_get_key_value(track, p_index);
 		String text;
 
-		if (d.has("method")) {
+		if (d.has("method") && function_text_mode > 0) {
 			text += String(d["method"]);
 		}
-		text += "(";
-		Vector<Variant> args;
-		if (d.has("args")) {
-			args = d["args"];
-		}
-		for (int i = 0; i < args.size(); i++) {
-			if (i > 0) {
-				text += ", ";
+
+		if (function_text_mode > 1) {
+			text += "(";
+			Vector<Variant> args;
+			if (d.has("args")) {
+				args = d["args"];
 			}
-			text += String(args[i]);
+			for (int i = 0; i < args.size(); i++) {
+				if (i > 0) {
+					text += ", ";
+				}
+				text += String(args[i]);
+			}
+			text += ")";
 		}
-		text += ")";
 
 		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
 		if (limit > 0) {
@@ -2914,6 +2917,10 @@ void AnimationTrackEdit::cancel_drop() {
 	}
 }
 
+void AnimationTrackEdit::set_function_text_mode(int p_mode) {
+	function_text_mode = p_mode;
+}
+
 void AnimationTrackEdit::set_in_group(bool p_enable) {
 	in_group = p_enable;
 	update();
@@ -3146,6 +3153,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_read_only(false);
 		snap->set_disabled(false);
 		snap_mode->set_disabled(false);
+		function_text_mode_button->set_disabled(false);
 
 		imported_anim_warning->hide();
 		for (int i = 0; i < animation->get_track_count(); i++) {
@@ -3164,6 +3172,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_read_only(true);
 		snap->set_disabled(true);
 		snap_mode->set_disabled(true);
+		function_text_mode_button->set_disabled(true);
 	}
 }
 
@@ -3211,6 +3220,7 @@ bool AnimationTrackEditor::has_keying() const {
 
 Dictionary AnimationTrackEditor::get_state() const {
 	Dictionary state;
+	state["function_text_mode"] = function_text_mode;
 	state["fps_mode"] = timeline->is_using_fps();
 	state["zoom"] = zoom->get_value();
 	state["offset"] = timeline->get_value();
@@ -3219,6 +3229,14 @@ Dictionary AnimationTrackEditor::get_state() const {
 }
 
 void AnimationTrackEditor::set_state(const Dictionary &p_state) {
+	if (p_state.has("function_text_mode")) {
+		int text_mode = p_state["function_text_mode"];
+		_function_text_mode_changed(text_mode);
+		function_text_mode_button->select(text_mode);
+	} else {
+		_function_text_mode_changed(2);
+		function_text_mode_button->select(2);
+	}
 	if (p_state.has("fps_mode")) {
 		bool fps_mode = p_state["fps_mode"];
 		if (fps_mode) {
@@ -4060,6 +4078,8 @@ void AnimationTrackEditor::_update_tracks() {
 
 		track_edits.push_back(track_edit);
 
+		track_edit->set_function_text_mode(function_text_mode);
+
 		if (use_grouping) {
 			String base_path = animation->track_get_path(i);
 			base_path = base_path.get_slice(":", 0); // Remove sub-path.
@@ -4154,6 +4174,11 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 		key_edit->set_use_fps(p_mode == 1);
 	}
 	_update_step_spinbox();
+}
+
+void AnimationTrackEditor::_function_text_mode_changed(int p_mode) {
+	function_text_mode = p_mode;
+	_update_tracks();
 }
 
 void AnimationTrackEditor::_update_step_spinbox() {
@@ -5657,6 +5682,21 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_tooltip(TTR("Group tracks by node or display them as plain list."));
 
 	bottom_hb->add_child(view_group);
+
+	bottom_hb->add_child(memnew(VSeparator));
+
+	function_text_mode_label = memnew(Label);
+	function_text_mode_label->set_text(TTR("Function Calls:") + " ");
+	bottom_hb->add_child(function_text_mode_label);
+
+	function_text_mode_button = memnew(OptionButton);
+	function_text_mode_button->add_item(TTR("None"));
+	function_text_mode_button->add_item(TTR("Name"));
+	function_text_mode_button->add_item(TTR("Name and Arguments"));
+	bottom_hb->add_child(function_text_mode_button);
+	function_text_mode_button->connect("item_selected", callable_mp(this, &AnimationTrackEditor::_function_text_mode_changed));
+	function_text_mode_button->set_disabled(true);
+
 	bottom_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
