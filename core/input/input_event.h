@@ -179,6 +179,7 @@ public:
 	virtual bool is_echo() const;
 
 	virtual String as_text() const;
+	virtual String to_string() override;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
@@ -247,6 +248,9 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
+	virtual String as_text() const override;
+	virtual String to_string() override;
+
 	InputEventWithModifiers() {}
 };
 
@@ -289,6 +293,7 @@ public:
 	virtual bool is_action_type() const override { return true; }
 
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventKey() {}
 };
@@ -346,6 +351,7 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventMouseButton() {}
 };
@@ -376,6 +382,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
@@ -403,6 +410,7 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventJoypadMotion() {}
 };
@@ -431,6 +439,7 @@ public:
 
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventJoypadButton() {}
 };
@@ -456,6 +465,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventScreenTouch() {}
 };
@@ -485,6 +495,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventScreenDrag() {}
 };
@@ -516,6 +527,7 @@ public:
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 	virtual bool is_action_type() const override { return true; }
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventAction() {}
 };
@@ -546,6 +558,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventMagnifyGesture() {}
 };
@@ -563,6 +576,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventPanGesture() {}
 };
@@ -608,6 +622,7 @@ public:
 	int get_controller_value() const;
 
 	virtual String as_text() const override;
+	virtual String to_string() override;
 
 	InputEventMIDI() {}
 };
