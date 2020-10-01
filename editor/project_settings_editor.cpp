@@ -269,6 +269,206 @@ void ProjectSettingsEditor::_editor_restart_close() {
 	restart_container->hide();
 }
 
+void ProjectSettingsEditor::_action_added(const String &p_name) {
+	String name = "input/" + p_name;
+
+	if (ProjectSettings::get_singleton()->has_setting(name)) {
+		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), name));
+		return;
+	}
+
+	Dictionary action;
+	action["events"] = Array();
+	action["deadzone"] = 0.5f;
+
+	undo_redo->create_action(TTR("Add Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionary &p_action) {
+	const String property_name = "input/" + p_name;
+	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+
+	if (old_val["deadzone"] != p_action["deadzone"]) {
+		// Deadzone Changed
+		undo_redo->create_action(TTR("Change Action deadzone"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+
+	} else {
+		// Events changed
+		int event_count = ((Array)p_action["events"]).size();
+		int old_event_count = ((Array)old_val["events"]).size();
+
+		if (event_count == old_event_count) {
+			undo_redo->create_action(TTR("Edit Input Action Event"));
+		} else if (event_count > old_event_count) {
+			undo_redo->create_action(TTR("Add Input Action Event"));
+		} else if (event_count < old_event_count) {
+			undo_redo->create_action(TTR("Remove Input Action Event"));
+		}
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", property_name, p_action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_removed(const String &p_name) {
+	const String property_name = "input/" + p_name;
+
+	Dictionary old_val = ProjectSettings::get_singleton()->get(property_name);
+	int order = ProjectSettings::get_singleton()->get_order(property_name);
+
+	undo_redo->create_action(TTR("Erase Input Action"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property_name);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property_name, old_val);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", property_name, order);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const String &p_new_name) {
+	const String old_property_name = "input/" + p_old_name;
+	const String new_property_name = "input/" + p_new_name;
+
+	if (ProjectSettings::get_singleton()->has_setting(new_property_name)) {
+		action_map->show_message(vformat(TTR("An action with the name '%s' already exists."), new_property_name));
+		return;
+	}
+
+	int order = ProjectSettings::get_singleton()->get_order(old_property_name);
+	Dictionary action = ProjectSettings::get_singleton()->get(old_property_name);
+
+	undo_redo->create_action(TTR("Rename Input Action Event"));
+	// Do: clear old, set new
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", old_property_name);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_property_name, action);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", new_property_name, order);
+	// Undo: clear new, set old
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", new_property_name);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", old_property_name, action);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", old_property_name, order);
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const String &p_relative_to, bool p_before) {
+	const String action_name = "input/" + p_action_name;
+	const String target_name = "input/" + p_relative_to;
+
+	// It is much easier to rebuild the custom "input" properties rather than messing around with the "order" values of them.
+	Variant action_value = ps->get(action_name);
+	Variant target_value = ps->get(target_name);
+
+	List<PropertyInfo> props;
+	OrderedHashMap<String, Variant> action_values;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	undo_redo->create_action(TTR("Update Input Action Order"));
+
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		PropertyInfo prop = E->get();
+		// Skip builtins and non-inputs
+		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
+			continue;
+		}
+
+		action_values.insert(prop.name, ps->get(prop.name));
+
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", prop.name);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", prop.name);
+	}
+
+	for (OrderedHashMap<String, Variant>::Element E = action_values.front(); E; E = E.next()) {
+		String name = E.key();
+		Variant value = E.get();
+
+		if (name == target_name) {
+			if (p_before) {
+				// Insert before target
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+			} else {
+				// Insert after target
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+				undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", action_name, action_value);
+				undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", target_name, target_value);
+			}
+
+		} else if (name != action_name) {
+			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, value);
+			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, value);
+		}
+	}
+
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "queue_save");
+	undo_redo->add_undo_method(this, "queue_save");
+	undo_redo->commit_action();
+}
+
+void ProjectSettingsEditor::_update_action_map_editor() {
+	Vector<ActionMapEditor::ActionInfo> actions;
+
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+
+	const Ref<Texture2D> builtin_icon = get_theme_icon("PinPressed", "EditorIcons");
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		const String property_name = E->get().name;
+
+		if (!property_name.begins_with("input/")) {
+			continue;
+		}
+
+		// Strip the "input/" from the left.
+		String display_name = property_name.substr(String("input/").size() - 1);
+		Dictionary action = ProjectSettings::get_singleton()->get(property_name);
+
+		ActionMapEditor::ActionInfo action_info;
+		action_info.action = action;
+		action_info.editable = true;
+		action_info.name = display_name;
+
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(property_name) != nullptr;
+		if (is_builtin_input) {
+			action_info.editable = false;
+			action_info.icon = builtin_icon;
+		}
+
+		actions.push_back(action_info);
+	}
+
+	action_map->update_action_list(actions);
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -289,6 +489,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_container->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 			restart_icon->set_texture(get_theme_icon("StatusWarning", "EditorIcons"));
 			restart_label->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+
+			_update_action_map_editor();
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
@@ -299,6 +501,8 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("queue_save"), &ProjectSettingsEditor::queue_save);
+
+	ClassDB::bind_method(D_METHOD("_update_action_map_editor"), &ProjectSettingsEditor::_update_action_map_editor);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -437,10 +641,16 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_close_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_editor_restart_close));
 	restart_hb->add_child(restart_close_button);
 
-	inputmap_editor = memnew(InputMapEditor);
-	inputmap_editor->set_name(TTR("Input Map"));
-	inputmap_editor->connect("inputmap_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
-	tab_container->add_child(inputmap_editor);
+	action_map = memnew(ActionMapEditor);
+	action_map->set_name(TTR("Input Map"));
+	action_map->connect("action_added", callable_mp(this, &ProjectSettingsEditor::_action_added));
+	action_map->connect("action_edited", callable_mp(this, &ProjectSettingsEditor::_action_edited));
+	action_map->connect("action_removed", callable_mp(this, &ProjectSettingsEditor::_action_removed));
+	action_map->connect("action_renamed", callable_mp(this, &ProjectSettingsEditor::_action_renamed));
+	action_map->connect("action_reordered", callable_mp(this, &ProjectSettingsEditor::_action_reordered));
+	action_map->set_toggle_editable_label(TTR("Show built-in Actions"));
+	action_map->set_show_uneditable(false);
+	tab_container->add_child(action_map);
 
 	localization_editor = memnew(LocalizationEditor);
 	localization_editor->set_name(TTR("Localization"));
