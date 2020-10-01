@@ -114,6 +114,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint64_t last_msec;
 	uint64_t msec_count;
 
+	OS::ProcessID allow_focus_steal_pid;
+
 	bool locking; //hack to avoid a deadloop
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 
@@ -198,6 +200,7 @@ public:
 	virtual void set_skip_breakpoints(bool p_skip_breakpoints);
 
 	void set_scene_tree(SceneTree *p_scene_tree) { scene_tree = p_scene_tree; };
+	void set_allow_focus_steal_pid(OS::ProcessID p_pid);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();
