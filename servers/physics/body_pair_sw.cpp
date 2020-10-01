@@ -211,7 +211,7 @@ real_t combine_friction(BodySW *A, BodySW *B) {
 
 bool BodyPairSW::setup(real_t p_step) {
 	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
 		collided = false;
 		return false;
 	}
@@ -293,12 +293,12 @@ bool BodyPairSW::setup(real_t p_step) {
 
 		// contact query reporting...
 
-		if (A->can_report_contacts()) {
+		if (A->can_report_contacts() && B->mask_has_layer(A)) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
 			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA);
 		}
 
-		if (B->can_report_contacts()) {
+		if (B->can_report_contacts() && A->mask_has_layer(B)) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
 		}
@@ -316,8 +316,10 @@ bool BodyPairSW::setup(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		A->apply_impulse(c.rA + A->get_center_of_mass(), -j_vec);
-		B->apply_impulse(c.rB + B->get_center_of_mass(), j_vec);
+		if (A->mask_has_layer(B))
+			A->apply_impulse(c.rA + A->get_center_of_mass(), -j_vec);
+		if (B->mask_has_layer(A))
+			B->apply_impulse(c.rB + B->get_center_of_mass(), j_vec);
 		c.acc_bias_impulse = 0;
 		c.acc_bias_impulse_center_of_mass = 0;
 
@@ -362,8 +364,10 @@ void BodyPairSW::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb, MAX_BIAS_ROTATION / p_step);
-			B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb, MAX_BIAS_ROTATION / p_step);
+			if (A->mask_has_layer(B))
+				A->apply_bias_impulse(c.rA + A->get_center_of_mass(), -jb, MAX_BIAS_ROTATION / p_step);
+			if (B->mask_has_layer(A))
+				B->apply_bias_impulse(c.rB + B->get_center_of_mass(), jb, MAX_BIAS_ROTATION / p_step);
 
 			crbA = A->get_biased_angular_velocity().cross(c.rA);
 			crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -378,8 +382,10 @@ void BodyPairSW::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				A->apply_bias_impulse(A->get_center_of_mass(), -jb_com, 0.0f);
-				B->apply_bias_impulse(B->get_center_of_mass(), jb_com, 0.0f);
+				if (A->mask_has_layer(B))
+					A->apply_bias_impulse(A->get_center_of_mass(), -jb_com, 0.0f);
+				if (B->mask_has_layer(A))
+					B->apply_bias_impulse(B->get_center_of_mass(), jb_com, 0.0f);
 			}
 
 			c.active = true;
@@ -399,8 +405,10 @@ void BodyPairSW::solve(real_t p_step) {
 
 			Vector3 j = c.normal * (c.acc_normal_impulse - jnOld);
 
-			A->apply_impulse(c.rA + A->get_center_of_mass(), -j);
-			B->apply_impulse(c.rB + B->get_center_of_mass(), j);
+			if (A->mask_has_layer(B))
+				A->apply_impulse(c.rA + A->get_center_of_mass(), -j);
+			if (B->mask_has_layer(A))
+				B->apply_impulse(c.rB + B->get_center_of_mass(), j);
 
 			c.active = true;
 		}
@@ -442,8 +450,10 @@ void BodyPairSW::solve(real_t p_step) {
 
 			jt = c.acc_tangent_impulse - jtOld;
 
-			A->apply_impulse(c.rA + A->get_center_of_mass(), -jt);
-			B->apply_impulse(c.rB + B->get_center_of_mass(), jt);
+			if (A->mask_has_layer(B))
+				A->apply_impulse(c.rA + A->get_center_of_mass(), -jt);
+			if (B->mask_has_layer(A))
+				B->apply_impulse(c.rB + B->get_center_of_mass(), jt);
 
 			c.active = true;
 		}
