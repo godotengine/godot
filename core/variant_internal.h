@@ -41,6 +41,78 @@ public:
 	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
 		v->clear();
 		v->type = p_type;
+
+		switch (p_type) {
+			case Variant::AABB:
+				v->_data._aabb = memnew(AABB);
+				break;
+			case Variant::TRANSFORM2D:
+				v->_data._transform2d = memnew(Transform2D);
+				break;
+			case Variant::TRANSFORM:
+				v->_data._transform = memnew(Transform);
+				break;
+			case Variant::STRING:
+				memnew_placement(v->_data._mem, String);
+				break;
+			case Variant::STRING_NAME:
+				memnew_placement(v->_data._mem, StringName);
+				break;
+			case Variant::NODE_PATH:
+				memnew_placement(v->_data._mem, NodePath);
+				break;
+			case Variant::CALLABLE:
+				memnew_placement(v->_data._mem, Callable);
+				break;
+			case Variant::SIGNAL:
+				memnew_placement(v->_data._mem, Signal);
+				break;
+			case Variant::DICTIONARY:
+				memnew_placement(v->_data._mem, Dictionary);
+				break;
+			case Variant::ARRAY:
+				memnew_placement(v->_data._mem, Array);
+				break;
+			case Variant::PACKED_BYTE_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<uint8_t>);
+				break;
+			case Variant::PACKED_INT32_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<int32_t>);
+				break;
+			case Variant::PACKED_INT64_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<int64_t>);
+				break;
+			case Variant::PACKED_FLOAT32_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<float>);
+				break;
+			case Variant::PACKED_FLOAT64_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<double>);
+				break;
+			case Variant::PACKED_STRING_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<String>);
+				break;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<Vector2>);
+				break;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<Vector3>);
+				break;
+			case Variant::PACKED_COLOR_ARRAY:
+				v->_data.packed_array = memnew(Variant::PackedArrayRef<Color>);
+				break;
+			default:
+				break;
+		}
+	}
+
+	_FORCE_INLINE_ static void set_object(Variant *v, Object *obj) {
+		if (obj) {
+			v->_get_obj().obj = obj;
+			v->_get_obj().id = obj->get_instance_id();
+		} else {
+			v->_get_obj().obj = nullptr;
+			v->_get_obj().id = ObjectID();
+		}
 	}
 
 	// Atomic types.
@@ -119,6 +191,162 @@ public:
 
 	_FORCE_INLINE_ static Object **get_object(Variant *v) { return (Object **)&v->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *v) { return (const Object **)&v->_get_obj().obj; }
+
+	_FORCE_INLINE_ static void *get_opaque_pointer(Variant *v) {
+		switch (v->type) {
+			case Variant::NIL:
+				return nullptr;
+			case Variant::BOOL:
+				return get_bool(v);
+			case Variant::INT:
+				return get_int(v);
+			case Variant::FLOAT:
+				return get_float(v);
+			case Variant::STRING:
+				return get_string(v);
+			case Variant::VECTOR2:
+				return get_vector2(v);
+			case Variant::VECTOR2I:
+				return get_vector2i(v);
+			case Variant::VECTOR3:
+				return get_vector3(v);
+			case Variant::VECTOR3I:
+				return get_vector3i(v);
+			case Variant::RECT2:
+				return get_rect2(v);
+			case Variant::RECT2I:
+				return get_rect2i(v);
+			case Variant::TRANSFORM:
+				return get_transform(v);
+			case Variant::TRANSFORM2D:
+				return get_transform2d(v);
+			case Variant::QUAT:
+				return get_quat(v);
+			case Variant::PLANE:
+				return get_plane(v);
+			case Variant::BASIS:
+				return get_basis(v);
+			case Variant::AABB:
+				return get_aabb(v);
+			case Variant::COLOR:
+				return get_color(v);
+			case Variant::STRING_NAME:
+				return get_string_name(v);
+			case Variant::NODE_PATH:
+				return get_node_path(v);
+			case Variant::_RID:
+				return get_rid(v);
+			case Variant::CALLABLE:
+				return get_callable(v);
+			case Variant::SIGNAL:
+				return get_signal(v);
+			case Variant::DICTIONARY:
+				return get_dictionary(v);
+			case Variant::ARRAY:
+				return get_array(v);
+			case Variant::PACKED_BYTE_ARRAY:
+				return get_byte_array(v);
+			case Variant::PACKED_INT32_ARRAY:
+				return get_int32_array(v);
+			case Variant::PACKED_INT64_ARRAY:
+				return get_int64_array(v);
+			case Variant::PACKED_FLOAT32_ARRAY:
+				return get_float32_array(v);
+			case Variant::PACKED_FLOAT64_ARRAY:
+				return get_float64_array(v);
+			case Variant::PACKED_STRING_ARRAY:
+				return get_string_array(v);
+			case Variant::PACKED_VECTOR2_ARRAY:
+				return get_vector2_array(v);
+			case Variant::PACKED_VECTOR3_ARRAY:
+				return get_vector3_array(v);
+			case Variant::PACKED_COLOR_ARRAY:
+				return get_color_array(v);
+			case Variant::OBJECT:
+				return v->_get_obj().obj;
+			case Variant::VARIANT_MAX:
+				ERR_FAIL_V(nullptr);
+		}
+		ERR_FAIL_V(nullptr);
+	}
+
+	_FORCE_INLINE_ static const void *get_opaque_pointer(const Variant *v) {
+		switch (v->type) {
+			case Variant::NIL:
+				return nullptr;
+			case Variant::BOOL:
+				return get_bool(v);
+			case Variant::INT:
+				return get_int(v);
+			case Variant::FLOAT:
+				return get_float(v);
+			case Variant::STRING:
+				return get_string(v);
+			case Variant::VECTOR2:
+				return get_vector2(v);
+			case Variant::VECTOR2I:
+				return get_vector2i(v);
+			case Variant::VECTOR3:
+				return get_vector3(v);
+			case Variant::VECTOR3I:
+				return get_vector3i(v);
+			case Variant::RECT2:
+				return get_rect2(v);
+			case Variant::RECT2I:
+				return get_rect2i(v);
+			case Variant::TRANSFORM:
+				return get_transform(v);
+			case Variant::TRANSFORM2D:
+				return get_transform2d(v);
+			case Variant::QUAT:
+				return get_quat(v);
+			case Variant::PLANE:
+				return get_plane(v);
+			case Variant::BASIS:
+				return get_basis(v);
+			case Variant::AABB:
+				return get_aabb(v);
+			case Variant::COLOR:
+				return get_color(v);
+			case Variant::STRING_NAME:
+				return get_string_name(v);
+			case Variant::NODE_PATH:
+				return get_node_path(v);
+			case Variant::_RID:
+				return get_rid(v);
+			case Variant::CALLABLE:
+				return get_callable(v);
+			case Variant::SIGNAL:
+				return get_signal(v);
+			case Variant::DICTIONARY:
+				return get_dictionary(v);
+			case Variant::ARRAY:
+				return get_array(v);
+			case Variant::PACKED_BYTE_ARRAY:
+				return get_byte_array(v);
+			case Variant::PACKED_INT32_ARRAY:
+				return get_int32_array(v);
+			case Variant::PACKED_INT64_ARRAY:
+				return get_int64_array(v);
+			case Variant::PACKED_FLOAT32_ARRAY:
+				return get_float32_array(v);
+			case Variant::PACKED_FLOAT64_ARRAY:
+				return get_float64_array(v);
+			case Variant::PACKED_STRING_ARRAY:
+				return get_string_array(v);
+			case Variant::PACKED_VECTOR2_ARRAY:
+				return get_vector2_array(v);
+			case Variant::PACKED_VECTOR3_ARRAY:
+				return get_vector3_array(v);
+			case Variant::PACKED_COLOR_ARRAY:
+				return get_color_array(v);
+			case Variant::OBJECT:
+				return v->_get_obj().obj;
+			case Variant::VARIANT_MAX:
+				ERR_FAIL_V(nullptr);
+		}
+		ERR_FAIL_V(nullptr);
+	}
 };
 
 template <class T>
