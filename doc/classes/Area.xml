@@ -7,6 +7,8 @@
 		3D area that detects [CollisionObject] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
 	</description>
 	<tutorials>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">

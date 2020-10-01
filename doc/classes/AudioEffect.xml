@@ -7,6 +7,7 @@
 		Base resource for audio bus. Applies an audio effect on the bus that the resource is applied on.
 	</description>
 	<tutorials>
+		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
 	</tutorials>
 	<methods>
 	</methods>
