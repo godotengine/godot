@@ -2487,13 +2487,28 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	// Handles the mouse hovering
 	_gui_input_hover(p_event);
 
-	// Change the cursor
-	CursorShape c = CURSOR_ARROW;
-	bool should_switch = false;
-	if (drag_selection.size() != 0) {
-		float angle = drag_selection[0]->_edit_get_rotation();
-		should_switch = abs(Math::cos(angle)) < Math_SQRT12;
+	// Compute an eventual rotation of the cursor
+	CursorShape rotation_array[4] = { CURSOR_HSIZE, CURSOR_BDIAGSIZE, CURSOR_VSIZE, CURSOR_FDIAGSIZE };
+	int rotation_array_index = 0;
+
+	List<CanvasItem *> selection = _get_edited_canvas_items();
+	if (selection.size() == 1) {
+		float angle = Math::fposmod((double)selection[0]->get_global_transform_with_canvas().get_rotation(), Math_PI);
+		if (angle > Math_PI * 7.0 / 8.0) {
+			rotation_array_index = 0;
+		} else if (angle > Math_PI * 5.0 / 8.0) {
+			rotation_array_index = 1;
+		} else if (angle > Math_PI * 3.0 / 8.0) {
+			rotation_array_index = 2;
+		} else if (angle > Math_PI * 1.0 / 8.0) {
+			rotation_array_index = 3;
+		} else {
+			rotation_array_index = 0;
+		}
 	}
+
+	// Choose the correct cursor
+	CursorShape c = CURSOR_ARROW;
 	switch (drag_type) {
 		case DRAG_NONE:
 			switch (tool) {
@@ -2515,38 +2530,28 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			break;
 		case DRAG_LEFT:
 		case DRAG_RIGHT:
+			c = rotation_array[rotation_array_index];
+			break;
 		case DRAG_V_GUIDE:
-			if (should_switch) {
-				c = CURSOR_VSIZE;
-			} else {
-				c = CURSOR_HSIZE;
-			}
+			c = CURSOR_HSIZE;
 			break;
 		case DRAG_TOP:
 		case DRAG_BOTTOM:
+			c = rotation_array[(rotation_array_index + 2) % 4];
+			break;
 		case DRAG_H_GUIDE:
-			if (should_switch) {
-				c = CURSOR_HSIZE;
-			} else {
-				c = CURSOR_VSIZE;
-			}
+			c = CURSOR_VSIZE;
 			break;
 		case DRAG_TOP_LEFT:
 		case DRAG_BOTTOM_RIGHT:
+			c = rotation_array[(rotation_array_index + 3) % 4];
+			break;
 		case DRAG_DOUBLE_GUIDE:
-			if (should_switch) {
-				c = CURSOR_BDIAGSIZE;
-			} else {
-				c = CURSOR_FDIAGSIZE;
-			}
+			c = CURSOR_FDIAGSIZE;
 			break;
 		case DRAG_TOP_RIGHT:
 		case DRAG_BOTTOM_LEFT:
-			if (should_switch) {
-				c = CURSOR_FDIAGSIZE;
-			} else {
-				c = CURSOR_BDIAGSIZE;
-			}
+			c = rotation_array[(rotation_array_index + 1) % 4];
 			break;
 		case DRAG_MOVE:
 			c = CURSOR_MOVE;
