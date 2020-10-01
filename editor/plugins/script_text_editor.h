@@ -60,6 +60,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Ref<Script> script;
 	bool script_is_valid;
+	bool editor_enabled;
 
 	Vector<String> functions;
 
@@ -71,10 +72,12 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	MenuButton *goto_menu;
 	PopupMenu *bookmarks_menu;
 	PopupMenu *breakpoints_menu;
 	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
+	PopupMenu *convert_case;
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
@@ -145,6 +148,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		LOOKUP_SYMBOL,
 	};
 
+	void _enable_code_editor();
+
 protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
@@ -162,7 +167,6 @@ protected:
 	void _show_warnings_panel(bool p_show);
 	void _warning_clicked(Variant p_line);
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 	Map<String, SyntaxHighlighter *> highlighters;
@@ -197,6 +201,7 @@ public:
 	virtual void apply_code();
 	virtual RES get_edited_resource() const;
 	virtual void set_edited_resource(const RES &p_res);
+	virtual void enable_editor();
 	virtual Vector<String> get_functions();
 	virtual void reload_text();
 	virtual String get_name();

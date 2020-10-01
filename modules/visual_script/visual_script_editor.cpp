@@ -2413,7 +2413,8 @@ RES VisualScriptEditor::get_edited_resource() const {
 }
 
 void VisualScriptEditor::set_edited_resource(const RES &p_res) {
-
+	ERR_FAIL_COND(script.is_valid());
+	ERR_FAIL_COND(p_res.is_null());
 	script = p_res;
 	signal_editor->script = script;
 	signal_editor->undo_redo = undo_redo;
@@ -2432,6 +2433,9 @@ void VisualScriptEditor::set_edited_resource(const RES &p_res) {
 
 	_update_graph();
 	_update_members();
+}
+
+void VisualScriptEditor::enable_editor() {
 }
 
 Vector<String> VisualScriptEditor::get_functions() {
