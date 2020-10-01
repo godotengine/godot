@@ -767,7 +767,7 @@
 				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
 				for i in range(-3, 4):
-				    print("%2.0f %2.0f %2.0f" % [i, i % 3, posmod(i, 3)])
+				    print("%2d %2d %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Produces:
 				[codeblock]
