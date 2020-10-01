@@ -124,11 +124,8 @@
 	}
 
 	if (context) {
-		[context release];
 		context = nil;
 	}
-
-	[super dealloc];
 }
 
 - (BOOL)createFramebuffer {

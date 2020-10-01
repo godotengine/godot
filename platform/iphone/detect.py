@@ -129,7 +129,7 @@ def configure(env):
         detect_darwin_sdk_path("iphone", env)
         env.Append(
             CCFLAGS=(
-                "-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing"
+                "-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb"
                 ' "-DIBOutlet=__attribute__((iboutlet))"'
@@ -141,7 +141,7 @@ def configure(env):
         detect_darwin_sdk_path("iphone", env)
         env.Append(
             CCFLAGS=(
-                "-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"
+                "-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=11.0"
                 " -isysroot $IPHONESDK".split()
