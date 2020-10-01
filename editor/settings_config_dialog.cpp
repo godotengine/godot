@@ -493,48 +493,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	updating = false;
 }
 
-<<<<<<< HEAD
-=======
-void EditorSettingsDialog::_action_edited(const String &p_name, const Dictionary &p_action) {
-	Array new_input_array = p_action["events"];
-	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
-
-	undo_redo->create_action(TTR("Edit Built-in Action"));
-	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, new_input_array);
-	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
-	undo_redo->add_do_method(this, "_update_action_map_editor");
-	undo_redo->add_undo_method(this, "_update_action_map_editor");
-	undo_redo->add_do_method(this, "_settings_changed");
-	undo_redo->add_undo_method(this, "_settings_changed");
-	undo_redo->commit_action();
-}
-
-void EditorSettingsDialog::_update_action_map_editor() {
-	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
-
-	Vector<ActionMapEditor::ActionInfo> actions;
-	for (OrderedHashMap<StringName, InputMap::Action>::Element E = action_map.front(); E; E = E.next()) {
-		Array events;
-		for (List<Ref<InputEvent>>::Element *I = E.get().inputs.front(); I; I = I->next()) {
-			events.push_back(I->get());
-		}
-
-		Dictionary action;
-		action["deadzone"] = Variant(E.get().deadzone);
-		action["events"] = events;
-
-		ActionMapEditor::ActionInfo action_info;
-		action_info.action = action;
-		action_info.editable = false;
-		action_info.name = E.key();
-
-		actions.push_back(action_info);
-	}
-
-	builtin_action_editor->update_action_list(actions);
-}
-
->>>>>>> f7499aa40e... Updated input map to use OrderedHashMap intead of Map so that order of actions is preserved
 EditorSettingsDialog::~EditorSettingsDialog() {
 	memdelete(undo_redo);
 }
