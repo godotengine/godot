@@ -1200,8 +1200,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	bool skip_global = input.is_valid() && for_preview;
 
 	if (!skip_global) {
-
-		global_code += vsnode->generate_global(get_mode(), type, node);
+		Ref<VisualShaderNodeUniform> uniform = vsnode;
+		if (!uniform.is_valid() || !uniform->is_global_code_generated()) {
+			global_code += vsnode->generate_global(get_mode(), type, node);
+		}
 
 		String class_name = vsnode->get_class_name();
 		if (class_name == "VisualShaderNodeCustom") {
@@ -1300,6 +1302,9 @@ void VisualShader::_update_shader() const {
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light" };
 
 	String global_expressions;
+	Set<String> used_uniform_names;
+	List<VisualShaderNodeUniform *> uniforms;
+
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
 			Ref<VisualShaderNodeGlobalExpression> global_expression = Object::cast_to<VisualShaderNodeGlobalExpression>(E->get().node.ptr());
@@ -1312,6 +1317,24 @@ void VisualShader::_update_shader() const {
 				expr += "\n";
 				global_expressions += expr;
 			}
+			Ref<VisualShaderNodeUniformRef> uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(E->get().node.ptr());
+			if (uniform_ref.is_valid()) {
+				used_uniform_names.insert(uniform_ref->get_uniform_name());
+			}
+			Ref<VisualShaderNodeUniform> uniform = Object::cast_to<VisualShaderNodeUniform>(E->get().node.ptr());
+			if (uniform.is_valid()) {
+				uniforms.push_back(uniform.ptr());
+			}
+		}
+	}
+
+	for (int i = 0; i < uniforms.size(); i++) {
+		VisualShaderNodeUniform *uniform = uniforms[i];
+		if (used_uniform_names.has(uniform->get_uniform_name())) {
+			global_code += uniform->generate_global(get_mode(), Type(i), -1);
+			const_cast<VisualShaderNodeUniform *>(uniform)->set_global_code_generated(true);
+		} else {
+			const_cast<VisualShaderNodeUniform *>(uniform)->set_global_code_generated(false);
 		}
 	}
 
@@ -1873,6 +1896,187 @@ VisualShaderNodeInput::VisualShaderNodeInput() {
 	shader_mode = Shader::MODE_MAX;
 }
 
+////////////// UniformRef
+
+List<VisualShaderNodeUniformRef::Uniform> uniforms;
+
+void VisualShaderNodeUniformRef::add_uniform(const String &p_name, UniformType p_type) {
+	uniforms.push_back({ p_name, p_type });
+}
+
+void VisualShaderNodeUniformRef::clear_uniforms() {
+	uniforms.clear();
+}
+
+String VisualShaderNodeUniformRef::get_caption() const {
+	return "UniformRef";
+}
+
+int VisualShaderNodeUniformRef::get_input_port_count() const {
+	return 0;
+}
+
+VisualShaderNodeUniformRef::PortType VisualShaderNodeUniformRef::get_input_port_type(int p_port) const {
+	return PortType::PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeUniformRef::get_input_port_name(int p_port) const {
+	return "";
+}
+
+int VisualShaderNodeUniformRef::get_output_port_count() const {
+	switch (uniform_type) {
+		case UniformType::UNIFORM_TYPE_SCALAR:
+			return 1;
+		case UniformType::UNIFORM_TYPE_BOOLEAN:
+			return 1;
+		case UniformType::UNIFORM_TYPE_VECTOR:
+			return 1;
+		case UniformType::UNIFORM_TYPE_TRANSFORM:
+			return 1;
+		case UniformType::UNIFORM_TYPE_COLOR:
+			return 2;
+		case UniformType::UNIFORM_TYPE_SAMPLER:
+			return 1;
+		default:
+			break;
+	}
+	return 0;
+}
+
+VisualShaderNodeUniformRef::PortType VisualShaderNodeUniformRef::get_output_port_type(int p_port) const {
+	switch (uniform_type) {
+		case UniformType::UNIFORM_TYPE_SCALAR:
+			return PortType::PORT_TYPE_SCALAR;
+		case UniformType::UNIFORM_TYPE_BOOLEAN:
+			return PortType::PORT_TYPE_BOOLEAN;
+		case UniformType::UNIFORM_TYPE_VECTOR:
+			return PortType::PORT_TYPE_VECTOR;
+		case UniformType::UNIFORM_TYPE_TRANSFORM:
+			return PortType::PORT_TYPE_TRANSFORM;
+		case UniformType::UNIFORM_TYPE_COLOR:
+			if (p_port == 0) {
+				return PortType::PORT_TYPE_VECTOR;
+			} else if (p_port == 1) {
+				return PORT_TYPE_SCALAR;
+			}
+			break;
+		case UniformType::UNIFORM_TYPE_SAMPLER:
+			return PortType::PORT_TYPE_SAMPLER;
+		default:
+			break;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeUniformRef::get_output_port_name(int p_port) const {
+	switch (uniform_type) {
+		case UniformType::UNIFORM_TYPE_SCALAR:
+			return "";
+		case UniformType::UNIFORM_TYPE_BOOLEAN:
+			return "";
+		case UniformType::UNIFORM_TYPE_VECTOR:
+			return "";
+		case UniformType::UNIFORM_TYPE_TRANSFORM:
+			return "";
+		case UniformType::UNIFORM_TYPE_COLOR:
+			if (p_port == 0) {
+				return "rgb";
+			} else if (p_port == 1) {
+				return "alpha";
+			}
+			break;
+		case UniformType::UNIFORM_TYPE_SAMPLER:
+			return "";
+			break;
+		default:
+			break;
+	}
+	return "";
+}
+
+void VisualShaderNodeUniformRef::set_uniform_name(const String &p_name) {
+	uniform_name = p_name;
+	if (p_name != "[None]") {
+		uniform_type = get_uniform_type_by_name(p_name);
+	} else {
+		uniform_type = UniformType::UNIFORM_TYPE_SCALAR;
+	}
+	emit_changed();
+}
+
+String VisualShaderNodeUniformRef::get_uniform_name() const {
+	return uniform_name;
+}
+
+int VisualShaderNodeUniformRef::get_uniforms_count() const {
+	return uniforms.size();
+}
+
+String VisualShaderNodeUniformRef::get_uniform_name_by_index(int p_idx) const {
+	if (p_idx >= 0 && p_idx < uniforms.size()) {
+		return uniforms[p_idx].name;
+	}
+	return "";
+}
+
+VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_type_by_name(const String &p_name) const {
+	for (int i = 0; i < uniforms.size(); i++) {
+		if (uniforms[i].name == p_name) {
+			return uniforms[i].type;
+		}
+	}
+	return UniformType::UNIFORM_TYPE_SCALAR;
+}
+
+VisualShaderNodeUniformRef::UniformType VisualShaderNodeUniformRef::get_uniform_type_by_index(int p_idx) const {
+	if (p_idx >= 0 && p_idx < uniforms.size()) {
+		return uniforms[p_idx].type;
+	}
+	return UniformType::UNIFORM_TYPE_SCALAR;
+}
+
+String VisualShaderNodeUniformRef::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	switch (uniform_type) {
+		case UniformType::UNIFORM_TYPE_SCALAR:
+			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+		case UniformType::UNIFORM_TYPE_BOOLEAN:
+			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+		case UniformType::UNIFORM_TYPE_VECTOR:
+			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+		case UniformType::UNIFORM_TYPE_TRANSFORM:
+			return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+		case UniformType::UNIFORM_TYPE_COLOR: {
+			String code = "\t" + p_output_vars[0] + " = " + get_uniform_name() + ".rgb;\n";
+			code += "\t" + p_output_vars[1] + " = " + get_uniform_name() + ".a;\n";
+			return code;
+		} break;
+		case UniformType::UNIFORM_TYPE_SAMPLER:
+			break;
+		default:
+			break;
+	}
+	return "";
+}
+
+void VisualShaderNodeUniformRef::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_uniform_name", "name"), &VisualShaderNodeUniformRef::set_uniform_name);
+	ClassDB::bind_method(D_METHOD("get_uniform_name"), &VisualShaderNodeUniformRef::get_uniform_name);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uniform_name", PROPERTY_HINT_ENUM, ""), "set_uniform_name", "get_uniform_name");
+}
+
+Vector<StringName> VisualShaderNodeUniformRef::get_editable_properties() const {
+	Vector<StringName> props;
+	props.push_back("uniform_name");
+	return props;
+}
+
+VisualShaderNodeUniformRef::VisualShaderNodeUniformRef() {
+	uniform_name = "[None]";
+	uniform_type = UniformType::UNIFORM_TYPE_SCALAR;
+}
+
 ////////////////////////////////////////////
 
 const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
@@ -2056,6 +2260,14 @@ void VisualShaderNodeUniform::set_uniform_name(const String &p_name) {
 
 String VisualShaderNodeUniform::get_uniform_name() const {
 	return uniform_name;
+}
+
+void VisualShaderNodeUniform::set_global_code_generated(bool p_enabled) {
+	global_code_generated = p_enabled;
+}
+
+bool VisualShaderNodeUniform::is_global_code_generated() const {
+	return global_code_generated;
 }
 
 void VisualShaderNodeUniform::_bind_methods() {

@@ -219,6 +219,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _rebuild();
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
+	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
 
 	void _add_input_port(int p_node, int p_port, int p_port_type, const String &p_name);
 	void _remove_input_port(int p_node, int p_port);
