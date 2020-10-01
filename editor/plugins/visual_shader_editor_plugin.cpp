@@ -226,6 +226,13 @@ void VisualShaderGraphPlugin::update_constant(VisualShader::Type p_type, int p_n
 	links[p_node_id].graph_node->set_size(Size2(-1, -1));
 }
 
+void VisualShaderGraphPlugin::update_node_size(int p_node_id) {
+	if (!links.has(p_node_id)) {
+		return;
+	}
+	links[p_node_id].graph_node->set_size(Size2(-1, -1));
+}
+
 void VisualShaderGraphPlugin::register_default_input_button(int p_node_id, int p_port_id, Button *p_button) {
 	links[p_node_id].input_ports.insert(p_port_id, { p_button });
 }
@@ -2516,6 +2523,7 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 
 void VisualShaderEditor::_float_constant_selected(int p_index, int p_node) {
 	if (p_index == 0) {
+		graph_plugin->update_node_size(p_node);
 		return;
 	}
 
