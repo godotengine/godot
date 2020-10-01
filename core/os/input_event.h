@@ -220,7 +220,7 @@ public:
 	virtual bool is_echo() const;
 	// ...-.
 
-	virtual String as_text() const;
+	virtual String as_text() const = 0;
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 
@@ -276,6 +276,9 @@ public:
 
 	uint32_t get_modifiers_mask() const;
 
+	virtual String as_text() const;
+	virtual String to_string();
+
 	InputEventWithModifiers();
 };
 
@@ -318,6 +321,7 @@ public:
 	virtual bool is_action_type() const { return true; }
 
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventKey();
 };
@@ -376,6 +380,7 @@ public:
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventMouseButton();
 };
@@ -406,6 +411,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+	virtual String to_string();
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event);
 
@@ -434,6 +440,7 @@ public:
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventJoypadMotion();
 };
@@ -462,6 +469,7 @@ public:
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventJoypadButton();
 };
@@ -487,6 +495,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventScreenTouch();
 };
@@ -516,6 +525,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+	virtual String to_string();
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event);
 
@@ -549,6 +559,7 @@ public:
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventAction();
 };
@@ -579,6 +590,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventMagnifyGesture();
 };
@@ -596,6 +608,7 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventPanGesture();
 };
@@ -641,6 +654,7 @@ public:
 	int get_controller_value() const;
 
 	virtual String as_text() const;
+	virtual String to_string();
 
 	InputEventMIDI();
 };
