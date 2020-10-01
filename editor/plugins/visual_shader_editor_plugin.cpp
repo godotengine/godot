@@ -47,6 +47,27 @@
 #include "servers/display_server.h"
 #include "servers/rendering/shader_types.h"
 
+struct FloatConstantDef {
+	String name;
+	float value;
+	String desc;
+};
+
+static FloatConstantDef float_constant_defs[] = {
+	{ "E", Math_E, TTR("E constant (2.718282). Represents the base of the natural logarithm.") },
+	{ "Epsilon", CMP_EPSILON, TTR("Epsilon constant (0.00001). Smallest possible scalar number.") },
+	{ "Phi", 1.618034f, TTR("Phi constant (1.618034). Golden ratio.") },
+	{ "Pi/4", Math_PI / 4, TTR("Pi/4 constant (0.785398) or 45 degrees.") },
+	{ "Pi/2", Math_PI / 2, TTR("Pi/2 constant (1.570796) or 90 degrees.") },
+	{ "Pi", Math_PI, TTR("Pi constant (3.141593) or 180 degrees.") },
+	{ "Tau", Math_TAU, TTR("Tau constant (6.283185) or 360 degrees.") },
+	{ "Sqrt2", Math_SQRT2, TTR("Sqrt2 constant (1.414214). Square root of 2.") }
+};
+
+const int MAX_FLOAT_CONST_DEFS = sizeof(float_constant_defs) / sizeof(FloatConstantDef);
+
+///////////////////
+
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("create_editor", p_parent_resource, p_node);
@@ -86,6 +107,7 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("update_node_deferred", &VisualShaderGraphPlugin::update_node_deferred);
 	ClassDB::bind_method("set_input_port_default_value", &VisualShaderGraphPlugin::set_input_port_default_value);
 	ClassDB::bind_method("set_uniform_name", &VisualShaderGraphPlugin::set_uniform_name);
+	ClassDB::bind_method("update_constant", &VisualShaderGraphPlugin::update_constant);
 }
 
 void VisualShaderGraphPlugin::register_shader(VisualShader *p_shader) {
@@ -183,8 +205,33 @@ void VisualShaderGraphPlugin::set_uniform_name(VisualShader::Type p_type, int p_
 	}
 }
 
+int VisualShaderGraphPlugin::get_constant_index(float p_constant) const {
+	for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
+		if (Math::is_equal_approx(p_constant, float_constant_defs[i].value)) {
+			return i + 1;
+		}
+	}
+	return 0;
+}
+
+void VisualShaderGraphPlugin::update_constant(VisualShader::Type p_type, int p_node_id) {
+	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id) || !links[p_node_id].const_op) {
+		return;
+	}
+	VisualShaderNodeFloatConstant *float_const = Object::cast_to<VisualShaderNodeFloatConstant>(links[p_node_id].visual_node);
+	if (!float_const) {
+		return;
+	}
+	links[p_node_id].const_op->select(get_constant_index(float_const->get_constant()));
+	links[p_node_id].graph_node->set_size(Size2(-1, -1));
+}
+
 void VisualShaderGraphPlugin::register_default_input_button(int p_node_id, int p_port_id, Button *p_button) {
 	links[p_node_id].input_ports.insert(p_port_id, { p_button });
+}
+
+void VisualShaderGraphPlugin::register_constant_option_btn(int p_node_id, OptionButton *p_button) {
+	links[p_node_id].const_op = p_button;
 }
 
 void VisualShaderGraphPlugin::update_uniform_refs() {
@@ -230,7 +277,7 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr });
 }
 
 void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
@@ -335,6 +382,23 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 			}
 			break;
 		}
+	}
+
+	Ref<VisualShaderNodeFloatConstant> float_const = vsnode;
+	if (float_const.is_valid()) {
+		HBoxContainer *hbox = memnew(HBoxContainer);
+
+		hbox->add_child(custom_editor);
+		OptionButton *btn = memnew(OptionButton);
+		hbox->add_child(btn);
+		register_constant_option_btn(p_id, btn);
+		btn->add_item("");
+		for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
+			btn->add_item(float_constant_defs[i].name);
+		}
+		btn->select(get_constant_index(float_const->get_constant()));
+		btn->connect("item_selected", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_float_constant_selected), varray(p_id));
+		custom_editor = hbox;
 	}
 
 	if (custom_editor && !vsnode->is_use_prop_slots() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
@@ -2450,6 +2514,29 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 	undo_redo->commit_action();
 }
 
+void VisualShaderEditor::_float_constant_selected(int p_index, int p_node) {
+	if (p_index == 0) {
+		return;
+	}
+
+	--p_index;
+
+	ERR_FAIL_INDEX(p_index, MAX_FLOAT_CONST_DEFS);
+
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeFloatConstant> node = visual_shader->get_node(type, p_node);
+	if (!node.is_valid()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Set constant"));
+	undo_redo->add_do_method(node.ptr(), "set_constant", float_constant_defs[p_index].value);
+	undo_redo->add_undo_method(node.ptr(), "set_constant", node->get_constant());
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_constant", type, p_node);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_constant", type, p_node);
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_member_filter_changed(const String &p_text) {
 	_update_options_menu();
 }
@@ -2695,6 +2782,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_uniforms", &VisualShaderEditor::_update_uniforms);
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
 	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
+	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -3163,15 +3251,9 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	//CONSTANTS
 
-	add_options.push_back(AddOption("E", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("E constant (2.718282). Represents the base of the natural logarithm."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_E));
-	add_options.push_back(AddOption("Epsilon", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Epsilon constant (0.00001). Smallest possible scalar number."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, CMP_EPSILON));
-	add_options.push_back(AddOption("Phi", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Phi constant (1.618034). Golden ratio."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, 1.618034f));
-	add_options.push_back(AddOption("Pi/4", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Pi/4 constant (0.785398) or 45 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI / 4));
-	add_options.push_back(AddOption("Pi/2", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Pi/2 constant (1.570796) or 90 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI / 2));
-	add_options.push_back(AddOption("Pi", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Pi constant (3.141593) or 180 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_PI));
-	add_options.push_back(AddOption("Tau", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Tau constant (6.283185) or 360 degrees."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_TAU));
-	add_options.push_back(AddOption("Sqrt2", "Scalar", "Constants", "VisualShaderNodeFloatConstant", TTR("Sqrt2 constant (1.414214). Square root of 2."), -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, Math_SQRT2));
-
+	for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
+		add_options.push_back(AddOption(float_constant_defs[i].name, "Scalar", "Constants", "VisualShaderNodeFloatConstant", float_constant_defs[i].desc, -1, VisualShaderNode::PORT_TYPE_SCALAR, -1, -1, float_constant_defs[i].value));
+	}
 	// FUNCTIONS
 
 	add_options.push_back(AddOption("Abs", "Scalar", "Functions", "VisualShaderNodeFloatFunc", TTR("Returns the absolute value of the parameter."), VisualShaderNodeFloatFunc::FUNC_ABS, VisualShaderNode::PORT_TYPE_SCALAR));
@@ -3553,6 +3635,9 @@ public:
 		if (p_property != "constant") {
 			undo_redo->add_do_method(VisualShaderEditor::get_singleton()->get_graph_plugin(), "update_node_deferred", shader_type, node_id);
 			undo_redo->add_undo_method(VisualShaderEditor::get_singleton()->get_graph_plugin(), "update_node_deferred", shader_type, node_id);
+		} else {
+			undo_redo->add_do_method(VisualShaderEditor::get_singleton()->get_graph_plugin(), "update_constant", shader_type, node_id);
+			undo_redo->add_undo_method(VisualShaderEditor::get_singleton()->get_graph_plugin(), "update_constant", shader_type, node_id);
 		}
 		undo_redo->commit_action();
 

@@ -72,6 +72,7 @@ private:
 		Map<int, Port> output_ports;
 		VBoxContainer *preview_box;
 		LineEdit *uniform_name;
+		OptionButton *const_op;
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -88,6 +89,8 @@ public:
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
 	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
+	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
+	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
@@ -104,9 +107,10 @@ public:
 	void set_node_size(VisualShader::Type p_type, int p_id, const Vector2 &p_size);
 	void refresh_node_ports(VisualShader::Type p_type, int p_node);
 	void set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value);
-	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void update_uniform_refs();
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
+	void update_constant(VisualShader::Type p_type, int p_node_id);
+	int get_constant_index(float p_constant) const;
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
@@ -330,6 +334,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
+
+	void _float_constant_selected(int p_index, int p_node);
 
 	VisualShader::Type get_current_shader_type() const;
 
