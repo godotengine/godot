@@ -18,6 +18,7 @@
 	</description>
 	<tutorials>
 		<link title="Scenes and nodes">https://docs.godotengine.org/en/latest/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">

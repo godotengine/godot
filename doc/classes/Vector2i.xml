@@ -10,6 +10,8 @@
 	</description>
 	<tutorials>
 		<link title="Math tutorial index">https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
+		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
+		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
 	</tutorials>
 	<methods>
 		<method name="Vector2i">
