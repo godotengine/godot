@@ -10,6 +10,7 @@
 	</description>
 	<tutorials>
 		<link title="Introduction to 3D">https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
 		<method name="force_update_transform">

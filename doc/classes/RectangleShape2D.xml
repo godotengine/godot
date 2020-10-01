@@ -7,6 +7,8 @@
 		Rectangle shape for 2D collisions. This shape is useful for modeling box-like 2D objects.
 	</description>
 	<tutorials>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 	</methods>

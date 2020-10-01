@@ -5,6 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="allocate">
