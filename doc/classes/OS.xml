@@ -966,6 +966,28 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="set_window_mouse_passthrough">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="PoolVector2Array">
+			</argument>
+			<description>
+				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+				[codeblock]
+				# Set region, using Path2D node.
+				OS.set_window_mouse_passthrough($Path2D.curve.get_baked_points())
+
+				# Set region, using Polygon2D node.
+				OS.set_window_mouse_passthrough($Polygon2D.polygon)
+
+				# Reset region to default.
+				OS.set_window_mouse_passthrough([])
+				[/codeblock]
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="set_window_title">
 			<return type="void">
 			</return>

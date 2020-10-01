@@ -309,6 +309,8 @@ class OS_Windows : public OS {
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
+
+	Vector<Vector2> mpath;
 	Point2 last_pos;
 
 	bool layered_window;
@@ -371,6 +373,7 @@ class OS_Windows : public OS {
 	void _touch_event(bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(bool p_repaint = true, bool p_maximized = false);
+	void _update_window_mouse_passthrough();
 
 	void _set_mouse_mode_impl(MouseMode p_mode);
 
@@ -422,6 +425,7 @@ public:
 	void update_real_mouse_position();
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
+	virtual void set_window_mouse_passthrough(const PoolVector2Array &p_region);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;

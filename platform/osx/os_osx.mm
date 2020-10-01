@@ -30,6 +30,7 @@
 
 #include "os_osx.h"
 
+#include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/version_generated.gen.h"
@@ -2136,6 +2137,13 @@ void OS_OSX::set_window_title(const String &p_title) {
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+void OS_OSX::set_window_mouse_passthrough(const PoolVector2Array &p_region) {
+	mpath.clear();
+	for (int i = 0; i < p_region.size(); i++) {
+		mpath.push_back(p_region[i]);
+	}
+}
+
 void OS_OSX::set_native_icon(const String &p_filename) {
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
@@ -3052,6 +3060,23 @@ void OS_OSX::process_events() {
 		[NSApp sendEvent:event];
 	}
 	process_key_events();
+
+	if (mpath.size() > 0) {
+		const Vector2 mpos = get_mouse_pos([window_object mouseLocationOutsideOfEventStream]);
+		if (Geometry::is_point_in_polygon(mpos, mpath)) {
+			if ([window_object ignoresMouseEvents]) {
+				[window_object setIgnoresMouseEvents:NO];
+			}
+		} else {
+			if (![window_object ignoresMouseEvents]) {
+				[window_object setIgnoresMouseEvents:YES];
+			}
+		}
+	} else {
+		if ([window_object ignoresMouseEvents]) {
+			[window_object setIgnoresMouseEvents:NO];
+		}
+	}
 
 	[autoreleasePool drain];
 	autoreleasePool = [[NSAutoreleasePool alloc] init];

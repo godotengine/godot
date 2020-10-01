@@ -114,6 +114,7 @@ public:
 	NSOpenGLPixelFormat *pixelFormat;
 	NSOpenGLContext *context;
 
+	Vector<Vector2> mpath;
 	bool layered_window;
 
 	CursorShape cursor_shape;
@@ -208,6 +209,7 @@ public:
 	virtual int get_mouse_button_state() const;
 	void update_real_mouse_position();
 	virtual void set_window_title(const String &p_title);
+	virtual void set_window_mouse_passthrough(const PoolVector2Array &p_region);
 
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
