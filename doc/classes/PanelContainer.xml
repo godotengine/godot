@@ -7,6 +7,7 @@
 		Panel container type. This container fits controls inside of the delimited area of a stylebox. It's useful for giving controls an outline.
 	</description>
 	<tutorials>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<methods>
 	</methods>

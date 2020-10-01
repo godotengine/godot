@@ -5,6 +5,7 @@
 	<description>
 	</description>
 	<tutorials>
+		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
 	</tutorials>
 	<methods>
 		<method name="get_parent_skeleton" qualifiers="const">

@@ -7,6 +7,7 @@
 		Navigation2D provides navigation and pathfinding within a 2D area, specified as a collection of [NavigationPolygon] resources. These are automatically collected from child [NavigationRegion2D] nodes.
 	</description>
 	<tutorials>
+		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 	</tutorials>
 	<methods>
 		<method name="get_closest_point" qualifiers="const">

@@ -18,6 +18,7 @@
 	<tutorials>
 		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
 		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
 		<method name="_clips_input" qualifiers="virtual">

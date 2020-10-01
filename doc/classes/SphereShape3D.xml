@@ -7,6 +7,7 @@
 		Sphere shape for 3D collisions, which can be set into a [PhysicsBody3D] or [Area3D]. This shape is useful for modeling sphere-like 3D objects.
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 	</methods>

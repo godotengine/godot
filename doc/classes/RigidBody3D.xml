@@ -12,6 +12,8 @@
 	</description>
 	<tutorials>
 		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
