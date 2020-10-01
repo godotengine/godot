@@ -85,10 +85,11 @@ def configure(env):
     ## Build type
 
     if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
+        if env["debug_symbols"] != "full":
+            if env["optimize"] == "speed":  # optimize for speed (default)
+                env.Prepend(CCFLAGS=["-O3"])
+            else:  # optimize for size
+                env.Prepend(CCFLAGS=["-Os"])
 
         if env["debug_symbols"] == "yes":
             env.Prepend(CCFLAGS=["-g1"])
@@ -96,10 +97,12 @@ def configure(env):
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O2"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
+        if env["debug_symbols"] != "full":
+            if env["optimize"] == "speed":  # optimize for speed (default)
+                env.Prepend(CCFLAGS=["-O2"])
+            else:  # optimize for size
+                env.Prepend(CCFLAGS=["-Os"])
+
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
         if env["debug_symbols"] == "yes":
@@ -146,11 +149,24 @@ def configure(env):
         env.extra_suffix += "s"
 
         if env["use_ubsan"]:
-            env.Append(CCFLAGS=["-fsanitize=undefined"])
-            env.Append(LINKFLAGS=["-fsanitize=undefined"])
+            env.Append(
+                CCFLAGS=[
+                    "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
+                ]
+            )
+
+            if env["use_llvm"]:
+                env.Append(
+                    CCFLAGS=[
+                        "-fsanitize=nullability-return,nullability-arg,function,nullability-assign,implicit-integer-sign-change,implicit-signed-integer-truncation,implicit-unsigned-integer-truncation"
+                    ]
+                )
+            else:
+                env.Append(CCFLAGS=["-fsanitize=bounds-strict"])
+        env.Append(LINKFLAGS=["-fsanitize=undefined"])
 
         if env["use_asan"]:
-            env.Append(CCFLAGS=["-fsanitize=address"])
+            env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
         if env["use_lsan"]:
