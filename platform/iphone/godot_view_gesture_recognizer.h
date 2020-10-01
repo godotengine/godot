@@ -39,6 +39,8 @@
 
 @interface GodotViewGestureRecognizer : UIGestureRecognizer
 
+@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+
 - (instancetype)init;
 
 @end
