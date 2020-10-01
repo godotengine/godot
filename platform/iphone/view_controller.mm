@@ -67,9 +67,6 @@
 	self.view = view;
 
 	view.renderer = self.renderer;
-
-	[renderer release];
-	[view release];
 }
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -153,8 +150,6 @@
 	self.renderer = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[super dealloc];
 }
 
 // MARK: Orientation

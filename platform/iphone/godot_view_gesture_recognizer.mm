@@ -83,8 +83,6 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	if (self.delayedEvent) {
 		self.delayedEvent = nil;
 	}
-
-	[super dealloc];
 }
 
 - (void)delayTouches:(NSSet *)touches andEvent:(UIEvent *)event {
@@ -116,7 +114,6 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseBegan];
 	[self delayTouches:cleared andEvent:event];
-	[cleared release];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -137,17 +134,14 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 			if (distance > kGLGestureMovementDistance) {
 				[self.delayTimer fire];
 				[self.view touchesMoved:cleared withEvent:event];
-				[cleared release];
 				return;
 			}
 		}
 
-		[cleared release];
 		return;
 	}
 
 	[self.view touchesMoved:cleared withEvent:event];
-	[cleared release];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -155,7 +149,6 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 
 	NSSet *cleared = [self copyClearedTouches:touches phase:UITouchPhaseEnded];
 	[self.view touchesEnded:cleared withEvent:event];
-	[cleared release];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
