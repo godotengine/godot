@@ -73,11 +73,21 @@ typedef PoolVector<Color> PoolColorArray;
 #define GCC_ALIGNED_8
 #endif
 
+// With DEBUG_ENABLED, the pointer to a deleted object stored in ObjectRC is set to nullptr,
+// so _OBJ_PTR is not useful for checks in which we want to act as if we still believed the
+// object is alive; e.g., comparing a Variant that points to a deleted object with NIL,
+// should return false regardless DEBUG_ENABLED is defined or not.
+// So in cases like that we use _UNSAFE_OBJ_PROXY_PTR, which serves that purpose. With DEBUG_ENABLED
+// it won't be the real pointer to the object for non-Reference types, but that's fine.
+// We just need it to be unique for each object, to be comparable and not to be forced to NULL
+// when the object is freed.
 #ifdef DEBUG_ENABLED
-// Ideally, an inline member of ObjectRC, but would cause circular includes
-#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
+#define _REF_OBJ_PTR(m_variant) (reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
+#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : _REF_OBJ_PTR(m_variant))
+#define _UNSAFE_OBJ_PROXY_PTR(m_variant) ((m_variant)._get_obj().rc ? reinterpret_cast<uint8_t *>((m_variant)._get_obj().rc) : reinterpret_cast<uint8_t *>(_REF_OBJ_PTR(m_variant)))
 #else
 #define _OBJ_PTR(m_variant) ((m_variant)._get_obj().obj)
+#define _UNSAFE_OBJ_PROXY_PTR(m_variant) _OBJ_PTR(m_variant)
 #endif
 
 class Variant {
