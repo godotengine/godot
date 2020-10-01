@@ -201,7 +201,7 @@ private:
 	bool first_draw;
 	bool visible;
 	bool pending_update;
-	bool toplevel;
+	bool top_level;
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
@@ -355,8 +355,8 @@ public:
 
 	/* RECT / TRANSFORM */
 
-	void set_as_toplevel(bool p_toplevel);
-	bool is_set_as_toplevel() const;
+	void set_as_top_level(bool p_toplevel);
+	bool is_set_as_top_level() const;
 
 	void set_draw_behind_parent(bool p_enable);
 	bool is_draw_behind_parent_enabled() const;
@@ -369,7 +369,7 @@ public:
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 
-	CanvasItem *get_toplevel() const;
+	CanvasItem *get_top_level() const;
 	_FORCE_INLINE_ RID get_canvas_item() const {
 		return canvas_item;
 	}

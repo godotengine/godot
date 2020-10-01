@@ -57,7 +57,7 @@ void BoxContainer::_resort() {
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -111,7 +111,7 @@ void BoxContainer::_resort() {
 			if (!c || !c->is_visible_in_tree()) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 
@@ -172,7 +172,7 @@ void BoxContainer::_resort() {
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -224,7 +224,7 @@ Size2 BoxContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
