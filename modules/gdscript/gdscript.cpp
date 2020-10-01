@@ -1044,8 +1044,10 @@ GDScript::~GDScript() {
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-			E->self()->_clear_stack();
+			// Order matters since clearing the stack may already cause
+			// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 			pending_func_states.remove(E);
+			E->self()->_clear_stack();
 		}
 	}
 
@@ -1451,8 +1453,10 @@ GDScriptInstance::~GDScriptInstance() {
 	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		E->self()->_clear_stack();
+		// Order matters since clearing the stack may already cause
+		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
+		E->self()->_clear_stack();
 	}
 
 	if (script.is_valid() && owner) {
