@@ -4182,11 +4182,12 @@ String String::sprintf(const Array &values, bool *error) const {
 					int number_len = str.length();
 
 					// Padding.
+					int pad_chars_count = (value < 0 || show_sign) ? min_chars - 1 : min_chars;
 					String pad_char = pad_with_zeroes ? String("0") : String(" ");
 					if (left_justified) {
-						str = str.rpad(min_chars, pad_char);
+						str = str.rpad(pad_chars_count, pad_char);
 					} else {
-						str = str.lpad(min_chars, pad_char);
+						str = str.lpad(pad_chars_count, pad_char);
 					}
 
 					// Sign.
