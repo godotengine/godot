@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_view_gesture_recognizer.m                                         */
+/*  gl_view_gesture_recognizer.mm                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,14 +30,19 @@
 
 #import "gl_view_gesture_recognizer.h"
 
-// Using same delay interval that is used for `UIScrollView`
-const NSTimeInterval kGLGestureDelayInterval = 0.150;
+#include "core/project_settings.h"
 
 // Minimum distance for touches to move to fire
 // a delay timer before scheduled time.
 // Should be the low enough to not cause issues with dragging
 // but big enough to allow click to work.
 const CGFloat kGLGestureMovementDistance = 0.5;
+
+@interface GLViewGestureRecognizer ()
+
+@property(nonatomic, readwrite, assign) NSTimeInterval delayTimeInterval;
+
+@end
 
 @implementation GLViewGestureRecognizer
 
@@ -48,6 +53,8 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	self.delaysTouchesBegan = YES;
 	self.delaysTouchesEnded = YES;
 
+	self.delayTimeInterval = GLOBAL_GET("input_devices/pointing/ios/touch_delay");
+
 	return self;
 }
 
@@ -57,7 +64,7 @@ const CGFloat kGLGestureMovementDistance = 0.5;
 	delayedTouches = touches;
 	delayedEvent = event;
 
-	delayTimer = [NSTimer scheduledTimerWithTimeInterval:kGLGestureDelayInterval target:self selector:@selector(fireDelayedTouches:) userInfo:nil repeats:NO];
+	delayTimer = [NSTimer scheduledTimerWithTimeInterval:self.delayTimeInterval target:self selector:@selector(fireDelayedTouches:) userInfo:nil repeats:NO];
 }
 
 - (void)fireDelayedTouches:(id)timer {

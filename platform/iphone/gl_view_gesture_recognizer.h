@@ -49,6 +49,8 @@
 	UIEvent *delayedEvent;
 }
 
+@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+
 - (instancetype)init;
 
 @end
