@@ -150,6 +150,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_code_size = 0;
 	}
 
+	if (method_bind_map.size()) {
+		function->methods.resize(method_bind_map.size());
+		function->_methods_ptr = function->methods.ptrw();
+		function->_methods_count = method_bind_map.size();
+		for (const Map<MethodBind *, int, MethodBindComparator>::Element *E = method_bind_map.front(); E; E = E->next()) {
+			function->methods.write[E->get()] = E->key();
+		}
+	} else {
+		function->_methods_ptr = nullptr;
+		function->_methods_count = 0;
+	}
+
 	if (function->default_arguments.size()) {
 		function->_default_arg_count = function->default_arguments.size();
 		function->_default_arg_ptr = &function->default_arguments[0];
@@ -267,6 +279,8 @@ void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant:
 	m_macro(STRING, STRING);                             \
 	m_macro(VECTOR2, VECTOR2);                           \
 	m_macro(VECTOR2I, VECTOR2I);                         \
+	m_macro(RECT2, RECT2);                               \
+	m_macro(RECT2I, RECT2I);                             \
 	m_macro(VECTOR3, VECTOR3);                           \
 	m_macro(VECTOR3I, VECTOR3I);                         \
 	m_macro(TRANSFORM2D, TRANSFORM2D);                   \
@@ -855,12 +869,11 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 	alloc_call(p_arguments.size());
 }
 
-void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
+void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
 	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET);
 	append(p_arguments.size());
 	append(p_base);
-	append(p_method->get_instance_class());
-	append(p_method->get_name());
+	append(p_method);
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -868,16 +881,68 @@ void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, 
 	alloc_call(p_arguments.size());
 }
 
-void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN);
+void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
+#define CASE_TYPE(m_type, m_var_type)                           \
+	case Variant::m_var_type:                                   \
+		append(GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type); \
+		break
+
+	if (p_method->has_return()) {
+		MethodInfo info;
+		ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
+		switch (info.return_val.type) {
+			CASE_TYPE(BOOL, BOOL);
+			CASE_TYPE(INT, INT);
+			CASE_TYPE(FLOAT, FLOAT);
+			CASE_TYPE(STRING, STRING);
+			CASE_TYPE(VECTOR2, VECTOR2);
+			CASE_TYPE(VECTOR2I, VECTOR2I);
+			CASE_TYPE(RECT2, RECT2);
+			CASE_TYPE(RECT2I, RECT2I);
+			CASE_TYPE(VECTOR3, VECTOR3);
+			CASE_TYPE(VECTOR3I, VECTOR3I);
+			CASE_TYPE(TRANSFORM2D, TRANSFORM2D);
+			CASE_TYPE(PLANE, PLANE);
+			CASE_TYPE(AABB, AABB);
+			CASE_TYPE(BASIS, BASIS);
+			CASE_TYPE(TRANSFORM, TRANSFORM);
+			CASE_TYPE(COLOR, COLOR);
+			CASE_TYPE(STRING_NAME, STRING_NAME);
+			CASE_TYPE(NODE_PATH, NODE_PATH);
+			CASE_TYPE(RID, _RID);
+			CASE_TYPE(QUAT, QUAT);
+			CASE_TYPE(OBJECT, OBJECT);
+			CASE_TYPE(CALLABLE, CALLABLE);
+			CASE_TYPE(SIGNAL, SIGNAL);
+			CASE_TYPE(DICTIONARY, DICTIONARY);
+			CASE_TYPE(ARRAY, ARRAY);
+			CASE_TYPE(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY);
+			CASE_TYPE(PACKED_INT32_ARRAY, PACKED_INT32_ARRAY);
+			CASE_TYPE(PACKED_INT64_ARRAY, PACKED_INT64_ARRAY);
+			CASE_TYPE(PACKED_FLOAT32_ARRAY, PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(PACKED_FLOAT64_ARRAY, PACKED_FLOAT64_ARRAY);
+			CASE_TYPE(PACKED_STRING_ARRAY, PACKED_STRING_ARRAY);
+			CASE_TYPE(PACKED_VECTOR2_ARRAY, PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(PACKED_VECTOR3_ARRAY, PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(PACKED_COLOR_ARRAY, PACKED_COLOR_ARRAY);
+			default:
+				append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET);
+				break;
+		}
+	} else {
+		append(GDScriptFunction::OPCODE_CALL_PTRCALL_NO_RETURN);
+	}
+
 	append(p_arguments.size());
 	append(p_base);
-	append(p_method->get_name());
+	append(p_method);
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_target);
 	alloc_call(p_arguments.size());
+
+#undef CASE_TYPE
 }
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {

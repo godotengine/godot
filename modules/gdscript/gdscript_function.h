@@ -195,6 +195,8 @@ struct GDScriptDataType {
 			OPCODE_##m_op##_STRING,               \
 			OPCODE_##m_op##_VECTOR2,              \
 			OPCODE_##m_op##_VECTOR2I,             \
+			OPCODE_##m_op##_RECT2,                \
+			OPCODE_##m_op##_RECT2I,               \
 			OPCODE_##m_op##_VECTOR3,              \
 			OPCODE_##m_op##_VECTOR3I,             \
 			OPCODE_##m_op##_TRANSFORM2D,          \
@@ -205,6 +207,7 @@ struct GDScriptDataType {
 			OPCODE_##m_op##_TRANSFORM,            \
 			OPCODE_##m_op##_COLOR,                \
 			OPCODE_##m_op##_STRING_NAME,          \
+			OPCODE_##m_op##_NODE_PATH,            \
 			OPCODE_##m_op##_RID,                  \
 			OPCODE_##m_op##_OBJECT,               \
 			OPCODE_##m_op##_CALLABLE,             \
@@ -401,6 +404,9 @@ public:
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_CALL_METHOD_BIND,
 		OPCODE_CALL_METHOD_BIND_RET,
+		// ptrcall have one instruction per return type.
+		OPCODE_CALL_PTRCALL_NO_RETURN,
+		OPCODE_ALL_TYPES(CALL_PTRCALL),
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
 		OPCODE_JUMP,
@@ -461,6 +467,8 @@ private:
 	int _default_arg_count;
 	const int *_code_ptr;
 	int _code_size;
+	int _methods_count;
+	MethodBind **_methods_ptr;
 	int _argument_count;
 	int _stack_size;
 	int _call_size;
@@ -475,6 +483,7 @@ private:
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<MethodBind *> methods;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 

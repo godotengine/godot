@@ -33,6 +33,10 @@
 
 #include "gdscript_codegen.h"
 
+struct MethodBindComparator {
+	_ALWAYS_INLINE_ bool operator()(const MethodBind *p_a, const MethodBind *p_b) const { return (p_a < p_b); }
+};
+
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
@@ -52,6 +56,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 	Map<StringName, int> name_map;
+	Map<MethodBind *, int, MethodBindComparator> method_bind_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;
 #endif
@@ -127,10 +132,20 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	int get_constant_pos(const Variant &p_constant) {
-		if (constant_map.has(p_constant))
+		if (constant_map.has(p_constant)) {
 			return constant_map[p_constant];
+		}
 		int pos = constant_map.size();
 		constant_map[p_constant] = pos;
+		return pos;
+	}
+
+	int get_method_bind_pos(MethodBind *p_method) {
+		if (method_bind_map.has(p_method)) {
+			return method_bind_map[p_method];
+		}
+		int pos = method_bind_map.size();
+		method_bind_map[p_method] = pos;
 		return pos;
 	}
 
@@ -189,6 +204,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_name_map_pos(p_name));
 	}
 
+	void append(MethodBind *p_method) {
+		opcodes.push_back(get_method_bind_pos(p_method));
+	}
+
 	void patch_jump(int p_address) {
 		opcodes.write[p_address] = opcodes.size();
 	}
@@ -244,8 +263,8 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;

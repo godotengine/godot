@@ -158,6 +158,48 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 	return result;
 }
 
+static bool _is_exact_type(const PropertyInfo &p_par_type, const GDScriptDataType &p_arg_type) {
+	if (!p_arg_type.has_type) {
+		return false;
+	}
+	if (p_par_type.type == Variant::NIL) {
+		return false;
+	}
+	if (p_par_type.type == Variant::OBJECT) {
+		if (p_arg_type.kind == GDScriptDataType::BUILTIN) {
+			return false;
+		}
+		StringName class_name;
+		if (p_arg_type.kind == GDScriptDataType::NATIVE) {
+			class_name = p_arg_type.native_type;
+		} else {
+			class_name = p_arg_type.native_type == StringName() ? p_arg_type.script_type->get_instance_base_type() : p_arg_type.native_type;
+		}
+		return p_par_type.class_name == class_name || ClassDB::is_parent_class(class_name, p_par_type.class_name);
+	} else {
+		if (p_arg_type.kind != GDScriptDataType::BUILTIN) {
+			return false;
+		}
+		return p_par_type.type == p_arg_type.builtin_type;
+	}
+}
+
+static bool _have_exact_arguments(const MethodBind *p_method, const Vector<GDScriptCodeGenerator::Address> &p_arguments) {
+	if (p_method->get_argument_count() != p_arguments.size()) {
+		// ptrcall won't work with default arguments.
+		return false;
+	}
+	MethodInfo info;
+	ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
+	for (int i = 0; i < p_arguments.size(); i++) {
+		const PropertyInfo &prop = info.arguments[i];
+		if (!_is_exact_type(prop, p_arguments[i].type)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
 	if (p_expression->is_constant) {
 		return codegen.add_constant(p_expression->reduced_value);
@@ -434,8 +476,15 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							// Native method, use faster path.
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::SELF;
-							const MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
-							gen->write_call_method_bind(result, self, method, arguments);
+							MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
+
+							if (_have_exact_arguments(method, arguments)) {
+								// Exact arguments, use ptrcall.
+								gen->write_call_ptrcall(result, self, method, arguments);
+							} else {
+								// Not exact arguments, but still can use method bind call.
+								gen->write_call_method_bind(result, self, method, arguments);
+							}
 						} else if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
@@ -459,11 +508,17 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (base.type.kind == GDScriptDataType::NATIVE) {
 									class_name = base.type.native_type;
 								} else {
-									class_name = base.type.script_type->get_instance_base_type();
+									class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 								}
 								if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
-									const MethodBind *method = ClassDB::get_method(class_name, call->function_name);
-									gen->write_call_method_bind(result, base, method, arguments);
+									MethodBind *method = ClassDB::get_method(class_name, call->function_name);
+									if (_have_exact_arguments(method, arguments)) {
+										// Exact arguments, use ptrcall.
+										gen->write_call_ptrcall(result, base, method, arguments);
+									} else {
+										// Not exact arguments, but still can use method bind call.
+										gen->write_call_method_bind(result, base, method, arguments);
+									}
 								} else {
 									gen->write_call(result, base, call->function_name, arguments);
 								}
@@ -513,7 +568,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(get_node->get_datatype()));
 
 			MethodBind *get_node_method = ClassDB::get_method("Node", "get_node");
-			gen->write_call_method_bind(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
+			gen->write_call_ptrcall(result, GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), get_node_method, args);
 
 			return result;
 		} break;
