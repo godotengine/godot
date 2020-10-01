@@ -4109,6 +4109,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				//arguments
 			} break;
 			case GDScriptTokenizer::TK_PR_SIGNAL: {
+				_mark_line_as_safe(tokenizer->get_token_line());
 				tokenizer->advance();
 
 				if (!tokenizer->is_token_literal()) {
