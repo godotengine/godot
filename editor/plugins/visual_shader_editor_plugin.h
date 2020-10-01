@@ -111,6 +111,7 @@ public:
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_constant(VisualShader::Type p_type, int p_node_id);
 	int get_constant_index(float p_constant) const;
+	void update_node_size(int p_node_id);
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
