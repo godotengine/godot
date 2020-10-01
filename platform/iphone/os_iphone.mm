@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_iphone.cpp                                                        */
+/*  os_iphone.mm                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -47,6 +47,7 @@
 
 #include "semaphore_iphone.h"
 
+#import <UIKit/UIKit.h>
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -81,14 +82,9 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_id(String p_id) {
-
-	unique_id = p_id;
-};
-
 String OSIPhone::get_unique_id() const {
-
-	return unique_id;
+	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
+	return String::utf8([uuid UTF8String]);
 };
 
 void OSIPhone::initialize_core() {
@@ -542,12 +538,15 @@ bool OSIPhone::has_touchscreen_ui_hint() const {
 	return true;
 }
 
-void OSIPhone::set_locale(String p_locale) {
-	locale_code = p_locale;
-}
-
 String OSIPhone::get_locale() const {
-	return locale_code;
+	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
+
+	if (preferedLanguage) {
+		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
+	}
+
+	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
 }
 
 extern bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

@@ -440,30 +440,6 @@ static int frame_count = 0;
 			};
 			++frame_count;
 
-			NSString *locale_code = [[NSLocale currentLocale] localeIdentifier];
-			OSIPhone::get_singleton()->set_locale(
-					String::utf8([locale_code UTF8String]));
-
-			NSString *uuid;
-			if ([[UIDevice currentDevice]
-						respondsToSelector:@selector(identifierForVendor)]) {
-				uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
-			} else {
-				// before iOS 6, so just generate an identifier and store it
-				uuid = [[NSUserDefaults standardUserDefaults]
-						objectForKey:@"identiferForVendor"];
-				if (!uuid) {
-					CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-					uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, cfuuid);
-					CFRelease(cfuuid);
-					[[NSUserDefaults standardUserDefaults]
-							setObject:uuid
-							   forKey:@"identifierForVendor"];
-				}
-			}
-
-			OSIPhone::get_singleton()->set_unique_id(String::utf8([uuid UTF8String]));
-
 		}; break;
 
 		case 1: {
