@@ -6,7 +6,7 @@ iphone_lib = [
     "godot_iphone.cpp",
     "os_iphone.mm",
     "semaphore_iphone.cpp",
-    "gl_view.mm",
+    "godot_view.mm",
     "main.m",
     "app_delegate.mm",
     "view_controller.mm",
@@ -14,7 +14,7 @@ iphone_lib = [
     "in_app_store.mm",
     "icloud.mm",
     "ios.mm",
-    "gl_view_gesture_recognizer.mm",
+    "godot_view_gesture_recognizer.mm",
 ]
 
 env_ios = env.Clone()

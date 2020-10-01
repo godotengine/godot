@@ -206,7 +206,7 @@ void GameCenter::request_achievement_descriptions() {
 			Array hidden;
 			Array replayable;
 
-			for (int i = 0; i < [descriptions count]; i++) {
+			for (NSUInteger i = 0; i < [descriptions count]; i++) {
 
 				GKAchievementDescription *description = [descriptions objectAtIndex:i];
 
@@ -256,7 +256,7 @@ void GameCenter::request_achievements() {
 			PoolStringArray names;
 			PoolRealArray percentages;
 
-			for (int i = 0; i < [achievements count]; i++) {
+			for (NSUInteger i = 0; i < [achievements count]; i++) {
 
 				GKAchievement *achievement = [achievements objectAtIndex:i];
 				const char *str = [achievement.identifier UTF8String];

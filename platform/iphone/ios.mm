@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "ios.h"
-#include <sys/sysctl.h>
+
+#import "app_delegate.h"
 
 #import <UIKit/UIKit.h>
+#include <sys/sysctl.h>
 
 void iOS::_bind_methods() {
 
@@ -39,8 +41,18 @@ void iOS::_bind_methods() {
 };
 
 void iOS::alert(const char *p_alert, const char *p_title) {
-	UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:[NSString stringWithUTF8String:p_title] message:[NSString stringWithUTF8String:p_alert] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
-	[alert show];
+	NSString *title = [NSString stringWithUTF8String:p_title];
+	NSString *message = [NSString stringWithUTF8String:p_alert];
+
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
+													 style:UIAlertActionStyleCancel
+												   handler:^(id){
+												   }];
+
+	[alert addAction:button];
+
+	[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
 }
 
 String iOS::get_model() const {

@@ -28,20 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view.h"
+#import "godot_view.h"
 #import "view_controller.h"
 #import <UIKit/UIKit.h>
 
 #import <CoreMotion/CoreMotion.h>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
+@interface AppDelegate : NSObject <UIApplicationDelegate, GodotViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
 	ViewController *view_controller;
 	bool is_focus_out;
 };
 
+@property(strong, class, readonly, nonatomic) ViewController *viewController;
 @property(strong, nonatomic) UIWindow *window;
-
-+ (ViewController *)getViewController;
 
 @end

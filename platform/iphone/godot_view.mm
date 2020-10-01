@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_view.mm                                                           */
+/*  godot_view.mm                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "gl_view.h"
-#import "gl_view_gesture_recognizer.h"
+#import "godot_view.h"
+#import "godot_view_gesture_recognizer.h"
 
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
@@ -40,7 +40,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 /*
-@interface GLView (private)
+@interface GodotView (private)
 
 - (id)initGLES;
 - (BOOL)createFramebuffer;
@@ -51,7 +51,7 @@
 bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
-static GLView *_instance = NULL;
+static GodotView *_instance = NULL;
 
 static bool video_found_error = false;
 static bool video_playing = false;
@@ -203,7 +203,7 @@ CGFloat _points_to_pixels(CGFloat points) {
 	return (points / pointsPerInch * pixelPerInch);
 }
 
-@implementation GLView
+@implementation GodotView
 
 @synthesize animationInterval;
 
@@ -325,16 +325,16 @@ static void clear_touches() {
 }
 
 - (void)initGestureRecognizer {
-	delayGestureRecognizer = [[GLViewGestureRecognizer alloc] init];
+	delayGestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
 	[self addGestureRecognizer:delayGestureRecognizer];
 }
 
-- (id<GLViewDelegate>)delegate {
+- (id<GodotViewDelegate>)delegate {
 	return delegate;
 }
 
 // Update the delegate, and if it needs a -setupView: call, set our internal flag so that it will be called.
-- (void)setDelegate:(id<GLViewDelegate>)d {
+- (void)setDelegate:(id<GodotViewDelegate>)d {
 	delegate = d;
 	delegateSetup = ![delegate respondsToSelector:@selector(setupView:)];
 }
@@ -418,10 +418,10 @@ static void clear_touches() {
 
 		// Approximate frame rate
 		// assumes device refreshes at 60 fps
-		int frameInterval = (int)floor(animationInterval * 60.0f);
+		int displayFPS = (NSInteger)(1.0 / animationInterval);
 
 		displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
-		[displayLink setFrameInterval:frameInterval];
+		displayLink.preferredFramesPerSecond = displayFPS;
 
 		// Setup DisplayLink in main thread
 		[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];

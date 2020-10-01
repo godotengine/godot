@@ -163,13 +163,10 @@
 
 		{
 			// do Y
-			int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-			int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-			int _bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
 
 			if ((width[0] != new_width) || (height[0] != new_height)) {
-				// printf("Camera Y plane %i, %i - %i\n", new_width, new_height, bytes_per_row);
-
 				width[0] = new_width;
 				height[0] = new_height;
 				img_data[0].resize(new_width * new_height);
@@ -184,13 +181,10 @@
 
 		{
 			// do CbCr
-			int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-			int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-			int bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1);
+			size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+			size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
 
 			if ((width[1] != new_width) || (height[1] != new_height)) {
-				// printf("Camera CbCr plane %i, %i - %i\n", new_width, new_height, bytes_per_row);
-
 				width[1] = new_width;
 				height[1] = new_height;
 				img_data[1].resize(2 * new_width * new_height);
@@ -359,7 +353,23 @@ void CameraIOS::update_feeds() {
 	// this way of doing things is deprecated but still works,
 	// rewrite to using AVCaptureDeviceDiscoverySession
 
-	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInDualCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSMutableArray *deviceTypes = [NSMutableArray array];
+
+	[deviceTypes addObject:AVCaptureDeviceTypeBuiltInWideAngleCamera];
+	[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTelephotoCamera];
+
+	if (@available(iOS 10.2, *)) {
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInDualCamera];
+	}
+
+	if (@available(iOS 11.1, *)) {
+		[deviceTypes addObject:AVCaptureDeviceTypeBuiltInTrueDepthCamera];
+	}
+
+	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession
+			discoverySessionWithDeviceTypes:deviceTypes
+								  mediaType:AVMediaTypeVideo
+								   position:AVCaptureDevicePositionUnspecified];
 
 	// remove devices that are gone..
 	for (int i = feeds.size() - 1; i >= 0; i--) {
