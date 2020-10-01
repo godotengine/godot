@@ -1224,11 +1224,15 @@ StringName AnimatedSprite3D::get_animation() const {
 
 String AnimatedSprite3D::get_configuration_warning() const {
 
+	String warning = SpriteBase3D::get_configuration_warning();
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
-	return String();
+	return warning;
 }
 
 void AnimatedSprite3D::_bind_methods() {

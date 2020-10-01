@@ -697,19 +697,28 @@ String NavigationMeshInstance::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
+	String warning = Spatial::get_configuration_warning();
 	if (!navmesh.is_valid()) {
-		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
+		return warning;
 	}
 	const Spatial *c = this;
 	while (c) {
 
 		if (Object::cast_to<Navigation>(c))
-			return String();
+			return warning;
 
 		c = Object::cast_to<Spatial>(c->get_parent());
 	}
 
-	return TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	if (warning != String()) {
+		warning += "\n\n";
+	}
+	warning += TTR("NavigationMeshInstance must be a child or grandchild to a Navigation node. It only provides navigation data.");
+	return warning;
 }
 
 void NavigationMeshInstance::_bind_methods() {

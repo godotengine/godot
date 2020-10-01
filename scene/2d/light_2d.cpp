@@ -352,11 +352,15 @@ void Light2D::_notification(int p_what) {
 
 String Light2D::get_configuration_warning() const {
 
+	String warning = Node2D::get_configuration_warning();
 	if (!texture.is_valid()) {
-		return TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
 	}
 
-	return String();
+	return warning;
 }
 
 void Light2D::set_shadow_smooth(float p_amount) {

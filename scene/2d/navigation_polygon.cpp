@@ -504,20 +504,29 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
+	String warning = Node2D::get_configuration_warning();
 	if (!navpoly.is_valid()) {
-		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
 	}
 	const Node2D *c = this;
 	while (c) {
 
 		if (Object::cast_to<Navigation2D>(c)) {
-			return String();
+			return warning;
 		}
 
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
 
-	return TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+	if (warning != String()) {
+		warning += "\n\n";
+	}
+	warning += TTR("NavigationPolygonInstance must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+
+	return warning;
 }
 
 void NavigationPolygonInstance::_bind_methods() {

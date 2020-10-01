@@ -244,7 +244,7 @@ String Particles::get_configuration_warning() const {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
 	}
 
-	String warnings;
+	String warnings = GeometryInstance::get_configuration_warning();
 
 	bool meshes_found = false;
 	bool anim_material_found = false;
@@ -267,7 +267,7 @@ String Particles::get_configuration_warning() const {
 
 	if (!meshes_found) {
 		if (warnings != String())
-			warnings += "\n";
+			warnings += "\n\n";
 		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
 	}
 

@@ -234,11 +234,15 @@ Popup::Popup() {
 
 String Popup::get_configuration_warning() const {
 
+	String warning = Control::get_configuration_warning();
 	if (is_visible_in_tree()) {
-		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
 	}
 
-	return String();
+	return warning;
 }
 
 Popup::~Popup() {

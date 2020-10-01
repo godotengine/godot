@@ -275,11 +275,15 @@ String PathFollow2D::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
+	String warning = Node2D::get_configuration_warning();
 	if (!Object::cast_to<Path2D>(get_parent())) {
-		return TTR("PathFollow2D only works when set as a child of a Path2D node.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PathFollow2D only works when set as a child of a Path2D node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void PathFollow2D::_bind_methods() {

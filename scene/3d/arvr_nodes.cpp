@@ -58,13 +58,17 @@ String ARVRCamera::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
+	String warning = Camera::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRCamera must have an ARVROrigin node as its parent.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
-	return String();
+	return warning;
 };
 
 Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
@@ -367,17 +371,24 @@ String ARVRController::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
+	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRController must have an ARVROrigin node as its parent.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRController must have an ARVROrigin node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		return TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
-	return String();
+	return warning;
 };
 
 ARVRController::ARVRController() {
@@ -494,17 +505,24 @@ String ARVRAnchor::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
+	String warning = Spatial::get_configuration_warning();
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		return TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
-	return String();
+	return warning;
 };
 
 Plane ARVRAnchor::get_plane() const {
@@ -535,10 +553,15 @@ String ARVROrigin::get_configuration_warning() const {
 	if (!is_visible() || !is_inside_tree())
 		return String();
 
-	if (tracked_camera == NULL)
-		return TTR("ARVROrigin requires an ARVRCamera child node.");
+	String warning = Spatial::get_configuration_warning();
+	if (tracked_camera == NULL) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ARVROrigin requires an ARVRCamera child node.");
+	}
 
-	return String();
+	return warning;
 };
 
 void ARVROrigin::_bind_methods() {
