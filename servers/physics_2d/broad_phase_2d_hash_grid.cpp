@@ -78,7 +78,7 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 	for (Map<Element *, PairData *>::Element *E = p_elem->paired.front(); E; E = E->next()) {
 
 		bool physical_collision = p_elem->aabb.intersects(E->key()->aabb);
-		bool logical_collision = p_elem->owner->test_collision_mask(E->key()->owner);
+		bool logical_collision = p_elem->owner->interacts_with(E->key()->owner);
 
 		if (physical_collision) {
 			if (!E->get()->colliding || (logical_collision && !E->get()->ud && pair_callback)) {

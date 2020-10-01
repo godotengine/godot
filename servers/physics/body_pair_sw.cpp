@@ -222,7 +222,7 @@ real_t combine_friction(BodySW *A, BodySW *B) {
 bool BodyPairSW::setup(real_t p_step) {
 
 	//cannot collide
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
+	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
 		collided = false;
 		return false;
 	}
