@@ -191,7 +191,7 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -215,7 +215,7 @@ void PopupPanel::_update_child_rects() {
 			continue;
 		}
 
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 

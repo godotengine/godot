@@ -45,7 +45,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {
@@ -285,7 +285,7 @@ void ScrollContainer::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (c == h_scroll || c == v_scroll) {
@@ -529,7 +529,7 @@ String ScrollContainer::get_configuration_warning() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {

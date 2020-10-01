@@ -5758,7 +5758,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	box_selection = memnew(Control);
 	add_child(box_selection);
-	box_selection->set_as_toplevel(true);
+	box_selection->set_as_top_level(true);
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect("draw", callable_mp(this, &AnimationTrackEditor::_box_selection_draw));

@@ -547,7 +547,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 }
 
 bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos) {
-	if (p_control->is_set_as_toplevel() || !p_control->is_visible()) {
+	if (p_control->is_set_as_top_level() || !p_control->is_visible()) {
 		return false;
 	}
 
