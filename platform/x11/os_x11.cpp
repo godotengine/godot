@@ -870,6 +870,8 @@ void OS_X11::finalize() {
 	if (xmbstring)
 		memfree(xmbstring);
 
+	memdelete(events_mutex);
+
 	args.clear();
 }
 
