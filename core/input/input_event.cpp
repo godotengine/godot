@@ -84,10 +84,6 @@ Ref<InputEvent> InputEvent::xformed_by(const Transform2D &p_xform, const Vector2
 	return Ref<InputEvent>((InputEvent *)this);
 }
 
-String InputEvent::as_text() const {
-	return String();
-}
-
 bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	return false;
 }
@@ -196,6 +192,33 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 	set_shift(event->get_shift());
 	set_control(event->get_control());
 	set_metakey(event->get_metakey());
+}
+
+String InputEventWithModifiers::as_text() const {
+	Vector<String> mod_names;
+
+	if (get_control()) {
+		mod_names.push_back(find_keycode_name(KEY_CONTROL));
+	}
+	if (get_shift()) {
+		mod_names.push_back(find_keycode_name(KEY_SHIFT));
+	}
+	if (get_alt()) {
+		mod_names.push_back(find_keycode_name(KEY_ALT));
+	}
+	if (get_metakey()) {
+		mod_names.push_back(find_keycode_name(KEY_META));
+	}
+
+	if (!mod_names.empty()) {
+		return String("+").join(mod_names);
+	} else {
+		return "None";
+	}
+}
+
+String InputEventWithModifiers::to_string() {
+	return as_text();
 }
 
 void InputEventWithModifiers::_bind_methods() {
@@ -326,24 +349,31 @@ uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
 }
 
 String InputEventKey::as_text() const {
-	String kc = keycode_get_string(keycode);
+	String kc;
+
+	if (keycode == 0) {
+		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
+	} else {
+		kc = keycode_get_string(keycode);
+	}
+
 	if (kc == String()) {
 		return kc;
 	}
 
-	if (get_metakey()) {
-		kc = find_keycode_name(KEY_META) + ("+" + kc);
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text == "" ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::to_string() {
+	String p = is_pressed() ? "true" : "false";
+	String e = is_echo() ? "true" : "false";
+
+	if (keycode == 0) {
+		return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", itos(physical_keycode) + " " + keycode_get_string(physical_keycode), InputEventWithModifiers::as_text(), "true", p, e);
+	} else {
+		return vformat("InputEventKey: keycode=%s mods=%s physical=%s pressed=%s echo=%s", itos(keycode) + " " + keycode_get_string(keycode), InputEventWithModifiers::as_text(), "false", p, e);
 	}
-	if (get_alt()) {
-		kc = find_keycode_name(KEY_ALT) + ("+" + kc);
-	}
-	if (get_shift()) {
-		kc = find_keycode_name(KEY_SHIFT) + ("+" + kc);
-	}
-	if (get_control()) {
-		kc = find_keycode_name(KEY_CONTROL) + ("+" + kc);
-	}
-	return kc;
 }
 
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
@@ -536,41 +566,74 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 	return match;
 }
 
+static const char *_mouse_button_descriptions[9] = {
+	TTRC("Left Mouse Button"),
+	TTRC("Right Mouse Button"),
+	TTRC("Middle Mouse Button"),
+	TTRC("Mouse Wheel Up"),
+	TTRC("Mouse Wheel Down"),
+	TTRC("Mouse Wheel Left"),
+	TTRC("Mouse Wheel Right"),
+	TTRC("Mouse Thumb Button 1"),
+	TTRC("Mouse Thumb Button 2")
+};
+
 String InputEventMouseButton::as_text() const {
-	String button_index_string = "";
-	switch (get_button_index()) {
+	// Modifiers
+	String mods_text = InputEventWithModifiers::as_text();
+	String full_string = mods_text == "" ? "" : mods_text + "+";
+
+	// Button
+	int idx = get_button_index();
+	switch (idx) {
 		case BUTTON_LEFT:
-			button_index_string = "BUTTON_LEFT";
-			break;
 		case BUTTON_RIGHT:
-			button_index_string = "BUTTON_RIGHT";
-			break;
 		case BUTTON_MIDDLE:
-			button_index_string = "BUTTON_MIDDLE";
-			break;
 		case BUTTON_WHEEL_UP:
-			button_index_string = "BUTTON_WHEEL_UP";
-			break;
 		case BUTTON_WHEEL_DOWN:
-			button_index_string = "BUTTON_WHEEL_DOWN";
-			break;
 		case BUTTON_WHEEL_LEFT:
-			button_index_string = "BUTTON_WHEEL_LEFT";
-			break;
 		case BUTTON_WHEEL_RIGHT:
-			button_index_string = "BUTTON_WHEEL_RIGHT";
-			break;
 		case BUTTON_XBUTTON1:
-			button_index_string = "BUTTON_XBUTTON1";
-			break;
 		case BUTTON_XBUTTON2:
-			button_index_string = "BUTTON_XBUTTON2";
+			full_string += RTR(_mouse_button_descriptions[idx - 1]); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
-			button_index_string = itos(get_button_index());
+			full_string += RTR("Button") + " #" + itos(idx);
 			break;
 	}
-	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
+
+	// Double Click
+	if (doubleclick) {
+		full_string += " (" + RTR("Double Click") + ")";
+	}
+
+	return full_string;
+}
+
+String InputEventMouseButton::to_string() {
+	String p = is_pressed() ? "true" : "false";
+	String d = doubleclick ? "true" : "false";
+
+	int idx = get_button_index();
+	String button_string = itos(idx);
+
+	switch (idx) {
+		case BUTTON_LEFT:
+		case BUTTON_RIGHT:
+		case BUTTON_MIDDLE:
+		case BUTTON_WHEEL_UP:
+		case BUTTON_WHEEL_DOWN:
+		case BUTTON_WHEEL_LEFT:
+		case BUTTON_WHEEL_RIGHT:
+		case BUTTON_XBUTTON1:
+		case BUTTON_XBUTTON2:
+			button_string += " (" + RTR(_mouse_button_descriptions[idx - 1]) + ")"; // button index starts from 1, array index starts from 0, so subtract 1
+			break;
+		default:
+			break;
+	}
+
+	return vformat("InputEventMouseButton: button_index=%s pressed=%s position=(%s) button_mask=%s doubleclick=%s", button_index, p, String(get_position()), itos(get_button_mask()), d);
 }
 
 void InputEventMouseButton::_bind_methods() {
@@ -653,27 +716,32 @@ Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, co
 }
 
 String InputEventMouseMotion::as_text() const {
-	String button_mask_string = "";
+	return vformat(RTR("Mouse motion at position (%s) with speed (%s)"), String(get_position()), String(get_speed()));
+}
+
+String InputEventMouseMotion::to_string() {
+	int button_mask = get_button_mask();
+	String button_mask_string = itos(button_mask);
 	switch (get_button_mask()) {
 		case BUTTON_MASK_LEFT:
-			button_mask_string = "BUTTON_MASK_LEFT";
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_LEFT - 1]) + ")";
 			break;
 		case BUTTON_MASK_MIDDLE:
-			button_mask_string = "BUTTON_MASK_MIDDLE";
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_MIDDLE - 1]) + ")";
 			break;
 		case BUTTON_MASK_RIGHT:
-			button_mask_string = "BUTTON_MASK_RIGHT";
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_RIGHT - 1]) + ")";
 			break;
 		case BUTTON_MASK_XBUTTON1:
-			button_mask_string = "BUTTON_MASK_XBUTTON1";
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON1 - 1]) + ")";
 			break;
 		case BUTTON_MASK_XBUTTON2:
-			button_mask_string = "BUTTON_MASK_XBUTTON2";
+			button_mask_string += " (" + RTR(_mouse_button_descriptions[BUTTON_XBUTTON2 - 1]) + ")";
 			break;
 		default:
-			button_mask_string = itos(get_button_mask());
 			break;
 	}
+
 	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + "), pressure=(" + rtos(get_pressure()) + "), tilt=(" + String(get_tilt()) + ")";
 }
 
@@ -796,7 +864,26 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
+static const char *_joy_axis_descriptions[JOY_AXIS_MAX] = {
+	TTRC("Left Stick X-Axis, Joystick 0 X-Axis"),
+	TTRC("Left Stick Y-Axis, Joystick 0 Y-Axis"),
+	TTRC("Right Stick X-Axis, Joystick 1 X-Axis"),
+	TTRC("Right Stick Y-Axis, Joystick 1 Y-Axis"),
+	TTRC("Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"),
+	TTRC("Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"),
+	TTRC("Joystick 3 X-Axis"),
+	TTRC("Joystick 3 Y-Axis"),
+	TTRC("Joystick 4 X-Axis"),
+	TTRC("Joystick 4 Y-Axis"),
+};
+
 String InputEventJoypadMotion::as_text() const {
+	String desc = axis < JOY_AXIS_MAX ? RTR(_joy_axis_descriptions[axis]) : TTR("Unknown Joypad Axis");
+
+	return vformat(TTR("Joypad Motion on Axis %s (%s) with Value %s"), itos(axis), desc, String(Variant(axis_value)));
+}
+
+String InputEventJoypadMotion::to_string() {
 	return "InputEventJoypadMotion : axis=" + itos(axis) + ", axis_value=" + String(Variant(axis_value));
 }
 
@@ -869,7 +956,39 @@ bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) cons
 	return button_index == button->button_index;
 }
 
+static const char *_joy_button_descriptions[JOY_BUTTON_SDL_MAX] = {
+	TTRC("Bottom Action, Sony Cross, Xbox A, Nintendo B"),
+	TTRC("Right Action, Sony Circle, Xbox B, Nintendo A"),
+	TTRC("Left Action, Sony Square, Xbox X, Nintendo Y"),
+	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
+	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
+	TTRC("Guide, Sony PS, Xbox Home"),
+	TTRC("Start, Nintendo +"),
+	TTRC("Left Stick, Sony L3, Xbox L/LS"),
+	TTRC("Right Stick, Sony R3, Xbox R/RS"),
+	TTRC("Left Shoulder, Sony L1, Xbox LB"),
+	TTRC("Right Shoulder, Sony R1, Xbox RB"),
+	TTRC("D-pad Up"),
+	TTRC("D-pad Down"),
+	TTRC("D-pad Left"),
+	TTRC("D-pad Right"),
+};
+
 String InputEventJoypadButton::as_text() const {
+	String text = "Joypad Button " + itos(button_index);
+
+	if (button_index < JOY_BUTTON_SDL_MAX) {
+		text += vformat(" (%s)", _joy_button_descriptions[button_index]);
+	}
+
+	if (pressure != 0) {
+		text += ", Pressure:" + String(Variant(pressure));
+	}
+
+	return text;
+}
+
+String InputEventJoypadButton::to_string() {
 	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
 }
 
@@ -927,6 +1046,12 @@ Ref<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, co
 }
 
 String InputEventScreenTouch::as_text() const {
+	String status = pressed ? RTR("touched") : RTR("released");
+
+	return vformat(RTR("Screen %s at (%s) with %s touch points"), status, String(get_position()), itos(index));
+}
+
+String InputEventScreenTouch::to_string() {
 	return "InputEventScreenTouch : index=" + itos(index) + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + ")";
 }
 
@@ -996,6 +1121,10 @@ Ref<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p_xform, con
 }
 
 String InputEventScreenDrag::as_text() const {
+	return vformat(RTR("Screen dragged with %s touch points at position (%s) with speed of (%s)"), itos(index), String(get_position()), String(get_speed()));
+}
+
+String InputEventScreenDrag::to_string() {
 	return "InputEventScreenDrag : index=" + itos(index) + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
 }
 
@@ -1079,6 +1208,10 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 }
 
 String InputEventAction::as_text() const {
+	return vformat(RTR("Input Action %s was %s"), action, pressed ? "pressed" : "released");
+}
+
+String InputEventAction::to_string() {
 	return "InputEventAction : action=" + action + ", pressed=(" + (pressed ? "true" : "false");
 }
 
@@ -1142,6 +1275,10 @@ Ref<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2D &p_xform,
 }
 
 String InputEventMagnifyGesture::as_text() const {
+	return vformat(RTR("Magnify Gesture at (%s) with factor %s"), String(get_position()), rtos(get_factor()));
+}
+
+String InputEventMagnifyGesture::to_string() {
 	return "InputEventMagnifyGesture : factor=" + rtos(get_factor()) + ", position=(" + String(get_position()) + ")";
 }
 
@@ -1178,6 +1315,10 @@ Ref<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p_xform, con
 }
 
 String InputEventPanGesture::as_text() const {
+	return vformat(RTR("Pan Gesture at (%s) with delta (%s)"), String(get_position()), String(get_delta()));
+}
+
+String InputEventPanGesture::to_string() {
 	return "InputEventPanGesture : delta=(" + String(get_delta()) + "), position=(" + String(get_position()) + ")";
 }
 
@@ -1255,7 +1396,11 @@ int InputEventMIDI::get_controller_value() const {
 }
 
 String InputEventMIDI::as_text() const {
-	return "InputEventMIDI : channel=(" + itos(get_channel()) + "), message=(" + itos(get_message()) + ")";
+	return vformat(RTR("MIDI Input on Channel=%s Message=%s"), itos(channel), itos(message));
+}
+
+String InputEventMIDI::to_string() {
+	return vformat("InputEvenMIDI: channel=%s message=%s pitch=%s velocity=%s pressure=%s", itos(channel), itos(message), itos(pitch), itos(velocity), itos(pressure));
 }
 
 void InputEventMIDI::_bind_methods() {
