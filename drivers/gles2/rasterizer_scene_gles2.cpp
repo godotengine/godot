@@ -2968,6 +2968,9 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 			}
 		}
 
+		// If max_texture_image_units is 8, our max glow level is 5, which allows 6 layers of glow
+		max_glow_level = MIN(max_glow_level, storage->config.max_texture_image_units - 3);
+
 		for (int i = 0; i < (max_glow_level + 1); i++) {
 
 			int vp_w = storage->frame.current_rt->mip_maps[1].sizes[i].width;
@@ -3070,7 +3073,7 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 					}
 				}
 			}
-			glActiveTexture(GL_TEXTURE1);
+			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->mip_maps[0].color);
 		} else {
 
@@ -3080,7 +3083,7 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 
 				if (glow_mask & (1 << i)) {
 					active_glow_level++;
-					glActiveTexture(GL_TEXTURE0 + active_glow_level);
+					glActiveTexture(GL_TEXTURE1 + active_glow_level);
 					glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->mip_maps[0].sizes[i + 1].color);
 					if (active_glow_level == 1) {
 						state.tonemap_shader.set_conditional(TonemapShaderGLES2::USE_GLOW_LEVEL1, true);
@@ -3119,7 +3122,7 @@ void RasterizerSceneGLES2::_post_process(Environment *env, const CameraMatrix &p
 		RasterizerStorageGLES2::Texture *tex = storage->texture_owner.getornull(env->color_correction);
 		if (tex) {
 			state.tonemap_shader.set_conditional(TonemapShaderGLES2::USE_COLOR_CORRECTION, true);
-			glActiveTexture(GL_TEXTURE2);
+			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(tex->target, tex->tex_id);
 		}
 	}

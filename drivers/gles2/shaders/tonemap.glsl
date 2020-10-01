@@ -75,15 +75,17 @@ uniform highp sampler2D source; //texunit:0
 #define USING_GLOW // only use glow when at least one glow level is selected
 
 #ifdef USE_MULTI_TEXTURE_GLOW
-uniform highp sampler2D source_glow1; //texunit:1
-uniform highp sampler2D source_glow2; //texunit:2
-uniform highp sampler2D source_glow3; //texunit:3
-uniform highp sampler2D source_glow4; //texunit:4
-uniform highp sampler2D source_glow5; //texunit:5
-uniform highp sampler2D source_glow6; //texunit:6
-uniform highp sampler2D source_glow7; //texunit:7
+uniform highp sampler2D source_glow1; //texunit:2
+uniform highp sampler2D source_glow2; //texunit:3
+uniform highp sampler2D source_glow3; //texunit:4
+uniform highp sampler2D source_glow4; //texunit:5
+uniform highp sampler2D source_glow5; //texunit:6
+uniform highp sampler2D source_glow6; //texunit:7
+#ifdef USE_GLOW_LEVEL7
+uniform highp sampler2D source_glow7; //texunit:8
+#endif
 #else
-uniform highp sampler2D source_glow; //texunit:1
+uniform highp sampler2D source_glow; //texunit:2
 #endif
 uniform highp float glow_intensity;
 #endif
@@ -93,7 +95,7 @@ uniform vec3 bcs;
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-uniform sampler2D color_correction; //texunit:2
+uniform sampler2D color_correction; //texunit:1
 #endif
 
 #ifdef GL_EXT_gpu_shader4
