@@ -271,11 +271,16 @@ void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
 }
 
 String NavigationAgent2D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		return TTR("The NavigationAgent2D can be used only under a Node2D node");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationAgent2D can be used only under a Node2D node");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationAgent2D::update_navigation() {

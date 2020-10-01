@@ -254,7 +254,7 @@ bool CPUParticles2D::get_fractional_delta() const {
 }
 
 String CPUParticles2D::get_configuration_warning() const {
-	String warnings;
+	String warnings = Node2D::get_configuration_warning();
 
 	CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 

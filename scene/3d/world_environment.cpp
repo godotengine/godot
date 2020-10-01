@@ -110,22 +110,30 @@ Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
 }
 
 String WorldEnvironment::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!environment.is_valid()) {
-		return TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
 	}
 
 	if (!is_inside_tree()) {
-		return String();
+		return warning;
 	}
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), &nodes);
 
 	if (nodes.size() > 1) {
-		return TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
 	}
 
-	return String();
+	return warning;
 }
 
 void WorldEnvironment::_bind_methods() {
