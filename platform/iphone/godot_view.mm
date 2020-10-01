@@ -145,8 +145,6 @@ static const int max_touches = 8;
 	if (self.delayGestureRecognizer) {
 		self.delayGestureRecognizer = nil;
 	}
-
-	[super dealloc];
 }
 
 - (void)godot_commonInit {
@@ -156,7 +154,7 @@ static const int max_touches = 8;
 
 	// Configure and start accelerometer
 	if (!self.motionManager) {
-		self.motionManager = [[[CMMotionManager alloc] init] autorelease];
+		self.motionManager = [[CMMotionManager alloc] init];
 		if (self.motionManager.deviceMotionAvailable) {
 			self.motionManager.deviceMotionUpdateInterval = 1.0 / 70.0;
 			[self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXMagneticNorthZVertical];
@@ -169,7 +167,6 @@ static const int max_touches = 8;
 	GodotViewGestureRecognizer *gestureRecognizer = [[GodotViewGestureRecognizer alloc] init];
 	self.delayGestureRecognizer = gestureRecognizer;
 	[self addGestureRecognizer:self.delayGestureRecognizer];
-	[gestureRecognizer release];
 }
 
 - (void)stopRendering {
@@ -204,14 +201,11 @@ static const int max_touches = 8;
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
 
-		//        if (@available(iOS 10, *)) {
-		self.displayLink.preferredFramesPerSecond = (NSInteger)(1.0 / self.renderingInterval);
-		//        } else {
-		//            // Approximate frame rate
-		//            // assumes device refreshes at 60 fps
-		//            int frameInterval = (int)floor(self.renderingInterval * 60.0f);
-		//            [self.displayLink setFrameInterval:frameInterval];
-		//        }
+		// Approximate frame rate
+		// assumes device refreshes at 60 fps
+		int displayFPS = (NSInteger)(1.0 / self.renderingInterval);
+
+		self.displayLink.preferredFramesPerSecond = displayFPS;
 
 		// Setup DisplayLink in main thread
 		[self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
