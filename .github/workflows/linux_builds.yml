@@ -118,9 +118,7 @@ jobs:
 
   linux-sanitizer:
     runs-on: "ubuntu-20.04"
-    name: Editor and exported project  with sanitizers (target=debug/release, tools=yes/no, debug_symbols=yes/full, use_ubsan=yes, use_asan=yes)
-    # FIXME: Disabled until we can get it to pass.
-    if: false
+    name: Editor and exported project with sanitizers (target=debug/release, tools=yes/no, debug_symbols=yes/full, use_ubsan=yes, use_asan=yes)
 
     steps:
       - uses: actions/checkout@v2
