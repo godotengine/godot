@@ -38,7 +38,82 @@
 class VariantInternal {
 public:
 	// Set type.
-	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) { v->type = p_type; }
+	_FORCE_INLINE_ static void initialize(Variant *v, Variant::Type p_type) {
+		v->clear();
+		v->type = p_type;
+
+		switch (p_type) {
+			case Variant::AABB:
+				init_aabb(v);
+				break;
+			case Variant::TRANSFORM2D:
+				init_transform2d(v);
+				break;
+			case Variant::TRANSFORM:
+				init_transform(v);
+				break;
+			case Variant::STRING:
+				init_string(v);
+				break;
+			case Variant::STRING_NAME:
+				init_string_name(v);
+				break;
+			case Variant::NODE_PATH:
+				init_node_path(v);
+				break;
+			case Variant::CALLABLE:
+				init_callable(v);
+				break;
+			case Variant::SIGNAL:
+				init_signal(v);
+				break;
+			case Variant::DICTIONARY:
+				init_dictionary(v);
+				break;
+			case Variant::ARRAY:
+				init_array(v);
+				break;
+			case Variant::PACKED_BYTE_ARRAY:
+				init_byte_array(v);
+				break;
+			case Variant::PACKED_INT32_ARRAY:
+				init_int32_array(v);
+				break;
+			case Variant::PACKED_INT64_ARRAY:
+				init_int64_array(v);
+				break;
+			case Variant::PACKED_FLOAT32_ARRAY:
+				init_float32_array(v);
+				break;
+			case Variant::PACKED_FLOAT64_ARRAY:
+				init_float64_array(v);
+				break;
+			case Variant::PACKED_STRING_ARRAY:
+				init_string_array(v);
+				break;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				init_vector2_array(v);
+				break;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				init_vector3_array(v);
+				break;
+			case Variant::PACKED_COLOR_ARRAY:
+				init_color_array(v);
+				break;
+			default:
+				break;
+		}
+	}
+
+	_FORCE_INLINE_ static void set_object(Variant *v, Object *obj) {
+		if (obj) {
+			v->_get_obj().obj = obj;
+			v->_get_obj().id = obj->get_instance_id();
+		} else {
+			v->_get_obj().obj = nullptr;
+			v->_get_obj().id = ObjectID();
+		}
+	}
 
 	// Atomic types.
 	_FORCE_INLINE_ static bool *get_bool(Variant *v) { return &v->_data._bool; }
@@ -215,6 +290,162 @@ public:
 	_FORCE_INLINE_ static void object_assign_null(Variant *v) {
 		v->_get_obj().obj = nullptr;
 		v->_get_obj().id = ObjectID();
+	}
+
+	_FORCE_INLINE_ static void *get_opaque_pointer(Variant *v) {
+		switch (v->type) {
+			case Variant::NIL:
+				return nullptr;
+			case Variant::BOOL:
+				return get_bool(v);
+			case Variant::INT:
+				return get_int(v);
+			case Variant::FLOAT:
+				return get_float(v);
+			case Variant::STRING:
+				return get_string(v);
+			case Variant::VECTOR2:
+				return get_vector2(v);
+			case Variant::VECTOR2I:
+				return get_vector2i(v);
+			case Variant::VECTOR3:
+				return get_vector3(v);
+			case Variant::VECTOR3I:
+				return get_vector3i(v);
+			case Variant::RECT2:
+				return get_rect2(v);
+			case Variant::RECT2I:
+				return get_rect2i(v);
+			case Variant::TRANSFORM:
+				return get_transform(v);
+			case Variant::TRANSFORM2D:
+				return get_transform2d(v);
+			case Variant::QUAT:
+				return get_quat(v);
+			case Variant::PLANE:
+				return get_plane(v);
+			case Variant::BASIS:
+				return get_basis(v);
+			case Variant::AABB:
+				return get_aabb(v);
+			case Variant::COLOR:
+				return get_color(v);
+			case Variant::STRING_NAME:
+				return get_string_name(v);
+			case Variant::NODE_PATH:
+				return get_node_path(v);
+			case Variant::RID:
+				return get_rid(v);
+			case Variant::CALLABLE:
+				return get_callable(v);
+			case Variant::SIGNAL:
+				return get_signal(v);
+			case Variant::DICTIONARY:
+				return get_dictionary(v);
+			case Variant::ARRAY:
+				return get_array(v);
+			case Variant::PACKED_BYTE_ARRAY:
+				return get_byte_array(v);
+			case Variant::PACKED_INT32_ARRAY:
+				return get_int32_array(v);
+			case Variant::PACKED_INT64_ARRAY:
+				return get_int64_array(v);
+			case Variant::PACKED_FLOAT32_ARRAY:
+				return get_float32_array(v);
+			case Variant::PACKED_FLOAT64_ARRAY:
+				return get_float64_array(v);
+			case Variant::PACKED_STRING_ARRAY:
+				return get_string_array(v);
+			case Variant::PACKED_VECTOR2_ARRAY:
+				return get_vector2_array(v);
+			case Variant::PACKED_VECTOR3_ARRAY:
+				return get_vector3_array(v);
+			case Variant::PACKED_COLOR_ARRAY:
+				return get_color_array(v);
+			case Variant::OBJECT:
+				return v->_get_obj().obj;
+			case Variant::VARIANT_MAX:
+				ERR_FAIL_V(nullptr);
+		}
+		ERR_FAIL_V(nullptr);
+	}
+
+	_FORCE_INLINE_ static const void *get_opaque_pointer(const Variant *v) {
+		switch (v->type) {
+			case Variant::NIL:
+				return nullptr;
+			case Variant::BOOL:
+				return get_bool(v);
+			case Variant::INT:
+				return get_int(v);
+			case Variant::FLOAT:
+				return get_float(v);
+			case Variant::STRING:
+				return get_string(v);
+			case Variant::VECTOR2:
+				return get_vector2(v);
+			case Variant::VECTOR2I:
+				return get_vector2i(v);
+			case Variant::VECTOR3:
+				return get_vector3(v);
+			case Variant::VECTOR3I:
+				return get_vector3i(v);
+			case Variant::RECT2:
+				return get_rect2(v);
+			case Variant::RECT2I:
+				return get_rect2i(v);
+			case Variant::TRANSFORM:
+				return get_transform(v);
+			case Variant::TRANSFORM2D:
+				return get_transform2d(v);
+			case Variant::QUAT:
+				return get_quat(v);
+			case Variant::PLANE:
+				return get_plane(v);
+			case Variant::BASIS:
+				return get_basis(v);
+			case Variant::AABB:
+				return get_aabb(v);
+			case Variant::COLOR:
+				return get_color(v);
+			case Variant::STRING_NAME:
+				return get_string_name(v);
+			case Variant::NODE_PATH:
+				return get_node_path(v);
+			case Variant::RID:
+				return get_rid(v);
+			case Variant::CALLABLE:
+				return get_callable(v);
+			case Variant::SIGNAL:
+				return get_signal(v);
+			case Variant::DICTIONARY:
+				return get_dictionary(v);
+			case Variant::ARRAY:
+				return get_array(v);
+			case Variant::PACKED_BYTE_ARRAY:
+				return get_byte_array(v);
+			case Variant::PACKED_INT32_ARRAY:
+				return get_int32_array(v);
+			case Variant::PACKED_INT64_ARRAY:
+				return get_int64_array(v);
+			case Variant::PACKED_FLOAT32_ARRAY:
+				return get_float32_array(v);
+			case Variant::PACKED_FLOAT64_ARRAY:
+				return get_float64_array(v);
+			case Variant::PACKED_STRING_ARRAY:
+				return get_string_array(v);
+			case Variant::PACKED_VECTOR2_ARRAY:
+				return get_vector2_array(v);
+			case Variant::PACKED_VECTOR3_ARRAY:
+				return get_vector3_array(v);
+			case Variant::PACKED_COLOR_ARRAY:
+				return get_color_array(v);
+			case Variant::OBJECT:
+				return v->_get_obj().obj;
+			case Variant::VARIANT_MAX:
+				ERR_FAIL_V(nullptr);
+		}
+		ERR_FAIL_V(nullptr);
 	}
 };
 
