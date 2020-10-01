@@ -1493,7 +1493,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
 			break;
 		}
-		if (p_control->is_set_as_toplevel()) {
+		if (p_control->is_set_as_top_level()) {
 			break;
 		}
 
@@ -1620,7 +1620,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 				}
 			}
 
-			if (!control->is_inside_tree() || control->is_set_as_toplevel()) {
+			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
 			if (gui.key_event_accepted) {
@@ -1631,7 +1631,7 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 			}
 		}
 
-		if (ci->is_set_as_toplevel()) {
+		if (ci->is_set_as_top_level()) {
 			break;
 		}
 
@@ -1655,7 +1655,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 				break;
 			}
 
-			if (!control->is_inside_tree() || control->is_set_as_toplevel()) {
+			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
 			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
@@ -1663,7 +1663,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 			}
 		}
 
-		if (ci->is_set_as_toplevel()) {
+		if (ci->is_set_as_top_level()) {
 			break;
 		}
 
@@ -1721,7 +1721,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	if (!c || !c->clips_input() || c->has_point(matrix.affine_inverse().xform(p_global))) {
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			CanvasItem *ci = Object::cast_to<CanvasItem>(p_node->get_child(i));
-			if (!ci || ci->is_set_as_toplevel()) {
+			if (!ci || ci->is_set_as_top_level()) {
 				continue;
 			}
 
@@ -1768,7 +1768,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 
 			p_at_pos = ci->get_transform().xform(p_at_pos);
 
-			if (ci->is_set_as_toplevel()) {
+			if (ci->is_set_as_top_level()) {
 				break;
 			}
 
@@ -1865,7 +1865,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						}
 					}
 
-					if (ci->is_set_as_toplevel()) {
+					if (ci->is_set_as_top_level()) {
 						break;
 					}
 
@@ -1993,7 +1993,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							}
 						}
 
-						if (ci->is_set_as_toplevel()) {
+						if (ci->is_set_as_top_level()) {
 							break;
 						}
 
@@ -2105,7 +2105,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
 						break;
 					}
-					if (c->is_set_as_toplevel()) {
+					if (c->is_set_as_top_level()) {
 						break;
 					}
 					c = c->get_parent_control();
@@ -2404,7 +2404,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	if (gui.drag_preview) {
 		memdelete(gui.drag_preview);
 	}
-	p_control->set_as_toplevel(true);
+	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();

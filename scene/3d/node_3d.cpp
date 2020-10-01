@@ -103,7 +103,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	data.children_lock++;
 
 	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
-		if (E->get()->data.toplevel_active) {
+		if (E->get()->data.top_level_active) {
 			continue; //don't propagate to a toplevel
 		}
 		E->get()->_propagate_transform_changed(p_origin);
@@ -136,12 +136,12 @@ void Node3D::_notification(int p_what) {
 				data.C = nullptr;
 			}
 
-			if (data.toplevel && !Engine::get_singleton()->is_editor_hint()) {
+			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
 					data.dirty = DIRTY_VECTORS; //global is always dirty upon entering a scene
 				}
-				data.toplevel_active = true;
+				data.top_level_active = true;
 			}
 
 			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
@@ -160,7 +160,7 @@ void Node3D::_notification(int p_what) {
 			}
 			data.parent = nullptr;
 			data.C = nullptr;
-			data.toplevel_active = false;
+			data.top_level_active = false;
 		} break;
 		case NOTIFICATION_ENTER_WORLD: {
 			data.inside_world = true;
@@ -238,7 +238,7 @@ void Node3D::set_transform(const Transform &p_transform) {
 
 void Node3D::set_global_transform(const Transform &p_transform) {
 	Transform xform =
-			(data.parent && !data.toplevel_active) ?
+			(data.parent && !data.top_level_active) ?
 					data.parent->get_global_transform().affine_inverse() * p_transform :
 					p_transform;
 
@@ -261,7 +261,7 @@ Transform Node3D::get_global_transform() const {
 			_update_local_transform();
 		}
 
-		if (data.parent && !data.toplevel_active) {
+		if (data.parent && !data.top_level_active) {
 			data.global_transform = data.parent->get_global_transform() * data.local_transform;
 		} else {
 			data.global_transform = data.local_transform;
@@ -462,8 +462,8 @@ bool Node3D::is_scale_disabled() const {
 	return data.disable_scale;
 }
 
-void Node3D::set_as_toplevel(bool p_enabled) {
-	if (data.toplevel == p_enabled) {
+void Node3D::set_as_top_level(bool p_enabled) {
+	if (data.top_level == p_enabled) {
 		return;
 	}
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
@@ -473,16 +473,16 @@ void Node3D::set_as_toplevel(bool p_enabled) {
 			set_transform(data.parent->get_global_transform().affine_inverse() * get_global_transform());
 		}
 
-		data.toplevel = p_enabled;
-		data.toplevel_active = p_enabled;
+		data.top_level = p_enabled;
+		data.top_level_active = p_enabled;
 
 	} else {
-		data.toplevel = p_enabled;
+		data.top_level = p_enabled;
 	}
 }
 
-bool Node3D::is_set_as_toplevel() const {
-	return data.toplevel;
+bool Node3D::is_set_as_top_level() const {
+	return data.top_level;
 }
 
 Ref<World3D> Node3D::get_world_3d() const {
@@ -715,8 +715,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Node3D::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
-	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Node3D::set_as_toplevel);
-	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Node3D::is_set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Node3D::set_as_top_level);
+	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Node3D::is_set_as_top_level);
 	ClassDB::bind_method(D_METHOD("set_disable_scale", "disable"), &Node3D::set_disable_scale);
 	ClassDB::bind_method(D_METHOD("is_scale_disabled"), &Node3D::is_scale_disabled);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Node3D::get_world_3d);
@@ -789,8 +789,8 @@ Node3D::Node3D() :
 	data.children_lock = 0;
 
 	data.ignore_notification = false;
-	data.toplevel = false;
-	data.toplevel_active = false;
+	data.top_level = false;
+	data.top_level_active = false;
 	data.scale = Vector3(1, 1, 1);
 	data.viewport = nullptr;
 	data.inside_world = false;

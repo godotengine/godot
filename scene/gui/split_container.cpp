@@ -41,7 +41,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 		if (!c || !c->is_visible_in_tree()) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 

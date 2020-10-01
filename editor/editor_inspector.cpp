@@ -48,7 +48,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -117,7 +117,7 @@ void EditorProperty::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_toplevel()) {
+				if (c->is_set_as_top_level()) {
 					continue;
 				}
 				if (c == bottom_editor) {
@@ -179,7 +179,7 @@ void EditorProperty::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (c == bottom_editor) {
@@ -1133,7 +1133,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (!c->is_visible_in_tree()) {
@@ -1225,7 +1225,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {

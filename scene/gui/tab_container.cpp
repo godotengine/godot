@@ -478,7 +478,7 @@ void TabContainer::_on_mouse_exited() {
 int TabContainer::_get_tab_width(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, get_tab_count(), 0);
 	Control *control = Object::cast_to<Control>(_get_tabs()[p_index]);
-	if (!control || control->is_set_as_toplevel() || get_tab_hidden(p_index)) {
+	if (!control || control->is_set_as_top_level() || get_tab_hidden(p_index)) {
 		return 0;
 	}
 
@@ -537,7 +537,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 	if (!c) {
 		return;
 	}
-	if (c->is_set_as_toplevel()) {
+	if (c->is_set_as_top_level()) {
 		return;
 	}
 

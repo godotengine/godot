@@ -282,7 +282,7 @@ void SoftBody3D::_notification(int p_what) {
 
 			set_notify_transform(false);
 			// Required to be top level with Transform at center of world in order to modify RenderingServer only to support custom Transform
-			set_as_toplevel(true);
+			set_as_top_level(true);
 			set_transform(Transform());
 			set_notify_transform(true);
 

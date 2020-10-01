@@ -493,7 +493,7 @@ void Control::_notification(int p_notification) {
 				}
 
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
-				if (ci && ci->is_set_as_toplevel()) {
+				if (ci && ci->is_set_as_top_level()) {
 					subwindow = true;
 					break;
 				}
@@ -532,7 +532,7 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
-			} else if (!is_set_as_toplevel()) {
+			} else if (!is_set_as_top_level()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
@@ -1816,7 +1816,7 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 }
 
 static Control *_next_control(Control *p_from) {
-	if (p_from->is_set_as_toplevel()) {
+	if (p_from->is_set_as_top_level()) {
 		return nullptr; // can't go above
 	}
 
@@ -1830,7 +1830,7 @@ static Control *_next_control(Control *p_from) {
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -1867,7 +1867,7 @@ Control *Control::find_next_valid_focus() const {
 
 		for (int i = 0; i < from->get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(from->get_child(i));
-			if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+			if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 				continue;
 			}
 
@@ -1879,7 +1879,7 @@ Control *Control::find_next_valid_focus() const {
 			next_child = _next_control(from);
 			if (!next_child) { //nothing else.. go up and find either window or subwindow
 				next_child = const_cast<Control *>(this);
-				while (next_child && !next_child->is_set_as_toplevel()) {
+				while (next_child && !next_child->is_set_as_top_level()) {
 					next_child = cast_to<Control>(next_child->get_parent());
 				}
 
@@ -1915,7 +1915,7 @@ static Control *_prev_control(Control *p_from) {
 	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -1955,7 +1955,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		Control *prev_child = nullptr;
 
-		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
+		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
 			//find last of the children
 
 			prev_child = _prev_control(from);
@@ -1964,7 +1964,7 @@ Control *Control::find_prev_valid_focus() const {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
 
-				if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+				if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 					continue;
 				}
 
@@ -2024,7 +2024,7 @@ void Control::release_focus() {
 }
 
 bool Control::is_toplevel_control() const {
-	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_toplevel());
+	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_top_level());
 }
 
 void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
@@ -2374,7 +2374,7 @@ void Control::minimum_size_changed() {
 	//invalidate cache upwards
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
-		if (invalidate->is_set_as_toplevel()) {
+		if (invalidate->is_set_as_top_level()) {
 			break; // do not go further up
 		}
 		if (!invalidate->data.parent && get_parent()) {
