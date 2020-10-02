@@ -872,7 +872,6 @@ Array ArrayMesh::_get_surfaces() const {
 
 		ret.push_back(data);
 	}
-	print_line("Saving surfaces: " + itos(ret.size()));
 
 	return ret;
 }
