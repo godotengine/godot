@@ -35,6 +35,7 @@
 #import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"
+#import "native_video_view.h"
 #include "os_iphone.h"
 #import "view_controller.h"
 
@@ -605,22 +606,22 @@ Error DisplayServerIPhone::native_video_play(String p_path, float p_volume, Stri
 }
 
 bool DisplayServerIPhone::native_video_is_playing() const {
-	return [AppDelegate.viewController isVideoPlaying];
+	return [AppDelegate.viewController.videoView isVideoPlaying];
 }
 
 void DisplayServerIPhone::native_video_pause() {
 	if (native_video_is_playing()) {
-		[AppDelegate.viewController pauseVideo];
+		[AppDelegate.viewController.videoView pauseVideo];
 	}
 }
 
 void DisplayServerIPhone::native_video_unpause() {
-	[AppDelegate.viewController unpauseVideo];
+	[AppDelegate.viewController.videoView unpauseVideo];
 };
 
 void DisplayServerIPhone::native_video_stop() {
 	if (native_video_is_playing()) {
-		[AppDelegate.viewController stopVideo];
+		[AppDelegate.viewController.videoView stopVideo];
 	}
 }
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  native_video_view.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <GameKit/GameKit.h>
 #import <UIKit/UIKit.h>
 
-@class GodotView;
-@class GodotNativeVideoView;
-
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
-
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
-
-// MARK: Native Video Player
+@interface GodotNativeVideoView : UIView
 
 - (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+- (BOOL)isVideoPlaying;
+- (void)pauseVideo;
+- (void)unpauseVideo;
+- (void)stopVideo;
 
 @end
