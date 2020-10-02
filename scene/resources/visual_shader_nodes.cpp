@@ -3266,6 +3266,10 @@ String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
 	}
 }
 
+bool VisualShaderNodeTextureUniform::is_code_generated() const {
+	return is_output_port_connected(0) || is_output_port_connected(1); // rgb or alpha
+}
+
 String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "uniform sampler2D " + get_uniform_name();
 
@@ -3749,6 +3753,13 @@ String VisualShaderNodeFresnel::get_output_port_name(int p_port) const {
 	return "result";
 }
 
+bool VisualShaderNodeFresnel::is_generate_input_var(int p_port) const {
+	if (p_port == 2) {
+		return false;
+	}
+	return true;
+}
+
 String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	String normal;
@@ -3764,7 +3775,15 @@ String VisualShaderNodeFresnel::generate_code(Shader::Mode p_mode, VisualShader:
 		view = p_input_vars[1];
 	}
 
-	return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + "));\n";
+	if (is_input_port_connected(2)) {
+		return "\t" + p_output_vars[0] + " = " + p_input_vars[2] + " ? (pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ")) : (pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + "));\n";
+	} else {
+		if (get_input_port_default_value(2)) {
+			return "\t" + p_output_vars[0] + " = pow(clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ");\n";
+		} else {
+			return "\t" + p_output_vars[0] + " = pow(1.0 - clamp(dot(" + normal + ", " + view + "), 0.0, 1.0), " + p_input_vars[3] + ");\n";
+		}
+	}
 }
 
 String VisualShaderNodeFresnel::get_input_port_default_hint(int p_port) const {
