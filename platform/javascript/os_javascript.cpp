@@ -101,7 +101,7 @@ bool OS_JavaScript::check_size_force_redraw() {
 	if (last_width != canvas_width || last_height != canvas_height) {
 		last_width = canvas_width;
 		last_height = canvas_height;
-		// Update the framebuffer size and for redraw.
+		// Update the framebuffer size for redraw.
 		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), canvas_width, canvas_height);
 		return true;
 	}
@@ -159,7 +159,11 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
+		double scale = EM_ASM_DOUBLE({
+			return window.devicePixelRatio || 1;
+		});
+		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), p_size.x * scale, p_size.y * scale);
+		emscripten_set_element_css_size(canvas_id.utf8().get_data(), p_size.x, p_size.y);
 	}
 }
 
@@ -1029,15 +1033,18 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 #define SET_EM_CALLBACK(target, ev, cb)                               \
 	result = emscripten_set_##ev##_callback(target, NULL, true, &cb); \
 	EM_CHECK(ev)
+#define SET_EM_WINDOW_CALLBACK(ev, cb)                                                         \
+	result = emscripten_set_##ev##_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, &cb); \
+	EM_CHECK(ev)
 #define SET_EM_CALLBACK_NOTARGET(ev, cb)                      \
 	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
 	// is used below.
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(id.get_data(), mousedown, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
+	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
+	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
 	SET_EM_CALLBACK(id.get_data(), wheel, wheel_callback)
 	SET_EM_CALLBACK(id.get_data(), touchstart, touch_press_callback)
 	SET_EM_CALLBACK(id.get_data(), touchmove, touchmove_callback)
@@ -1055,38 +1062,30 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	/* clang-format off */
 	EM_ASM({
-		Module.listeners = {};
+		// Bind native event listeners.
+		// Module.listeners, and Module.drop_handler are defined in native/utils.js
 		const canvas = Module['canvas'];
 		const send_notification = cwrap('send_notification', null, ['number']);
 		const notifications = arguments;
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
-			Module.listeners[event] = send_notification.bind(null, notifications[index]);
-			canvas.addEventListener(event, Module.listeners[event]);
+			Module.listeners.add(canvas, event, send_notification.bind(null, notifications[index]), true);
 		});
 		// Clipboard
 		const update_clipboard = cwrap('update_clipboard', null, ['string']);
-		Module.listeners['paste'] = function(evt) {
+		Module.listeners.add(window, 'paste', function(evt) {
 			update_clipboard(evt.clipboardData.getData('text'));
-		};
-		window.addEventListener('paste', Module.listeners['paste'], true);
-		Module.listeners['dragover'] = function(ev) {
+		}, false);
+		// Drag an drop
+		Module.listeners.add(canvas, 'dragover', function(ev) {
 			// Prevent default behavior (which would try to open the file(s))
 			ev.preventDefault();
-		};
-		// Drag an drop
-		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
-		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
-		canvas.addEventListener('drop', Module.listeners['drop'], false);
-		// Quit request
-		Module['request_quit'] = function() {
-			send_notification(notifications[notifications.length - 1]);
-		};
+		}, false);
+		Module.listeners.add(canvas, 'drop', Module.drop_handler, false);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
 		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT,
-		MainLoop::NOTIFICATION_WM_QUIT_REQUEST
+		MainLoop::NOTIFICATION_WM_FOCUS_OUT
 	);
 	/* clang-format on */
 
@@ -1120,24 +1119,25 @@ void OS_JavaScript::resume_audio() {
 	}
 }
 
+extern "C" EMSCRIPTEN_KEEPALIVE void _idb_synced() {
+	OS_JavaScript::get_singleton()->idb_is_syncing = false;
+}
+
 bool OS_JavaScript::main_loop_iterate() {
 
-	if (is_userfs_persistent() && sync_wait_time >= 0) {
-		int64_t current_time = get_ticks_msec();
-		int64_t elapsed_time = current_time - last_sync_check_time;
-		last_sync_check_time = current_time;
-
-		sync_wait_time -= elapsed_time;
-
-		if (sync_wait_time < 0) {
-			/* clang-format off */
-			EM_ASM(
-				FS.syncfs(function(error) {
-					if (error) { err('Failed to save IDB file system: ' + error.message); }
-				});
-			);
-			/* clang-format on */
-		}
+	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
+		idb_is_syncing = true;
+		idb_needs_sync = false;
+		/* clang-format off */
+		EM_ASM(
+			FS.syncfs(function(error) {
+				if (error) {
+					err('Failed to save IDB file system: ' + error.message);
+				}
+				ccall("_idb_synced", 'void', [], []);
+			});
+		);
+		/* clang-format on */
 	}
 
 	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
@@ -1152,9 +1152,8 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResizedCallback = NULL;
 			emscripten_enter_soft_fullscreen(canvas_id.utf8().get_data(), &strategy);
 		} else {
-			emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
+			set_window_size(Size2(windowed_size.width, windowed_size.height));
 		}
-		emscripten_set_canvas_element_size(canvas_id.utf8().get_data(), windowed_size.width, windowed_size.height);
 		just_exited_fullscreen = false;
 	}
 
@@ -1176,17 +1175,11 @@ void OS_JavaScript::delete_main_loop() {
 }
 
 void OS_JavaScript::finalize_async() {
+	/* clang-format off */
 	EM_ASM({
-		const canvas = Module['canvas'];
-		Object.entries(Module.listeners).forEach(function(kv) {
-			if (kv[0] == 'paste') {
-				window.removeEventListener(kv[0], kv[1], true);
-			} else {
-				canvas.removeEventListener(kv[0], kv[1]);
-			}
-		});
-		Module.listeners = {};
+		Module.listeners.clear();
 	});
+	/* clang-format on */
 	if (audio_driver_javascript) {
 		audio_driver_javascript->finish_async();
 	}
@@ -1397,10 +1390,17 @@ int OS_JavaScript::get_power_percent_left() {
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
 
 	OS_JavaScript *os = get_singleton();
-	if (os->is_userfs_persistent() && p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
-		os->last_sync_check_time = OS::get_singleton()->get_ticks_msec();
-		// Wait five seconds in case more files are about to be closed.
-		os->sync_wait_time = 5000;
+
+	if (!(os->is_userfs_persistent() && p_flags & FileAccess::WRITE)) {
+		return; // FS persistence is not working or we are not writing.
+	}
+	bool is_file_persistent = p_file.begins_with("/userfs");
+#ifdef TOOLS_ENABLED
+	// Hack for editor persistence (can we track).
+	is_file_persistent = is_file_persistent || p_file.begins_with("/home/web_user/");
+#endif
+	if (is_file_persistent) {
+		os->idb_needs_sync = true;
 	}
 }
 
@@ -1445,7 +1445,8 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 
 	swap_ok_cancel = false;
 	idb_available = false;
-	sync_wait_time = -1;
+	idb_needs_sync = false;
+	idb_is_syncing = false;
 
 	if (AudioDriverJavaScript::is_available()) {
 		audio_driver_javascript = memnew(AudioDriverJavaScript);

@@ -28,6 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+Module['initFS'] = function(persistentPaths) {
+	FS.mkdir('/userfs');
+	FS.mount(IDBFS, {}, '/userfs');
+
+	function createRecursive(dir) {
+		try {
+			FS.stat(dir);
+		} catch (e) {
+			if (e.errno !== ERRNO_CODES.ENOENT) {
+				throw e;
+			}
+			FS.mkdirTree(dir);
+		}
+	}
+
+	persistentPaths.forEach(function(path) {
+		createRecursive(path);
+		FS.mount(IDBFS, {}, path);
+	});
+	return new Promise(function(resolve, reject) {
+		FS.syncfs(true, function(err) {
+			if (err) {
+				Module.idbfs = false;
+				console.log("IndexedDB not available: " + err.message);
+			} else {
+				Module.idbfs = true;
+			}
+			resolve(err);
+		});
+	});
+};
+
 Module['copyToFS'] = function(path, buffer) {
 	var p = path.lastIndexOf("/");
 	var dir = "/";
@@ -37,7 +69,7 @@ Module['copyToFS'] = function(path, buffer) {
 	try {
 		FS.stat(dir);
 	} catch (e) {
-		if (e.errno !== ERRNO_CODES.ENOENT) { // 'ENOENT', see https://github.com/emscripten-core/emscripten/blob/master/system/lib/libc/musl/arch/emscripten/bits/errno.h
+		if (e.errno !== ERRNO_CODES.ENOENT) {
 			throw e;
 		}
 		FS.mkdirTree(dir);
@@ -202,3 +234,44 @@ Module.drop_handler = (function() {
 		});
 	}
 })();
+
+function EventHandlers() {
+	function Handler(target, event, method, capture) {
+		this.target = target;
+		this.event = event;
+		this.method = method;
+		this.capture = capture;
+	}
+
+	var listeners = [];
+
+	function has(target, event, method, capture) {
+		return listeners.findIndex(function(e) {
+			return e.target === target && e.event === event && e.method === method && e.capture == capture;
+		}) !== -1;
+	}
+
+	this.add = function(target, event, method, capture) {
+		if (has(target, event, method, capture)) {
+			return;
+		}
+		listeners.push(new Handler(target, event, method, capture));
+		target.addEventListener(event, method, capture);
+	};
+
+	this.remove = function(target, event, method, capture) {
+		if (!has(target, event, method, capture)) {
+			return;
+		}
+		target.removeEventListener(event, method, capture);
+	};
+
+	this.clear = function() {
+		listeners.forEach(function(h) {
+			h.target.removeEventListener(h.event, h.method, h.capture);
+		});
+		listeners.length = 0;
+	};
+}
+
+Module.listeners = new EventHandlers();
