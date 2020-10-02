@@ -30,6 +30,7 @@
 
 #include "settings_config_dialog.h"
 
+#include "core/input/input_map.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -127,6 +128,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			_update_icons();
+			_update_action_map_editor();
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
@@ -358,6 +360,8 @@ void EditorSettingsDialog::_focus_current_search_box() {
 		current_search_box = search_box;
 	} else if (tab == tab_shortcuts) {
 		current_search_box = shortcut_search_box;
+	} else if (tab == builtin_action_editor) {
+		current_search_box = builtin_action_editor->get_search_box();
 	}
 
 	if (current_search_box) {
@@ -382,6 +386,8 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorSettingsDialog::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
+	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_update_action_map_editor"), &EditorSettingsDialog::_update_action_map_editor);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -480,6 +486,16 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	press_a_key->connect("window_input", callable_mp(this, &EditorSettingsDialog::_wait_for_key));
 	press_a_key->connect("confirmed", callable_mp(this, &EditorSettingsDialog::_press_a_key_confirm));
 
+	// Builtin Actions
+	builtin_action_editor = memnew(ActionMapEditor);
+	builtin_action_editor->set_name(TTR("Built-in Actions"));
+	builtin_action_editor->connect("action_edited", callable_mp(this, &EditorSettingsDialog::_action_edited));
+	builtin_action_editor->set_toggle_editable_label(TTR("Show built-in Actions"));
+	builtin_action_editor->set_allow_editing_actions(false);
+	builtin_action_editor->set_show_uneditable(true);
+	builtin_action_editor->get_configuration_dialog()->set_allowed_input_types(InputEventConfigurationDialog::INPUT_KEY);
+	tabs->add_child(builtin_action_editor);
+
 	set_hide_on_ok(true);
 
 	timer = memnew(Timer);
@@ -491,6 +507,45 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	get_ok()->set_text(TTR("Close"));
 
 	updating = false;
+}
+
+void EditorSettingsDialog::_action_edited(const String &p_name, const Dictionary &p_action) {
+	Array new_input_array = p_action["events"];
+	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
+
+	undo_redo->create_action(TTR("Edit Built-in Action"));
+	undo_redo->add_do_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, new_input_array);
+	undo_redo->add_undo_method(EditorSettings::get_singleton(), "set_builtin_action_override", p_name, old_input_array);
+	undo_redo->add_do_method(this, "_update_action_map_editor");
+	undo_redo->add_undo_method(this, "_update_action_map_editor");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
+void EditorSettingsDialog::_update_action_map_editor() {
+	OrderedHashMap<StringName, InputMap::Action> action_map = InputMap::get_singleton()->get_action_map();
+
+	Vector<ActionMapEditor::ActionInfo> actions;
+	for (OrderedHashMap<StringName, InputMap::Action>::Element E = action_map.front(); E; E = E.next()) {
+		Array events;
+		for (List<Ref<InputEvent>>::Element *I = E.get().inputs.front(); I; I = I->next()) {
+			events.push_back(I->get());
+		}
+
+		Dictionary action;
+		action["deadzone"] = Variant(E.get().deadzone);
+		action["events"] = events;
+
+		ActionMapEditor::ActionInfo action_info;
+		action_info.action = action;
+		action_info.editable = false;
+		action_info.name = E.key();
+
+		actions.push_back(action_info);
+	}
+
+	builtin_action_editor->update_action_list(actions);
 }
 
 EditorSettingsDialog::~EditorSettingsDialog() {

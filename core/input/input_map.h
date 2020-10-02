@@ -86,8 +86,9 @@ public:
 	void load_from_project_settings();
 	void load_default();
 
+	String get_builtin_display_name(const String &p_name) const;
 	// Use an Ordered Map so insertion order is preserved. We want the elements to be 'grouped' somewhat.
-	OrderedHashMap<StringName, List<Ref<InputEvent>>> get_builtins();
+	const OrderedHashMap<String, List<Ref<InputEvent>>> &get_builtins();
 
 	InputMap();
 };
