@@ -119,6 +119,7 @@ class TileMapEditor : public VBoxContainer {
 	Rect2i rectangle;
 
 	Point2i over_tile;
+	bool refocus_over_tile;
 
 	bool *bucket_cache_visited;
 	Rect2i bucket_cache_rect;
