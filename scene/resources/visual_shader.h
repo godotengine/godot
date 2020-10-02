@@ -193,8 +193,7 @@ class VisualShaderNode : public Resource {
 
 	Map<int, Variant> default_input_values;
 	Map<int, bool> connected_input_ports;
-	Map<int, bool> connected_output_ports;
-	int connected_output_count = 0;
+	Map<int, int> connected_output_ports;
 
 protected:
 	bool simple_decl = true;
