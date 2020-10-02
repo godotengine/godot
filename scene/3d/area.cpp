@@ -192,25 +192,19 @@ void Area::_body_inout(int p_status, const RID &p_body, int p_instance, int p_bo
 		if (node)
 			E->get().shapes.erase(ShapePair(p_body_shape, p_area_shape));
 
-		bool eraseit = false;
-
+		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-
+			body_map.erase(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_body_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_body_exit_tree);
-				if (E->get().in_tree)
+				if (in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exited, obj);
 			}
-
-			eraseit = true;
 		}
-		if (node && E->get().in_tree) {
+		if (node && in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, objid, obj, p_body_shape, p_area_shape);
 		}
-
-		if (eraseit)
-			body_map.erase(E);
 	}
 
 	locked = false;
@@ -385,10 +379,9 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 		if (node)
 			E->get().shapes.erase(AreaShapePair(p_area_shape, p_self_shape));
 
-		bool eraseit = false;
-
+		bool in_tree = E->get().in_tree;
 		if (E->get().rc == 0) {
-
+			area_map.erase(E);
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, this, SceneStringNames::get_singleton()->_area_enter_tree);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, this, SceneStringNames::get_singleton()->_area_exit_tree);
@@ -396,15 +389,10 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 					emit_signal(SceneStringNames::get_singleton()->area_exited, obj);
 				}
 			}
-
-			eraseit = true;
 		}
-		if (!node || E->get().in_tree) {
+		if (!node || in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->area_shape_exited, objid, obj, p_area_shape, p_self_shape);
 		}
-
-		if (eraseit)
-			area_map.erase(E);
 	}
 
 	locked = false;
