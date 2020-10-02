@@ -379,13 +379,21 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 				Vector<uint8_t> buffer_data;
 				String uri = buffer["uri"];
 
-				if (uri.findn("data:application/octet-stream;base64") == 0) {
-					//embedded data
+				if (uri.begins_with("data:")) { // Embedded data using base64.
+					// Validate data MIME types and throw an error if it's one we don't know/support.
+					// Could be an importer bug on our side or a broken glTF file.
+					// Ref: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#file-extensions-and-mime-types
+					if (!uri.begins_with("data:application/octet-stream;base64") &&
+							!uri.begins_with("data:application/gltf-buffer;base64") &&
+							!uri.begins_with("data:image/jpeg;base64") &&
+							!uri.begins_with("data:image/png;base64")) {
+						ERR_PRINT("glTF file contains buffer with an unknown URI data type: " + uri);
+					}
 					buffer_data = _parse_base64_uri(uri);
-				} else {
-					uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+				} else { // Should be a relative file path.
+					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
-					ERR_FAIL_COND_V(buffer.size() == 0, ERR_PARSE_ERROR);
+					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "Couldn't load binary file as an array: " + uri);
 				}
 
 				ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
