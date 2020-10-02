@@ -284,6 +284,14 @@ struct _GlobalLock {
 
 #define GLOBAL_LOCK_FUNCTION _GlobalLock _global_lock_;
 
+#if defined(__GNUC__)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+#define likely(x) x
+#define unlikely(x) x
+#endif
+
 #ifdef NO_SAFE_CAST
 #define SAFE_CAST static_cast
 #else

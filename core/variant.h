@@ -45,6 +45,7 @@
 #include "io/ip_address.h"
 #include "math_2d.h"
 #include "matrix3.h"
+#include "object_id.h"
 #include "os/input_event.h"
 #include "path_db.h"
 #include "plane.h"
@@ -71,6 +72,14 @@ typedef DVector<String> StringArray;
 typedef DVector<Vector2> Vector2Array;
 typedef DVector<Vector3> Vector3Array;
 typedef DVector<Color> ColorArray;
+
+#define _OBJ_PTR(m_variant) (((m_variant)._get_obj().obj != NULL &&                                                                  \
+									 (m_variant)._get_obj().instance_id == 0) ?                                                      \
+									 reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr() :              \
+									 (((m_variant)._get_obj().obj != NULL &&                                                         \
+											  (m_variant)._get_obj().instance_id == (m_variant)._get_obj().obj->get_instance_ID()) ? \
+													 (m_variant)._get_obj().obj :                                                    \
+													 NULL))
 
 class Variant {
 public:
@@ -128,6 +137,7 @@ private:
 
 	struct ObjData {
 
+		ObjectID instance_id;
 		Object *obj;
 		RefPtr ref;
 	};

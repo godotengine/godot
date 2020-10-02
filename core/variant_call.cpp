@@ -974,7 +974,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 	if (type == Variant::OBJECT) {
 		//call object
-		Object *obj = _get_obj().obj;
+		Object *obj = _OBJ_PTR(*this);
 		if (!obj) {
 			r_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			return;
@@ -990,8 +990,6 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 
 #endif
 		ret = _get_obj().obj->call(p_method, p_args, p_argcount, r_error);
-
-		//else if (type==Variant::METHOD) {
 
 	} else {
 
@@ -1162,7 +1160,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 bool Variant::has_method(const StringName &p_method) const {
 
 	if (type == OBJECT) {
-		Object *obj = operator Object *();
+		Object *obj = _OBJ_PTR(*this);
 		if (!obj)
 			return false;
 #ifdef DEBUG_ENABLED

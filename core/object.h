@@ -33,6 +33,7 @@
 
 #include "list.h"
 #include "map.h"
+#include "object_id.h"
 #include "set.h"
 #include "variant.h"
 #include "vmap.h"
@@ -403,7 +404,7 @@ private:
 	bool _block_signals;
 	int _predelete_ok;
 	Set<Object *> change_receptors;
-	uint32_t _instance_ID;
+	ObjectID _instance_ID;
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;

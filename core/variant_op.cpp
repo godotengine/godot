@@ -59,7 +59,7 @@ bool Variant::booleanize(bool &r_valid) const {
 		case COLOR:
 		case IMAGE: r_valid = false; return false;
 		case _RID: return (*reinterpret_cast<const RID *>(_data._mem)).is_valid();
-		case OBJECT: return _get_obj().obj;
+		case OBJECT: return _OBJ_PTR(*this);
 		case NODE_PATH: return (*reinterpret_cast<const NodePath *>(_data._mem)) != NodePath();
 		case INPUT_EVENT:
 		case DICTIONARY:
@@ -249,9 +249,9 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 					_RETURN(true);
 				//only against object is allowed
 				if (p_a.type == Variant::OBJECT) {
-					_RETURN(p_a._get_obj().obj == NULL);
+					_RETURN(_OBJ_PTR(p_a) == NULL);
 				} else if (p_b.type == Variant::OBJECT) {
-					_RETURN(p_b._get_obj().obj == NULL);
+					_RETURN(_OBJ_PTR(p_b) == NULL);
 				}
 				//otherwise, always false
 				_RETURN(false);
@@ -374,7 +374,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				case OBJECT: {
 
 					if (p_b.type == OBJECT)
-						_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
+						_RETURN((_OBJ_PTR(p_a) < _OBJ_PTR(p_b)));
 				} break;
 					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
@@ -439,7 +439,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a, const Variant &
 				case OBJECT: {
 
 					if (p_b.type == OBJECT)
-						_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
+						_RETURN((_OBJ_PTR(p_a) <= _OBJ_PTR(p_b)));
 				} break;
 					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
@@ -938,8 +938,9 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 	if (type == OBJECT) {
 
+		Object *obj = _OBJ_PTR(*this);
 #ifdef DEBUG_ENABLED
-		if (!_get_obj().obj) {
+		if (unlikely(!obj)) {
 			if (r_valid)
 				*r_valid = false;
 			return;
@@ -953,7 +954,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 		}
 
 #endif
-		_get_obj().obj->set(p_index, p_value, r_valid);
+		obj->set(p_index, p_value, r_valid);
 		return;
 	}
 
@@ -963,9 +964,10 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 
 	if (type == OBJECT) {
+		Object *obj = _OBJ_PTR(*this);
 
 #ifdef DEBUG_ENABLED
-		if (!_get_obj().obj) {
+		if (unlikely(!obj)) {
 			if (r_valid)
 				*r_valid = false;
 			return "Instance base is null.";
@@ -980,7 +982,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 
 #endif
 
-		return _get_obj().obj->get(p_index, r_valid);
+		return obj->get(p_index, r_valid);
 	}
 
 	return get(p_index.operator String(), r_valid);
@@ -1449,28 +1451,29 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case OBJECT: {
 
-			Object *obj = _get_obj().obj;
+			Object *obj = _OBJ_PTR(*this);
 			//only if debugging!
 
-			if (obj) {
+			if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
+				valid = false;
 				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
 
 					if (!ObjectDB::instance_validate(obj)) {
 						WARN_PRINT("Attempted use of stray pointer object.");
-						valid = false;
 						return;
 					}
 				}
+				return;
 #endif
-
-				if (p_index.get_type() != Variant::STRING) {
-					obj->setvar(p_index, p_value, r_valid);
-					return;
-				}
-
-				return obj->set(p_index, p_value, r_valid);
 			}
+
+			if (p_index.get_type() != Variant::STRING) {
+				obj->setvar(p_index, p_value, r_valid);
+				return;
+			}
+
+			return obj->set(p_index, p_value, r_valid);
 		} break;
 		case INPUT_EVENT: {
 
@@ -2208,25 +2211,26 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case _RID: {
 		} break;
 		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			if (obj) {
+			Object *obj = _OBJ_PTR(*this);
 
+			if (unlikely(!obj)) {
+
+				valid = false;
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
 					//only if debugging!
 					if (!ObjectDB::instance_validate(obj)) {
-						valid = false;
 						return "Attempted get on stray pointer.";
 					}
 				}
 #endif
-
-				if (p_index.get_type() != Variant::STRING) {
-					return obj->getvar(p_index, r_valid);
-				}
-
-				return obj->get(p_index, r_valid);
+				return Variant();
 			}
+
+			if (p_index.get_type() != Variant::STRING) {
+				return obj->getvar(p_index, r_valid);
+			}
+			return obj->get(p_index, r_valid);
 
 		} break;
 		case INPUT_EVENT: {
@@ -2500,34 +2504,31 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 		} break;
 		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			if (obj) {
+			Object *obj = _OBJ_PTR(*this);
 
-				bool valid = false;
+			if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
+				if (r_valid) {
+					*r_valid = false;
+				}
 				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
 					//only if debugging!
 					if (!ObjectDB::instance_validate(obj)) {
-						if (r_valid) {
-							*r_valid = false;
-						}
 						return "Attempted get on stray pointer.";
 					}
 				}
 #endif
-
-				if (p_index.get_type() != Variant::STRING) {
-					obj->getvar(p_index, &valid);
-				} else {
-					obj->get(p_index, &valid);
-				}
-
-				return valid;
-			} else {
-				if (r_valid)
-					*r_valid = false;
+				return false;
 			}
-			return false;
+
+			bool valid = false;
+
+			if (p_index.get_type() != Variant::STRING) {
+				obj->getvar(p_index, &valid);
+			} else {
+				obj->get(p_index, &valid);
+			}
+			return valid;
 		} break;
 		case DICTIONARY: {
 
@@ -2778,8 +2779,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case OBJECT: {
 
-			Object *obj = _get_obj().obj;
-			if (obj) {
+			Object *obj = _OBJ_PTR(*this);
+
+			if (unlikely(!obj)) {
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
 					//only if debugging!
@@ -2790,8 +2792,9 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 				}
 #endif
 
-				obj->get_property_list(p_list);
+				return;
 			}
+			obj->get_property_list(p_list);
 
 		} break;
 		case INPUT_EVENT: {
@@ -2913,9 +2916,10 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 	valid = true;
 	switch (type) {
 		case OBJECT: {
+			Object *obj = _OBJ_PTR(*this);
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (unlikely(!obj)) {
 				valid = false;
 				return false;
 			}
@@ -2925,13 +2929,14 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 				return false;
 			}
 #endif
+
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
 			Array ref(true);
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
 				valid = false;
@@ -3038,9 +3043,10 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 	switch (type) {
 
 		case OBJECT: {
+			Object *obj = _OBJ_PTR(*this);
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (unlikely(!obj)) {
 				valid = false;
 				return false;
 			}
@@ -3050,13 +3056,14 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 				return false;
 			}
 #endif
+
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
 			Array ref(true);
 			ref.push_back(r_iter);
 			Variant vref = ref;
 			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
 
 			if (ref.size() != 1 || ce.error != Variant::CallError::CALL_OK) {
 				valid = false;
@@ -3181,9 +3188,10 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	r_valid = true;
 	switch (type) {
 		case OBJECT: {
+			Object *obj = _OBJ_PTR(*this);
 
 #ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
+			if (unlikely(!obj)) {
 				r_valid = false;
 				return Variant();
 			}
@@ -3193,10 +3201,11 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				return Variant();
 			}
 #endif
+
 			Variant::CallError ce;
 			ce.error = Variant::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
+			Variant ret = obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
 
 			if (ce.error != Variant::CallError::CALL_OK) {
 				r_valid = false;
