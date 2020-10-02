@@ -220,7 +220,7 @@ private:
 	mutable Transform2D global_transform;
 	mutable bool global_invalid;
 
-	void _toplevel_raise_self();
+	void _top_level_raise_self();
 
 	void _propagate_visibility_changed(bool p_visible);
 
@@ -355,7 +355,7 @@ public:
 
 	/* RECT / TRANSFORM */
 
-	void set_as_top_level(bool p_toplevel);
+	void set_as_top_level(bool p_top_level);
 	bool is_set_as_top_level() const;
 
 	void set_draw_behind_parent(bool p_enable);
