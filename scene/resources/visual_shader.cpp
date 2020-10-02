@@ -65,20 +65,16 @@ bool VisualShaderNode::is_port_separator(int p_index) const {
 
 bool VisualShaderNode::is_output_port_connected(int p_port) const {
 	if (connected_output_ports.has(p_port)) {
-		return connected_output_ports[p_port];
+		return connected_output_ports[p_port] > 0;
 	}
 	return false;
 }
 
 void VisualShaderNode::set_output_port_connected(int p_port, bool p_connected) {
 	if (p_connected) {
-		connected_output_ports[p_port] = true;
-		++connected_output_count;
+		connected_output_ports[p_port]++;
 	} else {
-		--connected_output_count;
-		if (connected_output_count == 0) {
-			connected_output_ports[p_port] = false;
-		}
+		connected_output_ports[p_port]--;
 	}
 }
 
