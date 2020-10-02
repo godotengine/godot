@@ -54,32 +54,37 @@ protected:
 	static void _bind_methods();
 
 public:
-	uint64_t relative_index;
-	uint64_t absolute_index;
-	bool visibility;
+	Vector2i range;
+	bool visibility = true;
+	bool outline = false;
 	Point2 offset;
 	Color color;
-	char32_t character;
-	float elapsed_time;
+	float elapsed_time = 0.0f;
 	Dictionary environment;
+	uint32_t glpyh_index = 0;
+	RID font;
 
 	CharFXTransform();
 	~CharFXTransform();
 
-	uint64_t get_relative_index() { return relative_index; }
-	void set_relative_index(uint64_t p_index) { relative_index = p_index; }
-	uint64_t get_absolute_index() { return absolute_index; }
-	void set_absolute_index(uint64_t p_index) { absolute_index = p_index; }
+	Vector2i get_range() { return range; }
+	void set_range(const Vector2i &p_range) { range = p_range; }
 	float get_elapsed_time() { return elapsed_time; }
 	void set_elapsed_time(float p_elapsed_time) { elapsed_time = p_elapsed_time; }
 	bool is_visible() { return visibility; }
-	void set_visibility(bool p_vis) { visibility = p_vis; }
+	void set_visibility(bool p_visibility) { visibility = p_visibility; }
+	bool is_outline() { return outline; }
+	void set_outline(bool p_outline) { outline = p_outline; }
 	Point2 get_offset() { return offset; }
 	void set_offset(Point2 p_offset) { offset = p_offset; }
 	Color get_color() { return color; }
 	void set_color(Color p_color) { color = p_color; }
-	int get_character() { return (int)character; }
-	void set_character(int p_char) { character = (char32_t)p_char; }
+
+	uint32_t get_glyph_index() const { return glpyh_index; };
+	void set_glyph_index(uint32_t p_glpyh_index) { glpyh_index = p_glpyh_index; };
+	RID get_font() const { return font; };
+	void set_font(RID p_font) { font = p_font; };
+
 	Dictionary get_environment() { return environment; }
 	void set_environment(Dictionary p_environment) { environment = p_environment; }
 };

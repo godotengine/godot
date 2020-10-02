@@ -803,6 +803,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("bold_italics_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("mono_font", "RichTextLabel", Ref<Font>());
 
+	theme->set_font_size("normal_font_size", "RichTextLabel", -1);
+	theme->set_font_size("bold_font_size", "RichTextLabel", -1);
+	theme->set_font_size("italics_font_size", "RichTextLabel", -1);
+	theme->set_font_size("bold_italics_font_size", "RichTextLabel", -1);
+	theme->set_font_size("mono_font_size", "RichTextLabel", -1);
+
 	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
@@ -817,6 +823,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("table_hseparation", "RichTextLabel", 3 * scale);
 	theme->set_constant("table_vseparation", "RichTextLabel", 3 * scale);
 
+	theme->set_color("table_odd_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("table_even_row_bg", "RichTextLabel", Color(0, 0, 0, 0));
+	theme->set_color("table_border", "RichTextLabel", Color(0, 0, 0, 0));
 	// Containers
 
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(vsplit_bg_png, 1, 1, 1, 1));
