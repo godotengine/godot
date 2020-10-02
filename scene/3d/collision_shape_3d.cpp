@@ -140,15 +140,14 @@ String CollisionShape3D::get_configuration_warning() const {
 		warning += TTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it.");
 	}
 
-	if (Object::cast_to<RigidBody3D>(get_parent())) {
-		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-			if (Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
-				if (!warning.empty()) {
-					warning += "\n\n";
-				}
-				warning += TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static.");
-			}
+	if (shape.is_valid() &&
+			Object::cast_to<RigidBody3D>(get_parent()) &&
+			Object::cast_to<ConcavePolygonShape3D>(*shape) &&
+			Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
+		if (!warning.empty()) {
+			warning += "\n\n";
 		}
+		warning += TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static.");
 	}
 
 	return warning;

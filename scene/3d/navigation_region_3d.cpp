@@ -197,10 +197,12 @@ String NavigationRegion3D::get_configuration_warning() const {
 		}
 		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
+
 	const Node3D *c = this;
 	while (c) {
-		if (Object::cast_to<Navigation3D>(c))
+		if (Object::cast_to<Navigation3D>(c)) {
 			return warning;
+		}
 
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
