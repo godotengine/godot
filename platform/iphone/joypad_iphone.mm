@@ -131,8 +131,6 @@ void JoypadIPhone::start_processing() {
 
 - (void)dealloc {
 	[self finishObserving];
-
-	[super dealloc];
 }
 
 - (int)getJoyIdForController:(GCController *)controller {
@@ -251,8 +249,13 @@ void JoypadIPhone::start_processing() {
 		// The extended gamepad profile has all the input you could possibly find on
 		// a gamepad but will only be active if your gamepad actually has all of
 		// these...
-		controller.extendedGamepad.valueChangedHandler = ^(
-				GCExtendedGamepad *gamepad, GCControllerElement *element) {
+		_weakify(self);
+		_weakify(controller);
+
+		controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad *gamepad, GCControllerElement *element) {
+			_strongify(self);
+			_strongify(controller);
+
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
@@ -304,71 +307,33 @@ void JoypadIPhone::start_processing() {
 				Input::get_singleton()->joy_axis(joy_id, JOY_AXIS_TRIGGER_RIGHT, jx);
 			};
 		};
+	} else if (controller.microGamepad != nil) {
+		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
+		_weakify(self);
+		_weakify(controller);
+
+		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *gamepad, GCControllerElement *element) {
+			_strongify(self);
+			_strongify(controller);
+
+			int joy_id = [self getJoyIdForController:controller];
+
+			if (element == gamepad.buttonA) {
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
+						gamepad.buttonA.isPressed);
+			} else if (element == gamepad.buttonX) {
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
+						gamepad.buttonX.isPressed);
+			} else if (element == gamepad.dpad) {
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
+						gamepad.dpad.up.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
+						gamepad.dpad.down.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT, gamepad.dpad.left.isPressed);
+				Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT, gamepad.dpad.right.isPressed);
+			};
+		};
 	}
-	//    else if (controller.gamepad != nil) {
-	//        // gamepad is the standard profile with 4 buttons, shoulder buttons and a
-	//        // D-pad
-	//        controller.gamepad.valueChangedHandler = ^(GCGamepad *gamepad,
-	//                GCControllerElement *element) {
-	//            int joy_id = [self getJoyIdForController:controller];
-	//
-	//            if (element == gamepad.buttonA) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
-	//                        gamepad.buttonA.isPressed);
-	//            } else if (element == gamepad.buttonB) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_B,
-	//                        gamepad.buttonB.isPressed);
-	//            } else if (element == gamepad.buttonX) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
-	//                        gamepad.buttonX.isPressed);
-	//            } else if (element == gamepad.buttonY) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_Y,
-	//                        gamepad.buttonY.isPressed);
-	//            } else if (element == gamepad.leftShoulder) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_LEFT_SHOULDER,
-	//                        gamepad.leftShoulder.isPressed);
-	//            } else if (element == gamepad.rightShoulder) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_RIGHT_SHOULDER,
-	//                        gamepad.rightShoulder.isPressed);
-	//            } else if (element == gamepad.dpad) {
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
-	//                        gamepad.dpad.up.isPressed);
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
-	//                        gamepad.dpad.down.isPressed);
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
-	//                        gamepad.dpad.left.isPressed);
-	//                Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
-	//                        gamepad.dpad.right.isPressed);
-	//            };
-	//        };
-	//#ifdef ADD_MICRO_GAMEPAD // disabling this for now, only available on iOS 9+,
-	//        // while we are setting that as the minimum, seems our
-	//        // build environment doesn't like it
-	//    } else if (controller.microGamepad != nil) {
-	//        // micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
-	//        controller.microGamepad.valueChangedHandler =
-	//                ^(GCMicroGamepad *gamepad, GCControllerElement *element) {
-	//                    int joy_id = [self getJoyIdForController:controller];
-	//
-	//                    if (element == gamepad.buttonA) {
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
-	//                                gamepad.buttonA.isPressed);
-	//                    } else if (element == gamepad.buttonX) {
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
-	//                                gamepad.buttonX.isPressed);
-	//                    } else if (element == gamepad.dpad) {
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
-	//                                gamepad.dpad.up.isPressed);
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
-	//                                gamepad.dpad.down.isPressed);
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
-	//                                gamepad.dpad.left.isPressed);
-	//                        Input::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
-	//                                gamepad.dpad.right.isPressed);
-	//                    };
-	//                };
-	//#endif
-	//    };
 
 	///@TODO need to add support for controller.motion which gives us access to
 	/// the orientation of the device (if supported)

@@ -62,7 +62,7 @@ static ViewController *mainViewController = nil;
 	CGRect windowBounds = [[UIScreen mainScreen] bounds];
 
 	// Create a full-screen window
-	self.window = [[[UIWindow alloc] initWithFrame:windowBounds] autorelease];
+	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -140,7 +140,6 @@ static ViewController *mainViewController = nil;
 
 - (void)dealloc {
 	self.window = nil;
-	[super dealloc];
 }
 
 @end
