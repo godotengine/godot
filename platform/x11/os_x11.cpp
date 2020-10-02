@@ -3428,6 +3428,7 @@ Error OS_X11::move_to_trash(const String &p_path) {
 	// The trash can is successfully created, now move the given resource to it.
 	// Do not use DirAccess:rename() because it can't move files across multiple mountpoints.
 	List<String> mv_args;
+  mv_args.push_back("--backup=t");
 	mv_args.push_back(p_path);
 	mv_args.push_back(trash_can);
 	int retval;
