@@ -101,9 +101,9 @@ void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
 	btVector3 column2 = basis.getColumn(2);
 
 	// Check for zero scaling.
-	if (btFuzzyZero(column0[0])) {
-		if (btFuzzyZero(column1[1])) {
-			if (btFuzzyZero(column2[2])) {
+	if (column0.fuzzyZero()) {
+		if (column1.fuzzyZero()) {
+			if (column2.fuzzyZero()) {
 				// All dimensions are fuzzy zero. Create a default basis.
 				column0 = btVector3(1, 0, 0);
 				column1 = btVector3(0, 1, 0);
@@ -115,7 +115,7 @@ void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
 				column0 = column1.cross(column2);
 			}
 		} else { // Column 1 scale not fuzzy zero.
-			if (btFuzzyZero(column2[2])) {
+			if (column2.fuzzyZero()) {
 				// Create two vectors othogonal to column 1.
 				// Ensure that a default basis is created if column 1 = <0, 1, 0>
 				column0 = btVector3(column1[1], -column1[0], 0);
@@ -126,8 +126,8 @@ void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
 			}
 		}
 	} else { // Column 0 scale not fuzzy zero.
-		if (btFuzzyZero(column1[1])) {
-			if (btFuzzyZero(column2[2])) {
+		if (column1.fuzzyZero()) {
+			if (column2.fuzzyZero()) {
 				// Create two vectors orthogonal to column 0.
 				// Ensure that a default basis is created if column 0 = <1, 0, 0>
 				column2 = btVector3(-column0[2], 0, column0[0]);
@@ -137,7 +137,7 @@ void UNSCALE_BT_BASIS(btTransform &scaledBasis) {
 				column1 = column2.cross(column0);
 			}
 		} else { // Column 0 and column 1 scales not fuzzy zero.
-			if (btFuzzyZero(column2[2])) {
+			if (column2.fuzzyZero()) {
 				// Create column 2 orthogonal to column 0 and column 1.
 				column2 = column0.cross(column1);
 			}
