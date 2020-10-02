@@ -181,7 +181,7 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		if (c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c == bg || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -209,7 +209,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c->is_set_as_top_level()) {
 			continue;
 		}
 
