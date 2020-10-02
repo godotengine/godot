@@ -51,7 +51,7 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_erase_events", "action"), &InputMap::action_erase_events);
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action"), &InputMap::event_is_action);
-	ClassDB::bind_method(D_METHOD("load_from_globals"), &InputMap::load_from_globals);
+	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
 }
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
@@ -228,7 +228,7 @@ const Map<StringName, InputMap::Action> &InputMap::get_action_map() const {
 	return input_map;
 }
 
-void InputMap::load_from_globals() {
+void InputMap::load_from_project_settings() {
 	input_map.clear();
 
 	List<PropertyInfo> pinfo;
