@@ -3892,7 +3892,7 @@ Tree::Tree() {
 	popup_menu = memnew(PopupMenu);
 	popup_menu->hide();
 	add_child(popup_menu);
-	//	popup_menu->set_as_toplevel(true);
+	//	popup_menu->set_as_top_level(true);
 
 	popup_editor = memnew(Popup);
 	popup_editor->set_wrap_controls(true);

@@ -425,7 +425,7 @@ void SoftBody3D::_draw_soft_mesh() {
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
-		call_deferred("set_as_toplevel", true);
+		call_deferred("set_as_top_level", true);
 		call_deferred("set_transform", Transform());
 	}
 

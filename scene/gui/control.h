@@ -464,7 +464,7 @@ public:
 
 	virtual Transform2D get_transform() const override;
 
-	bool is_toplevel_control() const;
+	bool is_top_level_control() const;
 
 	Size2 get_parent_area_size() const;
 	Rect2 get_parent_anchorable_rect() const;

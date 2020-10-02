@@ -509,13 +509,13 @@ void Control::_notification(int p_notification) {
 			}
 
 			if (parent_control && !subwindow) {
-				//do nothing, has a parent control and not toplevel
+				//do nothing, has a parent control and not top_level
 				if (data.theme.is_null() && parent_control->data.theme_owner) {
 					data.theme_owner = parent_control->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
 				}
 			} else {
-				//is a regular root control or toplevel
+				//is a regular root control or top_level
 				data.RI = get_viewport()->_gui_add_root_control(this);
 			}
 
@@ -2023,7 +2023,7 @@ void Control::release_focus() {
 	update();
 }
 
-bool Control::is_toplevel_control() const {
+bool Control::is_top_level_control() const {
 	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_top_level());
 }
 
@@ -2499,7 +2499,7 @@ Control *Control::get_root_parent_control() const {
 		if (c) {
 			root = c;
 
-			if (c->data.RI || c->is_toplevel_control()) {
+			if (c->data.RI || c->is_top_level_control()) {
 				break;
 			}
 		}
