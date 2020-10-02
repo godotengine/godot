@@ -663,6 +663,18 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 	instance->visible = p_visible;
 
+	// when showing or hiding geometry, lights must be kept up to date to show / hide shadows
+	if ((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+
+		if (geom->can_cast_shadows) {
+			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
+				InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
+				light->shadow_dirty = true;
+			}
+		}
+	}
+
 	switch (instance->base_type) {
 		case VS::INSTANCE_LIGHT: {
 			if (VSG::storage->light_get_type(instance->base) != VS::LIGHT_DIRECTIONAL && instance->octree_id && instance->scenario) {
