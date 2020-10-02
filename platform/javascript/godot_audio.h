@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_javascript.h                                            */
+/*  godot_audio.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,56 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIO_DRIVER_JAVASCRIPT_H
-#define AUDIO_DRIVER_JAVASCRIPT_H
+#ifndef GODOT_AUDIO_H
+#define GODOT_AUDIO_H
 
-#include "servers/audio_server.h"
-
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
-
-class AudioDriverJavaScript : public AudioDriver {
-private:
-	float *internal_buffer = nullptr;
-
-	int buffer_length = 0;
-	int mix_rate = 0;
-	int channel_count = 0;
-
-public:
-#ifndef NO_THREADS
-	Mutex mutex;
-	Thread *thread = nullptr;
-	bool quit = false;
-	bool needs_process = true;
-
-	static void _audio_thread_func(void *p_data);
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-	void _js_driver_process();
+#include "stddef.h"
 
-	static bool is_available();
-	void process_capture(float sample);
+extern int godot_audio_is_available();
 
-	static AudioDriverJavaScript *singleton;
+extern int godot_audio_init(int p_mix_rate, int p_latency);
+extern int godot_audio_create_processor(int p_buffer_length, int p_channel_count);
 
-	const char *get_name() const override;
+extern void godot_audio_start(float *r_buffer_ptr);
+extern void godot_audio_resume();
+extern void godot_audio_finish_async();
 
-	Error init() override;
-	void start() override;
-	void resume();
-	float get_latency() override;
-	int get_mix_rate() const override;
-	SpeakerMode get_speaker_mode() const override;
-	void lock() override;
-	void unlock() override;
-	void finish() override;
-	void finish_async();
+extern float godot_audio_get_latency();
 
-	Error capture_start() override;
-	Error capture_stop() override;
+extern void godot_audio_capture_start();
+extern void godot_audio_capture_stop();
 
-	AudioDriverJavaScript();
-};
-
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* GODOT_AUDIO_H */
