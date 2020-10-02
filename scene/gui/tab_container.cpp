@@ -517,7 +517,7 @@ Vector<Control *> TabContainer::_get_tabs() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_toplevel_control()) {
+		if (!control || control->is_top_level_control()) {
 			continue;
 		}
 

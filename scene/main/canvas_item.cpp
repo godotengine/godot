@@ -371,7 +371,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 	for (int i = 0; i < get_child_count(); i++) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
-		if (c && c->visible) { //should the toplevels stop propagation? i think so but..
+		if (c && c->visible) { //should the top_levels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
 		}
 	}
@@ -486,7 +486,7 @@ Transform2D CanvasItem::get_global_transform() const {
 	return global_transform;
 }
 
-void CanvasItem::_toplevel_raise_self() {
+void CanvasItem::_top_level_raise_self() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -533,7 +533,7 @@ void CanvasItem::_enter_canvas() {
 			get_viewport()->gui_reset_canvas_sort_index();
 		}
 
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 
 	} else {
 		CanvasItem *parent = get_parent_item();
@@ -599,7 +599,7 @@ void CanvasItem::_notification(int p_what) {
 			}
 
 			if (group != "") {
-				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_toplevel_raise_self");
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE, group, "_top_level_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -674,18 +674,18 @@ Color CanvasItem::get_modulate() const {
 	return modulate;
 }
 
-void CanvasItem::set_as_top_level(bool p_toplevel) {
-	if (top_level == p_toplevel) {
+void CanvasItem::set_as_top_level(bool p_top_level) {
+	if (top_level == p_top_level) {
 		return;
 	}
 
 	if (!is_inside_tree()) {
-		top_level = p_toplevel;
+		top_level = p_top_level;
 		return;
 	}
 
 	_exit_canvas();
-	top_level = p_toplevel;
+	top_level = p_top_level;
 	_enter_canvas();
 }
 
@@ -1104,7 +1104,7 @@ void CanvasItem::force_update_transform() {
 }
 
 void CanvasItem::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"), &CanvasItem::_toplevel_raise_self);
+	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
 	ClassDB::bind_method(D_METHOD("_update_callback"), &CanvasItem::_update_callback);
 
 #ifdef TOOLS_ENABLED
@@ -1136,8 +1136,8 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update"), &CanvasItem::update);
 
-	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &CanvasItem::set_as_top_level);
-	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &CanvasItem::is_set_as_top_level);
+	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &CanvasItem::set_as_top_level);
+	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &CanvasItem::is_set_as_top_level);
 
 	ClassDB::bind_method(D_METHOD("set_light_mask", "light_mask"), &CanvasItem::set_light_mask);
 	ClassDB::bind_method(D_METHOD("get_light_mask"), &CanvasItem::get_light_mask);

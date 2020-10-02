@@ -959,8 +959,8 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		SceneTree::get_singleton()->get_current_scene()->add_child(motionVec);
 		SceneTree::get_singleton()->get_current_scene()->add_child(normalLine);
 
-		motionVec->set_as_toplevel(true);
-		normalLine->set_as_toplevel(true);
+		motionVec->set_as_top_level(true);
+		normalLine->set_as_top_level(true);
 
 		red_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 		red_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);

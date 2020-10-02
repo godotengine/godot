@@ -936,7 +936,7 @@ FileDialog::FileDialog() {
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//	confirm_save->set_as_toplevel(true);
+	//	confirm_save->set_as_top_level(true);
 	add_child(confirm_save);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
