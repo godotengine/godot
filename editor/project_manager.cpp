@@ -878,6 +878,7 @@ public:
 		rasterizer_container->add_child(rshb);
 		rasterizer_button_group.instance();
 
+		bool is_gles3 = OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES3;
 		Container *rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
 		rshb->add_child(rvb);
@@ -885,7 +886,7 @@ public:
 		rs_button->set_button_group(rasterizer_button_group);
 		rs_button->set_text(TTR("OpenGL ES 3.0"));
 		rs_button->set_meta("driver_name", "GLES3");
-		rs_button->set_pressed(true);
+		rs_button->set_pressed(is_gles3);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
@@ -900,6 +901,7 @@ public:
 		rs_button->set_button_group(rasterizer_button_group);
 		rs_button->set_text(TTR("OpenGL ES 2.0"));
 		rs_button->set_meta("driver_name", "GLES2");
+		rs_button->set_pressed(!is_gles3);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
