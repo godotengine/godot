@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "collision_shape.h"
+
 #include "scene/resources/box_shape.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/concave_polygon_shape.h"
@@ -116,6 +117,7 @@ void CollisionShape::resource_changed(RES res) {
 String CollisionShape::get_configuration_warning() const {
 
 	String warning = Spatial::get_configuration_warning();
+
 	if (!Object::cast_to<CollisionObject>(get_parent())) {
 		if (warning != String()) {
 			warning += "\n\n";
@@ -128,23 +130,21 @@ String CollisionShape::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 		warning += TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
-	}
-
-	if (shape->is_class("PlaneShape")) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
-	}
-
-	if (Object::cast_to<RigidBody>(get_parent())) {
-		if (Object::cast_to<ConcavePolygonShape>(*shape)) {
-			if (Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
-				if (warning != String()) {
-					warning += "\n\n";
-				}
-				warning += TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+	} else {
+		if (shape->is_class("PlaneShape")) {
+			if (warning != String()) {
+				warning += "\n\n";
 			}
+			warning += TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
+		}
+
+		if (Object::cast_to<RigidBody>(get_parent()) &&
+				Object::cast_to<ConcavePolygonShape>(*shape) &&
+				Object::cast_to<RigidBody>(get_parent())->get_mode() != RigidBody::MODE_STATIC) {
+			if (warning != String()) {
+				warning += "\n\n";
+			}
+			warning += TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
 		}
 	}
 
