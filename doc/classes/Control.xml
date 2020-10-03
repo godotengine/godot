@@ -669,7 +669,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Invalidates the size cache in this node and in parent nodes up to toplevel. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
+				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">

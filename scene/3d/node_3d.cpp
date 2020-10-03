@@ -104,7 +104,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 
 	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
 		if (E->get()->data.top_level_active) {
-			continue; //don't propagate to a toplevel
+			continue; //don't propagate to a top_level
 		}
 		E->get()->_propagate_transform_changed(p_origin);
 	}
@@ -715,8 +715,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_transform"), &Node3D::get_global_transform);
 	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Node3D::get_parent_spatial);
 	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification", "enabled"), &Node3D::set_ignore_transform_notification);
-	ClassDB::bind_method(D_METHOD("set_as_toplevel", "enable"), &Node3D::set_as_top_level);
-	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Node3D::is_set_as_top_level);
+	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &Node3D::set_as_top_level);
+	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &Node3D::is_set_as_top_level);
 	ClassDB::bind_method(D_METHOD("set_disable_scale", "disable"), &Node3D::set_disable_scale);
 	ClassDB::bind_method(D_METHOD("is_scale_disabled"), &Node3D::is_scale_disabled);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Node3D::get_world_3d);
@@ -773,7 +773,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "rotation", PROPERTY_HINT_NONE, "", 0), "set_rotation", "get_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_scale", "get_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toplevel"), "set_as_toplevel", "is_set_as_toplevel");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_GROUP("Matrix", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "transform", PROPERTY_HINT_NONE, ""), "set_transform", "get_transform");
 	ADD_GROUP("Visibility", "");

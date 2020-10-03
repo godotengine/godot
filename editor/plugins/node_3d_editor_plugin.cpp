@@ -3566,7 +3566,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	return point + offset;
 }
 
-AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_toplevel_transform) {
+AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_exclude_top_level_transform) {
 	AABB bounds;
 
 	const MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_parent);
@@ -3591,7 +3591,7 @@ AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, boo
 		bounds = AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
 
-	if (!p_exclude_toplevel_transform) {
+	if (!p_exclude_top_level_transform) {
 		bounds = p_parent->get_transform().xform(bounds);
 	}
 
