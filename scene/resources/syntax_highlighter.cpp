@@ -149,6 +149,13 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting(int p_line) {
 	color_region_cache[p_line] = -1;
 	int in_region = -1;
 	if (p_line != 0) {
+		int prev_region_line = p_line - 1;
+		while (prev_region_line > 0 && !color_region_cache.has(prev_region_line)) {
+			prev_region_line--;
+		}
+		for (int i = prev_region_line; i < p_line - 1; i++) {
+			get_line_syntax_highlighting(i);
+		}
 		if (!color_region_cache.has(p_line - 1)) {
 			get_line_syntax_highlighting(p_line - 1);
 		}
