@@ -140,7 +140,7 @@
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
 			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
-			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
+			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end).
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
 			Continuous collision detection mode.
