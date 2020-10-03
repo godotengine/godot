@@ -333,7 +333,7 @@ uniform highp float light_height;
 uniform highp float light_outside_alpha;
 uniform highp float shadow_distance_mult;
 
-uniform lowp sampler2D light_texture; // texunit:-4
+uniform lowp sampler2D light_texture; // texunit:-6
 varying vec4 light_uv_interp;
 varying vec2 transformed_light_uv;
 
