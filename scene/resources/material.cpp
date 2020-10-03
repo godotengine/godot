@@ -31,6 +31,7 @@
 #include "material.h"
 
 #include "core/engine.h"
+#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -473,7 +474,7 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
 		code += ",depth_test_disable";
 	}
-	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
+	if (flags[FLAG_USE_VERTEX_LIGHTING] || force_vertex_shading) {
 		code += ",vertex_lighting";
 	}
 	if (flags[FLAG_TRIPLANAR_USE_WORLD] && (flags[FLAG_UV1_USE_TRIPLANAR] || flags[FLAG_UV2_USE_TRIPLANAR])) {
@@ -623,7 +624,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tPOINT_SIZE=point_size;\n";
 	}
 
-	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
+	if (flags[FLAG_USE_VERTEX_LIGHTING] || force_vertex_shading) {
 		code += "\tROUGHNESS=roughness;\n";
 	}
 
@@ -2300,6 +2301,9 @@ SpatialMaterial::SpatialMaterial() :
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = false;
 	}
+
+	force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
+
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;
 
