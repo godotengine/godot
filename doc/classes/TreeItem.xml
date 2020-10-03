@@ -190,6 +190,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the meta value.
 			</description>
 		</method>
 		<method name="get_next">
@@ -239,6 +240,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's range.
 			</description>
 		</method>
 		<method name="get_range_config">
@@ -247,6 +249,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's range config.
 			</description>
 		</method>
 		<method name="get_suffix" qualifiers="const">
@@ -255,6 +258,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns the given column's suffix.
 			</description>
 		</method>
 		<method name="get_text" qualifiers="const">
@@ -310,6 +314,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given column has a custom button.
 			</description>
 		</method>
 		<method name="is_editable">
@@ -427,6 +432,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
+				Sets the given column's custom button.
 			</description>
 		</method>
 		<method name="set_custom_bg_color">
@@ -541,6 +547,7 @@
 			<argument index="1" name="meta" type="Variant">
 			</argument>
 			<description>
+				Sets the given column's meta value.
 			</description>
 		</method>
 		<method name="set_range">
@@ -551,6 +558,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
+				Sets the given column's range value.
 			</description>
 		</method>
 		<method name="set_range_config">
@@ -567,6 +575,7 @@
 			<argument index="4" name="expr" type="bool" default="false">
 			</argument>
 			<description>
+				Sets the given column's range configuration.
 			</description>
 		</method>
 		<method name="set_selectable">
@@ -588,6 +597,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+				Sets the given column's suffix.
 			</description>
 		</method>
 		<method name="set_text">
@@ -598,6 +608,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
+				Sets the given column's text.
 			</description>
 		</method>
 		<method name="set_text_align">
@@ -648,6 +659,7 @@
 			Cell contains an icon.
 		</constant>
 		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
+			Cell contains a custom draw object or edit button.
 		</constant>
 		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
 			Align text to the left. See [code]set_text_align()[/code].
