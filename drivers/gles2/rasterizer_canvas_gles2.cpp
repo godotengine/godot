@@ -2604,7 +2604,7 @@ void RasterizerCanvasGLES2::_canvas_render_item(Item *p_ci, RenderItemState &r_r
 				_set_uniforms();
 				state.canvas_shader.use_material((void *)material_ptr);
 
-				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
 				RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(light->texture);
 				if (!t) {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
@@ -3000,7 +3000,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 				_set_uniforms();
 				state.canvas_shader.use_material((void *)material_ptr);
 
-				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
 				RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(light->texture);
 				if (!t) {
 					glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
