@@ -98,6 +98,7 @@ class ProjectManager : public Control {
 	void _restart_confirm();
 	void _exit_dialog();
 	void _confirm_update_settings();
+	void _nonempty_confirmation_ok_pressed();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
