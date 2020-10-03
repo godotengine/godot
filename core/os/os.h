@@ -122,6 +122,22 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	// Returns internal pointers and handles.
+	// While exposed to GDScript this is mostly to give GDNative plugins access to this information.
+	// Note that whether a valid handle is returned depends on whether it applies to the given
+	// platform and often to the chosen render driver.
+	// NULL will be returned if a handle is not available.
+
+	enum HandleType {
+		APPLICATION_HANDLE, // HINSTANCE, NSApplication*, UIApplication*, JNIEnv* ...
+		DISPLAY_HANDLE, // X11::Display* ...
+		WINDOW_HANDLE, // HWND, X11::Window*, NSWindow*, UIWindow*, Android activity ...
+		WINDOW_VIEW, // HDC, NSView*, UIView*, Android surface ...
+		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
+	};
+
+	virtual void *get_native_handle(int p_handle_type, int p_index) { return NULL; };
+
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) { return ERR_UNAVAILABLE; }

@@ -91,6 +91,7 @@ public:
 	virtual String get_unique_id() const;
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
+	virtual void *get_native_handle(int p_handle_type, int p_index);
 
 	void run();
 

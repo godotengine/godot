@@ -62,6 +62,9 @@ public:
 
 	void make_current();
 
+	HDC get_hdc();
+	HGLRC get_hglrc();
+
 	int get_window_width();
 	int get_window_height();
 	void swap_buffers();

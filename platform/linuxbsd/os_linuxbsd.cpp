@@ -141,6 +141,17 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
+void *OS_LinuxBSD::get_native_handle(int p_handle_type, int p_index) {
+	switch (p_handle_type) {
+		case APPLICATION_HANDLE: return NULL; // Do we have a value to return here?
+		case DISPLAY_HANDLE: return (void *)x11_display;
+		case WINDOW_HANDLE: return NULL;
+		case WINDOW_VIEW: return NULL; // Do we have a value to return here?
+		case OPENGL_CONTEXT: return NULL;
+		default: return NULL;
+	}
+}
+
 String OS_LinuxBSD::get_config_path() const {
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");

@@ -149,6 +149,16 @@ public:
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
 
+	enum HandleType {
+		APPLICATION_HANDLE, // HINSTANCE, NSApplication*, UIApplication*, JNIEnv* ...
+		DISPLAY_HANDLE, // X11::Display* ...
+		WINDOW_HANDLE, // HWND, X11::Window*, NSWindow*, UIWindow*, Android activity ...
+		WINDOW_VIEW, // HDC, NSView*, UIView*, Android surface ...
+		OPENGL_CONTEXT, // HGLRC, X11::GLXContext, NSOpenGLContext*, EGLContext* ...
+	};
+
+	virtual int64_t get_native_handle(HandleType p_handle_type, int p_index);
+
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
@@ -254,6 +264,7 @@ VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
+VARIANT_ENUM_CAST(_OS::HandleType);
 
 class _Geometry2D : public Object {
 	GDCLASS(_Geometry2D, Object);

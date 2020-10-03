@@ -125,6 +125,7 @@ public:
 	virtual void set_current_tablet_driver(const String &p_driver);
 
 	virtual void initialize_joypads() {}
+	virtual void *get_native_handle(int p_handle_type, int p_index);
 
 	virtual Date get_date(bool utc) const;
 	virtual Time get_time(bool utc) const;
