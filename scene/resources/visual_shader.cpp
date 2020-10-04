@@ -992,7 +992,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 			set_node_position(type, id, p_value);
 			return true;
 		} else if (what == "size") {
-			((VisualShaderNodeGroupBase *)get_node(type, id).ptr())->set_size(p_value);
+			((VisualShaderNodeResizableBase *)get_node(type, id).ptr())->set_size(p_value);
 			return true;
 		} else if (what == "input_ports") {
 			((VisualShaderNodeGroupBase *)get_node(type, id).ptr())->set_inputs(p_value);
@@ -1059,7 +1059,7 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_node_position(type, id);
 			return true;
 		} else if (what == "size") {
-			r_ret = ((VisualShaderNodeGroupBase *)get_node(type, id).ptr())->get_size();
+			r_ret = ((VisualShaderNodeResizableBase *)get_node(type, id).ptr())->get_size();
 			return true;
 		} else if (what == "input_ports") {
 			r_ret = ((VisualShaderNodeGroupBase *)get_node(type, id).ptr())->get_inputs();
@@ -2597,19 +2597,36 @@ Vector<StringName> VisualShaderNodeUniform::get_editable_properties() const {
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
 }
 
-////////////// GroupBase
+////////////// ResizeableBase
 
-String VisualShaderNodeGroupBase::get_caption() const {
-	return "Group";
-}
-
-void VisualShaderNodeGroupBase::set_size(const Vector2 &p_size) {
+void VisualShaderNodeResizableBase::set_size(const Vector2 &p_size) {
 	size = p_size;
 }
 
-Vector2 VisualShaderNodeGroupBase::get_size() const {
+Vector2 VisualShaderNodeResizableBase::get_size() const {
 	return size;
 }
+
+void VisualShaderNodeResizableBase::set_allow_v_resize(bool p_enabled) {
+	allow_v_resize = p_enabled;
+}
+
+bool VisualShaderNodeResizableBase::is_allow_v_resize() const {
+	return allow_v_resize;
+}
+
+void VisualShaderNodeResizableBase::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &VisualShaderNodeResizableBase::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &VisualShaderNodeResizableBase::get_size);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+}
+
+VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
+	set_allow_v_resize(true);
+}
+
+////////////// GroupBase
 
 void VisualShaderNodeGroupBase::set_inputs(const String &p_inputs) {
 	if (inputs == p_inputs) {
@@ -3037,9 +3054,6 @@ bool VisualShaderNodeGroupBase::is_editable() const {
 }
 
 void VisualShaderNodeGroupBase::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_size", "size"), &VisualShaderNodeGroupBase::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &VisualShaderNodeGroupBase::get_size);
-
 	ClassDB::bind_method(D_METHOD("set_inputs", "inputs"), &VisualShaderNodeGroupBase::set_inputs);
 	ClassDB::bind_method(D_METHOD("get_inputs"), &VisualShaderNodeGroupBase::get_inputs);
 
@@ -3067,8 +3081,6 @@ void VisualShaderNodeGroupBase::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_free_input_port_id"), &VisualShaderNodeGroupBase::get_free_input_port_id);
 	ClassDB::bind_method(D_METHOD("get_free_output_port_id"), &VisualShaderNodeGroupBase::get_free_output_port_id);
-
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
 }
 
 String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {

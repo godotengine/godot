@@ -522,7 +522,8 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCustom>();
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
-	ClassDB::register_class<VisualShaderNodeGroupBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeResizableBase>();
+	ClassDB::register_virtual_class<VisualShaderNodeGroupBase>();
 	ClassDB::register_class<VisualShaderNodeFloatConstant>();
 	ClassDB::register_class<VisualShaderNodeIntConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
@@ -563,6 +564,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
 	ClassDB::register_class<VisualShaderNodeTransformDecompose>();
 	ClassDB::register_class<VisualShaderNodeTexture>();
+	ClassDB::register_class<VisualShaderNodeCurveTexture>();
 	ClassDB::register_virtual_class<VisualShaderNodeSample3D>();
 	ClassDB::register_class<VisualShaderNodeTexture2DArray>();
 	ClassDB::register_class<VisualShaderNodeTexture3D>();
