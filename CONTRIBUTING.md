@@ -242,6 +242,7 @@ or a bug you want to fix), the following channels can be used:
   can also create a new issue - please keep in mind to create issues only to
   discuss quite specific points about the development, and not general user
   feedback or support requests.
+	
 - [#godotengine-devel IRC channel on
   Freenode](https://webchat.freenode.net/?channels=godotengine-devel): You will
   find most core developers there, so it's the go-to channel for direct chat
