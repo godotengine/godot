@@ -5871,7 +5871,7 @@ RID RasterizerStorageRD::decal_atlas_get_texture() const {
 }
 
 RID RasterizerStorageRD::decal_atlas_get_texture_srgb() const {
-	return decal_atlas.texture;
+	return decal_atlas.texture_srgb;
 }
 
 void RasterizerStorageRD::_update_decal_atlas() {
