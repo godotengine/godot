@@ -51,7 +51,7 @@
 			<argument index="0" name="area" type="Node">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the given area intersects or overlaps Area2D. Otherwise it returns false.
+				Returns [code]true[/code] if the given area intersects or overlaps the Area2D, [code]false[/code] otherwise.
 				[b]Note:[/b] The result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
