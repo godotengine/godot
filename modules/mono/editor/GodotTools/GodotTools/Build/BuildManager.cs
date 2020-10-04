@@ -1,20 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using GodotTools.Build;
 using GodotTools.Ides.Rider;
 using GodotTools.Internals;
-using GodotTools.Utils;
 using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
+using OS = GodotTools.Utils.OS;
+using Path = System.IO.Path;
 
-namespace GodotTools
+namespace GodotTools.Build
 {
     public static class BuildManager
     {
-        private static readonly List<BuildInfo> BuildsInProgress = new List<BuildInfo>();
+        private static BuildInfo _buildInProgress;
 
         public const string PropNameMSBuildMono = "MSBuild (Mono)";
         public const string PropNameMSBuildVs = "MSBuild (VS Build Tools)";
@@ -23,6 +22,14 @@ namespace GodotTools
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         public const string MsBuildLogFileName = "msbuild_log.txt";
+
+        public delegate void BuildLaunchFailedEventHandler(BuildInfo buildInfo, string reason);
+
+        public static event BuildLaunchFailedEventHandler BuildLaunchFailed;
+        public static event Action<BuildInfo> BuildStarted;
+        public static event Action<BuildResult> BuildFinished;
+        public static event Action<string> StdOutputReceived;
+        public static event Action<string> StdErrorReceived;
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
@@ -36,12 +43,13 @@ namespace GodotTools
 
         private static void ShowBuildErrorDialog(string message)
         {
-            GodotSharpEditor.Instance.ShowErrorDialog(message, "Build error");
-            GodotSharpEditor.Instance.BottomPanel.ShowBuildTab();
+            var plugin = GodotSharpEditor.Instance;
+            plugin.ShowErrorDialog(message, "Build error");
+            plugin.MakeBottomPanelItemVisible(plugin.MSBuildPanel);
         }
 
-        public static void RestartBuild(BuildTab buildTab) => throw new NotImplementedException();
-        public static void StopBuild(BuildTab buildTab) => throw new NotImplementedException();
+        public static void RestartBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
+        public static void StopBuild(BuildOutputView buildOutputView) => throw new NotImplementedException();
 
         private static string GetLogFilePath(BuildInfo buildInfo)
         {
@@ -61,15 +69,14 @@ namespace GodotTools
 
         public static bool Build(BuildInfo buildInfo)
         {
-            if (BuildsInProgress.Contains(buildInfo))
+            if (_buildInProgress != null)
                 throw new InvalidOperationException("A build is already in progress");
 
-            BuildsInProgress.Add(buildInfo);
+            _buildInProgress = buildInfo;
 
             try
             {
-                BuildTab buildTab = GodotSharpEditor.Instance.BottomPanel.GetBuildTabFor(buildInfo);
-                buildTab.OnBuildStart();
+                BuildStarted?.Invoke(buildInfo);
 
                 // Required in order to update the build tasks list
                 Internal.GodotMainIteration();
@@ -80,44 +87,44 @@ namespace GodotTools
                 }
                 catch (IOException e)
                 {
-                    buildTab.OnBuildExecFailed($"Cannot remove issues file: {GetIssuesFilePath(buildInfo)}");
+                    BuildLaunchFailed?.Invoke(buildInfo, $"Cannot remove issues file: {GetIssuesFilePath(buildInfo)}");
                     Console.Error.WriteLine(e);
                 }
 
                 try
                 {
-                    int exitCode = BuildSystem.Build(buildInfo);
+                    int exitCode = BuildSystem.Build(buildInfo, StdOutputReceived, StdErrorReceived);
 
                     if (exitCode != 0)
                         PrintVerbose($"MSBuild exited with code: {exitCode}. Log file: {GetLogFilePath(buildInfo)}");
 
-                    buildTab.OnBuildExit(exitCode == 0 ? BuildTab.BuildResults.Success : BuildTab.BuildResults.Error);
+                    BuildFinished?.Invoke(exitCode == 0 ? BuildResult.Success : BuildResult.Error);
 
                     return exitCode == 0;
                 }
                 catch (Exception e)
                 {
-                    buildTab.OnBuildExecFailed($"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
             }
             finally
             {
-                BuildsInProgress.Remove(buildInfo);
+                _buildInProgress = null;
             }
         }
 
         public static async Task<bool> BuildAsync(BuildInfo buildInfo)
         {
-            if (BuildsInProgress.Contains(buildInfo))
+            if (_buildInProgress != null)
                 throw new InvalidOperationException("A build is already in progress");
 
-            BuildsInProgress.Add(buildInfo);
+            _buildInProgress = buildInfo;
 
             try
             {
-                BuildTab buildTab = GodotSharpEditor.Instance.BottomPanel.GetBuildTabFor(buildInfo);
+                BuildStarted?.Invoke(buildInfo);
 
                 try
                 {
@@ -125,43 +132,57 @@ namespace GodotTools
                 }
                 catch (IOException e)
                 {
-                    buildTab.OnBuildExecFailed($"Cannot remove issues file: {GetIssuesFilePath(buildInfo)}");
+                    BuildLaunchFailed?.Invoke(buildInfo, $"Cannot remove issues file: {GetIssuesFilePath(buildInfo)}");
                     Console.Error.WriteLine(e);
                 }
 
                 try
                 {
-                    int exitCode = await BuildSystem.BuildAsync(buildInfo);
+                    int exitCode = await BuildSystem.BuildAsync(buildInfo, StdOutputReceived, StdErrorReceived);
 
                     if (exitCode != 0)
                         PrintVerbose($"MSBuild exited with code: {exitCode}. Log file: {GetLogFilePath(buildInfo)}");
 
-                    buildTab.OnBuildExit(exitCode == 0 ? BuildTab.BuildResults.Success : BuildTab.BuildResults.Error);
+                    BuildFinished?.Invoke(exitCode == 0 ? BuildResult.Success : BuildResult.Error);
 
                     return exitCode == 0;
                 }
                 catch (Exception e)
                 {
-                    buildTab.OnBuildExecFailed($"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
+                    BuildLaunchFailed?.Invoke(buildInfo, $"The build method threw an exception.\n{e.GetType().FullName}: {e.Message}");
                     Console.Error.WriteLine(e);
                     return false;
                 }
             }
             finally
             {
-                BuildsInProgress.Remove(buildInfo);
+                _buildInProgress = null;
             }
         }
 
-        public static bool BuildProjectBlocking(string config, [CanBeNull] string platform = null)
+        public static bool BuildProjectBlocking(string config, [CanBeNull] string[] targets = null, [CanBeNull] string platform = null)
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets ?? new[] {"Build"}, config, restore: true);
+
+            // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
+            if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
+                buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
+
+            if (Internal.GodotIsRealTDouble())
+                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+
+            return BuildProjectBlocking(buildInfo);
+        }
+
+        private static bool BuildProjectBlocking(BuildInfo buildInfo)
+        {
+            if (!File.Exists(buildInfo.Solution))
                 return true; // No solution to build
 
             // Make sure the API assemblies are up to date before building the project.
             // We may not have had the chance to update the release API assemblies, and the debug ones
             // may have been deleted by the user at some point after they were loaded by the Godot editor.
-            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(config == "ExportRelease" ? "Release" : "Debug");
+            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(buildInfo.Configuration == "ExportRelease" ? "Release" : "Debug");
 
             if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
             {
@@ -172,15 +193,6 @@ namespace GodotTools
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {
                 pr.Step("Building project solution", 0);
-
-                var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, new[] {"Build"}, config, restore: true);
-
-                // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
-                if (platform != null || OS.PlatformNameMap.TryGetValue(Godot.OS.GetName(), out platform))
-                    buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
-
-                if (Internal.GodotIsRealTDouble())
-                    buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
 
                 if (!Build(buildInfo))
                 {
@@ -197,18 +209,41 @@ namespace GodotTools
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
 
-            string editorScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor");
-            string playerScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
-
-            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
-
-            if (File.Exists(editorScriptsMetadataPath))
-                File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
+            GenerateEditorScriptMetadata();
 
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
                 return true; // Requested play from an external editor/IDE which already built the project
 
             return BuildProjectBlocking("Debug");
+        }
+
+        // NOTE: This will be replaced with C# source generators in 4.0
+        public static void GenerateEditorScriptMetadata()
+        {
+            string editorScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor");
+            string playerScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
+
+            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
+
+            if (!File.Exists(editorScriptsMetadataPath))
+                return;
+
+            try
+            {
+                File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
+            }
+            catch (IOException e)
+            {
+                throw new IOException("Failed to copy scripts metadata file.", innerException: e);
+            }
+        }
+
+        // NOTE: This will be replaced with C# source generators in 4.0
+        public static string GenerateExportedGameScriptMetadata(bool isDebug)
+        {
+            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
+            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
+            return scriptsMetadataPath;
         }
 
         public static void Initialize()
@@ -254,8 +289,6 @@ namespace GodotTools
                 ["hint"] = Godot.PropertyHint.Enum,
                 ["hint_string"] = hintString
             });
-
-            EditorDef("mono/builds/print_build_output", false);
         }
     }
 }

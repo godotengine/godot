@@ -5,16 +5,10 @@ using GodotTools.Internals;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
 
-namespace GodotTools
+namespace GodotTools.Build
 {
-    public class BuildTab : VBoxContainer
+    public class BuildOutputView : VBoxContainer, ISerializationListener
     {
-        public enum BuildResults
-        {
-            Error,
-            Success
-        }
-
         [Serializable]
         private class BuildIssue : Reference // TODO Remove Reference once we have proper serialization
         {
@@ -29,10 +23,15 @@ namespace GodotTools
 
         private readonly Array<BuildIssue> issues = new Array<BuildIssue>(); // TODO Use List once we have proper serialization
         private ItemList issuesList;
+        private TextEdit buildLog;
+        private PopupMenu issuesListContextMenu;
 
-        public bool BuildExited { get; private set; } = false;
+        [Signal]
+        public delegate void BuildStateChanged();
 
-        public BuildResults? BuildResult { get; private set; } = null;
+        public bool HasBuildExited { get; private set; } = false;
+
+        public BuildResult? BuildResult { get; private set; } = null;
 
         public int ErrorCount { get; private set; } = 0;
 
@@ -41,23 +40,31 @@ namespace GodotTools
         public bool ErrorsVisible { get; set; } = true;
         public bool WarningsVisible { get; set; } = true;
 
-        public Texture IconTexture
+        public Texture BuildStateIcon
         {
             get
             {
-                if (!BuildExited)
+                if (!HasBuildExited)
                     return GetIcon("Stop", "EditorIcons");
 
-                if (BuildResult == BuildResults.Error)
-                    return GetIcon("StatusError", "EditorIcons");
+                if (BuildResult == Build.BuildResult.Error)
+                    return GetIcon("Error", "EditorIcons");
 
-                return GetIcon("StatusSuccess", "EditorIcons");
+                if (WarningCount > 1)
+                    return GetIcon("Warning", "EditorIcons");
+
+                return null;
             }
         }
 
-        public BuildInfo BuildInfo { get; private set; }
+        private BuildInfo BuildInfo { get; set; }
 
-        private void _LoadIssuesFromFile(string csvFile)
+        public bool LogVisible
+        {
+            set => buildLog.Visible = value;
+        }
+
+        private void LoadIssuesFromFile(string csvFile)
         {
             using (var file = new Godot.File())
             {
@@ -107,7 +114,7 @@ namespace GodotTools
             }
         }
 
-        private void _IssueActivated(int idx)
+        private void IssueActivated(int idx)
         {
             if (idx < 0 || idx >= issuesList.GetItemCount())
                 throw new IndexOutOfRangeException("Item list index out of range");
@@ -190,49 +197,79 @@ namespace GodotTools
             }
         }
 
-        public void OnBuildStart()
+        private void BuildLaunchFailed(BuildInfo buildInfo, string cause)
         {
-            BuildExited = false;
-
-            issues.Clear();
-            WarningCount = 0;
-            ErrorCount = 0;
-            UpdateIssuesList();
-
-            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
-        }
-
-        public void OnBuildExit(BuildResults result)
-        {
-            BuildExited = true;
-            BuildResult = result;
-
-            _LoadIssuesFromFile(Path.Combine(BuildInfo.LogsDirPath, BuildManager.MsBuildIssuesFileName));
-            UpdateIssuesList();
-
-            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
-        }
-
-        public void OnBuildExecFailed(string cause)
-        {
-            BuildExited = true;
-            BuildResult = BuildResults.Error;
+            HasBuildExited = true;
+            BuildResult = Build.BuildResult.Error;
 
             issuesList.Clear();
 
-            var issue = new BuildIssue { Message = cause, Warning = false };
+            var issue = new BuildIssue {Message = cause, Warning = false};
 
             ErrorCount += 1;
             issues.Add(issue);
 
             UpdateIssuesList();
 
-            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
+            EmitSignal(nameof(BuildStateChanged));
+        }
+
+        private void BuildStarted(BuildInfo buildInfo)
+        {
+            BuildInfo = buildInfo;
+            HasBuildExited = false;
+
+            issues.Clear();
+            WarningCount = 0;
+            ErrorCount = 0;
+            buildLog.Text = string.Empty;
+
+            UpdateIssuesList();
+
+            EmitSignal(nameof(BuildStateChanged));
+        }
+
+        private void BuildFinished(BuildResult result)
+        {
+            HasBuildExited = true;
+            BuildResult = result;
+
+            LoadIssuesFromFile(Path.Combine(BuildInfo.LogsDirPath, BuildManager.MsBuildIssuesFileName));
+
+            UpdateIssuesList();
+
+            EmitSignal(nameof(BuildStateChanged));
+        }
+
+        private void StdOutputReceived(string text)
+        {
+            buildLog.Text += text + "\n";
+            ScrollToLastNonEmptyLogLine();
+        }
+
+        private void StdErrorReceived(string text)
+        {
+            buildLog.Text += text + "\n";
+            ScrollToLastNonEmptyLogLine();
+        }
+
+        private void ScrollToLastNonEmptyLogLine()
+        {
+            int line;
+            for (line = buildLog.GetLineCount(); line > 0; line--)
+            {
+                string lineText = buildLog.GetLine(line);
+
+                if (!string.IsNullOrEmpty(lineText) || !string.IsNullOrEmpty(lineText?.Trim()))
+                    break;
+            }
+
+            buildLog.CursorSetLine(line);
         }
 
         public void RestartBuild()
         {
-            if (!BuildExited)
+            if (!HasBuildExited)
                 throw new InvalidOperationException("Build already started");
 
             BuildManager.RestartBuild(this);
@@ -240,28 +277,118 @@ namespace GodotTools
 
         public void StopBuild()
         {
-            if (!BuildExited)
+            if (!HasBuildExited)
                 throw new InvalidOperationException("Build is not in progress");
 
             BuildManager.StopBuild(this);
+        }
+
+        private enum IssuesContextMenuOption
+        {
+            Copy
+        }
+
+        private void IssuesListContextOptionPressed(IssuesContextMenuOption id)
+        {
+            switch (id)
+            {
+                case IssuesContextMenuOption.Copy:
+                {
+                    // We don't allow multi-selection but just in case that changes later...
+                    string text = null;
+
+                    foreach (int issueIndex in issuesList.GetSelectedItems())
+                    {
+                        if (text != null)
+                            text += "\n";
+                        text += issuesList.GetItemText(issueIndex);
+                    }
+
+                    if (text != null)
+                        OS.Clipboard = text;
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid issue context menu option");
+            }
+        }
+
+        private void IssuesListRmbSelected(int index, Vector2 atPosition)
+        {
+            _ = index; // Unused
+
+            issuesListContextMenu.Clear();
+            issuesListContextMenu.SetSize(new Vector2(1, 1));
+
+            if (issuesList.IsAnythingSelected())
+            {
+                // Add menu entries for the selected item
+                issuesListContextMenu.AddIconItem(GetIcon("ActionCopy", "EditorIcons"),
+                    label: "Copy Error".TTR(), (int)IssuesContextMenuOption.Copy);
+            }
+
+            if (issuesListContextMenu.GetItemCount() > 0)
+            {
+                issuesListContextMenu.SetPosition(issuesList.RectGlobalPosition + atPosition);
+                issuesListContextMenu.Popup_();
+            }
         }
 
         public override void _Ready()
         {
             base._Ready();
 
-            issuesList = new ItemList { SizeFlagsVertical = (int)SizeFlags.ExpandFill };
-            issuesList.Connect("item_activated", this, nameof(_IssueActivated));
-            AddChild(issuesList);
+            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
+
+            var hsc = new HSplitContainer
+            {
+                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
+                SizeFlagsVertical = (int)SizeFlags.ExpandFill
+            };
+            AddChild(hsc);
+
+            issuesList = new ItemList
+            {
+                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the build log
+            };
+            issuesList.Connect("item_activated", this, nameof(IssueActivated));
+            issuesList.AllowRmbSelect = true;
+            issuesList.Connect("item_rmb_selected", this, nameof(IssuesListRmbSelected));
+            hsc.AddChild(issuesList);
+
+            issuesListContextMenu = new PopupMenu();
+            issuesListContextMenu.Connect("id_pressed", this, nameof(IssuesListContextOptionPressed));
+            issuesList.AddChild(issuesListContextMenu);
+
+            buildLog = new TextEdit
+            {
+                Readonly = true,
+                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the issues list
+            };
+            hsc.AddChild(buildLog);
+
+            AddBuildEventListeners();
         }
 
-        private BuildTab()
+        private void AddBuildEventListeners()
+        {
+            BuildManager.BuildLaunchFailed += BuildLaunchFailed;
+            BuildManager.BuildStarted += BuildStarted;
+            BuildManager.BuildFinished += BuildFinished;
+            // StdOutput/Error can be received from different threads, so we need to use CallDeferred
+            BuildManager.StdOutputReceived += line => CallDeferred(nameof(StdOutputReceived), line);
+            BuildManager.StdErrorReceived += line => CallDeferred(nameof(StdErrorReceived), line);
+        }
+
+        public void OnBeforeSerialize()
         {
         }
 
-        public BuildTab(BuildInfo buildInfo)
+        public void OnAfterDeserialize()
         {
-            BuildInfo = buildInfo;
+            AddBuildEventListeners(); // Re-add them
         }
     }
 }

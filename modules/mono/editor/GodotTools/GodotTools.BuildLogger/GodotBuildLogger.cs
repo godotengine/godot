@@ -15,14 +15,14 @@ namespace GodotTools.BuildLogger
         public void Initialize(IEventSource eventSource)
         {
             if (null == Parameters)
-                throw new LoggerException("Log directory was not set.");
+                throw new LoggerException("Log directory parameter not specified.");
 
             var parameters = Parameters.Split(new[] {';'});
 
             string logDir = parameters[0];
 
             if (string.IsNullOrEmpty(logDir))
-                throw new LoggerException("Log directory was not set.");
+                throw new LoggerException("Log directory parameter is empty.");
 
             if (parameters.Length > 1)
                 throw new LoggerException("Too many parameters passed.");
@@ -51,22 +51,31 @@ namespace GodotTools.BuildLogger
                 {
                     throw new LoggerException("Failed to create log file: " + ex.Message);
                 }
-                else
-                {
-                    // Unexpected failure
-                    throw;
-                }
+
+                // Unexpected failure
+                throw;
             }
 
             eventSource.ProjectStarted += eventSource_ProjectStarted;
-            eventSource.TaskStarted += eventSource_TaskStarted;
+            eventSource.ProjectFinished += eventSource_ProjectFinished;
             eventSource.MessageRaised += eventSource_MessageRaised;
             eventSource.WarningRaised += eventSource_WarningRaised;
             eventSource.ErrorRaised += eventSource_ErrorRaised;
-            eventSource.ProjectFinished += eventSource_ProjectFinished;
         }
 
-        void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
+        private void eventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
+        {
+            WriteLine(e.Message);
+            indent++;
+        }
+
+        private void eventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
+        {
+            indent--;
+            WriteLine(e.Message);
+        }
+
+        private void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): error {e.Code}: {e.Message}";
 
@@ -81,7 +90,7 @@ namespace GodotTools.BuildLogger
             issuesStreamWriter.WriteLine(errorLine);
         }
 
-        void eventSource_WarningRaised(object sender, BuildWarningEventArgs e)
+        private void eventSource_WarningRaised(object sender, BuildWarningEventArgs e)
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): warning {e.Code}: {e.Message}";
 
@@ -105,40 +114,6 @@ namespace GodotTools.BuildLogger
                 || e.Importance == MessageImportance.Low && IsVerbosityAtLeast(LoggerVerbosity.Detailed))
             {
                 WriteLineWithSenderAndMessage(string.Empty, e);
-            }
-        }
-
-        private void eventSource_TaskStarted(object sender, TaskStartedEventArgs e)
-        {
-            // TaskStartedEventArgs adds ProjectFile, TaskFile, TaskName
-            // To keep this log clean, this logger will ignore these events.
-        }
-
-        private void eventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
-        {
-            WriteLine(e.Message);
-            indent++;
-        }
-
-        private void eventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
-        {
-            indent--;
-            WriteLine(e.Message);
-        }
-
-        /// <summary>
-        /// Write a line to the log, adding the SenderName
-        /// </summary>
-        private void WriteLineWithSender(string line, BuildEventArgs e)
-        {
-            if (0 == string.Compare(e.SenderName, "MSBuild", StringComparison.OrdinalIgnoreCase))
-            {
-                // Well, if the sender name is MSBuild, let's leave it out for prettiness
-                WriteLine(line);
-            }
-            else
-            {
-                WriteLine(e.SenderName + ": " + line);
             }
         }
 
