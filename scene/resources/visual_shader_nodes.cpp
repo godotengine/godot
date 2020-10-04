@@ -853,7 +853,7 @@ String VisualShaderNodeSample3D::generate_code(Shader::Mode p_mode, VisualShader
 				if (p_input_vars[1] == String()) {
 					code += "\t\tvec4 " + id + "_tex_read = texture(" + id + ", " + default_uv + ");\n";
 				} else {
-					code += "\t\tvec4 " + id + "_tex_read = textureLod(" + id + ", " + default_uv = ", " + p_input_vars[1] + ");\n";
+					code += "\t\tvec4 " + id + "_tex_read = textureLod(" + id + ", " + default_uv + ", " + p_input_vars[1] + ");\n";
 				}
 			} else if (p_input_vars[1] == String()) {
 				//no lod
