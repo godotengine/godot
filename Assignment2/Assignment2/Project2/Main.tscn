@@ -1,0 +1,238 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://lava.tres" type="Material" id=1]
+[ext_resource path="res://grass.tres" type="Material" id=2]
+[ext_resource path="res://Player.tscn" type="PackedScene" id=3]
+
+[sub_resource type="BoxShape" id=1]
+
+[sub_resource type="CubeMesh" id=2]
+
+[sub_resource type="BoxShape" id=3]
+extents = Vector3( 0.221771, 0.219238, 0.219993 )
+
+[sub_resource type="CubeMesh" id=4]
+
+[node name="Main" type="Spatial"]
+transform = Transform( 0.999974, 0.00100224, 0.00716465, -0.00103201, 0.999991, 0.00415113, -0.00716042, -0.00415841, 0.999966, 0, 0, 0 )
+
+[node name="Short Platforms" type="Node" parent="."]
+
+[node name="Challenge Platform" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( 4.89802, 0, 0, 0, 0.90726, 0, 0, 0, 3.74674, 5.70288, -17.9618, -9.4487 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Challenge Platform"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Challenge Platform"]
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Challenge Platform2" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( 9.93815, 0, 0, 0, 0.90726, 0, 0, 0, 14.9264, 60.6176, -35.6984, -12.5486 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Challenge Platform2"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Challenge Platform2"]
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Starting Platform" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( 13.3094, 0, 0, 0, 1.04466, 0, 0, 0, 21.5742, -75.2225, 2.30234, -11.1446 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Starting Platform"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Starting Platform"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal Platform" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -10.4613, -34.9749, -23.3472, 81.9637 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal Platform"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal Platform"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal Platform2" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -10.4613, 5.97166, -32.4844, 117.189 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal Platform2"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal Platform2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal Platform3" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -10.4613, 50.13, -48.0209, 78.7366 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal Platform3"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal Platform3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 120.146, -55.0906, 39.0599 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform2" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 223.634, -57.3745, 39.0599 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform2"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform3" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 274.755, -71.7723, -20.7502 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform3"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform4" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 360.862, -96.9843, -5.99475 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform4"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform4"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform5" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 405.209, -125.303, 69.2803 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform5"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform5"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform6" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 373.76, -160.615, 150.928 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform6"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform6"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Normal2 Platform7" type="KinematicBody" parent="Short Platforms"]
+transform = Transform( -10.4755, 0, 0, 0, 1.04466, 0, 0, 0, -15.7103, 295.923, -188.237, 235.521 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Short Platforms/Normal2 Platform7"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Short Platforms/Normal2 Platform7"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.38826e-05, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 2 )
+
+[node name="Long Platforms" type="Node" parent="."]
+
+[node name="Long Starter1" type="KinematicBody" parent="Long Platforms"]
+transform = Transform( 24.9465, 0, 0, 0, 2.18908, 0, 0, 0, 66.9689, -55.1949, -2.03175, 3.41846 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Long Platforms/Long Starter1"]
+transform = Transform( 1.03553, 0, 0, 0, 1.0087, 0, 0, 0, 1, 0, 0, 0 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Long Platforms/Long Starter1"]
+transform = Transform( 0.229484, 0, 0, 0, 0.219957, 0, 0, 0, 0.219982, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 2 )
+
+[node name="Long Starter2" type="KinematicBody" parent="Long Platforms"]
+transform = Transform( 18.8641, 0, 0, 0, 2.4344, 0, 0, 0, 66.9689, -45.536, -5.41009, 31.6898 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Long Platforms/Long Starter2"]
+transform = Transform( 1.03553, 0, 0, 0, 1.0087, 0, 0, 0, 1, 0, 0, 0 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Long Platforms/Long Starter2"]
+transform = Transform( 0.229484, 0, 0, 0, 0.219957, 0, 0, 0, 0.219982, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 2 )
+
+[node name="Long Starter3" type="KinematicBody" parent="Long Platforms"]
+transform = Transform( 17.6314, 0, 0, 0, 3.12083, 0, 0, 0, 66.9689, -54.2938, -12.5101, 59.2568 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Long Platforms/Long Starter3"]
+transform = Transform( 1.03553, 0, 0, 0, 1.0087, 0, 0, 0, 1, 0, 0, 0 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Long Platforms/Long Starter3"]
+transform = Transform( 0.229484, 0, 0, 0, 0.219957, 0, 0, 0, 0.219982, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 2 )
+
+[node name="Middle Angled" type="KinematicBody" parent="Long Platforms"]
+transform = Transform( -0.189018, -0.550871, -81.6144, -0.0557308, 1.59286, -24.0636, 40.2953, 0, -1.34636, 91.9941, -59.6517, 38.4448 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Long Platforms/Middle Angled"]
+transform = Transform( 1.03553, 0, 0, 0, 1.0087, 0, 0, 0, 1, 0, 0, 0 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Long Platforms/Middle Angled"]
+transform = Transform( 0.229484, 0, 0, 0, 0.219957, 0, 0, 0, 0.219982, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 2 )
+
+[node name="Middle Angled2" type="KinematicBody" parent="Long Platforms"]
+transform = Transform( 37.9081, -0.199642, 25.6612, 0.34348, 1.59232, 31.5605, -13.6605, -0.515095, 74.7477, 250.239, -113.358, 122.083 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Long Platforms/Middle Angled2"]
+transform = Transform( 1.03553, 0, 0, 0, 1.0087, 0, 0, 0, 1, 0, 0, 0 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Long Platforms/Middle Angled2"]
+transform = Transform( 0.229484, 0, 0, 0, 0.219957, 0, 0, 0, 0.219982, 0, 0, 0 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 2 )
+
+[node name="Lava" type="Node" parent="."]
+
+[node name="Lava" type="KinematicBody" parent="Lava"]
+transform = Transform( 514.837, 0, 0, 0, 1.04466, 0, 0, 0, 537.885, 121.316, -219.15, 73.8166 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Lava/Lava"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Lava/Lava"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0382489, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = ExtResource( 1 )
+
+[node name="Player" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, -4.19095e-09, -2.18279e-11, 1, 4.19095e-09, 0, 0, 0.999999, -80.089, 6.13277, -21.1606 )

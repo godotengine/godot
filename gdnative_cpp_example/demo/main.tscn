@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://RigidBody3D.tscn" type="PackedScene" id=1]
+
+[node name="Main" type="Node3D"]
+script = null
+
+[node name="RigidBody3D" parent="." instance=ExtResource( 1 )]

@@ -1,0 +1,12 @@
+Implemented Project Features:
+
+Room with walls that contains a light
+Balls that shmoove
+Bouncing Balls (off each other and walls)
+A standstill camera
+Random Ball Movement!
+
+Weird feature is some of my code contains errors for recognizing some of the core & gen file
+header files, but it works despite that.
+
+You use the program by opening and running the project

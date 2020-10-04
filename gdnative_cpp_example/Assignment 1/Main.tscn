@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="BoxShape3D" id=1]
+
+[sub_resource type="CubeMesh" id=2]
+
+[node name="Main" type="Node3D"]
+script = null
+
+[node name="KinematicBody3D" type="KinematicBody3D" parent="."]
+script = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="KinematicBody3D"]
+shape = SubResource( 1 )
+script = null
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="KinematicBody3D"]
+mesh = SubResource( 2 )
+material/0 = null
+script = null

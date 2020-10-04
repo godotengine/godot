@@ -1,0 +1,63 @@
+Idea: Ball Fall
+
+Description: jumping from sskyscrapers, collect as many coins as possible  
+
+- Move
+	- WASD
+- Jump
+	- Space
+- Fall
+	- Gravity 
+- Walkable Angle
+	- IN PROGRESS
+- Ledge Interactions
+	- IN PROGRESS
+- Flying  
+	- Jet Pack (with fuel)
+- Custom Movement 
+	- Climbing
+- Object Interactions 
+	- Coins
+	- Fuel
+- Camera
+	- Anchor around ball
+- Sound effects and Background music
+	- Music: Celeste 
+	- Sound effects: jump, fall, end game
+- Physics and collision detection
+	- Kinematic Body
+		- Gravity
+	- CSGBox (platforms)
+	- Climbing
+	- Flying
+- GUI and Status
+	- Score (Coins)
+	- Time
+	- Fuel Meter 
+	
+Extra Credit:
+- 3D Animations LOW PRIORITY
+	- Possibly running man
+- End Conditon
+	- Reaches end or time runs out
+- Particle Effects 
+	- Red particles coming out of the lava occasionally
+- Player Interfaces 
+	- Main Menu 
+		- Start 
+		- Options
+			- Walkable angle
+	- Pause
+		- Resume
+		- Restart
+		- Quit
+		
+Architecture:
+	- Player
+		- Kinematic Body
+	- Platforms
+		- Rigid Bodies 
+		- Kinematic Body for moving ones 
+	
+Open Questions:
+	- Check Points? 

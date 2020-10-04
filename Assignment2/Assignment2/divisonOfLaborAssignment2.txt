@@ -1,0 +1,16 @@
+Division of Tasks ~ Assignment 2
+
+
+Task List: 
+Player Controller Script - Gavin
+Start Menu --------------- Evan
+Pause Menu --------------- Evan
+Adjustable Walk Angle ---- Gavin
+Level Design ------------- Julian
+Platform Design ---------- Julian
+Collectibles ------------- Julian
+GUI & GUI Script --------- Evan/Julian
+
+Meeting Schedule:
+	- Daily Standups in evening (8 - 10) 
+	- Daily Discord check-ins

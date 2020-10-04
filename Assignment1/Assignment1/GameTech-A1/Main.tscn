@@ -1,0 +1,128 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://godot.tres" type="Material" id=1]
+[ext_resource path="res://bin/ball.gdns" type="Script" id=2]
+[ext_resource path="res://Bluuu.tres" type="Material" id=3]
+[ext_resource path="res://Lime.tres" type="Material" id=4]
+[ext_resource path="res://MetalOrange.tres" type="Material" id=5]
+
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="BoxShape" id=2]
+
+[sub_resource type="SphereShape" id=3]
+
+[sub_resource type="SphereMesh" id=4]
+
+[node name="Main" type="Spatial"]
+
+[node name="Walls" type="Spatial" parent="."]
+
+[node name="Wall" type="KinematicBody" parent="Walls"]
+transform = Transform( 3, 0, 0, 0, 3, 0, 0, 0, 0.2, 0, 0, -3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall"]
+shape = SubResource( 2 )
+
+[node name="Wall2" type="KinematicBody" parent="Walls"]
+transform = Transform( 3, 0, 0, 0, 3, 0, 0, 0, 0.2, 0, 0, 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall2"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall2"]
+shape = SubResource( 2 )
+
+[node name="Wall3" type="KinematicBody" parent="Walls"]
+transform = Transform( 0.2, 0, 0, 0, 3, 0, 0, 0, 3, 3, 0, 0 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall3"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall3"]
+shape = SubResource( 2 )
+
+[node name="Wall4" type="KinematicBody" parent="Walls"]
+transform = Transform( 0.2, 0, 0, 0, 3, 0, 0, 0, 3, -3, 0, 0 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall4"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall4"]
+shape = SubResource( 2 )
+
+[node name="Wall5" type="KinematicBody" parent="Walls"]
+transform = Transform( 3, 0, 0, 0, 0.2, 0, 0, 0, 3, 0, -3, 0 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall5"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall5"]
+shape = SubResource( 2 )
+
+[node name="Wall6" type="KinematicBody" parent="Walls"]
+transform = Transform( 3, 0, 0, 0, 0.2, 0, 0, 0, 3, 0.00747538, 3.00703, 0.000229836 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Walls/Wall6"]
+mesh = SubResource( 1 )
+material/0 = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Walls/Wall6"]
+shape = SubResource( 2 )
+
+[node name="Balls" type="Spatial" parent="."]
+
+[node name="Ball" type="KinematicBody" parent="Balls"]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.9122, 1.39637, -0.398404 )
+script = ExtResource( 2 )
+speed = 4
+
+[node name="CollisionShape" type="CollisionShape" parent="Balls/Ball"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Balls/Ball"]
+mesh = SubResource( 4 )
+material/0 = ExtResource( 3 )
+
+[node name="Ball2" type="KinematicBody" parent="Balls"]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 1.95694, -0.207675, 1.89068 )
+script = ExtResource( 2 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Balls/Ball2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.401923, -3.42383, -2.31881 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Balls/Ball2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.399715, -3.41492, -2.33519 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 4 )
+
+[node name="Ball3" type="KinematicBody" parent="Balls"]
+transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.02869, 0.0620548, -2.62329 )
+script = ExtResource( 2 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Balls/Ball3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.88847, 0, 3.29368 )
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Balls/Ball3"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 3.89423, 0, 3.27739 )
+mesh = SubResource( 4 )
+material/0 = ExtResource( 5 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 2.5, 2.5, 2.5 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, -2.5, 2.5, 2.5 )
+
+[node name="SpotLight" type="SpotLight" parent="."]
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, -1, 0, 1, -1.62921e-07, 0, -2.5, 0 )

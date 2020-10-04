@@ -1,0 +1,13 @@
+# Properly detect languages on Github
+*.h linguist-language=c
+*.inc linguist-language=c
+drivers/* linguist-vendored
+
+*.c eol=lf
+*.cpp eol=lf
+*.mm eol=lf
+*.h eol=lf
+*.py eol=lf
+*.hpp eol=lf
+*.xml eol=lf
+*.json eol=lf

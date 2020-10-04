@@ -1,0 +1,39 @@
+Software Architecture ~ Assignment 2
+
+
+Scene Structure: 
+	- Main Room
+		- Player 
+			- Kinematic Body
+			- Camera
+		- Platforms
+			- Static Platforms
+			- Kinetic Platforms
+		- Interactables 
+			- Coins
+			- Gas Cans
+
+Class Structure: 
+	- No inheretince needed for right now
+
+
+Script Wireframes:  
+Player Script
+	- Handle movement every delta T
+	- Implement camera control via mouse
+	
+Pause Menu: 
+	- Resume
+	- Restart
+	- Quit
+	
+Start Menu:
+	- Start Game
+	- Options
+	- Quit Program
+	
+GUI Script
+	- Timer
+	- Coins Collected
+	- Gas Meter
+	

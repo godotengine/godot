@@ -1,0 +1,75 @@
+language: cpp
+dist: xenial
+osx_image: xcode10.1
+
+env:
+  global:
+    - SCONS_CACHE="$HOME/.scons_cache"
+    - SCONS_CACHE_LIMIT=1024
+
+cache:
+  directories:
+    - $SCONS_CACHE
+
+matrix:
+  include:
+    - name: Linux Debug + Static Checks
+      os: linux
+      compiler: gcc
+      env: TARGET=debug STATIC_CHECKS=yes
+      addons:
+        apt:
+          packages:
+            - clang-format-8
+            - [scons, pkg-config, build-essential, p7zip-full]
+
+    - name: Linux Release
+      os: linux
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - [scons, pkg-config, build-essential, p7zip-full]
+      env: TARGET=release
+
+    - name: macOS Debug
+      os: osx
+      compiler: clang
+      env: TARGET=debug
+
+    - name: macOS Release
+      os: osx
+      compiler: clang
+      env: TARGET=release
+
+    - name: Windows MSVC Debug
+      os: windows
+      env: TARGET=debug
+
+    - name: Windows MSVC Release
+      os: windows
+      env: TARGET=release
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update;
+      brew install scons p7zip;
+    fi
+
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+      curl -LO https://downloads.sourceforge.net/project/scons/scons-local/3.1.2/scons-local-3.1.2.zip;
+      unzip scons-local-3.1.2.zip;
+    fi
+
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+      export SCONS="./scons.bat";
+    else
+      export SCONS="scons";
+    fi
+
+  - $SCONS target="$TARGET" bits=64 generate_bindings=yes $SCONS_FLAGS;
+
+  - if [[ "$STATIC_CHECKS" == "yes" ]]; then
+      sh ./misc/travis/clang-format.sh;
+    fi

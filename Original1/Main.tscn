@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Icon.tres" type="Material" id=1]
+
+[sub_resource type="BoxShape" id=1]
+
+[sub_resource type="CubeMesh" id=2]
+
+[node name="Main" type="Spatial"]
+
+[node name="KinematicBody" type="KinematicBody" parent="."]
+
+[node name="CollisionShape" type="CollisionShape" parent="KinematicBody"]
+shape = SubResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="KinematicBody"]
+mesh = SubResource( 2 )
+material/0 = ExtResource( 1 )

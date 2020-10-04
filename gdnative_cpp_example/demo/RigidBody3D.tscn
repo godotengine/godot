@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://bin/wallColor.gdns" type="Script" id=1]
+
+[sub_resource type="BoxShape3D" id=1]
+extents = Vector3( 0.221384, 0.220747, 0.220809 )
+
+[sub_resource type="CubeMesh" id=2]
+
+[sub_resource type="ImageTexture" id=3]
+
+[sub_resource type="StandardMaterial3D" id=4]
+vertex_color_use_as_albedo = true
+albedo_color = Color( 0.627451, 0.290196, 0.290196, 1 )
+albedo_texture = SubResource( 3 )
+
+[node name="RigidBody3D" type="RigidBody3D"]
+transform = Transform( 4.52909, 0, 0, 0, 3.91225, 0, 0, 0, 0.293254, 0, 0.870382, 1.06311 )
+script = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource( 1 )
+script = null
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform( 0.203129, 0, 0, 0, 0.200265, 0, 0, 0, 0.186585, 0, 0, 0 )
+mesh = SubResource( 2 )
+material/0 = SubResource( 4 )
+script = ExtResource( 1 )
