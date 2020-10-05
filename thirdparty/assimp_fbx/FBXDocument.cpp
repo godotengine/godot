@@ -192,7 +192,9 @@ ObjectPtr LazyObject::LoadObject() {
 	} else if (!strncmp(obtype, "AnimationCurveNode", length)) {
 		object.reset(new AnimationCurveNode(id, element, name, doc));
 	} else {
-		ERR_FAIL_V_MSG(nullptr, "FBX contains unsupported object: " + String(obtype));
+		object.reset();
+		ERR_PRINT("FBX Unsupported element: " + String(obtype));
+		//ERR_FAIL_V_MSG(nullptr, "FBX contains unsupported object: " + String(obtype));
 	}
 
 	flags &= ~BEING_CONSTRUCTED;
