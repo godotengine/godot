@@ -139,8 +139,6 @@ static const int max_touches = 8;
 	if (self.delayGestureRecognizer) {
 		self.delayGestureRecognizer = nil;
 	}
-
-	[super dealloc];
 }
 
 - (void)godot_commonInit {

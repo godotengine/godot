@@ -305,10 +305,8 @@ void ARKitInterface::uninitialize() {
 		remove_all_anchors();
 
 		if (@available(iOS 11.0, *)) {
-			[ar_session release];
-			ar_session = NULL;
+			ar_session = nil;
 		}
-		[ar_delegate release];
 
 		ar_delegate = NULL;
 		initialized = false;
@@ -684,7 +682,7 @@ void ARKitInterface::process() {
 	}
 }
 
-void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
+void ARKitInterface::_add_or_update_anchor(GodotARAnchor *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
 	if (@available(iOS 11.0, *)) {
@@ -746,7 +744,7 @@ void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
 	}
 }
 
-void ARKitInterface::_remove_anchor(void *p_anchor) {
+void ARKitInterface::_remove_anchor(GodotARAnchor *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
 	if (@available(iOS 11.0, *)) {

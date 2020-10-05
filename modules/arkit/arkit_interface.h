@@ -44,6 +44,12 @@
 // forward declaration for some needed objects
 class ARKitShader;
 
+#ifdef __OBJC__
+typedef NSObject GodotARAnchor;
+#else
+typedef void GodotARAnchor;
+#endif
+
 class ARKitInterface : public ARVRInterface {
 	GDCLASS(ARKitInterface, ARVRInterface);
 
@@ -115,8 +121,8 @@ public:
 	virtual void process();
 
 	// called by delegate (void * because C++ and Obj-C don't always mix, should really change all platform/iphone/*.cpp files to .mm)
-	void _add_or_update_anchor(void *p_anchor);
-	void _remove_anchor(void *p_anchor);
+	void _add_or_update_anchor(GodotARAnchor *p_anchor);
+	void _remove_anchor(GodotARAnchor *p_anchor);
 
 	ARKitInterface();
 	~ARKitInterface();

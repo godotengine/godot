@@ -53,7 +53,6 @@ static NSArray *latestProducts;
 	[numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
 	[numberFormatter setLocale:self.priceLocale];
 	NSString *formattedString = [numberFormatter stringFromNumber:self.price];
-	[numberFormatter release];
 	return formattedString;
 }
 @end
@@ -123,8 +122,6 @@ void InAppStore::_bind_methods() {
 	ret["invalid_ids"] = invalid_ids;
 
 	InAppStore::get_singleton()->_post_event(ret);
-
-	[request release];
 };
 
 @end
@@ -137,14 +134,14 @@ Error InAppStore::request_product_info(Variant p_params) {
 	PoolStringArray pids = params["product_ids"];
 	printf("************ request product info! %i\n", pids.size());
 
-	NSMutableArray *array = [[[NSMutableArray alloc] initWithCapacity:pids.size()] autorelease];
+	NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:pids.size()];
 	for (int i = 0; i < pids.size(); i++) {
 		printf("******** adding %ls to product list\n", pids[i].c_str());
-		NSString *pid = [[[NSString alloc] initWithUTF8String:pids[i].utf8().get_data()] autorelease];
+		NSString *pid = [[NSString alloc] initWithUTF8String:pids[i].utf8().get_data()];
 		[array addObject:pid];
 	};
 
-	NSSet *products = [[[NSSet alloc] initWithArray:array] autorelease];
+	NSSet *products = [[NSSet alloc] initWithArray:array];
 	SKProductsRequest *request = [[SKProductsRequest alloc] initWithProductIdentifiers:products];
 
 	ProductsDelegate *delegate = [[ProductsDelegate alloc] init];
@@ -256,7 +253,7 @@ Error InAppStore::purchase(Variant p_params) {
 	Dictionary params = p_params;
 	ERR_FAIL_COND_V(!params.has("product_id"), ERR_INVALID_PARAMETER);
 
-	NSString *pid = [[[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()] autorelease];
+	NSString *pid = [[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()];
 
 	SKProduct *product = nil;
 
@@ -301,7 +298,7 @@ void InAppStore::_post_event(Variant p_event) {
 void InAppStore::_record_purchase(String product_id) {
 
 	String skey = "purchased/" + product_id;
-	NSString *key = [[[NSString alloc] initWithUTF8String:skey.utf8().get_data()] autorelease];
+	NSString *key = [[NSString alloc] initWithUTF8String:skey.utf8().get_data()];
 	[[NSUserDefaults standardUserDefaults] setBool:YES forKey:key];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 };

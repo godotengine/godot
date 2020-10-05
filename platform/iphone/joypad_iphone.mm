@@ -130,8 +130,6 @@ void JoypadIPhone::start_processing() {
 
 - (void)dealloc {
 	[self finishObserving];
-
-	[super dealloc];
 }
 
 - (int)getJoyIdForController:(GCController *)controller {
@@ -250,7 +248,13 @@ void JoypadIPhone::start_processing() {
 		// The extended gamepad profile has all the input you could possibly find on
 		// a gamepad but will only be active if your gamepad actually has all of
 		// these...
+		_weakify(self);
+		_weakify(controller);
+
 		controller.extendedGamepad.valueChangedHandler = ^(GCExtendedGamepad *gamepad, GCControllerElement *element) {
+			_strongify(self);
+			_strongify(controller);
+
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
@@ -310,7 +314,13 @@ void JoypadIPhone::start_processing() {
 		};
 	} else if (controller.microGamepad != nil) {
 		// micro gamepads were added in OS 9 and feature just 2 buttons and a d-pad
+		_weakify(self);
+		_weakify(controller);
+
 		controller.microGamepad.valueChangedHandler = ^(GCMicroGamepad *gamepad, GCControllerElement *element) {
+			_strongify(self);
+			_strongify(controller);
+
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {

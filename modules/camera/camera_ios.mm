@@ -124,16 +124,10 @@
 	if (output) {
 		[self removeOutput:output];
 		[output setSampleBufferDelegate:nil queue:NULL];
-		[output release];
 		output = nil;
 	}
 
 	[self commitConfiguration];
-}
-
-- (void)dealloc {
-	// bye bye
-	[super dealloc];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
@@ -270,7 +264,6 @@ CameraFeedIOS::CameraFeedIOS() {
 
 void CameraFeedIOS::set_device(AVCaptureDevice *p_device) {
 	device = p_device;
-	[device retain];
 
 	// get some info
 	NSString *device_name = p_device.localizedName;
@@ -284,15 +277,13 @@ void CameraFeedIOS::set_device(AVCaptureDevice *p_device) {
 };
 
 CameraFeedIOS::~CameraFeedIOS() {
-	if (capture_session != NULL) {
-		[capture_session release];
-		capture_session = NULL;
-	};
+	if (capture_session) {
+		capture_session = nil;
+	}
 
-	if (device != NULL) {
-		[device release];
-		device = NULL;
-	};
+	if (device) {
+		device = nil;
+	}
 };
 
 bool CameraFeedIOS::activate_feed() {
@@ -310,9 +301,8 @@ void CameraFeedIOS::deactivate_feed() {
 	// end camera capture if we have one
 	if (capture_session) {
 		[capture_session cleanup];
-		[capture_session release];
-		capture_session = NULL;
-	};
+		capture_session = nil;
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -345,8 +335,6 @@ void CameraFeedIOS::deactivate_feed() {
 	// remove notifications
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasConnectedNotification object:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceWasDisconnectedNotification object:nil];
-
-	[super dealloc];
 }
 
 @end
@@ -449,5 +437,5 @@ CameraIOS::CameraIOS() {
 };
 
 CameraIOS::~CameraIOS() {
-	[device_notifications release];
+	device_notifications = nil;
 };

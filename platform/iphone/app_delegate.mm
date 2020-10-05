@@ -144,8 +144,6 @@ static ViewController *mainViewController = nil;
 
 - (void)dealloc {
 	self.window = nil;
-
-	[super dealloc];
 }
 
 @end

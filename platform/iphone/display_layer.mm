@@ -130,8 +130,6 @@ bool gles3_available = true;
 	if (context) {
 		context = nil;
 	}
-
-	[super dealloc];
 }
 
 - (BOOL)createFramebuffer {

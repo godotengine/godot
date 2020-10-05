@@ -122,8 +122,6 @@
 	self.renderer = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[super dealloc];
 }
 
 // MARK: Orientation
