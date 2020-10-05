@@ -295,19 +295,15 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		if (A->is_shape_set_as_one_way_collision(shape_A)) {
 			Vector2 direction = xform_A.get_axis(1).normalized();
 			bool valid = false;
-			if (B->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused)
-						continue;
-					if (c.normal.dot(direction) > 0) //greater (normal inverted)
-						continue;
-
-					valid = true;
-					break;
-				}
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused)
+					continue;
+				if (c.normal.dot(direction) > -CMP_EPSILON) //greater (normal inverted)
+					continue;
+				valid = true;
+				break;
 			}
-
 			if (!valid) {
 				collided = false;
 				oneway_disabled = true;
@@ -318,17 +314,14 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		if (B->is_shape_set_as_one_way_collision(shape_B)) {
 			Vector2 direction = xform_B.get_axis(1).normalized();
 			bool valid = false;
-			if (A->get_linear_velocity().dot(direction) >= 0) {
-				for (int i = 0; i < contact_count; i++) {
-					Contact &c = contacts[i];
-					if (!c.reused)
-						continue;
-					if (c.normal.dot(direction) < 0) //less (normal ok)
-						continue;
-
-					valid = true;
-					break;
-				}
+			for (int i = 0; i < contact_count; i++) {
+				Contact &c = contacts[i];
+				if (!c.reused)
+					continue;
+				if (c.normal.dot(direction) < CMP_EPSILON) //less (normal ok)
+					continue;
+				valid = true;
+				break;
 			}
 			if (!valid) {
 				collided = false;

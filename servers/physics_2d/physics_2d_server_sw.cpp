@@ -167,24 +167,19 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 	if (cbk->max == 0)
 		return;
 
+	Vector2 rel_dir = (p_point_A - p_point_B);
+	real_t rel_length2 = rel_dir.length_squared();
 	if (cbk->valid_dir != Vector2()) {
-		if (p_point_A.distance_squared_to(p_point_B) > cbk->valid_depth * cbk->valid_depth) {
-			cbk->invalid_by_dir++;
-			return;
-		}
-		Vector2 rel_dir = (p_point_A - p_point_B).normalized();
-
-		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { //sqrt(2)/2.0 - 45 degrees
-			cbk->invalid_by_dir++;
-
-			/*
-			print_line("A: "+p_point_A);
-			print_line("B: "+p_point_B);
-			print_line("discard too angled "+rtos(cbk->valid_dir.dot((p_point_A-p_point_B))));
-			print_line("resnorm: "+(p_point_A-p_point_B).normalized());
-			print_line("distance: "+rtos(p_point_A.distance_to(p_point_B)));
-			*/
-			return;
+		if (cbk->valid_depth < 10e20) {
+			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
+					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
+		} else {
+			if (rel_length2 > 0 && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON) {
+				return;
+			}
 		}
 	}
 
@@ -201,8 +196,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			}
 		}
 
-		real_t d = p_point_A.distance_squared_to(p_point_B);
-		if (d < min_depth)
+		if (rel_length2 < min_depth)
 			return;
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
