@@ -681,6 +681,17 @@
 				Sets the update mode (see [enum UpdateMode]) of a value track.
 			</description>
 		</method>
+		<method name="value_track_interpolate" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="track_idx" type="int">
+			</argument>
+			<argument index="1" name="time_sec" type="float">
+			</argument>
+			<description>
+				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">

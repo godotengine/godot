@@ -634,6 +634,7 @@
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
 				[b]Important:[/b] The path must be absolute, a local path will just return [code]null[/code].
+				This method is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 			</description>
 		</method>
 		<method name="log">
@@ -766,7 +767,7 @@
 				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
 				for i in range(-3, 4):
-				    print("%2.0f %2.0f %2.0f" % [i, i % 3, posmod(i, 3)])
+				    print("%2d %2d %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Produces:
 				[codeblock]

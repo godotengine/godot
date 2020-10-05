@@ -965,7 +965,11 @@ void EditorData::script_class_save_icon_paths() {
 			d[E->get()] = _script_class_icon_paths[E->get()];
 	}
 
-	ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	if (d.empty()) {
+		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	} else {
+		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+	}
 	ProjectSettings::get_singleton()->save();
 }
 
