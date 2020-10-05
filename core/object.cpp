@@ -1969,6 +1969,8 @@ void ObjectDB::cleanup() {
 				uint32_t slot = object_slots[i].next_free;
 				Object *obj = object_slots[slot].object;
 
+				ERR_CONTINUE_MSG(obj == nullptr, "object db cleanup failed");
+
 				String extra_info;
 				if (obj->is_class("Node")) {
 					extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
