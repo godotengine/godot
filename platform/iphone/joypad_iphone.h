@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  joypad_iphone.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import <GameController/GameController.h>
 
-@class ViewController;
+@interface JoypadIPhoneObserver : NSObject
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
-
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+- (void)startObserving;
+- (void)startProcessing;
+- (void)finishObserving;
 
 @end
+
+class JoypadIPhone {
+private:
+	JoypadIPhoneObserver *observer;
+
+public:
+	JoypadIPhone();
+	~JoypadIPhone();
+
+	void start_processing();
+};

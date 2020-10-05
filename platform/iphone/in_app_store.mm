@@ -32,10 +32,8 @@
 
 #include "in_app_store.h"
 
-extern "C" {
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-};
 
 bool auto_finish_transactions = true;
 NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
@@ -189,32 +187,17 @@ Error InAppStore::restore_purchases() {
 				ret["transaction_id"] = transactionId;
 
 				NSData *receipt = nil;
-				int sdk_version = 6;
+				int sdk_version = [[[UIDevice currentDevice] systemVersion] intValue];
 
-				if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-					NSURL *receiptFileURL = nil;
-					NSBundle *bundle = [NSBundle mainBundle];
-					if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
-						// Get the transaction receipt file path location in the app bundle.
-						receiptFileURL = [bundle appStoreReceiptURL];
+				NSBundle *bundle = [NSBundle mainBundle];
+				// Get the transaction receipt file path location in the app bundle.
+				NSURL *receiptFileURL = [bundle appStoreReceiptURL];
 
-						// Read in the contents of the transaction file.
-						receipt = [NSData dataWithContentsOfURL:receiptFileURL];
-						sdk_version = 7;
-
-					} else {
-						// Fall back to deprecated transaction receipt,
-						// which is still available in iOS 7.
-
-						// Use SKPaymentTransaction's transactionReceipt.
-						receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
-					}
-
-				} else {
-					receipt = [NSData dataWithContentsOfURL:[[NSBundle mainBundle] appStoreReceiptURL]];
-				}
+				// Read in the contents of the transaction file.
+				receipt = [NSData dataWithContentsOfURL:receiptFileURL];
 
 				NSString *receipt_to_send = nil;
+
 				if (receipt != nil) {
 					receipt_to_send = [receipt base64EncodedStringWithOptions:0];
 				}

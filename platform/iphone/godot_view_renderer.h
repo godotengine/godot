@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  godot_view_renderer.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,11 +30,15 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
+@protocol GodotViewRendererProtocol <NSObject>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
 
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+- (BOOL)setupView:(UIView *)view;
+- (void)renderOnView:(UIView *)view;
+
+@end
+
+@interface GodotViewRenderer : NSObject <GodotViewRendererProtocol>
 
 @end

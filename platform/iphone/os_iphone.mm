@@ -30,11 +30,6 @@
 
 #ifdef IPHONE_ENABLED
 
-// System headers are at top
-// to workaround `ambiguous expansion` warning/error
-#import <UIKit/UIKit.h>
-#include <dlfcn.h>
-
 #include "os_iphone.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -52,13 +47,33 @@
 
 #include "semaphore_iphone.h"
 
-int OSIPhone::get_video_driver_count() const {
+#import "app_delegate.h"
+#import "device_metrics.h"
+#import "godot_view.h"
+#import "native_video_view.h"
+#import "view_controller.h"
 
+#import <UIKit/UIKit.h>
+#include <dlfcn.h>
+#import <sys/utsname.h>
+
+extern int gl_view_base_fb; // from gl_view.mm
+extern bool gles3_available; // from gl_view.mm
+
+// Initialization order between compilation units is not guaranteed,
+// so we use this as a hack to ensure certain code is called before
+// everything else, but after all units are initialized.
+typedef void (*init_callback)();
+static init_callback *ios_init_callbacks = NULL;
+static int ios_init_callbacks_count = 0;
+static int ios_init_callbacks_capacity = 0;
+HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
+
+int OSIPhone::get_video_driver_count() const {
 	return 2;
 };
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
-
 	switch (p_driver) {
 		case VIDEO_DRIVER_GLES3:
 			return "GLES3";
@@ -69,14 +84,10 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 };
 
 OSIPhone *OSIPhone::get_singleton() {
-
 	return (OSIPhone *)OS::get_singleton();
 };
 
-extern int gl_view_base_fb; // from gl_view.mm
-
 void OSIPhone::set_data_dir(String p_dir) {
-
 	DirAccess *da = DirAccess::open(p_dir);
 
 	data_dir = da->get_current_dir();
@@ -101,7 +112,13 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-extern bool gles3_available; // from gl_view.mm
+void OSIPhone::start() {
+	Main::start();
+
+	if (joypad_iphone) {
+		joypad_iphone->start_processing();
+	}
+}
 
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
@@ -153,10 +170,11 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	//visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	if (use_gl3)
+	if (use_gl3) {
 		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
-	else
+	} else {
 		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+	}
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -180,6 +198,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
+	joypad_iphone = memnew(JoypadIPhone);
+
 	return OK;
 };
 
@@ -199,78 +219,57 @@ void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
 };
 
 bool OSIPhone::iterate() {
-
-	if (!main_loop)
+	if (!main_loop) {
 		return true;
-
-	if (main_loop) {
-		for (int i = 0; i < event_count; i++) {
-
-			input->parse_input_event(event_queue[i]);
-		};
-	};
-	event_count = 0;
+	}
 
 	return Main::iteration();
 };
 
 void OSIPhone::key(uint32_t p_key, bool p_pressed) {
-
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_scancode(p_key);
 	ev->set_unicode(p_key);
-	queue_event(ev);
+	perform_event(ev);
 };
 
 void OSIPhone::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick) {
+	if (GLOBAL_DEF("debug/disable_touch", false)) {
+		return;
+	}
 
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-		Ref<InputEventScreenTouch> ev;
-		ev.instance();
+	Ref<InputEventScreenTouch> ev;
+	ev.instance();
 
-		ev->set_index(p_idx);
-		ev->set_pressed(p_pressed);
-		ev->set_position(Vector2(p_x, p_y));
-		queue_event(ev);
-	};
-
-	touch_list.pressed[p_idx] = p_pressed;
+	ev->set_index(p_idx);
+	ev->set_pressed(p_pressed);
+	ev->set_position(Vector2(p_x, p_y));
+	perform_event(ev);
 };
 
 void OSIPhone::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
+	if (GLOBAL_DEF("debug/disable_touch", false)) {
+		return;
+	}
 
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+	Ref<InputEventScreenDrag> ev;
+	ev.instance();
+	ev->set_index(p_idx);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	perform_event(ev);
+}
 
-		Ref<InputEventScreenDrag> ev;
-		ev.instance();
-		ev->set_index(p_idx);
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
-		queue_event(ev);
-	};
-};
+void OSIPhone::perform_event(const Ref<InputEvent> &p_event) {
+	input->parse_input_event(p_event);
+}
 
-void OSIPhone::queue_event(const Ref<InputEvent> &p_event) {
-
-	ERR_FAIL_INDEX(event_count, MAX_EVENTS);
-
-	event_queue[event_count++] = p_event;
-};
-
-void OSIPhone::touches_cancelled() {
-
-	for (int i = 0; i < MAX_MOUSE_COUNT; i++) {
-
-		if (touch_list.pressed[i]) {
-
-			// send a mouse_up outside the screen
-			touch_press(i, -1, -1, false, false);
-		};
-	};
-};
+void OSIPhone::touches_cancelled(int p_idx) {
+	touch_press(p_idx, -1, -1, false, false);
+}
 
 static const float ACCEL_RANGE = 1;
 
@@ -282,39 +281,6 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 
 	// Found out the Z should not be negated! Pass as is!
 	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
-
-	/*
-	if (p_x != last_accel.x) {
-		//printf("updating accel x %f\n", p_x);
-		InputEvent ev;
-		ev.type = InputEvent::JOYPAD_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_0;
-		ev.joy_motion.axis_value = (p_x / (float)ACCEL_RANGE);
-		last_accel.x = p_x;
-		queue_event(ev);
-	};
-	if (p_y != last_accel.y) {
-		//printf("updating accel y %f\n", p_y);
-		InputEvent ev;
-		ev.type = InputEvent::JOYPAD_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_1;
-		ev.joy_motion.axis_value = (p_y / (float)ACCEL_RANGE);
-		last_accel.y = p_y;
-		queue_event(ev);
-	};
-	if (p_z != last_accel.z) {
-		//printf("updating accel z %f\n", p_z);
-		InputEvent ev;
-		ev.type = InputEvent::JOYPAD_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_2;
-		ev.joy_motion.axis_value = ( (1.0 - p_z) / (float)ACCEL_RANGE);
-		last_accel.z = p_z;
-		queue_event(ev);
-	};
-	*/
 };
 
 void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
@@ -355,58 +321,75 @@ void OSIPhone::finalize() {
 
 	delete_main_loop();
 
-	memdelete(input);
-	memdelete(ios);
+	if (joypad_iphone) {
+		memdelete(joypad_iphone);
+	}
+
+	if (input) {
+		memdelete(input);
+	}
+
+	if (ios) {
+		memdelete(ios);
+	}
 
 #ifdef GAME_CENTER_ENABLED
-	memdelete(game_center);
+	if (game_center) {
+		memdelete(game_center);
+	}
 #endif
 
 #ifdef STOREKIT_ENABLED
-	memdelete(store_kit);
+	if (store_kit) {
+		memdelete(store_kit);
+	}
 #endif
 
 #ifdef ICLOUD_ENABLED
-	memdelete(icloud);
+	if (icloud) {
+		memdelete(icloud);
+	}
 #endif
 
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
+}
 
-	// Free unhandled events before close
-	for (int i = 0; i < MAX_EVENTS; i++) {
-		event_queue[i].unref();
-	};
-	event_count = 0;
-};
+void OSIPhone::set_mouse_show(bool p_show) {
+	// Not supported for iOS
+}
 
-void OSIPhone::set_mouse_show(bool p_show){};
-void OSIPhone::set_mouse_grab(bool p_grab){};
+void OSIPhone::set_mouse_grab(bool p_grab) {
+	// Not supported for iOS
+}
 
 bool OSIPhone::is_mouse_grab_enabled() const {
-
+	// Not supported for iOS
 	return true;
-};
+}
 
 Point2 OSIPhone::get_mouse_position() const {
-
+	// Not supported for iOS
 	return Point2();
-};
+}
 
 int OSIPhone::get_mouse_button_state() const {
-
+	// Not supported for iOS
 	return 0;
-};
+}
 
-void OSIPhone::set_window_title(const String &p_title){};
+void OSIPhone::set_window_title(const String &p_title) {
+	// Not supported for iOS
+}
 
 void OSIPhone::alert(const String &p_alert, const String &p_title) {
-
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
 }
+
+// MARK: Dynamic Libraries
 
 Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	if (p_path.length() == 0) {
@@ -423,7 +406,6 @@ Error OSIPhone::close_dynamic_library(void *p_library_handle) {
 	return OS_Unix::close_dynamic_library(p_library_handle);
 }
 
-HashMap<String, void *> OSIPhone::dynamic_symbol_lookup_table;
 void register_dynamic_symbol(char *name, void *address) {
 	OSIPhone::dynamic_symbol_lookup_table[String(name)] = address;
 }
@@ -440,55 +422,46 @@ Error OSIPhone::get_dynamic_library_symbol_handle(void *p_library_handle, const 
 }
 
 void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-
 	video_mode = p_video_mode;
-};
+}
 
 OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
 
 	return video_mode;
-};
+}
 
 void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
 	p_list->push_back(video_mode);
-};
+}
 
 bool OSIPhone::can_draw() const {
 
 	if (native_video_is_playing())
 		return false;
 	return true;
-};
+}
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
-
 	// gl_view_base_fb has not been updated yet
 	RasterizerStorageGLES3::system_fbo = p_fb;
 
 	return 0;
-};
+}
 
 bool OSIPhone::has_virtual_keyboard() const {
 	return true;
 };
 
-extern void _show_keyboard(String p_existing);
-extern void _hide_keyboard();
-extern Error _shell_open(String p_uri);
-extern void _set_keep_screen_on(bool p_enabled);
-extern void _vibrate();
-
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
-	_show_keyboard(p_existing_text);
+	[AppDelegate.viewController.godotView becomeFirstResponderWithString:p_existing_text];
 };
 
 void OSIPhone::hide_virtual_keyboard() {
-	_hide_keyboard();
-};
+	[AppDelegate.viewController.godotView resignFirstResponder];
+}
 
 void OSIPhone::set_virtual_keyboard_height(int p_height) {
-	virtual_keyboard_height = p_height;
+	virtual_keyboard_height = p_height * [UIScreen mainScreen].nativeScale;
 }
 
 int OSIPhone::get_virtual_keyboard_height() const {
@@ -496,46 +469,103 @@ int OSIPhone::get_virtual_keyboard_height() const {
 }
 
 Error OSIPhone::shell_open(String p_uri) {
-	return _shell_open(p_uri);
-};
+	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
+	NSURL *url = [NSURL URLWithString:urlPath];
+
+	if (![[UIApplication sharedApplication] canOpenURL:url]) {
+		return ERR_CANT_OPEN;
+	}
+
+	printf("opening url %s\n", p_uri.utf8().get_data());
+
+	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
+
+	return OK;
+}
 
 void OSIPhone::set_keep_screen_on(bool p_enabled) {
 	OS::set_keep_screen_on(p_enabled);
-	_set_keep_screen_on(p_enabled);
+	[UIApplication sharedApplication].idleTimerDisabled = p_enabled;
 };
 
 String OSIPhone::get_user_data_dir() const {
-
 	return data_dir;
-};
+}
 
 String OSIPhone::get_name() const {
-
 	return "iOS";
-};
+}
 
 String OSIPhone::get_model_name() const {
-
 	String model = ios->get_model();
-	if (model != "")
+	if (model != "") {
 		return model;
+	}
 
 	return OS_Unix::get_model_name();
 }
 
 Size2 OSIPhone::get_window_size() const {
-
 	return Vector2(video_mode.width, video_mode.height);
 }
 
-extern Rect2 _get_ios_window_safe_area(float p_window_width, float p_window_height);
+int OSIPhone::get_screen_dpi(int p_screen) const {
+	struct utsname systemInfo;
+	uname(&systemInfo);
+
+	NSString *string = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+
+	NSDictionary *iOSModelToDPI = [GodotDeviceMetrics dpiList];
+
+	for (NSArray *keyArray in iOSModelToDPI) {
+		if ([keyArray containsObject:string]) {
+			NSNumber *value = iOSModelToDPI[keyArray];
+			return [value intValue];
+		}
+	}
+
+	// If device wasn't found in dictionary
+	// make a best guess from device metrics.
+	CGFloat scale = [UIScreen mainScreen].scale;
+
+	UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
+
+	switch (idiom) {
+		case UIUserInterfaceIdiomPad:
+			return scale == 2 ? 264 : 132;
+		case UIUserInterfaceIdiomPhone: {
+			if (scale == 3) {
+				CGFloat nativeScale = [UIScreen mainScreen].nativeScale;
+				return nativeScale == 3 ? 458 : 401;
+			}
+
+			return 326;
+		}
+		default:
+			return 72;
+	}
+}
 
 Rect2 OSIPhone::get_window_safe_area() const {
-	return _get_ios_window_safe_area(video_mode.width, video_mode.height);
+	if (@available(iOS 11, *)) {
+		UIEdgeInsets insets = UIEdgeInsetsZero;
+		UIView *view = AppDelegate.viewController.godotView;
+
+		if ([view respondsToSelector:@selector(safeAreaInsets)]) {
+			insets = [view safeAreaInsets];
+		}
+
+		float scale = [UIScreen mainScreen].nativeScale;
+		Size2i insets_position = Size2i(insets.left, insets.top) * scale;
+		Size2i insets_size = Size2i(insets.left + insets.right, insets.top + insets.bottom) * scale;
+
+		return Rect2i(insets_position, get_window_size() - insets_size);
+	} else {
+		return Rect2i(Size2i(0, 0), get_window_size());
+	}
 }
 
 bool OSIPhone::has_touchscreen_ui_hint() const {
-
 	return true;
 }
 
@@ -550,78 +580,81 @@ String OSIPhone::get_locale() const {
 	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
 }
 
-extern bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-extern bool _is_video_playing();
-extern void _pause_video();
-extern void _unpause_video();
-extern void _stop_video();
-extern void _focus_out_video();
-
 Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	bool exists = f && f->is_open();
 
-	String tempFile = get_user_data_dir();
-	if (!exists)
+	String user_data_dir = OSIPhone::get_singleton()->get_user_data_dir();
+
+	if (!exists) {
 		return FAILED;
+	}
+
+	String tempFile = OSIPhone::get_singleton()->get_user_data_dir();
 
 	if (p_path.begins_with("res://")) {
 		if (PackedData::get_singleton()->has_path(p_path)) {
-			print("Unable to play %S using the native player as it resides in a .pck file\n", p_path.c_str());
+			printf("Unable to play %s using the native player as it resides in a .pck file\n", p_path.utf8().get_data());
 			return ERR_INVALID_PARAMETER;
 		} else {
 			p_path = p_path.replace("res:/", ProjectSettings::get_singleton()->get_resource_path());
 		}
-	} else if (p_path.begins_with("user://"))
-		p_path = p_path.replace("user:/", get_user_data_dir());
+	} else if (p_path.begins_with("user://")) {
+		p_path = p_path.replace("user:/", user_data_dir);
+	}
 
 	memdelete(f);
 
-	print("Playing video: %S\n", p_path.c_str());
-	if (_play_video(p_path, p_volume, p_audio_track, p_subtitle_track))
+	printf("Playing video: %s\n", p_path.utf8().get_data());
+
+	String file_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+	NSString *filePath = [[NSString alloc] initWithUTF8String:file_path.utf8().get_data()];
+	NSString *audioTrack = [NSString stringWithUTF8String:p_audio_track.utf8()];
+	NSString *subtitleTrack = [NSString stringWithUTF8String:p_subtitle_track.utf8()];
+
+	if (![AppDelegate.viewController playVideoAtPath:filePath
+											  volume:p_volume
+											   audio:audioTrack
+											subtitle:subtitleTrack]) {
 		return OK;
+	}
+
 	return FAILED;
 }
 
 bool OSIPhone::native_video_is_playing() const {
-	return _is_video_playing();
+	return [AppDelegate.viewController.videoView isVideoPlaying];
 }
 
 void OSIPhone::native_video_pause() {
-	if (native_video_is_playing())
-		_pause_video();
+	if (native_video_is_playing()) {
+		[AppDelegate.viewController.videoView pauseVideo];
+	}
 }
 
 void OSIPhone::native_video_unpause() {
-	_unpause_video();
-};
+	[AppDelegate.viewController.videoView unpauseVideo];
+}
 
 void OSIPhone::native_video_focus_out() {
-	_focus_out_video();
-};
+	[AppDelegate.viewController.videoView unfocusVideo];
+}
 
 void OSIPhone::native_video_stop() {
-	if (native_video_is_playing())
-		_stop_video();
+	if (native_video_is_playing()) {
+		[AppDelegate.viewController.videoView stopVideo];
+	}
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
 	// iOS does not support duration for vibration
-	_vibrate();
+	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "mobile";
 }
-
-// Initialization order between compilation units is not guaranteed,
-// so we use this as a hack to ensure certain code is called before
-// everything else, but after all units are initialized.
-typedef void (*init_callback)();
-static init_callback *ios_init_callbacks = NULL;
-static int ios_init_callbacks_count = 0;
-static int ios_init_callbacks_capacity = 0;
 
 void add_ios_init_callback(init_callback cb) {
 	if (ios_init_callbacks_count == ios_init_callbacks_capacity) {
@@ -637,7 +670,7 @@ void add_ios_init_callback(init_callback cb) {
 	}
 }
 
-OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
+OSIPhone::OSIPhone(String p_data_dir) {
 	for (int i = 0; i < ios_init_callbacks_count; ++i) {
 		ios_init_callbacks[i]();
 	}
@@ -648,15 +681,6 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 
 	main_loop = NULL;
 	visual_server = NULL;
-
-	VideoMode vm;
-	vm.fullscreen = true;
-	vm.width = width;
-	vm.height = height;
-	vm.resizable = false;
-	set_video_mode(vm);
-	event_count = 0;
-	virtual_keyboard_height = 0;
 
 	// can't call set_data_dir from here, since it requires DirAccess
 	// which is initialized in initialize_core
@@ -674,6 +698,42 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 };
 
 OSIPhone::~OSIPhone() {
+}
+
+void OSIPhone::on_focus_out() {
+	if (is_focused) {
+		is_focused = false;
+
+		if (get_main_loop()) {
+			get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+		}
+
+		[AppDelegate.viewController.godotView stopRendering];
+
+		if (native_video_is_playing()) {
+			native_video_focus_out();
+		}
+
+		audio_driver.stop();
+	}
+}
+
+void OSIPhone::on_focus_in() {
+	if (!is_focused) {
+		is_focused = true;
+
+		if (get_main_loop()) {
+			get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+		}
+
+		[AppDelegate.viewController.godotView startRendering];
+
+		if (native_video_is_playing()) {
+			native_video_unpause();
+		}
+
+		audio_driver.start();
+	}
 }
 
 #endif

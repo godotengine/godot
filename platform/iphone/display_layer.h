@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  display_layer.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import <OpenGLES/EAGLDrawable.h>
+#import <QuartzCore/QuartzCore.h>
 
-@class ViewController;
+@protocol DisplayLayer <NSObject>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
+- (void)startRenderDisplayLayer;
+- (void)stopRenderDisplayLayer;
+- (void)initializeDisplayLayer;
+- (void)layoutDisplayLayer;
 
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+@end
+
+@interface GodotOpenGLLayer : CAEAGLLayer <DisplayLayer>
 
 @end

@@ -158,7 +158,14 @@
 	} else if (dataCbCr == NULL) {
 		print_line("Couldn't access CbCr pixel buffer data");
 	} else {
-		UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+		UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+
+		if (@available(iOS 13, *)) {
+			orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+		} else {
+			orientation = [[UIApplication sharedApplication] statusBarOrientation];
+		}
+
 		Ref<Image> img[2];
 
 		{

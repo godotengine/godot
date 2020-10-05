@@ -35,93 +35,28 @@
 #import <OpenGLES/ES1/glext.h>
 #import <UIKit/UIKit.h>
 
-@protocol GodotViewDelegate;
-@class GodotViewGestureRecognizer;
+class String;
 
-@interface GodotView : UIView <UIKeyInput> {
-@private
-	// The pixel dimensions of the backbuffer
-	GLint backingWidth;
-	GLint backingHeight;
+@protocol DisplayLayer;
+@protocol GodotViewRendererProtocol;
 
-	EAGLContext *context;
+@interface GodotView : UIView <UIKeyInput>
 
-	// OpenGL names for the renderbuffer and framebuffers used to render to this view
-	GLuint viewRenderbuffer, viewFramebuffer;
+@property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
 
-	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
-	GLuint depthRenderbuffer;
+@property(assign, readonly, nonatomic) BOOL isActive;
 
-	BOOL useCADisplayLink;
-	// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
-	CADisplayLink *displayLink;
+@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
+@property(assign, readonly, nonatomic) BOOL canRender;
 
-	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
-	// Only used if CADisplayLink is not
-	NSTimer *animationTimer;
+@property(assign, nonatomic) NSTimeInterval renderingInterval;
 
-	NSTimeInterval animationInterval;
+- (CALayer<DisplayLayer> *)initializeRendering;
+- (void)stopRendering;
+- (void)startRendering;
 
-	// Delegate to do our drawing, called by -drawView, which can be called manually or via the animation timer.
-	id<GodotViewDelegate> delegate;
+- (BOOL)becomeFirstResponderWithString:(String)p_existing;
 
-	// Flag to denote that the -setupView method of a delegate has been called.
-	// Resets to NO whenever the delegate changes.
-	BOOL delegateSetup;
-	BOOL active;
-	float screen_scale;
-
-	// Delay gesture recognizer
-	GodotViewGestureRecognizer *delayGestureRecognizer;
-}
-
-@property(nonatomic, assign) id<GodotViewDelegate> delegate;
-
-// AVPlayer-related properties
-@property(strong, nonatomic) AVAsset *avAsset;
-@property(strong, nonatomic) AVPlayerItem *avPlayerItem;
-@property(strong, nonatomic) AVPlayer *avPlayer;
-@property(strong, nonatomic) AVPlayerLayer *avPlayerLayer;
-
-@property(strong, nonatomic) UIWindow *backgroundWindow;
-
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-
-- (void)startAnimation;
-- (void)stopAnimation;
-- (void)drawView;
-
-- (BOOL)canBecomeFirstResponder;
-
-- (void)open_keyboard;
-- (void)hide_keyboard;
-- (void)deleteBackward;
-- (BOOL)hasText;
-- (void)insertText:(NSString *)p_text;
-
-- (id)initGLES;
-- (BOOL)createFramebuffer;
-- (void)destroyFramebuffer;
-
-- (void)audioRouteChangeListenerCallback:(NSNotification *)notification;
-- (void)keyboardOnScreen:(NSNotification *)notification;
-- (void)keyboardHidden:(NSNotification *)notification;
-
-@property(nonatomic, assign) NSTimeInterval animationInterval;
 @property(nonatomic, assign) BOOL useCADisplayLink;
-
-@end
-
-@protocol GodotViewDelegate <NSObject>
-
-@required
-
-// Draw with OpenGL ES
-- (void)drawView:(GodotView *)view;
-
-@optional
-
-// Called whenever you need to do some initialization before rendering.
-- (void)setupView:(GodotView *)view;
 
 @end

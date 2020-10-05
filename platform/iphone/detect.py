@@ -138,6 +138,9 @@ def configure(env):
         else:
             env.Append(CCFLAGS=["-fno-exceptions"])
 
+    # Temp fix for ABS/MAX/MIN macros in iPhone SDK blocking compilation
+    env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
+
     ## Link flags
 
     if env["arch"] == "x86" or env["arch"] == "x86_64":

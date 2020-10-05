@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  native_video_view.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,11 +30,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class ViewController;
+@interface GodotNativeVideoView : UIView
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
-
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+- (BOOL)isVideoPlaying;
+- (void)pauseVideo;
+- (void)unfocusVideo;
+- (void)unpauseVideo;
+- (void)stopVideo;
 
 @end

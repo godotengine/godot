@@ -32,20 +32,9 @@
 
 #include "game_center.h"
 
-#ifdef __IPHONE_9_0
-
-#import <GameKit/GameKit.h>
-extern "C" {
-
-#else
-
-extern "C" {
-#import <GameKit/GameKit.h>
-
-#endif
-
 #import "app_delegate.h"
-};
+#import "view_controller.h"
+#import <GameKit/GameKit.h>
 
 GameCenter *GameCenter::instance = NULL;
 

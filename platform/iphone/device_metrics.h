@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  device_metrics.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-@class ViewController;
+@interface GodotDeviceMetrics : NSObject
 
-@interface AppDelegate : NSObject <UIApplicationDelegate>
-
-@property(strong, nonatomic) UIWindow *window;
-@property(strong, class, readonly, nonatomic) ViewController *viewController;
+@property(nonatomic, class, readonly, strong) NSDictionary<NSArray *, NSNumber *> *dpiList;
 
 @end

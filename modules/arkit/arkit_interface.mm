@@ -469,10 +469,8 @@ void ARKitInterface::process() {
 
 				if (@available(iOS 13, *)) {
 					orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
-#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
 				} else {
 					orientation = [[UIApplication sharedApplication] statusBarOrientation];
-#endif
 				}
 
 				// Grab our camera image for our backbuffer
