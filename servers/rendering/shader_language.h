@@ -79,6 +79,10 @@ public:
 		TK_TYPE_USAMPLER3D,
 		TK_TYPE_SAMPLERCUBE,
 		TK_TYPE_SAMPLERCUBEARRAY,
+		TK_TYPE_CLUSTERDATA,
+		TK_TYPE_LIGHTDATA,
+		TK_TYPE_DIRECTIONALLIGHTDATA,
+		TK_TYPE_LIGHTMAPCAPTURE,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
 		TK_CONST,
@@ -219,6 +223,10 @@ public:
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
 		TYPE_SAMPLERCUBEARRAY,
+		TYPE_CLUSTERDATA,
+		TYPE_LIGHTDATA,
+		TYPE_DIRECTIONALLIGHTDATA,
+		TYPE_LIGHTMAPCAPTURE,
 		TYPE_STRUCT,
 		TYPE_MAX
 	};
@@ -825,7 +833,7 @@ private:
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = nullptr);
 
 	struct BuiltinFuncDef {
-		enum { MAX_ARGS = 5 };
+		enum { MAX_ARGS = 12 };
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];

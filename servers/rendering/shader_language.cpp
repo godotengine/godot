@@ -129,6 +129,10 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"TYPE_USAMPLER3D",
 	"TYPE_SAMPLERCUBE",
 	"TYPE_SAMPLERCUBEARRAY",
+	"TYPE_CLUSTERDATA",
+	"TYPE_LIGHTDATA",
+	"TYPE_DIRECTIONALLIGHTDATA",
+	"TYPE_LIGHTMAPCAPTURE",
 	"INTERPOLATION_FLAT",
 	"INTERPOLATION_SMOOTH",
 	"CONST",
@@ -279,6 +283,10 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_TYPE_USAMPLER3D, "usampler3D" },
 	{ TK_TYPE_SAMPLERCUBE, "samplerCube" },
 	{ TK_TYPE_SAMPLERCUBEARRAY, "samplerCubeArray" },
+	{ TK_TYPE_CLUSTERDATA, "ClusterData" },
+	{ TK_TYPE_LIGHTDATA, "LightData" },
+	{ TK_TYPE_DIRECTIONALLIGHTDATA, "DirectionalLightData" },
+	{ TK_TYPE_LIGHTMAPCAPTURE, "LightmapCapture" },
 	{ TK_INTERPOLATION_FLAT, "flat" },
 	{ TK_INTERPOLATION_SMOOTH, "smooth" },
 	{ TK_CONST, "const" },
@@ -735,7 +743,11 @@ bool ShaderLanguage::is_token_variable_datatype(TokenType p_type) {
 			p_type == TK_TYPE_VEC4 ||
 			p_type == TK_TYPE_MAT2 ||
 			p_type == TK_TYPE_MAT3 ||
-			p_type == TK_TYPE_MAT4);
+			p_type == TK_TYPE_MAT4 ||
+			p_type == TK_TYPE_LIGHTDATA ||
+			p_type == TK_TYPE_LIGHTMAPCAPTURE ||
+			p_type == TK_TYPE_DIRECTIONALLIGHTDATA ||
+			p_type == TK_TYPE_CLUSTERDATA);
 }
 
 bool ShaderLanguage::is_token_datatype(TokenType p_type) {
@@ -770,7 +782,11 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 			p_type == TK_TYPE_ISAMPLER3D ||
 			p_type == TK_TYPE_USAMPLER3D ||
 			p_type == TK_TYPE_SAMPLERCUBE ||
-			p_type == TK_TYPE_SAMPLERCUBEARRAY);
+			p_type == TK_TYPE_SAMPLERCUBEARRAY ||
+			p_type == TK_TYPE_LIGHTDATA ||
+			p_type == TK_TYPE_LIGHTMAPCAPTURE ||
+			p_type == TK_TYPE_DIRECTIONALLIGHTDATA ||
+			p_type == TK_TYPE_CLUSTERDATA);
 }
 
 ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
@@ -886,6 +902,14 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 			return "samplerCube";
 		case TYPE_SAMPLERCUBEARRAY:
 			return "samplerCubeArray";
+		case TYPE_DIRECTIONALLIGHTDATA:
+			return "uint"; //"DirectionalLightData";
+		case TYPE_LIGHTDATA:
+			return "uint"; //"LightData";
+		case TYPE_LIGHTMAPCAPTURE:
+			return "uint"; //"LightmapCapture";
+		case TYPE_CLUSTERDATA:
+			return "uvec4"; //"ClusterData";
 		case TYPE_STRUCT:
 			return "struct";
 		case TYPE_MAX:
@@ -2156,6 +2180,41 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
 
+	// access to Godot shading information
+	{ "GET_LIGHTMAP_SH", TYPE_BOOL, { TYPE_LIGHTMAPCAPTURE, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SH_COEF", TYPE_VEC4, { TYPE_LIGHTMAPCAPTURE, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_POSITION", TYPE_VEC3, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_INV_RADIUS", TYPE_FLOAT, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_DIRECTION", TYPE_VEC3, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_DIR_LIGHT_DIRECTION", TYPE_VEC3, { TYPE_DIRECTIONALLIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_SIZE_PARAM", TYPE_FLOAT, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_DIR_LIGHT_SIZE_PARAM", TYPE_FLOAT, { TYPE_DIRECTIONALLIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_ATTENUATION_PARAM", TYPE_FLOAT, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_SPOT_ATTENUATION_ANGLE_PARAM", TYPE_VEC2, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_OMNI_LIGHT_ATTENUATION_SIZE", TYPE_VEC2, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_SPOT_LIGHT_ATTENUATION_SIZE", TYPE_VEC2, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_COLOR_SPECULAR", TYPE_VEC4, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_LIGHT_SHADOW_COLOR", TYPE_VEC3, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_DIR_LIGHT_COLOR_SPECULAR", TYPE_VEC4, { TYPE_DIRECTIONALLIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "OMNI_PROJECTOR_PROCESS", TYPE_VEC3, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SPOT_PROJECTOR_PROCESS", TYPE_VEC3, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "OMNI_SHADOW_PROCESS", TYPE_BOOL, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SPOT_SHADOW_PROCESS", TYPE_BOOL, { TYPE_LIGHTDATA, TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "DIRECTIONAL_SHADOW_PROCESS", TYPE_BOOL, { TYPE_DIRECTIONALLIGHTDATA, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "AMBIENT_PROCESS", TYPE_VOID, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_BOOL, TYPE_VEC3, TYPE_VEC2, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "REFLECTION_PROCESS", TYPE_VOID, { TYPE_CLUSTERDATA, TYPE_UINT, TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VEC3, TYPE_VEC3, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "DECAL_PROCESS", TYPE_BOOL, { TYPE_CLUSTERDATA, TYPE_UINT, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SHOULD_RENDER_LIGHT", TYPE_BOOL, { TYPE_LIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SHOULD_RENDER_DIR_LIGHT", TYPE_BOOL, { TYPE_DIRECTIONALLIGHTDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "OMNI_LIGHT_COUNT", TYPE_UINT, { TYPE_CLUSTERDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "SPOT_LIGHT_COUNT", TYPE_UINT, { TYPE_CLUSTERDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "DIRECTIONAL_LIGHT_COUNT", TYPE_UINT, { TYPE_VOID }, TAG_GLOBAL, true },
+	{ "REFLECTION_PROBE_COUNT", TYPE_UINT, { TYPE_CLUSTERDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "DECAL_COUNT", TYPE_UINT, { TYPE_CLUSTERDATA, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_OMNI_LIGHT", TYPE_LIGHTDATA, { TYPE_CLUSTERDATA, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_SPOT_LIGHT", TYPE_LIGHTDATA, { TYPE_CLUSTERDATA, TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "GET_DIRECTIONAL_LIGHT", TYPE_DIRECTIONALLIGHTDATA, { TYPE_UINT, TYPE_VOID }, TAG_GLOBAL, true },
+
 	{ nullptr, TYPE_VOID, { TYPE_VOID }, TAG_GLOBAL, false }
 
 };
@@ -2163,6 +2222,13 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[] = {
 	//constructors
 	{ "modf", 1 },
+	{ "GET_LIGHTMAP_SH", 0 },
+	{ "AMBIENT_PROCESS", 7 },
+	{ "REFLECTION_PROCESS", 7 },
+	{ "OMNI_SHADOW_PROCESS", 3 },
+	{ "SPOT_SHADOW_PROCESS", 3 },
+	{ "DIRECTIONAL_SHADOW_PROCESS", 3 },
+	{ "DECAL_PROCESS", 6 },
 	{ nullptr, 0 }
 };
 
@@ -2211,7 +2277,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	bool unsupported_builtin = false;
 	int builtin_idx = 0;
 
-	if (argcount <= 4) {
+	if (argcount <= BuiltinFuncDef::MAX_ARGS - 1) {
 		// test builtins
 		int idx = 0;
 
@@ -2243,7 +2309,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 					}
 				}
 
-				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
+				if (!fail && argcount < BuiltinFuncDef::MAX_ARGS - 1 && builtin_func_defs[idx].args[argcount] != TYPE_VOID) {
 					fail = true; //make sure the number of arguments matches
 				}
 
@@ -2254,7 +2320,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 						if (String(name) == builtin_func_out_args[outarg_idx].name) {
 							int arg_idx = builtin_func_out_args[outarg_idx].argument;
 
-							if (arg_idx < argcount) {
+							while (arg_idx < argcount) {
 								if (p_func->arguments[arg_idx + 1]->type != Node::TYPE_VARIABLE && p_func->arguments[arg_idx + 1]->type != Node::TYPE_MEMBER && p_func->arguments[arg_idx + 1]->type != Node::TYPE_ARRAY) {
 									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' is not a variable, array or member.");
 									return false;
@@ -2335,6 +2401,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 									_set_error("Argument " + itos(arg_idx + 1) + " of function '" + String(name) + "' can only take a local variable, array or member.");
 									return false;
 								}
+								arg_idx++;
 							}
 						}
 
@@ -2765,6 +2832,12 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				// Texture types, likely not relevant here.
 				break;
 			}
+			case ShaderLanguage::TYPE_CLUSTERDATA:
+			case ShaderLanguage::TYPE_LIGHTDATA:
+			case ShaderLanguage::TYPE_DIRECTIONALLIGHTDATA:
+			case ShaderLanguage::TYPE_LIGHTMAPCAPTURE: {
+				break;
+			}
 			case ShaderLanguage::TYPE_STRUCT:
 				break;
 			case ShaderLanguage::TYPE_VOID:
@@ -2875,6 +2948,14 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "TextureLayered";
 		} break;
+		case ShaderLanguage::TYPE_CLUSTERDATA:
+			break;
+		case ShaderLanguage::TYPE_LIGHTDATA:
+			break;
+		case ShaderLanguage::TYPE_DIRECTIONALLIGHTDATA:
+			break;
+		case ShaderLanguage::TYPE_LIGHTMAPCAPTURE:
+			break;
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
 		} break;
@@ -2926,6 +3007,11 @@ uint32_t ShaderLanguage::get_type_size(DataType p_type) {
 		case TYPE_SAMPLERCUBE:
 		case TYPE_SAMPLERCUBEARRAY:
 			return 4; //not really, but useful for indices
+		case TYPE_CLUSTERDATA:
+		case TYPE_LIGHTDATA:
+		case TYPE_DIRECTIONALLIGHTDATA:
+		case TYPE_LIGHTMAPCAPTURE:
+			return 0;
 		case TYPE_STRUCT:
 			// FIXME: Implement.
 			return 0;
@@ -2975,6 +3061,7 @@ void ShaderLanguage::get_builtin_funcs(List<String> *r_keywords) {
 }
 
 ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
+	// FIXME: out of sync with enum
 	static const DataType scalar_types[] = {
 		TYPE_VOID,
 		TYPE_BOOL,
@@ -3000,12 +3087,26 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_INT,
 		TYPE_UINT,
 		TYPE_FLOAT,
+		TYPE_INT,
+		TYPE_UINT,
+		TYPE_FLOAT,
+		TYPE_INT,
+		TYPE_UINT,
+		TYPE_FLOAT,
+		TYPE_FLOAT,
+		TYPE_FLOAT,
+		TYPE_VOID,
+		TYPE_VOID,
+		TYPE_VOID,
+		TYPE_VOID,
+		TYPE_VOID,
 	};
 
 	return scalar_types[p_type];
 }
 
 int ShaderLanguage::get_cardinality(DataType p_type) {
+	// FIXME: out of sync with enum
 	static const int cardinality_table[] = {
 		0,
 		1,
@@ -3027,6 +3128,22 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		4,
 		9,
 		16,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
 		1,
 		1,
 		1,
@@ -7525,7 +7642,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 							calltip += char32_t(0xFFFF);
 						}
 
-						if (out_arg >= 0 && i == out_arg) {
+						if (out_arg >= 0 && i >= out_arg) {
 							calltip += "out ";
 						}
 

@@ -118,6 +118,14 @@ static int _get_datatype_size(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLERCUBEARRAY:
 			return 16;
+		case SL::TYPE_CLUSTERDATA:
+			return 16;
+		case SL::TYPE_LIGHTDATA:
+			return 4;
+		case SL::TYPE_DIRECTIONALLIGHTDATA:
+			return 4;
+		case SL::TYPE_LIGHTMAPCAPTURE:
+			return 4;
 		case SL::TYPE_STRUCT:
 			return 0;
 
@@ -193,6 +201,14 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_SAMPLERCUBEARRAY:
 			return 16;
+		case SL::TYPE_CLUSTERDATA:
+			return 16;
+		case SL::TYPE_LIGHTDATA:
+			return 4;
+		case SL::TYPE_DIRECTIONALLIGHTDATA:
+			return 4;
+		case SL::TYPE_LIGHTMAPCAPTURE:
+			return 4;
 		case SL::TYPE_STRUCT:
 			return 0;
 		case SL::TYPE_MAX: {
@@ -1066,6 +1082,15 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
 
 					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
+
+					if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
+						String define = p_default_actions.usage_defines[vnode->name];
+						if (define.begins_with("@")) {
+							define = p_default_actions.usage_defines[define.substr(1, define.length())];
+						}
+						r_gen_code.defines.push_back(define);
+						used_name_defines.insert(vnode->name);
+					}
 
 					bool is_texture_func = false;
 					if (onode->op == SL::OP_STRUCT) {

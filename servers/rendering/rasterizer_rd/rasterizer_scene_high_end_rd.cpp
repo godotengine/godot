@@ -2766,14 +2766,56 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["RADIANCE"] = "custom_radiance";
 		actions.renames["IRRADIANCE"] = "custom_irradiance";
 
+		actions.renames["AMBIENT_LIGHT"] = "ambient_light";
+		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
+		actions.renames["SPECULAR_LIGHT"] = "specular_light";
+		actions.renames["CLUSTER_CELL"] = "cluster_cell";
+		// Functions
+		actions.renames["GET_LIGHTMAP_SH"] = "GET_LIGHTMAP_SH";
+		actions.renames["SH_COEF"] = "SH_COEF";
+		actions.renames["GET_LIGHT_POSITION"] = "GET_LIGHT_POSITION";
+		actions.renames["GET_LIGHT_INV_RADIUS"] = "GET_LIGHT_INV_RADIUS";
+		actions.renames["GET_LIGHT_DIRECTION"] = "GET_LIGHT_DIRECTION";
+		actions.renames["GET_DIR_LIGHT_DIRECTION"] = "GET_DIR_LIGHT_DIRECTION";
+		actions.renames["GET_LIGHT_SIZE_PARAM"] = "GET_LIGHT_SIZE_PARAM";
+		actions.renames["GET_DIR_LIGHT_SIZE_PARAM"] = "GET_DIR_LIGHT_SIZE_PARAM";
+		actions.renames["GET_LIGHT_ATTENUATION_PARAM"] = "GET_LIGHT_ATTENUATION_PARAM";
+		actions.renames["GET_SPOT_ATTENUATION_ANGLE_PARAM"] = "GET_SPOT_ATTENUATION_ANGLE_PARAM";
+		actions.renames["GET_OMNI_LIGHT_ATTENUATION_SIZE"] = "GET_OMNI_LIGHT_ATTENUATION_SIZE";
+		actions.renames["GET_SPOT_LIGHT_ATTENUATION_SIZE"] = "GET_SPOT_LIGHT_ATTENUATION_SIZE";
+		actions.renames["GET_LIGHT_COLOR_SPECULAR"] = "GET_LIGHT_COLOR_SPECULAR";
+		actions.renames["GET_LIGHT_SHADOW_COLOR"] = "GET_LIGHT_SHADOW_COLOR";
+		actions.renames["GET_DIR_LIGHT_COLOR_SPECULAR"] = "GET_DIR_LIGHT_COLOR_SPECULAR";
+		actions.renames["OMNI_PROJECTOR_PROCESS"] = "OMNI_PROJECTOR_PROCESS";
+		actions.renames["SPOT_PROJECTOR_PROCESS"] = "SPOT_PROJECTOR_PROCESS";
+		actions.renames["OMNI_SHADOW_PROCESS"] = "OMNI_SHADOW_PROCESS";
+		actions.renames["SPOT_SHADOW_PROCESS"] = "SPOT_SHADOW_PROCESS";
+		actions.renames["DIRECTIONAL_SHADOW_PROCESS"] = "DIRECTIONAL_SHADOW_PROCESS";
+		actions.renames["AMBIENT_PROCESS"] = "AMBIENT_PROCESS";
+		actions.renames["REFLECTION_PROCESS"] = "REFLECTION_PROCESS";
+		actions.renames["DECAL_PROCESS"] = "DECAL_PROCESS";
+		actions.renames["SHOULD_RENDER_LIGHT"] = "SHOULD_RENDER_LIGHT";
+		actions.renames["SHOULD_RENDER_DIR_LIGHT"] = "SHOULD_RENDER_DIR_LIGHT";
+		actions.renames["OMNI_LIGHT_COUNT"] = "OMNI_LIGHT_COUNT";
+		actions.renames["SPOT_LIGHT_COUNT"] = "SPOT_LIGHT_COUNT";
+		actions.renames["DIRECTIONAL_LIGHT_COUNT"] = "DIRECTIONAL_LIGHT_COUNT";
+		actions.renames["REFLECTION_PROBE_COUNT"] = "REFLECTION_PROBE_COUNT";
+		actions.renames["DECAL_COUNT"] = "DECAL_COUNT";
+		actions.renames["GET_OMNI_LIGHT"] = "GET_OMNI_LIGHT";
+		actions.renames["GET_SPOT_LIGHT"] = "GET_SPOT_LIGHT";
+		actions.renames["GET_DIRECTIONAL_LIGHT"] = "GET_DIRECTIONAL_LIGHT";
+		// Opaque Types
+		actions.renames["DirectionalLightData"] = "uint";
+		actions.renames["LightData"] = "uint";
+		actions.renames["LightmapCapture"] = "uint";
+		actions.renames["ClusterData"] = "uvec4";
+
 		//for light
 		actions.renames["VIEW"] = "view";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT"] = "light";
 		actions.renames["ATTENUATION"] = "attenuation";
 		actions.renames["SHADOW_ATTENUATION"] = "shadow_attenuation";
-		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
-		actions.renames["SPECULAR_LIGHT"] = "specular_light";
 
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
 		actions.usage_defines["BINORMAL"] = "@TANGENT";
@@ -2799,6 +2841,9 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
+		actions.usage_defines["CLUSTER_CELL"] = "#define CLUSTER_CELL_USED\n";
+		actions.usage_defines["AMBIENT_LIGHT"] = "#define AMBIENT_LIGHT_USED\n";
+		actions.usage_defines["DECAL_PROCESS"] = "#define DECAL_PROCESS_USED\n";
 		actions.usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 		actions.usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 

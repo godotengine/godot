@@ -159,6 +159,91 @@ layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 }
 directional_lights;
 
+vec3 GET_LIGHT_POSITION(uint light_idx) {
+	return lights.data[light_idx].position;
+}
+
+float GET_LIGHT_INV_RADIUS(uint light_idx) {
+	return lights.data[light_idx].inv_radius;
+}
+
+vec3 GET_LIGHT_DIRECTION(uint light_idx) {
+	return lights.data[light_idx].direction;
+}
+
+float GET_LIGHT_SIZE_PARAM(uint light_idx) {
+	return lights.data[light_idx].size;
+}
+
+float GET_LIGHT_ATTENUATION_PARAM(uint light_idx) {
+	vec2 attenuation_energy = unpackHalf2x16(lights.data[light_idx].attenuation_energy);
+	return attenuation_energy.x;
+}
+
+vec2 GET_SPOT_ATTENUATION_ANGLE_PARAM(uint light_idx) {
+	return unpackHalf2x16(lights.data[light_idx].cone_attenuation_angle);
+}
+
+vec2 GET_OMNI_LIGHT_ATTENUATION_SIZE(uint light_idx, vec3 vertex) {
+	vec3 light_rel_vec = lights.data[light_idx].position - vertex;
+	float light_length = length(light_rel_vec);
+	float normalized_distance = light_length * lights.data[light_idx].inv_radius;
+	vec2 attenuation_energy = unpackHalf2x16(lights.data[light_idx].attenuation_energy);
+	float omni_attenuation = pow(max(1.0 - normalized_distance, 0.0), attenuation_energy.x);
+	float size_A = 0.0;
+
+	if (lights.data[light_idx].size > 0.0) {
+		float t = lights.data[light_idx].size / max(0.001, light_length);
+		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+	}
+	return vec2(omni_attenuation, size_A);
+}
+
+vec2 GET_SPOT_LIGHT_ATTENUATION_SIZE(uint light_idx, vec3 vertex) {
+	vec3 light_rel_vec = lights.data[light_idx].position - vertex;
+	float light_length = length(light_rel_vec);
+	float normalized_distance = light_length * lights.data[light_idx].inv_radius;
+	vec2 attenuation_energy = unpackHalf2x16(lights.data[light_idx].attenuation_energy);
+	float spot_attenuation = pow(max(1.0 - normalized_distance, 0.001), attenuation_energy.x);
+	vec3 spot_dir = lights.data[light_idx].direction;
+	vec2 spot_att_angle = unpackHalf2x16(lights.data[light_idx].cone_attenuation_angle);
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_att_angle.y);
+	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_att_angle.y));
+	spot_attenuation *= 1.0 - pow(spot_rim, spot_att_angle.x);
+
+	float size_A = 0.0;
+
+	if (lights.data[light_idx].size > 0.0) {
+		float t = lights.data[light_idx].size / max(0.001, light_length);
+		size_A = max(0.0, 1.0 - 1 / sqrt(1 + t * t));
+	}
+	return vec2(spot_attenuation, size_A);
+}
+
+vec4 GET_LIGHT_COLOR_SPECULAR(uint light_idx) {
+	vec2 attenuation_energy = unpackHalf2x16(lights.data[light_idx].attenuation_energy);
+	vec4 color_specular = unpackUnorm4x8(lights.data[light_idx].color_specular);
+	color_specular.rgb *= attenuation_energy.y;
+	return color_specular;
+}
+
+vec3 GET_LIGHT_SHADOW_COLOR(uint light_idx) {
+	vec4 shadow_color_enabled = unpackUnorm4x8(lights.data[light_idx].shadow_color_enabled);
+	return shadow_color_enabled.rgb;
+}
+
+vec3 GET_DIR_LIGHT_DIRECTION(uint index) {
+	return directional_lights.data[index].direction;
+}
+
+float GET_DIR_LIGHT_SIZE_PARAM(uint index) {
+	return directional_lights.data[index].size;
+}
+
+vec4 GET_DIR_LIGHT_COLOR_SPECULAR(uint index) {
+	return vec4(directional_lights.data[index].color * directional_lights.data[index].energy, directional_lights.data[index].specular);
+}
+
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
 
