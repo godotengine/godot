@@ -2344,6 +2344,7 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_
 		mesh->bone_aabbs = p_surface.bone_aabbs;
 		mesh->aabb = p_surface.aabb;
 	} else {
+		ERR_FAIL_COND_MSG(mesh->bone_aabbs.size() != p_surface.bone_aabbs.size(), "invalid mesh aabb input");
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
 		}
