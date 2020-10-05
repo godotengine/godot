@@ -188,7 +188,13 @@ void PivotTransform::ComputePivotTransform() {
 	Sp.set_origin(scaling_pivot);
 
 	// Scaling node
-	S.scale(scaling);
+	if(!scaling.is_equal_approx(Vector3())) {
+		S.scale(scaling);
+	}
+	else
+	{
+		S.scale(Vector3(1,1,1));
+	}
 	Local_Scaling_Matrix = S; // copy for when node / child is looking for the value of this.
 
 	// Rotation pivots
@@ -230,6 +236,8 @@ void PivotTransform::ComputePivotTransform() {
 	}
 	LocalTransform = Transform();
 	LocalTransform = T * Roff * Rp * Rpre * R * Rpost.affine_inverse() * Rp.affine_inverse() * Soff * Sp * S * Sp.affine_inverse();
+
+	ERR_FAIL_COND_MSG(LocalTransform.basis.determinant() == 0, "invalid scale reset");
 
 	Transform local_translation_pivoted = Transform(Basis(), LocalTransform.origin);
 	GlobalTransform = Transform();

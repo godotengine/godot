@@ -144,7 +144,7 @@ MeshGeometry::MeshGeometry(uint64_t id, const ElementPtr element, const std::str
 	const ScopePtr top = GetRequiredScope(element);
 
 	// iterate over all layers for the mesh (uvs, normals, smoothing groups, colors, etc)
-	for( size_t x = 0; x < valid_layers.size(); x++) {
+	for( int x = 0; x < valid_layers.size(); x++) {
 		const int layer_id = std::get<0>(valid_layers[x]);
 		const std::string &layer_type_name = std::get<1>(valid_layers[x]);
 

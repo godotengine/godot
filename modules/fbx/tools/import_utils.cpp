@@ -123,7 +123,9 @@ Vector3 ImportUtils::QuaternionToEuler(Assimp::FBX::Model::RotOrder mode, const 
 }
 
 Transform get_unscaled_transform(const Transform &p_initial, real_t p_scale) {
-	return Transform(p_initial.basis, p_initial.origin * p_scale);
+	Transform unscaled = Transform(p_initial.basis, p_initial.origin * p_scale);
+	ERR_FAIL_COND_V_MSG(unscaled.basis.determinant() == 0, Transform(), "det is zero unscaled?");
+	return unscaled;
 }
 
 Vector3 get_poly_normal(const std::vector<Vector3> &p_vertices) {

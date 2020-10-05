@@ -40,7 +40,7 @@
 struct FBXTrack {
 	bool has_default = false;
 	Vector3 default_value;
-	std::map<uint64_t, Vector3> keyframes;
+	std::map<int64_t, Vector3> keyframes;
 };
 
 #endif //MODEL_ABSTRACTION_ANIM_CONTAINER_H

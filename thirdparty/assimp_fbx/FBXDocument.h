@@ -255,7 +255,7 @@ public:
 			target_id = ParseTokenAsInt64(GetRequiredToken(NodeId, 0));
 		}
 
-		print_verbose("added posenode " + itos(target_id) + " transform: " + transform);
+		print_verbose("added pose node " + itos(target_id) + " transform: " + transform);
 	}
 	virtual ~FbxPoseNode() {
 	}
@@ -738,7 +738,8 @@ private:
 	LayeredTextureMap layeredTextures;
 };
 
-typedef std::vector<uint64_t> KeyTimeList;
+// signed int keys (this can happen!)
+typedef std::vector<int64_t> KeyTimeList;
 typedef std::vector<float> KeyValueList;
 
 /** Represents a FBX animation curve (i.e. a 1-dimensional set of keyframes and values therefor) */
@@ -759,7 +760,7 @@ public:
 		return values;
 	}
 
-	const std::map<uint64_t, float> &GetValueTimeTrack() const {
+	const std::map<int64_t, float> &GetValueTimeTrack() const {
 		return keyvalues;
 	}
 
@@ -775,7 +776,7 @@ private:
 	KeyTimeList keys;
 	KeyValueList values;
 	std::vector<float> attributes;
-	std::map<uint64_t, float> keyvalues;
+	std::map<int64_t, float> keyvalues;
 	std::vector<unsigned int> flags;
 };
 

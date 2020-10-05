@@ -40,6 +40,7 @@ Ref<FBXNode> FBXBone::get_link(const ImportState &state) const {
 
 	Ref<FBXNode> link_node;
 	uint64_t id = cluster->TargetNode()->ID();
+	print_verbose("Cluster link: " + cluster->TransformLink());
 	if (state.fbx_target_map.has(id)) {
 		link_node = state.fbx_target_map[id];
 	} else {
@@ -80,6 +81,10 @@ Transform FBXBone::get_vertex_skin_xform(const ImportState &state, Transform mes
 		Transform reference_global_current_position = mesh_global_position;
 		//Transform geometric_pivot = Transform(); // we do not use this - 3ds max only
 		Transform global_init_position = cluster->TransformLink();
+		if(global_init_position.basis.determinant() == 0)
+		{
+			global_init_position = Transform(Basis(), global_init_position.origin);
+		}
 		Transform cluster_relative_init_position = global_init_position.affine_inverse() * reference_global_position;
 		Transform cluster_relative_position_inverse = reference_global_current_position.affine_inverse() * global_init_position;
 		vertex_transform_matrix = cluster_relative_position_inverse * cluster_relative_init_position;

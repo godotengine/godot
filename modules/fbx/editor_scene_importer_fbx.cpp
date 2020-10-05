@@ -719,6 +719,11 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 			Transform bind = bone->get_vertex_skin_xform(state, fbx_node->pivot_transform->GlobalTransform, valid_bind);
 			ERR_CONTINUE_MSG(!valid_bind, "invalid bind");
 
+			if(bind.basis.determinant() == 0)
+			{
+				bind = Transform(Basis(), bind.origin);
+			}
+
 			skin->add_named_bind(bone->bone_name, get_unscaled_transform(bind, state.scale));
 		}
 
@@ -981,7 +986,8 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 							if (object != nullptr) {
 								print_error("[doc] warning failed to find a target Model for curve: " + String(object->Name().c_str()));
 							} else {
-								print_error("[doc] failed to resolve object");
+								//print_error("[doc] failed to resolve object");
+								continue;
 							}
 
 							continue;
@@ -1054,10 +1060,10 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 							}
 
 							// FBX has no name for AnimCurveNode::, most of the time, not seen any with valid name here.
-							const std::map<uint64_t, float> track_time = curve->GetValueTimeTrack();
+							const std::map<int64_t, float> track_time = curve->GetValueTimeTrack();
 
 							if (track_time.size() > 0) {
-								for (std::pair<uint64_t, float> keyframe : track_time) {
+								for (std::pair<int64_t, float> keyframe : track_time) {
 									if (curve_element == "d|X") {
 										keyframe_map.keyframes[keyframe.first].x = keyframe.second;
 									} else if (curve_element == "d|Y") {
@@ -1172,7 +1178,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 						double max_duration = 0;
 						double anim_length = animation->get_length();
 
-						for (std::pair<uint64_t, Vector3> position_key : translation_keys.keyframes) {
+						for (std::pair<int64_t, Vector3> position_key : translation_keys.keyframes) {
 							pos_values.push_back(position_key.second * state.scale);
 							double animation_track_time = CONVERT_FBX_TIME(position_key.first);
 
@@ -1184,7 +1190,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 							pos_times.push_back(animation_track_time);
 						}
 
-						for (std::pair<uint64_t, Vector3> scale_key : scale_keys.keyframes) {
+						for (std::pair<int64_t, Vector3> scale_key : scale_keys.keyframes) {
 							scale_values.push_back(scale_key.second);
 							double animation_track_time = CONVERT_FBX_TIME(scale_key.first);
 
@@ -1219,7 +1225,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 
 						Quat lastQuat = Quat();
 
-						for (std::pair<uint64_t, Vector3> rotation_key : rotation_keys.keyframes) {
+						for (std::pair<int64_t, Vector3> rotation_key : rotation_keys.keyframes) {
 							double animation_track_time = CONVERT_FBX_TIME(rotation_key.first);
 
 							//print_verbose("euler rotation key: " + rotation_key.second);
@@ -1244,6 +1250,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 							rot_times.push_back(animation_track_time);
 						}
 
+						bool valid_rest = false;
 						Transform bone_rest;
 						int skeleton_bone = -1;
 						if (state.fbx_bone_map.has(target_id)) {
@@ -1251,9 +1258,17 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 								skeleton_bone = bone->godot_bone_id;
 								if (skeleton_bone >= 0) {
 									bone_rest = bone->fbx_skeleton->skeleton->get_bone_rest(skeleton_bone);
+									valid_rest = true;
 								}
 							}
+
+							if(!valid_rest)
+							{
+								print_verbose("invalid rest!");
+							}
 						}
+
+
 
 						const Vector3 def_pos = translation_keys.has_default ? (translation_keys.default_value * state.scale) : bone_rest.origin;
 						const Quat def_rot = rotation_keys.has_default ? ImportUtils::EulerToQuaternion(quat_rotation_order, ImportUtils::deg2rad(rotation_keys.default_value)) : bone_rest.basis.get_rotation_quat();

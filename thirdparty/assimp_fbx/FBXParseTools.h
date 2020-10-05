@@ -1,9 +1,13 @@
 #ifndef _H_FBX_PARSE_TOOLS
 #define _H_FBX_PARSE_TOOLS
 
+#include "core/ustring.h"
+#include "core/error_macros.h"
+
 #include <stdint.h>
 #include <algorithm>
 #include <locale>
+
 
 template <class char_t>
 inline bool IsNewLine(char_t c) {
@@ -28,13 +32,12 @@ inline bool IsLineEnd(char_t c) {
 // Special version of the function, providing higher accuracy and safety
 // It is mainly used by fast_atof to prevent ugly and unwanted integer overflows.
 // ------------------------------------------------------------------------------------
-inline uint64_t strtoul10_64(const char *in, const char **out = 0, unsigned int *max_inout = 0) {
+inline uint64_t strtoul10_64(const char *in, bool& errored, const char **out = 0, unsigned int *max_inout = 0) {
 	unsigned int cur = 0;
 	uint64_t value = 0;
 
-	if (*in < '0' || *in > '9') {
-		throw std::invalid_argument(std::string("The string \"") + in + "\" cannot be converted into a value.");
-	}
+	errored = *in < '0' || *in > '9';
+	ERR_FAIL_COND_V_MSG(errored, 0, "The string cannot be converted parser error");
 
 	for (;;) {
 		if (*in < '0' || *in > '9') {

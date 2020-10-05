@@ -250,8 +250,10 @@ uint64_t ParseTokenAsID(const TokenPtr t, const char *&err_out) {
 	//ai_assert(length > 0);
 
 	const char *out = nullptr;
-	const uint64_t id = strtoul10_64(t->begin(), &out, &length);
-	if (out > t->end()) {
+	bool errored = false;
+
+	const uint64_t id = strtoul10_64(t->begin(),errored, &out, &length);
+	if (errored || out > t->end()) {
 		err_out = "failed to parse ID (text)";
 		return 0L;
 	}
@@ -305,8 +307,9 @@ size_t ParseTokenAsDim(const TokenPtr t, const char *&err_out) {
 	}
 
 	const char *out = nullptr;
-	const size_t id = static_cast<size_t>(strtoul10_64(t->begin() + 1, &out, &length));
-	if (out > t->end()) {
+	bool errored = false;
+	const size_t id = static_cast<size_t>(strtoul10_64(t->begin()+1, errored, &out, &length));
+	if (errored || out > t->end()) {
 		print_error("failed to parse id");
 		err_out = "failed to parse ID";
 		return 0;
