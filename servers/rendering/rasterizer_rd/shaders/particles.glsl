@@ -80,7 +80,7 @@ struct ParticleEmission {
 	vec4 custom;
 };
 
-layout(set = 1, binding = 2, std430) restrict volatile coherent buffer SourceEmission {
+layout(set = 1, binding = 2, std430) restrict buffer SourceEmission {
 	int particle_count;
 	uint pad0;
 	uint pad1;
