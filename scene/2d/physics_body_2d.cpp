@@ -212,6 +212,7 @@ void StaticBody2D::_bind_methods() {
 StaticBody2D::StaticBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_STATIC) {
 	constant_angular_velocity = 0;
+	_reload_physics_characteristics();
 }
 
 StaticBody2D::~StaticBody2D() {
@@ -889,6 +890,7 @@ RigidBody2D::RigidBody2D() :
 	can_sleep = true;
 
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	_reload_physics_characteristics();
 }
 
 RigidBody2D::~RigidBody2D() {

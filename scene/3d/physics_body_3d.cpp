@@ -223,6 +223,7 @@ void StaticBody3D::_bind_methods() {
 
 StaticBody3D::StaticBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC) {
+	_reload_physics_characteristics();
 }
 
 StaticBody3D::~StaticBody3D() {}
@@ -871,6 +872,7 @@ RigidBody3D::RigidBody3D() :
 	can_sleep = true;
 
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	_reload_physics_characteristics();
 }
 
 RigidBody3D::~RigidBody3D() {
