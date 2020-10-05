@@ -35,7 +35,7 @@
 #include "fbx_bone.h"
 #include "import_state.h"
 #include "modules/fbx/tools/import_utils.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "thirdparty/assimp_fbx/FBXMeshGeometry.h"
 
@@ -227,7 +227,7 @@ struct FBXMeshData : Reference {
 	// translate fbx mesh data from document context to FBX Mesh Geometry Context
 	bool valid_weight_indexes = false;
 
-	MeshInstance *create_fbx_mesh(const ImportState &state, const Assimp::FBX::MeshGeometry *mesh_geometry, const Assimp::FBX::Model *model);
+	MeshInstance3D *create_fbx_mesh(const ImportState &state, const Assimp::FBX::MeshGeometry *mesh_geometry, const Assimp::FBX::Model *model);
 
 	void gen_weight_info(Ref<SurfaceTool> st, int vertex_id) const;
 
@@ -236,7 +236,7 @@ struct FBXMeshData : Reference {
 	int max_weight_count = 0;
 	uint64_t armature_id = 0;
 	bool valid_armature_id = false;
-	MeshInstance *godot_mesh_instance = nullptr;
+	MeshInstance3D *godot_mesh_instance = nullptr;
 
 private:
 	void sanitize_vertex_weights();

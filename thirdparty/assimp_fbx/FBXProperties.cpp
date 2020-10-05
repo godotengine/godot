@@ -102,6 +102,7 @@ PropertyPtr ReadTypedProperty(const ElementPtr element) {
 	return nullptr;
 }
 
+
 // ------------------------------------------------------------------------------------------------
 // peek into an element and check if it contains a FBX property, if so return its name.
 std::string PeekPropertyName(const Element &element) {
@@ -205,6 +206,30 @@ DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
 	}
 
 	return result;
+}
+
+
+const Map<String, Variant> PropertyTable::GetMetaData() const
+{
+	Map<String, Variant> metadata;
+	return metadata;
+
+//	// Loop through all the lazy properties (which is all the properties)
+//	for (const LazyPropertyMap::value_type &element : lazyProps) {
+//
+//		// Skip parsed properties
+//		if (props.end() != props.find(element.first)) continue;
+//
+//		// Read the element's value.
+//		// Wrap the naked pointer (since the call site is required to acquire ownership)
+//		// std::unique_ptr from C++11 would be preferred both as a wrapper and a return value.
+//		Property* prop = ReadTypedProperty(element.second);
+//
+//		// Element could not be read. Skip it.
+//		if (!prop) continue;
+//
+//		metadata.insert()
+//	}
 }
 
 } // namespace FBX

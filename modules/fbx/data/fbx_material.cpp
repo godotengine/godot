@@ -156,8 +156,9 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const Assimp::FBX::
 		const std::string &fbx_mapping_name = texture.first;
 
 		if (fbx_feature_mapping_desc.count(fbx_mapping_name) > 0) {
-			// This is a feature not a normal texture.
-			mat_info.features.push_back(fbx_feature_mapping_desc.at(fbx_mapping_name));
+			// This is transparency not a normal texture.
+			print_verbose("material fx mapping is transparent not supported in 4.0 yet..");
+			//mat_info.features.push_back(fbx_feature_mapping_desc.at(fbx_mapping_name));
 			continue;
 		}
 
@@ -179,7 +180,7 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const Assimp::FBX::
 				"The FBX file contains a texture with an unrecognized extension: " + file_extension_uppercase);
 
 		const String texture_name = absoulte_fbx_file_path.get_file();
-		const SpatialMaterial::TextureParam mapping_mode = fbx_texture_mapping_desc.at(fbx_mapping_name);
+		const StandardMaterial3D::TextureParam mapping_mode = fbx_texture_mapping_desc.at(fbx_mapping_name);
 
 		TextureFileMapping file_mapping;
 		file_mapping.map_mode = mapping_mode;
@@ -189,42 +190,46 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const Assimp::FBX::
 
 		// Make sure to active the various features.
 		switch (mapping_mode) {
-			case SpatialMaterial::TextureParam::TEXTURE_ALBEDO:
-			case SpatialMaterial::TextureParam::TEXTURE_METALLIC:
-			case SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS:
-			case SpatialMaterial::TextureParam::TEXTURE_FLOWMAP:
-			case SpatialMaterial::TextureParam::TEXTURE_REFRACTION:
-			case SpatialMaterial::TextureParam::TEXTURE_MAX:
+			case StandardMaterial3D::TextureParam::TEXTURE_ALBEDO:
+			case StandardMaterial3D::TextureParam::TEXTURE_METALLIC:
+			case StandardMaterial3D::TextureParam::TEXTURE_ROUGHNESS:
+			case StandardMaterial3D::TextureParam::TEXTURE_FLOWMAP:
+			case StandardMaterial3D::TextureParam::TEXTURE_REFRACTION:
+			case StandardMaterial3D::TextureParam::TEXTURE_MAX:
 				// No features required.
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_EMISSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+			case StandardMaterial3D::TextureParam::TEXTURE_EMISSION:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_EMISSION);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_NORMAL:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING);
+			case StandardMaterial3D::TextureParam::TEXTURE_NORMAL:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_RIM:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_RIM);
+			case StandardMaterial3D::TextureParam::TEXTURE_RIM:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_RIM);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_CLEARCOAT:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+			case StandardMaterial3D::TextureParam::TEXTURE_CLEARCOAT:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_CLEARCOAT);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_AMBIENT_OCCLUSION);
+			case StandardMaterial3D::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_AMBIENT_OCCLUSION);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_DEPTH:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_DEPTH_MAPPING);
+				// todo: PORT 4.0
+#warning "these need ported"
+//			case StandardMaterial3D::TextureParam::TEXTURE_NORMAL:
+//				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_DEPTH_MAPPING);
+//				break;
+//			case StandardMaterial3D::TextureParam::TEXTURE_SUBSURFACE_SCATTERING:
+//				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_SUBSURACE_SCATTERING);
+//				break;
+//			case StandardMaterial3D::TextureParam::TEXTURE_TRANSMISSION:
+//				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_TRANSMISSION);
+//				break;
+			case StandardMaterial3D::TextureParam::TEXTURE_DETAIL_ALBEDO:
+			case StandardMaterial3D::TextureParam::TEXTURE_DETAIL_MASK:
+			case StandardMaterial3D::TextureParam::TEXTURE_DETAIL_NORMAL:
+				mat_info.features.push_back(StandardMaterial3D::Feature::FEATURE_DETAIL);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_SUBSURFACE_SCATTERING:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_SUBSURACE_SCATTERING);
-				break;
-			case SpatialMaterial::TextureParam::TEXTURE_TRANSMISSION:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSMISSION);
-				break;
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_ALBEDO:
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_MASK:
-			case SpatialMaterial::TextureParam::TEXTURE_DETAIL_NORMAL:
-				mat_info.features.push_back(SpatialMaterial::Feature::FEATURE_DETAIL);
+			default:
 				break;
 		}
 	}
@@ -242,13 +247,13 @@ T extract_from_prop(Assimp::FBX::PropertyPtr prop, const T& p_default, const std
 	return val->Value();
 }
 
-Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
+Ref<StandardMaterial3D> FBXMaterial::import_material(ImportState &state) {
 
 	ERR_FAIL_COND_V(material == nullptr, nullptr);
 
 	const String p_fbx_current_directory = state.path;
 
-	Ref<SpatialMaterial> spatial_material;
+	Ref<StandardMaterial3D> spatial_material;
 
 	// read the material file
 	// is material two sided
@@ -317,8 +322,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 					Color c = spatial_material->get_albedo();
 					c[3] = opacity;
 					spatial_material->set_albedo(c);
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSPARENT);
-					spatial_material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+					spatial_material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 				}
 			} break;
 			case PROPERTY_DESC_METALLIC: {
@@ -329,17 +333,17 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 			} break;
 			case PROPERTY_DESC_COAT: {
 				spatial_material->set_clearcoat(extract_from_prop(prop, 1.0f, name, "float"));
-				material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+				material_info.features.push_back(StandardMaterial3D::Feature::FEATURE_CLEARCOAT);
 			} break;
 			case PROPERTY_DESC_COAT_ROUGHNESS: {
 				spatial_material->set_clearcoat_gloss(1.0 - extract_from_prop(prop, 0.5f, name, "float"));
-				material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+				material_info.features.push_back(StandardMaterial3D::Feature::FEATURE_CLEARCOAT);
 			} break;
 			case PROPERTY_DESC_EMISSIVE: {
 				const real_t emissive = extract_from_prop(prop, 0.0f, name, "float");
 				if (emissive > CMP_EPSILON) {
 					spatial_material->set_emission_energy(emissive);
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+					material_info.features.push_back(StandardMaterial3D::Feature::FEATURE_EMISSION);
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE_COLOR: {
@@ -431,8 +435,8 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				image_texture.instance();
 				image_texture->create_from_image(image);
 
-				const int32_t flags = Texture::FLAGS_DEFAULT;
-				image_texture->set_flags(flags);
+//				const int32_t flags = Texture::FLAGS_DEFAULT;
+//				image_texture->set_flags(flags);
 
 				texture = image_texture;
 				state.cached_image_searches[mapping.name] = texture;
@@ -447,31 +451,31 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 		}
 
 		switch (mapping.map_mode) {
-			case SpatialMaterial::TextureParam::TEXTURE_METALLIC:
+			case StandardMaterial3D::TextureParam::TEXTURE_METALLIC:
 				if (mapping.name.to_lower().find("ser") >= 0) {
 					// SER shader.
-					spatial_material->set_metallic_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_RED);
+					spatial_material->set_metallic_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_RED);
 				} else {
 					// Use grayscale as default.
-					spatial_material->set_metallic_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+					spatial_material->set_metallic_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS:
+			case StandardMaterial3D::TextureParam::TEXTURE_ROUGHNESS:
 				if (mapping.name.to_lower().find("ser") >= 0) {
 					// SER shader.
-					spatial_material->set_roughness_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_BLUE);
+					spatial_material->set_roughness_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_BLUE);
 				} else {
 					// Use grayscale as default.
-					spatial_material->set_roughness_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+					spatial_material->set_roughness_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
+			case StandardMaterial3D::TextureParam::TEXTURE_AMBIENT_OCCLUSION:
 				// Use grayscale as default.
-				spatial_material->set_ao_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+				spatial_material->set_ao_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				break;
-			case SpatialMaterial::TextureParam::TEXTURE_REFRACTION:
+			case StandardMaterial3D::TextureParam::TEXTURE_REFRACTION:
 				// Use grayscale as default.
-				spatial_material->set_refraction_texture_channel(SpatialMaterial::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
+				spatial_material->set_refraction_texture_channel(StandardMaterial3D::TextureChannel::TEXTURE_CHANNEL_GRAYSCALE);
 				break;
 			default:
 				// Nothing to do.

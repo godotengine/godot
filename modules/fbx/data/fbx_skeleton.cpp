@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "fbx_skeleton.h"
-
+#include "scene/3d/skeleton_3d.h"
 #include "import_state.h"
 #include "modules/fbx/tools/import_utils.h"
 
@@ -37,7 +37,7 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 	int skeleton_bone_count = skeleton_bones.size();
 
 	if (skeleton == nullptr && skeleton_bone_count > 0) {
-		skeleton = memnew(Skeleton);
+		skeleton = memnew(Skeleton3D);
 
 		Ref<FBXNode> skeleton_parent_node;
 		if (fbx_node.is_valid()) {
@@ -104,6 +104,7 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 		print_verbose("working on bone: " + itos(bone_index) + " bone name:" + bone->bone_name);
 
 		skeleton->set_bone_rest(bone->godot_bone_id, get_unscaled_transform(bone->pivot_xform->LocalTransform, state.scale));
+		skeleton->set_bone_pose(bone->godot_bone_id, get_unscaled_transform(bone->pivot_xform->LocalTransform, state.scale));
 
 		// lookup parent ID
 		if (bone->valid_parent && state.fbx_bone_map.has(bone->parent_bone_id)) {

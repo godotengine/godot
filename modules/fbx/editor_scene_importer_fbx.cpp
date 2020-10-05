@@ -37,10 +37,9 @@
 #include "editor/editor_node.h"
 #include "editor/import/resource_importer_scene.h"
 #include "modules/fbx/data/fbx_mesh_data.h"
-#include "scene/3d/bone_attachment.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/bone_attachment_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/main/node.h"
 #include "scene/resources/material.h"
 #include "tools/import_utils.h"
@@ -91,6 +90,7 @@ uint32_t EditorSceneImporterFBX::get_import_flags() const {
 
 void EditorSceneImporterFBX::_bind_methods() {
 }
+
 Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
@@ -105,24 +105,23 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 	{
 
-		PoolByteArray data;
+		PackedByteArray data;
 		// broadphase tokenizing pass in which we identify the core
 		// syntax elements of FBX (brackets, commas, key:value mappings)
 		Assimp::FBX::TokenList tokens;
 
 		bool is_binary = false;
 		data.resize(f->get_len());
-		f->get_buffer(data.write().ptr(), data.size());
-		PoolByteArray fbx_header;
+		f->get_buffer(data.ptrw(), data.size());
+		PackedByteArray fbx_header;
 		fbx_header.resize(64);
 		for (int32_t byte_i = 0; byte_i < 64; byte_i++) {
-			fbx_header.write()[byte_i] = data.read()[byte_i];
+			fbx_header.ptrw()[byte_i] = data.ptr()[byte_i];
 		}
 
 		String fbx_header_string;
 		if (fbx_header.size() >= 0) {
-			PoolByteArray::Read r = fbx_header.read();
-			fbx_header_string.parse_utf8((const char *)r.ptr(), fbx_header.size());
+			fbx_header_string.parse_utf8((const char *)fbx_header.ptr(), fbx_header.size());
 		}
 
 		print_verbose("[doc] opening fbx file: " + p_path);
@@ -132,10 +131,10 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 		if (fbx_header_string.find("Kaydara FBX Binary", 0) != -1) {
 			is_binary = true;
 			print_verbose("[doc] is binary");
-			Assimp::FBX::TokenizeBinary(tokens, (const char *)data.write().ptr(), (size_t)data.size());
+			Assimp::FBX::TokenizeBinary(tokens, (const char *)data.ptrw(), (size_t)data.size());
 		} else {
 			print_verbose("[doc] is ascii");
-			Assimp::FBX::Tokenize(tokens, (const char *)data.write().ptr());
+			Assimp::FBX::Tokenize(tokens, (const char *)data.ptrw());
 		}
 
 		// The import process explained:
@@ -158,7 +157,7 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 
 		// safety for version handling
 		if (doc.IsSafeToImport()) {
-			Spatial * spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8);
+			Node3D * spatial = _generate_scene(p_path, &doc, p_flags, p_bake_fps, 8);
 
 			// todo: move to document shutdown (will need to be validated after moving; this code has been validated already)
 			for( Assimp::FBX::TokenPtr token : tokens)
@@ -175,33 +174,30 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 		}
 	}
 
-	return memnew(Spatial);
+	return memnew(Node3D);
 }
 
 template <class T>
 struct EditorSceneImporterAssetImportInterpolate {
 
 	T lerp(const T &a, const T &b, float c) const {
-
 		return a + (b - a) * c;
 	}
 
 	T catmull_rom(const T &p0, const T &p1, const T &p2, const T &p3, float t) {
+		const float t2 = t * t;
+		const float t3 = t2 * t;
 
-		float t2 = t * t;
-		float t3 = t2 * t;
-
-		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4 * p2 - p3) * t2 +
-							  (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
+		return 0.5f * ((2.0f * p1) + (-p0 + p2) * t + (2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3) * t2 + (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
 	}
 
 	T bezier(T start, T control_1, T control_2, T end, float t) {
 		/* Formula from Wikipedia article on Bezier curves. */
-		real_t omt = (1.0 - t);
-		real_t omt2 = omt * omt;
-		real_t omt3 = omt2 * omt;
-		real_t t2 = t * t;
-		real_t t3 = t2 * t;
+		const real_t omt = (1.0 - t);
+		const real_t omt2 = omt * omt;
+		const real_t omt3 = omt2 * omt;
+		const real_t t2 = t * t;
+		const real_t t3 = t2 * t;
 
 		return start * omt3 + control_1 * omt2 * t * 3.0 + control_2 * omt * t2 * 3.0 + end * t3;
 	}
@@ -317,7 +313,7 @@ void set_owner_recursive(Node *root, Node *current_node) {
 }
 
 // tool which can get the global transform for a scene which isn't loaded.
-Transform get_global_transform(Spatial *root, Spatial *child_node) {
+Transform get_global_transform(Node3D *root, Node3D *child_node) {
 	// state.root is armature and you are using this for an armature check.
 	if (root == child_node) {
 		return root->get_transform();
@@ -327,7 +323,7 @@ Transform get_global_transform(Spatial *root, Spatial *child_node) {
 	Node *iter = child_node;
 
 	while (iter != nullptr && iter != root) {
-		Spatial *spatial = Object::cast_to<Spatial>(iter);
+		Node3D *spatial = Object::cast_to<Node3D>(iter);
 		if (spatial) {
 			t *= spatial->get_transform();
 		}
@@ -338,7 +334,7 @@ Transform get_global_transform(Spatial *root, Spatial *child_node) {
 	return t;
 }
 
-Spatial *
+Node3D *
 EditorSceneImporterFBX::_generate_scene(const String &p_path,
 		const Assimp::FBX::Document *p_document, const uint32_t p_flags,
 		int p_bake_fps, const int32_t p_max_bone_weights) {
@@ -348,8 +344,8 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 	state.animation_player = NULL;
 
 	// create new root node for scene
-	Spatial *scene_root = memnew(Spatial);
-	state.root = memnew(Spatial);
+	Node3D *scene_root = memnew(Node3D);
+	state.root = memnew(Node3D);
 	state.root_owner = scene_root; // the real scene root... sorry compatibility code is painful...
 
 	state.root->set_name("RootNode");
@@ -523,7 +519,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 			material.instance();
 			material->set_imported_material(mat);
 
-			Ref<SpatialMaterial> godot_material = material->import_material(state);
+			Ref<StandardMaterial3D> godot_material = material->import_material(state);
 
 			state.cached_materials.insert(material_id, godot_material);
 		}
@@ -623,7 +619,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 				node_element;
 				node_element = node_element->next()) {
 			Ref<FBXNode> fbx_node = node_element->get();
-			MeshInstance *mesh_node = nullptr;
+			MeshInstance3D *mesh_node = nullptr;
 			Ref<FBXMeshData> mesh_data_precached;
 
 			// check for valid geometry
@@ -666,10 +662,10 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 			Ref<FBXSkeleton> node_skeleton = fbx_node->skeleton_node;
 
 			if (node_skeleton.is_valid()) {
-				Skeleton *skel = node_skeleton->skeleton;
+				Skeleton3D *skel = node_skeleton->skeleton;
 				fbx_node->godot_node = skel;
 			} else if (mesh_node == nullptr) {
-				fbx_node->godot_node = memnew(Spatial);
+				fbx_node->godot_node = memnew(Node3D);
 			} else {
 				fbx_node->godot_node = mesh_node;
 			}
@@ -734,7 +730,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 	for (Map<uint64_t, Ref<FBXMeshData> >::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
 		Ref<FBXMeshData> mesh = mesh_data->value();
 		const uint64_t mesh_id = mesh_data->key();
-		MeshInstance *mesh_instance = mesh->godot_mesh_instance;
+		MeshInstance3D *mesh_instance = mesh->godot_mesh_instance;
 		const int mesh_weights = mesh->max_weight_count;
 		Ref<FBXSkeleton> skeleton;
 		const bool valid_armature = mesh->valid_armature_id;

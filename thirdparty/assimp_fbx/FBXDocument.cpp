@@ -349,7 +349,7 @@ void Document::ReadObjects() {
 	objects[0] = new LazyObject(0L, eobjects, *this);
 
 	const ScopePtr sobjects = eobjects->Compound();
-	for (const ElementMap::value_type iter : sobjects->Elements()) {
+	for (const ElementMap::value_type &iter : sobjects->Elements()) {
 
 		// extract ID
 		const TokenList &tok = iter.second->Tokens();

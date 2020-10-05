@@ -32,6 +32,7 @@
 
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "thirdparty/misc/triangulator.h"
 #include <algorithm>
 
@@ -81,12 +82,12 @@ struct SurfaceData {
 	Ref<SurfaceTool> surface_tool;
 	// Contains vertices, calling this data so it's the same name used in the FBX format.
 	Vector<Vertex> vertices_map;
-	Ref<SpatialMaterial> material;
+	Ref<StandardMaterial3D> material;
 	HashMap<PolygonId, Vector<DataIndex> > surface_polygon_vertex;
 	Array morphs;
 };
 
-MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const Assimp::FBX::MeshGeometry *mesh_geometry, const Assimp::FBX::Model *model) {
+MeshInstance3D *FBXMeshData::create_fbx_mesh(const ImportState &state, const Assimp::FBX::MeshGeometry *mesh_geometry, const Assimp::FBX::Model *model) {
 
 	// todo: make this just use a uint64_t FBX ID this is a copy of our original materials unfortunately.
 	const std::vector<const Assimp::FBX::Material *> &material_lookup = model->GetMaterials();
@@ -343,13 +344,14 @@ MeshInstance *FBXMeshData::create_fbx_mesh(const ImportState &state, const Assim
 		in_mesh_surface_id += 1;
 	}
 
-	MeshInstance *godot_mesh = memnew(MeshInstance);
+	MeshInstance3D *godot_mesh = memnew(MeshInstance3D);
 	godot_mesh->set_mesh(mesh);
 	return godot_mesh;
 }
 
 void FBXMeshData::sanitize_vertex_weights() {
-	const int max_bones = VS::ARRAY_WEIGHTS_SIZE;
+#warning "port to 4.0 max weight count"
+	const int max_bones = 4;
 
 	for (const Vertex *v = vertex_weights.next(nullptr); v != nullptr; v = vertex_weights.next(v)) {
 		VertexMapping *vm = vertex_weights.getptr(*v);
@@ -892,7 +894,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 				// https://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_layer_element_html
 				ERR_FAIL_COND_V_MSG((int)p_mapping_data.index.size() != p_vertex_count, (HashMap<int, R>()), "FBX file corrupted: #ERR02");
 				for (size_t vertex_index = 0; vertex_index < p_mapping_data.index.size(); vertex_index += 1) {
-					ERR_FAIL_INDEX_V_MSG(p_mapping_data.index[vertex_index], (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR03.")
+					ERR_FAIL_INDEX_V_MSG(p_mapping_data.index[vertex_index], (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR03.");
 					aggregate_vertex_data[vertex_index].push_back({ -1, p_mapping_data.data[p_mapping_data.index[vertex_index]] });
 				}
 			}
@@ -941,9 +943,9 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 					}
 					const int vertex_index = get_vertex_from_polygon_vertex(p_mesh_indices, polygon_vertex_index);
 					ERR_FAIL_COND_V_MSG(vertex_index < 0, (HashMap<int, R>()), "FBX file corrupted: #ERR8");
-					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR9.")
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR10.")
-					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.")
+					ERR_FAIL_COND_V_MSG(vertex_index >= p_vertex_count, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR9.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] < 0, (HashMap<int, R>()), "FBX file seems  corrupted: #ERR10.");
+					ERR_FAIL_COND_V_MSG(p_mapping_data.index[polygon_vertex_index] >= (int)p_mapping_data.data.size(), (HashMap<int, R>()), "FBX file seems corrupted: #ERR11.");
 					aggregate_vertex_data[vertex_index].push_back({ polygon_id, p_mapping_data.data[p_mapping_data.index[polygon_vertex_index]] });
 				}
 			}
@@ -970,7 +972,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 
 					aggregate_vertex_data[vertex_index].push_back({ polygon_index, p_mapping_data.data[polygon_index] });
 				}
-				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR16. Not all Polygons are present in the file.")
+				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR16. Not all Polygons are present in the file.");
 			} else {
 				// The data is mapped per polygon using a reference.
 				// The indices array, contains a *reference_id for each polygon.
@@ -997,7 +999,7 @@ HashMap<int, R> FBXMeshData::extract_per_vertex_data(
 
 					aggregate_vertex_data[vertex_index].push_back({ polygon_index, p_mapping_data.data[p_mapping_data.index[polygon_index]] });
 				}
-				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR22. Not all Polygons are present in the file.")
+				ERR_FAIL_COND_V_MSG((polygon_index + 1) != polygon_count, (HashMap<int, R>()), "FBX file seems corrupted: #ERR22. Not all Polygons are present in the file.");
 			}
 		} break;
 		case Assimp::FBX::MeshGeometry::MapType::edge: {

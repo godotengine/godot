@@ -51,6 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <string>
 #include <vector>
+#include "core/variant.h"
+#include "core/map.h"
 
 namespace Assimp {
 namespace FBX {
@@ -131,6 +133,8 @@ public:
 	const PropertyTable *TemplateProps() const {
 		return templateProps;
 	}
+
+	const Map<String, Variant> GetMetaData() const;
 
 	DirectPropertyMap GetUnparsedProperties() const;
 
