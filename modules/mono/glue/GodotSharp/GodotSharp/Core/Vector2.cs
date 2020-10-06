@@ -437,8 +437,11 @@ namespace Godot
         /// <returns>The rotated vector.</returns>
         public Vector2 Rotated(real_t phi)
         {
-            real_t rads = Angle() + phi;
-            return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
+            real_t sine = Mathf.Sin(phi);
+            real_t cosi = Mathf.Cos(phi);
+            return new Vector2(
+                x * cosi - y * sine,
+                x * sine + y * cosi);
         }
 
         /// <summary>
