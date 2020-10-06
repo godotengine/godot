@@ -166,7 +166,16 @@ class VisualShaderEditor : public VBoxContainer {
 
 	static VisualShaderEditor *singleton;
 
+	struct DragOp {
+		VisualShader::Type type;
+		int node;
+		Vector2 from;
+		Vector2 to;
+	};
+	List<DragOp> drag_buffer;
+	bool drag_dirty = false;
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node);
+	void _nodes_dragged();
 	bool updating;
 
 	void _connection_request(const String &p_from, int p_from_index, const String &p_to, int p_to_index);

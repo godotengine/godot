@@ -1497,15 +1497,28 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 }
 
 void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node) {
-
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	drag_buffer.push_back({ type, p_node, p_from, p_to });
+	if (!drag_dirty) {
+		call_deferred("_nodes_dragged");
+	}
+	drag_dirty = true;
+}
 
+void VisualShaderEditor::_nodes_dragged() {
+	drag_dirty = false;
+
+	undo_redo->create_action(TTR("Node(s) Moved"));
+
+	for (List<DragOp>::Element *E = drag_buffer.front(); E; E = E->next()) {
+		undo_redo->add_do_method(visual_shader.ptr(), "set_node_position", E->get().type, E->get().node, E->get().to);
+		undo_redo->add_undo_method(visual_shader.ptr(), "set_node_position", E->get().type, E->get().node, E->get().from);
+	}
 	updating = true;
-	undo_redo->create_action(TTR("Node Moved"));
-	undo_redo->add_do_method(visual_shader.ptr(), "set_node_position", type, p_node, p_to);
-	undo_redo->add_undo_method(visual_shader.ptr(), "set_node_position", type, p_node, p_from);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
+
+	drag_buffer.clear();
 	undo_redo->commit_action();
 	updating = false;
 }
@@ -2331,6 +2344,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
 	ClassDB::bind_method("_show_preview_text", &VisualShaderEditor::_show_preview_text);
 	ClassDB::bind_method("_update_preview", &VisualShaderEditor::_update_preview);
+	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
