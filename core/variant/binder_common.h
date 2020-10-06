@@ -122,6 +122,18 @@ struct VariantObjectClassChecker {
 	}
 };
 
+template <typename T>
+class Ref;
+
+template <typename T>
+struct VariantObjectClassChecker<const Ref<T> &> {
+	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+		Object *obj = p_variant;
+		const Ref<T> node = p_variant;
+		return node.ptr() || !obj;
+	}
+};
+
 template <>
 struct VariantObjectClassChecker<Node *> {
 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
