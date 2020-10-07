@@ -69,6 +69,12 @@ public:
 		DISPLAY_MODE_SPLIT,
 	};
 
+	enum FileSortOption {
+		FILE_SORT_NAME = 0,
+		FILE_SORT_TYPE,
+		FILE_SORT_MAX,
+	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -95,6 +101,8 @@ private:
 		FOLDER_COLLAPSE_ALL,
 	};
 
+	FileSortOption file_sort = FILE_SORT_NAME;
+
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
 	VSplitContainer *split_box;
@@ -109,8 +117,13 @@ private:
 	Button *button_hist_next;
 	Button *button_hist_prev;
 	LineEdit *current_path;
+
+	HBoxContainer *toolbar2_hbc;
 	LineEdit *tree_search_box;
+	MenuButton *tree_button_sort;
+
 	LineEdit *file_list_search_box;
+	MenuButton *file_list_button_sort;
 
 	String searched_string;
 	Vector<String> uncollapsed_paths_before_search;
@@ -173,7 +186,7 @@ private:
 	ItemList *files;
 	bool import_dock_needs_update;
 
-	Ref<Texture2D> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
+	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, String p_file_type);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
 	Vector<String> _compute_uncollapsed_paths();
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
@@ -238,6 +251,9 @@ private:
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
+	MenuButton *_create_file_menu_button();
+	void _file_sort_popup(int p_id);
+
 	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos);
 	void _tree_rmb_empty(const Vector2 &p_pos);
@@ -254,6 +270,11 @@ private:
 
 		bool operator<(const FileInfo &fi) const {
 			return NaturalNoCaseComparator()(name, fi.name);
+		}
+	};
+	struct FileInfoExtensionComparator {
+		bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+			return NaturalNoCaseComparator()(p_a.name.get_extension() + p_a.name.get_basename(), p_b.name.get_extension() + p_b.name.get_basename());
 		}
 	};
 
@@ -298,6 +319,9 @@ public:
 
 	void set_display_mode(DisplayMode p_display_mode);
 	DisplayMode get_display_mode() { return display_mode; }
+
+	void set_file_sort(FileSortOption p_file_sort);
+	FileSortOption get_file_sort() { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
