@@ -305,10 +305,8 @@ void ARKitInterface::uninitialize() {
 		remove_all_anchors();
 
 		if (@available(iOS 11.0, *)) {
-			[ar_session release];
-			ar_session = NULL;
+			ar_session = nil;
 		}
-		[ar_delegate release];
 
 		ar_delegate = NULL;
 		initialized = false;
@@ -469,10 +467,8 @@ void ARKitInterface::process() {
 
 				if (@available(iOS 13, *)) {
 					orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
-#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
 				} else {
 					orientation = [[UIApplication sharedApplication] statusBarOrientation];
-#endif
 				}
 
 				// Grab our camera image for our backbuffer
@@ -686,7 +682,7 @@ void ARKitInterface::process() {
 	}
 }
 
-void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
+void ARKitInterface::_add_or_update_anchor(GodotARAnchor *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
 	if (@available(iOS 11.0, *)) {
@@ -748,7 +744,7 @@ void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
 	}
 }
 
-void ARKitInterface::_remove_anchor(void *p_anchor) {
+void ARKitInterface::_remove_anchor(GodotARAnchor *p_anchor) {
 	_THREAD_SAFE_METHOD_
 
 	if (@available(iOS 11.0, *)) {

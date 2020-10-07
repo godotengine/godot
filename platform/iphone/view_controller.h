@@ -32,10 +32,15 @@
 #import <UIKit/UIKit.h>
 
 @class GodotView;
+@class GodotNativeVideoView;
 
-@interface ViewController : UIViewController <GKGameCenterControllerDelegate> {
-};
+@interface ViewController : UIViewController <GKGameCenterControllerDelegate>
 
-- (GodotView *)godotView;
+@property(nonatomic, readonly, strong) GodotView *godotView;
+@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+
+// MARK: Native Video Player
+
+- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
 
 @end

@@ -32,17 +32,9 @@
 
 #include "icloud.h"
 
-#ifndef __IPHONE_9_0
-extern "C" {
-#endif
-
 #import "app_delegate.h"
 
 #import <Foundation/Foundation.h>
-
-#ifndef __IPHONE_9_0
-};
-#endif
 
 ICloud *ICloud::instance = NULL;
 
@@ -150,7 +142,7 @@ Variant nsobject_to_variant(NSObject *object) {
 
 NSObject *variant_to_nsobject(Variant v) {
 	if (v.get_type() == Variant::STRING) {
-		return [[[NSString alloc] initWithUTF8String:((String)v).utf8().get_data()] autorelease];
+		return [[NSString alloc] initWithUTF8String:((String)v).utf8().get_data()];
 	} else if (v.get_type() == Variant::REAL) {
 		return [NSNumber numberWithDouble:(double)v];
 	} else if (v.get_type() == Variant::INT) {
@@ -158,11 +150,11 @@ NSObject *variant_to_nsobject(Variant v) {
 	} else if (v.get_type() == Variant::BOOL) {
 		return [NSNumber numberWithBool:BOOL((bool)v)];
 	} else if (v.get_type() == Variant::DICTIONARY) {
-		NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
+		NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
 		Dictionary dic = v;
 		Array keys = dic.keys();
 		for (int i = 0; i < keys.size(); ++i) {
-			NSString *key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
+			NSString *key = [[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()];
 			NSObject *value = variant_to_nsobject(dic[keys[i]]);
 
 			if (key == NULL || value == NULL) {
@@ -173,7 +165,7 @@ NSObject *variant_to_nsobject(Variant v) {
 		}
 		return result;
 	} else if (v.get_type() == Variant::ARRAY) {
-		NSMutableArray *result = [[[NSMutableArray alloc] init] autorelease];
+		NSMutableArray *result = [[NSMutableArray alloc] init];
 		Array arr = v;
 		for (int i = 0; i < arr.size(); ++i) {
 			NSObject *value = variant_to_nsobject(arr[i]);
@@ -196,7 +188,7 @@ NSObject *variant_to_nsobject(Variant v) {
 
 Error ICloud::remove_key(Variant p_param) {
 	String param = p_param;
-	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+	NSString *key = [[NSString alloc] initWithUTF8String:param.utf8().get_data()];
 
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
@@ -219,7 +211,7 @@ Variant ICloud::set_key_values(Variant p_params) {
 		String variant_key = keys[i];
 		Variant variant_value = params[variant_key];
 
-		NSString *key = [[[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()] autorelease];
+		NSString *key = [[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()];
 		if (key == NULL) {
 			error_keys.push_back(variant_key);
 			continue;
@@ -242,7 +234,7 @@ Variant ICloud::set_key_values(Variant p_params) {
 Variant ICloud::get_key_value(Variant p_param) {
 	String param = p_param;
 
-	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+	NSString *key = [[NSString alloc] initWithUTF8String:param.utf8().get_data()];
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
 	if (![[store dictionaryRepresentation] objectForKey:key]) {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ios.mm                                                               */
+/*  godot_view_renderer.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,57 +28,90 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ios.h"
+#import "godot_view_renderer.h"
 
-#import "app_delegate.h"
-#import "view_controller.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
+#include "main/main.h"
+#include "os_iphone.h"
+#include "servers/audio_server.h"
 
+#import <AudioToolbox/AudioServices.h>
+#import <CoreMotion/CoreMotion.h>
+#import <GameController/GameController.h>
+#import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
-#include <sys/sysctl.h>
 
-void iOS::_bind_methods() {
+@interface GodotViewRenderer ()
 
-	ClassDB::bind_method(D_METHOD("get_rate_url", "app_id"), &iOS::get_rate_url);
-};
+@property(assign, nonatomic) BOOL hasFinishedProjectDataSetup;
+@property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasFinishedSetup;
 
-void iOS::alert(const char *p_alert, const char *p_title) {
-	NSString *title = [NSString stringWithUTF8String:p_title];
-	NSString *message = [NSString stringWithUTF8String:p_alert];
+@end
 
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
-	UIAlertAction *button = [UIAlertAction actionWithTitle:@"OK"
-													 style:UIAlertActionStyleCancel
-												   handler:^(id){
-												   }];
+@implementation GodotViewRenderer
 
-	[alert addAction:button];
-
-	[AppDelegate.viewController presentViewController:alert animated:YES completion:nil];
-}
-
-String iOS::get_model() const {
-	// [[UIDevice currentDevice] model] only returns "iPad" or "iPhone".
-	size_t size;
-	sysctlbyname("hw.machine", NULL, &size, NULL, 0);
-	char *model = (char *)malloc(size);
-	if (model == NULL) {
-		return "";
+- (BOOL)setupView:(UIView *)view {
+	if (self.hasFinishedSetup) {
+		return NO;
 	}
-	sysctlbyname("hw.machine", model, &size, NULL, 0);
-	NSString *platform = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
-	free(model);
-	const char *str = [platform UTF8String];
-	return String(str != NULL ? str : "");
+
+	if (!OS::get_singleton()) {
+		exit(0);
+	}
+
+	if (!self.hasFinishedProjectDataSetup) {
+		[self setupProjectData];
+		return YES;
+	}
+
+	if (!self.hasStartedMain) {
+		self.hasStartedMain = YES;
+		OSIPhone::get_singleton()->start();
+		return YES;
+	}
+
+	self.hasFinishedSetup = YES;
+
+	return NO;
 }
 
-String iOS::get_rate_url(int p_app_id) const {
-	String app_url_path = "itms-apps://itunes.apple.com/app/idAPP_ID";
+- (void)setupProjectData {
+	self.hasFinishedProjectDataSetup = YES;
 
-	String ret = app_url_path.replace("APP_ID", String::num(p_app_id));
+	Main::setup2();
 
-	printf("returning rate url %ls\n", ret.c_str());
+	// this might be necessary before here
+	NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+	for (NSString *key in dict) {
+		NSObject *value = [dict objectForKey:key];
+		String ukey = String::utf8([key UTF8String]);
 
-	return ret;
-};
+		// we need a NSObject to Variant conversor
 
-iOS::iOS(){};
+		if ([value isKindOfClass:[NSString class]]) {
+			NSString *str = (NSString *)value;
+			String uval = String::utf8([str UTF8String]);
+
+			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
+
+		} else if ([value isKindOfClass:[NSNumber class]]) {
+			NSNumber *n = (NSNumber *)value;
+			double dval = [n doubleValue];
+
+			ProjectSettings::get_singleton()->set("Info.plist/" + ukey, dval);
+		};
+		// do stuff
+	}
+}
+
+- (void)renderOnView:(UIView *)view {
+	if (!OSIPhone::get_singleton()) {
+		return;
+	}
+
+	OSIPhone::get_singleton()->iterate();
+}
+
+@end
