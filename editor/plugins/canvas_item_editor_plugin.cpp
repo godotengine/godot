@@ -4744,6 +4744,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_lock_");
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_group_", true);
+				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_group_");
+				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 			undo_redo->add_do_method(viewport, "update", Variant());
 			undo_redo->add_undo_method(viewport, "update", Variant());
@@ -4766,6 +4770,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(canvas_item, "set_meta", "_edit_lock_", true);
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method(canvas_item, "remove_meta", "_edit_group_");
+				undo_redo->add_undo_method(canvas_item, "set_meta", "_edit_group_", true);
+				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 			undo_redo->add_do_method(viewport, "update", Variant());
 			undo_redo->add_undo_method(viewport, "update", Variant());
