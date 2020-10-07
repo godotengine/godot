@@ -4225,6 +4225,7 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 
 	p_layout->set_value(p_section, "dock_filesystem_split", filesystem_dock->get_split_offset());
 	p_layout->set_value(p_section, "dock_filesystem_display_mode", filesystem_dock->get_display_mode());
+	p_layout->set_value(p_section, "dock_filesystem_file_sort", filesystem_dock->get_file_sort());
 	p_layout->set_value(p_section, "dock_filesystem_file_list_display_mode", filesystem_dock->get_file_list_display_mode());
 
 	for (int i = 0; i < vsplits.size(); i++) {
@@ -4417,6 +4418,11 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_display_mode")) {
 		FileSystemDock::DisplayMode dock_filesystem_display_mode = FileSystemDock::DisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_display_mode")));
 		filesystem_dock->set_display_mode(dock_filesystem_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "dock_filesystem_file_sort")) {
+		FileSystemDock::FileSortOption dock_filesystem_file_sort = FileSystemDock::FileSortOption(int(p_layout->get_value(p_section, "dock_filesystem_file_sort")));
+		filesystem_dock->set_file_sort(dock_filesystem_file_sort);
 	}
 
 	if (p_layout->has_section_key(p_section, "dock_filesystem_file_list_display_mode")) {
