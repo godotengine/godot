@@ -44,7 +44,7 @@ bool PropertyUtils::is_property_value_different(const Variant &p_a, const Varian
 		// For our purposes, treating null object as NIL is the right thing to do
 		const Variant &a = p_a.get_type() == Variant::OBJECT && (Object *)p_a == nullptr ? Variant() : p_a;
 		const Variant &b = p_b.get_type() == Variant::OBJECT && (Object *)p_b == nullptr ? Variant() : p_b;
-		return a != b;
+		return !a.deep_equal(b);
 	}
 }
 
