@@ -30,6 +30,7 @@
 
 #include "gdscript_function.h"
 
+#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "gdscript.h"
 #include "gdscript_functions.h"
@@ -185,93 +186,131 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 }
 
 #if defined(__GNUC__)
-#define OPCODES_TABLE                               \
-	static const void *switch_table_ops[] = {       \
-		&&OPCODE_OPERATOR,                          \
-		&&OPCODE_OPERATOR_VALIDATED,                \
-		&&OPCODE_EXTENDS_TEST,                      \
-		&&OPCODE_IS_BUILTIN,                        \
-		&&OPCODE_SET_KEYED,                         \
-		&&OPCODE_SET_KEYED_VALIDATED,               \
-		&&OPCODE_SET_INDEXED_VALIDATED,             \
-		&&OPCODE_GET_KEYED,                         \
-		&&OPCODE_GET_KEYED_VALIDATED,               \
-		&&OPCODE_GET_INDEXED_VALIDATED,             \
-		&&OPCODE_SET_NAMED,                         \
-		&&OPCODE_SET_NAMED_VALIDATED,               \
-		&&OPCODE_GET_NAMED,                         \
-		&&OPCODE_GET_NAMED_VALIDATED,               \
-		&&OPCODE_SET_MEMBER,                        \
-		&&OPCODE_GET_MEMBER,                        \
-		&&OPCODE_ASSIGN,                            \
-		&&OPCODE_ASSIGN_TRUE,                       \
-		&&OPCODE_ASSIGN_FALSE,                      \
-		&&OPCODE_ASSIGN_TYPED_BUILTIN,              \
-		&&OPCODE_ASSIGN_TYPED_NATIVE,               \
-		&&OPCODE_ASSIGN_TYPED_SCRIPT,               \
-		&&OPCODE_CAST_TO_BUILTIN,                   \
-		&&OPCODE_CAST_TO_NATIVE,                    \
-		&&OPCODE_CAST_TO_SCRIPT,                    \
-		&&OPCODE_CONSTRUCT,                         \
-		&&OPCODE_CONSTRUCT_ARRAY,                   \
-		&&OPCODE_CONSTRUCT_DICTIONARY,              \
-		&&OPCODE_CALL,                              \
-		&&OPCODE_CALL_RETURN,                       \
-		&&OPCODE_CALL_ASYNC,                        \
-		&&OPCODE_CALL_BUILT_IN,                     \
-		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,       \
-		&&OPCODE_CALL_SELF_BASE,                    \
-		&&OPCODE_CALL_METHOD_BIND,                  \
-		&&OPCODE_CALL_METHOD_BIND_RET,              \
-		&&OPCODE_CALL_PTRCALL_NO_RETURN,            \
-		&&OPCODE_CALL_PTRCALL_BOOL,                 \
-		&&OPCODE_CALL_PTRCALL_INT,                  \
-		&&OPCODE_CALL_PTRCALL_FLOAT,                \
-		&&OPCODE_CALL_PTRCALL_STRING,               \
-		&&OPCODE_CALL_PTRCALL_VECTOR2,              \
-		&&OPCODE_CALL_PTRCALL_VECTOR2I,             \
-		&&OPCODE_CALL_PTRCALL_RECT2,                \
-		&&OPCODE_CALL_PTRCALL_RECT2I,               \
-		&&OPCODE_CALL_PTRCALL_VECTOR3,              \
-		&&OPCODE_CALL_PTRCALL_VECTOR3I,             \
-		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,          \
-		&&OPCODE_CALL_PTRCALL_PLANE,                \
-		&&OPCODE_CALL_PTRCALL_QUAT,                 \
-		&&OPCODE_CALL_PTRCALL_AABB,                 \
-		&&OPCODE_CALL_PTRCALL_BASIS,                \
-		&&OPCODE_CALL_PTRCALL_TRANSFORM,            \
-		&&OPCODE_CALL_PTRCALL_COLOR,                \
-		&&OPCODE_CALL_PTRCALL_STRING_NAME,          \
-		&&OPCODE_CALL_PTRCALL_NODE_PATH,            \
-		&&OPCODE_CALL_PTRCALL_RID,                  \
-		&&OPCODE_CALL_PTRCALL_OBJECT,               \
-		&&OPCODE_CALL_PTRCALL_CALLABLE,             \
-		&&OPCODE_CALL_PTRCALL_SIGNAL,               \
-		&&OPCODE_CALL_PTRCALL_DICTIONARY,           \
-		&&OPCODE_CALL_PTRCALL_ARRAY,                \
-		&&OPCODE_CALL_PTRCALL_PACKED_BYTE_ARRAY,    \
-		&&OPCODE_CALL_PTRCALL_PACKED_INT32_ARRAY,   \
-		&&OPCODE_CALL_PTRCALL_PACKED_INT64_ARRAY,   \
-		&&OPCODE_CALL_PTRCALL_PACKED_FLOAT32_ARRAY, \
-		&&OPCODE_CALL_PTRCALL_PACKED_FLOAT64_ARRAY, \
-		&&OPCODE_CALL_PTRCALL_PACKED_STRING_ARRAY,  \
-		&&OPCODE_CALL_PTRCALL_PACKED_VECTOR2_ARRAY, \
-		&&OPCODE_CALL_PTRCALL_PACKED_VECTOR3_ARRAY, \
-		&&OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,   \
-		&&OPCODE_AWAIT,                             \
-		&&OPCODE_AWAIT_RESUME,                      \
-		&&OPCODE_JUMP,                              \
-		&&OPCODE_JUMP_IF,                           \
-		&&OPCODE_JUMP_IF_NOT,                       \
-		&&OPCODE_JUMP_TO_DEF_ARGUMENT,              \
-		&&OPCODE_RETURN,                            \
-		&&OPCODE_ITERATE_BEGIN,                     \
-		&&OPCODE_ITERATE,                           \
-		&&OPCODE_ASSERT,                            \
-		&&OPCODE_BREAKPOINT,                        \
-		&&OPCODE_LINE,                              \
-		&&OPCODE_END                                \
-	};                                              \
+#define OPCODES_TABLE                                \
+	static const void *switch_table_ops[] = {        \
+		&&OPCODE_OPERATOR,                           \
+		&&OPCODE_OPERATOR_VALIDATED,                 \
+		&&OPCODE_EXTENDS_TEST,                       \
+		&&OPCODE_IS_BUILTIN,                         \
+		&&OPCODE_SET_KEYED,                          \
+		&&OPCODE_SET_KEYED_VALIDATED,                \
+		&&OPCODE_SET_INDEXED_VALIDATED,              \
+		&&OPCODE_GET_KEYED,                          \
+		&&OPCODE_GET_KEYED_VALIDATED,                \
+		&&OPCODE_GET_INDEXED_VALIDATED,              \
+		&&OPCODE_SET_NAMED,                          \
+		&&OPCODE_SET_NAMED_VALIDATED,                \
+		&&OPCODE_GET_NAMED,                          \
+		&&OPCODE_GET_NAMED_VALIDATED,                \
+		&&OPCODE_SET_MEMBER,                         \
+		&&OPCODE_GET_MEMBER,                         \
+		&&OPCODE_ASSIGN,                             \
+		&&OPCODE_ASSIGN_TRUE,                        \
+		&&OPCODE_ASSIGN_FALSE,                       \
+		&&OPCODE_ASSIGN_TYPED_BUILTIN,               \
+		&&OPCODE_ASSIGN_TYPED_NATIVE,                \
+		&&OPCODE_ASSIGN_TYPED_SCRIPT,                \
+		&&OPCODE_CAST_TO_BUILTIN,                    \
+		&&OPCODE_CAST_TO_NATIVE,                     \
+		&&OPCODE_CAST_TO_SCRIPT,                     \
+		&&OPCODE_CONSTRUCT,                          \
+		&&OPCODE_CONSTRUCT_ARRAY,                    \
+		&&OPCODE_CONSTRUCT_DICTIONARY,               \
+		&&OPCODE_CALL,                               \
+		&&OPCODE_CALL_RETURN,                        \
+		&&OPCODE_CALL_ASYNC,                         \
+		&&OPCODE_CALL_BUILT_IN,                      \
+		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,        \
+		&&OPCODE_CALL_SELF_BASE,                     \
+		&&OPCODE_CALL_METHOD_BIND,                   \
+		&&OPCODE_CALL_METHOD_BIND_RET,               \
+		&&OPCODE_CALL_PTRCALL_NO_RETURN,             \
+		&&OPCODE_CALL_PTRCALL_BOOL,                  \
+		&&OPCODE_CALL_PTRCALL_INT,                   \
+		&&OPCODE_CALL_PTRCALL_FLOAT,                 \
+		&&OPCODE_CALL_PTRCALL_STRING,                \
+		&&OPCODE_CALL_PTRCALL_VECTOR2,               \
+		&&OPCODE_CALL_PTRCALL_VECTOR2I,              \
+		&&OPCODE_CALL_PTRCALL_RECT2,                 \
+		&&OPCODE_CALL_PTRCALL_RECT2I,                \
+		&&OPCODE_CALL_PTRCALL_VECTOR3,               \
+		&&OPCODE_CALL_PTRCALL_VECTOR3I,              \
+		&&OPCODE_CALL_PTRCALL_TRANSFORM2D,           \
+		&&OPCODE_CALL_PTRCALL_PLANE,                 \
+		&&OPCODE_CALL_PTRCALL_QUAT,                  \
+		&&OPCODE_CALL_PTRCALL_AABB,                  \
+		&&OPCODE_CALL_PTRCALL_BASIS,                 \
+		&&OPCODE_CALL_PTRCALL_TRANSFORM,             \
+		&&OPCODE_CALL_PTRCALL_COLOR,                 \
+		&&OPCODE_CALL_PTRCALL_STRING_NAME,           \
+		&&OPCODE_CALL_PTRCALL_NODE_PATH,             \
+		&&OPCODE_CALL_PTRCALL_RID,                   \
+		&&OPCODE_CALL_PTRCALL_OBJECT,                \
+		&&OPCODE_CALL_PTRCALL_CALLABLE,              \
+		&&OPCODE_CALL_PTRCALL_SIGNAL,                \
+		&&OPCODE_CALL_PTRCALL_DICTIONARY,            \
+		&&OPCODE_CALL_PTRCALL_ARRAY,                 \
+		&&OPCODE_CALL_PTRCALL_PACKED_BYTE_ARRAY,     \
+		&&OPCODE_CALL_PTRCALL_PACKED_INT32_ARRAY,    \
+		&&OPCODE_CALL_PTRCALL_PACKED_INT64_ARRAY,    \
+		&&OPCODE_CALL_PTRCALL_PACKED_FLOAT32_ARRAY,  \
+		&&OPCODE_CALL_PTRCALL_PACKED_FLOAT64_ARRAY,  \
+		&&OPCODE_CALL_PTRCALL_PACKED_STRING_ARRAY,   \
+		&&OPCODE_CALL_PTRCALL_PACKED_VECTOR2_ARRAY,  \
+		&&OPCODE_CALL_PTRCALL_PACKED_VECTOR3_ARRAY,  \
+		&&OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,    \
+		&&OPCODE_AWAIT,                              \
+		&&OPCODE_AWAIT_RESUME,                       \
+		&&OPCODE_JUMP,                               \
+		&&OPCODE_JUMP_IF,                            \
+		&&OPCODE_JUMP_IF_NOT,                        \
+		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
+		&&OPCODE_RETURN,                             \
+		&&OPCODE_ITERATE_BEGIN,                      \
+		&&OPCODE_ITERATE_BEGIN_INT,                  \
+		&&OPCODE_ITERATE_BEGIN_FLOAT,                \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2,              \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2I,             \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3,              \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3I,             \
+		&&OPCODE_ITERATE_BEGIN_STRING,               \
+		&&OPCODE_ITERATE_BEGIN_DICTIONARY,           \
+		&&OPCODE_ITERATE_BEGIN_ARRAY,                \
+		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,    \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,   \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,   \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY, \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY, \
+		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,  \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY, \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY, \
+		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,   \
+		&&OPCODE_ITERATE_BEGIN_OBJECT,               \
+		&&OPCODE_ITERATE,                            \
+		&&OPCODE_ITERATE_INT,                        \
+		&&OPCODE_ITERATE_FLOAT,                      \
+		&&OPCODE_ITERATE_VECTOR2,                    \
+		&&OPCODE_ITERATE_VECTOR2I,                   \
+		&&OPCODE_ITERATE_VECTOR3,                    \
+		&&OPCODE_ITERATE_VECTOR3I,                   \
+		&&OPCODE_ITERATE_STRING,                     \
+		&&OPCODE_ITERATE_DICTIONARY,                 \
+		&&OPCODE_ITERATE_ARRAY,                      \
+		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,          \
+		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,         \
+		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,         \
+		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,       \
+		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,       \
+		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,        \
+		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,       \
+		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,       \
+		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,         \
+		&&OPCODE_ITERATE_OBJECT,                     \
+		&&OPCODE_ASSERT,                             \
+		&&OPCODE_BREAKPOINT,                         \
+		&&OPCODE_LINE,                               \
+		&&OPCODE_END                                 \
+	};                                               \
 	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
@@ -1979,6 +2018,344 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_ITERATE_BEGIN_INT) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				int64_t size = *VariantInternal::get_int(container);
+
+				VariantInternal::initialize(counter, Variant::INT);
+				*VariantInternal::get_int(counter) = 0;
+
+				if (size > 0) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::INT);
+					*VariantInternal::get_int(iterator) = 0;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_FLOAT) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				double size = *VariantInternal::get_float(container);
+
+				VariantInternal::initialize(counter, Variant::FLOAT);
+				*VariantInternal::get_float(counter) = 0.0;
+
+				if (size > 0) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::FLOAT);
+					*VariantInternal::get_float(iterator) = 0;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR2) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Vector2 *bounds = VariantInternal::get_vector2(container);
+
+				VariantInternal::initialize(counter, Variant::FLOAT);
+				*VariantInternal::get_float(counter) = bounds->x;
+
+				if (bounds->x < bounds->y) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::FLOAT);
+					*VariantInternal::get_float(iterator) = bounds->x;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR2I) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Vector2i *bounds = VariantInternal::get_vector2i(container);
+
+				VariantInternal::initialize(counter, Variant::FLOAT);
+				*VariantInternal::get_int(counter) = bounds->x;
+
+				if (bounds->x < bounds->y) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::INT);
+					*VariantInternal::get_int(iterator) = bounds->x;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR3) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Vector3 *bounds = VariantInternal::get_vector3(container);
+				double from = bounds->x;
+				double to = bounds->y;
+				double step = bounds->z;
+
+				VariantInternal::initialize(counter, Variant::FLOAT);
+				*VariantInternal::get_float(counter) = from;
+
+				bool do_continue = from == to ? false : (from < to ? step > 0 : step < 0);
+
+				if (do_continue) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::FLOAT);
+					*VariantInternal::get_float(iterator) = from;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_VECTOR3I) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Vector3i *bounds = VariantInternal::get_vector3i(container);
+				int64_t from = bounds->x;
+				int64_t to = bounds->y;
+				int64_t step = bounds->z;
+
+				VariantInternal::initialize(counter, Variant::INT);
+				*VariantInternal::get_int(counter) = from;
+
+				bool do_continue = from == to ? false : (from < to ? step > 0 : step < 0);
+
+				if (do_continue) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::INT);
+					*VariantInternal::get_int(iterator) = from;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_STRING) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				String *str = VariantInternal::get_string(container);
+
+				VariantInternal::initialize(counter, Variant::INT);
+				*VariantInternal::get_int(counter) = 0;
+
+				if (!str->empty()) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					VariantInternal::initialize(iterator, Variant::STRING);
+					*VariantInternal::get_string(iterator) = str->substr(0, 1);
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_DICTIONARY) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Dictionary *dict = VariantInternal::get_dictionary(container);
+				const Variant *next = dict->next(nullptr);
+				*counter = *next;
+
+				if (!dict->empty()) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*iterator = *next;
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_BEGIN_ARRAY) {
+				CHECK_SPACE(8); // Check space for iterate instruction too.
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				Array *array = VariantInternal::get_array(container);
+
+				VariantInternal::initialize(counter, Variant::INT);
+				*VariantInternal::get_int(counter) = 0;
+
+				if (!array->empty()) {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*iterator = array->get(0);
+
+					// Skip regular iterate.
+					ip += 5;
+				} else {
+					// Jump to end of loop.
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				}
+			}
+			DISPATCH_OPCODE;
+
+#define OPCODE_ITERATE_BEGIN_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_var_ret_type, m_ret_type, m_ret_get_func) \
+	OPCODE(OPCODE_ITERATE_BEGIN_PACKED_##m_var_type##_ARRAY) {                                                             \
+		CHECK_SPACE(8);                                                                                                    \
+		GET_INSTRUCTION_ARG(counter, 0);                                                                                   \
+		GET_INSTRUCTION_ARG(container, 1);                                                                                 \
+		Vector<m_elem_type> *array = VariantInternal::m_get_func(container);                                               \
+		VariantInternal::initialize(counter, Variant::INT);                                                                \
+		*VariantInternal::get_int(counter) = 0;                                                                            \
+		if (!array->empty()) {                                                                                             \
+			GET_INSTRUCTION_ARG(iterator, 2);                                                                              \
+			VariantInternal::initialize(iterator, Variant::m_var_ret_type);                                                \
+			m_ret_type *it = VariantInternal::m_ret_get_func(iterator);                                                    \
+			*it = array->get(0);                                                                                           \
+			ip += 5;                                                                                                       \
+		} else {                                                                                                           \
+			int jumpto = _code_ptr[ip + 4];                                                                                \
+			GD_ERR_BREAK(jumpto<0 || jumpto> _code_size);                                                                  \
+			ip = jumpto;                                                                                                   \
+		}                                                                                                                  \
+	}                                                                                                                      \
+	DISPATCH_OPCODE
+
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(BYTE, uint8_t, get_byte_array, INT, int64_t, get_int);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT32, int32_t, get_int32_array, INT, int64_t, get_int);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT64, int64_t, get_int64_array, INT, int64_t, get_int);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT32, float, get_float32_array, FLOAT, double, get_float);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT64, double, get_float64_array, FLOAT, double, get_float);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(STRING, String, get_string_array, STRING, String, get_string);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR2, Vector2, get_vector2_array, VECTOR2, Vector2, get_vector2);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, VECTOR3, Vector3, get_vector3);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(COLOR, Color, get_color_array, COLOR, Color, get_color);
+
+			OPCODE(OPCODE_ITERATE_BEGIN_OBJECT) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+#ifdef DEBUG_ENABLED
+				bool freed = false;
+				Object *obj = container->get_validated_object_with_check(freed);
+				if (freed) {
+					err_text = "Trying to iterate on a previously freed object.";
+					OPCODE_BREAK;
+				} else if (!obj) {
+					err_text = "Trying to iterate on a null value.";
+					OPCODE_BREAK;
+				}
+#else
+				Object *obj = *VariantInternal::get_object(container);
+#endif
+				Array ref;
+				ref.push_back(*counter);
+				Variant vref;
+				VariantInternal::initialize(&vref, Variant::ARRAY);
+				*VariantInternal::get_array(&vref) = ref;
+
+				Variant **args = instruction_args; // Overriding an instruction argument, but we don't need access to that anymore.
+				args[0] = &vref;
+
+				Callable::CallError ce;
+				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_init, (const Variant **)args, 1, ce);
+
+#ifdef DEBUG_ENABLED
+				if (ce.error != Callable::CallError::CALL_OK) {
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type %s.)", *container);
+					OPCODE_BREAK;
+				}
+#endif
+				if (!has_next.booleanize()) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+#ifdef DEBUG_ENABLED
+					if (ce.error != Callable::CallError::CALL_OK) {
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
+						OPCODE_BREAK;
+					}
+#endif
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_ITERATE) {
 				CHECK_SPACE(4);
 
@@ -2007,6 +2384,305 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 					ip += 5; //loop again
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_INT) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				int64_t size = *VariantInternal::get_int(container);
+				int64_t *count = VariantInternal::get_int(counter);
+
+				(*count)++;
+
+				if (*count >= size) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_int(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_FLOAT) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				double size = *VariantInternal::get_float(container);
+				double *count = VariantInternal::get_float(counter);
+
+				(*count)++;
+
+				if (*count >= size) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_float(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_VECTOR2) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Vector2 *bounds = VariantInternal::get_vector2((const Variant *)container);
+				double *count = VariantInternal::get_float(counter);
+
+				(*count)++;
+
+				if (*count >= bounds->y) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_float(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_VECTOR2I) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Vector2i *bounds = VariantInternal::get_vector2i((const Variant *)container);
+				int64_t *count = VariantInternal::get_int(counter);
+
+				(*count)++;
+
+				if (*count >= bounds->y) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_int(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_VECTOR3) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Vector3 *bounds = VariantInternal::get_vector3((const Variant *)container);
+				double *count = VariantInternal::get_float(counter);
+
+				*count += bounds->z;
+
+				if ((bounds->z < 0 && *count <= bounds->y) || (bounds->z > 0 && *count >= bounds->y)) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_float(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_VECTOR3I) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Vector3i *bounds = VariantInternal::get_vector3i((const Variant *)container);
+				int64_t *count = VariantInternal::get_int(counter);
+
+				*count += bounds->z;
+
+				if ((bounds->z < 0 && *count <= bounds->y) || (bounds->z > 0 && *count >= bounds->y)) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_int(iterator) = *count;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_STRING) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const String *str = VariantInternal::get_string((const Variant *)container);
+				int64_t *idx = VariantInternal::get_int(counter);
+				(*idx)++;
+
+				if (*idx >= str->length()) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*VariantInternal::get_string(iterator) = str->substr(*idx, 1);
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_DICTIONARY) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Dictionary *dict = VariantInternal::get_dictionary((const Variant *)container);
+				const Variant *next = dict->next(counter);
+
+				if (!next) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*counter = *next;
+					*iterator = *next;
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_ITERATE_ARRAY) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+				const Array *array = VariantInternal::get_array((const Variant *)container);
+				int64_t *idx = VariantInternal::get_int(counter);
+				(*idx)++;
+
+				if (*idx >= array->size()) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*iterator = array->get(*idx);
+
+					ip += 5; // Loop again.
+				}
+			}
+			DISPATCH_OPCODE;
+
+#define OPCODE_ITERATE_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_ret_get_func)            \
+	OPCODE(OPCODE_ITERATE_PACKED_##m_var_type##_ARRAY) {                                            \
+		CHECK_SPACE(4);                                                                             \
+		GET_INSTRUCTION_ARG(counter, 0);                                                            \
+		GET_INSTRUCTION_ARG(container, 1);                                                          \
+		const Vector<m_elem_type> *array = VariantInternal::m_get_func((const Variant *)container); \
+		int64_t *idx = VariantInternal::get_int(counter);                                           \
+		(*idx)++;                                                                                   \
+		if (*idx >= array->size()) {                                                                \
+			int jumpto = _code_ptr[ip + 4];                                                         \
+			GD_ERR_BREAK(jumpto<0 || jumpto> _code_size);                                           \
+			ip = jumpto;                                                                            \
+		} else {                                                                                    \
+			GET_INSTRUCTION_ARG(iterator, 2);                                                       \
+			*VariantInternal::m_ret_get_func(iterator) = array->get(*idx);                          \
+			ip += 5;                                                                                \
+		}                                                                                           \
+	}                                                                                               \
+	DISPATCH_OPCODE
+
+			OPCODE_ITERATE_PACKED_ARRAY(BYTE, uint8_t, get_byte_array, get_int);
+			OPCODE_ITERATE_PACKED_ARRAY(INT32, int32_t, get_int32_array, get_int);
+			OPCODE_ITERATE_PACKED_ARRAY(INT64, int64_t, get_int64_array, get_int);
+			OPCODE_ITERATE_PACKED_ARRAY(FLOAT32, float, get_float32_array, get_float);
+			OPCODE_ITERATE_PACKED_ARRAY(FLOAT64, double, get_float64_array, get_float);
+			OPCODE_ITERATE_PACKED_ARRAY(STRING, String, get_string_array, get_string);
+			OPCODE_ITERATE_PACKED_ARRAY(VECTOR2, Vector2, get_vector2_array, get_vector2);
+			OPCODE_ITERATE_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, get_vector3);
+			OPCODE_ITERATE_PACKED_ARRAY(COLOR, Color, get_color_array, get_color);
+
+			OPCODE(OPCODE_ITERATE_OBJECT) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(counter, 0);
+				GET_INSTRUCTION_ARG(container, 1);
+
+#ifdef DEBUG_ENABLED
+				bool freed = false;
+				Object *obj = container->get_validated_object_with_check(freed);
+				if (freed) {
+					err_text = "Trying to iterate on a previously freed object.";
+					OPCODE_BREAK;
+				} else if (!obj) {
+					err_text = "Trying to iterate on a null value.";
+					OPCODE_BREAK;
+				}
+#else
+				Object *obj = *VariantInternal::get_object(container);
+#endif
+				Array ref;
+				ref.push_back(*counter);
+				Variant vref;
+				VariantInternal::initialize(&vref, Variant::ARRAY);
+				*VariantInternal::get_array(&vref) = ref;
+
+				Variant **args = instruction_args; // Overriding an instruction argument, but we don't need access to that anymore.
+				args[0] = &vref;
+
+				Callable::CallError ce;
+				Variant has_next = obj->call(CoreStringNames::get_singleton()->_iter_next, (const Variant **)args, 1, ce);
+
+#ifdef DEBUG_ENABLED
+				if (ce.error != Callable::CallError::CALL_OK) {
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type %s.)", *container);
+					OPCODE_BREAK;
+				}
+#endif
+				if (!has_next.booleanize()) {
+					int jumpto = _code_ptr[ip + 4];
+					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
+					ip = jumpto;
+				} else {
+					GET_INSTRUCTION_ARG(iterator, 2);
+					*iterator = obj->call(CoreStringNames::get_singleton()->_iter_get, (const Variant **)args, 1, ce);
+#ifdef DEBUG_ENABLED
+					if (ce.error != Callable::CallError::CALL_OK) {
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
+						OPCODE_BREAK;
+					}
+#endif
+
+					ip += 5; // Loop again.
 				}
 			}
 			DISPATCH_OPCODE;

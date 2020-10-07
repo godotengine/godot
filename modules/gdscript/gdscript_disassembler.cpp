@@ -674,6 +674,58 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 2;
 			} break;
+
+#define DISASSEMBLE_ITERATE(m_type)      \
+	case OPCODE_ITERATE_##m_type: {      \
+		text += "for-loop (typed ";      \
+		text += #m_type;                 \
+		text += ") ";                    \
+		text += DADDR(3);                \
+		text += " in ";                  \
+		text += DADDR(2);                \
+		text += " counter ";             \
+		text += DADDR(1);                \
+		text += " end ";                 \
+		text += itos(_code_ptr[ip + 4]); \
+		incr += 5;                       \
+	} break
+
+#define DISASSEMBLE_ITERATE_BEGIN(m_type) \
+	case OPCODE_ITERATE_BEGIN_##m_type: { \
+		text += "for-init (typed ";       \
+		text += #m_type;                  \
+		text += ") ";                     \
+		text += DADDR(3);                 \
+		text += " in ";                   \
+		text += DADDR(2);                 \
+		text += " counter ";              \
+		text += DADDR(1);                 \
+		text += " end ";                  \
+		text += itos(_code_ptr[ip + 4]);  \
+		incr += 5;                        \
+	} break
+
+#define DISASSEMBLE_ITERATE_TYPES(m_macro) \
+	m_macro(INT);                          \
+	m_macro(FLOAT);                        \
+	m_macro(VECTOR2);                      \
+	m_macro(VECTOR2I);                     \
+	m_macro(VECTOR3);                      \
+	m_macro(VECTOR3I);                     \
+	m_macro(STRING);                       \
+	m_macro(DICTIONARY);                   \
+	m_macro(ARRAY);                        \
+	m_macro(PACKED_BYTE_ARRAY);            \
+	m_macro(PACKED_INT32_ARRAY);           \
+	m_macro(PACKED_INT64_ARRAY);           \
+	m_macro(PACKED_FLOAT32_ARRAY);         \
+	m_macro(PACKED_FLOAT64_ARRAY);         \
+	m_macro(PACKED_STRING_ARRAY);          \
+	m_macro(PACKED_VECTOR2_ARRAY);         \
+	m_macro(PACKED_VECTOR3_ARRAY);         \
+	m_macro(PACKED_COLOR_ARRAY);           \
+	m_macro(OBJECT)
+
 			case OPCODE_ITERATE_BEGIN: {
 				text += "for-init ";
 				text += DADDR(3);
@@ -686,6 +738,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
+				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE_BEGIN);
 			case OPCODE_ITERATE: {
 				text += "for-loop ";
 				text += DADDR(2);
@@ -698,6 +751,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
+				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE);
 			case OPCODE_LINE: {
 				int line = _code_ptr[ip + 1] - 1;
 				if (line >= 0 && line < p_code_lines.size()) {
