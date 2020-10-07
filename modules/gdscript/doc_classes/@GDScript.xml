@@ -231,6 +231,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="deep_equal">
+			<return type="bool" />
+			<argument index="0" name="a" type="Variant" />
+			<argument index="1" name="b" type="Variant" />
+			<description>
+				Compares two values by checking their actual contents, recursing into any `Array` or `Dictionary` up to its deepest level.
+				This compares to [code]==[/code] in a number of ways:
+				- For [code]null[/code], [code]int[/code], [code]float[/code], [code]String[/code], [code]Object[/code] and [code]RID[/code] both [code]deep_equal[/code] and [code]==[/code] work the same.
+				- For [code]Dictionary[/code], [code]==[/code] considers equality if, and only if, both variables point to the very same [code]Dictionary[/code], with no recursion or awareness of the contents at all.
+				- For [code]Array[/code], [code]==[/code] considers equality if, and only if, each item in the first [code]Array[/code] is equal to its counterpart in the second [code]Array[/code], as told by [code]==[/code] itself. That implies that [code]==[/code] recurses into [code]Array[/code], but not into [code]Dictionary[/code].
+				In short, whenever a [code]Dictionary[/code] is potentially involved, if you want a true content-aware comparison, you have to use [code]deep_equal[/code].
+			</description>
+		</method>
 		<method name="deg2rad">
 			<return type="float" />
 			<argument index="0" name="deg" type="float" />
