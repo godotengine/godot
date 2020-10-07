@@ -381,9 +381,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		hbc->add_child(type);
 
-		// Start at 1 to avoid adding "Nil" as an option
-		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
-			type->add_item(Variant::get_type_name(Variant::Type(i)));
+		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+			// There's no point in adding Nil types, and Object types
+			// can't be serialized correctly in the project settings.
+			if (i != Variant::NIL && i != Variant::OBJECT) {
+				type->add_item(Variant::get_type_name(Variant::Type(i)));
+			}
 		}
 
 		l = memnew(Label);
