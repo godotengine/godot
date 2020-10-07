@@ -340,7 +340,7 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] {OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
+            return !new[] {OS.Platforms.macOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
         }
 
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
@@ -411,7 +411,7 @@ namespace GodotTools.Export
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
                     return "net_4_x_win";
-                case OS.Platforms.OSX:
+                case OS.Platforms.macOS:
                 case OS.Platforms.LinuxBSD:
                 case OS.Platforms.Server:
                 case OS.Platforms.Haiku:

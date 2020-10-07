@@ -272,7 +272,7 @@ namespace GodotTools
 
                     bool osxAppBundleInstalled = false;
 
-                    if (OS.IsOSX)
+                    if (OS.IsmacOS)
                     {
                         // The package path is '/Applications/Visual Studio Code.app'
                         const string vscodeBundleId = "com.microsoft.VSCode";
@@ -312,7 +312,7 @@ namespace GodotTools
 
                     string command;
 
-                    if (OS.IsOSX)
+                    if (OS.IsmacOS)
                     {
                         if (!osxAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
                         {
@@ -504,7 +504,7 @@ namespace GodotTools
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
                                    $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsOSX)
+            else if (OS.IsmacOS)
             {
                 settingsHintStr += $",Visual Studio:{(int)ExternalEditorId.VisualStudioForMac}" +
                                    $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
