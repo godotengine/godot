@@ -792,8 +792,8 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 				}
 
 				// Keep ptrs to start of numerical sequences
-				const CharType *this_substr = this_str;
-				const CharType *that_substr = that_str;
+				const char32_t *this_substr = this_str;
+				const char32_t *that_substr = that_str;
 
 				// Compare lengths of both numerical sequences, ignoring leading zeros
 				while (IS_DIGIT(*this_str)) {
