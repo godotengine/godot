@@ -2870,6 +2870,14 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(vs);
 	graph->get_zoom_hbox()->move_child(vs, 0);
 
+	preview_shader = memnew(Button);
+	preview_shader->set_flat(true);
+	preview_shader->set_toggle_mode(true);
+	preview_shader->set_tooltip(TTR("Show resulted shader code."));
+	graph->get_zoom_hbox()->add_child(preview_shader);
+	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
+	graph->get_zoom_hbox()->move_child(preview_shader, 0);
+
 	edit_type_standart = memnew(OptionButton);
 	edit_type_standart->add_item(TTR("Vertex"));
 	edit_type_standart->add_item(TTR("Fragment"));
@@ -2897,13 +2905,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog), varray(false));
-
-	preview_shader = memnew(Button);
-	preview_shader->set_flat(true);
-	preview_shader->set_toggle_mode(true);
-	preview_shader->set_tooltip(TTR("Show resulted shader code."));
-	graph->get_zoom_hbox()->add_child(preview_shader);
-	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////
 	// PREVIEW PANEL
