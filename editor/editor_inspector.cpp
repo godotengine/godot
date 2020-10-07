@@ -475,7 +475,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 			if (scr.is_valid()) {
 				Variant orig_value;
 				if (scr->get_property_default_value(p_property, orig_value)) {
-					if (orig_value != p_object->get(p_property)) {
+					if (!orig_value.deep_equal(p_object->get(p_property))) {
 						has_revert = true;
 					}
 				}
