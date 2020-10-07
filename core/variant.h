@@ -416,6 +416,7 @@ public:
 
 	//argsVariant call()
 
+	bool deep_equal(const Variant &p_variant, int recursion_count = 0) const;
 	bool operator==(const Variant &p_variant) const;
 	bool operator!=(const Variant &p_variant) const;
 	bool operator<(const Variant &p_variant) const;
