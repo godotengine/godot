@@ -153,6 +153,7 @@ void OS_Android::main_loop_begin() {
 bool OS_Android::main_loop_iterate() {
 	if (!main_loop)
 		return false;
+	DisplayServerAndroid::get_singleton()->process_events();
 	return Main::iteration();
 }
 
