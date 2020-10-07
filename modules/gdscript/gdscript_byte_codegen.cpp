@@ -864,8 +864,95 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Addre
 	append(container_pos);
 	append(p_list);
 
+	GDScriptFunction::Opcode begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN;
+	GDScriptFunction::Opcode iterate_opcode = GDScriptFunction::OPCODE_ITERATE;
+
+	if (p_list.type.has_type) {
+		if (p_list.type.kind == GDScriptDataType::BUILTIN) {
+			switch (p_list.type.builtin_type) {
+				case Variant::INT:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_INT;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_INT;
+					break;
+				case Variant::FLOAT:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_FLOAT;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_FLOAT;
+					break;
+				case Variant::VECTOR2:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_VECTOR2;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_VECTOR2;
+					break;
+				case Variant::VECTOR2I:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_VECTOR2I;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_VECTOR2I;
+					break;
+				case Variant::VECTOR3:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_VECTOR3;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_VECTOR3;
+					break;
+				case Variant::VECTOR3I:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_VECTOR3I;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_VECTOR3I;
+					break;
+				case Variant::STRING:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_STRING;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_STRING;
+					break;
+				case Variant::DICTIONARY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_DICTIONARY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_DICTIONARY;
+					break;
+				case Variant::ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_ARRAY;
+					break;
+				case Variant::PACKED_BYTE_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_BYTE_ARRAY;
+					break;
+				case Variant::PACKED_INT32_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_INT32_ARRAY;
+					break;
+				case Variant::PACKED_INT64_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_INT64_ARRAY;
+					break;
+				case Variant::PACKED_FLOAT32_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_FLOAT32_ARRAY;
+					break;
+				case Variant::PACKED_FLOAT64_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_FLOAT64_ARRAY;
+					break;
+				case Variant::PACKED_STRING_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_STRING_ARRAY;
+					break;
+				case Variant::PACKED_VECTOR2_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR2_ARRAY;
+					break;
+				case Variant::PACKED_VECTOR3_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR3_ARRAY;
+					break;
+				case Variant::PACKED_COLOR_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_COLOR_ARRAY;
+					break;
+				default:
+					break;
+			}
+		} else {
+			begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_OBJECT;
+			iterate_opcode = GDScriptFunction::OPCODE_ITERATE_OBJECT;
+		}
+	}
+
 	// Begin loop.
-	append(GDScriptFunction::OPCODE_ITERATE_BEGIN, 3);
+	append(begin_opcode, 3);
 	append(counter_pos);
 	append(container_pos);
 	append(p_variable);
@@ -877,7 +964,7 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Addre
 	// Next iteration.
 	int continue_addr = opcodes.size();
 	continue_addrs.push_back(continue_addr);
-	append(GDScriptFunction::OPCODE_ITERATE, 3);
+	append(iterate_opcode, 3);
 	append(counter_pos);
 	append(container_pos);
 	append(p_variable);
