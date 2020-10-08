@@ -177,7 +177,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	bt_xform_to.getOrigin() += bt_motion;
 
 	if ((bt_xform_to.getOrigin() - bt_xform_from.getOrigin()).fuzzyZero()) {
-		shape->destroy_bt_shape(btShape);
+		bulletdelete(btShape);
 		return false;
 	}
 
