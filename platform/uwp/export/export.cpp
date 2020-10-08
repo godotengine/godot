@@ -263,7 +263,7 @@ void AppxPackager::make_content_types(const String &p_path) {
 
 	for (int i = 0; i < file_metadata.size(); i++) {
 
-		String ext = file_metadata[i].name.get_extension();
+		String ext = file_metadata[i].name.get_extension().to_lower();
 
 		if (types.has(ext)) continue;
 
