@@ -193,6 +193,8 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 	} else if (B->base_type == RS::INSTANCE_GI_PROBE && A->base_type == RS::INSTANCE_LIGHT) {
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
 		return gi_probe->lights.insert(A);
+	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
+		RSG::storage->particles_add_collision(A->base, B);
 	}
 
 	return nullptr;
@@ -274,6 +276,8 @@ void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Insta
 		Set<Instance *>::Element *E = reinterpret_cast<Set<Instance *>::Element *>(udata);
 
 		gi_probe->lights.erase(E);
+	} else if (B->base_type == RS::INSTANCE_PARTICLES_COLLISION && A->base_type == RS::INSTANCE_PARTICLES) {
+		RSG::storage->particles_remove_collision(A->base, B);
 	}
 }
 
@@ -539,6 +543,9 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 				RSG::scene_render->reflection_probe_release_atlas_index(reflection_probe->instance);
 
 			} break;
+			case RS::INSTANCE_PARTICLES_COLLISION: {
+				heightfield_particle_colliders_update_list.erase(instance);
+			} break;
 			case RS::INSTANCE_GI_PROBE: {
 				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
 
@@ -699,6 +706,12 @@ void RenderingServerScene::instance_set_visible(RID p_instance, bool p_visible) 
 		case RS::INSTANCE_GI_PROBE: {
 			if (instance->octree_id && instance->scenario) {
 				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << RS::INSTANCE_GI_PROBE, p_visible ? (RS::INSTANCE_GEOMETRY_MASK | (1 << RS::INSTANCE_LIGHT)) : 0);
+			}
+
+		} break;
+		case RS::INSTANCE_PARTICLES_COLLISION: {
+			if (instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << RS::INSTANCE_PARTICLES_COLLISION, p_visible ? (1 << RS::INSTANCE_PARTICLES) : 0);
 			}
 
 		} break;
@@ -1026,6 +1039,13 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		RSG::storage->particles_set_emission_transform(p_instance->base, p_instance->transform);
 	}
 
+	if (p_instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
+		//remove materials no longer used and un-own them
+		if (RSG::storage->particles_collision_is_heightfield(p_instance->base)) {
+			heightfield_particle_colliders_update_list.insert(p_instance);
+		}
+	}
+
 	if (p_instance->aabb.has_no_surface()) {
 		return;
 	}
@@ -1082,6 +1102,11 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 
 		if (p_instance->base_type == RS::INSTANCE_LIGHT || p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE || p_instance->base_type == RS::INSTANCE_DECAL || p_instance->base_type == RS::INSTANCE_LIGHTMAP) {
 			pairable_mask = p_instance->visible ? RS::INSTANCE_GEOMETRY_MASK : 0;
+			pairable = true;
+		}
+
+		if (p_instance->base_type == RS::INSTANCE_PARTICLES_COLLISION) {
+			pairable_mask = p_instance->visible ? (1 << RS::INSTANCE_PARTICLES) : 0;
 			pairable = true;
 		}
 
@@ -1144,6 +1169,10 @@ void RenderingServerScene::_update_instance_aabb(Instance *p_instance) {
 			} else {
 				new_aabb = RSG::storage->particles_get_aabb(p_instance->base);
 			}
+
+		} break;
+		case RenderingServer::INSTANCE_PARTICLES_COLLISION: {
+			new_aabb = RSG::storage->particles_collision_get_aabb(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_LIGHT: {
@@ -2676,6 +2705,27 @@ void RenderingServerScene::render_probes() {
 		gi_probe_update_list.remove(gi_probe);
 
 		gi_probe = next;
+	}
+}
+
+void RenderingServerScene::render_particle_colliders() {
+	while (heightfield_particle_colliders_update_list.front()) {
+		Instance *hfpc = heightfield_particle_colliders_update_list.front()->get();
+
+		if (hfpc->scenario && hfpc->base_type == RS::INSTANCE_PARTICLES_COLLISION && RSG::storage->particles_collision_is_heightfield(hfpc->base)) {
+			//update heightfield
+			int cull_count = hfpc->scenario->octree.cull_aabb(hfpc->transformed_aabb, instance_cull_result, MAX_INSTANCE_CULL); //@TODO: cull mask missing
+			for (int i = 0; i < cull_count; i++) {
+				Instance *instance = instance_cull_result[i];
+				if (!instance->visible || !((1 << instance->base_type) & (RS::INSTANCE_GEOMETRY_MASK & (~(1 << RS::INSTANCE_PARTICLES))))) { //all but particles to avoid self collision
+					cull_count--;
+					SWAP(instance_cull_result[i], instance_cull_result[cull_count]);
+				}
+			}
+
+			RSG::scene_render->render_particle_collider_heightfield(hfpc->base, hfpc->transform, (RasterizerScene::InstanceBase **)instance_cull_result, cull_count);
+		}
+		heightfield_particle_colliders_update_list.erase(heightfield_particle_colliders_update_list.front());
 	}
 }
 

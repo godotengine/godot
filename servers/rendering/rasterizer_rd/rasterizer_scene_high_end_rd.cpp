@@ -2018,6 +2018,39 @@ void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **
 	}
 }
 
+void RasterizerSceneHighEndRD::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, InstanceBase **p_cull_result, int p_cull_count) {
+	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
+
+	_update_render_base_uniform_set();
+
+	render_pass++;
+
+	scene_state.ubo.dual_paraboloid_side = 0;
+
+	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_cam_projection.get_z_far(), false, false);
+
+	render_list.clear();
+
+	PassMode pass_mode = PASS_MODE_SHADOW;
+
+	_fill_render_list(p_cull_result, p_cull_count, pass_mode);
+
+	_setup_view_dependant_uniform_set(RID(), RID(), nullptr, 0);
+
+	RENDER_TIMESTAMP("Render Collider Heightield");
+
+	render_list.sort_by_key(false);
+
+	_fill_instances(render_list.elements, render_list.element_count, true);
+
+	{
+		//regular forward for now
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_fb), render_list.elements, render_list.element_count, false, pass_mode, true, RID(), RID());
+		RD::get_singleton()->draw_list_end();
+	}
+}
+
 void RasterizerSceneHighEndRD::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering Material");
 
