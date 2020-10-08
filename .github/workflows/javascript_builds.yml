@@ -60,7 +60,7 @@ jobs:
           scons --version
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v6
+        uses: mymindstorm/setup-emsdk@v7
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
