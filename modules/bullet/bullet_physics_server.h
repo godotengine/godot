@@ -52,7 +52,7 @@ class BulletPhysicsServer3D : public PhysicsServer3D {
 
 	bool active = true;
 	char active_spaces_count = 0;
-	LocalVector<SpaceBullet *> active_spaces;
+	Vector<SpaceBullet *> active_spaces;
 
 	mutable RID_PtrOwner<SpaceBullet> space_owner;
 	mutable RID_PtrOwner<ShapeBullet> shape_owner;
