@@ -194,6 +194,7 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
@@ -450,6 +451,15 @@ void register_scene_types() {
 	ClassDB::register_class<LightmapProbe>();
 	ClassDB::register_virtual_class<Lightmapper>();
 	ClassDB::register_class<GPUParticles3D>();
+	ClassDB::register_virtual_class<GPUParticlesCollision3D>();
+	ClassDB::register_class<GPUParticlesCollisionBox>();
+	ClassDB::register_class<GPUParticlesCollisionSphere>();
+	ClassDB::register_class<GPUParticlesCollisionSDF>();
+	ClassDB::register_class<GPUParticlesCollisionHeightField>();
+	ClassDB::register_virtual_class<GPUParticlesAttractor3D>();
+	ClassDB::register_class<GPUParticlesAttractorBox>();
+	ClassDB::register_class<GPUParticlesAttractorSphere>();
+	ClassDB::register_class<GPUParticlesAttractorVectorField>();
 	ClassDB::register_class<CPUParticles3D>();
 	ClassDB::register_class<Position3D>();
 

@@ -475,6 +475,46 @@ private:
 	};
 
 	struct ParticlesFrameParams {
+		enum {
+			MAX_ATTRACTORS = 32,
+			MAX_COLLIDERS = 32,
+			MAX_3D_TEXTURES = 7
+		};
+
+		enum AttractorType {
+			ATTRACTOR_TYPE_SPHERE,
+			ATTRACTOR_TYPE_BOX,
+			ATTRACTOR_TYPE_VECTOR_FIELD,
+		};
+
+		struct Attractor {
+			float transform[16];
+			float extents[3]; //exents or radius
+			uint32_t type;
+
+			uint32_t texture_index; //texture index for vector field
+			float strength;
+			float attenuation;
+			float directionality;
+		};
+
+		enum CollisionType {
+			COLLISION_TYPE_SPHERE,
+			COLLISION_TYPE_BOX,
+			COLLISION_TYPE_SDF,
+			COLLISION_TYPE_HEIGHT_FIELD
+		};
+
+		struct Collider {
+			float transform[16];
+			float extents[3]; //exents or radius
+			uint32_t type;
+
+			uint32_t texture_index; //texture index for vector field
+			float scale;
+			uint32_t pad[2];
+		};
+
 		uint32_t emitting;
 		float system_phase;
 		float prev_system_phase;
@@ -486,9 +526,14 @@ private:
 		float delta;
 
 		uint32_t random_seed;
-		uint32_t pad[3];
+		uint32_t attractor_count;
+		uint32_t collider_count;
+		float particle_size;
 
 		float emission_transform[16];
+
+		Attractor attractors[MAX_ATTRACTORS];
+		Collider colliders[MAX_COLLIDERS];
 	};
 
 	struct ParticleEmissionBufferData {
@@ -536,6 +581,11 @@ private:
 		RID particles_material_uniform_set;
 		RID particles_copy_uniform_set;
 		RID particles_transforms_buffer_uniform_set;
+		RID collision_textures_uniform_set;
+
+		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
+		uint32_t collision_3d_textures_used = 0;
+		RID collision_heightmap_texture;
 
 		RID particles_sort_buffer;
 		RID particles_sort_uniform_set;
@@ -557,6 +607,7 @@ private:
 		int fixed_fps;
 		bool fractional_delta;
 		float frame_remainder;
+		float collision_base_size;
 
 		bool clear;
 
@@ -568,6 +619,8 @@ private:
 
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
+
+		Set<RasterizerScene::InstanceBase *> collisions;
 
 		Particles() :
 				inactive(true),
@@ -590,6 +643,7 @@ private:
 				fixed_fps(0),
 				fractional_delta(false),
 				frame_remainder(0),
+				collision_base_size(0.01),
 				clear(true) {
 		}
 
@@ -703,6 +757,28 @@ private:
 	void update_particles();
 
 	mutable RID_Owner<Particles> particles_owner;
+
+	/* Particles Collision */
+
+	struct ParticlesCollision {
+		RS::ParticlesCollisionType type = RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT;
+		uint32_t cull_mask = 0xFFFFFFFF;
+		float radius = 1.0;
+		Vector3 extents = Vector3(1, 1, 1);
+		float attractor_strength = 1.0;
+		float attractor_attenuation = 1.0;
+		float attractor_directionality = 0.0;
+		RID field_texture;
+		RID heightfield_texture;
+		RID heightfield_fb;
+		Size2i heightfield_fb_size;
+
+		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<ParticlesCollision> particles_collision_owner;
 
 	/* Skeleton */
 
@@ -1691,6 +1767,7 @@ public:
 	void particles_set_process_material(RID p_particles, RID p_material);
 	void particles_set_fixed_fps(RID p_particles, int p_fps);
 	void particles_set_fractional_delta(RID p_particles, bool p_enable);
+	void particles_set_collision_base_size(RID p_particles, float p_size);
 	void particles_restart(RID p_particles);
 	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles);
@@ -1747,6 +1824,27 @@ public:
 
 		return particles->particles_transforms_buffer_uniform_set;
 	}
+
+	virtual void particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance);
+	virtual void particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance);
+
+	/* PARTICLES COLLISION */
+
+	virtual RID particles_collision_create();
+	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type);
+	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask);
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius); //for spheres
+	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents); //for non-spheres
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength);
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality);
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve);
+	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture); //for SDF and vector field, heightfield is dynamic
+	virtual void particles_collision_height_field_update(RID p_particles_collision); //for SDF and vector field
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution); //for SDF and vector field
+	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const;
+	virtual Vector3 particles_collision_get_extents(RID p_particles_collision) const;
+	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const;
+	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 
 	/* GLOBAL VARIABLES API */
 

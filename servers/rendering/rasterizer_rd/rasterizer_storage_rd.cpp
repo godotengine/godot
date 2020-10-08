@@ -3333,6 +3333,10 @@ void RasterizerStorageRD::_particles_free_data(Particles *particles) {
 	particles->particles_transforms_buffer_uniform_set = RID();
 	particles->particle_buffer = RID();
 
+	if (RD::get_singleton()->uniform_set_is_valid(particles->collision_textures_uniform_set)) {
+		RD::get_singleton()->free(particles->collision_textures_uniform_set);
+	}
+
 	if (particles->particles_sort_buffer.is_valid()) {
 		RD::get_singleton()->free(particles->particles_sort_buffer);
 		particles->particles_sort_buffer = RID();
@@ -3452,6 +3456,13 @@ void RasterizerStorageRD::particles_set_fractional_delta(RID p_particles, bool p
 	ERR_FAIL_COND(!particles);
 
 	particles->fractional_delta = p_enable;
+}
+
+void RasterizerStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->collision_base_size = p_size;
 }
 
 void RasterizerStorageRD::particles_set_process_material(RID p_particles, RID p_material) {
@@ -3646,6 +3657,22 @@ RID RasterizerStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pas
 	return particles->draw_passes[p_pass];
 }
 
+void RasterizerStorageRD::particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	ERR_FAIL_COND(p_instance->base_type != RS::INSTANCE_PARTICLES_COLLISION);
+
+	particles->collisions.insert(p_instance);
+}
+
+void RasterizerStorageRD::particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->collisions.erase(p_instance);
+}
+
 void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_delta) {
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
@@ -3729,6 +3756,195 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 
 	frame_params.cycle = p_particles->cycle_number;
 
+	{ //collision and attractors
+
+		frame_params.collider_count = 0;
+		frame_params.attractor_count = 0;
+		frame_params.particle_size = p_particles->collision_base_size;
+
+		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
+		RID collision_heightmap_texture;
+
+		Transform to_particles;
+		if (p_particles->use_local_coords) {
+			to_particles = p_particles->emission_transform.affine_inverse();
+		}
+		uint32_t collision_3d_textures_used = 0;
+		for (const Set<RasterizerScene::InstanceBase *>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
+			ParticlesCollision *pc = particles_collision_owner.getornull(E->get()->base);
+			Transform to_collider = E->get()->transform;
+			if (p_particles->use_local_coords) {
+				to_collider = to_particles * to_collider;
+			}
+			Vector3 scale = to_collider.basis.get_scale();
+			to_collider.basis.orthonormalize();
+
+			if (pc->type <= RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
+				//attractor
+				if (frame_params.attractor_count >= ParticlesFrameParams::MAX_ATTRACTORS) {
+					continue;
+				}
+
+				ParticlesFrameParams::Attractor &attr = frame_params.attractors[frame_params.attractor_count];
+
+				store_transform(to_collider, attr.transform);
+				attr.strength = pc->attractor_strength;
+				attr.attenuation = pc->attractor_attenuation;
+				attr.directionality = pc->attractor_directionality;
+
+				switch (pc->type) {
+					case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT: {
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_SPHERE;
+						float radius = pc->radius;
+						radius *= (scale.x + scale.y + scale.z) / 3.0;
+						attr.extents[0] = radius;
+						attr.extents[1] = radius;
+						attr.extents[2] = radius;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_BOX_ATTRACT: {
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_BOX;
+						Vector3 extents = pc->extents * scale;
+						attr.extents[0] = extents.x;
+						attr.extents[1] = extents.y;
+						attr.extents[2] = extents.z;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
+						if (collision_3d_textures_used >= ParticlesFrameParams::MAX_3D_TEXTURES) {
+							continue;
+						}
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_VECTOR_FIELD;
+						Vector3 extents = pc->extents * scale;
+						attr.extents[0] = extents.x;
+						attr.extents[1] = extents.y;
+						attr.extents[2] = extents.z;
+						attr.texture_index = collision_3d_textures_used;
+
+						collision_3d_textures[collision_3d_textures_used] = pc->field_texture;
+						collision_3d_textures_used++;
+					} break;
+					default: {
+					}
+				}
+
+				frame_params.attractor_count++;
+			} else {
+				//collider
+				if (frame_params.collider_count >= ParticlesFrameParams::MAX_COLLIDERS) {
+					continue;
+				}
+
+				ParticlesFrameParams::Collider &col = frame_params.colliders[frame_params.collider_count];
+
+				store_transform(to_collider, col.transform);
+				switch (pc->type) {
+					case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+						col.type = ParticlesFrameParams::COLLISION_TYPE_SPHERE;
+						float radius = pc->radius;
+						radius *= (scale.x + scale.y + scale.z) / 3.0;
+						col.extents[0] = radius;
+						col.extents[1] = radius;
+						col.extents[2] = radius;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_BOX_COLLIDE: {
+						col.type = ParticlesFrameParams::COLLISION_TYPE_BOX;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
+						if (collision_3d_textures_used >= ParticlesFrameParams::MAX_3D_TEXTURES) {
+							continue;
+						}
+						col.type = ParticlesFrameParams::COLLISION_TYPE_SDF;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+						col.texture_index = collision_3d_textures_used;
+						col.scale = (scale.x + scale.y + scale.z) * 0.333333333333; //non uniform scale non supported
+
+						collision_3d_textures[collision_3d_textures_used] = pc->field_texture;
+						collision_3d_textures_used++;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
+						if (collision_heightmap_texture != RID()) { //already taken
+							continue;
+						}
+
+						col.type = ParticlesFrameParams::COLLISION_TYPE_HEIGHT_FIELD;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+						collision_heightmap_texture = pc->heightfield_texture;
+					} break;
+					default: {
+					}
+				}
+
+				frame_params.collider_count++;
+			}
+		}
+
+		bool different = false;
+		if (collision_3d_textures_used == p_particles->collision_3d_textures_used) {
+			for (int i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+				if (p_particles->collision_3d_textures[i] != collision_3d_textures[i]) {
+					different = true;
+					break;
+				}
+			}
+		}
+
+		if (collision_heightmap_texture != p_particles->collision_heightmap_texture) {
+			different = true;
+		}
+
+		bool uniform_set_valid = RD::get_singleton()->uniform_set_is_valid(p_particles->collision_textures_uniform_set);
+
+		if (different || !uniform_set_valid) {
+			if (uniform_set_valid) {
+				RD::get_singleton()->free(p_particles->collision_textures_uniform_set);
+			}
+
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 0;
+				for (uint32_t i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+					RID rd_tex;
+					if (i < collision_3d_textures_used) {
+						Texture *t = texture_owner.getornull(collision_3d_textures[i]);
+						if (t && t->type == Texture::TYPE_3D) {
+							rd_tex = t->rd_texture;
+						}
+					}
+
+					if (rd_tex == RID()) {
+						rd_tex = default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE];
+					}
+					u.ids.push_back(rd_tex);
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 1;
+				if (collision_heightmap_texture.is_valid()) {
+					u.ids.push_back(collision_heightmap_texture);
+				} else {
+					u.ids.push_back(default_rd_textures[DEFAULT_RD_TEXTURE_BLACK]);
+				}
+				uniforms.push_back(u);
+			}
+			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
+		}
+	}
+
 	ParticlesShader::PushConstant push_constant;
 
 	push_constant.clear = p_particles->clear;
@@ -3783,8 +3999,10 @@ void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_del
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, m->shader_data->pipeline);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles_shader.base_uniform_set, 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->particles_material_uniform_set, 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->collision_textures_uniform_set, 2);
+
 	if (m->uniform_set.is_valid()) {
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, m->uniform_set, 2);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, m->uniform_set, 3);
 	}
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));
@@ -4190,7 +4408,7 @@ void RasterizerStorageRD::ParticlesMaterialData::update_parameters(const Map<Str
 		}
 	}
 
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, base_singleton->particles_shader.shader.version_get_shader(shader_data->version, 0), 2);
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, base_singleton->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
 }
 
 RasterizerStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
@@ -4211,6 +4429,171 @@ RasterizerStorageRD::MaterialData *RasterizerStorageRD::_create_particles_materi
 	return material_data;
 }
 ////////
+
+/* PARTICLES COLLISION API */
+
+RID RasterizerStorageRD::particles_collision_create() {
+	return particles_collision_owner.make_rid(ParticlesCollision());
+}
+
+RID RasterizerStorageRD::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, RID());
+	ERR_FAIL_COND_V(particles_collision->type != RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, RID());
+
+	if (particles_collision->heightfield_texture == RID()) {
+		//create
+		int resolutions[RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
+		Size2i size;
+		if (particles_collision->extents.x > particles_collision->extents.z) {
+			size.x = resolutions[particles_collision->heightfield_resolution];
+			size.y = int32_t(particles_collision->extents.z / particles_collision->extents.x * size.x);
+		} else {
+			size.y = resolutions[particles_collision->heightfield_resolution];
+			size.x = int32_t(particles_collision->extents.x / particles_collision->extents.z * size.y);
+		}
+
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
+		tf.width = size.x;
+		tf.height = size.y;
+		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+		particles_collision->heightfield_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+		Vector<RID> fb_tex;
+		fb_tex.push_back(particles_collision->heightfield_texture);
+		particles_collision->heightfield_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+		particles_collision->heightfield_fb_size = size;
+	}
+
+	return particles_collision->heightfield_fb;
+}
+
+void RasterizerStorageRD::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	if (p_type == particles_collision->type) {
+		return;
+	}
+
+	if (particles_collision->heightfield_texture.is_valid()) {
+		RD::get_singleton()->free(particles_collision->heightfield_texture);
+		particles_collision->heightfield_texture = RID();
+	}
+	particles_collision->type = p_type;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+	particles_collision->cull_mask = p_cull_mask;
+}
+
+void RasterizerStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->radius = p_radius;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->extents = p_extents;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_strength = p_strength;
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_directionality = p_directionality;
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_attenuation = p_curve;
+}
+
+void RasterizerStorageRD::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->field_texture = p_texture;
+}
+
+void RasterizerStorageRD::particles_collision_height_field_update(RID p_particles_collision) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	if (particles_collision->heightfield_resolution == p_resolution) {
+		return;
+	}
+
+	particles_collision->heightfield_resolution = p_resolution;
+
+	if (particles_collision->heightfield_texture.is_valid()) {
+		RD::get_singleton()->free(particles_collision->heightfield_texture);
+		particles_collision->heightfield_texture = RID();
+	}
+}
+
+AABB RasterizerStorageRD::particles_collision_get_aabb(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, AABB());
+
+	switch (particles_collision->type) {
+		case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT:
+		case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+			AABB aabb;
+			aabb.position = -Vector3(1, 1, 1) * particles_collision->radius;
+			aabb.size = Vector3(2, 2, 2) * particles_collision->radius;
+			return aabb;
+		}
+		default: {
+			AABB aabb;
+			aabb.position = -particles_collision->extents;
+			aabb.size = particles_collision->extents * 2;
+			return aabb;
+		}
+	}
+
+	return AABB();
+}
+
+Vector3 RasterizerStorageRD::particles_collision_get_extents(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, Vector3());
+	return particles_collision->extents;
+}
+
+bool RasterizerStorageRD::particles_collision_is_heightfield(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, false);
+	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
+
 /* SKELETON API */
 
 RID RasterizerStorageRD::skeleton_create() {
@@ -4680,6 +5063,9 @@ void RasterizerStorageRD::reflection_probe_set_extents(RID p_probe, const Vector
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
+	if (reflection_probe->extents == p_extents) {
+		return;
+	}
 	reflection_probe->extents = p_extents;
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
@@ -5797,6 +6183,9 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	} else if (particles_owner.owns(p_base)) {
 		Particles *p = particles_owner.getornull(p_base);
 		p_instance->update_dependency(&p->instance_dependency);
+	} else if (particles_collision_owner.owns(p_base)) {
+		ParticlesCollision *pc = particles_collision_owner.getornull(p_base);
+		p_instance->update_dependency(&pc->instance_dependency);
 	}
 }
 
@@ -5831,6 +6220,9 @@ RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (particles_owner.owns(p_rid)) {
 		return RS::INSTANCE_PARTICLES;
+	}
+	if (particles_collision_owner.owns(p_rid)) {
+		return RS::INSTANCE_PARTICLES_COLLISION;
 	}
 
 	return RS::INSTANCE_NONE;
@@ -6735,8 +7127,6 @@ void RasterizerStorageRD::update_dirty_resources() {
 	_update_dirty_multimeshes();
 	_update_dirty_skeletons();
 	_update_decal_atlas();
-
-	update_particles();
 }
 
 bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
@@ -6871,6 +7261,14 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		_particles_free_data(particles);
 		particles->instance_dependency.instance_notify_deleted(p_rid);
 		particles_owner.free(p_rid);
+	} else if (particles_collision_owner.owns(p_rid)) {
+		ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_rid);
+
+		if (particles_collision->heightfield_texture.is_valid()) {
+			RD::get_singleton()->free(particles_collision->heightfield_texture);
+		}
+		particles_collision->instance_dependency.instance_notify_deleted(p_rid);
+		particles_collision_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -7379,14 +7777,19 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		actions.renames["RESTART_COLOR"] = "restart_color";
 		actions.renames["RESTART_CUSTOM"] = "restart_custom";
 		actions.renames["emit_particle"] = "emit_particle";
+		actions.renames["COLLIDED"] = "collided";
+		actions.renames["COLLISION_NORMAL"] = "collision_normal";
+		actions.renames["COLLISION_DEPTH"] = "collision_depth";
+		actions.renames["ATTRACTOR_FORCE"] = "attractor_force";
 
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
 		actions.render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+		actions.render_mode_defines["collision_use_scale"] = "#define USE_COLLISON_SCALE\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
-		actions.texture_layout_set = 2;
+		actions.texture_layout_set = 3;
 		actions.base_uniform_string = "material.";
 		actions.base_varying_index = 10;
 

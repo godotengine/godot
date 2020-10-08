@@ -73,13 +73,15 @@ class ThreadWorkPool {
 
 	ThreadData *threads = nullptr;
 	uint32_t thread_count = 0;
+	BaseWork *current_work = nullptr;
 
 	static void _thread_function(ThreadData *p_thread);
 
 public:
 	template <class C, class M, class U>
-	void do_work(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
+	void begin_work(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
 		ERR_FAIL_COND(!threads); //never initialized
+		ERR_FAIL_COND(current_work != nullptr);
 
 		index.store(0);
 
@@ -90,16 +92,37 @@ public:
 		w->index = &index;
 		w->max_elements = p_elements;
 
+		current_work = w;
+
 		for (uint32_t i = 0; i < thread_count; i++) {
 			threads[i].work = w;
 			threads[i].start.post();
 		}
+	}
+
+	bool is_working() const {
+		return current_work != nullptr;
+	}
+
+	uint32_t get_work_index() const {
+		return index;
+	}
+
+	void end_work() {
+		ERR_FAIL_COND(current_work == nullptr);
 		for (uint32_t i = 0; i < thread_count; i++) {
 			threads[i].completed.wait();
 			threads[i].work = nullptr;
 		}
 
-		memdelete(w);
+		memdelete(current_work);
+		current_work = nullptr;
+	}
+
+	template <class C, class M, class U>
+	void do_work(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
+		begin_work(p_elements, p_instance, p_method, p_userdata);
+		end_work();
 	}
 
 	void init(int p_thread_count = -1);
