@@ -737,6 +737,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	XDestroyWindow(x11_display, wd.x11_window);
 	if (wd.xic) {
 		XDestroyIC(wd.xic);
+		wd.xic = nullptr;
 	}
 
 	windows.erase(p_id);
@@ -2784,6 +2785,13 @@ void DisplayServerX11::process_events() {
 
 				wd.focused = true;
 
+				if (wd.xic) {
+					// Block events polling while changing input focus
+					// because it triggers some event polling internally.
+					MutexLock mutex_lock(events_mutex);
+					XSetICFocus(wd.xic);
+				}
+
 				// Keep track of focus order for overlapping windows.
 				static unsigned int focus_order = 0;
 				wd.focus_order = ++focus_order;
@@ -2812,12 +2820,6 @@ void DisplayServerX11::process_events() {
 					XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
 				}*/
 #endif
-				if (wd.xic) {
-					// Block events polling while changing input focus
-					// because it triggers some event polling internally.
-					MutexLock mutex_lock(events_mutex);
-					XSetICFocus(wd.xic);
-				}
 
 				if (!app_focused) {
 					if (OS::get_singleton()->get_main_loop()) {
@@ -2833,6 +2835,13 @@ void DisplayServerX11::process_events() {
 				WindowData &wd = windows[window_id];
 
 				wd.focused = false;
+
+				if (wd.xic) {
+					// Block events polling while changing input focus
+					// because it triggers some event polling internally.
+					MutexLock mutex_lock(events_mutex);
+					XUnsetICFocus(wd.xic);
+				}
 
 				Input::get_singleton()->release_pressed_events();
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
@@ -2864,12 +2873,6 @@ void DisplayServerX11::process_events() {
 				}
 				xi.state.clear();
 #endif
-				if (wd.xic) {
-					// Block events polling while changing input focus
-					// because it triggers some event polling internally.
-					MutexLock mutex_lock(events_mutex);
-					XUnsetICFocus(wd.xic);
-				}
 			} break;
 
 			case ConfigureNotify: {
@@ -4044,11 +4047,13 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 #endif
 
-		if (E->get().xic) {
-			XDestroyIC(E->get().xic);
+		WindowData &wd = E->get();
+		if (wd.xic) {
+			XDestroyIC(wd.xic);
+			wd.xic = nullptr;
 		}
-		XUnmapWindow(x11_display, E->get().x11_window);
-		XDestroyWindow(x11_display, E->get().x11_window);
+		XUnmapWindow(x11_display, wd.x11_window);
+		XDestroyWindow(x11_display, wd.x11_window);
 	}
 
 	//destroy drivers
