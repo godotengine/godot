@@ -241,6 +241,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space) override;
 
 	virtual void dispatch_callbacks() override;
+	virtual void flush_dirty() override;
 	virtual void pre_process() override;
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch_space_override_modificator();

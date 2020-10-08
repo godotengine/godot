@@ -334,6 +334,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 		space->register_collision_object(this);
 		reload_body();
 		space->add_to_flush_queue(this);
+		space->add_to_dirty_queue(this);
 	}
 }
 
@@ -362,14 +363,16 @@ void RigidBodyBullet::dispatch_callbacks() {
 	previousActiveState = btBody->isActive();
 }
 
-void RigidBodyBullet::pre_process() {
-	RigidCollisionObjectBullet::pre_process();
+void RigidBodyBullet::flush_dirty() {
+	RigidCollisionObjectBullet::flush_dirty();
 
 	if (isScratchedSpaceOverrideModificator || 0 < countGravityPointSpaces) {
 		isScratchedSpaceOverrideModificator = false;
 		reload_space_override_modificator();
 	}
+}
 
+void RigidBodyBullet::pre_process() {
 	if (is_active()) {
 		/// Lock axis
 		btBody->setLinearVelocity(btBody->getLinearVelocity() * btBody->getLinearFactor());
@@ -393,6 +396,9 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 
 void RigidBodyBullet::scratch_space_override_modificator() {
 	isScratchedSpaceOverrideModificator = true;
+	if (likely(space)) {
+		space->add_to_dirty_queue(this);
+	}
 }
 
 void RigidBodyBullet::do_reload_collision_filters() {

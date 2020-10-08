@@ -139,6 +139,7 @@ protected:
 public:
 	bool is_in_world = false;
 	bool is_in_flush_queue = false;
+	bool is_in_dirty_queue = false;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -171,20 +172,10 @@ public:
 	bool has_collision_exception(const CollisionObjectBullet *p_otherCollisionObject) const;
 	_FORCE_INLINE_ const VSet<RID> &get_exceptions() const { return exceptions; }
 
-	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
-		if (collisionLayer != p_layer) {
-			collisionLayer = p_layer;
-			needs_collision_filters_reload = true;
-		}
-	}
+	void set_collision_layer(uint32_t p_layer);
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collisionLayer; }
 
-	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
-		if (collisionMask != p_mask) {
-			collisionMask = p_mask;
-			needs_collision_filters_reload = true;
-		}
-	}
+	void set_collision_mask(uint32_t p_mask);
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collisionMask; }
 
 	virtual void do_reload_collision_filters() = 0;
@@ -207,6 +198,7 @@ public:
 	virtual void on_collision_checker_end() = 0;
 
 	virtual void dispatch_callbacks();
+	virtual void flush_dirty();
 	virtual void pre_process();
 
 	void set_collision_enabled(bool p_enabled);
@@ -264,7 +256,7 @@ public:
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
-	virtual void pre_process() override;
+	virtual void flush_dirty() override;
 
 	virtual void shape_changed(int p_shape_index) override;
 	virtual void reload_shapes() override;
