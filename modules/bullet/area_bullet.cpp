@@ -141,11 +141,11 @@ void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) 
 	}
 }
 
-int AreaBullet::find_overlapping_object(CollisionObjectBullet *p_colObj) {
-	const int size = overlappingObjects.size();
-	for (int i = 0; i < size; ++i) {
+int AreaBullet::find_overlapping_object(CollisionObjectBullet *p_colObj, uint32_t p_search_from) {
+	for (int i = p_search_from; i < overlappingObjects.size(); ++i) {
 		if (overlappingObjects[i].object == p_colObj) {
-			return i;
+			SWAP(overlappingObjects.write[p_search_from], overlappingObjects.write[i]);
+			return p_search_from;
 		}
 	}
 	return -1;
