@@ -80,6 +80,9 @@ def configure(env):
     env["ENV"] = os.environ
     vc_base_path = os.environ["VCTOOLSINSTALLDIR"] if "VCTOOLSINSTALLDIR" in os.environ else os.environ["VCINSTALLDIR"]
 
+    # Force to use Unicode encoding
+    env.Append(MSVC_FLAGS=["/utf-8"])
+
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")
     env.Prepend(CPPPATH=[angle_root + "/include"])
