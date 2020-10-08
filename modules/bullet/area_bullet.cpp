@@ -65,11 +65,14 @@ AreaBullet::~AreaBullet() {
 }
 
 void AreaBullet::dispatch_callbacks() {
-	RigidCollisionObjectBullet::dispatch_callbacks();
+	if (!isScratched) {
+		return;
+	}
+	isScratched = false;
 
 	// Reverse order because I've to remove EXIT objects
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		OverlappingObjectData &otherObj = overlappingObjects[i];
+		OverlappingObjectData &otherObj = overlappingObjects.write[i];
 
 		switch (otherObj.state) {
 			case OVERLAP_STATE_ENTER:
@@ -109,9 +112,10 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3
 }
 
 void AreaBullet::scratch() {
-	if (space != nullptr) {
-		space->add_to_pre_flush_queue(this);
+	if (isScratched) {
+		return;
 	}
+	isScratched = true;
 }
 
 void AreaBullet::clear_overlaps(bool p_notify) {
@@ -169,9 +173,9 @@ void AreaBullet::do_reload_body() {
 
 void AreaBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
-
 	if (space) {
 		clear_overlaps(false);
+		isScratched = false;
 
 		// Remove this object form the physics world
 		space->unregister_collision_object(this);
@@ -183,11 +187,10 @@ void AreaBullet::set_space(SpaceBullet *p_space) {
 	if (space) {
 		space->register_collision_object(this);
 		reload_body();
-		scratch();
 	}
 }
 
-void AreaBullet::do_reload_collision_filters() {
+void AreaBullet::on_collision_filters_change() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
@@ -201,13 +204,13 @@ void AreaBullet::add_overlap(CollisionObjectBullet *p_otherObject) {
 
 void AreaBullet::put_overlap_as_exit(int p_index) {
 	scratch();
-	overlappingObjects[p_index].state = OVERLAP_STATE_EXIT;
+	overlappingObjects.write[p_index].state = OVERLAP_STATE_EXIT;
 }
 
 void AreaBullet::put_overlap_as_inside(int p_index) {
 	// This check is required to be sure this body was inside
 	if (OVERLAP_STATE_DIRTY == overlappingObjects[p_index].state) {
-		overlappingObjects[p_index].state = OVERLAP_STATE_INSIDE;
+		overlappingObjects.write[p_index].state = OVERLAP_STATE_INSIDE;
 	}
 }
 
