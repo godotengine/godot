@@ -30,6 +30,15 @@
 				This helper creates a [StaticBody] child node with a [ConcavePolygonShape] collision shape calculated from the mesh geometry. It's mainly used for testing.
 			</description>
 		</method>
+		<method name="get_active_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<argument index="0" name="surface" type="int">
+			</argument>
+			<description>
+				Returns the [Material] that will be used by the [Mesh] when drawing. This can return the [member GeometryInstance.material_override], the surface override [Material] defined in this [MeshInstance], or the surface [Material] defined in the [Mesh]. For example, if [member GeometryInstance.material_override] is used, all surfaces will return the override material.
+			</description>
+		</method>
 		<method name="get_surface_material" qualifiers="const">
 			<return type="Material">
 			</return>
@@ -67,6 +76,10 @@
 		</member>
 		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
 			Sets the skin to be used by this instance.
+		</member>
+		<member name="software_skinning_transform_normals" type="bool" setter="set_software_skinning_transform_normals" getter="is_software_skinning_transform_normals_enabled" default="true">
+			If [code]true[/code], normals are transformed when software skinning is used. Set to [code]false[/code] when normals are not needed for better performance.
+			See [member ProjectSettings.rendering/quality/skinning/software_skinning_fallback] for details about how software skinning is enabled.
 		</member>
 	</members>
 	<constants>

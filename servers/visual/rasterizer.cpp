@@ -46,3 +46,11 @@ RasterizerStorage::RasterizerStorage() {
 
 	base_singleton = this;
 }
+
+bool RasterizerStorage::material_uses_tangents(RID p_material) {
+	return false;
+}
+
+bool RasterizerStorage::material_uses_ensure_correct_normals(RID p_material) {
+	return false;
+}
