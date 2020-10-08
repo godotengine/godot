@@ -1093,7 +1093,6 @@ private:
 
 	const btCollisionObject *self_collision_object;
 	uint32_t collision_layer = 0;
-	uint32_t collision_mask = 0;
 
 	struct CompoundLeafCallback : btDbvt::ICollide {
 	private:
@@ -1123,10 +1122,9 @@ public:
 	Vector<BroadphaseResult> results;
 
 public:
-	RecoverPenetrationBroadPhaseCallback(const btCollisionObject *p_self_collision_object, uint32_t p_collision_layer, uint32_t p_collision_mask, btVector3 p_aabb_min, btVector3 p_aabb_max) :
+	RecoverPenetrationBroadPhaseCallback(const btCollisionObject *p_self_collision_object, uint32_t p_collision_layer, btVector3 p_aabb_min, btVector3 p_aabb_max) :
 			self_collision_object(p_self_collision_object),
-			collision_layer(p_collision_layer),
-			collision_mask(p_collision_mask) {
+			collision_layer(p_collision_layer) {
 		bounds = btDbvtVolume::FromMM(p_aabb_min, p_aabb_max);
 	}
 
@@ -1135,7 +1133,7 @@ public:
 	virtual bool process(const btBroadphaseProxy *proxy) {
 		btCollisionObject *co = static_cast<btCollisionObject *>(proxy->m_clientObject);
 		if (co->getInternalType() <= btCollisionObject::CO_RIGID_BODY) {
-			if (self_collision_object != proxy->m_clientObject && GodotFilterCallback::test_collision_filters(collision_layer, collision_mask, proxy->m_collisionFilterGroup, proxy->m_collisionFilterMask)) {
+			if (self_collision_object != proxy->m_clientObject && (collision_layer & proxy->m_collisionFilterMask)) {
 				if (co->getCollisionShape()->isCompound()) {
 					const btCompoundShape *cs = static_cast<btCompoundShape *>(co->getCollisionShape());
 
@@ -1218,7 +1216,7 @@ bool SpaceBullet::recover_from_penetration(RigidBodyBullet *p_body, const btTran
 	}
 
 	// Perform broadphase test
-	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask(), aabb_min, aabb_max);
+	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), aabb_min, aabb_max);
 	dynamicsWorld->getBroadphase()->aabbTest(aabb_min, aabb_max, recover_broad_result);
 
 	bool penetration = false;
@@ -1409,7 +1407,7 @@ int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btT
 	}
 
 	// Perform broadphase test
-	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask(), aabb_min, aabb_max);
+	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), aabb_min, aabb_max);
 	dynamicsWorld->getBroadphase()->aabbTest(aabb_min, aabb_max, recover_broad_result);
 
 	int ray_count = 0;
