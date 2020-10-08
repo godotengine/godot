@@ -52,7 +52,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this peer is currently connected to a host, [code]false[/code] otherwise.
+				Returns [code]true[/code] if this peer is currently connected or is connecting to a host, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_no_delay">
