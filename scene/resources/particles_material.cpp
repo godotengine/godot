@@ -98,6 +98,9 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->sub_emitter_frequency = "sub_emitter_frequency";
 	shader_names->sub_emitter_amount_at_end = "sub_emitter_amount_at_end";
 	shader_names->sub_emitter_keep_velocity = "sub_emitter_keep_velocity";
+
+	shader_names->collision_friction = "collision_friction";
+	shader_names->collision_bounce = "collision_bounce";
 }
 
 void ParticlesMaterial::finish_shaders() {
@@ -135,6 +138,10 @@ void ParticlesMaterial::_update_shader() {
 	//must create a shader!
 
 	String code = "shader_type particles;\n";
+
+	if (collision_scale) {
+		code += "render_mode collision_use_scale;\n";
+	}
 
 	code += "uniform vec3 direction;\n";
 	code += "uniform float spread;\n";
@@ -245,6 +252,11 @@ void ParticlesMaterial::_update_shader() {
 	}
 	if (tex_parameters[PARAM_ANIM_OFFSET].is_valid()) {
 		code += "uniform sampler2D anim_offset_texture;\n";
+	}
+
+	if (collision_enabled) {
+		code += "uniform float collision_friction;\n";
+		code += "uniform float collision_bounce;\n";
 	}
 
 	//need a random function
@@ -476,6 +488,10 @@ void ParticlesMaterial::_update_shader() {
 		code += "		vec3 crossDiff = cross(normalize(diff), normalize(gravity));\n";
 		code += "		force += length(crossDiff) > 0.0 ? normalize(crossDiff) * ((tangent_accel + tex_tangent_accel) * mix(1.0, rand_from_seed(alt_seed), tangent_accel_random)) : vec3(0.0);\n";
 	}
+	if (attractor_interaction_enabled) {
+		code += "		force += ATTRACTOR_FORCE;\n\n";
+	}
+
 	code += "		// apply attractor forces\n";
 	code += "		VELOCITY += force * DELTA;\n";
 	code += "		// orbit velocity\n";
@@ -599,6 +615,13 @@ void ParticlesMaterial::_update_shader() {
 		code += "	VELOCITY.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
+	if (collision_enabled) {
+		code += "	if (COLLIDED) {\n";
+		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
+		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
+		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
+		code += "	}\n";
+	}
 	if (sub_emitter_mode != SUB_EMITTER_DISABLED) {
 		code += "	int emit_count = 0;\n";
 		switch (sub_emitter_mode) {
@@ -609,6 +632,7 @@ void ParticlesMaterial::_update_shader() {
 			} break;
 			case SUB_EMITTER_AT_COLLISION: {
 				//not implemented yet
+				code += "	if (COLLIDED) emit_count = 1;\n";
 			} break;
 			case SUB_EMITTER_AT_END: {
 				//not implemented yet
@@ -1072,6 +1096,51 @@ bool ParticlesMaterial::get_sub_emitter_keep_velocity() const {
 	return sub_emitter_keep_velocity;
 }
 
+void ParticlesMaterial::set_attractor_interaction_enabled(bool p_enable) {
+	attractor_interaction_enabled = p_enable;
+	_queue_shader_change();
+}
+
+bool ParticlesMaterial::is_attractor_interaction_enabled() const {
+	return attractor_interaction_enabled;
+}
+
+void ParticlesMaterial::set_collision_enabled(bool p_enabled) {
+	collision_enabled = p_enabled;
+	_queue_shader_change();
+}
+
+bool ParticlesMaterial::is_collision_enabled() const {
+	return collision_enabled;
+}
+
+void ParticlesMaterial::set_collision_use_scale(bool p_scale) {
+	collision_scale = p_scale;
+	_queue_shader_change();
+}
+
+bool ParticlesMaterial::is_collision_using_scale() const {
+	return collision_scale;
+}
+
+void ParticlesMaterial::set_collision_friction(float p_friction) {
+	collision_friction = p_friction;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->collision_friction, p_friction);
+}
+
+float ParticlesMaterial::get_collision_friction() const {
+	return collision_friction;
+}
+
+void ParticlesMaterial::set_collision_bounce(float p_bounce) {
+	collision_bounce = p_bounce;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->collision_bounce, p_bounce);
+}
+
+float ParticlesMaterial::get_collision_bounce() const {
+	return collision_bounce;
+}
+
 Shader::Mode ParticlesMaterial::get_shader_mode() const {
 	return Shader::MODE_PARTICLES;
 }
@@ -1142,6 +1211,21 @@ void ParticlesMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_sub_emitter_keep_velocity"), &ParticlesMaterial::get_sub_emitter_keep_velocity);
 	ClassDB::bind_method(D_METHOD("set_sub_emitter_keep_velocity", "enable"), &ParticlesMaterial::set_sub_emitter_keep_velocity);
+
+	ClassDB::bind_method(D_METHOD("set_attractor_interaction_enabled", "enabled"), &ParticlesMaterial::set_attractor_interaction_enabled);
+	ClassDB::bind_method(D_METHOD("is_attractor_interaction_enabled"), &ParticlesMaterial::is_attractor_interaction_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collision_enabled", "enabled"), &ParticlesMaterial::set_collision_enabled);
+	ClassDB::bind_method(D_METHOD("is_collision_enabled"), &ParticlesMaterial::is_collision_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collision_use_scale", "radius"), &ParticlesMaterial::set_collision_use_scale);
+	ClassDB::bind_method(D_METHOD("is_collision_using_scale"), &ParticlesMaterial::is_collision_using_scale);
+
+	ClassDB::bind_method(D_METHOD("set_collision_friction", "friction"), &ParticlesMaterial::set_collision_friction);
+	ClassDB::bind_method(D_METHOD("get_collision_friction"), &ParticlesMaterial::get_collision_friction);
+
+	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticlesMaterial::set_collision_bounce);
+	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticlesMaterial::get_collision_bounce);
 
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
@@ -1221,6 +1305,14 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sub_emitter_amount_at_end", PROPERTY_HINT_RANGE, "1,32,1"), "set_sub_emitter_amount_at_end", "get_sub_emitter_amount_at_end");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sub_emitter_keep_velocity"), "set_sub_emitter_keep_velocity", "get_sub_emitter_keep_velocity");
 
+	ADD_GROUP("Attractor Interaction", "attractor_interaction_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "attractor_interaction_enabled"), "set_attractor_interaction_enabled", "is_attractor_interaction_enabled");
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_scale"), "set_collision_use_scale", "is_collision_using_scale");
+
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_ORBIT_VELOCITY);
@@ -1282,6 +1374,12 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_sub_emitter_frequency(4);
 	set_sub_emitter_amount_at_end(1);
 	set_sub_emitter_keep_velocity(false);
+
+	set_attractor_interaction_enabled(true);
+	set_collision_enabled(true);
+	set_collision_bounce(0.0);
+	set_collision_friction(0.0);
+	set_collision_use_scale(false);
 
 	for (int i = 0; i < PARAM_MAX; i++) {
 		set_param_randomness(Parameter(i), 0);

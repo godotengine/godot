@@ -37,11 +37,7 @@
 /*
  TODO:
 -Path following
-*Manual emission
--Sub Emitters
--Attractors
 -Emitter positions deformable by bones
--Collision
 -Proper trails
 */
 
@@ -99,6 +95,9 @@ private:
 			uint32_t invalid_key : 1;
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
+			uint32_t attractor_enabled : 1;
+			uint32_t collision_enabled : 1;
+			uint32_t collision_scale : 1;
 		};
 
 		uint32_t key;
@@ -135,6 +134,9 @@ private:
 		mk.emission_shape = emission_shape;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
 		mk.sub_emitter = sub_emitter_mode;
+		mk.collision_enabled = collision_enabled;
+		mk.attractor_enabled = attractor_interaction_enabled;
+		mk.collision_scale = collision_scale;
 
 		return mk;
 	}
@@ -201,6 +203,9 @@ private:
 		StringName sub_emitter_frequency;
 		StringName sub_emitter_amount_at_end;
 		StringName sub_emitter_keep_velocity;
+
+		StringName collision_friction;
+		StringName collision_bounce;
 	};
 
 	static ShaderNames *shader_names;
@@ -243,6 +248,12 @@ private:
 	int sub_emitter_amount_at_end;
 	bool sub_emitter_keep_velocity;
 	//do not save emission points here
+
+	bool attractor_interaction_enabled;
+	bool collision_enabled;
+	bool collision_scale;
+	float collision_friction;
+	float collision_bounce;
 
 protected:
 	static void _bind_methods();
@@ -297,6 +308,21 @@ public:
 
 	void set_lifetime_randomness(float p_lifetime);
 	float get_lifetime_randomness() const;
+
+	void set_attractor_interaction_enabled(bool p_enable);
+	bool is_attractor_interaction_enabled() const;
+
+	void set_collision_enabled(bool p_enabled);
+	bool is_collision_enabled() const;
+
+	void set_collision_use_scale(bool p_scale);
+	bool is_collision_using_scale() const;
+
+	void set_collision_friction(float p_friction);
+	float get_collision_friction() const;
+
+	void set_collision_bounce(float p_bounce);
+	float get_collision_bounce() const;
 
 	static void init_shaders();
 	static void finish_shaders();

@@ -65,6 +65,7 @@ private:
 	int fixed_fps;
 	bool fractional_delta;
 	NodePath sub_emitter;
+	float collision_base_size;
 
 	Ref<Material> process_material;
 
@@ -94,6 +95,7 @@ public:
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
 	void set_speed_scale(float p_scale);
+	void set_collision_base_size(float p_ratio);
 
 	bool is_emitting() const;
 	int get_amount() const;
@@ -106,6 +108,7 @@ public:
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
 	float get_speed_scale() const;
+	float get_collision_base_size() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;

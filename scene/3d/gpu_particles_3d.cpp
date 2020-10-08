@@ -124,6 +124,11 @@ void GPUParticles3D::set_speed_scale(float p_scale) {
 	RS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
+void GPUParticles3D::set_collision_base_size(float p_size) {
+	collision_base_size = p_size;
+	RS::get_singleton()->particles_set_collision_base_size(particles, p_size);
+}
+
 bool GPUParticles3D::is_emitting() const {
 	return RS::get_singleton()->particles_get_emitting(particles);
 }
@@ -166,6 +171,10 @@ Ref<Material> GPUParticles3D::get_process_material() const {
 
 float GPUParticles3D::get_speed_scale() const {
 	return speed_scale;
+}
+
+float GPUParticles3D::get_collision_base_size() const {
+	return collision_base_size;
 }
 
 void GPUParticles3D::set_draw_order(DrawOrder p_order) {
@@ -381,6 +390,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &GPUParticles3D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_process_material", "material"), &GPUParticles3D::set_process_material);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &GPUParticles3D::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles3D::set_collision_base_size);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles3D::get_amount);
@@ -395,6 +405,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &GPUParticles3D::get_fractional_delta);
 	ClassDB::bind_method(D_METHOD("get_process_material"), &GPUParticles3D::get_process_material);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &GPUParticles3D::get_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_collision_base_size"), &GPUParticles3D::get_collision_base_size);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &GPUParticles3D::set_draw_order);
 
@@ -426,6 +437,8 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_base_size", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater"), "set_collision_base_size", "get_collision_base_size");
 	ADD_GROUP("Drawing", "");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
@@ -469,6 +482,7 @@ GPUParticles3D::GPUParticles3D() {
 	set_draw_passes(1);
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
+	set_collision_base_size(0.01);
 }
 
 GPUParticles3D::~GPUParticles3D() {

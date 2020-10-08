@@ -7511,6 +7511,23 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 	}
 }
 
+void RasterizerSceneRD::render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, InstanceBase **p_cull_result, int p_cull_count) {
+	ERR_FAIL_COND(!storage->particles_collision_is_heightfield(p_collider));
+	Vector3 extents = storage->particles_collision_get_extents(p_collider) * p_transform.basis.get_scale();
+	CameraMatrix cm;
+	cm.set_orthogonal(-extents.x, extents.x, -extents.z, extents.z, 0, extents.y * 2.0);
+
+	Vector3 cam_pos = p_transform.origin;
+	cam_pos.y += extents.y;
+
+	Transform cam_xform;
+	cam_xform.set_look_at(cam_pos, cam_pos - p_transform.basis.get_axis(Vector3::AXIS_Y), -p_transform.basis.get_axis(Vector3::AXIS_Z).normalized());
+
+	RID fb = storage->particles_collision_get_heightfield_framebuffer(p_collider);
+
+	_render_particle_collider_heightfield(fb, cam_xform, cm, p_cull_result, p_cull_count);
+}
+
 void RasterizerSceneRD::render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb);

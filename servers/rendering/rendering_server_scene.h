@@ -385,6 +385,8 @@ public:
 		}
 	};
 
+	Set<Instance *> heightfield_particle_colliders_update_list;
+
 	int instance_cull_count;
 	Instance *instance_cull_result[MAX_INSTANCE_CULL];
 	Instance *instance_shadow_cull_result[MAX_INSTANCE_CULL]; //used for generating shadowmaps
@@ -461,6 +463,7 @@ public:
 	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
 
+	void render_particle_colliders();
 	void render_probes();
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);

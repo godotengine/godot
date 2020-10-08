@@ -108,6 +108,9 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::scene->update_dirty_instances(); //update scene stuff
 
+	RSG::scene->render_particle_colliders();
+	RSG::storage->update_particles(); //need to be done after instances are updated (colliders and particle transforms), and colliders are rendered
+
 	RSG::scene->render_probes();
 	RSG::viewport->draw_viewports();
 	RSG::canvas_render->update();
