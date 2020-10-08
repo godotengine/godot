@@ -119,7 +119,7 @@ namespace GodotTools.Build
             {
                 var result = new List<string>();
 
-                if (OS.IsmacOS)
+                if (OS.IsMacOS)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
                     result.Add("/usr/local/var/homebrew/linked/mono/bin/");
