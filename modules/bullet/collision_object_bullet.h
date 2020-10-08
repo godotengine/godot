@@ -70,12 +70,11 @@ public:
 
 	struct ShapeWrapper {
 		ShapeBullet *shape = nullptr;
+		btCollisionShape *bt_shape = nullptr;
 		btTransform transform;
 		btVector3 scale;
 		bool active = true;
-		btCollisionShape *bt_shape = nullptr;
 
-	public:
 		ShapeWrapper() {}
 
 		ShapeWrapper(ShapeBullet *p_shape, const btTransform &p_transform, bool p_active) :
@@ -108,7 +107,6 @@ public:
 		btTransform get_adjusted_transform() const;
 
 		void claim_bt_shape(const btVector3 &body_scale);
-		void release_bt_shape();
 	};
 
 protected:
@@ -126,16 +124,11 @@ protected:
 
 	VSet<RID> exceptions;
 
-	bool need_body_reload = true;
-
 	/// This array is used to know all areas where this Object is overlapped in
 	/// New area is added when overlap with new area (AreaBullet::addOverlap), then is removed when it exit (CollisionObjectBullet::onExitArea)
 	/// This array is used mainly to know which area hold the pointer of this object
 	Vector<AreaBullet *> areasOverlapped;
 	bool isTransformChanged = false;
-
-public:
-	bool is_in_world = false;
 
 public:
 	CollisionObjectBullet(Type p_type);
@@ -190,21 +183,13 @@ public:
 		return collisionLayer & p_other->collisionMask || p_other->collisionLayer & collisionMask;
 	}
 
-	bool need_reload_body() const {
-		return need_body_reload;
-	}
-
-	void reload_body() {
-		need_body_reload = true;
-	}
-	virtual void do_reload_body() = 0;
+	virtual void reload_body() = 0;
 	virtual void set_space(SpaceBullet *p_space) = 0;
 	_FORCE_INLINE_ SpaceBullet *get_space() const { return space; }
 
 	virtual void on_collision_checker_start() = 0;
 	virtual void on_collision_checker_end() = 0;
 
-	virtual void prepare_object_for_dispatch();
 	virtual void dispatch_callbacks() = 0;
 
 	void set_collision_enabled(bool p_enabled);
@@ -230,7 +215,6 @@ class RigidCollisionObjectBullet : public CollisionObjectBullet, public ShapeOwn
 protected:
 	btCollisionShape *mainShape = nullptr;
 	Vector<ShapeWrapper> shapes;
-	bool need_shape_reload = true;
 
 public:
 	RigidCollisionObjectBullet(Type p_type) :
@@ -262,12 +246,8 @@ public:
 	void set_shape_disabled(int p_index, bool p_disabled);
 	bool is_shape_disabled(int p_index);
 
-	virtual void prepare_object_for_dispatch();
-
 	virtual void shape_changed(int p_shape_index);
-	void reload_shapes();
-	bool need_reload_shapes() const { return need_shape_reload; }
-	virtual void do_reload_shapes();
+	virtual void reload_shapes();
 
 	virtual void main_shape_changed() = 0;
 	virtual void body_scale_changed();
