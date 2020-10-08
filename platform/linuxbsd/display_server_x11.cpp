@@ -552,6 +552,60 @@ String DisplayServerX11::clipboard_get() const {
 	return ret;
 }
 
+Bool DisplayServerX11::_predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg) {
+	if (event->xany.window == *(Window *)arg) {
+		return (event->type == SelectionRequest) ||
+			   (event->type == SelectionNotify);
+	} else {
+		return False;
+	}
+}
+
+void DisplayServerX11::_clipboard_transfer_ownership(Atom p_source, Window x11_window) const {
+	_THREAD_SAFE_METHOD_
+
+	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
+
+	if (selection_owner != x11_window) {
+		return;
+	}
+
+	// Block events polling while processing selection events.
+	MutexLock mutex_lock(events_mutex);
+
+	Atom clipboard_manager = XInternAtom(x11_display, "CLIPBOARD_MANAGER", False);
+	Atom save_targets = XInternAtom(x11_display, "SAVE_TARGETS", False);
+	XConvertSelection(x11_display, clipboard_manager, save_targets, None,
+			x11_window, CurrentTime);
+
+	// Process events from the queue.
+	while (true) {
+		if (!_wait_for_events()) {
+			// Error or timeout, abort.
+			break;
+		}
+
+		// Non-blocking wait for next event and remove it from the queue.
+		XEvent ev;
+		while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_save_targets, (XPointer)&x11_window)) {
+			switch (ev.type) {
+				case SelectionRequest:
+					_handle_selection_request_event(&(ev.xselectionrequest));
+					break;
+
+				case SelectionNotify: {
+					if (ev.xselection.target == save_targets) {
+						// Once SelectionNotify is received, we're done whether it succeeded or not.
+						return;
+					}
+
+					break;
+				}
+			}
+		}
+	}
+}
+
 int DisplayServerX11::get_screen_count() const {
 	_THREAD_SAFE_METHOD_
 
@@ -2291,53 +2345,105 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	Input::get_singleton()->accumulate_input_event(k);
 }
 
-void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p_event) {
-	XEvent respond;
-	if (p_event->target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
-			p_event->target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
-			p_event->target == XInternAtom(x11_display, "TEXT", 0) ||
-			p_event->target == XA_STRING ||
-			p_event->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
-			p_event->target == XInternAtom(x11_display, "text/plain", 0)) {
-		// Directly using internal clipboard because we know our window
-		// is the owner during a selection request.
-		CharString clip = internal_clipboard.utf8();
-		XChangeProperty(x11_display,
-				p_event->requestor,
-				p_event->property,
-				p_event->target,
-				8,
-				PropModeReplace,
-				(unsigned char *)clip.get_data(),
-				clip.length());
-		respond.xselection.property = p_event->property;
-	} else if (p_event->target == XInternAtom(x11_display, "TARGETS", 0)) {
-		Atom data[7];
+Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const {
+	if (p_target == XInternAtom(x11_display, "TARGETS", 0)) {
+		// Request to list all supported targets.
+		Atom data[9];
 		data[0] = XInternAtom(x11_display, "TARGETS", 0);
-		data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
-		data[2] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
-		data[3] = XInternAtom(x11_display, "TEXT", 0);
-		data[4] = XA_STRING;
-		data[5] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
-		data[6] = XInternAtom(x11_display, "text/plain", 0);
+		data[1] = XInternAtom(x11_display, "SAVE_TARGETS", 0);
+		data[2] = XInternAtom(x11_display, "MULTIPLE", 0);
+		data[3] = XInternAtom(x11_display, "UTF8_STRING", 0);
+		data[4] = XInternAtom(x11_display, "COMPOUND_TEXT", 0);
+		data[5] = XInternAtom(x11_display, "TEXT", 0);
+		data[6] = XA_STRING;
+		data[7] = XInternAtom(x11_display, "text/plain;charset=utf-8", 0);
+		data[8] = XInternAtom(x11_display, "text/plain", 0);
 
 		XChangeProperty(x11_display,
-				p_event->requestor,
-				p_event->property,
+				p_requestor,
+				p_property,
 				XA_ATOM,
 				32,
 				PropModeReplace,
 				(unsigned char *)&data,
 				sizeof(data) / sizeof(data[0]));
-		respond.xselection.property = p_event->property;
-
+		return p_property;
+	} else if (p_target == XInternAtom(x11_display, "SAVE_TARGETS", 0)) {
+		// Request to check if SAVE_TARGETS is supported, nothing special to do.
+		XChangeProperty(x11_display,
+				p_requestor,
+				p_property,
+				XInternAtom(x11_display, "NULL", False),
+				32,
+				PropModeReplace,
+				nullptr,
+				0);
+		return p_property;
+	} else if (p_target == XInternAtom(x11_display, "UTF8_STRING", 0) ||
+			   p_target == XInternAtom(x11_display, "COMPOUND_TEXT", 0) ||
+			   p_target == XInternAtom(x11_display, "TEXT", 0) ||
+			   p_target == XA_STRING ||
+			   p_target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
+			   p_target == XInternAtom(x11_display, "text/plain", 0)) {
+		// Directly using internal clipboard because we know our window
+		// is the owner during a selection request.
+		CharString clip = internal_clipboard.utf8();
+		XChangeProperty(x11_display,
+				p_requestor,
+				p_property,
+				p_target,
+				8,
+				PropModeReplace,
+				(unsigned char *)clip.get_data(),
+				clip.length());
+		return p_property;
 	} else {
-		char *targetname = XGetAtomName(x11_display, p_event->target);
-		printf("No Target '%s'\n", targetname);
-		if (targetname) {
-			XFree(targetname);
+		char *target_name = XGetAtomName(x11_display, p_target);
+		printf("Target '%s' not supported.\n", target_name);
+		if (target_name) {
+			XFree(target_name);
 		}
+		return None;
+	}
+}
+
+void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p_event) const {
+	XEvent respond;
+	if (p_event->target == XInternAtom(x11_display, "MULTIPLE", 0)) {
+		// Request for multiple target conversions at once.
+		Atom atom_pair = XInternAtom(x11_display, "ATOM_PAIR", False);
 		respond.xselection.property = None;
+
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, p_event->requestor, p_event->property, 0, LONG_MAX, False, atom_pair, &type, &format, &len, &remaining, &data) == Success) {
+			if ((len >= 2) && data) {
+				Atom *targets = (Atom *)data;
+				for (uint64_t i = 0; i < len; i += 2) {
+					Atom target = targets[i];
+					Atom &property = targets[i + 1];
+					property = _process_selection_request_target(target, p_event->requestor, property);
+				}
+
+				XChangeProperty(x11_display,
+						p_event->requestor,
+						p_event->property,
+						atom_pair,
+						32,
+						PropModeReplace,
+						(unsigned char *)targets,
+						len);
+
+				respond.xselection.property = p_event->property;
+			}
+			XFree(data);
+		}
+	} else {
+		// Request for target conversion.
+		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property);
 	}
 
 	respond.xselection.type = SelectionNotify;
@@ -2473,32 +2579,43 @@ Bool DisplayServerX11::_predicate_all_events(Display *display, XEvent *event, XP
 	return True;
 }
 
-void DisplayServerX11::_poll_events() {
+bool DisplayServerX11::_wait_for_events() const {
 	int x11_fd = ConnectionNumber(x11_display);
 	fd_set in_fds;
 
-	while (!events_thread_done) {
-		XFlush(x11_display);
+	XFlush(x11_display);
 
-		FD_ZERO(&in_fds);
-		FD_SET(x11_fd, &in_fds);
+	FD_ZERO(&in_fds);
+	FD_SET(x11_fd, &in_fds);
 
-		struct timeval tv;
-		tv.tv_usec = 0;
-		tv.tv_sec = 1;
+	struct timeval tv;
+	tv.tv_usec = 0;
+	tv.tv_sec = 1;
 
-		// Wait for next event or timeout.
-		int num_ready_fds = select(x11_fd + 1, &in_fds, NULL, NULL, &tv);
+	// Wait for next event or timeout.
+	int num_ready_fds = select(x11_fd + 1, &in_fds, NULL, NULL, &tv);
+
+	if (num_ready_fds > 0) {
+		// Event received.
+		return true;
+	} else {
+		// Error or timeout.
 		if (num_ready_fds < 0) {
-			ERR_PRINT("_poll_events: select error: " + itos(errno));
+			ERR_PRINT("_wait_for_events: select error: " + itos(errno));
 		}
+		return false;
+	}
+}
+
+void DisplayServerX11::_poll_events() {
+	while (!events_thread_done) {
+		_wait_for_events();
 
 		// Process events from the queue.
 		{
 			MutexLock mutex_lock(events_mutex);
 
-			// Non-blocking wait for next event
-			// and remove it from the queue.
+			// Non-blocking wait for next event and remove it from the queue.
 			XEvent ev;
 			while (XCheckIfEvent(x11_display, &ev, _predicate_all_events, nullptr)) {
 				// Check if the input manager wants to process the event.
@@ -4068,6 +4185,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 }
 
 DisplayServerX11::~DisplayServerX11() {
+	// Send owned clipboard data to clipboard manager before exit.
+	Window x11_main_window = windows[MAIN_WINDOW_ID].x11_window;
+	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
+	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
+
 	events_thread_done = true;
 	Thread::wait_to_finish(events_thread);
 	memdelete(events_thread);

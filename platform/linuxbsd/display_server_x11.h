@@ -204,10 +204,13 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
-	void _handle_selection_request_event(XSelectionRequestEvent *p_event);
+
+	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property) const;
+	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _clipboard_get(Atom p_source, Window x11_window) const;
+	void _clipboard_transfer_ownership(Atom p_source, Window x11_window) const;
 
 	//bool minimized;
 	//bool window_has_focus;
@@ -262,10 +265,12 @@ class DisplayServerX11 : public DisplayServer {
 	bool events_thread_done = false;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
+	bool _wait_for_events() const;
 	void _poll_events();
 
 	static Bool _predicate_all_events(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg);
+	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
 protected:
 	void _window_changed(XEvent *event);
