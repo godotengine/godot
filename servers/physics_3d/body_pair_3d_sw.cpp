@@ -215,7 +215,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 
-	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
+	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
 		return false;
 	}
@@ -597,7 +597,7 @@ void BodySoftBodyPair3DSW::validate_contacts() {
 bool BodySoftBodyPair3DSW::setup(real_t p_step) {
 	body_dynamic = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 
-	if (!body->test_collision_mask(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
+	if (!body->interacts_with(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
 		collided = false;
 		return false;
 	}
