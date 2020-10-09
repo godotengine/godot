@@ -102,15 +102,6 @@
 				Given the two 3D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector3Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
 			</description>
 		</method>
-		<method name="get_uv84_normal_bit">
-			<return type="int">
-			</return>
-			<argument index="0" name="normal" type="Vector3">
-			</argument>
-			<description>
-				Used internally by the engine.
-			</description>
-		</method>
 		<method name="ray_intersects_triangle">
 			<return type="Variant">
 			</return>
