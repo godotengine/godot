@@ -402,6 +402,12 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			over_text = over_text_now;
 		}
 	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+	}
 }
 
 void AnimationNodeStateMachineEditor::_file_opened(const String &p_file) {
