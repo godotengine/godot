@@ -636,54 +636,6 @@ public:
 		void optimize_vertices();
 	};
 
-	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
-		int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
-
-		if (lat == 0) {
-			return 24;
-		} else if (lat == 4) {
-			return 25;
-		}
-
-		int lon = Math::fast_ftoi(Math::floor((Math_PI + Math::atan2(p_vector.x, p_vector.z)) * 8.0 / (Math_PI * 2.0) + 0.5)) % 8;
-
-		return lon + (lat - 1) * 8;
-	}
-
-	_FORCE_INLINE_ static int get_uv84_normal_bit_neighbors(int p_idx) {
-		if (p_idx == 24) {
-			return 1 | 2 | 4 | 8;
-		} else if (p_idx == 25) {
-			return (1 << 23) | (1 << 22) | (1 << 21) | (1 << 20);
-		} else {
-			int ret = 0;
-			if ((p_idx % 8) == 0) {
-				ret |= (1 << (p_idx + 7));
-			} else {
-				ret |= (1 << (p_idx - 1));
-			}
-			if ((p_idx % 8) == 7) {
-				ret |= (1 << (p_idx - 7));
-			} else {
-				ret |= (1 << (p_idx + 1));
-			}
-
-			int mask = ret | (1 << p_idx);
-			if (p_idx < 8) {
-				ret |= 24;
-			} else {
-				ret |= mask >> 8;
-			}
-
-			if (p_idx >= 16) {
-				ret |= 25;
-			} else {
-				ret |= mask << 8;
-			}
-
-			return ret;
-		}
-	}
 	static MeshData build_convex_mesh(const Vector<Plane> &p_planes);
 	static Vector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static Vector<Plane> build_box_planes(const Vector3 &p_extents);
