@@ -31,6 +31,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include "core/callable_bind.h"
 #include "core/hash_map.h"
 #include "core/list.h"
 #include "core/map.h"
