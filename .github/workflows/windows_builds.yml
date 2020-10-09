@@ -1,10 +1,11 @@
 name: 🏁 Windows Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: master
+  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
 
@@ -54,7 +55,7 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes tests=yes target=release_debug
+        scons tools=yes tests=yes target=release_debug
         ls -l bin/
 
     # Execute unit tests for the editor
@@ -109,7 +110,7 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows target=release tools=no
+        scons target=release tools=no
         ls -l bin/
 
     - uses: actions/upload-artifact@v2
