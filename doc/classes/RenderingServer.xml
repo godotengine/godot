@@ -583,6 +583,12 @@
 				Modulates all colors in the given canvas.
 			</description>
 		</method>
+		<method name="create_local_rendering_device" qualifiers="const">
+			<return type="RenderingDevice">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="directional_light_create">
 			<return type="RID">
 			</return>
@@ -1627,7 +1633,6 @@
 			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
 			<argument index="4" name="lods" type="Dictionary" default="{
-
 }">
 			</argument>
 			<argument index="5" name="compress_format" type="int" default="31744">
