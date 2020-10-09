@@ -69,7 +69,6 @@
 			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
 			<argument index="3" name="lods" type="Dictionary" default="{
-
 }">
 			</argument>
 			<argument index="4" name="compress_flags" type="int" default="31744">

@@ -301,7 +301,7 @@
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
 			Scale part of the local transformation.
 		</member>
-		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level">
+		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.
 		</member>
 		<member name="transform" type="Transform" setter="set_transform" getter="get_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
