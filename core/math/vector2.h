@@ -65,6 +65,14 @@ struct Vector2 {
 	real_t length() const;
 	real_t length_squared() const;
 
+	Vector2 min(const Vector2 &p_vector2) const {
+		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
+	}
+
+	Vector2 max(const Vector2 &p_vector2) const {
+		return Vector2(MAX(x, p_vector2.x), MAX(y, p_vector2.y));
+	}
+
 	real_t distance_to(const Vector2 &p_vector2) const;
 	real_t distance_squared_to(const Vector2 &p_vector2) const;
 	real_t angle_to(const Vector2 &p_vector2) const;

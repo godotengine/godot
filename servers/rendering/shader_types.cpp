@@ -295,6 +295,10 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_VELOCITY"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_COLOR"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_CUSTOM"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLIDED"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLISION_NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLISION_DEPTH"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["ATTRACTOR_FORCE"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_PARTICLES].functions["compute"].can_discard = false;
 
 	{
@@ -308,6 +312,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_PARTICLES].functions["compute"].stage_functions["emit_particle"] = emit_vertex_func;
 	}
 
+	shader_modes[RS::SHADER_PARTICLES].modes.push_back("collision_use_scale");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("disable_force");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("disable_velocity");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("keep_data");

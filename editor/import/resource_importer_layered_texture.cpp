@@ -51,7 +51,7 @@ String ResourceImporterLayeredTexture::get_importer_name() const {
 			return "cubemap_array_texture";
 		} break;
 		case MODE_3D: {
-			return "cubemap_3d_texture";
+			return "3d_texture";
 		} break;
 	}
 

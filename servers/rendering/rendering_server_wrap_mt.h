@@ -356,6 +356,8 @@ public:
 	FUNC2(particles_set_process_material, RID, RID)
 	FUNC2(particles_set_fixed_fps, RID, int)
 	FUNC2(particles_set_fractional_delta, RID, bool)
+	FUNC2(particles_set_collision_base_size, RID, float)
+
 	FUNC1R(bool, particles_is_inactive, RID)
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
@@ -370,6 +372,21 @@ public:
 	FUNC2(particles_set_subemitter, RID, RID)
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
+
+	/* PARTICLES COLLISION */
+
+	FUNCRID(particles_collision)
+
+	FUNC2(particles_collision_set_collision_type, RID, ParticlesCollisionType)
+	FUNC2(particles_collision_set_cull_mask, RID, uint32_t)
+	FUNC2(particles_collision_set_sphere_radius, RID, float)
+	FUNC2(particles_collision_set_box_extents, RID, const Vector3 &)
+	FUNC2(particles_collision_set_attractor_strength, RID, float)
+	FUNC2(particles_collision_set_attractor_directionality, RID, float)
+	FUNC2(particles_collision_set_attractor_attenuation, RID, float)
+	FUNC2(particles_collision_set_field_texture, RID, RID)
+	FUNC1(particles_collision_height_field_update, RID)
+	FUNC2(particles_collision_set_height_field_resolution, RID, ParticlesCollisionHeightfieldResolution)
 
 	/* CAMERA API */
 

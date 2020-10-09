@@ -41,6 +41,7 @@
 #include "scene/3d/decal.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
+#include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
@@ -2452,6 +2453,266 @@ void GPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_handles(handles, get_material("handles"));
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
+
+////
+
+////
+
+GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/particle_collision", Color(0.5, 0.7, 1));
+	create_material("shape_material", gizmo_color);
+	gizmo_color.a = 0.15;
+	create_material("shape_material_internal", gizmo_color);
+
+	create_handle_material("handles");
+}
+
+bool GPUParticlesCollision3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return (Object::cast_to<GPUParticlesCollision3D>(p_spatial) != nullptr) || (Object::cast_to<GPUParticlesAttractor3D>(p_spatial) != nullptr);
+}
+
+String GPUParticlesCollision3DGizmoPlugin::get_name() const {
+	return "GPUParticlesCollision3D";
+}
+
+int GPUParticlesCollision3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	const Node3D *cs = p_gizmo->get_spatial_node();
+
+	if (Object::cast_to<GPUParticlesCollisionSphere>(cs) || Object::cast_to<GPUParticlesAttractorSphere>(cs)) {
+		return "Radius";
+	}
+
+	if (Object::cast_to<GPUParticlesCollisionBox>(cs) || Object::cast_to<GPUParticlesAttractorBox>(cs) || Object::cast_to<GPUParticlesAttractorVectorField>(cs) || Object::cast_to<GPUParticlesCollisionSDF>(cs) || Object::cast_to<GPUParticlesCollisionHeightField>(cs)) {
+		return "Extents";
+	}
+
+	return "";
+}
+
+Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+	const Node3D *cs = p_gizmo->get_spatial_node();
+
+	if (Object::cast_to<GPUParticlesCollisionSphere>(cs) || Object::cast_to<GPUParticlesAttractorSphere>(cs)) {
+		return p_gizmo->get_spatial_node()->call("get_radius");
+	}
+
+	if (Object::cast_to<GPUParticlesCollisionBox>(cs) || Object::cast_to<GPUParticlesAttractorBox>(cs) || Object::cast_to<GPUParticlesAttractorVectorField>(cs) || Object::cast_to<GPUParticlesCollisionSDF>(cs) || Object::cast_to<GPUParticlesCollisionHeightField>(cs)) {
+		return Vector3(p_gizmo->get_spatial_node()->call("get_extents"));
+	}
+
+	return Variant();
+}
+
+void GPUParticlesCollision3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	Transform gt = sn->get_global_transform();
+	Transform gi = gt.affine_inverse();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+
+	if (Object::cast_to<GPUParticlesCollisionSphere>(sn) || Object::cast_to<GPUParticlesAttractorSphere>(sn)) {
+		Vector3 ra, rb;
+		Geometry3D::get_closest_points_between_segments(Vector3(), Vector3(4096, 0, 0), sg[0], sg[1], ra, rb);
+		float d = ra.x;
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+
+		if (d < 0.001) {
+			d = 0.001;
+		}
+
+		sn->call("set_radius", d);
+	}
+
+	if (Object::cast_to<GPUParticlesCollisionBox>(sn) || Object::cast_to<GPUParticlesAttractorBox>(sn) || Object::cast_to<GPUParticlesAttractorVectorField>(sn) || Object::cast_to<GPUParticlesCollisionSDF>(sn) || Object::cast_to<GPUParticlesCollisionHeightField>(sn)) {
+		Vector3 axis;
+		axis[p_idx] = 1.0;
+		Vector3 ra, rb;
+		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
+		float d = ra[p_idx];
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+
+		if (d < 0.001) {
+			d = 0.001;
+		}
+
+		Vector3 he = sn->call("get_extents");
+		he[p_idx] = d;
+		sn->call("set_extents", he);
+	}
+}
+
+void GPUParticlesCollision3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+	Node3D *sn = p_gizmo->get_spatial_node();
+
+	if (Object::cast_to<GPUParticlesCollisionSphere>(sn) || Object::cast_to<GPUParticlesAttractorSphere>(sn)) {
+		if (p_cancel) {
+			sn->call("set_radius", p_restore);
+			return;
+		}
+
+		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change Radius"));
+		ur->add_do_method(sn, "set_radius", sn->call("get_radius"));
+		ur->add_undo_method(sn, "set_radius", p_restore);
+		ur->commit_action();
+	}
+
+	if (Object::cast_to<GPUParticlesCollisionBox>(sn) || Object::cast_to<GPUParticlesAttractorBox>(sn) || Object::cast_to<GPUParticlesAttractorVectorField>(sn) || Object::cast_to<GPUParticlesCollisionSDF>(sn) || Object::cast_to<GPUParticlesCollisionHeightField>(sn)) {
+		if (p_cancel) {
+			sn->call("set_extents", p_restore);
+			return;
+		}
+
+		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change Box Shape Extents"));
+		ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
+		ur->add_undo_method(sn, "set_extents", p_restore);
+		ur->commit_action();
+	}
+}
+
+void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	Node3D *cs = p_gizmo->get_spatial_node();
+
+	print_line("redraw request " + itos(cs != nullptr));
+	p_gizmo->clear();
+
+	const Ref<Material> material =
+			get_material("shape_material", p_gizmo);
+	const Ref<Material> material_internal =
+			get_material("shape_material_internal", p_gizmo);
+
+	Ref<Material> handles_material = get_material("handles");
+
+	if (Object::cast_to<GPUParticlesCollisionSphere>(cs) || Object::cast_to<GPUParticlesAttractorSphere>(cs)) {
+		float r = cs->call("get_radius");
+
+		Vector<Vector3> points;
+
+		for (int i = 0; i <= 360; i++) {
+			float ra = Math::deg2rad((float)i);
+			float rb = Math::deg2rad((float)i + 1);
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+			points.push_back(Vector3(a.x, 0, a.y));
+			points.push_back(Vector3(b.x, 0, b.y));
+			points.push_back(Vector3(0, a.x, a.y));
+			points.push_back(Vector3(0, b.x, b.y));
+			points.push_back(Vector3(a.x, a.y, 0));
+			points.push_back(Vector3(b.x, b.y, 0));
+		}
+
+		Vector<Vector3> collision_segments;
+
+		for (int i = 0; i < 64; i++) {
+			float ra = i * Math_PI * 2.0 / 64.0;
+			float rb = (i + 1) * Math_PI * 2.0 / 64.0;
+			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+
+			collision_segments.push_back(Vector3(a.x, 0, a.y));
+			collision_segments.push_back(Vector3(b.x, 0, b.y));
+			collision_segments.push_back(Vector3(0, a.x, a.y));
+			collision_segments.push_back(Vector3(0, b.x, b.y));
+			collision_segments.push_back(Vector3(a.x, a.y, 0));
+			collision_segments.push_back(Vector3(b.x, b.y, 0));
+		}
+
+		p_gizmo->add_lines(points, material);
+		p_gizmo->add_collision_segments(collision_segments);
+		Vector<Vector3> handles;
+		handles.push_back(Vector3(r, 0, 0));
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<GPUParticlesCollisionBox>(cs) || Object::cast_to<GPUParticlesAttractorBox>(cs) || Object::cast_to<GPUParticlesAttractorVectorField>(cs) || Object::cast_to<GPUParticlesCollisionSDF>(cs) || Object::cast_to<GPUParticlesCollisionHeightField>(cs)) {
+		Vector<Vector3> lines;
+		AABB aabb;
+		aabb.position = -cs->call("get_extents").operator Vector3();
+		aabb.size = aabb.position * -2;
+
+		for (int i = 0; i < 12; i++) {
+			Vector3 a, b;
+			aabb.get_edge(i, a, b);
+			lines.push_back(a);
+			lines.push_back(b);
+		}
+
+		Vector<Vector3> handles;
+
+		for (int i = 0; i < 3; i++) {
+			Vector3 ax;
+			ax[i] = cs->call("get_extents").operator Vector3()[i];
+			handles.push_back(ax);
+		}
+
+		p_gizmo->add_lines(lines, material);
+		p_gizmo->add_collision_segments(lines);
+		p_gizmo->add_handles(handles, handles_material);
+
+		GPUParticlesCollisionSDF *col_sdf = Object::cast_to<GPUParticlesCollisionSDF>(cs);
+		if (col_sdf) {
+			static const int subdivs[GPUParticlesCollisionSDF::RESOLUTION_MAX] = { 16, 32, 64, 128, 256, 512 };
+			int subdiv = subdivs[col_sdf->get_resolution()];
+			float cell_size = aabb.get_longest_axis_size() / subdiv;
+
+			lines.clear();
+
+			for (int i = 1; i < subdiv; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (cell_size * i > aabb.size[j]) {
+						continue;
+					}
+
+					Vector2 dir;
+					dir[j] = 1.0;
+					Vector2 ta, tb;
+					int j_n1 = (j + 1) % 3;
+					int j_n2 = (j + 2) % 3;
+					ta[j_n1] = 1.0;
+					tb[j_n2] = 1.0;
+
+					for (int k = 0; k < 4; k++) {
+						Vector3 from = aabb.position, to = aabb.position;
+						from[j] += cell_size * i;
+						to[j] += cell_size * i;
+
+						if (k & 1) {
+							to[j_n1] += aabb.size[j_n1];
+						} else {
+							to[j_n2] += aabb.size[j_n2];
+						}
+
+						if (k & 2) {
+							from[j_n1] += aabb.size[j_n1];
+							from[j_n2] += aabb.size[j_n2];
+						}
+
+						lines.push_back(from);
+						lines.push_back(to);
+					}
+				}
+			}
+
+			p_gizmo->add_lines(lines, material_internal);
+		}
+	}
+}
+
+/////
 
 ////
 
