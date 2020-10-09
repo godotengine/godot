@@ -1156,10 +1156,6 @@ Vector<Vector3> _Geometry3D::clip_polygon(const Vector<Vector3> &p_points, const
 	return Geometry3D::clip_polygon(p_points, p_plane);
 }
 
-int _Geometry3D::get_uv84_normal_bit(const Vector3 &p_vector) {
-	return Geometry3D::get_uv84_normal_bit(p_vector);
-}
-
 void _Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry3D::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry3D::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
@@ -1170,8 +1166,6 @@ void _Geometry3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "point", "s1", "s2"), &_Geometry3D::get_closest_point_to_segment);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment_uncapped", "point", "s1", "s2"), &_Geometry3D::get_closest_point_to_segment_uncapped);
-
-	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit", "normal"), &_Geometry3D::get_uv84_normal_bit);
 
 	ClassDB::bind_method(D_METHOD("ray_intersects_triangle", "from", "dir", "a", "b", "c"), &_Geometry3D::ray_intersects_triangle);
 	ClassDB::bind_method(D_METHOD("segment_intersects_triangle", "from", "to", "a", "b", "c"), &_Geometry3D::segment_intersects_triangle);
