@@ -1315,9 +1315,10 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 
 	Callable target = p_callable;
 
-	if (s->slot_map.has(target)) {
+	//compare with the base callable, so binds can be ignored
+	if (s->slot_map.has(*target.get_base_comparator())) {
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
-			s->slot_map[target].reference_count++;
+			s->slot_map[*target.get_base_comparator()].reference_count++;
 			return OK;
 		} else {
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given callable '" + p_callable + "' in that object.");
@@ -1337,7 +1338,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 		slot.reference_count = 1;
 	}
 
-	s->slot_map[target] = slot;
+	//use callable version as key, so binds can be ignored
+	s->slot_map[*target.get_base_comparator()] = slot;
 
 	return OK;
 }
@@ -1364,7 +1366,7 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 
 	Callable target = p_callable;
 
-	return s->slot_map.has(target);
+	return s->slot_map.has(*target.get_base_comparator());
 	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
 	//return (E!=nullptr );
 }
@@ -1386,7 +1388,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	SignalData *s = signal_map.getptr(p_signal);
 	ERR_FAIL_COND_MSG(!s, vformat("Nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_MSG(!s->slot_map.has(p_callable), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
+	ERR_FAIL_COND_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
 
 	SignalData::Slot *slot = &s->slot_map[p_callable];
 
@@ -1398,7 +1400,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 
 	target_object->connections.erase(slot->cE);
-	s->slot_map.erase(p_callable);
+	s->slot_map.erase(*p_callable.get_base_comparator());
 
 	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
 		//not user signal, delete
