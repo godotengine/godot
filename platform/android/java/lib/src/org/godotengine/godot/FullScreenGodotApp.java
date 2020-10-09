@@ -77,6 +77,38 @@ public abstract class FullScreenGodotApp extends FragmentActivity {
 	}
 
 	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (godotFragment != null) {
+			godotFragment.onActivityResult(requestCode, resultCode, data);
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (godotFragment != null) {
+			godotFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (godotFragment != null) {
+			godotFragment.onDestroy();
+		}
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (godotFragment != null) {
+			godotFragment.onPause();
+		}
+	}
+
+	@Override
 	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
 		if (godotFragment != null && godotFragment.onKeyMultiple(inKeyCode, repeatCount, event)) {
 			return true;
