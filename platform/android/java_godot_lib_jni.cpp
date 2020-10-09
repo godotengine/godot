@@ -49,6 +49,8 @@
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
+
+#include <android/input.h>
 #include <unistd.h>
 
 static JavaClassWrapper *java_class_wrapper = NULL;
@@ -272,42 +274,51 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint count, jintArray positions) {
-
+void touch_preprocessing(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray positions, jint buttons_mask, jfloat vertical_factor, jfloat horizontal_factor) {
 	if (step == 0)
 		return;
 
 	Vector<OS_Android::TouchPos> points;
-	for (int i = 0; i < count; i++) {
-
-		jint p[3];
-		env->GetIntArrayRegion(positions, i * 3, 3, p);
+	for (int i = 0; i < pointer_count; i++) {
+		jfloat p[3];
+		env->GetFloatArrayRegion(positions, i * 3, 3, p);
 		OS_Android::TouchPos tp;
 		tp.pos = Point2(p[1], p[2]);
-		tp.id = p[0];
+		tp.id = (int)p[0];
 		points.push_back(tp);
 	}
 
-	os_android->process_touch(ev, pointer, points);
-
-	/*
-	if (os_android)
-		os_android->process_touch(ev,pointer,points);
-	*/
+	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE) {
+		os_android->process_mouse_event(ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
+	} else {
+		os_android->process_touch(ev, pointer, points);
+	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint p_type, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3F(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3FI(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position, jint buttons_mask) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position, buttons_mask);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch__IIII_3FIFF(JNIEnv *env, jclass clazz, jint input_device, jint ev, jint pointer, jint pointer_count, jfloatArray position, jint buttons_mask, jfloat vertical_factor, jfloat horizontal_factor) {
+	touch_preprocessing(env, clazz, input_device, ev, pointer, pointer_count, position, buttons_mask, vertical_factor, horizontal_factor);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jclass clazz, jint p_type, jfloat p_x, jfloat p_y) {
 	if (step == 0)
 		return;
 
 	os_android->process_hover(p_type, Point2(p_x, p_y));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubleTap(JNIEnv *env, jclass clazz, jint p_button_mask, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
-	os_android->process_double_tap(Point2(p_x, p_y));
+	os_android->process_double_tap(p_button_mask, Point2(p_x, p_y));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {

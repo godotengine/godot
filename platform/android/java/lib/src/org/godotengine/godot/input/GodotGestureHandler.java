@@ -33,7 +33,6 @@ package org.godotengine.godot.input;
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotView;
 
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
@@ -76,10 +75,11 @@ public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener
 		//Log.i("GodotGesture", "onDoubleTap");
 		final int x = Math.round(event.getX());
 		final int y = Math.round(event.getY());
+		final int buttonMask = event.getButtonState();
 		queueEvent(new Runnable() {
 			@Override
 			public void run() {
-				GodotLib.doubletap(x, y);
+				GodotLib.doubleTap(buttonMask, x, y);
 			}
 		});
 		return true;
