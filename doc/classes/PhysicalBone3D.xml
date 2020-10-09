@@ -63,7 +63,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
+		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
 			Damps the body's rotation if greater than [code]0[/code].
 		</member>
 		<member name="axis_lock_angular_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
@@ -111,7 +111,7 @@
 		<member name="joint_type" type="int" setter="set_joint_type" getter="get_joint_type" enum="PhysicalBone3D.JointType" default="0">
 			Sets the joint type. See [enum JointType] for possible values.
 		</member>
-		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
+		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
 			Damps the body's movement if greater than [code]0[/code].
 		</member>
 		<member name="mass" type="float" setter="set_mass" getter="get_mass" default="1.0">

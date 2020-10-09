@@ -515,8 +515,8 @@ private:
 	real_t mass = 1;
 	real_t friction = 1;
 	real_t gravity_scale = 1;
-	real_t linear_damp = -1;
-	real_t angular_damp = -1;
+	real_t linear_damp = 0;
+	real_t angular_damp = 0;
 	bool can_sleep = true;
 
 protected:

@@ -430,19 +430,19 @@ void Body3DSW::integrate_forces(real_t p_step) {
 	}
 
 	Area3DSW *def_area = get_space()->get_default_area();
-	// AreaSW *damp_area = def_area;
-
 	ERR_FAIL_COND(!def_area);
 
 	int ac = areas.size();
 	bool stopped = false;
 	gravity = Vector3(0, 0, 0);
-	area_linear_damp = 0;
-	area_angular_damp = 0;
+
+	area_linear_damp = linear_damp;
+	area_angular_damp = angular_damp;
+
+	// Combine gravity and damping from overlapping areas in priority order
 	if (ac) {
 		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		// damp_area = aa[ac-1].area;
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			PhysicsServer3D::AreaSpaceOverrideMode mode = aa[i].area->get_space_override_mode();
 			switch (mode) {
@@ -465,28 +465,12 @@ void Body3DSW::integrate_forces(real_t p_step) {
 		}
 	}
 
+	// Add default gravity and damping from space area
 	if (!stopped) {
 		_compute_area_gravity_and_dampenings(def_area);
 	}
 
 	gravity *= gravity_scale;
-
-	// If less than 0, override dampenings with that of the Body
-	if (angular_damp >= 0) {
-		area_angular_damp = angular_damp;
-	}
-	/*
-	else
-		area_angular_damp=damp_area->get_angular_damp();
-	*/
-
-	if (linear_damp >= 0) {
-		area_linear_damp = linear_damp;
-	}
-	/*
-	else
-		area_linear_damp=damp_area->get_linear_damp();
-	*/
 
 	Vector3 motion;
 	bool do_motion = false;
