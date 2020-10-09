@@ -465,59 +465,138 @@ Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *
 	}
 }
 
+Bool DisplayServerX11::_predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg) {
+	if (event->type == PropertyNotify && event->xproperty.state == PropertyNewValue) {
+		return True;
+	} else {
+		return False;
+	}
+}
+
 String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const {
 	String ret;
 
-	Atom type;
-	Atom selection = XA_PRIMARY;
-	int format, result;
-	unsigned long len, bytes_left, dummy;
-	unsigned char *data;
 	Window selection_owner = XGetSelectionOwner(x11_display, p_source);
-
 	if (selection_owner == x11_window) {
 		return internal_clipboard;
 	}
 
 	if (selection_owner != None) {
-		{
-			// Block events polling while processing selection events.
-			MutexLock mutex_lock(events_mutex);
+		// Block events polling while processing selection events.
+		MutexLock mutex_lock(events_mutex);
 
-			XConvertSelection(x11_display, p_source, target, selection,
-					x11_window, CurrentTime);
+		Atom selection = XA_PRIMARY;
+		XConvertSelection(x11_display, p_source, target, selection,
+				x11_window, CurrentTime);
 
-			XFlush(x11_display);
+		XFlush(x11_display);
 
-			// Blocking wait for predicate to be True
-			// and remove the event from the queue.
-			XEvent event;
-			XIfEvent(x11_display, &event, _predicate_clipboard_selection, (XPointer)&x11_window);
-		}
+		// Blocking wait for predicate to be True and remove the event from the queue.
+		XEvent event;
+		XIfEvent(x11_display, &event, _predicate_clipboard_selection, (XPointer)&x11_window);
 
-		//
-		// Do not get any data, see how much data is there
-		//
+		// Do not get any data, see how much data is there.
+		Atom type;
+		int format, result;
+		unsigned long len, bytes_left, dummy;
+		unsigned char *data;
 		XGetWindowProperty(x11_display, x11_window,
 				selection, // Tricky..
 				0, 0, // offset - len
 				0, // Delete 0==FALSE
-				AnyPropertyType, //flag
+				AnyPropertyType, // flag
 				&type, // return type
 				&format, // return format
-				&len, &bytes_left, //that
+				&len, &bytes_left, // data length
 				&data);
-		// DATA is There
-		if (bytes_left > 0) {
+
+		if (data) {
+			XFree(data);
+		}
+
+		if (type == XInternAtom(x11_display, "INCR", 0)) {
+			// Data is going to be received incrementally.
+			DEBUG_LOG_X11("INCR selection started.\n");
+
+			LocalVector<uint8_t> incr_data;
+			uint32_t data_size = 0;
+			bool success = false;
+
+			// Delete INCR property to notify the owner.
+			XDeleteProperty(x11_display, x11_window, type);
+
+			// Process events from the queue.
+			bool done = false;
+			while (!done) {
+				if (!_wait_for_events()) {
+					// Error or timeout, abort.
+					break;
+				}
+
+				// Non-blocking wait for next event and remove it from the queue.
+				XEvent ev;
+				while (XCheckIfEvent(x11_display, &ev, _predicate_clipboard_incr, nullptr)) {
+					result = XGetWindowProperty(x11_display, x11_window,
+							selection, // selection type
+							0, LONG_MAX, // offset - len
+							True, // delete property to notify the owner
+							AnyPropertyType, // flag
+							&type, // return type
+							&format, // return format
+							&len, &bytes_left, // data length
+							&data);
+
+					DEBUG_LOG_X11("PropertyNotify: len=%lu, format=%i\n", len, format);
+
+					if (result == Success) {
+						if (data && (len > 0)) {
+							uint32_t prev_size = incr_data.size();
+							if (prev_size == 0) {
+								// First property contains initial data size.
+								unsigned long initial_size = *(unsigned long *)data;
+								incr_data.resize(initial_size);
+							} else {
+								// New chunk, resize to be safe and append data.
+								incr_data.resize(MAX(data_size + len, prev_size));
+								memcpy(incr_data.ptr() + data_size, data, len);
+								data_size += len;
+							}
+						} else {
+							// Last chunk, process finished.
+							done = true;
+							success = true;
+						}
+					} else {
+						printf("Failed to get selection data chunk.\n");
+						done = true;
+					}
+
+					if (data) {
+						XFree(data);
+					}
+
+					if (done) {
+						break;
+					}
+				}
+			}
+
+			if (success && (data_size > 0)) {
+				ret.parse_utf8((const char *)incr_data.ptr(), data_size);
+			}
+		} else if (bytes_left > 0) {
+			// Data is ready and can be processed all at once.
 			result = XGetWindowProperty(x11_display, x11_window,
 					selection, 0, bytes_left, 0,
 					AnyPropertyType, &type, &format,
 					&len, &dummy, &data);
+
 			if (result == Success) {
 				ret.parse_utf8((const char *)data);
 			} else {
-				printf("FAIL\n");
+				printf("Failed to get selection data.\n");
 			}
+
 			if (data) {
 				XFree(data);
 			}
