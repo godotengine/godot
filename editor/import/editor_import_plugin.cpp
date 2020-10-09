@@ -44,6 +44,13 @@ String EditorImportPlugin::get_visible_name() const {
 	return get_script_instance()->call("get_visible_name");
 }
 
+int EditorImportPlugin::get_importer_version() const {
+	if (!(get_script_instance() && get_script_instance()->has_method("get_importer_version"))) {
+		return ResourceImporter::get_importer_version();
+	}
+	return get_script_instance()->call("get_importer_version");
+}
+
 void EditorImportPlugin::get_recognized_extensions(List<String> *p_extensions) const {
 	ERR_FAIL_COND(!(get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")));
 	Array extensions = get_script_instance()->call("get_recognized_extensions");
@@ -156,6 +163,7 @@ void EditorImportPlugin::_bind_methods() {
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_importer_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_visible_name"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_importer_version"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_preset_count"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_preset_name", PropertyInfo(Variant::INT, "preset")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::ARRAY, "get_recognized_extensions"));

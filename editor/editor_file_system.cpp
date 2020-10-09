@@ -376,7 +376,12 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	String source_md5 = "";
 	Vector<String> dest_files;
 	String dest_md5 = "";
+	String params_md5 = "";
+	String params_hash = "";
+	int importer_current_version = 0;
+	int importer_imported_version = 0;
 
+	bool is_hashing_params = false;
 	while (true) {
 
 		assign = Variant();
@@ -384,6 +389,9 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		next_tag.name = String();
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		if (next_tag.name == "params") {
+			is_hashing_params = true;
+		}
 		if (err == ERR_FILE_EOF) {
 			break;
 		} else if (err != OK) {
@@ -392,24 +400,30 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 			return false; //parse error, try reimport manually (Avoid reimport loop on broken file)
 		}
 
-		if (assign != String()) {
-			if (assign.begins_with("path")) {
-				to_check.push_back(value);
-			} else if (assign == "files") {
-				Array fa = value;
-				for (int i = 0; i < fa.size(); i++) {
-					to_check.push_back(fa[i]);
-				}
-			} else if (!p_only_imported_files) {
-				if (assign == "source_file") {
-					source_file = value;
-				} else if (assign == "dest_files") {
-					dest_files = value;
-				}
+		if (assign == String()) {
+			continue;
+		} else if (is_hashing_params) {
+			String hashed_value;
+			VariantWriter::write_to_string(value, hashed_value);
+			params_hash += "::" + assign + "=" + hashed_value;
+		} else if (assign.begins_with("path")) {
+			to_check.push_back(value);
+		} else if (assign == "files") {
+			Array fa = value;
+			for (int i = 0; i < fa.size(); i++) {
+				to_check.push_back(fa[i]);
 			}
-
-		} else if (next_tag.name != "remap" && next_tag.name != "deps") {
-			break;
+		} else if (assign == "importer") {
+			Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(value);
+			if (importer.is_valid()) {
+				importer_current_version = importer->get_importer_version();
+			}
+		} else if (!p_only_imported_files) {
+			if (assign == "source_file") {
+				source_file = value;
+			} else if (assign == "dest_files") {
+				dest_files = value;
+			}
 		}
 	}
 
@@ -445,11 +459,21 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 					source_md5 = value;
 				} else if (assign == "dest_md5") {
 					dest_md5 = value;
+				} else if (assign == "params_md5") {
+					params_md5 = value;
 				}
+			}
+			if (assign == "importer_version") {
+				importer_imported_version = value;
 			}
 		}
 	}
 	memdelete(md5s);
+
+	//imported with different importer version, reimport
+	if (importer_current_version != importer_imported_version) {
+		return true;
+	}
 
 	//imported files are gone, reimport
 	for (List<String>::Element *E = to_check.front(); E; E = E->next()) {
@@ -460,6 +484,9 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	//check source md5 matching
 	if (!p_only_imported_files) {
+		if (params_md5 != params_hash.md5_text()) {
+			return true; //params had changed, reimport
+		}
 
 		if (source_file != String() && source_file != p_path) {
 			return true; //file was moved, reimport
@@ -1660,6 +1687,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 
 		List<ResourceImporter::ImportOption> options;
 		importer->get_import_options(&options);
+		String params_md5 = "";
 		//set default values
 		for (List<ResourceImporter::ImportOption>::Element *F = options.front(); F; F = F->next()) {
 
@@ -1671,6 +1699,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			String value;
 			VariantWriter::write_to_string(v, value);
 			f->store_line(base + "=" + value);
+			params_md5 += "::" + base + "=" + value;
 		}
 
 		f->close();
@@ -1679,6 +1708,8 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 		FileAccessRef md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(!md5s, ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
 
+		md5s->store_line("importer_version=" + Variant(importer->get_importer_version()).get_construct_string());
+		md5s->store_line("params_md5=\"" + params_md5.md5_text() + "\"");
 		md5s->store_line("source_md5=\"" + FileAccess::get_md5(file) + "\"");
 		if (dest_paths.size()) {
 			md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");
@@ -1876,12 +1907,14 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 
 	//store options in provided order, to avoid file changing. Order is also important because first match is accepted first.
 
+	String params_md5 = "";
 	for (List<ResourceImporter::ImportOption>::Element *E = opts.front(); E; E = E->next()) {
 
 		String base = E->get().option.name;
 		String value;
 		VariantWriter::write_to_string(params[base], value);
 		f->store_line(base + "=" + value);
+		params_md5 += "::" + base + "=" + value;
 	}
 
 	f->close();
@@ -1891,6 +1924,8 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(!md5s, "Cannot open MD5 file '" + base_path + ".md5'.");
 
+	md5s->store_line("importer_version=" + Variant(importer->get_importer_version()).get_construct_string());
+	md5s->store_line("params_md5=\"" + params_md5.md5_text() + "\"");
 	md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
 	if (dest_paths.size()) {
 		md5s->store_line("dest_md5=\"" + FileAccess::get_multiple_md5(dest_paths) + "\"\n");

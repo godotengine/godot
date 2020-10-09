@@ -99,6 +99,7 @@ class ResourceImporter : public Reference {
 public:
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;
+	virtual int get_importer_version() const { return 0; }
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual String get_save_extension() const = 0;
 	virtual String get_resource_type() const = 0;
