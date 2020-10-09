@@ -87,8 +87,11 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
+			<argument index="1" name="update_skins" type="bool" default="false">
+			</argument>
 			<description>
 				Returns the overall transform of the specified bone, with respect to the skeleton. Being relative to the skeleton frame, this is not the actual "global" transform of the bone.
+				[b]Note:[/b] If [code]update_skins[/code] is [code]false[/code], the skin will be updated at the end of the thread. If you need only bone global pose, not updating skin will improve performance when calling [method get_bone_global_pose] multiple times in the same thread.
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -108,6 +111,22 @@
 			<description>
 				Returns the bone index which is the parent of the bone at [code]bone_idx[/code]. If -1, then bone has no parent.
 				[b]Note:[/b] The parent bone returned will always be less than [code]bone_idx[/code].
+			</description>
+		</method>
+		<method name="get_bone_children">
+			<return type="int">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Returns the array of bone indexes which is the children of the bone at [code]bone_idx[/code]. If array is empty, then bone has no children.
+			</description>
+		</method>
+		<method name="get_bones_root">
+			<return type="int">
+			</return>
+			<description>
+				Returns the bone index which is the root of the all bones.
 			</description>
 		</method>
 		<method name="get_bone_pose" qualifiers="const">
