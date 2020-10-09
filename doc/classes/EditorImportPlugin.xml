@@ -17,6 +17,9 @@
 		func get_visible_name():
 		    return "Special Mesh Importer"
 
+		func get_importer_version():
+		    return 1;
+
 		func get_recognized_extensions():
 		    return ["special", "spec"]
 
@@ -73,6 +76,13 @@
 			</return>
 			<description>
 				Gets the unique name of the importer.
+			</description>
+		</method>
+		<method name="get_importer_version" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<description>
+				Gets the version of the importer. When the version changes, all associated resources will be re-imported.
 			</description>
 		</method>
 		<method name="get_option_visibility" qualifiers="virtual">
