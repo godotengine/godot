@@ -17,6 +17,6 @@
     <repository url="$projecturl$" />
   </metadata>
   <files>
-    <file src="Sdk\**" target="Sdk" />\
+    <file src="Sdk\**" target="Sdk" />
   </files>
 </package>
