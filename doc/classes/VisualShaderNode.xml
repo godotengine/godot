@@ -57,12 +57,6 @@
 				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubemap] (and their derivatives).
 			</description>
 		</signal>
-		<signal name="show_port_preview">
-			<argument index="0" name="port_id" type="int">
-			</argument>
-			<description>
-			</description>
-		</signal>
 	</signals>
 	<constants>
 		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
