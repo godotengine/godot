@@ -233,6 +233,7 @@ class EditorInspectorSection : public Container {
 
 	Timer *dropping_unfold_timer;
 	bool dropping;
+	bool attempting_drop;
 
 	void _test_unfold();
 

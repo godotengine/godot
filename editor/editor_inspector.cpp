@@ -1165,7 +1165,8 @@ void EditorInspectorSection::_notification(int p_what) {
 		}
 		h += get_theme_constant("vseparation", "Tree");
 
-		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
+		Color box_color = attempting_drop ? get_theme_color("highlight_color", "Editor") : bg_color;
+		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), box_color);
 
 		const int arrow_margin = 3;
 		Color color = get_theme_color("font_color", "Tree");
@@ -1206,14 +1207,18 @@ void EditorInspectorSection::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-		if (dropping) {
+		if (dropping && foldable && !object->editor_is_section_unfolded(section)) {
 			dropping_unfold_timer->start();
+			attempting_drop = true;
+			update();
 		}
 	}
 
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
 		if (dropping) {
 			dropping_unfold_timer->stop();
+			attempting_drop = false;
+			update();
 		}
 	}
 }
@@ -1295,6 +1300,8 @@ void EditorInspectorSection::unfold() {
 		return;
 	}
 
+	attempting_drop = false;
+
 	_test_unfold();
 
 	object->editor_set_section_unfold(section, true);
@@ -1331,6 +1338,7 @@ EditorInspectorSection::EditorInspectorSection() {
 	vbox_added = false;
 
 	dropping = false;
+	attempting_drop = false;
 	dropping_unfold_timer = memnew(Timer);
 	dropping_unfold_timer->set_wait_time(0.6);
 	dropping_unfold_timer->set_one_shot(true);
