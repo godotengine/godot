@@ -32,21 +32,20 @@
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
-
 	Ref<StyleBox> style = get_theme_stylebox("slider");
 	Size2i ss = style->get_minimum_size() + style->get_center_size();
 
 	Ref<Texture2D> grabber = get_theme_icon("grabber");
 	Size2i rs = grabber->get_size();
 
-	if (orientation == HORIZONTAL)
+	if (orientation == HORIZONTAL) {
 		return Size2i(ss.width, MAX(ss.height, rs.height));
-	else
+	} else {
 		return Size2i(MAX(ss.width, rs.width), ss.height);
+	}
 }
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
-
 	if (!editable) {
 		return;
 	}
@@ -55,7 +54,6 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == BUTTON_LEFT) {
-
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -63,10 +61,11 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 				double grab_width = (double)grabber->get_size().width;
 				double grab_height = (double)grabber->get_size().height;
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
-				if (orientation == VERTICAL)
+				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
-				else
+				} else {
 					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+				}
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 			} else {
@@ -85,53 +84,51 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 
 	if (mm.is_valid()) {
 		if (grab.active) {
-
 			Size2i size = get_size();
 			Ref<Texture2D> grabber = get_theme_icon("grabber");
 			float motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
-			if (orientation == VERTICAL)
+			if (orientation == VERTICAL) {
 				motion = -motion;
+			}
 			float areasize = orientation == VERTICAL ? size.height - grabber->get_size().height : size.width - grabber->get_size().width;
-			if (areasize <= 0)
+			if (areasize <= 0) {
 				return;
+			}
 			float umotion = motion / float(areasize);
 			set_as_ratio(grab.uvalue + umotion);
 		}
 	}
 
 	if (!mm.is_valid() && !mb.is_valid()) {
-
 		if (p_event->is_action_pressed("ui_left", true)) {
-
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
-
-			if (orientation != HORIZONTAL)
+			if (orientation != HORIZONTAL) {
 				return;
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
-
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
-
-			if (orientation != VERTICAL)
+			if (orientation != VERTICAL) {
 				return;
+			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action("ui_home") && p_event->is_pressed()) {
-
 			set_value(get_min());
 			accept_event();
 		} else if (p_event->is_action("ui_end") && p_event->is_pressed()) {
-
 			set_value(get_max());
 			accept_event();
 		}
@@ -139,26 +136,21 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void Slider::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
-
 			mouse_inside = true;
 			update();
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-
 			mouse_inside = false;
 			update();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: // fallthrough
 		case NOTIFICATION_EXIT_TREE: {
-
 			mouse_inside = false;
 			grab.active = false;
 		} break;
@@ -173,7 +165,6 @@ void Slider::_notification(int p_what) {
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
 			if (orientation == VERTICAL) {
-
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
 				float areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
@@ -182,14 +173,15 @@ void Slider::_notification(int p_what) {
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().height / 2 - tick->get_height() / 2);
 					for (int i = 0; i < ticks; i++) {
-						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) continue;
+						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) {
+							continue;
+						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
 					}
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2, size.height - ratio * areasize - grabber->get_size().height));
 			} else {
-
 				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
 				float areasize = size.width - grabber->get_size().width;
 
@@ -199,7 +191,9 @@ void Slider::_notification(int p_what) {
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_size().width / 2 - tick->get_width() / 2);
 					for (int i = 0; i < ticks; i++) {
-						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) continue;
+						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) {
+							continue;
+						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset;
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
@@ -212,23 +206,19 @@ void Slider::_notification(int p_what) {
 }
 
 void Slider::set_custom_step(float p_custom_step) {
-
 	custom_step = p_custom_step;
 }
 
 float Slider::get_custom_step() const {
-
 	return custom_step;
 }
 
 void Slider::set_ticks(int p_count) {
-
 	ticks = p_count;
 	update();
 }
 
 int Slider::get_ticks() const {
-
 	return ticks;
 }
 
@@ -242,28 +232,23 @@ void Slider::set_ticks_on_borders(bool _tob) {
 }
 
 void Slider::set_editable(bool p_editable) {
-
 	editable = p_editable;
 	update();
 }
 
 bool Slider::is_editable() const {
-
 	return editable;
 }
 
 void Slider::set_scrollable(bool p_scrollable) {
-
 	scrollable = p_scrollable;
 }
 
 bool Slider::is_scrollable() const {
-
 	return scrollable;
 }
 
 void Slider::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Slider::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_ticks", "count"), &Slider::set_ticks);
 	ClassDB::bind_method(D_METHOD("get_ticks"), &Slider::get_ticks);

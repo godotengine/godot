@@ -53,8 +53,9 @@ protected:
 	Map<RID, RID> render_target_descriptors;
 
 	double time;
+	float delta;
 
-	static uint32_t frame;
+	static uint64_t frame;
 
 public:
 	RasterizerStorage *get_storage() { return storage; }
@@ -71,7 +72,9 @@ public:
 	void end_frame(bool p_swap_buffers);
 	void finalize();
 
-	static _ALWAYS_INLINE_ uint64_t get_frame_number() { return frame; }
+	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
+	_ALWAYS_INLINE_ float get_frame_delta_time() const { return delta; }
+	_ALWAYS_INLINE_ double get_total_time() const { return time; }
 
 	static Error is_viable() {
 		return OK;
@@ -89,6 +92,7 @@ public:
 
 	static ThreadWorkPool thread_work_pool;
 
+	static RasterizerRD *singleton;
 	RasterizerRD();
 	~RasterizerRD() {}
 };

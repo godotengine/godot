@@ -33,7 +33,6 @@
 #include "core/io/image_loader.h"
 
 void BitMap::create(const Size2 &p_size) {
-
 	ERR_FAIL_COND(p_size.width < 1);
 	ERR_FAIL_COND(p_size.height < 1);
 
@@ -44,7 +43,6 @@ void BitMap::create(const Size2 &p_size) {
 }
 
 void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshold) {
-
 	ERR_FAIL_COND(p_image.is_null() || p_image->empty());
 	Ref<Image> img = p_image->duplicate();
 	img->convert(Image::FORMAT_LA8);
@@ -56,7 +54,6 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 	uint8_t *w = bitmask.ptrw();
 
 	for (int i = 0; i < width * height; i++) {
-
 		int bbyte = i / 8;
 		int bbit = i % 8;
 		if (r[i * 2 + 1] / 255.0 > p_threshold) {
@@ -66,24 +63,22 @@ void BitMap::create_from_image_alpha(const Ref<Image> &p_image, float p_threshol
 }
 
 void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
-
 	Rect2i current = Rect2i(0, 0, width, height).clip(p_rect);
 	uint8_t *data = bitmask.ptrw();
 
 	for (int i = current.position.x; i < current.position.x + current.size.x; i++) {
-
 		for (int j = current.position.y; j < current.position.y + current.size.y; j++) {
-
 			int ofs = width * j + i;
 			int bbyte = ofs / 8;
 			int bbit = ofs % 8;
 
 			uint8_t b = data[bbyte];
 
-			if (p_value)
+			if (p_value) {
 				b |= (1 << bbit);
-			else
+			} else {
 				b &= ~(1 << bbit);
+			}
 
 			data[bbyte] = b;
 		}
@@ -91,7 +86,6 @@ void BitMap::set_bit_rect(const Rect2 &p_rect, bool p_value) {
 }
 
 int BitMap::get_true_bit_count() const {
-
 	int ds = bitmask.size();
 	const uint8_t *d = bitmask.ptr();
 	int c = 0;
@@ -99,7 +93,6 @@ int BitMap::get_true_bit_count() const {
 	//fast, almost branchless version
 
 	for (int i = 0; i < ds; i++) {
-
 		c += (d[i] & (1 << 7)) >> 7;
 		c += (d[i] & (1 << 6)) >> 6;
 		c += (d[i] & (1 << 5)) >> 5;
@@ -114,7 +107,6 @@ int BitMap::get_true_bit_count() const {
 }
 
 void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
-
 	int x = p_pos.x;
 	int y = p_pos.y;
 
@@ -127,16 +119,16 @@ void BitMap::set_bit(const Point2 &p_pos, bool p_value) {
 
 	uint8_t b = bitmask[bbyte];
 
-	if (p_value)
+	if (p_value) {
 		b |= (1 << bbit);
-	else
+	} else {
 		b &= ~(1 << bbit);
+	}
 
 	bitmask.write[bbyte] = b;
 }
 
 bool BitMap::get_bit(const Point2 &p_pos) const {
-
 	int x = Math::fast_ftoi(p_pos.x);
 	int y = Math::fast_ftoi(p_pos.y);
 	ERR_FAIL_INDEX_V(x, width, false);
@@ -150,12 +142,10 @@ bool BitMap::get_bit(const Point2 &p_pos) const {
 }
 
 Size2 BitMap::get_size() const {
-
 	return Size2(width, height);
 }
 
 void BitMap::_set_data(const Dictionary &p_d) {
-
 	ERR_FAIL_COND(!p_d.has("size"));
 	ERR_FAIL_COND(!p_d.has("data"));
 
@@ -164,7 +154,6 @@ void BitMap::_set_data(const Dictionary &p_d) {
 }
 
 Dictionary BitMap::_get_data() const {
-
 	Dictionary d;
 	d["size"] = get_size();
 	d["data"] = bitmask;
@@ -172,7 +161,6 @@ Dictionary BitMap::_get_data() const {
 }
 
 Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) const {
-
 	int stepx = 0;
 	int stepy = 0;
 	int prevx = 0;
@@ -209,7 +197,6 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 		}
 
 		switch (sv) {
-
 			case 1:
 			case 5:
 			case 13:
@@ -354,8 +341,9 @@ static float perpendicular_distance(const Vector2 &i, const Vector2 &start, cons
 }
 
 static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
-	if (v.size() < 3)
+	if (v.size() < 3) {
 		return v;
+	}
 
 	int index = -1;
 	float dist = 0;
@@ -368,7 +356,6 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 		}
 	}
 	if (dist > optimization) {
-
 		Vector<Vector2> left, right;
 		left.resize(index);
 		for (int i = 0; i < index; i++) {
@@ -424,7 +411,6 @@ struct FillBitsStackEntry {
 };
 
 static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_pos, const Rect2i &rect) {
-
 	// Using a custom stack to work iteratively to avoid stack overflow on big bitmaps
 	Vector<FillBitsStackEntry> stack;
 	// Tracking size since we won't be shrinking the stack vector
@@ -453,15 +439,17 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 					continue;
 				}
 
-				if (i < rect.position.x || i >= rect.position.x + rect.size.x)
+				if (i < rect.position.x || i >= rect.position.x + rect.size.x) {
 					continue;
-				if (j < rect.position.y || j >= rect.position.y + rect.size.y)
+				}
+				if (j < rect.position.y || j >= rect.position.y + rect.size.y) {
+					continue;
+				}
+
+				if (p_map->get_bit(Vector2(i, j))) {
 					continue;
 
-				if (p_map->get_bit(Vector2(i, j)))
-					continue;
-
-				else if (p_src->get_bit(Vector2(i, j))) {
+				} else if (p_src->get_bit(Vector2(i, j))) {
 					p_map->set_bit(Vector2(i, j), true);
 
 					FillBitsStackEntry se = { pos, i, j };
@@ -494,7 +482,6 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 }
 
 Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon) const {
-
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
 	print_verbose("BitMap: Rect: " + r);
 
@@ -507,7 +494,6 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, flo
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
 			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
-
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
@@ -529,7 +515,6 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, flo
 }
 
 void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
-
 	if (p_pixels == 0) {
 		return;
 	}
@@ -546,35 +531,38 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
-			if (bit_value == get_bit(Point2(j, i)))
+			if (bit_value == get_bit(Point2(j, i))) {
 				continue;
+			}
 
 			bool found = false;
 
 			for (int y = i - p_pixels; y <= i + p_pixels; y++) {
 				for (int x = j - p_pixels; x <= j + p_pixels; x++) {
-
 					bool outside = false;
 
 					if ((x < p_rect.position.x) || (x >= p_rect.position.x + p_rect.size.x) || (y < p_rect.position.y) || (y >= p_rect.position.y + p_rect.size.y)) {
 						// outside of rectangle counts as bit not set
-						if (!bit_value)
+						if (!bit_value) {
 							outside = true;
-						else
+						} else {
 							continue;
+						}
 					}
 
 					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
-					if (d > p_pixels)
+					if (d > p_pixels) {
 						continue;
+					}
 
 					if (outside || (bit_value == copy->get_bit(Point2(x, y)))) {
 						found = true;
 						break;
 					}
 				}
-				if (found)
+				if (found) {
 					break;
+				}
 			}
 
 			if (found) {
@@ -585,12 +573,10 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 }
 
 void BitMap::shrink_mask(int p_pixels, const Rect2 &p_rect) {
-
 	grow_mask(-p_pixels, p_rect);
 }
 
 Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
-
 	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
 
 	// Convert result to bindable types
@@ -598,7 +584,6 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 	Array result_array;
 	result_array.resize(result.size());
 	for (int i = 0; i < result.size(); i++) {
-
 		const Vector<Vector2> &polygon = result[i];
 
 		PackedVector2Array polygon_array;
@@ -618,7 +603,6 @@ Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) con
 }
 
 void BitMap::resize(const Size2 &p_new_size) {
-
 	Ref<BitMap> new_bitmap;
 	new_bitmap.instance();
 	new_bitmap->create(p_new_size);
@@ -636,7 +620,6 @@ void BitMap::resize(const Size2 &p_new_size) {
 }
 
 Ref<Image> BitMap::convert_to_image() const {
-
 	Ref<Image> image;
 	image.instance();
 	image->create(width, height, false, Image::FORMAT_L8);
@@ -649,8 +632,8 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	return image;
 }
-void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 
+void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 	int x = p_pos.x;
 	int y = p_pos.y;
 	int w = p_bitmap->get_size().width;
@@ -660,10 +643,12 @@ void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 		for (int j = 0; j < h; j++) {
 			int px = x + i;
 			int py = y + j;
-			if (px < 0 || px >= width)
+			if (px < 0 || px >= width) {
 				continue;
-			if (py < 0 || py >= height)
+			}
+			if (py < 0 || py >= height) {
 				continue;
+			}
 			if (p_bitmap->get_bit(Vector2(i, j))) {
 				set_bit(Vector2(x, y), true);
 			}
@@ -672,7 +657,6 @@ void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 }
 
 void BitMap::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("create", "size"), &BitMap::create);
 	ClassDB::bind_method(D_METHOD("create_from_image_alpha", "image", "threshold"), &BitMap::create_from_image_alpha, DEFVAL(0.1));
 
@@ -694,7 +678,6 @@ void BitMap::_bind_methods() {
 }
 
 BitMap::BitMap() {
-
 	width = 0;
 	height = 0;
 }

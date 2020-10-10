@@ -136,7 +136,6 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
-
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
@@ -146,6 +145,8 @@ int widechar_main(int argc, wchar_t **argv) {
 	for (int i = 0; i < argc; ++i) {
 		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
+
+	TEST_MAIN_PARAM_OVERRIDE(argc, argv_utf8)
 
 	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 
@@ -187,10 +188,12 @@ int _main() {
 	return result;
 }
 
-int main(int _argc, char **_argv) {
+int main(int argc, char **argv) {
+	// override the arguments for the test handler / if symbol is provided
+	// TEST_MAIN_OVERRIDE
+
 	// _argc and _argv are ignored
 	// we are going to use the WideChar version of them instead
-
 #ifdef CRASH_HANDLER_EXCEPTION
 	__try {
 		return _main();

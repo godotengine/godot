@@ -39,7 +39,6 @@
 #include "scene/resources/texture.h"
 
 class Theme : public Resource {
-
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
@@ -54,7 +53,7 @@ class Theme : public Resource {
 
 	Vector<String> _get_icon_list(const String &p_type) const;
 	Vector<String> _get_stylebox_list(const String &p_type) const;
-	Vector<String> _get_stylebox_types(void) const;
+	Vector<String> _get_stylebox_types() const;
 	Vector<String> _get_font_list(const String &p_type) const;
 	Vector<String> _get_color_list(const String &p_type) const;
 	Vector<String> _get_constant_list(const String &p_type) const;

@@ -6,14 +6,22 @@
 	<description>
 		[TextureButton] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex [Control]s.
 		The "normal" state must contain a texture ([member texture_normal]); other textures are optional.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="expand" type="bool" setter="set_expand" getter="get_expand" default="false">
 			If [code]true[/code], the texture stretches to the edges of the node's bounding rectangle using the [member stretch_mode]. If [code]false[/code], the texture will not scale with the node.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureButton.StretchMode" default="0">
 			Controls the texture's behavior when you resize the node's bounding rectangle, [b]only if[/b] [member expand] is [code]true[/code]. Set it to one of the [enum StretchMode] constants. See the constants to learn more.

@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
-/* clang-format on */
 
 #define MAX_DISTANCE 100000
 
@@ -45,7 +43,6 @@ layout(push_constant, binding = 0, std430) uniform Params {
 params;
 
 void main() {
-
 	vec3 pos = vec3(gl_GlobalInvocationID);
 	float closest_dist = 100000.0;
 
@@ -71,19 +68,17 @@ void main() {
 
 #if 0
 layout(push_constant, binding = 0, std430) uniform Params {
-
 	ivec3 limits;
 	uint stack_size;
-} params;
+}
+params;
 
 float distance_to_aabb(ivec3 pos, ivec3 aabb_pos, ivec3 aabb_size) {
-
 	vec3 delta = vec3(max(ivec3(0), max(aabb_pos - pos, pos - (aabb_pos + aabb_size - ivec3(1)))));
 	return length(delta);
 }
 
 void main() {
-
 	ivec3 pos = ivec3(gl_GlobalInvocationID);
 
 	uint stack[10] = uint[](0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -107,7 +102,6 @@ void main() {
 	int stack_pos = 0;
 
 	while (true) {
-
 		uint index = stack_indices[stack_pos] >> 24;
 
 		if (index == 8) {

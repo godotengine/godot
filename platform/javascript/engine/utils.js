@@ -27,24 +27,6 @@ var Utils = {
 		return instantiateWasm;
 	},
 
-	copyToFS: function(fs, path, buffer) {
-		var p = path.lastIndexOf("/");
-		var dir = "/";
-		if (p > 0) {
-			dir = path.slice(0, path.lastIndexOf("/"));
-		}
-		try {
-			fs.stat(dir);
-		} catch (e) {
-			if (e.errno !== 44) { // 'ENOENT', see https://github.com/emscripten-core/emscripten/blob/master/system/lib/libc/musl/arch/emscripten/bits/errno.h
-				throw e;
-			}
-			fs['mkdirTree'](dir);
-		}
-		// With memory growth, canOwn should be false.
-		fs['writeFile'](path, new Uint8Array(buffer), {'flags': 'wx+'});
-	},
-
 	findCanvas: function() {
 		var nodes = document.getElementsByTagName('canvas');
 		if (nodes.length && nodes[0] instanceof HTMLCanvasElement) {

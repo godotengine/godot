@@ -44,7 +44,6 @@
 #define WSL_MAX_HEADER_SIZE 4096
 
 class WSLPeer : public WebSocketPeer {
-
 	GDCIIMPL(WSLPeer, WebSocketPeer);
 
 public:

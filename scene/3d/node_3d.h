@@ -35,7 +35,6 @@
 #include "scene/main/scene_tree.h"
 
 class Node3DGizmo : public Reference {
-
 	GDCLASS(Node3DGizmo, Reference);
 
 public:
@@ -50,7 +49,6 @@ public:
 };
 
 class Node3D : public Node {
-
 	GDCLASS(Node3D, Node);
 	OBJ_CATEGORY("3D");
 
@@ -64,7 +62,6 @@ class Node3D : public Node {
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
-
 		mutable Transform global_transform;
 		mutable Transform local_transform;
 		mutable Vector3 rotation;
@@ -74,8 +71,8 @@ class Node3D : public Node {
 
 		Viewport *viewport;
 
-		bool toplevel_active;
-		bool toplevel;
+		bool top_level_active;
+		bool top_level;
 		bool inside_world;
 
 		int children_lock;
@@ -124,7 +121,7 @@ public:
 
 	Node3D *get_parent_spatial() const;
 
-	Ref<World3D> get_world() const;
+	Ref<World3D> get_world_3d() const;
 
 	void set_translation(const Vector3 &p_translation);
 	void set_rotation(const Vector3 &p_euler_rad);
@@ -147,8 +144,8 @@ public:
 	virtual Transform get_local_gizmo_transform() const;
 #endif
 
-	void set_as_toplevel(bool p_enabled);
-	bool is_set_as_toplevel() const;
+	void set_as_top_level(bool p_enabled);
+	bool is_set_as_top_level() const;
 
 	void set_disable_scale(bool p_enabled);
 	bool is_scale_disabled() const;

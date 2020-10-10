@@ -34,25 +34,28 @@
 #include "editor_scale.h"
 
 void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
-
-	if (p_depth > 8)
+	if (p_depth > 8) {
 		return;
+	}
 
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo);
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
-		if (E->get().hint != PROPERTY_HINT_RESOURCE_TYPE)
+		}
+		if (E->get().hint != PROPERTY_HINT_RESOURCE_TYPE) {
 			continue;
+		}
 
 		Variant value = p_obj->get(E->get().name);
-		if (value.get_type() != Variant::OBJECT)
+		if (value.get_type() != Variant::OBJECT) {
 			continue;
+		}
 		Object *obj = value;
-		if (!obj)
+		if (!obj) {
 			continue;
+		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
@@ -66,10 +69,10 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void EditorPath::_about_to_show() {
-
 	Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
-	if (!obj)
+	if (!obj) {
 		return;
+	}
 
 	objects.clear();
 	get_popup()->clear();
@@ -83,37 +86,39 @@ void EditorPath::_about_to_show() {
 }
 
 void EditorPath::update_path() {
-
 	for (int i = 0; i < history->get_path_size(); i++) {
-
 		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
-		if (!obj)
+		if (!obj) {
 			continue;
+		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
-		if (icon.is_valid())
+		if (icon.is_valid()) {
 			set_icon(icon);
+		}
 
 		if (i == history->get_path_size() - 1) {
 			String name;
 			if (Object::cast_to<Resource>(obj)) {
-
 				Resource *r = Object::cast_to<Resource>(obj);
-				if (r->get_path().is_resource_file())
+				if (r->get_path().is_resource_file()) {
 					name = r->get_path().get_file();
-				else
+				} else {
 					name = r->get_name();
+				}
 
-				if (name == "")
+				if (name == "") {
 					name = r->get_class();
-			} else if (obj->is_class("EditorDebuggerRemoteObject"))
+				}
+			} else if (obj->is_class("EditorDebuggerRemoteObject")) {
 				name = obj->call("get_title");
-			else if (Object::cast_to<Node>(obj))
+			} else if (Object::cast_to<Node>(obj)) {
 				name = Object::cast_to<Node>(obj)->get_name();
-			else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "")
+			} else if (Object::cast_to<Resource>(obj) && Object::cast_to<Resource>(obj)->get_name() != "") {
 				name = Object::cast_to<Resource>(obj)->get_name();
-			else
+			} else {
 				name = obj->get_class();
+			}
 
 			set_text(" " + name); // An extra space so the text is not too close of the icon.
 			set_tooltip(obj->get_class());
@@ -122,18 +127,17 @@ void EditorPath::update_path() {
 }
 
 void EditorPath::_id_pressed(int p_idx) {
-
 	ERR_FAIL_INDEX(p_idx, objects.size());
 
 	Object *obj = ObjectDB::get_instance(objects[p_idx]);
-	if (!obj)
+	if (!obj) {
 		return;
+	}
 
 	EditorNode::get_singleton()->push_item(obj);
 }
 
 void EditorPath::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
@@ -145,7 +149,6 @@ void EditorPath::_bind_methods() {
 }
 
 EditorPath::EditorPath(EditorHistory *p_history) {
-
 	history = p_history;
 	set_clip_text(true);
 	set_text_align(ALIGN_LEFT);

@@ -31,11 +31,11 @@
 #ifndef RANDOM_PCG_H
 #define RANDOM_PCG_H
 
-#include <math.h>
-
 #include "core/math/math_defs.h"
 
 #include "thirdparty/misc/pcg.h"
+
+#include <math.h>
 
 #if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
@@ -67,7 +67,6 @@ class RandomPCG {
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
 	static const uint64_t DEFAULT_INC = PCG_DEFAULT_INC_64;
-	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
 
 	RandomPCG(uint64_t p_seed = DEFAULT_SEED, uint64_t p_inc = DEFAULT_INC);
 

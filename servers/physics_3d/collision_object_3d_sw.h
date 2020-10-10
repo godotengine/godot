@@ -59,7 +59,6 @@ private:
 	uint32_t collision_mask;
 
 	struct Shape {
-
 		Transform xform;
 		Transform xform_inv;
 		BroadPhase3DSW::ID bpid;
@@ -92,7 +91,9 @@ protected:
 #endif
 
 		transform = p_transform;
-		if (p_update_shapes) _update_shapes();
+		if (p_update_shapes) {
+			_update_shapes();
+		}
 	}
 	_FORCE_INLINE_ void _set_inv_transform(const Transform &p_transform) { inv_transform = p_transform; }
 	void _set_static(bool p_static);
@@ -141,10 +142,16 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) { collision_layer = p_layer; }
+	_FORCE_INLINE_ void set_collision_layer(uint32_t p_layer) {
+		collision_layer = p_layer;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
 
-	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }
+	_FORCE_INLINE_ void set_collision_mask(uint32_t p_mask) {
+		collision_mask = p_mask;
+		_shape_changed();
+	}
 	_FORCE_INLINE_ uint32_t get_collision_mask() const { return collision_mask; }
 
 	_FORCE_INLINE_ bool test_collision_mask(CollisionObject3DSW *p_other) const {

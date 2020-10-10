@@ -36,12 +36,10 @@
 #include "thirdparty/misc/mikktspace.h"
 
 class SurfaceTool : public Reference {
-
 	GDCLASS(SurfaceTool, Reference);
 
 public:
 	struct Vertex {
-
 		Vector3 vertex;
 		Color color;
 		Vector3 normal; // normal, binormal, tangent

@@ -35,21 +35,18 @@ void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
 }
 
 float AudioStreamGenerator::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 void AudioStreamGenerator::set_buffer_length(float p_seconds) {
-
 	buffer_len = p_seconds;
 }
-float AudioStreamGenerator::get_buffer_length() const {
 
+float AudioStreamGenerator::get_buffer_length() const {
 	return buffer_len;
 }
 
 Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
-
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instance();
 	playback->generator = this;
@@ -58,8 +55,8 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instance_playback() {
 	playback->buffer.clear();
 	return playback;
 }
-String AudioStreamGenerator::get_stream_name() const {
 
+String AudioStreamGenerator::get_stream_name() const {
 	return "UserFeed";
 }
 
@@ -99,8 +96,8 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 bool AudioStreamGeneratorPlayback::can_push_buffer(int p_frames) const {
 	return buffer.space_left() >= p_frames;
 }
-bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frames) {
 
+bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frames) {
 	int to_write = p_frames.size();
 	if (buffer.space_left() < to_write) {
 		return false;
@@ -115,7 +112,6 @@ bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frame
 		AudioFrame buf[2048];
 		int ofs = 0;
 		while (to_write) {
-
 			int w = MIN(to_write, 2048);
 			for (int i = 0; i < w; i++) {
 				buf[i] = r[i + ofs];
@@ -143,7 +139,6 @@ void AudioStreamGeneratorPlayback::clear_buffer() {
 }
 
 void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
 	int read_amount = buffer.data_left();
 	if (p_frames < read_amount) {
 		read_amount = p_frames;
@@ -162,12 +157,12 @@ void AudioStreamGeneratorPlayback::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	mixed += p_frames / generator->get_mix_rate();
 }
+
 float AudioStreamGeneratorPlayback::get_stream_sampling_rate() {
 	return generator->get_mix_rate();
 }
 
 void AudioStreamGeneratorPlayback::start(float p_from_pos) {
-
 	if (mixed == 0.0) {
 		_begin_resample();
 	}
@@ -179,8 +174,8 @@ void AudioStreamGeneratorPlayback::start(float p_from_pos) {
 void AudioStreamGeneratorPlayback::stop() {
 	active = false;
 }
-bool AudioStreamGeneratorPlayback::is_playing() const {
 
+bool AudioStreamGeneratorPlayback::is_playing() const {
 	return active; //always playing, can't be stopped
 }
 
@@ -191,6 +186,7 @@ int AudioStreamGeneratorPlayback::get_loop_count() const {
 float AudioStreamGeneratorPlayback::get_playback_position() const {
 	return mixed;
 }
+
 void AudioStreamGeneratorPlayback::seek(float p_time) {
 	//no seek possible
 }

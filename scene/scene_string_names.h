@@ -35,7 +35,6 @@
 #include "core/string_name.h"
 
 class SceneStringNames {
-
 	friend void register_scene_types();
 	friend void unregister_scene_types();
 
@@ -95,6 +94,8 @@ public:
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
+
+	StringName pose_updated;
 
 	StringName body_shape_entered;
 	StringName body_entered;
@@ -207,7 +208,13 @@ public:
 	StringName window_input;
 
 	StringName theme_changed;
+	StringName shader_overrides_group;
+	StringName shader_overrides_group_active;
 
+#ifndef DISABLE_DEPRECATED
+	StringName use_in_baked_light;
+	StringName use_dynamic_gi;
+#endif
 	enum {
 		MAX_MATERIALS = 32
 	};

@@ -54,7 +54,6 @@ basist::etc1_global_selector_codebook *sel_codebook = nullptr;
 
 #ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
-
 	Vector<uint8_t> budata;
 
 	{
@@ -163,7 +162,6 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 
 	switch (*(uint32_t *)(ptr)) {
 		case BASIS_DECOMPRESS_RG: {
-
 			if (RS::get_singleton()->has_os_feature("rgtc")) {
 				format = basist::transcoder_texture_format::cTFBC5; // get this from renderer
 				imgfmt = Image::FORMAT_RGTC_RG;
@@ -186,7 +184,6 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				format = basist::transcoder_texture_format::cTFBC1; // get this from renderer
 				imgfmt = Image::FORMAT_DXT1;
 			} else if (RS::get_singleton()->has_os_feature("etc")) {
-
 				format = basist::transcoder_texture_format::cTFETC1; // get this from renderer
 				imgfmt = Image::FORMAT_ETC;
 			} else {
@@ -243,13 +240,13 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	{
 		uint8_t *w = gpudata.ptrw();
 		uint8_t *dst = w;
-		for (int i = 0; i < gpudata.size(); i++)
+		for (int i = 0; i < gpudata.size(); i++) {
 			dst[i] = 0x00;
+		}
 
 		int ofs = 0;
 		tr.start_transcoding(ptr, size);
 		for (uint32_t i = 0; i < info.m_total_levels; i++) {
-
 			basist::basisu_image_level_info level;
 			tr.get_image_level_info(ptr, size, level, 0, i);
 
@@ -279,7 +276,6 @@ void register_basis_universal_types() {
 }
 
 void unregister_basis_universal_types() {
-
 #ifdef TOOLS_ENABLED
 	delete sel_codebook;
 	Image::basis_universal_packer = nullptr;

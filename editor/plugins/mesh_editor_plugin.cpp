@@ -33,15 +33,13 @@
 #include "editor/editor_scale.h"
 
 void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
-
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
-		if (rot_x < -Math_PI / 2)
+		if (rot_x < -Math_PI / 2) {
 			rot_x = -Math_PI / 2;
-		else if (rot_x > Math_PI / 2) {
+		} else if (rot_x > Math_PI / 2) {
 			rot_x = Math_PI / 2;
 		}
 		_update_rotation();
@@ -49,9 +47,7 @@ void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
 void MeshEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
-
 		//get_scene()->connect("node_removed",this,"_node_removed");
 
 		if (first_enter) {
@@ -67,7 +63,6 @@ void MeshEditor::_notification(int p_what) {
 }
 
 void MeshEditor::_update_rotation() {
-
 	Transform t;
 	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
 	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
@@ -75,7 +70,6 @@ void MeshEditor::_update_rotation() {
 }
 
 void MeshEditor::edit(Ref<Mesh> p_mesh) {
-
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
@@ -98,7 +92,6 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 }
 
 void MeshEditor::_button_pressed(Node *p_button) {
-
 	if (p_button == light_1_switch) {
 		light1->set_visible(!light_1_switch->is_pressed());
 	}
@@ -109,16 +102,14 @@ void MeshEditor::_button_pressed(Node *p_button) {
 }
 
 void MeshEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
 }
 
 MeshEditor::MeshEditor() {
-
 	viewport = memnew(SubViewport);
-	Ref<World3D> world;
-	world.instance();
-	viewport->set_world(world); //use own world
+	Ref<World3D> world_3d;
+	world_3d.instance();
+	viewport->set_world_3d(world_3d); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_msaa(Viewport::MSAA_2X);
@@ -172,12 +163,10 @@ MeshEditor::MeshEditor() {
 ///////////////////////
 
 bool EditorInspectorPluginMesh::can_handle(Object *p_object) {
-
 	return Object::cast_to<Mesh>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
-
 	Mesh *mesh = Object::cast_to<Mesh>(p_object);
 	if (!mesh) {
 		return;
@@ -190,7 +179,6 @@ void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
 }
 
 MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginMesh> plugin;
 	plugin.instance();
 	add_inspector_plugin(plugin);

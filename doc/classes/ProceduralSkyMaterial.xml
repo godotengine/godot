@@ -40,11 +40,8 @@
 		<member name="sun_angle_max" type="float" setter="set_sun_angle_max" getter="get_sun_angle_max" default="100.0">
 			Distance from center of sun where it fades out completely.
 		</member>
-		<member name="sun_angle_min" type="float" setter="set_sun_angle_min" getter="get_sun_angle_min" default="1.0">
-			Distance from sun where it goes from solid to starting to fade.
-		</member>
 		<member name="sun_curve" type="float" setter="set_sun_curve" getter="get_sun_curve" default="0.05">
-			How quickly the sun fades away between [member sun_angle_min] and [member sun_angle_max].
+			How quickly the sun fades away between the edge of the sun disk and [member sun_angle_max].
 		</member>
 	</members>
 	<constants>

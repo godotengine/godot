@@ -149,7 +149,6 @@ struct Location {
  * Represents a link between a source and a target location.
  */
 struct LocationLink {
-
 	/**
 	 * Span of the origin of this link.
 	 *
@@ -220,7 +219,6 @@ struct DocumentLinkParams {
  * text document or a web site.
  */
 struct DocumentLink {
-
 	/**
 	 * The range this link applies to.
 	 */
@@ -282,7 +280,9 @@ struct Command {
 		Dictionary dict;
 		dict["title"] = title;
 		dict["command"] = command;
-		if (arguments.size()) dict["arguments"] = arguments;
+		if (arguments.size()) {
+			dict["arguments"] = arguments;
+		}
 		return dict;
 	}
 };
@@ -486,7 +486,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	SaveOptions save;
+	bool save = false;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +494,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save.to_json();
+		dict["save"] = save;
 		return dict;
 	}
 };
@@ -946,16 +946,24 @@ struct CompletionItem {
 			dict["preselect"] = preselect;
 			dict["sortText"] = sortText;
 			dict["filterText"] = filterText;
-			if (commitCharacters.size()) dict["commitCharacters"] = commitCharacters;
+			if (commitCharacters.size()) {
+				dict["commitCharacters"] = commitCharacters;
+			}
 			dict["command"] = command.to_json();
 		}
 		return dict;
 	}
 
 	void load(const Dictionary &p_dict) {
-		if (p_dict.has("label")) label = p_dict["label"];
-		if (p_dict.has("kind")) kind = p_dict["kind"];
-		if (p_dict.has("detail")) detail = p_dict["detail"];
+		if (p_dict.has("label")) {
+			label = p_dict["label"];
+		}
+		if (p_dict.has("kind")) {
+			kind = p_dict["kind"];
+		}
+		if (p_dict.has("detail")) {
+			detail = p_dict["detail"];
+		}
 		if (p_dict.has("documentation")) {
 			Variant doc = p_dict["documentation"];
 			if (doc.get_type() == Variant::STRING) {
@@ -965,12 +973,24 @@ struct CompletionItem {
 				documentation.value = v["value"];
 			}
 		}
-		if (p_dict.has("deprecated")) deprecated = p_dict["deprecated"];
-		if (p_dict.has("preselect")) preselect = p_dict["preselect"];
-		if (p_dict.has("sortText")) sortText = p_dict["sortText"];
-		if (p_dict.has("filterText")) filterText = p_dict["filterText"];
-		if (p_dict.has("insertText")) insertText = p_dict["insertText"];
-		if (p_dict.has("data")) data = p_dict["data"];
+		if (p_dict.has("deprecated")) {
+			deprecated = p_dict["deprecated"];
+		}
+		if (p_dict.has("preselect")) {
+			preselect = p_dict["preselect"];
+		}
+		if (p_dict.has("sortText")) {
+			sortText = p_dict["sortText"];
+		}
+		if (p_dict.has("filterText")) {
+			filterText = p_dict["filterText"];
+		}
+		if (p_dict.has("insertText")) {
+			insertText = p_dict["insertText"];
+		}
+		if (p_dict.has("data")) {
+			data = p_dict["data"];
+		}
 	}
 };
 
@@ -1096,7 +1116,6 @@ struct DocumentedSymbolInformation : public SymbolInformation {
  * e.g. the range of an identifier.
  */
 struct DocumentSymbol {
-
 	/**
 	 * The name of this symbol. Will be displayed in the user interface and therefore must not be
 	 * an empty string or a string only consisting of white spaces.
@@ -1205,7 +1224,6 @@ struct DocumentSymbol {
 	}
 
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-
 		lsp::CompletionItem item;
 		item.label = name;
 
@@ -1249,7 +1267,6 @@ struct DocumentSymbol {
 };
 
 struct NativeSymbolInspectParams {
-
 	String native_class;
 	String symbol_name;
 
@@ -1281,7 +1298,6 @@ static const String Region = "region";
  * Represents a folding range.
  */
 struct FoldingRange {
-
 	/**
 	 * The zero-based line number from where the folded range starts.
 	 */
@@ -1364,7 +1380,6 @@ struct CompletionContext {
 };
 
 struct CompletionParams : public TextDocumentPositionParams {
-
 	/**
 	 * The completion context. This is only available if the client specifies
 	 * to send this using `ClientCapabilities.textDocument.completion.contextSupport === true`
@@ -1405,7 +1420,6 @@ struct Hover {
  * have a label and a doc-comment.
  */
 struct ParameterInformation {
-
 	/**
 	 * The label of this parameter information.
 	 *
@@ -1642,7 +1656,7 @@ struct ServerCapabilities {
 
 	_FORCE_INLINE_ Dictionary to_json() {
 		Dictionary dict;
-		dict["textDocumentSync"] = (int)textDocumentSync.change;
+		dict["textDocumentSync"] = textDocumentSync.to_json();
 		dict["completionProvider"] = completionProvider.to_json();
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
@@ -1684,7 +1698,6 @@ struct InitializeResult {
 };
 
 struct GodotNativeClassInfo {
-
 	String name;
 	const DocData::ClassDoc *class_doc = nullptr;
 	const ClassDB::ClassInfo *class_info = nullptr;
@@ -1699,7 +1712,6 @@ struct GodotNativeClassInfo {
 
 /** Features not included in the standard lsp specifications */
 struct GodotCapabilities {
-
 	/**
 	 * Native class list
 	*/
@@ -1718,7 +1730,6 @@ struct GodotCapabilities {
 
 /** Format BBCode documentation from DocData to markdown */
 static String marked_documentation(const String &p_bbcode) {
-
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");

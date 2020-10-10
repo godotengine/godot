@@ -34,9 +34,8 @@
 #include "core/input/input_event.h"
 #include "core/resource.h"
 
-class ShortCut : public Resource {
-
-	GDCLASS(ShortCut, Resource);
+class Shortcut : public Resource {
+	GDCLASS(Shortcut, Resource);
 
 	Ref<InputEvent> shortcut;
 
@@ -51,7 +50,7 @@ public:
 
 	String get_as_text() const;
 
-	ShortCut();
+	Shortcut();
 };
 
 #endif // SHORTCUT_H

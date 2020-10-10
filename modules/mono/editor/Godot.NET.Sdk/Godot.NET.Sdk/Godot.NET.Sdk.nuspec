@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <description>$description$</description>
+    <authors>$authors$</authors>
+    <owners>$authors$</owners>
+    <projectUrl>$projecturl$</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <tags>$tags$</tags>
+    <packageTypes>
+      <packageType name="$packagetype$" />
+    </packageTypes>
+    <repository url="$projecturl$" />
+  </metadata>
+  <files>
+    <file src="Sdk\**" target="Sdk" />
+  </files>
+</package>

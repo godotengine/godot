@@ -7,7 +7,8 @@
 		Manages the connection to network peers. Assigns unique IDs to each client connected to the server.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="High-level multiplayer">https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="WebRTC Signaling Demo">https://godotengine.org/asset-library/asset/537</link>
 	</tutorials>
 	<methods>
 		<method name="get_connection_status" qualifiers="const">

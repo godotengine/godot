@@ -8,6 +8,7 @@
 		[b]Note:[/b] Contrarily to most other [Control]s, Label's [member Control.mouse_filter] defaults to [constant Control.MOUSE_FILTER_IGNORE] (i.e. it doesn't react to mouse input events). This implies that a label won't display any configured [member Control.hint_tooltip], unless you change its mouse filter.
 	</description>
 	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="get_line_count" qualifiers="const">
@@ -57,7 +58,7 @@
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" override="true" enum="Control.MouseFilter" default="2" />
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
-			Limits the count of visible characters. If you set [code]percent_visible[/code] to 50, only up to half of the text's characters will display on screen. Useful to animate the text in a dialog box.
+			Limits the amount of visible characters. If you set [code]percent_visible[/code] to 0.5, only up to half of the text's characters will display on screen. Useful to animate the text in a dialog box.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="4" />
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">

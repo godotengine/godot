@@ -39,7 +39,6 @@
 #include "scene/gui/tree.h"
 
 class SceneTreeEditor : public Control {
-
 	GDCLASS(SceneTreeEditor, Control);
 
 	EditorSelection *editor_selection;
@@ -163,7 +162,6 @@ public:
 };
 
 class SceneTreeDialog : public ConfirmationDialog {
-
 	GDCLASS(SceneTreeDialog, ConfirmationDialog);
 
 	SceneTreeEditor *tree;
@@ -181,6 +179,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void popup_scenetree_dialog();
 	SceneTreeEditor *get_scene_tree() { return tree; }
 	SceneTreeDialog();
 	~SceneTreeDialog();

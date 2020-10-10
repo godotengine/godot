@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class RayCast2D : public Node2D {
-
 	GDCLASS(RayCast2D, Node2D);
 
 	bool enabled;
@@ -47,7 +46,7 @@ class RayCast2D : public Node2D {
 	uint32_t collision_mask;
 	bool exclude_parent_body;
 
-	Vector2 cast_to;
+	Vector2 target_position;
 
 	bool collide_with_areas;
 	bool collide_with_bodies;
@@ -67,8 +66,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_cast_to(const Vector2 &p_point);
-	Vector2 get_cast_to() const;
+	void set_target_position(const Vector2 &p_point);
+	Vector2 get_target_position() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;

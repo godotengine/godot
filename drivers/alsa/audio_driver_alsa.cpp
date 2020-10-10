@@ -38,7 +38,7 @@
 #include <errno.h>
 
 Error AudioDriverALSA::init_device() {
-	mix_rate = GLOBAL_DEF("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
@@ -104,7 +104,7 @@ Error AudioDriverALSA::init_device() {
 	// In ALSA the period size seems to be the one that will determine the actual latency
 	// Ref: https://www.alsa-project.org/main/index.php/FramesPeriods
 	unsigned int periods = 2;
-	int latency = GLOBAL_DEF("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_GET("audio/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	buffer_size = buffer_frames * periods;
 	period_size = buffer_frames;
@@ -147,7 +147,6 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
-
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
@@ -161,11 +160,9 @@ Error AudioDriverALSA::init() {
 }
 
 void AudioDriverALSA::thread_func(void *p_udata) {
-
 	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		ad->lock();
 		ad->start_counting_ticks();
 
@@ -237,30 +234,27 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 }
 
 void AudioDriverALSA::start() {
-
 	active = true;
 }
 
 int AudioDriverALSA::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverALSA::get_speaker_mode() const {
-
 	return speaker_mode;
 }
 
 Array AudioDriverALSA::get_device_list() {
-
 	Array list;
 
 	list.push_back("Default");
 
 	void **hints;
 
-	if (snd_device_name_hint(-1, "pcm", &hints) < 0)
+	if (snd_device_name_hint(-1, "pcm", &hints) < 0) {
 		return list;
+	}
 
 	for (void **n = hints; *n != nullptr; n++) {
 		char *name = snd_device_name_get_hint(*n, "NAME");
@@ -274,10 +268,12 @@ Array AudioDriverALSA::get_device_list() {
 			}
 		}
 
-		if (desc != nullptr)
+		if (desc != nullptr) {
 			free(desc);
-		if (name != nullptr)
+		}
+		if (name != nullptr) {
 			free(name);
+		}
 	}
 	snd_device_name_free_hint(hints);
 
@@ -285,33 +281,30 @@ Array AudioDriverALSA::get_device_list() {
 }
 
 String AudioDriverALSA::get_device() {
-
 	return device_name;
 }
 
 void AudioDriverALSA::set_device(String device) {
-
 	lock();
 	new_device = device;
 	unlock();
 }
 
 void AudioDriverALSA::lock() {
-
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.lock();
 }
 
 void AudioDriverALSA::unlock() {
-
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.unlock();
 }
 
 void AudioDriverALSA::finish_device() {
-
 	if (pcm_handle) {
 		snd_pcm_close(pcm_handle);
 		pcm_handle = nullptr;
@@ -319,7 +312,6 @@ void AudioDriverALSA::finish_device() {
 }
 
 void AudioDriverALSA::finish() {
-
 	if (thread) {
 		exit_thread = true;
 		Thread::wait_to_finish(thread);
@@ -331,14 +323,4 @@ void AudioDriverALSA::finish() {
 	finish_device();
 }
 
-AudioDriverALSA::AudioDriverALSA() :
-		thread(nullptr),
-		pcm_handle(nullptr),
-		device_name("Default"),
-		new_device("Default") {
-}
-
-AudioDriverALSA::~AudioDriverALSA() {
-}
-
-#endif
+#endif // ALSA_ENABLED

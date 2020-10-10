@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8" />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title></title>
+	<title>$GODOT_PROJECT_NAME</title>
 	<style type="text/css">
 
 		body {
@@ -232,10 +232,10 @@ $GODOT_HEAD_INCLUDE
 
 			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const EXTRA_ARGS = JSON.parse('$GODOT_ARGS');
 			const DEBUG_ENABLED = $GODOT_DEBUG_ENABLED;
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
-			var container = document.getElementById('container');
 			var canvas = document.getElementById('canvas');
 			var statusProgress = document.getElementById('status-progress');
 			var statusProgressInner = document.getElementById('status-progress-inner');
@@ -382,7 +382,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK, EXTRA_ARGS).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

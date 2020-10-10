@@ -31,11 +31,12 @@
 #ifndef POPUP_MENU_H
 #define POPUP_MENU_H
 
+#include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/shortcut.h"
 
 class PopupMenu : public Popup {
-
 	GDCLASS(PopupMenu, Popup);
 
 	struct Item {
@@ -58,10 +59,16 @@ class PopupMenu : public Popup {
 		String tooltip;
 		uint32_t accel;
 		int _ofs_cache;
+		int _height_cache;
 		int h_ofs;
-		Ref<ShortCut> shortcut;
+		Ref<Shortcut> shortcut;
 		bool shortcut_is_global;
 		bool shortcut_is_disabled;
+
+		// Returns (0,0) if icon is null.
+		Size2 get_icon_size() const {
+			return icon.is_null() ? Size2() : icon->get_size();
+		}
 
 		Item() {
 			checked = false;
@@ -72,6 +79,7 @@ class PopupMenu : public Popup {
 			accel = 0;
 			disabled = false;
 			_ofs_cache = 0;
+			_height_cache = 0;
 			h_ofs = 0;
 			shortcut_is_global = false;
 			shortcut_is_disabled = false;
@@ -88,13 +96,16 @@ class PopupMenu : public Popup {
 	Rect2 parent_rect;
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
-	virtual Size2 _get_contents_minimum_size() const;
-	void _scroll(float p_factor, const Point2 &p_over);
+	virtual Size2 _get_contents_minimum_size() const override;
+
+	int _get_items_total_height() const;
+	void _scroll_to_item(int p_item);
+
 	void _gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
-	bool invalidated_click;
+	uint64_t popup_time_msec = 0;
 	bool hide_on_item_selection;
 	bool hide_on_checkable_item_selection;
 	bool hide_on_multistate_item_selection;
@@ -103,18 +114,21 @@ class PopupMenu : public Popup {
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 
-	Map<Ref<ShortCut>, int> shortcut_refcount;
+	Map<Ref<Shortcut>, int> shortcut_refcount;
 
-	void _ref_shortcut(Ref<ShortCut> p_sc);
-	void _unref_shortcut(Ref<ShortCut> p_sc);
+	void _ref_shortcut(Ref<Shortcut> p_sc);
+	void _unref_shortcut(Ref<Shortcut> p_sc);
 
 	bool allow_search;
 	uint64_t search_time_msec;
 	String search_string;
 
+	MarginContainer *margin_container;
+	ScrollContainer *scroll_container;
 	Control *control;
 
-	void _draw();
+	void _draw_items();
+	void _draw_background();
 
 protected:
 	friend class MenuButton;
@@ -131,12 +145,12 @@ public:
 
 	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state = 0, int p_id = -1, uint32_t p_accel = 0);
 
-	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
-	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_radio_check_shortcut(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_radio_check_shortcut(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 
 	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
@@ -152,7 +166,7 @@ public:
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_as_radio_checkable(int p_idx, bool p_radio_checkable);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
-	void set_item_shortcut(int p_idx, const Ref<ShortCut> &p_shortcut, bool p_global = false);
+	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
 	void set_item_h_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
@@ -175,9 +189,10 @@ public:
 	bool is_item_radio_checkable(int p_idx) const;
 	bool is_item_shortcut_disabled(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
-	Ref<ShortCut> get_item_shortcut(int p_idx) const;
+	Ref<Shortcut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
 
+	int get_current_index() const;
 	int get_item_count() const;
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
@@ -193,7 +208,7 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const;
+	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();

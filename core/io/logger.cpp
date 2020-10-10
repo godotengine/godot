@@ -34,17 +34,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
-
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
 #endif
@@ -60,18 +49,29 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 
 	const char *err_type = "ERROR";
 	switch (p_type) {
-		case ERR_ERROR: err_type = "ERROR"; break;
-		case ERR_WARNING: err_type = "WARNING"; break;
-		case ERR_SCRIPT: err_type = "SCRIPT ERROR"; break;
-		case ERR_SHADER: err_type = "SHADER ERROR"; break;
-		default: ERR_PRINT("Unknown error type"); break;
+		case ERR_ERROR:
+			err_type = "ERROR";
+			break;
+		case ERR_WARNING:
+			err_type = "WARNING";
+			break;
+		case ERR_SCRIPT:
+			err_type = "SCRIPT ERROR";
+			break;
+		case ERR_SHADER:
+			err_type = "SHADER ERROR";
+			break;
+		default:
+			ERR_PRINT("Unknown error type");
+			break;
 	}
 
 	const char *err_details;
-	if (p_rationale && *p_rationale)
+	if (p_rationale && *p_rationale) {
 		err_details = p_rationale;
-	else
+	} else {
 		err_details = p_code;
+	}
 
 	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
@@ -102,8 +102,6 @@ void Logger::logf_error(const char *p_format, ...) {
 
 	va_end(argp);
 }
-
-Logger::~Logger() {}
 
 void RotatedFileLogger::close_file() {
 	if (file) {
@@ -154,7 +152,7 @@ void RotatedFileLogger::rotate_file() {
 			char timestamp[21];
 			OS::Date date = OS::get_singleton()->get_date();
 			OS::Time time = OS::get_singleton()->get_time();
-			sprintf(timestamp, "-%04d-%02d-%02d-%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
+			sprintf(timestamp, "_%04d-%02d-%02d_%02d-%02d-%02d", date.year, date.month, date.day, time.hour, time.min, time.sec);
 
 			String backup_name = base_path.get_basename() + timestamp;
 			if (base_path.get_extension() != String()) {
@@ -181,8 +179,7 @@ void RotatedFileLogger::rotate_file() {
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
-		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(nullptr) {
+		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
 }
 
@@ -236,8 +233,6 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 #endif
 	}
 }
-
-StdLogger::~StdLogger() {}
 
 CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
 		loggers(p_loggers) {

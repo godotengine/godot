@@ -46,14 +46,12 @@
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene_tree_editor.h"
 
 class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
-
 	GDCLASS(SceneTreeDock, VBoxContainer);
 
 	enum Tool {
@@ -66,7 +64,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
-		TOOL_CLEAR_SCRIPT,
+		TOOL_DETACH_SCRIPT,
 		TOOL_MOVE_UP,
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
@@ -107,15 +105,18 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 	RenameDialog *rename_dialog;
 
-	ToolButton *button_add;
-	ToolButton *button_instance;
-	ToolButton *button_create_script;
-	ToolButton *button_clear_script;
+	Button *button_add;
+	Button *button_instance;
+	Button *button_create_script;
+	Button *button_detach_script;
 
+	Button *button_2d;
 	Button *button_3d;
+	Button *button_ui;
+	Button *button_custom;
 
 	HBoxContainer *button_hb;
-	ToolButton *edit_local, *edit_remote;
+	Button *edit_local, *edit_remote;
 	SceneTreeEditor *scene_tree;
 	Control *remote_tree;
 

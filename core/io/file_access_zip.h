@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MINIZIP_ENABLED
-
 #ifndef FILE_ACCESS_ZIP_H
 #define FILE_ACCESS_ZIP_H
+
+#ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
 #include "core/map.h"
@@ -41,22 +41,17 @@
 #include <stdlib.h>
 
 class ZipArchive : public PackSource {
-
 public:
 	struct File {
-
-		int package;
+		int package = -1;
 		unz_file_pos file_pos;
-		File() {
-
-			package = -1;
-		};
+		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile;
+		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
@@ -74,7 +69,7 @@ public:
 
 	bool file_exists(String p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 
 	static ZipArchive *get_singleton();
@@ -84,8 +79,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-
-	unzFile zfile;
+	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
 	mutable bool at_eof;
@@ -119,6 +113,6 @@ public:
 	~FileAccessZip();
 };
 
-#endif // FILE_ACCESS_ZIP_H
-
 #endif // MINIZIP_ENABLED
+
+#endif // FILE_ACCESS_ZIP_H

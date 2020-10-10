@@ -52,7 +52,6 @@ public:
 	};
 
 	struct Input {
-
 		String name;
 	};
 
@@ -63,7 +62,6 @@ public:
 	friend class AnimationTree;
 
 	struct AnimationState {
-
 		Ref<Animation> animation;
 		float time;
 		float delta;
@@ -73,7 +71,6 @@ public:
 	};
 
 	struct State {
-
 		int track_count;
 		HashMap<NodePath, int> track_map;
 		List<AnimationState> animation_states;
@@ -111,7 +108,7 @@ protected:
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 	void _set_parent(Object *p_parent);
 
@@ -174,7 +171,6 @@ public:
 
 private:
 	struct TrackCache {
-
 		bool root_motion;
 		uint64_t setup_pass;
 		uint64_t process_pass;
@@ -209,19 +205,16 @@ private:
 	};
 
 	struct TrackCacheValue : public TrackCache {
-
 		Variant value;
 		Vector<StringName> subpath;
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 	};
 
 	struct TrackCacheMethod : public TrackCache {
-
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
 	};
 
 	struct TrackCacheBezier : public TrackCache {
-
 		float value;
 		Vector<StringName> subpath;
 		TrackCacheBezier() {
@@ -231,7 +224,6 @@ private:
 	};
 
 	struct TrackCacheAudio : public TrackCache {
-
 		bool playing;
 		float start;
 		float len;
@@ -245,7 +237,6 @@ private:
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
-
 		bool playing;
 
 		TrackCacheAnimation() {
@@ -321,7 +312,7 @@ public:
 	void set_animation_player(const NodePath &p_player);
 	NodePath get_animation_player() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;

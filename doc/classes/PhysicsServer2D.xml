@@ -331,9 +331,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="offset" type="Vector2">
+			<argument index="1" name="force" type="Vector2">
 			</argument>
-			<argument index="2" name="force" type="Vector2">
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned force to the applied force and torque. As with [method body_apply_impulse], both the force and the offset from the body origin are in global coordinates. A force differs from an impulse in that, while the two are forces, the impulse clears itself after being applied.
@@ -379,9 +379,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="position" type="Vector2">
+			<argument index="1" name="impulse" type="Vector2">
 			</argument>
-			<argument index="2" name="impulse" type="Vector2">
+			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned impulse to the applied force and torque. Both the force and the offset from the body origin are in global coordinates.
@@ -804,6 +804,7 @@
 			</argument>
 			<description>
 				Sets a body state using one of the [enum BodyState] constants.
+				Note that the method doesn't take effect immediately. The state will change on the next physics frame.
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -864,28 +865,28 @@
 				Creates a damped spring joint between two bodies. If not specified, the second body is assumed to be the joint itself.
 			</description>
 		</method>
-		<method name="damped_string_joint_get_param" qualifiers="const">
+		<method name="damped_spring_joint_get_param" qualifiers="const">
 			<return type="float">
 			</return>
 			<argument index="0" name="joint" type="RID">
 			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedStringParam">
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam">
 			</argument>
 			<description>
-				Returns the value of a damped spring joint parameter.
+				Returns the value of a damped spring joint parameter. See [enum DampedSpringParam] for a list of available parameters.
 			</description>
 		</method>
-		<method name="damped_string_joint_set_param">
+		<method name="damped_spring_joint_set_param">
 			<return type="void">
 			</return>
 			<argument index="0" name="joint" type="RID">
 			</argument>
-			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedStringParam">
+			<argument index="1" name="param" type="int" enum="PhysicsServer2D.DampedSpringParam">
 			</argument>
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a damped spring joint parameter. See [enum DampedStringParam] for a list of available parameters.
+				Sets a damped spring joint parameter. See [enum DampedSpringParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -1247,13 +1248,13 @@
 		</constant>
 		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 		</constant>
-		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
+		<constant name="DAMPED_SPRING_REST_LENGTH" value="0" enum="DampedSpringParam">
 			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>
-		<constant name="DAMPED_STRING_STIFFNESS" value="1" enum="DampedStringParam">
+		<constant name="DAMPED_SPRING_STIFFNESS" value="1" enum="DampedSpringParam">
 			Sets the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 		</constant>
-		<constant name="DAMPED_STRING_DAMPING" value="2" enum="DampedStringParam">
+		<constant name="DAMPED_SPRING_DAMPING" value="2" enum="DampedSpringParam">
 			Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">

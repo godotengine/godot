@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_container.h"
 
 class Polygon2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
 	enum Mode {
@@ -61,16 +60,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 		UV_MODE_MAX
 	};
 
-	ToolButton *uv_edit_mode[4];
+	Button *uv_edit_mode[4];
 	Ref<ButtonGroup> uv_edit_group;
 
 	Polygon2D *node;
 
 	UVMode uv_mode;
 	AcceptDialog *uv_edit;
-	ToolButton *uv_button[UV_MODE_MAX];
-	ToolButton *b_snap_enable;
-	ToolButton *b_snap_grid;
+	Button *uv_button[UV_MODE_MAX];
+	Button *b_snap_enable;
+	Button *b_snap_grid;
 	Panel *uv_edit_draw;
 	HSlider *uv_zoom;
 	SpinBox *uv_zoom_value;
@@ -116,14 +115,14 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	AcceptDialog *error;
 
-	ToolButton *button_uv;
+	Button *button_uv;
 
 	bool use_snap;
 	bool snap_show_grid;
 	Vector2 snap_offset;
 	Vector2 snap_step;
 
-	virtual void _menu_option(int p_option);
+	virtual void _menu_option(int p_option) override;
 
 	void _cancel_editing();
 	void _update_polygon_editing_state();
@@ -144,16 +143,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
 
-	int _get_polygon_count() const;
+	int _get_polygon_count() const override;
 
 protected:
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_polygon);
+	virtual Node2D *_get_node() const override;
+	virtual void _set_node(Node *p_polygon) override;
 
-	virtual Vector2 _get_offset(int p_idx) const;
+	virtual Vector2 _get_offset(int p_idx) const override;
 
-	virtual bool _has_uv() const { return true; };
-	virtual void _commit_action();
+	virtual bool _has_uv() const override { return true; };
+	virtual void _commit_action() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -165,7 +164,6 @@ public:
 };
 
 class Polygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(Polygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

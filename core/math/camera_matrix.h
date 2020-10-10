@@ -35,7 +35,6 @@
 #include "core/math/transform.h"
 
 struct CameraMatrix {
-
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,
@@ -47,6 +46,7 @@ struct CameraMatrix {
 
 	real_t matrix[4][4];
 
+	float determinant() const;
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
@@ -61,7 +61,6 @@ struct CameraMatrix {
 	void set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 
 	static real_t get_fovy(real_t p_fovx, real_t p_aspect) {
-
 		return Math::rad2deg(Math::atan(p_aspect * Math::tan(Math::deg2rad(p_fovx) * 0.5)) * 2.0);
 	}
 
@@ -75,7 +74,7 @@ struct CameraMatrix {
 
 	bool get_endpoints(const Transform &p_transform, Vector3 *p_8points) const;
 	Vector2 get_viewport_half_extents() const;
-	void get_far_plane_size(real_t &r_width, real_t &r_height) const;
+	Vector2 get_far_plane_half_extents() const;
 
 	void invert();
 	CameraMatrix inverse() const;
@@ -115,7 +114,6 @@ struct CameraMatrix {
 };
 
 Vector3 CameraMatrix::xform(const Vector3 &p_vec3) const {
-
 	Vector3 ret;
 	ret.x = matrix[0][0] * p_vec3.x + matrix[1][0] * p_vec3.y + matrix[2][0] * p_vec3.z + matrix[3][0];
 	ret.y = matrix[0][1] * p_vec3.x + matrix[1][1] * p_vec3.y + matrix[2][1] * p_vec3.z + matrix[3][1];

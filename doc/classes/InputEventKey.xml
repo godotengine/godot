@@ -7,14 +7,14 @@
 		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_keycode_with_modifiers" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the keycode combined with modifier keys such as [code]Shift[/code] or [code]Alt[/code]. See also [InputEventWithModifiers].
+				Returns the keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
 			</description>
 		</method>
@@ -22,7 +22,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the physical keycode combined with modifier keys such as [code]Shift[/code] or [code]Alt[/code]. See also [InputEventWithModifiers].
+				Returns the physical keycode combined with modifier keys such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See also [InputEventWithModifiers].
 				To get a human-readable representation of the [InputEventKey] with modifiers, use [code]OS.get_keycode_string(event.get_physical_keycode_with_modifiers())[/code] where [code]event[/code] is the [InputEventKey].
 			</description>
 		</method>

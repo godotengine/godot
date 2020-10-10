@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+Import("env")
+
+env.tests_sources = []
+
+env_tests = env.Clone()
+
+# Include GDNative headers.
+if env["module_gdnative_enabled"]:
+    env_tests.Append(CPPPATH=["#modules/gdnative/include"])
+
+# We must disable the THREAD_LOCAL entirely in doctest to prevent crashes on debugging
+# Since we link with /MT thread_local is always expired when the header is used
+# So the debugger crashes the engine and it causes weird errors
+# Explained in https://github.com/onqtam/doctest/issues/401
+if env_tests["platform"] == "windows":
+    env_tests.Append(CPPDEFINES=[("DOCTEST_THREAD_LOCAL", "")])
+
+env_tests.add_source_files(env.tests_sources, "*.cpp")
+
+lib = env_tests.add_library("tests", env.tests_sources)
+env.Prepend(LIBS=[lib])

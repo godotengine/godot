@@ -34,25 +34,25 @@
 #include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
-
-	if (disable_shortcuts)
+	if (disable_shortcuts) {
 		return;
+	}
 
 	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event))) {
-
-		if (!get_parent() || !is_visible_in_tree() || is_disabled())
+		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
 			return;
+		}
 
 		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
 		//if (popup->activate_item_by_event(p_event, global_only))
 		//	accept_event();
-		if (popup->activate_item_by_event(p_event, false))
+		if (popup->activate_item_by_event(p_event, false)) {
 			accept_event();
+		}
 	}
 }
 
 void MenuButton::pressed() {
-
 	{
 		Window *w = Object::cast_to<Window>(get_viewport());
 		if (w && !w->is_embedding_subwindows()) {
@@ -75,39 +75,31 @@ void MenuButton::pressed() {
 }
 
 void MenuButton::_gui_input(Ref<InputEvent> p_event) {
-
 	BaseButton::_gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() const {
-
 	return popup;
 }
 
 void MenuButton::_set_items(const Array &p_items) {
-
 	popup->set("items", p_items);
 }
 
 Array MenuButton::_get_items() const {
-
 	return popup->get("items");
 }
 
 void MenuButton::set_switch_on_hover(bool p_enabled) {
-
 	switch_on_hover = p_enabled;
 }
 
 bool MenuButton::is_switch_on_hover() {
-
 	return switch_on_hover;
 }
 
 void MenuButton::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		if (!is_visible_in_tree()) {
 			popup->hide();
 		}
@@ -115,7 +107,6 @@ void MenuButton::_notification(int p_what) {
 }
 
 void MenuButton::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_items"), &MenuButton::_set_items);
@@ -131,12 +122,10 @@ void MenuButton::_bind_methods() {
 }
 
 void MenuButton::set_disable_shortcuts(bool p_disabled) {
-
 	disable_shortcuts = p_disabled;
 }
 
 MenuButton::MenuButton() {
-
 	switch_on_hover = false;
 	set_flat(true);
 	set_toggle_mode(true);

@@ -54,13 +54,11 @@ const char *ScriptClassParser::token_names[ScriptClassParser::TK_MAX] = {
 };
 
 String ScriptClassParser::get_token_name(ScriptClassParser::Token p_token) {
-
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
 	return token_names[p_token];
 }
 
 ScriptClassParser::Token ScriptClassParser::get_token() {
-
 	while (true) {
 		switch (code[idx]) {
 			case '\n': {
@@ -153,7 +151,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 			case '"': {
 				bool verbatim = idx != 0 && code[idx - 1] == '@';
 
-				CharType begin_str = code[idx];
+				char32_t begin_str = code[idx];
 				idx++;
 				String tk_string = String();
 				while (true) {
@@ -172,23 +170,33 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 					} else if (code[idx] == '\\' && !verbatim) {
 						//escaped characters...
 						idx++;
-						CharType next = code[idx];
+						char32_t next = code[idx];
 						if (next == 0) {
 							error_str = "Unterminated String";
 							error = true;
 							return TK_ERROR;
 						}
-						CharType res = 0;
+						char32_t res = 0;
 
 						switch (next) {
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
 							case 'r':
 								res = 13;
 								break;
-							case '\"': res = '\"'; break;
+							case '\"':
+								res = '\"';
+								break;
 							case '\\':
 								res = '\\';
 								break;
@@ -200,8 +208,9 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						tk_string += res;
 
 					} else {
-						if (code[idx] == '\n')
+						if (code[idx] == '\n') {
 							line++;
+						}
 						tk_string += code[idx];
 					}
 					idx++;
@@ -225,8 +234,8 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 
 				if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
 					//a number
-					const CharType *rptr;
-					double number = String::to_double(&code[idx], &rptr);
+					const char32_t *rptr;
+					double number = String::to_float(&code[idx], &rptr);
 					idx += (rptr - &code[idx]);
 					value = number;
 					return TK_NUMBER;
@@ -258,7 +267,6 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 }
 
 Error ScriptClassParser::_skip_generic_type_params() {
-
 	Token tk;
 
 	while (true) {
@@ -293,15 +301,17 @@ Error ScriptClassParser::_skip_generic_type_params() {
 
 					tk = get_token();
 
-					if (tk != TK_PERIOD)
+					if (tk != TK_PERIOD) {
 						break;
+					}
 				}
 			}
 
 			if (tk == TK_OP_LESS) {
 				Error err = _skip_generic_type_params();
-				if (err)
+				if (err) {
 					return err;
+				}
 				tk = get_token();
 			}
 
@@ -327,7 +337,6 @@ Error ScriptClassParser::_skip_generic_type_params() {
 }
 
 Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
-
 	Token tk = get_token();
 
 	if (tk != TK_IDENTIFIER) {
@@ -343,12 +352,14 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 
 		// We don't mind if the base is generic, but we skip it any ways since this information is not needed
 		Error err = _skip_generic_type_params();
-		if (err)
+		if (err) {
 			return err;
+		}
 	}
 
-	if (code[idx] != '.') // We only want to take the next token if it's a period
+	if (code[idx] != '.') { // We only want to take the next token if it's a period
 		return OK;
+	}
 
 	tk = get_token();
 
@@ -360,19 +371,20 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 }
 
 Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
-
 	String name;
 
 	Error err = _parse_type_full_name(name);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	Token tk = get_token();
 
 	if (tk == TK_COMMA) {
 		err = _parse_class_base(r_base);
-		if (err)
+		if (err) {
 			return err;
+		}
 	} else if (tk == TK_IDENTIFIER && String(value) == "where") {
 		err = _parse_type_constraints();
 		if (err) {
@@ -428,8 +440,9 @@ Error ScriptClassParser::_parse_type_constraints() {
 
 					tk = get_token();
 
-					if (tk != TK_PERIOD)
+					if (tk != TK_PERIOD) {
 						break;
+					}
 				}
 			}
 		}
@@ -447,8 +460,9 @@ Error ScriptClassParser::_parse_type_constraints() {
 			}
 		} else if (tk == TK_OP_LESS) {
 			Error err = _skip_generic_type_params();
-			if (err)
+			if (err) {
 				return err;
+			}
 		} else if (tk == TK_CURLY_BRACKET_OPEN) {
 			return OK;
 		} else {
@@ -460,7 +474,6 @@ Error ScriptClassParser::_parse_type_constraints() {
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
-
 	Token tk = get_token();
 
 	if (tk == TK_IDENTIFIER) {
@@ -487,7 +500,6 @@ Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stac
 }
 
 Error ScriptClassParser::parse(const String &p_code) {
-
 	code = p_code;
 	idx = 0;
 	line = 0;
@@ -519,8 +531,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 					const NameDecl &name_decl = E->value();
 
 					if (name_decl.type == NameDecl::NAMESPACE_DECL) {
-						if (E != name_stack.front())
+						if (E != name_stack.front()) {
 							class_decl.namespace_ += ".";
+						}
 						class_decl.namespace_ += name_decl.name;
 					} else {
 						class_decl.name += name_decl.name + ".";
@@ -537,8 +550,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 
 					if (tk == TK_COLON) {
 						Error err = _parse_class_base(class_decl.base);
-						if (err)
+						if (err) {
 							return err;
+						}
 
 						curly_stack++;
 						type_curly_stack++;
@@ -552,8 +566,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 						generic = true;
 
 						Error err = _skip_generic_type_params();
-						if (err)
+						if (err) {
 							return err;
+						}
 					} else if (tk == TK_IDENTIFIER && String(value) == "where") {
 						Error err = _parse_type_constraints();
 						if (err) {
@@ -581,8 +596,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 						classes.push_back(class_decl);
 					} else if (OS::get_singleton()->is_stdout_verbose()) {
 						String full_name = class_decl.namespace_;
-						if (full_name.length())
+						if (full_name.length()) {
 							full_name += ".";
+						}
 						full_name += class_decl.name;
 						OS::get_singleton()->print("Ignoring generic class declaration: %s\n", full_name.utf8().get_data());
 					}
@@ -599,8 +615,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 			int at_level = curly_stack;
 
 			Error err = _parse_namespace_name(name, curly_stack);
-			if (err)
+			if (err) {
 				return err;
+			}
 
 			NameDecl name_decl;
 			name_decl.name = name;
@@ -611,8 +628,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 		} else if (tk == TK_CURLY_BRACKET_CLOSE) {
 			curly_stack--;
 			if (name_stack.has(curly_stack)) {
-				if (name_stack[curly_stack].type != NameDecl::NAMESPACE_DECL)
+				if (name_stack[curly_stack].type != NameDecl::NAMESPACE_DECL) {
 					type_curly_stack--;
+				}
 				name_stack.erase(curly_stack);
 			}
 		}
@@ -625,8 +643,9 @@ Error ScriptClassParser::parse(const String &p_code) {
 		error = true;
 	}
 
-	if (error)
+	if (error) {
 		return ERR_PARSE_ERROR;
+	}
 
 	return OK;
 }
@@ -643,7 +662,6 @@ static String get_preprocessor_directive(const String &p_line, int p_from) {
 }
 
 static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
-
 	Vector<String> lines = r_source.split("\n", /* p_allow_empty: */ true);
 
 	bool *include_lines = memnew_arr(bool, lines.size());
@@ -700,8 +718,9 @@ static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 
 	// Custom join ignoring lines removed by the preprocessor
 	for (int i = 0; i < lines.size(); i++) {
-		if (i > 0 && include_lines[i - 1])
+		if (i > 0 && include_lines[i - 1]) {
 			r_source += '\n';
+		}
 
 		if (include_lines[i]) {
 			r_source += lines[i];
@@ -710,7 +729,6 @@ static void run_dummy_preprocessor(String &r_source, const String &p_filepath) {
 }
 
 Error ScriptClassParser::parse_file(const String &p_filepath) {
-
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);

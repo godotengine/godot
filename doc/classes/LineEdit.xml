@@ -5,27 +5,27 @@
 	</brief_description>
 	<description>
 		LineEdit provides a single-line string editor, used for text fields.
-		It features many built-in shortcuts which will always be available ([code]Ctrl[/code] here maps to [code]Command[/code] on macOS):
-		- Ctrl + C: Copy
-		- Ctrl + X: Cut
-		- Ctrl + V or Ctrl + Y: Paste/"yank"
-		- Ctrl + Z: Undo
-		- Ctrl + Shift + Z: Redo
-		- Ctrl + U: Delete text from the cursor position to the beginning of the line
-		- Ctrl + K: Delete text from the cursor position to the end of the line
-		- Ctrl + A: Select all text
-		- Up/Down arrow: Move the cursor to the beginning/end of the line
+		It features many built-in shortcuts which will always be available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
+		- [kbd]Ctrl + C[/kbd]: Copy
+		- [kbd]Ctrl + X[/kbd]: Cut
+		- [kbd]Ctrl + V[/kbd] or [kbd]Ctrl + Y[/kbd]: Paste/"yank"
+		- [kbd]Ctrl + Z[/kbd]: Undo
+		- [kbd]Ctrl + Shift + Z[/kbd]: Redo
+		- [kbd]Ctrl + U[/kbd]: Delete text from the cursor position to the beginning of the line
+		- [kbd]Ctrl + K[/kbd]: Delete text from the cursor position to the end of the line
+		- [kbd]Ctrl + A[/kbd]: Select all text
+		- [kbd]Up Arrow[/kbd]/[kbd]Down Arrow[/kbd]: Move the cursor to the beginning/end of the line
 		On macOS, some extra keyboard shortcuts are available:
-		- Ctrl + F: Like the right arrow key, move the cursor one character right
-		- Ctrl + B: Like the left arrow key, move the cursor one character left
-		- Ctrl + P: Like the up arrow key, move the cursor to the previous line
-		- Ctrl + N: Like the down arrow key, move the cursor to the next line
-		- Ctrl + D: Like the Delete key, delete the character on the right side of cursor
-		- Ctrl + H: Like the Backspace key, delete the character on the left side of the cursor
-		- Ctrl + A: Like the Home key, move the cursor to the beginning of the line
-		- Ctrl + E: Like the End key, move the cursor to the end of the line
-		- Command + Left arrow: Like the Home key, move the cursor to the beginning of the line
-		- Command + Right arrow: Like the End key, move the cursor to the end of the line
+		- [kbd]Ctrl + F[/kbd]: Same as [kbd]Right Arrow[/kbd], move the cursor one character right
+		- [kbd]Ctrl + B[/kbd]: Same as [kbd]Left Arrow[/kbd], move the cursor one character left
+		- [kbd]Ctrl + P[/kbd]: Same as [kbd]Up Arrow[/kbd], move the cursor to the previous line
+		- [kbd]Ctrl + N[/kbd]: Same as [kbd]Down Arrow[/kbd], move the cursor to the next line
+		- [kbd]Ctrl + D[/kbd]: Same as [kbd]Delete[/kbd], delete the character on the right side of cursor
+		- [kbd]Ctrl + H[/kbd]: Same as [kbd]Backspace[/kbd], delete the character on the left side of the cursor
+		- [kbd]Ctrl + A[/kbd]: Same as [kbd]Home[/kbd], move the cursor to the beginning of the line
+		- [kbd]Ctrl + E[/kbd]: Same as [kbd]End[/kbd], move the cursor to the end of the line
+		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the cursor to the beginning of the line
+		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the cursor to the end of the line
 	</description>
 	<tutorials>
 	</tutorials>
@@ -43,7 +43,25 @@
 			<return type="void">
 			</return>
 			<description>
-				Erases the [LineEdit] text.
+				Erases the [LineEdit]'s [member text].
+			</description>
+		</method>
+		<method name="delete_char_at_cursor">
+			<return type="void">
+			</return>
+			<description>
+				Deletes one character at the cursor's current position (equivalent to pressing [kbd]Delete[/kbd]).
+			</description>
+		</method>
+		<method name="delete_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="from_column" type="int">
+			</argument>
+			<argument index="1" name="to_column" type="int">
+			</argument>
+			<description>
+				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">
@@ -104,6 +122,8 @@
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
+		<member name="caret_force_displayed" type="bool" setter="cursor_set_force_displayed" getter="cursor_get_force_displayed" default="false">
+		</member>
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position" default="0">
 			The cursor's position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
@@ -148,6 +168,9 @@
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [LineEdit].
 			[b]Note:[/b] Changing text using this property won't emit the [signal text_changed] signal.
+		</member>
+		<member name="virtual_keyboard_enabled" type="bool" setter="set_virtual_keyboard_enabled" getter="is_virtual_keyboard_enabled" default="true">
+			If [code]true[/code], the native virtual keyboard is shown when focused on platforms that support it.
 		</member>
 	</members>
 	<signals>

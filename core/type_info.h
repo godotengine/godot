@@ -35,7 +35,6 @@
 
 template <bool C, typename T = void>
 struct EnableIf {
-
 	typedef T type;
 };
 
@@ -45,19 +44,16 @@ struct EnableIf<false, T> {
 
 template <typename, typename>
 struct TypesAreSame {
-
 	static bool const value = false;
 };
 
 template <typename A>
 struct TypesAreSame<A, A> {
-
 	static bool const value = true;
 };
 
 template <typename B, typename D>
 struct TypeInherits {
-
 	static D *get_d();
 
 	static char (&test(B *))[1];
@@ -136,7 +132,8 @@ MAKE_TYPE_INFO_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_
 MAKE_TYPE_INFO_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
 MAKE_TYPE_INFO_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
 MAKE_TYPE_INFO_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
-MAKE_TYPE_INFO(wchar_t, Variant::INT)
+MAKE_TYPE_INFO(char16_t, Variant::INT)
+MAKE_TYPE_INFO(char32_t, Variant::INT)
 MAKE_TYPE_INFO_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
 MAKE_TYPE_INFO_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 
@@ -262,8 +259,9 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
 
 template <typename T>
 inline StringName __constant_get_enum_name(T param, const String &p_constant) {
-	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL)
+	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
 		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
+	}
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 

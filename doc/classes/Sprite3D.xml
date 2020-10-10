@@ -4,8 +4,7 @@
 		2D sprite node in a 3D world.
 	</brief_description>
 	<description>
-		A node that displays a 2D texture in a 3D environment. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
-		[b]Note:[/b] There are [url=https://github.com/godotengine/godot/issues/20855]known performance issues[/url] when using [Sprite3D]. Consider using a [MeshInstance3D] with a [QuadMesh] as the mesh instead. You can still have billboarding by enabling billboard properties in the QuadMesh's [StandardMaterial3D].
+		A node that displays a 2D texture in a 3D environment. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation. See also [SpriteBase3D] where properties such as the billboard mode are defined.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,10 +12,10 @@
 	</methods>
 	<members>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
-			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
+			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="frame_coords" type="Vector2" setter="set_frame_coords" getter="get_frame_coords" default="Vector2( 0, 0 )">
-			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member vframes] or [member hframes] must be greater than 1.
+			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.

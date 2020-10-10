@@ -58,7 +58,6 @@ Ref<EditorSettings> EditorSettings::singleton = nullptr;
 // Properties
 
 bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	bool changed = _set_only(p_name, p_value);
@@ -69,19 +68,16 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_name.operator String() == "shortcuts") {
-
 		Array arr = p_value;
 		ERR_FAIL_COND_V(arr.size() && arr.size() & 1, true);
 		for (int i = 0; i < arr.size(); i += 2) {
-
 			String name = arr[i];
 			Ref<InputEvent> shortcut = arr[i + 1];
 
-			Ref<ShortCut> sc;
+			Ref<Shortcut> sc;
 			sc.instance();
 			sc->set_shortcut(shortcut);
 			add_shortcut(name, sc);
@@ -120,15 +116,12 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 }
 
 bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_name.operator String() == "shortcuts") {
-
 		Array arr;
-		for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-
-			Ref<ShortCut> sc = E->get();
+		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
+			Ref<Shortcut> sc = E->get();
 
 			if (optimize_save) {
 				if (!sc->has_meta("original")) {
@@ -136,8 +129,9 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
-				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null()))
+				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null())) {
 					continue; //not changed from default, don't save
+				}
 			}
 
 			arr.push_back(E->key());
@@ -163,7 +157,6 @@ void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_val
 }
 
 struct _EVCSort {
-
 	String name;
 	Variant::Type type;
 	int order;
@@ -174,18 +167,17 @@ struct _EVCSort {
 };
 
 void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	_THREAD_SAFE_METHOD_
 
 	const String *k = nullptr;
 	Set<_EVCSort> vclist;
 
 	while ((k = props.next(k))) {
-
 		const VariantContainer *v = props.getptr(*k);
 
-		if (v->hide_from_editor)
+		if (v->hide_from_editor) {
 			continue;
+		}
 
 		_EVCSort vc;
 		vc.name = *k;
@@ -203,7 +195,6 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (Set<_EVCSort>::Element *E = vclist.front(); E; E = E->next()) {
-
 		int pinfo = 0;
 		if (E->get().save || !optimize_save) {
 			pinfo |= PROPERTY_USAGE_STORAGE;
@@ -217,8 +208,9 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		PropertyInfo pi(E->get().type, E->get().name);
 		pi.usage = pinfo;
-		if (hints.has(E->get().name))
+		if (hints.has(E->get().name)) {
 			pi = hints[E->get().name];
+		}
 
 		if (E->get().restart_if_changed) {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
@@ -231,7 +223,6 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
-
 	ERR_FAIL_COND(!p_info.has("name"));
 	ERR_FAIL_COND(!p_info.has("type"));
 
@@ -241,26 +232,27 @@ void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
-	if (p_info.has("hint"))
+	if (p_info.has("hint")) {
 		pinfo.hint = PropertyHint(p_info["hint"].operator int());
-	if (p_info.has("hint_string"))
+	}
+	if (p_info.has("hint_string")) {
 		pinfo.hint_string = p_info["hint_string"];
+	}
 
 	add_property_hint(pinfo);
 }
 
 // Default configs
 bool EditorSettings::has_default_value(const String &p_setting) const {
-
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 	return props[p_setting].has_default_value;
 }
 
 void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
-
 	_THREAD_SAFE_METHOD_
 
 	/* Languages */
@@ -280,7 +272,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		EditorTranslationList *etl = _editor_translations;
 
 		while (etl->data) {
-
 			const String &locale = etl->lang;
 
 			// Skip locales which we can't render properly (see above comment).
@@ -429,7 +420,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_load_default_text_editor_theme();
 
 	// Highlighting
-	_initial_set("text_editor/highlighting/syntax_highlighting", true);
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
 	_initial_set("text_editor/highlighting/highlight_current_line", true);
 	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
@@ -455,7 +445,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_line_numbers", true);
 	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
 	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
-	_initial_set("text_editor/appearance/show_breakpoint_gutter", true);
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
 	_initial_set("text_editor/appearance/word_wrap", false);
@@ -505,6 +494,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/help/help_source_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_source_font_size", PROPERTY_HINT_RANGE, "8,48,1");
 	_initial_set("text_editor/help/help_title_font_size", 23);
 	hints["text_editor/help/help_title_font_size"] = PropertyInfo(Variant::INT, "text_editor/help/help_title_font_size", PROPERTY_HINT_RANGE, "8,48,1");
+	_initial_set("text_editor/help/class_reference_examples", 0);
+	hints["text_editor/help/class_reference_examples"] = PropertyInfo(Variant::INT, "text_editor/help/class_reference_examples", PROPERTY_HINT_ENUM, "GDScript,C#,GDScript and C#");
 
 	/* Editors */
 
@@ -512,17 +503,38 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
 	// 3D
-	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56));
-	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
+	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 
-	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38));
-	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
+	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 
-	_initial_set("editors/3d/grid_size", 50);
-	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-
+	// If a line is a multiple of this, it uses the primary grid color.
 	_initial_set("editors/3d/primary_grid_steps", 10);
-	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
+
+	// At 1000, the grid mostly looks like it has no edge.
+	_initial_set("editors/3d/grid_size", 200);
+	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,2000,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default largest grid size is 100m, 10^2 (primary grid lines are 1km apart when primary_grid_steps is 10).
+	_initial_set("editors/3d/grid_division_level_max", 2);
+	// Higher values produce graphical artifacts when far away unless View Z-Far
+	// is increased significantly more than it really should need to be.
+	hints["editors/3d/grid_division_level_max"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_max", PROPERTY_HINT_RANGE, "-1,3,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default smallest grid size is 1cm, 10^-2.
+	_initial_set("editors/3d/grid_division_level_min", -2);
+	// Lower values produce graphical artifacts regardless of view clipping planes, so limit to -2 as a lower bound.
+	hints["editors/3d/grid_division_level_min"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_min", PROPERTY_HINT_RANGE, "-2,2,1", PROPERTY_USAGE_DEFAULT);
+
+	// -0.2 seems like a sensible default. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
+	_initial_set("editors/3d/grid_division_level_bias", -0.2);
+	hints["editors/3d/grid_division_level_bias"] = PropertyInfo(Variant::FLOAT, "editors/3d/grid_division_level_bias", PROPERTY_HINT_RANGE, "-1.0,0.5,0.1", PROPERTY_USAGE_DEFAULT);
+
+	_initial_set("editors/3d/grid_xz_plane", true);
+	_initial_set("editors/3d/grid_xy_plane", false);
+	_initial_set("editors/3d/grid_yz_plane", false);
 
 	_initial_set("editors/3d/default_fov", 70.0);
 	_initial_set("editors/3d/default_z_near", 0.05);
@@ -531,6 +543,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);
 	_initial_set("editors/3d/navigation/invert_y_axis", false);
+	_initial_set("editors/3d/navigation/invert_x_axis", false);
 	hints["editors/3d/navigation/navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/navigation/navigation_scheme", PROPERTY_HINT_ENUM, "Godot,Maya,Modo");
 	_initial_set("editors/3d/navigation/zoom_style", 0);
 	hints["editors/3d/navigation/zoom_style"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_style", PROPERTY_HINT_ENUM, "Vertical, Horizontal");
@@ -559,6 +572,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/navigation_feel/manipulation_translation_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/navigation_feel/manipulation_translation_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 
 	// 3D: Freelook
+	_initial_set("editors/3d/freelook/freelook_navigation_scheme", false);
+	hints["editors/3d/freelook/freelook_navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/freelook/freelook_navigation_scheme", PROPERTY_HINT_ENUM, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)");
+	_initial_set("editors/3d/freelook/freelook_sensitivity", 0.4);
+	hints["editors/3d/freelook/freelook_sensitivity"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_sensitivity", PROPERTY_HINT_RANGE, "0.0, 2, 0.01");
 	_initial_set("editors/3d/freelook/freelook_inertia", 0.1);
 	hints["editors/3d/freelook/freelook_inertia"] = PropertyInfo(Variant::FLOAT, "editors/3d/freelook/freelook_inertia", PROPERTY_HINT_RANGE, "0.0, 1, 0.01");
 	_initial_set("editors/3d/freelook/freelook_base_speed", 5.0);
@@ -636,24 +653,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["project_manager/sorting_order"] = PropertyInfo(Variant::INT, "project_manager/sorting_order", PROPERTY_HINT_ENUM, "Name,Path,Last Edited");
 
 	if (p_extra_config.is_valid()) {
-
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
-
 			Vector<String> list = p_extra_config->get_value("init_projects", "list");
 			for (int i = 0; i < list.size(); i++) {
-
 				String name = list[i].replace("/", "::");
 				set("projects/" + name, list[i]);
 			};
 		};
 
 		if (p_extra_config->has_section("presets")) {
-
 			List<String> keys;
 			p_extra_config->get_section_keys("presets", &keys);
 
 			for (List<String>::Element *E = keys.front(); E; E = E->next()) {
-
 				String key = E->get();
 				Variant val = p_extra_config->get_value("presets", key);
 				set(key, val);
@@ -663,7 +675,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 }
 
 void EditorSettings::_load_default_text_editor_theme() {
-
 	bool dark_theme = is_dark_theme();
 
 	_initial_set("text_editor/highlighting/symbol_color", Color(0.73, 0.87, 1.0));
@@ -695,8 +706,8 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
-	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
-	_initial_set("text_editor/highlighting/executing_line_color", Color(0.2, 0.8, 0.2, 0.4));
+	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
+	_initial_set("text_editor/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
 	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
@@ -747,7 +758,6 @@ static Dictionary _get_builtin_script_templates() {
 }
 
 static void _create_script_templates(const String &p_path) {
-
 	Dictionary templates = _get_builtin_script_templates();
 	List<Variant> keys;
 	templates.get_key_list(&keys);
@@ -771,14 +781,13 @@ static void _create_script_templates(const String &p_path) {
 // PUBLIC METHODS
 
 EditorSettings *EditorSettings::get_singleton() {
-
 	return singleton.ptr();
 }
 
 void EditorSettings::create() {
-
-	if (singleton.ptr())
+	if (singleton.ptr()) {
 		return; //pointless
+	}
 
 	DirAccess *dir = nullptr;
 
@@ -811,7 +820,6 @@ void EditorSettings::create() {
 	memdelete(d);
 
 	if (self_contained) {
-
 		// editor is self contained, all in same folder
 		data_path = exe_path;
 		data_dir = data_path.plus_file("editor_data");
@@ -820,7 +828,6 @@ void EditorSettings::create() {
 		cache_path = exe_path;
 		cache_dir = data_dir.plus_file("cache");
 	} else {
-
 		// Typically XDG_DATA_HOME or %APPDATA%
 		data_path = OS::get_singleton()->get_data_path();
 		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
@@ -841,7 +848,6 @@ void EditorSettings::create() {
 	String config_file_path;
 
 	if (data_path != "" && config_path != "" && cache_path != "") {
-
 		// Validate/create data dir and subdirectories
 
 		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -912,8 +918,9 @@ void EditorSettings::create() {
 
 		dir->change_dir("projects");
 		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
-		if (project_config_dir.ends_with("/"))
+		if (project_config_dir.ends_with("/")) {
 			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
+		}
 		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
 
 		if (dir->change_dir(project_config_dir) != OK) {
@@ -928,6 +935,7 @@ void EditorSettings::create() {
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = config_dir.plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
+			memdelete(dir);
 			goto fail;
 		}
 
@@ -963,7 +971,6 @@ fail:
 	if (extra_config->has_section("init_projects")) {
 		Vector<String> list = extra_config->get_value("init_projects", "list");
 		for (int i = 0; i < list.size(); i++) {
-
 			list.write[i] = exe_path.plus_file(list[i]);
 		};
 		extra_config->set_value("init_projects", "list", list);
@@ -982,10 +989,10 @@ fail:
 }
 
 void EditorSettings::setup_language() {
-
 	String lang = get("interface/editor/editor_language");
-	if (lang == "en")
+	if (lang == "en") {
 		return; // Default, nothing to do.
+	}
 
 	// Load editor translation for configured/detected locale.
 	EditorTranslationList *etl = _editor_translations;
@@ -1035,7 +1042,6 @@ void EditorSettings::setup_language() {
 }
 
 void EditorSettings::setup_network() {
-
 	List<IP_Address> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
@@ -1044,20 +1050,23 @@ void EditorSettings::setup_network() {
 
 	// Check that current remote_host is a valid interface address and populate hints.
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
-
 		String ip = E->get();
 
 		// link-local IPv6 addresses don't work, skipping them
-		if (ip.begins_with("fe80:0:0:0:")) // fe80::/64
+		if (ip.begins_with("fe80:0:0:0:")) { // fe80::/64
 			continue;
+		}
 		// Same goes for IPv4 link-local (APIPA) addresses.
-		if (ip.begins_with("169.254.")) // 169.254.0.0/16
+		if (ip.begins_with("169.254.")) { // 169.254.0.0/16
 			continue;
+		}
 		// Select current IP (found)
-		if (ip == current)
+		if (ip == current) {
 			selected = ip;
-		if (hint != "")
+		}
+		if (hint != "") {
 			hint += ",";
+		}
 		hint += ip;
 	}
 
@@ -1068,11 +1077,11 @@ void EditorSettings::setup_network() {
 }
 
 void EditorSettings::save() {
-
 	//_THREAD_SAFE_METHOD_
 
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 
 	if (singleton->config_file_path == "") {
 		ERR_PRINT("Cannot save EditorSettings config, no valid path");
@@ -1089,15 +1098,14 @@ void EditorSettings::save() {
 }
 
 void EditorSettings::destroy() {
-
-	if (!singleton.ptr())
+	if (!singleton.ptr()) {
 		return;
+	}
 	save();
 	singleton = Ref<EditorSettings>();
 }
 
 void EditorSettings::set_optimize_save(bool p_optimize) {
-
 	optimize_save = p_optimize;
 }
 
@@ -1114,14 +1122,12 @@ Variant EditorSettings::get_setting(const String &p_setting) const {
 }
 
 bool EditorSettings::has_setting(const String &p_setting) const {
-
 	_THREAD_SAFE_METHOD_
 
 	return props.has(p_setting);
 }
 
 void EditorSettings::erase(const String &p_setting) {
-
 	_THREAD_SAFE_METHOD_
 
 	props.erase(p_setting);
@@ -1137,17 +1143,18 @@ void EditorSettings::raise_order(const String &p_setting) {
 void EditorSettings::set_restart_if_changed(const StringName &p_setting, bool p_restart) {
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].restart_if_changed = p_restart;
 }
 
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
-
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return;
+	}
 	props[p_setting].initial = p_value;
 	props[p_setting].has_default_value = true;
 	if (p_update_current) {
@@ -1156,7 +1163,6 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
-
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
@@ -1173,32 +1179,31 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-
 	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_setting), Variant());
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
 bool EditorSettings::property_can_revert(const String &p_setting) {
-
-	if (!props.has(p_setting))
+	if (!props.has(p_setting)) {
 		return false;
+	}
 
-	if (!props[p_setting].has_default_value)
+	if (!props[p_setting].has_default_value) {
 		return false;
+	}
 
 	return props[p_setting].initial != props[p_setting].variant;
 }
 
 Variant EditorSettings::property_get_revert(const String &p_setting) {
-
-	if (!props.has(p_setting) || !props[p_setting].has_default_value)
+	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
 		return Variant();
+	}
 
 	return props[p_setting].initial;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
-
 	_THREAD_SAFE_METHOD_
 
 	hints[p_hint.name] = p_hint;
@@ -1207,51 +1212,42 @@ void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
 // Data directories
 
 String EditorSettings::get_data_dir() const {
-
 	return data_dir;
 }
 
 String EditorSettings::get_templates_dir() const {
-
 	return get_data_dir().plus_file("templates");
 }
 
 // Config directories
 
 String EditorSettings::get_settings_dir() const {
-
 	return settings_dir;
 }
 
 String EditorSettings::get_project_settings_dir() const {
-
 	return get_settings_dir().plus_file("projects").plus_file(project_config_dir);
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
-
 	return get_settings_dir().plus_file("text_editor_themes");
 }
 
 String EditorSettings::get_script_templates_dir() const {
-
 	return get_settings_dir().plus_file("script_templates");
 }
 
 String EditorSettings::get_project_script_templates_dir() const {
-
 	return ProjectSettings::get_singleton()->get("editor/script_templates_search_path");
 }
 
 // Cache directory
 
 String EditorSettings::get_cache_dir() const {
-
 	return cache_dir;
 }
 
 String EditorSettings::get_feature_profiles_dir() const {
-
 	return get_settings_dir().plus_file("feature_profiles");
 }
 
@@ -1279,39 +1275,36 @@ Variant EditorSettings::get_project_metadata(const String &p_section, const Stri
 }
 
 void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
-
 	favorites = p_favorites;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < favorites.size(); i++)
+		for (int i = 0; i < favorites.size(); i++) {
 			f->store_line(favorites[i]);
+		}
 		memdelete(f);
 	}
 }
 
 Vector<String> EditorSettings::get_favorites() const {
-
 	return favorites;
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
-
 	recent_dirs = p_recent_dirs;
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("recent_dirs"), FileAccess::WRITE);
 	if (f) {
-		for (int i = 0; i < recent_dirs.size(); i++)
+		for (int i = 0; i < recent_dirs.size(); i++) {
 			f->store_line(recent_dirs[i]);
+		}
 		memdelete(f);
 	}
 }
 
 Vector<String> EditorSettings::get_recent_dirs() const {
-
 	return recent_dirs;
 }
 
 void EditorSettings::load_favorites() {
-
 	FileAccess *f = FileAccess::open(get_project_settings_dir().plus_file("favorites"), FileAccess::READ);
 	if (f) {
 		String line = f->get_line().strip_edges();
@@ -1394,7 +1387,6 @@ void EditorSettings::load_text_editor_theme() {
 
 		// don't load if it's not already there!
 		if (has_setting("text_editor/highlighting/" + key)) {
-
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
 				props["text_editor/highlighting/" + key].variant = Color::html(val); // change manually to prevent "Settings changed" console spam
@@ -1406,7 +1398,6 @@ void EditorSettings::load_text_editor_theme() {
 }
 
 bool EditorSettings::import_text_editor_theme(String p_file) {
-
 	if (!p_file.ends_with(".tet")) {
 		return false;
 	} else {
@@ -1425,7 +1416,6 @@ bool EditorSettings::import_text_editor_theme(String p_file) {
 }
 
 bool EditorSettings::save_text_editor_theme() {
-
 	String p_file = get("text_editor/theme/color_theme");
 
 	if (_is_default_text_editor_theme(p_file.get_file().to_lower())) {
@@ -1444,7 +1434,6 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 		return false;
 	}
 	if (_save_text_editor_theme(p_file)) {
-
 		// switch to theme is saved in the theme directory
 		list_text_editor_themes();
 		String theme_name = p_file.substr(0, p_file.length() - 4).get_file();
@@ -1464,7 +1453,6 @@ bool EditorSettings::is_default_text_editor_theme() {
 }
 
 Vector<String> EditorSettings::get_script_templates(const String &p_extension, const String &p_custom_path) {
-
 	Vector<String> templates;
 	String template_dir = get_script_templates_dir();
 	if (!p_custom_path.empty()) {
@@ -1487,62 +1475,55 @@ Vector<String> EditorSettings::get_script_templates(const String &p_extension, c
 }
 
 String EditorSettings::get_editor_layouts_config() const {
-
 	return get_settings_dir().plus_file("editor_layouts.cfg");
 }
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut) {
-
+void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
 }
 
-Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
-
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
-	if (!E)
-		return Ref<ShortCut>();
+Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
+	if (!E) {
+		return Ref<Shortcut>();
+	}
 
 	return E->get();
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-
-	for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-
+	for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 		r_shortcuts->push_back(E->key());
 	}
 }
 
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
-
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	if (!EditorSettings::get_singleton()) {
 		return nullptr;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	ERR_FAIL_COND_V_MSG(!sc.is_valid(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path + ".");
 
 	return sc;
 }
 
-struct ShortCutMapping {
+struct ShortcutMapping {
 	const char *path;
 	uint32_t keycode;
 };
 
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
-
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1563,7 +1544,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	}
 
 	if (!EditorSettings::get_singleton()) {
-		Ref<ShortCut> sc;
+		Ref<Shortcut> sc;
 		sc.instance();
 		sc->set_name(p_name);
 		sc->set_shortcut(ie);
@@ -1571,9 +1552,8 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		return sc;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
-
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
 		sc->set_meta("original", ie); //to compare against changes
 		return sc;
@@ -1589,7 +1569,6 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 }
 
 void EditorSettings::notify_changes() {
-
 	_THREAD_SAFE_METHOD_
 
 	SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
@@ -1607,7 +1586,6 @@ void EditorSettings::notify_changes() {
 }
 
 void EditorSettings::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &EditorSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
@@ -1634,7 +1612,6 @@ void EditorSettings::_bind_methods() {
 }
 
 EditorSettings::EditorSettings() {
-
 	last_order = 0;
 	optimize_save = true;
 	save_changed_setting = true;

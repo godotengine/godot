@@ -41,45 +41,37 @@
 #include "scene/3d/skeleton_3d.h"
 
 class FabrikInverseKinematic {
-
 	struct EndEffector {
 		BoneId tip_bone;
 		Transform goal_transform;
 	};
 
 	struct ChainItem {
-
 		Vector<ChainItem> children;
-		ChainItem *parent_item;
+		ChainItem *parent_item = nullptr;
 
 		// Bone info
-		BoneId bone;
-		PhysicalBone3D *pb;
+		BoneId bone = -1;
+		PhysicalBone3D *pb = nullptr;
 
-		real_t length;
+		real_t length = 0;
 		/// Positions relative to root bone
 		Transform initial_transform;
 		Vector3 current_pos;
 		// Direction from this bone to child
 		Vector3 current_ori;
 
-		ChainItem() :
-				parent_item(nullptr),
-				bone(-1),
-				pb(nullptr),
-				length(0) {}
+		ChainItem() {}
 
 		ChainItem *find_child(const BoneId p_bone_id);
 		ChainItem *add_child(const BoneId p_bone_id);
 	};
 
 	struct ChainTip {
-		ChainItem *chain_item;
-		const EndEffector *end_effector;
+		ChainItem *chain_item = nullptr;
+		const EndEffector *end_effector = nullptr;
 
-		ChainTip() :
-				chain_item(nullptr),
-				end_effector(nullptr) {}
+		ChainTip() {}
 
 		ChainTip(ChainItem *p_chain_item, const EndEffector *p_end_effector) :
 				chain_item(p_chain_item),
@@ -100,25 +92,21 @@ class FabrikInverseKinematic {
 public:
 	struct Task {
 		RID self;
-		Skeleton3D *skeleton;
+		Skeleton3D *skeleton = nullptr;
 
 		Chain chain;
 
 		// Settings
-		real_t min_distance;
-		int max_iterations;
+		real_t min_distance = 0.01;
+		int max_iterations = 10;
 
 		// Bone data
-		BoneId root_bone;
+		BoneId root_bone = -1;
 		Vector<EndEffector> end_effectors;
 
 		Transform goal_global_transform;
 
-		Task() :
-				skeleton(nullptr),
-				min_distance(0.01),
-				max_iterations(10),
-				root_bone(-1) {}
+		Task() {}
 	};
 
 private:
@@ -146,23 +134,23 @@ class SkeletonIK3D : public Node {
 
 	StringName root_bone;
 	StringName tip_bone;
-	real_t interpolation;
+	real_t interpolation = 1;
 	Transform target;
 	NodePath target_node_path_override;
-	bool override_tip_basis;
-	bool use_magnet;
+	bool override_tip_basis = true;
+	bool use_magnet = false;
 	Vector3 magnet_position;
 
-	real_t min_distance;
-	int max_iterations;
+	real_t min_distance = 0.01;
+	int max_iterations = 10;
 
-	Skeleton3D *skeleton;
-	Node3D *target_node_override;
-	FabrikInverseKinematic::Task *task;
+	Skeleton3D *skeleton = nullptr;
+	Node3D *target_node_override = nullptr;
+	FabrikInverseKinematic::Task *task = nullptr;
 
 protected:
 	virtual void
-	_validate_property(PropertyInfo &property) const;
+	_validate_property(PropertyInfo &property) const override;
 
 	static void _bind_methods();
 	virtual void _notification(int p_what);

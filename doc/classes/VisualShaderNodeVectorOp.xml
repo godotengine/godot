@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorOp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		A vector operator to be used within the visual shader graph.
 	</brief_description>
 	<description>
+		A visual shader node for use of vector operators. Operates on vector [code]a[/code] and vector [code]b[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,32 +12,45 @@
 	</methods>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeVectorOp.Operator" default="0">
+			The operator to be used. See [enum Operator] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="OP_ADD" value="0" enum="Operator">
+			Adds two vectors.
 		</constant>
 		<constant name="OP_SUB" value="1" enum="Operator">
+			Subtracts a vector from a vector.
 		</constant>
 		<constant name="OP_MUL" value="2" enum="Operator">
+			Multiplies two vectors.
 		</constant>
 		<constant name="OP_DIV" value="3" enum="Operator">
+			Divides vector by vector.
 		</constant>
 		<constant name="OP_MOD" value="4" enum="Operator">
+			Returns the remainder of the two vectors.
 		</constant>
 		<constant name="OP_POW" value="5" enum="Operator">
+			Returns the value of the first parameter raised to the power of the second, for each component of the vectors.
 		</constant>
 		<constant name="OP_MAX" value="6" enum="Operator">
+			Returns the greater of two values, for each component of the vectors.
 		</constant>
 		<constant name="OP_MIN" value="7" enum="Operator">
+			Returns the lesser of two values, for each component of the vectors.
 		</constant>
 		<constant name="OP_CROSS" value="8" enum="Operator">
+			Calculates the cross product of two vectors.
 		</constant>
 		<constant name="OP_ATAN2" value="9" enum="Operator">
+			Returns the arc-tangent of the parameters.
 		</constant>
 		<constant name="OP_REFLECT" value="10" enum="Operator">
+			Returns the vector that points in the direction of reflection. [code]a[/code] is incident vector and [code]b[/code] is the normal vector.
 		</constant>
 		<constant name="OP_STEP" value="11" enum="Operator">
+			Vector step operator. Returns [code]0.0[/code] if [code]a[/code] is smaller than [code]b[/code] and [code]1.0[/code] otherwise.
 		</constant>
 	</constants>
 </class>

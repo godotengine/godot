@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDTextureFormat" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_shareable_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_shareable_format">
+			<return type="void">
+			</return>
+			<argument index="0" name="format" type="int" enum="RenderingDevice.DataFormat">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="array_layers" type="int" setter="set_array_layers" getter="get_array_layers" default="1">
+		</member>
+		<member name="depth" type="int" setter="set_depth" getter="get_depth" default="1">
+		</member>
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="8">
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="1">
+		</member>
+		<member name="mipmaps" type="int" setter="set_mipmaps" getter="get_mipmaps" default="1">
+		</member>
+		<member name="samples" type="int" setter="set_samples" getter="get_samples" enum="RenderingDevice.TextureSamples" default="0">
+		</member>
+		<member name="type" type="int" setter="set_type" getter="get_type" enum="RenderingDevice.TextureType" default="1">
+		</member>
+		<member name="usage_bits" type="int" setter="set_usage_bits" getter="get_usage_bits" default="0">
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" default="1">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -2,7 +2,7 @@
 //
 //   Auto-fitter data for blue strings.
 //
-// Copyright (C) 2013-2019 by
+// Copyright (C) 2013-2020 by
 // David Turner, Robert Wilhelm, and Werner Lemberg.
 //
 // This file is part of the FreeType project, and may only be used,
@@ -442,6 +442,13 @@ AF_BLUE_STRING_ENUM AF_BLUE_STRINGS_ARRAY AF_BLUE_STRING_MAX_LEN:
     "𐒆 𐒉 𐒐 𐒒 𐒘 𐒛 𐒠 𐒣"
   AF_BLUE_STRING_OSMANYA_BOTTOM
     "𐒀 𐒂 𐒆 𐒈 𐒊 𐒒 𐒠 𐒩"
+
+  AF_BLUE_STRING_ROHINGYA_TOP
+    "𐴃 𐴀 𐴆 𐴖 𐴕"
+  AF_BLUE_STRING_ROHINGYA_BOTTOM
+    "𐴔 𐴖 𐴕 𐴑 𐴐"
+  AF_BLUE_STRING_ROHINGYA_JOIN
+    "ـ"
 
   AF_BLUE_STRING_SAURASHTRA_TOP
     "ꢜ ꢞ ꢳ ꢂ ꢖ ꢒ ꢝ ꢛ"
@@ -1001,6 +1008,12 @@ AF_BLUE_STRINGSET_ENUM AF_BLUE_STRINGSETS_ARRAY AF_BLUE_STRINGSET_MAX_LEN:
     { AF_BLUE_STRING_OSMANYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }
     { AF_BLUE_STRING_OSMANYA_BOTTOM, 0                          }
     { AF_BLUE_STRING_MAX,            0                          }
+
+  AF_BLUE_STRINGSET_ROHG
+    { AF_BLUE_STRING_ROHINGYA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP     }
+    { AF_BLUE_STRING_ROHINGYA_BOTTOM, 0                              }
+    { AF_BLUE_STRING_ROHINGYA_JOIN,   AF_BLUE_PROPERTY_LATIN_NEUTRAL }
+    { AF_BLUE_STRING_MAX,             0                              }
 
   AF_BLUE_STRINGSET_SAUR
     { AF_BLUE_STRING_SAURASHTRA_TOP,    AF_BLUE_PROPERTY_LATIN_TOP }

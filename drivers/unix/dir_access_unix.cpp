@@ -50,12 +50,10 @@
 #endif
 
 DirAccess *DirAccessUnix::create_fs() {
-
 	return memnew(DirAccessUnix);
 }
 
 Error DirAccessUnix::list_dir_begin() {
-
 	list_dir_end(); //close any previous dir opening!
 
 	//char real_current_dir_name[2048]; //is this enough?!
@@ -63,18 +61,19 @@ Error DirAccessUnix::list_dir_begin() {
 	//chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
-	if (!dir_stream)
+	if (!dir_stream) {
 		return ERR_CANT_OPEN; //error!
+	}
 
 	return OK;
 }
 
 bool DirAccessUnix::file_exists(String p_file) {
-
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_file.is_rel_path())
+	if (p_file.is_rel_path()) {
 		p_file = current_dir.plus_file(p_file);
+	}
 
 	p_file = fix_path(p_file);
 
@@ -89,11 +88,11 @@ bool DirAccessUnix::file_exists(String p_file) {
 }
 
 bool DirAccessUnix::dir_exists(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path())
+	if (p_dir.is_rel_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
+	}
 
 	p_dir = fix_path(p_dir);
 
@@ -104,9 +103,9 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
-
-	if (p_file.is_rel_path())
+	if (p_file.is_rel_path()) {
 		p_file = current_dir.plus_file(p_file);
+	}
 
 	p_file = fix_path(p_file);
 
@@ -116,16 +115,15 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	if (success) {
 		return flags.st_mtime;
 	} else {
-
 		ERR_FAIL_V(0);
 	};
 	return 0;
 };
 
 String DirAccessUnix::get_next() {
-
-	if (!dir_stream)
+	if (!dir_stream) {
 		return "";
+	}
 
 	dirent *entry = readdir(dir_stream);
 
@@ -154,25 +152,23 @@ String DirAccessUnix::get_next() {
 		_cisdir = (entry->d_type == DT_DIR);
 	}
 
-	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
+	_cishidden = is_hidden(fname);
 
 	return fname;
 }
 
 bool DirAccessUnix::current_is_dir() const {
-
 	return _cisdir;
 }
 
 bool DirAccessUnix::current_is_hidden() const {
-
 	return _cishidden;
 }
 
 void DirAccessUnix::list_dir_end() {
-
-	if (dir_stream)
+	if (dir_stream) {
 		closedir(dir_stream);
+	}
 	dir_stream = nullptr;
 	_cisdir = false;
 }
@@ -198,7 +194,6 @@ static bool _filter_drive(struct mntent *mnt) {
 #endif
 
 static void _get_drives(List<String> *list) {
-
 #if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions
 	FILE *mtab = setmntent("/etc/mtab", "r");
@@ -252,7 +247,6 @@ static void _get_drives(List<String> *list) {
 }
 
 int DirAccessUnix::get_drive_count() {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -260,7 +254,6 @@ int DirAccessUnix::get_drive_count() {
 }
 
 String DirAccessUnix::get_drive(int p_drive) {
-
 	List<String> list;
 	_get_drives(&list);
 
@@ -270,16 +263,15 @@ String DirAccessUnix::get_drive(int p_drive) {
 }
 
 bool DirAccessUnix::drives_are_shortcuts() {
-
 	return true;
 }
 
 Error DirAccessUnix::make_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
-	if (p_dir.is_rel_path())
+	if (p_dir.is_rel_path()) {
 		p_dir = get_current_dir().plus_file(p_dir);
+	}
 
 	p_dir = fix_path(p_dir);
 
@@ -298,7 +290,6 @@ Error DirAccessUnix::make_dir(String p_dir) {
 }
 
 Error DirAccessUnix::change_dir(String p_dir) {
-
 	GLOBAL_LOCK_FUNCTION
 
 	p_dir = fix_path(p_dir);
@@ -307,8 +298,9 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name))
+	if (prev_dir.parse_utf8(real_current_dir_name)) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
+	}
 
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
@@ -343,28 +335,28 @@ Error DirAccessUnix::change_dir(String p_dir) {
 }
 
 String DirAccessUnix::get_current_dir(bool p_include_drive) {
-
 	String base = _get_root_path();
 	if (base != "") {
-
 		String bd = current_dir.replace_first(base, "");
-		if (bd.begins_with("/"))
+		if (bd.begins_with("/")) {
 			return _get_root_string() + bd.substr(1, bd.length());
-		else
+		} else {
 			return _get_root_string() + bd;
+		}
 	}
 	return current_dir;
 }
 
 Error DirAccessUnix::rename(String p_path, String p_new_path) {
-
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		p_path = get_current_dir().plus_file(p_path);
+	}
 
 	p_path = fix_path(p_path);
 
-	if (p_new_path.is_rel_path())
+	if (p_new_path.is_rel_path()) {
 		p_new_path = get_current_dir().plus_file(p_new_path);
+	}
 
 	p_new_path = fix_path(p_new_path);
 
@@ -372,28 +364,28 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 }
 
 Error DirAccessUnix::remove(String p_path) {
-
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		p_path = get_current_dir().plus_file(p_path);
+	}
 
 	p_path = fix_path(p_path);
 
 	struct stat flags;
-	if ((stat(p_path.utf8().get_data(), &flags) != 0))
+	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
+	}
 
-	if (S_ISDIR(flags.st_mode))
+	if (S_ISDIR(flags.st_mode)) {
 		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
-	else
+	} else {
 		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+	}
 }
 
 size_t DirAccessUnix::get_space_left() {
-
 #ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
-
 		return 0;
 	};
 
@@ -408,8 +400,11 @@ String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented
 }
 
-DirAccessUnix::DirAccessUnix() {
+bool DirAccessUnix::is_hidden(const String &p_name) {
+	return p_name != "." && p_name != ".." && p_name.begins_with(".");
+}
 
+DirAccessUnix::DirAccessUnix() {
 	dir_stream = nullptr;
 	_cisdir = false;
 
@@ -418,14 +413,14 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
-	if (current_dir.parse_utf8(real_current_dir_name))
+	if (current_dir.parse_utf8(real_current_dir_name)) {
 		current_dir = real_current_dir_name;
+	}
 
 	change_dir(current_dir);
 }
 
 DirAccessUnix::~DirAccessUnix() {
-
 	list_dir_end();
 }
 

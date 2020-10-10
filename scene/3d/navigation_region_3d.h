@@ -38,21 +38,20 @@
 class Navigation3D;
 
 class NavigationRegion3D : public Node3D {
-
 	GDCLASS(NavigationRegion3D, Node3D);
 
-	bool enabled;
+	bool enabled = true;
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
-	Navigation3D *navigation;
-	Node *debug_view;
-	Thread *bake_thread;
+	Navigation3D *navigation = nullptr;
+	Node *debug_view = nullptr;
+	Thread *bake_thread = nullptr;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void set_enabled(bool p_enabled);
@@ -66,7 +65,7 @@ public:
 	void bake_navigation_mesh();
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

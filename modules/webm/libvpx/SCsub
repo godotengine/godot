@@ -238,6 +238,7 @@ else:
     is_x11_or_server_arm = (env["platform"] == "linuxbsd" or env["platform"] == "server") and (
         platform.machine().startswith("arm") or platform.machine().startswith("aarch")
     )
+    is_macos_x86 = env["platform"] == "osx" and ("arch" in env and (env["arch"] != "arm64"))
     is_ios_x86 = env["platform"] == "iphone" and ("arch" in env and env["arch"].startswith("x86"))
     is_android_x86 = env["platform"] == "android" and env["android_arch"].startswith("x86")
     if is_android_x86:
@@ -248,14 +249,15 @@ else:
         and (
             env["platform"] == "windows"
             or env["platform"] == "linuxbsd"
-            or env["platform"] == "osx"
             or env["platform"] == "haiku"
+            or is_macos_x86
             or is_android_x86
             or is_ios_x86
         )
     )
     webm_cpu_arm = (
         is_x11_or_server_arm
+        or (not is_macos_x86 and env["platform"] == "osx")
         or (not is_ios_x86 and env["platform"] == "iphone")
         or (not is_android_x86 and env["platform"] == "android")
     )

@@ -32,7 +32,6 @@
 #include "servers/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float threshold = Math::db2linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
@@ -51,7 +50,6 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	const AudioFrame *src = p_src_frames;
 
 	if (base->sidechain != StringName() && current_channel != -1) {
-
 		int bus = AudioServer::get_singleton()->thread_find_bus_index(base->sidechain);
 		if (bus >= 0) {
 			src = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus, current_channel);
@@ -59,7 +57,6 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	}
 
 	for (int i = 0; i < p_frame_count; i++) {
-
 		AudioFrame s = src[i];
 		//convert to positive
 		s.l = Math::abs(s.l);
@@ -69,11 +66,13 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
 
-		if (overdb < 0.0) //we only care about what goes over to compress
+		if (overdb < 0.0) { //we only care about what goes over to compress
 			overdb = 0.0;
+		}
 
-		if (overdb - rundb > 5) // diffeence is too large
+		if (overdb - rundb > 5) { // diffeence is too large
 			averatio = 4;
+		}
 
 		if (overdb > rundb) {
 			rundb = overdb + atcoef * (rundb - overdb);
@@ -104,8 +103,9 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 			gr_meter = grv;
 		} else {
 			gr_meter *= gr_meter_decay;
-			if (gr_meter > 1)
+			if (gr_meter > 1) {
 				gr_meter = 1;
+			}
 		}
 
 		p_dst_frames[i] = p_src_frames[i] * grv * makeup * mix + p_src_frames[i] * (1.0 - mix);
@@ -127,76 +127,65 @@ Ref<AudioEffectInstance> AudioEffectCompressor::instance() {
 }
 
 void AudioEffectCompressor::set_threshold(float p_threshold) {
-
 	threshold = p_threshold;
 }
 
 float AudioEffectCompressor::get_threshold() const {
-
 	return threshold;
 }
 
 void AudioEffectCompressor::set_ratio(float p_ratio) {
-
 	ratio = p_ratio;
 }
-float AudioEffectCompressor::get_ratio() const {
 
+float AudioEffectCompressor::get_ratio() const {
 	return ratio;
 }
 
 void AudioEffectCompressor::set_gain(float p_gain) {
-
 	gain = p_gain;
 }
-float AudioEffectCompressor::get_gain() const {
 
+float AudioEffectCompressor::get_gain() const {
 	return gain;
 }
 
 void AudioEffectCompressor::set_attack_us(float p_attack_us) {
-
 	attack_us = p_attack_us;
 }
-float AudioEffectCompressor::get_attack_us() const {
 
+float AudioEffectCompressor::get_attack_us() const {
 	return attack_us;
 }
 
 void AudioEffectCompressor::set_release_ms(float p_release_ms) {
-
 	release_ms = p_release_ms;
 }
-float AudioEffectCompressor::get_release_ms() const {
 
+float AudioEffectCompressor::get_release_ms() const {
 	return release_ms;
 }
 
 void AudioEffectCompressor::set_mix(float p_mix) {
-
 	mix = p_mix;
 }
-float AudioEffectCompressor::get_mix() const {
 
+float AudioEffectCompressor::get_mix() const {
 	return mix;
 }
 
 void AudioEffectCompressor::set_sidechain(const StringName &p_sidechain) {
-
 	AudioServer::get_singleton()->lock();
 	sidechain = p_sidechain;
 	AudioServer::get_singleton()->unlock();
 }
 
 StringName AudioEffectCompressor::get_sidechain() const {
-
 	return sidechain;
 }
 
 void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "sidechain") {
-
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			buses += ",";
@@ -208,7 +197,6 @@ void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
 }
 
 void AudioEffectCompressor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_threshold", "threshold"), &AudioEffectCompressor::set_threshold);
 	ClassDB::bind_method(D_METHOD("get_threshold"), &AudioEffectCompressor::get_threshold);
 

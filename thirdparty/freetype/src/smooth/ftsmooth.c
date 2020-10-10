@@ -4,7 +4,7 @@
  *
  *   Anti-aliasing renderer interface (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -155,6 +155,9 @@
       goto Exit;
     }
 
+    if ( !bitmap->rows || !bitmap->pitch )
+      goto Exit;
+
     /* allocate new one */
     if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, bitmap->pitch ) )
       goto Exit;
@@ -188,7 +191,7 @@
     /* implode outline if needed */
     {
       FT_Vector*  points     = outline->points;
-      FT_Vector*  points_end = points + outline->n_points;
+      FT_Vector*  points_end = FT_OFFSET( points, outline->n_points );
       FT_Vector*  vec;
 
 
@@ -207,7 +210,7 @@
     /* deflate outline if needed */
     {
       FT_Vector*  points     = outline->points;
-      FT_Vector*  points_end = points + outline->n_points;
+      FT_Vector*  points_end = FT_OFFSET( points, outline->n_points );
       FT_Vector*  vec;
 
 

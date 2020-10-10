@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		[PopupMenu] is a [Control] that displays a list of options. They are popular in toolbars or context menus.
+		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents.
+		If no maximum size is set, or if it is set to 0, the [PopupMenu] height will be limited by its parent rect.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -27,14 +29,14 @@
 		<method name="add_check_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="shortcut" type="ShortCut">
+			<argument index="0" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a new checkable item and assigns the specified [ShortCut] to it. Sets the label of the checkbox to the [ShortCut]'s name.
+				Adds a new checkable item and assigns the specified [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
@@ -61,14 +63,14 @@
 			</return>
 			<argument index="0" name="texture" type="Texture2D">
 			</argument>
-			<argument index="1" name="shortcut" type="ShortCut">
+			<argument index="1" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<argument index="3" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a new checkable item and assigns the specified [ShortCut] and icon [code]texture[/code] to it. Sets the label of the checkbox to the [ShortCut]'s name.
+				Adds a new checkable item and assigns the specified [Shortcut] and icon [code]texture[/code] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
@@ -109,7 +111,7 @@
 			</return>
 			<argument index="0" name="texture" type="Texture2D">
 			</argument>
-			<argument index="1" name="shortcut" type="ShortCut">
+			<argument index="1" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
@@ -124,14 +126,14 @@
 			</return>
 			<argument index="0" name="texture" type="Texture2D">
 			</argument>
-			<argument index="1" name="shortcut" type="ShortCut">
+			<argument index="1" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<argument index="3" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a new item and assigns the specified [ShortCut] and icon [code]texture[/code] to it. Sets the label of the checkbox to the [ShortCut]'s name.
+				Adds a new item and assigns the specified [Shortcut] and icon [code]texture[/code] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 			</description>
 		</method>
@@ -186,14 +188,14 @@
 		<method name="add_radio_check_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="shortcut" type="ShortCut">
+			<argument index="0" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a new radio check button and assigns a [ShortCut] to it. Sets the label of the checkbox to the [ShortCut]'s name.
+				Adds a new radio check button and assigns a [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
@@ -210,14 +212,14 @@
 		<method name="add_shortcut">
 			<return type="void">
 			</return>
-			<argument index="0" name="shortcut" type="ShortCut">
+			<argument index="0" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a [ShortCut].
+				Adds a [Shortcut].
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 			</description>
 		</method>
@@ -240,6 +242,12 @@
 			</return>
 			<description>
 				Removes all items from the [PopupMenu].
+			</description>
+		</method>
+		<method name="get_current_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_item_accelerator" qualifiers="const">
@@ -295,12 +303,12 @@
 			</description>
 		</method>
 		<method name="get_item_shortcut" qualifiers="const">
-			<return type="ShortCut">
+			<return type="Shortcut">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the [ShortCut] associated with the specified [code]idx[/code] item.
+				Returns the [Shortcut] associated with the specified [code]idx[/code] item.
 			</description>
 		</method>
 		<method name="get_item_submenu" qualifiers="const">
@@ -513,12 +521,12 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="shortcut" type="ShortCut">
+			<argument index="1" name="shortcut" type="Shortcut">
 			</argument>
 			<argument index="2" name="global" type="bool" default="false">
 			</argument>
 			<description>
-				Sets a [ShortCut] for the specified item [code]idx[/code].
+				Sets a [Shortcut] for the specified item [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_shortcut_disabled">
@@ -529,7 +537,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				Disables the [ShortCut] of the specified index [code]idx[/code].
+				Disables the [Shortcut] of the specified index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_submenu">
@@ -585,7 +593,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="false">
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
 			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
 		</member>
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">

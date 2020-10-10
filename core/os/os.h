@@ -42,21 +42,21 @@
 #include <stdarg.h>
 
 class OS {
-
 	static OS *singleton;
+	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
-	bool _keep_screen_on;
-	bool low_processor_usage_mode;
-	int low_processor_usage_mode_sleep_usec;
-	bool _verbose_stdout;
+	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
+	bool low_processor_usage_mode = false;
+	int low_processor_usage_mode_sleep_usec = 10000;
+	bool _verbose_stdout = false;
+	bool _debug_stdout = false;
 	String _local_clipboard;
-	uint64_t _msec_splash;
-	bool _no_window;
-	int _exit_code;
+	bool _no_window = false;
+	int _exit_code = 0;
 	int _orientation;
-	bool _allow_hidpi;
-	bool _allow_layered;
+	bool _allow_hidpi = false;
+	bool _allow_layered = false;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
 
@@ -64,9 +64,9 @@ class OS {
 
 	void *_stack_bottom;
 
-	CompositeLogger *_logger;
+	CompositeLogger *_logger = nullptr;
 
-	bool restart_on_exit;
+	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
 protected:
@@ -85,11 +85,13 @@ public:
 
 protected:
 	friend class Main;
+	// Needed by tests to setup command-line args.
+	friend int test_main(int argc, char *argv[]);
 
-	HasServerFeatureCallback has_server_feature_callback;
-	RenderThreadMode _render_thread_mode;
+	HasServerFeatureCallback has_server_feature_callback = nullptr;
+	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
 
-	// functions used by main to initialize/deinitialize the OS
+	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
@@ -149,6 +151,11 @@ public:
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 
+	virtual int get_tablet_driver_count() const { return 0; };
+	virtual String get_tablet_driver_name(int p_driver) const { return ""; };
+	virtual String get_current_tablet_driver() const { return ""; };
+	virtual void set_current_tablet_driver(const String &p_driver){};
+
 	void ensure_user_data_dir();
 
 	virtual MainLoop *get_main_loop() const = 0;
@@ -183,7 +190,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -192,7 +198,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;
@@ -207,18 +212,18 @@ public:
 	virtual Time get_time(bool local = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual String get_iso_date_time(bool local = false) const;
-	virtual uint64_t get_unix_time() const;
-	virtual uint64_t get_system_time_secs() const;
-	virtual uint64_t get_system_time_msecs() const;
+	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
+	virtual void add_frame_delay(bool p_can_draw);
+
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;
-	uint64_t get_splash_tick_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
 
 	bool is_stdout_verbose() const;
+	bool is_stdout_debug_enabled() const;
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }

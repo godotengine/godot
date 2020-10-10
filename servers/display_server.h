@@ -32,7 +32,7 @@
 #define DISPLAY_SERVER_H
 
 #include "core/callable.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/resource.h"
 
@@ -61,11 +61,11 @@ public:
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
-	static void _input_set_mouse_mode(InputFilter::MouseMode p_mode);
-	static InputFilter::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode(Input::MouseMode p_mode);
+	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
-	static InputFilter::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, InputFilter::CursorShape, const Vector2 &p_hostspot);
+	static Input::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();
@@ -167,6 +167,14 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const = 0;
 	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
+	virtual float screen_get_max_scale() const {
+		float scale = 1.f;
+		int screen_count = get_screen_count();
+		for (int i = 0; i < screen_count; i++) {
+			scale = fmax(scale, screen_get_scale(i));
+		}
+		return scale;
+	}
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const;
 	enum ScreenOrientation {
 
@@ -211,7 +219,8 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
 	};
 
-	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i & = Rect2i());
+	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual void show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const = 0;
@@ -237,6 +246,8 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID) = 0;
+
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -280,7 +291,7 @@ public:
 	virtual void console_set_visible(bool p_enabled);
 	virtual bool is_console_visible() const;
 
-	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_legth = -1);
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
@@ -310,7 +321,7 @@ public:
 	virtual CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
-	virtual bool get_swap_ok_cancel();
+	virtual bool get_swap_cancel_ok();
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
 
@@ -324,17 +335,11 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback);
 
-	enum LatinKeyboardVariant {
-		LATIN_KEYBOARD_QWERTY,
-		LATIN_KEYBOARD_QWERTZ,
-		LATIN_KEYBOARD_AZERTY,
-		LATIN_KEYBOARD_QZERTY,
-		LATIN_KEYBOARD_DVORAK,
-		LATIN_KEYBOARD_NEO,
-		LATIN_KEYBOARD_COLEMAK,
-	};
-
-	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void process_events() = 0;
 
@@ -384,6 +389,5 @@ VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
-VARIANT_ENUM_CAST(DisplayServer::LatinKeyboardVariant)
 
 #endif // DISPLAY_SERVER_H

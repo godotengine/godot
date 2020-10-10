@@ -59,98 +59,84 @@ enum ButtonList {
 	BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
 };
 
-enum JoystickList {
+enum JoyButtonList {
 
-	JOY_BUTTON_0 = 0,
-	JOY_BUTTON_1 = 1,
-	JOY_BUTTON_2 = 2,
-	JOY_BUTTON_3 = 3,
-	JOY_BUTTON_4 = 4,
-	JOY_BUTTON_5 = 5,
-	JOY_BUTTON_6 = 6,
-	JOY_BUTTON_7 = 7,
-	JOY_BUTTON_8 = 8,
-	JOY_BUTTON_9 = 9,
-	JOY_BUTTON_10 = 10,
-	JOY_BUTTON_11 = 11,
-	JOY_BUTTON_12 = 12,
-	JOY_BUTTON_13 = 13,
-	JOY_BUTTON_14 = 14,
-	JOY_BUTTON_15 = 15,
-	JOY_BUTTON_MAX = 16,
+	JOY_INVALID_BUTTON = -1,
 
-	JOY_L = JOY_BUTTON_4,
-	JOY_R = JOY_BUTTON_5,
-	JOY_L2 = JOY_BUTTON_6,
-	JOY_R2 = JOY_BUTTON_7,
-	JOY_L3 = JOY_BUTTON_8,
-	JOY_R3 = JOY_BUTTON_9,
-	JOY_SELECT = JOY_BUTTON_10,
-	JOY_START = JOY_BUTTON_11,
-	JOY_DPAD_UP = JOY_BUTTON_12,
-	JOY_DPAD_DOWN = JOY_BUTTON_13,
-	JOY_DPAD_LEFT = JOY_BUTTON_14,
-	JOY_DPAD_RIGHT = JOY_BUTTON_15,
+	// SDL Buttons
+	JOY_BUTTON_A = 0,
+	JOY_BUTTON_B = 1,
+	JOY_BUTTON_X = 2,
+	JOY_BUTTON_Y = 3,
+	JOY_BUTTON_BACK = 4,
+	JOY_BUTTON_GUIDE = 5,
+	JOY_BUTTON_START = 6,
+	JOY_BUTTON_LEFT_STICK = 7,
+	JOY_BUTTON_RIGHT_STICK = 8,
+	JOY_BUTTON_LEFT_SHOULDER = 9,
+	JOY_BUTTON_RIGHT_SHOULDER = 10,
+	JOY_BUTTON_DPAD_UP = 11,
+	JOY_BUTTON_DPAD_DOWN = 12,
+	JOY_BUTTON_DPAD_LEFT = 13,
+	JOY_BUTTON_DPAD_RIGHT = 14,
+	JOY_SDL_BUTTONS = 15,
 
-	JOY_SONY_CIRCLE = JOY_BUTTON_1,
-	JOY_SONY_X = JOY_BUTTON_0,
-	JOY_SONY_SQUARE = JOY_BUTTON_2,
-	JOY_SONY_TRIANGLE = JOY_BUTTON_3,
+	// Sony Buttons
+	JOY_SONY_X = JOY_BUTTON_A,
+	JOY_SONY_CROSS = JOY_BUTTON_A,
+	JOY_SONY_CIRCLE = JOY_BUTTON_B,
+	JOY_SONY_SQUARE = JOY_BUTTON_X,
+	JOY_SONY_TRIANGLE = JOY_BUTTON_Y,
+	JOY_SONY_SELECT = JOY_BUTTON_BACK,
+	JOY_SONY_START = JOY_BUTTON_START,
+	JOY_SONY_PS = JOY_BUTTON_GUIDE,
+	JOY_SONY_L1 = JOY_BUTTON_LEFT_SHOULDER,
+	JOY_SONY_R1 = JOY_BUTTON_RIGHT_SHOULDER,
+	JOY_SONY_L3 = JOY_BUTTON_LEFT_STICK,
+	JOY_SONY_R3 = JOY_BUTTON_RIGHT_STICK,
 
-	JOY_XBOX_A = JOY_BUTTON_0,
-	JOY_XBOX_B = JOY_BUTTON_1,
-	JOY_XBOX_X = JOY_BUTTON_2,
-	JOY_XBOX_Y = JOY_BUTTON_3,
+	// Xbox Buttons
+	JOY_XBOX_A = JOY_BUTTON_A,
+	JOY_XBOX_B = JOY_BUTTON_B,
+	JOY_XBOX_X = JOY_BUTTON_X,
+	JOY_XBOX_Y = JOY_BUTTON_Y,
+	JOY_XBOX_BACK = JOY_BUTTON_BACK,
+	JOY_XBOX_START = JOY_BUTTON_START,
+	JOY_XBOX_HOME = JOY_BUTTON_GUIDE,
+	JOY_XBOX_LS = JOY_BUTTON_LEFT_STICK,
+	JOY_XBOX_RS = JOY_BUTTON_RIGHT_STICK,
+	JOY_XBOX_LB = JOY_BUTTON_LEFT_SHOULDER,
+	JOY_XBOX_RB = JOY_BUTTON_RIGHT_SHOULDER,
 
-	JOY_DS_A = JOY_BUTTON_1,
-	JOY_DS_B = JOY_BUTTON_0,
-	JOY_DS_X = JOY_BUTTON_3,
-	JOY_DS_Y = JOY_BUTTON_2,
+	JOY_BUTTON_MAX = 36 // Apparently Android supports up to 36 buttons.
+};
 
-	JOY_WII_C = JOY_BUTTON_5,
-	JOY_WII_Z = JOY_BUTTON_6,
+enum JoyAxisList {
 
-	JOY_WII_MINUS = JOY_BUTTON_10,
-	JOY_WII_PLUS = JOY_BUTTON_11,
+	JOY_INVALID_AXIS = -1,
 
-	JOY_VR_GRIP = JOY_BUTTON_2,
-	JOY_VR_PAD = JOY_BUTTON_14,
-	JOY_VR_TRIGGER = JOY_BUTTON_15,
+	// SDL Axes
+	JOY_AXIS_LEFT_X = 0,
+	JOY_AXIS_LEFT_Y = 1,
+	JOY_AXIS_RIGHT_X = 2,
+	JOY_AXIS_RIGHT_Y = 3,
+	JOY_AXIS_TRIGGER_LEFT = 4,
+	JOY_AXIS_TRIGGER_RIGHT = 5,
+	JOY_SDL_AXES = 6,
 
-	JOY_OCULUS_AX = JOY_BUTTON_7,
-	JOY_OCULUS_BY = JOY_BUTTON_1,
-	JOY_OCULUS_MENU = JOY_BUTTON_3,
+	// Joystick axes.
+	JOY_AXIS_0_X = 0,
+	JOY_AXIS_0_Y = 1,
+	JOY_AXIS_1_X = 2,
+	JOY_AXIS_1_Y = 3,
+	JOY_AXIS_2_X = 4,
+	JOY_AXIS_2_Y = 5,
+	JOY_AXIS_3_X = 6,
+	JOY_AXIS_3_Y = 7,
+	JOY_AXIS_4_X = 8,
+	JOY_AXIS_4_Y = 9,
 
-	JOY_OPENVR_MENU = JOY_BUTTON_1,
-
-	// end of history
-
-	JOY_AXIS_0 = 0,
-	JOY_AXIS_1 = 1,
-	JOY_AXIS_2 = 2,
-	JOY_AXIS_3 = 3,
-	JOY_AXIS_4 = 4,
-	JOY_AXIS_5 = 5,
-	JOY_AXIS_6 = 6,
-	JOY_AXIS_7 = 7,
-	JOY_AXIS_8 = 8,
-	JOY_AXIS_9 = 9,
-	JOY_AXIS_MAX = 10,
-
-	JOY_ANALOG_LX = JOY_AXIS_0,
-	JOY_ANALOG_LY = JOY_AXIS_1,
-
-	JOY_ANALOG_RX = JOY_AXIS_2,
-	JOY_ANALOG_RY = JOY_AXIS_3,
-
-	JOY_ANALOG_L2 = JOY_AXIS_6,
-	JOY_ANALOG_R2 = JOY_AXIS_7,
-
-	JOY_VR_ANALOG_TRIGGER = JOY_AXIS_2,
-	JOY_VR_ANALOG_GRIP = JOY_AXIS_4,
-
-	JOY_OPENVR_TOUCHPADX = JOY_AXIS_0,
-	JOY_OPENVR_TOUCHPADY = JOY_AXIS_1,
+	JOY_AXIS_MAX = 10 // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 
 enum MidiMessageList {
@@ -171,7 +157,7 @@ enum MidiMessageList {
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
-	int device;
+	int device = 0;
 
 protected:
 	static void _bind_methods();
@@ -191,7 +177,6 @@ public:
 	// To be removed someday, since they do not make sense for all events
 	virtual bool is_pressed() const;
 	virtual bool is_echo() const;
-	// ...-.
 
 	virtual String as_text() const;
 
@@ -202,14 +187,14 @@ public:
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
-	InputEvent();
+
+	InputEvent() {}
 };
 
 class InputEventFromWindow : public InputEvent {
-
 	GDCLASS(InputEventFromWindow, InputEvent);
 
-	int64_t window_id;
+	int64_t window_id = 0;
 
 protected:
 	static void _bind_methods();
@@ -218,28 +203,27 @@ public:
 	void set_window_id(int64_t p_id);
 	int64_t get_window_id() const;
 
-	InputEventFromWindow();
+	InputEventFromWindow() {}
 };
 
 class InputEventWithModifiers : public InputEventFromWindow {
 	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
 
-	bool shift;
-	bool alt;
+	bool shift = false;
+	bool alt = false;
 #ifdef APPLE_STYLE_KEYS
 	union {
 		bool command;
-		bool meta; //< windows/mac key
+		bool meta = false; //< windows/mac key
 	};
 
-	bool control;
+	bool control = false;
 #else
 	union {
 		bool command; //< windows/mac key
-		bool control;
+		bool control = false;
 	};
-	bool meta; //< windows/mac key
-
+	bool meta = false; //< windows/mac key
 #endif
 
 protected:
@@ -263,27 +247,26 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
-	InputEventWithModifiers();
+	InputEventWithModifiers() {}
 };
 
 class InputEventKey : public InputEventWithModifiers {
-
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
-	bool pressed; /// otherwise release
+	bool pressed = false; /// otherwise release
 
-	uint32_t keycode; ///< check keyboard.h , KeyCode enum, without modifier masks
-	uint32_t physical_keycode;
-	uint32_t unicode; ///unicode
+	uint32_t keycode = 0; ///< check keyboard.h , KeyCode enum, without modifier masks
+	uint32_t physical_keycode = 0;
+	uint32_t unicode = 0; ///unicode
 
-	bool echo; /// true if this is an echo key
+	bool echo = false; /// true if this is an echo key
 
 protected:
 	static void _bind_methods();
 
 public:
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
 	void set_keycode(uint32_t p_keycode);
 	uint32_t get_keycode() const;
@@ -295,26 +278,25 @@ public:
 	uint32_t get_unicode() const;
 
 	void set_echo(bool p_enable);
-	virtual bool is_echo() const;
+	virtual bool is_echo() const override;
 
 	uint32_t get_keycode_with_modifiers() const;
 	uint32_t get_physical_keycode_with_modifiers() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const override;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 
-	virtual bool is_action_type() const { return true; }
+	virtual bool is_action_type() const override { return true; }
 
-	virtual String as_text() const;
+	virtual String as_text() const override;
 
-	InputEventKey();
+	InputEventKey() {}
 };
 
 class InputEventMouse : public InputEventWithModifiers {
-
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	int button_mask;
+	int button_mask = 0;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -332,49 +314,47 @@ public:
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
 
-	InputEventMouse();
+	InputEventMouse() {}
 };
 
 class InputEventMouseButton : public InputEventMouse {
-
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
-	float factor;
-	int button_index;
-	bool pressed; //otherwise released
-	bool doubleclick; //last even less than doubleclick time
+	float factor = 1;
+	int button_index = 0;
+	bool pressed = false; //otherwise released
+	bool doubleclick = false; //last even less than doubleclick time
 
 protected:
 	static void _bind_methods();
 
 public:
 	void set_factor(float p_factor);
-	float get_factor();
+	float get_factor() const;
 
 	void set_button_index(int p_index);
 	int get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
 	void set_doubleclick(bool p_doubleclick);
 	bool is_doubleclick() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const override;
 
-	virtual bool is_action_type() const { return true; }
-	virtual String as_text() const;
+	virtual bool is_action_type() const override { return true; }
+	virtual String as_text() const override;
 
-	InputEventMouseButton();
+	InputEventMouseButton() {}
 };
 
 class InputEventMouseMotion : public InputEventMouse {
-
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
 
 	Vector2 tilt;
-	float pressure;
+	float pressure = 0;
 	Vector2 relative;
 	Vector2 speed;
 
@@ -394,19 +374,18 @@ public:
 	void set_speed(const Vector2 &p_speed);
 	Vector2 get_speed() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual String as_text() const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
 
-	virtual bool accumulate(const Ref<InputEvent> &p_event);
+	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
-	InputEventMouseMotion();
+	InputEventMouseMotion() {}
 };
 
 class InputEventJoypadMotion : public InputEvent {
-
 	GDCLASS(InputEventJoypadMotion, InputEvent);
-	int axis; ///< Joypad axis
-	float axis_value; ///< -1 to 1
+	int axis = 0; ///< Joypad axis
+	float axis_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
@@ -418,22 +397,22 @@ public:
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
 
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const override;
 
-	virtual bool is_action_type() const { return true; }
-	virtual String as_text() const;
+	virtual bool is_action_type() const override { return true; }
+	virtual String as_text() const override;
 
-	InputEventJoypadMotion();
+	InputEventJoypadMotion() {}
 };
 
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
-	int button_index;
-	bool pressed;
-	float pressure; //0 to 1
+	int button_index = 0;
+	bool pressed = false;
+	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
 
@@ -442,25 +421,25 @@ public:
 	int get_button_index() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
 	void set_pressure(float p_pressure);
 	float get_pressure() const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const override;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
 
-	virtual bool is_action_type() const { return true; }
-	virtual String as_text() const;
+	virtual bool is_action_type() const override { return true; }
+	virtual String as_text() const override;
 
-	InputEventJoypadButton();
+	InputEventJoypadButton() {}
 };
 
 class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
-	int index;
+	int index = 0;
 	Vector2 pos;
-	bool pressed;
+	bool pressed = false;
 
 protected:
 	static void _bind_methods();
@@ -473,18 +452,17 @@ public:
 	Vector2 get_position() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual String as_text() const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
 
-	InputEventScreenTouch();
+	InputEventScreenTouch() {}
 };
 
 class InputEventScreenDrag : public InputEventFromWindow {
-
 	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
-	int index;
+	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
 	Vector2 speed;
@@ -505,19 +483,18 @@ public:
 	void set_speed(const Vector2 &p_speed);
 	Vector2 get_speed() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual String as_text() const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
 
-	InputEventScreenDrag();
+	InputEventScreenDrag() {}
 };
 
 class InputEventAction : public InputEvent {
-
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
-	bool pressed;
-	float strength;
+	bool pressed = false;
+	float strength = 1.0f;
 
 protected:
 	static void _bind_methods();
@@ -527,24 +504,23 @@ public:
 	StringName get_action() const;
 
 	void set_pressed(bool p_pressed);
-	virtual bool is_pressed() const;
+	virtual bool is_pressed() const override;
 
 	void set_strength(float p_strength);
 	float get_strength() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 
-	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const;
+	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const override;
 
-	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
-	virtual bool is_action_type() const { return true; }
-	virtual String as_text() const;
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const override;
+	virtual bool is_action_type() const override { return true; }
+	virtual String as_text() const override;
 
-	InputEventAction();
+	InputEventAction() {}
 };
 
 class InputEventGesture : public InputEventWithModifiers {
-
 	GDCLASS(InputEventGesture, InputEventWithModifiers);
 
 	Vector2 pos;
@@ -558,9 +534,8 @@ public:
 };
 
 class InputEventMagnifyGesture : public InputEventGesture {
-
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
-	real_t factor;
+	real_t factor = 1.0;
 
 protected:
 	static void _bind_methods();
@@ -569,14 +544,13 @@ public:
 	void set_factor(real_t p_factor);
 	real_t get_factor() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual String as_text() const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
 
-	InputEventMagnifyGesture();
+	InputEventMagnifyGesture() {}
 };
 
 class InputEventPanGesture : public InputEventGesture {
-
 	GDCLASS(InputEventPanGesture, InputEventGesture);
 	Vector2 delta;
 
@@ -587,23 +561,23 @@ public:
 	void set_delta(const Vector2 &p_delta);
 	Vector2 get_delta() const;
 
-	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
-	virtual String as_text() const;
+	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
+	virtual String as_text() const override;
 
-	InputEventPanGesture();
+	InputEventPanGesture() {}
 };
 
 class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
-	int channel;
-	int message;
-	int pitch;
-	int velocity;
-	int instrument;
-	int pressure;
-	int controller_number;
-	int controller_value;
+	int channel = 0;
+	int message = 0;
+	int pitch = 0;
+	int velocity = 0;
+	int instrument = 0;
+	int pressure = 0;
+	int controller_number = 0;
+	int controller_value = 0;
 
 protected:
 	static void _bind_methods();
@@ -633,9 +607,9 @@ public:
 	void set_controller_value(const int p_controller_value);
 	int get_controller_value() const;
 
-	virtual String as_text() const;
+	virtual String as_text() const override;
 
-	InputEventMIDI();
+	InputEventMIDI() {}
 };
 
 #endif // INPUT_EVENT_H

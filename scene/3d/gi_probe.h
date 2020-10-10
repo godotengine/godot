@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance_3d.h"
 
 class GIProbeData : public Resource {
-
 	GDCLASS(GIProbeData, Resource);
 
 	RID probe;
@@ -60,7 +59,7 @@ class GIProbeData : public Resource {
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
@@ -102,7 +101,7 @@ public:
 	void set_use_two_bounces(bool p_enable);
 	bool is_using_two_bounces() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	GIProbeData();
 	~GIProbeData();
@@ -163,10 +162,10 @@ public:
 
 	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	GIProbe();
 	~GIProbe();

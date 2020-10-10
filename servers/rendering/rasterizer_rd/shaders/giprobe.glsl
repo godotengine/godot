@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -10,7 +9,6 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #else
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 #endif
-/* clang-format on */
 
 #ifndef MODE_DYNAMIC
 
@@ -47,7 +45,6 @@ cell_data;
 #if defined(MODE_COMPUTE_LIGHT) || defined(MODE_DYNAMIC_LIGHTING)
 
 struct Light {
-
 	uint type;
 	float energy;
 	float radius;
@@ -191,7 +188,6 @@ layout(r16ui, set = 0, binding = 13) uniform restrict writeonly uimage3D aniso_n
 #if defined(MODE_COMPUTE_LIGHT) || defined(MODE_DYNAMIC_LIGHTING)
 
 float raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
-
 	vec3 cell_size = 1.0 / vec3(params.limits);
 	float occlusion = 1.0;
 	while (distance > 0.5) { //use this to avoid precision errors
@@ -213,14 +209,11 @@ float raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 }
 
 bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 light_pos) {
-
 	if (lights.data[light].type == LIGHT_TYPE_DIRECTIONAL) {
-
 		light_pos = pos - lights.data[light].direction * length(vec3(params.limits));
 		attenuation = 1.0;
 
 	} else {
-
 		light_pos = lights.data[light].position;
 		float distance = length(pos - light_pos);
 		if (distance >= lights.data[light].radius) {
@@ -230,7 +223,6 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 		attenuation = pow(clamp(1.0 - distance / lights.data[light].radius, 0.0001, 1.0), lights.data[light].attenuation);
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
-
 			vec3 rel = normalize(pos - light_pos);
 			float angle = acos(dot(rel, lights.data[light].direction));
 			if (angle > lights.data[light].spot_angle_radians) {
@@ -246,7 +238,6 @@ bool compute_light_vector(uint light, vec3 pos, out float attenuation, out vec3 
 }
 
 float get_normal_advance(vec3 p_normal) {
-
 	vec3 normal = p_normal;
 	vec3 unorm = abs(normal);
 
@@ -269,7 +260,6 @@ float get_normal_advance(vec3 p_normal) {
 }
 
 void clip_segment(vec4 plane, vec3 begin, inout vec3 end) {
-
 	vec3 segment = begin - end;
 	float den = dot(plane.xyz, segment);
 
@@ -302,7 +292,6 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 	}
 
 	if (lights.data[index].has_shadow) {
-
 		float distance_adv = get_normal_advance(light_dir);
 
 		vec3 to = pos;
@@ -352,7 +341,6 @@ bool compute_light_at_pos(uint index, vec3 pos, vec3 normal, inout vec3 light, i
 #endif // MODE COMPUTE LIGHT
 
 void main() {
-
 #ifndef MODE_DYNAMIC
 
 	uint cell_index = gl_GlobalInvocationID.x;
@@ -383,7 +371,6 @@ void main() {
 #endif
 
 	for (uint i = 0; i < params.light_count; i++) {
-
 		vec3 light;
 		vec3 light_dir;
 		if (!compute_light_at_pos(i, pos, normal.xyz, light, light_dir)) {
@@ -394,7 +381,6 @@ void main() {
 
 #ifdef MODE_ANISOTROPIC
 		for (uint j = 0; j < 6; j++) {
-
 			accum[j] += max(0.0, dot(accum_dirs[j], -light_dir)) * light;
 		}
 #else
@@ -461,7 +447,6 @@ void main() {
 #endif
 
 	if (length(normal.xyz) > 0.2) {
-
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 		vec3 tangent = normalize(cross(v0, normal.xyz));
 		vec3 bitangent = normalize(cross(tangent, normal.xyz));
@@ -481,11 +466,9 @@ void main() {
 		float tan_half_angle = 0.577;
 
 		for (int i = 0; i < MAX_CONE_DIRS; i++) {
-
 			vec3 direction = normal_mat * cone_dirs[i];
 			vec4 color = vec4(0.0);
 			{
-
 				float dist = 1.5;
 				float max_distance = length(vec3(params.limits));
 				vec3 cell_size = 1.0 / vec3(params.limits);
@@ -519,7 +502,6 @@ void main() {
 			color *= cone_weights[i] * vec4(albedo.rgb, 1.0) * params.dynamic_range; //restore range
 #ifdef MODE_ANISOTROPIC
 			for (uint j = 0; j < 6; j++) {
-
 				accum[j] += max(0.0, dot(accum_dirs[j], direction)) * color.rgb;
 			}
 #else
@@ -594,7 +576,6 @@ void main() {
 
 #ifdef MODE_WRITE_TEXTURE
 	{
-
 #ifdef MODE_ANISOTROPIC
 		vec3 accum_total = vec3(0.0);
 		accum_total += outputs.data[cell_index * 6 + 0].rgb;
@@ -665,7 +646,6 @@ void main() {
 
 		vec3 accum = vec3(0.0);
 		for (uint i = 0; i < params.light_count; i++) {
-
 			vec3 light;
 			vec3 light_dir;
 			if (!compute_light_at_pos(i, vec3(pos) * params.pos_multiplier, normal, light, light_dir)) {

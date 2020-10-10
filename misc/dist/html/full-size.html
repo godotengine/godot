@@ -4,7 +4,7 @@
 	<meta charset='utf-8' />
 	<meta name='viewport' content='width=device-width, user-scalable=no' />
 	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
-	<title></title>
+	<title>$GODOT_PROJECT_NAME</title>
 	<style type='text/css'>
 
 		body {
@@ -145,7 +145,9 @@ $GODOT_HEAD_INCLUDE
 
 			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const EXTRA_ARGS = JSON.parse('$GODOT_ARGS');
 			const INDETERMINATE_STATUS_STEP_MS = 100;
+			const FULL_WINDOW = $GODOT_FULL_WINDOW;
 
 			var canvas = document.getElementById('canvas');
 			var statusProgress = document.getElementById('status-progress');
@@ -155,6 +157,9 @@ $GODOT_HEAD_INCLUDE
 
 			var initializing = true;
 			var statusMode = 'hidden';
+			var lastWidth = 0;
+			var lastHeight = 0;
+			var lastScale = 0;
 
 			var animationCallbacks = [];
 			function animate(time) {
@@ -164,16 +169,23 @@ $GODOT_HEAD_INCLUDE
 			requestAnimationFrame(animate);
 
 			function adjustCanvasDimensions() {
-				var scale = window.devicePixelRatio || 1;
-				var width = window.innerWidth;
-				var height = window.innerHeight;
-				canvas.width = width * scale;
-				canvas.height = height * scale;
-				canvas.style.width = width + "px";
-				canvas.style.height = height + "px";
+				const scale = window.devicePixelRatio || 1;
+				if (lastWidth != window.innerWidth || lastHeight != window.innerHeight || lastScale != scale) {
+					lastScale = scale;
+					lastWidth = window.innerWidth;
+					lastHeight = window.innerHeight;
+					canvas.width = Math.floor(lastWidth * scale);
+					canvas.height = Math.floor(lastHeight * scale);
+					canvas.style.width = lastWidth + "px";
+					canvas.style.height = lastHeight + "px";
+				}
 			}
-			animationCallbacks.push(adjustCanvasDimensions);
-			adjustCanvasDimensions();
+			if (FULL_WINDOW) {
+				animationCallbacks.push(adjustCanvasDimensions);
+				adjustCanvasDimensions();
+			} else {
+				engine.setCanvasResizedOnStart(true);
+			}
 
 			setStatusMode = function setStatusMode(mode) {
 
@@ -202,7 +214,7 @@ $GODOT_HEAD_INCLUDE
 						throw new Error('Invalid status mode');
 				}
 				statusMode = mode;
-			}
+			};
 
 			function animateStatusIndeterminate(ms) {
 
@@ -256,7 +268,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK, EXTRA_ARGS).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

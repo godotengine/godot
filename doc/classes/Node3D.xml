@@ -6,9 +6,11 @@
 	<description>
 		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Node3D. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Node3D] object is set as top-level. Affine operations in this coordinate system correspond to direct affine operations on the [Node3D]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Node3D] object itself is referred to as object-local coordinate system.
+		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link title="Introduction to 3D">https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
+		<link title="All 3D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/3d</link>
 	</tutorials>
 	<methods>
 		<method name="force_update_transform">
@@ -25,7 +27,7 @@
 				Returns the parent [Node3D], or an empty [Object] if no parent exists or parent is not of type [Node3D].
 			</description>
 		</method>
-		<method name="get_world" qualifiers="const">
+		<method name="get_world_3d" qualifiers="const">
 			<return type="World3D">
 			</return>
 			<description>
@@ -82,13 +84,6 @@
 				Returns whether this node uses a scale of [code](1, 1, 1)[/code] or its local transformation scale.
 			</description>
 		</method>
-		<method name="is_set_as_toplevel" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether this node is set as Toplevel, that is whether it ignores its parent nodes transformations.
-			</description>
-		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -100,7 +95,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the node is visible, taking into consideration that its parents visibility.
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="look_at">
@@ -192,15 +187,6 @@
 			</argument>
 			<description>
 				Scales the local transformation by given 3D scale factors in object-local coordinate system.
-			</description>
-		</method>
-		<method name="set_as_toplevel">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Makes the node ignore its parents transformations. Node transformations are only in global space.
 			</description>
 		</method>
 		<method name="set_disable_scale">
@@ -315,6 +301,9 @@
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
 			Scale part of the local transformation.
 		</member>
+		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
+			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.
+		</member>
 		<member name="transform" type="Transform" setter="set_transform" getter="get_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			Local space [Transform] of this node, with respect to the parent node.
 		</member>
@@ -322,7 +311,7 @@
 			Local translation of this node.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this node is drawn.
+			If [code]true[/code], this node is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
 		</member>
 	</members>
 	<signals>

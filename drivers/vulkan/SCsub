@@ -4,6 +4,7 @@ Import("env")
 
 env.add_source_files(env.drivers_sources, "*.cpp")
 
+# FIXME: Refactor all this to reduce code duplication.
 if env["platform"] == "android":
     # Use NDK Vulkan headers
     thirdparty_dir = env["ANDROID_NDK_ROOT"] + "/sources/third_party/vulkan/src"
@@ -21,6 +22,17 @@ if env["platform"] == "android":
 
     thirdparty_dir = "#thirdparty/vulkan"
     vma_sources = [thirdparty_dir + "/android/vk_mem_alloc.cpp"]
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+elif env["platform"] == "iphone":
+    # Use bundled Vulkan headers
+    thirdparty_dir = "#thirdparty/vulkan"
+    env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include", thirdparty_dir + "/loader"])
+
+    # Build Vulkan memory allocator
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+
+    vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
     env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
 elif env["builtin_vulkan"]:
     # Use bundled Vulkan headers
@@ -70,16 +82,6 @@ elif env["builtin_vulkan"]:
                 'FALLBACK_CONFIG_DIRS=\\"%s\\"' % "/etc/xdg",
             ]
         )
-    elif env["platform"] == "iphone":
-        env_thirdparty.AppendUnique(
-            CPPDEFINES=[
-                "VK_USE_PLATFORM_IOS_MVK",
-                "VULKAN_NON_CMAKE_BUILD",
-                'SYSCONFDIR=\\"%s\\"' % "/etc",
-                'FALLBACK_DATA_DIRS=\\"%s\\"' % "/usr/local/share:/usr/share",
-                'FALLBACK_CONFIG_DIRS=\\"%s\\"' % "/etc/xdg",
-            ]
-        )
     elif env["platform"] == "linuxbsd":
         env_thirdparty.AppendUnique(
             CPPDEFINES=[
@@ -98,4 +100,14 @@ elif env["builtin_vulkan"]:
 
     loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
     env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+else:  # Always build VMA.
+    thirdparty_dir = "#thirdparty/vulkan"
+    env.Prepend(CPPPATH=[thirdparty_dir])
+
+    # Build Vulkan loader library
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+    vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
+
     env_thirdparty.add_source_files(env.drivers_sources, vma_sources)

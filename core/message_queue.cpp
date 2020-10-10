@@ -37,24 +37,22 @@
 MessageQueue *MessageQueue::singleton = nullptr;
 
 MessageQueue *MessageQueue::get_singleton() {
-
 	return singleton;
 }
 
 Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
-
 	return push_callable(Callable(p_id, p_method), p_args, p_argcount, p_show_error);
 }
 
 Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -62,15 +60,15 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, VARIANT
 }
 
 Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value) {
-
 	_THREAD_SAFE_METHOD_
 
 	uint8_t room_needed = sizeof(Message) + sizeof(Variant);
 
 	if ((buffer_end + room_needed) >= buffer_size) {
 		String type;
-		if (ObjectDB::get_instance(p_id))
+		if (ObjectDB::get_instance(p_id)) {
 			type = ObjectDB::get_instance(p_id)->get_class();
+		}
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
 		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
@@ -91,7 +89,6 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 }
 
 Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(p_notification < 0, ERR_INVALID_PARAMETER);
@@ -117,21 +114,18 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 }
 
 Error MessageQueue::push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_DECLARE) {
-
 	return push_call(p_object->get_instance_id(), p_method, VARIANT_ARG_PASS);
 }
 
 Error MessageQueue::push_notification(Object *p_object, int p_notification) {
-
 	return push_notification(p_object->get_instance_id(), p_notification);
 }
-Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const Variant &p_value) {
 
+Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const Variant &p_value) {
 	return push_set(p_object->get_instance_id(), p_prop, p_value);
 }
 
 Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
-
 	_THREAD_SAFE_METHOD_
 
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
@@ -146,13 +140,13 @@ Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_
 	msg->args = p_argcount;
 	msg->callable = p_callable;
 	msg->type = TYPE_CALL;
-	if (p_show_error)
+	if (p_show_error) {
 		msg->type |= FLAG_SHOW_ERROR;
+	}
 
 	buffer_end += sizeof(Message);
 
 	for (int i = 0; i < p_argcount; i++) {
-
 		Variant *v = memnew_placement(&buffer[buffer_end], Variant);
 		buffer_end += sizeof(Variant);
 		*v = *p_args[i];
@@ -161,8 +155,22 @@ Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_
 	return OK;
 }
 
-void MessageQueue::statistics() {
+Error MessageQueue::push_callable(const Callable &p_callable, VARIANT_ARG_DECLARE) {
+	VARIANT_ARGPTRS;
 
+	int argc = 0;
+
+	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		if (argptr[i]->get_type() == Variant::NIL) {
+			break;
+		}
+		argc++;
+	}
+
+	return push_callable(p_callable, argptr, argc);
+}
+
+void MessageQueue::statistics() {
 	Map<StringName, int> set_count;
 	Map<int, int> notify_count;
 	Map<Callable, int> call_count;
@@ -175,30 +183,28 @@ void MessageQueue::statistics() {
 		Object *target = message->callable.get_object();
 
 		if (target != nullptr) {
-
 			switch (message->type & FLAG_MASK) {
-
 				case TYPE_CALL: {
-
-					if (!call_count.has(message->callable))
+					if (!call_count.has(message->callable)) {
 						call_count[message->callable] = 0;
+					}
 
 					call_count[message->callable]++;
 
 				} break;
 				case TYPE_NOTIFICATION: {
-
-					if (!notify_count.has(message->notification))
+					if (!notify_count.has(message->notification)) {
 						notify_count[message->notification] = 0;
+					}
 
 					notify_count[message->notification]++;
 
 				} break;
 				case TYPE_SET: {
-
 					StringName t = message->callable.get_method();
-					if (!set_count.has(t))
+					if (!set_count.has(t)) {
 						set_count[t] = 0;
+					}
 
 					set_count[t]++;
 
@@ -213,8 +219,9 @@ void MessageQueue::statistics() {
 		}
 
 		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			read_pos += sizeof(Variant) * message->args;
+		}
 	}
 
 	print_line("TOTAL BYTES: " + itos(buffer_end));
@@ -234,12 +241,10 @@ void MessageQueue::statistics() {
 }
 
 int MessageQueue::get_max_buffer_usage() const {
-
 	return buffer_max_used;
 }
 
 void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error) {
-
 	const Variant **argptrs = nullptr;
 	if (p_argcount) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_argcount);
@@ -252,13 +257,11 @@ void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_a
 	Variant ret;
 	p_callable.call(argptrs, p_argcount, ret, ce);
 	if (p_show_error && ce.error != Callable::CallError::CALL_OK) {
-
 		ERR_PRINT("Error calling deferred method: " + Variant::get_callable_error_text(p_callable, argptrs, p_argcount, ce) + ".");
 	}
 }
 
 void MessageQueue::flush() {
-
 	if (buffer_end > buffer_max_used) {
 		buffer_max_used = buffer_end;
 	}
@@ -275,14 +278,14 @@ void MessageQueue::flush() {
 	flushing = true;
 
 	while (read_pos < buffer_end) {
-
 		//lock on each iteration, so a call can re-add itself to the message queue
 
 		Message *message = (Message *)&buffer[read_pos];
 
 		uint32_t advance = sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			advance += sizeof(Variant) * message->args;
+		}
 
 		//pre-advance so this function is reentrant
 		read_pos += advance;
@@ -292,10 +295,8 @@ void MessageQueue::flush() {
 		Object *target = message->callable.get_object();
 
 		if (target != nullptr) {
-
 			switch (message->type & FLAG_MASK) {
 				case TYPE_CALL: {
-
 					Variant *args = (Variant *)(message + 1);
 
 					// messages don't expect a return value
@@ -304,13 +305,11 @@ void MessageQueue::flush() {
 
 				} break;
 				case TYPE_NOTIFICATION: {
-
 					// messages don't expect a return value
 					target->notification(message->notification);
 
 				} break;
 				case TYPE_SET: {
-
 					Variant *arg = (Variant *)(message + 1);
 					// messages don't expect a return value
 					target->set(message->callable.get_method(), *arg);
@@ -337,18 +336,13 @@ void MessageQueue::flush() {
 }
 
 bool MessageQueue::is_flushing() const {
-
 	return flushing;
 }
 
 MessageQueue::MessageQueue() {
-
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
 	singleton = this;
-	flushing = false;
 
-	buffer_end = 0;
-	buffer_max_used = 0;
 	buffer_size = GLOBAL_DEF_RST("memory/limits/message_queue/max_size_kb", DEFAULT_QUEUE_SIZE_KB);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/message_queue/max_size_kb", PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_kb", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater"));
 	buffer_size *= 1024;
@@ -356,23 +350,23 @@ MessageQueue::MessageQueue() {
 }
 
 MessageQueue::~MessageQueue() {
-
 	uint32_t read_pos = 0;
 
 	while (read_pos < buffer_end) {
-
 		Message *message = (Message *)&buffer[read_pos];
 		Variant *args = (Variant *)(message + 1);
 		int argc = message->args;
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
-			for (int i = 0; i < argc; i++)
+			for (int i = 0; i < argc; i++) {
 				args[i].~Variant();
+			}
 		}
 		message->~Message();
 
 		read_pos += sizeof(Message);
-		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
+		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
 			read_pos += sizeof(Variant) * message->args;
+		}
 	}
 
 	singleton = nullptr;

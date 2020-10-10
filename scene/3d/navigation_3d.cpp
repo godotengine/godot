@@ -33,7 +33,6 @@
 #include "servers/navigation_server_3d.h"
 
 Vector<Vector3> Navigation3D::get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize) const {
-
 	return NavigationServer3D::get_singleton()->map_get_path(map, p_start, p_end, p_optimize);
 }
 
@@ -54,13 +53,11 @@ RID Navigation3D::get_closest_point_owner(const Vector3 &p_point) const {
 }
 
 void Navigation3D::set_up_vector(const Vector3 &p_up) {
-
 	up = p_up;
 	NavigationServer3D::get_singleton()->map_set_up(map, up);
 }
 
 Vector3 Navigation3D::get_up_vector() const {
-
 	return up;
 }
 
@@ -75,7 +72,6 @@ void Navigation3D::set_edge_connection_margin(float p_edge_connection_margin) {
 }
 
 void Navigation3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_rid"), &Navigation3D::get_rid);
 
 	ClassDB::bind_method(D_METHOD("get_simple_path", "start", "end", "optimize"), &Navigation3D::get_simple_path, DEFVAL(true));
@@ -104,18 +100,16 @@ void Navigation3D::_notification(int p_what) {
 			NavigationServer3D::get_singleton()->map_set_active(map, true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			NavigationServer3D::get_singleton()->map_set_active(map, false);
 		} break;
 	}
 }
 
 Navigation3D::Navigation3D() {
-
 	map = NavigationServer3D::get_singleton()->map_create();
 
 	set_cell_size(0.3);
-	set_edge_connection_margin(5.0); // Five meters, depends alot on the agents radius
+	set_edge_connection_margin(5.0); // Five meters, depends a lot on the agent's radius
 
 	up = Vector3(0, 1, 0);
 }

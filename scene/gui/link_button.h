@@ -35,7 +35,6 @@
 #include "scene/resources/bit_map.h"
 
 class LinkButton : public BaseButton {
-
 	GDCLASS(LinkButton, BaseButton);
 
 public:
@@ -50,7 +49,7 @@ private:
 	UnderlineMode underline_mode;
 
 protected:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

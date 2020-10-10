@@ -24,21 +24,65 @@ class btDeformableNeoHookeanForce : public btDeformableLagrangianForce
 {
 public:
     typedef btAlignedObjectArray<btVector3> TVStack;
-    btScalar m_mu, m_lambda;
+	btScalar m_mu, m_lambda; // Lame Parameters
+	btScalar m_E, m_nu;  // Young's modulus and Poisson ratio
     btScalar m_mu_damp, m_lambda_damp;
     btDeformableNeoHookeanForce(): m_mu(1), m_lambda(1)
     {
         btScalar damping = 0.05;
         m_mu_damp = damping * m_mu;
         m_lambda_damp = damping * m_lambda;
+		updateYoungsModulusAndPoissonRatio();
     }
     
     btDeformableNeoHookeanForce(btScalar mu, btScalar lambda, btScalar damping = 0.05): m_mu(mu), m_lambda(lambda)
     {
         m_mu_damp = damping * m_mu;
         m_lambda_damp = damping * m_lambda;
+		updateYoungsModulusAndPoissonRatio();
     }
-    
+
+	void updateYoungsModulusAndPoissonRatio()
+	{
+		// conversion from Lame Parameters to Young's modulus and Poisson ratio
+		// https://en.wikipedia.org/wiki/Lam%C3%A9_parameters
+		m_E  = m_mu * (3*m_lambda + 2*m_mu)/(m_lambda + m_mu);
+		m_nu = m_lambda * 0.5 / (m_mu + m_lambda);
+	}
+
+	void updateLameParameters()
+	{
+		// conversion from Young's modulus and Poisson ratio to Lame Parameters
+		// https://en.wikipedia.org/wiki/Lam%C3%A9_parameters
+		m_mu = m_E * 0.5 / (1 + m_nu);
+		m_lambda = m_E * m_nu / ((1 + m_nu) * (1- 2*m_nu));
+	}
+
+    void setYoungsModulus(btScalar E)
+    {
+		m_E = E;
+		updateLameParameters();
+    }
+
+	void setPoissonRatio(btScalar nu)
+	{
+		m_nu = nu;
+		updateLameParameters();
+	}
+	
+	void setDamping(btScalar damping)
+	{
+		m_mu_damp = damping * m_mu;
+		m_lambda_damp = damping * m_lambda;
+	}
+
+	void setLameParameters(btScalar mu, btScalar lambda)
+	{
+		m_mu = mu;
+		m_lambda = lambda;
+		updateYoungsModulusAndPoissonRatio();
+	}
+
     virtual void addScaledForces(btScalar scale, TVStack& force)
     {
         addScaledDampingForce(scale, force);
@@ -268,6 +312,8 @@ public:
             }
         }
     }
+    
+    virtual void buildDampingForceDifferentialDiagonal(btScalar scale, TVStack& diagA){}
     
     virtual void addScaledElasticForceDifferential(btScalar scale, const TVStack& dx, TVStack& df)
     {

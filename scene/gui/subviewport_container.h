@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  subviewport_container.h                                                 */
+/*  subviewport_container.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class SubViewportContainer : public Container {
-
 	GDCLASS(SubViewportContainer, Container);
 
 	bool stretch;
@@ -53,7 +52,7 @@ public:
 	void set_stretch_shrink(int p_shrink);
 	int get_stretch_shrink() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	SubViewportContainer();
 };

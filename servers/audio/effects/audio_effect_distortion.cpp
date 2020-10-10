@@ -33,7 +33,6 @@
 #include "servers/audio_server.h"
 
 void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	const float *src = (const float *)p_src_frames;
 	float *dst = (float *)p_dst_frames;
 
@@ -51,7 +50,6 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
-
 		float out = undenormalise(src[i] * lpf_ic + lpf_c * h[i & 1]);
 		h[i & 1] = out;
 		float a = out;
@@ -59,28 +57,24 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 		a *= pregain_f;
 
 		switch (base->mode) {
-
 			case AudioEffectDistortion::MODE_CLIP: {
-
 				a = powf(a, 1.0001 - drive_f);
-				if (a > 1.0)
+				if (a > 1.0) {
 					a = 1.0;
-				else if (a < (-1.0))
+				} else if (a < (-1.0)) {
 					a = -1.0;
+				}
 
 			} break;
 			case AudioEffectDistortion::MODE_ATAN: {
-
 				a = atanf(a * atan_mult) * atan_div;
 
 			} break;
 			case AudioEffectDistortion::MODE_LOFI: {
-
 				a = floorf(a * lofi_mult + 0.5) / lofi_mult;
 
 			} break;
 			case AudioEffectDistortion::MODE_OVERDRIVE: {
-
 				const double x = a * 0.686306;
 				const double z = 1 + exp(sqrt(fabs(x)) * -0.75);
 				a = (expf(x) - expf(-x * z)) / (expf(x) + expf(-x));
@@ -109,53 +103,46 @@ Ref<AudioEffectInstance> AudioEffectDistortion::instance() {
 }
 
 void AudioEffectDistortion::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 }
 
 AudioEffectDistortion::Mode AudioEffectDistortion::get_mode() const {
-
 	return mode;
 }
 
 void AudioEffectDistortion::set_pre_gain(float p_pre_gain) {
-
 	pre_gain = p_pre_gain;
 }
-float AudioEffectDistortion::get_pre_gain() const {
 
+float AudioEffectDistortion::get_pre_gain() const {
 	return pre_gain;
 }
 
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
-
 	keep_hf_hz = p_keep_hf_hz;
 }
-float AudioEffectDistortion::get_keep_hf_hz() const {
 
+float AudioEffectDistortion::get_keep_hf_hz() const {
 	return keep_hf_hz;
 }
 
 void AudioEffectDistortion::set_drive(float p_drive) {
-
 	drive = p_drive;
 }
-float AudioEffectDistortion::get_drive() const {
 
+float AudioEffectDistortion::get_drive() const {
 	return drive;
 }
 
 void AudioEffectDistortion::set_post_gain(float p_post_gain) {
-
 	post_gain = p_post_gain;
 }
-float AudioEffectDistortion::get_post_gain() const {
 
+float AudioEffectDistortion::get_post_gain() const {
 	return post_gain;
 }
 
 void AudioEffectDistortion::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &AudioEffectDistortion::set_mode);
 	ClassDB::bind_method(D_METHOD("get_mode"), &AudioEffectDistortion::get_mode);
 

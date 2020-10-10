@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_bar.h"
 
 class RichTextLabel : public Control {
-
 	GDCLASS(RichTextLabel, Control);
 
 public:
@@ -84,7 +83,6 @@ private:
 	struct Item;
 
 	struct Line {
-
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
@@ -151,6 +149,7 @@ private:
 	struct ItemImage : public Item {
 		Ref<Texture2D> image;
 		Size2 size;
+		Color color;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
@@ -352,7 +351,6 @@ private:
 	};
 
 	struct Selection {
-
 		Item *click;
 		int click_char;
 
@@ -384,6 +382,8 @@ private:
 	bool _find_by_type(Item *p_item, ItemType p_type);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
+	static Color _get_color_from_string(const String &p_color_str, const Color &p_default_color);
+
 	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, float p_delta_time);
 	void _scroll_changed(double);
@@ -403,13 +403,15 @@ private:
 
 	int fixed_width;
 
+	bool fit_content_height;
+
 protected:
 	void _notification(int p_what);
 
 public:
 	String get_text();
 	void add_text(const String &p_text);
-	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0);
+	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0));
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_font(const Ref<Font> &p_font);
@@ -456,20 +458,24 @@ public:
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
+	void set_fit_content_height(bool p_enabled);
+	bool is_fit_content_height_enabled() const;
+
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	int get_content_height();
+	int get_content_height() const;
 
 	VScrollBar *get_v_scroll() { return vscroll; }
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
+	String get_selected_text();
 	void selection_copy();
 
 	Error parse_bbcode(const String &p_bbcode);
@@ -496,7 +502,7 @@ public:
 	void install_effect(const Variant effect);
 
 	void set_fixed_size_to_width(int p_width);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel();
 	~RichTextLabel();

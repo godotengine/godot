@@ -34,14 +34,15 @@
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
-
-	if (!color_dirty)
+	if (!color_dirty) {
 		return color_accum;
+	}
 
-	if (parent_sprite)
+	if (parent_sprite) {
 		color_accum = parent_sprite->_get_color_accum();
-	else
+	} else {
 		color_accum = Color(1, 1, 1, 1);
+	}
 
 	color_accum.r *= modulate.r;
 	color_accum.g *= modulate.g;
@@ -52,25 +53,23 @@ Color SpriteBase3D::_get_color_accum() {
 }
 
 void SpriteBase3D::_propagate_color_changed() {
-
-	if (color_dirty)
+	if (color_dirty) {
 		return;
+	}
 
 	color_dirty = true;
 	_queue_update();
 
 	for (List<SpriteBase3D *>::Element *E = children.front(); E; E = E->next()) {
-
 		E->get()->_propagate_color_changed();
 	}
 }
 
 void SpriteBase3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		if (!pending_update)
+		if (!pending_update) {
 			_im_update();
+		}
 
 		parent_sprite = Object::cast_to<SpriteBase3D>(get_parent());
 		if (parent_sprite) {
@@ -79,9 +78,7 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		if (parent_sprite) {
-
 			parent_sprite->children.erase(pI);
 			pI = nullptr;
 			parent_sprite = nullptr;
@@ -90,100 +87,89 @@ void SpriteBase3D::_notification(int p_what) {
 }
 
 void SpriteBase3D::set_centered(bool p_center) {
-
 	centered = p_center;
 	_queue_update();
 }
 
 bool SpriteBase3D::is_centered() const {
-
 	return centered;
 }
 
 void SpriteBase3D::set_offset(const Point2 &p_offset) {
-
 	offset = p_offset;
 	_queue_update();
 }
-Point2 SpriteBase3D::get_offset() const {
 
+Point2 SpriteBase3D::get_offset() const {
 	return offset;
 }
 
 void SpriteBase3D::set_flip_h(bool p_flip) {
-
 	hflip = p_flip;
 	_queue_update();
 }
-bool SpriteBase3D::is_flipped_h() const {
 
+bool SpriteBase3D::is_flipped_h() const {
 	return hflip;
 }
 
 void SpriteBase3D::set_flip_v(bool p_flip) {
-
 	vflip = p_flip;
 	_queue_update();
 }
-bool SpriteBase3D::is_flipped_v() const {
 
+bool SpriteBase3D::is_flipped_v() const {
 	return vflip;
 }
 
 void SpriteBase3D::set_modulate(const Color &p_color) {
-
 	modulate = p_color;
 	_propagate_color_changed();
 	_queue_update();
 }
 
 Color SpriteBase3D::get_modulate() const {
-
 	return modulate;
 }
 
 void SpriteBase3D::set_pixel_size(float p_amount) {
-
 	pixel_size = p_amount;
 	_queue_update();
 }
-float SpriteBase3D::get_pixel_size() const {
 
+float SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
 }
 
 void SpriteBase3D::set_opacity(float p_amount) {
-
 	opacity = p_amount;
 	_queue_update();
 }
-float SpriteBase3D::get_opacity() const {
 
+float SpriteBase3D::get_opacity() const {
 	return opacity;
 }
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
-
 	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
 	_queue_update();
 }
-Vector3::Axis SpriteBase3D::get_axis() const {
 
+Vector3::Axis SpriteBase3D::get_axis() const {
 	return axis;
 }
 
 void SpriteBase3D::_im_update() {
-
 	_draw();
 
 	pending_update = false;
 }
 
 void SpriteBase3D::_queue_update() {
-
-	if (pending_update)
+	if (pending_update) {
 		return;
+	}
 
 	triangle_mesh.unref();
 	update_gizmo();
@@ -193,17 +179,17 @@ void SpriteBase3D::_queue_update() {
 }
 
 AABB SpriteBase3D::get_aabb() const {
-
 	return aabb;
 }
-Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 
+Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
 Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
-	if (triangle_mesh.is_valid())
+	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;
+	}
 
 	Vector<Vector3> faces;
 	faces.resize(6);
@@ -211,8 +197,9 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 
 	Rect2 final_rect = get_item_rect();
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return Ref<TriangleMesh>();
+	}
 
 	float pixel_size = get_pixel_size();
 
@@ -260,7 +247,6 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 }
 
 void SpriteBase3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
-
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 	flags[p_flag] = p_enable;
 	_queue_update();
@@ -272,31 +258,26 @@ bool SpriteBase3D::get_draw_flag(DrawFlags p_flag) const {
 }
 
 void SpriteBase3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
-
 	ERR_FAIL_INDEX(p_mode, 3);
 	alpha_cut = p_mode;
 	_queue_update();
 }
 
 SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
-
 	return alpha_cut;
 }
 
 void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
-
 	ERR_FAIL_INDEX(p_mode, 3);
 	billboard_mode = p_mode;
 	_queue_update();
 }
 
 StandardMaterial3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
-
 	return billboard_mode;
 }
 
 void SpriteBase3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &SpriteBase3D::is_centered);
 
@@ -359,7 +340,6 @@ void SpriteBase3D::_bind_methods() {
 }
 
 SpriteBase3D::SpriteBase3D() {
-
 	color_dirty = true;
 	centered = true;
 	hflip = false;
@@ -367,8 +347,9 @@ SpriteBase3D::SpriteBase3D() {
 	parent_sprite = nullptr;
 	pI = nullptr;
 
-	for (int i = 0; i < FLAG_MAX; i++)
+	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
+	}
 
 	alpha_cut = ALPHA_CUT_DISABLED;
 	billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
@@ -382,46 +363,50 @@ SpriteBase3D::SpriteBase3D() {
 }
 
 SpriteBase3D::~SpriteBase3D() {
-
 	RenderingServer::get_singleton()->free(immediate);
 }
 
 ///////////////////////////////////////////
 
 void Sprite3D::_draw() {
-
 	RID immediate = get_immediate();
 
 	RS::get_singleton()->immediate_clear(immediate);
-	if (!texture.is_valid())
+	if (!texture.is_valid()) {
 		return;
+	}
 	Vector2 tsize = texture->get_size();
-	if (tsize.x == 0 || tsize.y == 0)
+	if (tsize.x == 0 || tsize.y == 0) {
 		return;
+	}
 
 	Rect2 base_rect;
-	if (region)
+	if (region) {
 		base_rect = region_rect;
-	else
+	} else {
 		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
+	}
 
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
 	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
 	frame_offset *= frame_size;
 
 	Point2 dest_offset = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		dest_offset -= frame_size / 2;
+	}
 
 	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
 	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect)) {
 		return;
+	}
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return;
+	}
 
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
@@ -458,7 +443,6 @@ void Sprite3D::_draw() {
 		SWAP(uvs[2], uvs[3]);
 	}
 	if (is_flipped_v()) {
-
 		SWAP(uvs[0], uvs[3]);
 		SWAP(uvs[1], uvs[2]);
 	}
@@ -499,7 +483,6 @@ void Sprite3D::_draw() {
 	AABB aabb;
 
 	for (int i = 0; i < 6; i++) {
-
 		static const int index[6] = { 0, 1, 2, 0, 2, 3 };
 
 		RS::get_singleton()->immediate_normal(immediate, normal);
@@ -527,9 +510,9 @@ void Sprite3D::_texture_changed() {
 }
 
 void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
-
-	if (p_texture == texture)
+	if (p_texture == texture) {
 		return;
+	}
 	if (texture.is_valid()) {
 		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite3D::_texture_changed));
 	}
@@ -541,26 +524,23 @@ void Sprite3D::set_texture(const Ref<Texture2D> &p_texture) {
 }
 
 Ref<Texture2D> Sprite3D::get_texture() const {
-
 	return texture;
 }
 
 void Sprite3D::set_region(bool p_region) {
-
-	if (p_region == region)
+	if (p_region == region) {
 		return;
+	}
 
 	region = p_region;
 	_queue_update();
 }
 
 bool Sprite3D::is_region() const {
-
 	return region;
 }
 
 void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
-
 	bool changed = region_rect != p_region_rect;
 	region_rect = p_region_rect;
 	if (region && changed) {
@@ -569,12 +549,10 @@ void Sprite3D::set_region_rect(const Rect2 &p_region_rect) {
 }
 
 Rect2 Sprite3D::get_region_rect() const {
-
 	return region_rect;
 }
 
 void Sprite3D::set_frame(int p_frame) {
-
 	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
 	frame = p_frame;
@@ -587,7 +565,6 @@ void Sprite3D::set_frame(int p_frame) {
 }
 
 int Sprite3D::get_frame() const {
-
 	return frame;
 }
 
@@ -603,33 +580,31 @@ Vector2 Sprite3D::get_frame_coords() const {
 }
 
 void Sprite3D::set_vframes(int p_amount) {
-
 	ERR_FAIL_COND(p_amount < 1);
 	vframes = p_amount;
 	_queue_update();
 	_change_notify();
 }
-int Sprite3D::get_vframes() const {
 
+int Sprite3D::get_vframes() const {
 	return vframes;
 }
 
 void Sprite3D::set_hframes(int p_amount) {
-
 	ERR_FAIL_COND(p_amount < 1);
 	hframes = p_amount;
 	_queue_update();
 	_change_notify();
 }
-int Sprite3D::get_hframes() const {
 
+int Sprite3D::get_hframes() const {
 	return hframes;
 }
 
 Rect2 Sprite3D::get_item_rect() const {
-
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
+	}
 	/*
 	if (texture.is_null())
 		return CanvasItem::get_item_rect();
@@ -638,7 +613,6 @@ Rect2 Sprite3D::get_item_rect() const {
 	Size2i s;
 
 	if (region) {
-
 		s = region_rect.size;
 	} else {
 		s = texture->get_size();
@@ -646,17 +620,18 @@ Rect2 Sprite3D::get_item_rect() const {
 	}
 
 	Point2 ofs = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		ofs -= s / 2;
+	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }
 
 void Sprite3D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "frame") {
 		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
@@ -669,7 +644,6 @@ void Sprite3D::_validate_property(PropertyInfo &property) const {
 }
 
 void Sprite3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Sprite3D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &Sprite3D::get_texture);
 
@@ -693,8 +667,8 @@ void Sprite3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_GROUP("Animation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
@@ -705,7 +679,6 @@ void Sprite3D::_bind_methods() {
 }
 
 Sprite3D::Sprite3D() {
-
 	region = false;
 	frame = 0;
 	vframes = 1;
@@ -715,7 +688,6 @@ Sprite3D::Sprite3D() {
 ////////////////////////////////////////
 
 void AnimatedSprite3D::_draw() {
-
 	RID immediate = get_immediate();
 	RS::get_singleton()->immediate_clear(immediate);
 
@@ -732,11 +704,13 @@ void AnimatedSprite3D::_draw() {
 	}
 
 	Ref<Texture2D> texture = frames->get_frame(animation, frame);
-	if (!texture.is_valid())
+	if (!texture.is_valid()) {
 		return; //no texuture no life
+	}
 	Vector2 tsize = texture->get_size();
-	if (tsize.x == 0 || tsize.y == 0)
+	if (tsize.x == 0 || tsize.y == 0) {
 		return;
+	}
 
 	Size2i s = tsize;
 	Rect2 src_rect;
@@ -744,18 +718,21 @@ void AnimatedSprite3D::_draw() {
 	src_rect.size = s;
 
 	Point2 ofs = get_offset();
-	if (is_centered())
+	if (is_centered()) {
 		ofs -= s / 2;
+	}
 
 	Rect2 dst_rect(ofs, s);
 
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect)) {
 		return;
+	}
 
-	if (final_rect.size.x == 0 || final_rect.size.y == 0)
+	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return;
+	}
 
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
@@ -792,7 +769,6 @@ void AnimatedSprite3D::_draw() {
 		SWAP(uvs[2], uvs[3]);
 	}
 	if (is_flipped_v()) {
-
 		SWAP(uvs[0], uvs[3]);
 		SWAP(uvs[1], uvs[2]);
 	}
@@ -834,7 +810,6 @@ void AnimatedSprite3D::_draw() {
 	AABB aabb;
 
 	for (int i = 0; i < 6; i++) {
-
 		static const int indices[6] = {
 			0, 1, 2,
 			0, 2, 3
@@ -861,11 +836,10 @@ void AnimatedSprite3D::_draw() {
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
-
-	if (!frames.is_valid())
+	if (!frames.is_valid()) {
 		return;
+	}
 	if (property.name == "animation") {
-
 		property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
@@ -903,27 +877,27 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 }
 
 void AnimatedSprite3D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-
-			if (frames.is_null())
+			if (frames.is_null()) {
 				return;
-			if (!frames->has_animation(animation))
+			}
+			if (!frames->has_animation(animation)) {
 				return;
-			if (frame < 0)
+			}
+			if (frame < 0) {
 				return;
+			}
 
 			float speed = frames->get_animation_speed(animation);
-			if (speed == 0)
+			if (speed == 0) {
 				return; //do nothing
+			}
 
 			float remaining = get_process_delta_time();
 
 			while (remaining) {
-
 				if (timeout <= 0) {
-
 					timeout = 1.0 / speed;
 
 					int fc = frames->get_frame_count(animation);
@@ -950,12 +924,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 }
 
 void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
-
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->disconnect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
+	}
 	frames = p_frames;
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->connect("changed", callable_mp(this, &AnimatedSprite3D::_res_changed));
+	}
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -970,27 +945,28 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 }
 
 Ref<SpriteFrames> AnimatedSprite3D::get_sprite_frames() const {
-
 	return frames;
 }
 
 void AnimatedSprite3D::set_frame(int p_frame) {
-
 	if (!frames.is_valid()) {
 		return;
 	}
 
 	if (frames->has_animation(animation)) {
 		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit)
+		if (p_frame >= limit) {
 			p_frame = limit - 1;
+		}
 	}
 
-	if (p_frame < 0)
+	if (p_frame < 0) {
 		p_frame = 0;
+	}
 
-	if (frame == p_frame)
+	if (frame == p_frame) {
 		return;
+	}
 
 	frame = p_frame;
 	_reset_timeout();
@@ -998,36 +974,38 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
-int AnimatedSprite3D::get_frame() const {
 
+int AnimatedSprite3D::get_frame() const {
 	return frame;
 }
 
 Rect2 AnimatedSprite3D::get_item_rect() const {
-
 	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return Rect2(0, 0, 1, 1);
 	}
 
 	Ref<Texture2D> t;
-	if (animation)
+	if (animation) {
 		t = frames->get_frame(animation, frame);
-	if (t.is_null())
+	}
+	if (t.is_null()) {
 		return Rect2(0, 0, 1, 1);
+	}
 	Size2i s = t->get_size();
 
 	Point2 ofs = get_offset();
-	if (centered)
+	if (centered) {
 		ofs -= s / 2;
+	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }
 
 void AnimatedSprite3D::_res_changed() {
-
 	set_frame(frame);
 	_change_notify("frame");
 	_change_notify("animation");
@@ -1035,40 +1013,37 @@ void AnimatedSprite3D::_res_changed() {
 }
 
 void AnimatedSprite3D::_set_playing(bool p_playing) {
-
-	if (playing == p_playing)
+	if (playing == p_playing) {
 		return;
+	}
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
 }
 
 bool AnimatedSprite3D::_is_playing() const {
-
 	return playing;
 }
 
 void AnimatedSprite3D::play(const StringName &p_animation) {
-
-	if (p_animation)
+	if (p_animation) {
 		set_animation(p_animation);
+	}
 	_set_playing(true);
 }
 
 void AnimatedSprite3D::stop() {
-
 	_set_playing(false);
 }
 
 bool AnimatedSprite3D::is_playing() const {
-
 	return is_processing();
 }
 
 void AnimatedSprite3D::_reset_timeout() {
-
-	if (!playing)
+	if (!playing) {
 		return;
+	}
 
 	if (frames.is_valid() && frames->has_animation(animation)) {
 		float speed = frames->get_animation_speed(animation);
@@ -1083,9 +1058,9 @@ void AnimatedSprite3D::_reset_timeout() {
 }
 
 void AnimatedSprite3D::set_animation(const StringName &p_animation) {
-
-	if (animation == p_animation)
+	if (animation == p_animation) {
 		return;
+	}
 
 	animation = p_animation;
 	_reset_timeout();
@@ -1093,22 +1068,25 @@ void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	_change_notify();
 	_queue_update();
 }
-StringName AnimatedSprite3D::get_animation() const {
 
+StringName AnimatedSprite3D::get_animation() const {
 	return animation;
 }
 
 String AnimatedSprite3D::get_configuration_warning() const {
+	String warning = SpriteBase3D::get_configuration_warning();
 
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
-	return String();
+	return warning;
 }
 
 void AnimatedSprite3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);
 
@@ -1134,7 +1112,6 @@ void AnimatedSprite3D::_bind_methods() {
 }
 
 AnimatedSprite3D::AnimatedSprite3D() {
-
 	frame = 0;
 	playing = false;
 	animation = "default";

@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define BLOCK_SIZE 8
 
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 #ifdef MODE_GEN_BLUR_SIZE
 layout(rgba16f, set = 0, binding = 0) uniform restrict image2D color_image;
@@ -69,7 +67,6 @@ float get_depth_at_pos(vec2 uv) {
 }
 
 float get_blur_size(float depth) {
-
 	if (params.blur_near_active && depth < params.blur_near_begin) {
 		return -(1.0 - smoothstep(params.blur_near_end, params.blur_near_begin, depth)) * params.blur_size - DEPTH_GAP; //near blur is negative
 	}
@@ -95,7 +92,6 @@ float hash12n(vec2 p) {
 #if defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL)
 
 vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
-
 	dir *= pixel_size;
 	vec4 color = texture(color_texture, uv);
 
@@ -109,7 +105,6 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 	}
 
 	for (int i = -params.blur_steps; i <= params.blur_steps; i++) {
-
 		if (i == 0) {
 			continue;
 		}
@@ -141,7 +136,6 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 #endif
 
 void main() {
-
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	if (any(greaterThan(pos, params.size))) { //too large, do nothing
@@ -218,7 +212,6 @@ void main() {
 	float radius = params.blur_scale;
 
 	for (float ang = 0.0; radius < params.blur_size; ang += GOLDEN_ANGLE) {
-
 		vec2 suv = uv + vec2(cos(ang), sin(ang)) * pixel_size * radius;
 		vec4 sample_color = texture(color_texture, suv);
 		float sample_size = abs(sample_color.a);

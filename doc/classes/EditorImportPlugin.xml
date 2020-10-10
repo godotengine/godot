@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		EditorImportPlugins provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers. Register your [EditorPlugin] with [method EditorPlugin.add_import_plugin].
-		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extensions] and [method get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].import[/code] directory.
+		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extensions] and [method get_resource_type]. They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].godot/imported[/code] directory.
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
 		[codeblock]
 		tool
@@ -49,7 +49,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
+		<link title="Import plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_import_options" qualifiers="virtual">
@@ -83,6 +83,16 @@
 			<argument index="1" name="options" type="Dictionary">
 			</argument>
 			<description>
+				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
+				[codeblock]
+				func get_option_visibility(option, options):
+				    # Only show the lossy quality setting if the compression mode is set to "Lossy".
+				    if option == "compress/lossy_quality" and options.has("compress/mode"):
+				        return int(options["compress/mode"]) == COMPRESS_LOSSY
+
+				    return true
+				[/codeblock]
+				Return [code]true[/code] to make all options always visible.
 			</description>
 		</method>
 		<method name="get_preset_count" qualifiers="virtual">
@@ -126,7 +136,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Gets the extension used to save this resource in the [code].import[/code] directory.
+				Gets the extension used to save this resource in the [code].godot/imported[/code] directory.
 			</description>
 		</method>
 		<method name="get_visible_name" qualifiers="virtual">
@@ -150,6 +160,8 @@
 			<argument index="4" name="gen_files" type="Array">
 			</argument>
 			<description>
+				Imports [code]source_file[/code] into [code]save_path[/code] with the import [code]options[/code] specified. The [code]platform_variants[/code] and [code]gen_files[/code] arrays will be modified by this function.
+				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.
 			</description>
 		</method>
 	</methods>

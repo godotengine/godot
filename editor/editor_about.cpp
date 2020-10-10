@@ -38,7 +38,6 @@
 #include "core/version_hash.gen.h"
 
 void EditorAbout::_theme_changed() {
-
 	Control *base = EditorNode::get_singleton()->get_gui_base();
 	Ref<Font> font = base->get_theme_font("source", "EditorFonts");
 	_tpl_text->add_theme_font_override("normal_font", font);
@@ -49,9 +48,7 @@ void EditorAbout::_theme_changed() {
 }
 
 void EditorAbout::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
 			_theme_changed();
 		} break;
@@ -59,7 +56,6 @@ void EditorAbout::_notification(int p_what) {
 }
 
 void EditorAbout::_license_tree_selected() {
-
 	TreeItem *selected = _tpl_tree->get_selected();
 	_tpl_text->scroll_to_line(0);
 	_tpl_text->set_text(selected->get_metadata(0));
@@ -69,12 +65,10 @@ void EditorAbout::_bind_methods() {
 }
 
 TextureRect *EditorAbout::get_logo() const {
-
 	return _logo;
 }
 
 ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<String> &p_sections, const char *const *const p_src[], const int p_flag_single_column) {
-
 	ScrollContainer *sc = memnew(ScrollContainer);
 	sc->set_name(p_name);
 	sc->set_v_size_flags(Control::SIZE_EXPAND);
@@ -84,11 +78,9 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 	sc->add_child(vbc);
 
 	for (int i = 0; i < p_sections.size(); i++) {
-
 		bool single_column = p_flag_single_column & 1 << i;
 		const char *const *names_ptr = p_src[i];
 		if (*names_ptr) {
-
 			Label *lbl = memnew(Label);
 			lbl->set_text(p_sections[i]);
 			vbc->add_child(lbl);
@@ -115,7 +107,6 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 }
 
 EditorAbout::EditorAbout() {
-
 	set_title(TTR("Thanks from the Godot community!"));
 	set_hide_on_ok(true);
 
@@ -132,8 +123,9 @@ EditorAbout::EditorAbout() {
 	hbc->add_child(_logo);
 
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
+	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
+	}
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -152,7 +144,10 @@ EditorAbout::EditorAbout() {
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
-	dev_sections.push_back(TTR("Project Manager ")); // " " appended to distinguish between 'project supervisor' and 'project list'
+	// TRANSLATORS: This refers to a job title.
+	// The trailing space is used to distinguish with the project list application,
+	// you do not have to keep it in your translation.
+	dev_sections.push_back(TTR("Project Manager "));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };
@@ -163,12 +158,15 @@ EditorAbout::EditorAbout() {
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Platinum Sponsors"));
 	donor_sections.push_back(TTR("Gold Sponsors"));
+	donor_sections.push_back(TTR("Silver Sponsors"));
+	donor_sections.push_back(TTR("Bronze Sponsors"));
 	donor_sections.push_back(TTR("Mini Sponsors"));
 	donor_sections.push_back(TTR("Gold Donors"));
 	donor_sections.push_back(TTR("Silver Donors"));
 	donor_sections.push_back(TTR("Bronze Donors"));
-	const char *const *donor_src[] = { DONORS_SPONSOR_PLAT, DONORS_SPONSOR_GOLD,
-		DONORS_SPONSOR_MINI, DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
+	const char *const *donor_src[] = { DONORS_SPONSOR_PLATINUM, DONORS_SPONSOR_GOLD,
+		DONORS_SPONSOR_SILVER, DONORS_SPONSOR_BRONZE, DONORS_SPONSOR_MINI,
+		DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
 	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License
@@ -213,7 +211,6 @@ EditorAbout::EditorAbout() {
 	tpl_ti_lc->set_selectable(0, false);
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
-
 		const ComponentCopyright &component = COPYRIGHT_INFO[component_index];
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_tp);
 		String component_name = component.name;
@@ -239,7 +236,6 @@ EditorAbout::EditorAbout() {
 		ti->set_metadata(0, text);
 	}
 	for (int i = 0; i < LICENSE_COUNT; i++) {
-
 		TreeItem *ti = _tpl_tree->create_item(tpl_ti_lc);
 		String licensename = String(LICENSE_NAMES[i]);
 		ti->set_text(0, licensename);

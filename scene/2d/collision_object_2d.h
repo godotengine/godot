@@ -35,7 +35,6 @@
 #include "scene/resources/shape_2d.h"
 
 class CollisionObject2D : public Node2D {
-
 	GDCLASS(CollisionObject2D, Node2D);
 
 	bool area;
@@ -43,7 +42,6 @@ class CollisionObject2D : public Node2D {
 	bool pickable;
 
 	struct ShapeData {
-
 		Object *owner;
 		Transform2D xform;
 		struct Shape {
@@ -115,7 +113,7 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

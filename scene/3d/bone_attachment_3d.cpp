@@ -31,23 +31,21 @@
 #include "bone_attachment_3d.h"
 
 void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "bone_name") {
 		Skeleton3D *parent = Object::cast_to<Skeleton3D>(get_parent());
 
 		if (parent) {
-
 			String names;
 			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					names += ",";
+				}
 				names += parent->get_bone_name(i);
 			}
 
 			property.hint = PROPERTY_HINT_ENUM;
 			property.hint_string = names;
 		} else {
-
 			property.hint = PROPERTY_HINT_NONE;
 			property.hint_string = "";
 		}
@@ -55,10 +53,8 @@ void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 }
 
 void BoneAttachment3D::_check_bind() {
-
 	Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
 	if (sk) {
-
 		int idx = sk->find_bone(bone_name);
 		if (idx != -1) {
 			sk->bind_child_node_to_bone(idx, this);
@@ -69,12 +65,9 @@ void BoneAttachment3D::_check_bind() {
 }
 
 void BoneAttachment3D::_check_unbind() {
-
 	if (bound) {
-
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(get_parent());
 		if (sk) {
-
 			int idx = sk->find_bone(bone_name);
 			if (idx != -1) {
 				sk->unbind_child_node_from_bone(idx, this);
@@ -85,31 +78,27 @@ void BoneAttachment3D::_check_unbind() {
 }
 
 void BoneAttachment3D::set_bone_name(const String &p_name) {
-
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_unbind();
+	}
 
 	bone_name = p_name;
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_bind();
+	}
 }
 
 String BoneAttachment3D::get_bone_name() const {
-
 	return bone_name;
 }
 
 void BoneAttachment3D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			_check_bind();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			_check_unbind();
 		} break;
 	}

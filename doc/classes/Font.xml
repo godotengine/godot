@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		Font contains a Unicode-compatible character set, as well as the ability to draw it with variable width, ascent, descent and kerning. For creating fonts from TTF files (or other font formats), see the editor support for fonts.
+		[b]Note:[/b] If a DynamicFont doesn't contain a character used in a string, the character in question will be replaced with codepoint [code]0xfffd[/code] if it's available in the DynamicFont. If this replacement character isn't available in the DynamicFont, the character will be hidden without displaying any replacement character in the string.
+		[b]Note:[/b] If a BitmapFont doesn't contain a character used in a string, the character in question will be hidden without displaying any replacement character in the string.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +28,7 @@
 			</argument>
 			<description>
 				Draw [code]string[/code] into a canvas item using the font at a given position, with [code]modulate[/code] color, and optionally clipping the width. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
+				See also [method CanvasItem.draw_string].
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
@@ -52,6 +55,17 @@
 			</return>
 			<description>
 				Returns the font ascent (number of pixels above the baseline).
+			</description>
+		</method>
+		<method name="get_char_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="char" type="int">
+			</argument>
+			<argument index="1" name="next" type="int" default="0">
+			</argument>
+			<description>
+				Returns the size of a character, optionally taking kerning into account if the next character is provided.
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">

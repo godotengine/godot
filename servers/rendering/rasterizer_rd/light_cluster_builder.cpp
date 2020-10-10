@@ -45,7 +45,6 @@ void LightClusterBuilder::begin(const Transform &p_view_transform, const CameraM
 }
 
 void LightClusterBuilder::bake_cluster() {
-
 	float slice_depth = (z_near - z_far) / depth;
 
 	uint8_t *cluster_dataw = cluster_data.ptrw();
@@ -56,7 +55,6 @@ void LightClusterBuilder::bake_cluster() {
 	/* Step 1, create cell positions and count them */
 
 	for (uint32_t i = 0; i < item_count; i++) {
-
 		const Item &item = items[i];
 
 		int from_slice = Math::floor((z_near - (item.aabb.position.z + item.aabb.size.z)) / slice_depth);
@@ -70,7 +68,6 @@ void LightClusterBuilder::bake_cluster() {
 		to_slice = MIN((int)depth - 1, to_slice);
 
 		for (int j = from_slice; j <= to_slice; j++) {
-
 			Vector3 min = item.aabb.position;
 			Vector3 max = item.aabb.position + item.aabb.size;
 
@@ -126,7 +123,6 @@ void LightClusterBuilder::bake_cluster() {
 						sort_id_max = nearest_power_of_2_templated(sort_id_max + 1);
 						sort_ids = (SortID *)memrealloc(sort_ids, sizeof(SortID) * sort_id_max);
 						if (ids.size()) {
-
 							ids.resize(sort_id_max);
 							RD::get_singleton()->free(items_buffer);
 							items_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * sort_id_max);
@@ -178,7 +174,6 @@ void LightClusterBuilder::bake_cluster() {
 }
 
 void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
-
 	if (width == p_width && height == p_height && depth == p_depth) {
 		return;
 	}
@@ -208,6 +203,7 @@ void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_
 RID LightClusterBuilder::get_cluster_texture() const {
 	return cluster_texture;
 }
+
 RID LightClusterBuilder::get_cluster_indices_buffer() const {
 	return items_buffer;
 }
@@ -231,8 +227,8 @@ LightClusterBuilder::LightClusterBuilder() {
 	items_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 1024);
 	item_max = 1024;
 }
-LightClusterBuilder::~LightClusterBuilder() {
 
+LightClusterBuilder::~LightClusterBuilder() {
 	if (cluster_data.size()) {
 		RD::get_singleton()->free(cluster_texture);
 	}

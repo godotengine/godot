@@ -32,6 +32,7 @@
 
 #include "core/debugger/local_debugger.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/debugger/remote_debugger_peer.h"
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
@@ -40,6 +41,7 @@ ScriptDebugger *EngineDebugger::script_debugger = nullptr;
 
 Map<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
 Map<StringName, EngineDebugger::Capture> EngineDebugger::captures;
+Map<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
 	ERR_FAIL_COND_MSG(profilers.has(p_name), "Profiler already registered: " + p_name);
@@ -64,6 +66,11 @@ void EngineDebugger::register_message_capture(const StringName &p_name, Capture 
 void EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!captures.has(p_name), "Capture not registered: " + p_name);
 	captures.erase(p_name);
+}
+
+void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {
+	ERR_FAIL_COND_MSG(protocols.has(p_protocol), "Protocol handler already registered: " + p_protocol);
+	protocols.insert(p_protocol, p_func);
 }
 
 void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
@@ -104,8 +111,9 @@ Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_ms
 
 void EngineDebugger::line_poll() {
 	// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught
-	if (poll_every % 2048 == 0)
+	if (poll_every % 2048 == 0) {
 		poll_events(false);
+	}
 	poll_every++;
 }
 
@@ -117,42 +125,51 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 	// Notify tick to running profilers
 	for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
 		Profiler &p = E->get();
-		if (!p.active || !p.tick)
+		if (!p.active || !p.tick) {
 			continue;
+		}
 		p.tick(p.data, frame_time, idle_time, physics_time, physics_frame_time);
 	}
 	singleton->poll_events(true);
 }
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
-	if (p_uri.empty())
+	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
+	if (p_uri.empty()) {
 		return;
+	}
 	if (p_uri == "local://") {
 		singleton = memnew(LocalDebugger);
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else {
-		singleton = RemoteDebugger::create_for_uri(p_uri);
-		if (!singleton)
+	} else if (p_uri.find("://") >= 0) {
+		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
+		if (!protocols.has(proto)) {
 			return;
+		}
+		RemoteDebuggerPeer *peer = protocols[proto](p_uri);
+		if (!peer) {
+			return;
+		}
+		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
 		Array msg;
 		msg.push_back(OS::get_singleton()->get_process_id());
 		singleton->send_message("set_pid", msg);
 	}
-	if (!singleton)
+	if (!singleton) {
 		return;
+	}
 
 	// There is a debugger, parse breakpoints.
 	ScriptDebugger *singleton_script_debugger = singleton->get_script_debugger();
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
-
 		String bp = p_breakpoints[i];
-		int sp = bp.find_last(":");
+		int sp = bp.rfind(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 
 		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
@@ -160,27 +177,31 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 }
 
 void EngineDebugger::deinitialize() {
-	if (!singleton)
-		return;
+	if (singleton) {
+		// Stop all profilers
+		for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
+			if (E->get().active) {
+				singleton->profiler_enable(E->key(), false);
+			}
+		}
 
-	// Stop all profilers
-	for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
-		if (E->get().active)
-			singleton->profiler_enable(E->key(), false);
+		// Flush any remaining message
+		singleton->poll_events(false);
+
+		memdelete(singleton);
+		singleton = nullptr;
 	}
 
-	// Flush any remaining message
-	singleton->poll_events(false);
-
-	memdelete(singleton);
-	singleton = nullptr;
+	// Clear profilers/captuers/protocol handlers.
 	profilers.clear();
 	captures.clear();
+	protocols.clear();
 }
 
 EngineDebugger::~EngineDebugger() {
-	if (script_debugger)
+	if (script_debugger) {
 		memdelete(script_debugger);
+	}
 	script_debugger = nullptr;
 	singleton = nullptr;
 }

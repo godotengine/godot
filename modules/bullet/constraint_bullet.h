@@ -45,11 +45,10 @@ class SpaceBullet;
 class btTypedConstraint;
 
 class ConstraintBullet : public RIDBullet {
-
 protected:
-	SpaceBullet *space;
-	btTypedConstraint *constraint;
-	bool disabled_collisions_between_bodies;
+	SpaceBullet *space = nullptr;
+	btTypedConstraint *constraint = nullptr;
+	bool disabled_collisions_between_bodies = true;
 
 public:
 	ConstraintBullet();

@@ -35,7 +35,6 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent3D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent3D::get_target_desired_distance);
 
@@ -99,7 +98,6 @@ void NavigationAgent3D::_bind_methods() {
 void NavigationAgent3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			agent_parent = Object::cast_to<Node3D>(get_parent());
 
 			NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
@@ -110,10 +108,11 @@ void NavigationAgent3D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -128,7 +127,6 @@ void NavigationAgent3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 				if (!target_reached) {
 					if (distance_to_target() < target_desired_distance) {
@@ -141,16 +139,7 @@ void NavigationAgent3D::_notification(int p_what) {
 	}
 }
 
-NavigationAgent3D::NavigationAgent3D() :
-		agent_parent(nullptr),
-		navigation(nullptr),
-		agent(RID()),
-		target_desired_distance(1.0),
-		navigation_height_offset(0.0),
-		path_max_distance(3.0),
-		velocity_submitted(false),
-		target_reached(false),
-		navigation_finished(true) {
+NavigationAgent3D::NavigationAgent3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
 	set_neighbor_dist(50.0);
 	set_max_neighbors(10);
@@ -166,8 +155,9 @@ NavigationAgent3D::~NavigationAgent3D() {
 }
 
 void NavigationAgent3D::set_navigation(Navigation3D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -297,18 +287,28 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 }
 
 String NavigationAgent3D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		return TTR("The NavigationAgent3D can be used only under a spatial node.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationAgent3D can be used only under a spatial node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationAgent3D::update_navigation() {
-
-	if (agent_parent == nullptr) return;
-	if (navigation == nullptr) return;
-	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) return;
+	if (agent_parent == nullptr) {
+		return;
+	}
+	if (navigation == nullptr) {
+		return;
+	}
+	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
+		return;
+	}
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
@@ -328,7 +328,7 @@ void NavigationAgent3D::update_navigation() {
 			segment[1] = navigation_path[nav_path_index];
 			segment[0].y -= navigation_height_offset;
 			segment[1].y -= navigation_height_offset;
-			Vector3 p = Geometry::get_closest_point_to_segment(o, segment);
+			Vector3 p = Geometry3D::get_closest_point_to_segment(o, segment);
 			if (o.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;
@@ -343,8 +343,9 @@ void NavigationAgent3D::update_navigation() {
 		emit_signal("path_changed");
 	}
 
-	if (navigation_path.size() == 0)
+	if (navigation_path.size() == 0) {
 		return;
+	}
 
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {

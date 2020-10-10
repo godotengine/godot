@@ -35,6 +35,11 @@ def can_build():
         print("xinerama not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
+    if x11_error:
+        print("xext not found.. x11 disabled.")
+        return False
+
     x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
     if x11_error:
         print("xrandr not found.. x11 disabled.")
@@ -109,7 +114,7 @@ def configure(env):
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
-        env.Prepend(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
+        env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["-rdynamic"])
 
     ## Architecture
@@ -194,6 +199,7 @@ def configure(env):
     env.ParseConfig("pkg-config x11 --cflags --libs")
     env.ParseConfig("pkg-config xcursor --cflags --libs")
     env.ParseConfig("pkg-config xinerama --cflags --libs")
+    env.ParseConfig("pkg-config xext --cflags --libs")
     env.ParseConfig("pkg-config xrandr --cflags --libs")
     env.ParseConfig("pkg-config xrender --cflags --libs")
     env.ParseConfig("pkg-config xi --cflags --libs")
@@ -217,15 +223,17 @@ def configure(env):
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
 
     if not env["builtin_bullet"]:
-        # We need at least version 2.89
+        # We need at least version 2.90
+        min_bullet_version = "2.90"
+
         import subprocess
 
         bullet_version = subprocess.check_output(["pkg-config", "bullet", "--modversion"]).strip()
-        if str(bullet_version) < "2.89":
+        if str(bullet_version) < min_bullet_version:
             # Abort as system bullet was requested but too old
             print(
                 "Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(
-                    bullet_version, "2.89"
+                    bullet_version, min_bullet_version
                 )
             )
             sys.exit(255)

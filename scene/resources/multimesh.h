@@ -35,7 +35,6 @@
 #include "servers/rendering_server.h"
 
 class MultiMesh : public Resource {
-
 	GDCLASS(MultiMesh, Resource);
 	RES_BASE_EXTENSION("multimesh");
 
@@ -106,7 +105,7 @@ public:
 
 	virtual AABB get_aabb() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 
 	MultiMesh();
 	~MultiMesh();

@@ -56,15 +56,17 @@ int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
 	for (int i = 1; i < CONTROL_STEPS; ++i) {
 		const float typical_lower = typical_physics_steps[i];
 		const float current_min = typical_lower / (i + 1);
-		if (current_min > p_max)
+		if (current_min > p_max) {
 			return i; // bail out of further restrictions would void the interval
-		else if (current_min > p_min)
+		} else if (current_min > p_min) {
 			p_min = current_min;
+		}
 		const float current_max = (typical_lower + 1) / (i + 1);
-		if (current_max < p_min)
+		if (current_max < p_min) {
 			return i;
-		else if (current_max < p_max)
+		} else if (current_max < p_max) {
 			p_max = current_max;
+		}
 	}
 
 	return CONTROL_STEPS;
@@ -95,10 +97,12 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 			break;
 		}
 
-		if (steps_left_to_match_typical > min_typical_steps)
+		if (steps_left_to_match_typical > min_typical_steps) {
 			min_typical_steps = steps_left_to_match_typical;
-		if (steps_left_to_match_typical + 1 < max_typical_steps)
+		}
+		if (steps_left_to_match_typical + 1 < max_typical_steps) {
 			max_typical_steps = steps_left_to_match_typical + 1;
+		}
 	}
 
 	// try to keep it consistent with previous iterations
@@ -143,8 +147,9 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
 MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iterations_per_second, float p_idle_step) {
-	if (fixed_fps != -1)
+	if (fixed_fps != -1) {
 		p_idle_step = 1.0 / fixed_fps;
+	}
 
 	// compensate for last deficit
 	p_idle_step += time_deficit;
@@ -193,12 +198,7 @@ float MainTimerSync::get_cpu_idle_step() {
 	return cpu_ticks_elapsed / 1000000.0;
 }
 
-MainTimerSync::MainTimerSync() :
-		last_cpu_ticks_usec(0),
-		current_cpu_ticks_usec(0),
-		time_accum(0),
-		time_deficit(0),
-		fixed_fps(0) {
+MainTimerSync::MainTimerSync() {
 	for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
 		typical_physics_steps[i] = i;
 		accumulated_physics_steps[i] = i;

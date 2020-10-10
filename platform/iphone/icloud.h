@@ -36,7 +36,6 @@
 #include "core/object.h"
 
 class ICloud : public Object {
-
 	GDCLASS(ICloud, Object);
 
 	static ICloud *instance;
@@ -45,9 +44,9 @@ class ICloud : public Object {
 	List<Variant> pending_events;
 
 public:
-	Error remove_key(Variant p_param);
-	Variant set_key_values(Variant p_param);
-	Variant get_key_value(Variant p_param);
+	Error remove_key(String p_param);
+	Array set_key_values(Dictionary p_params);
+	Variant get_key_value(String p_param);
 	Error synchronize_key_values();
 	Variant get_all_key_values();
 

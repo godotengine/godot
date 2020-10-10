@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Horizontal slider. See [Slider]. This one goes from left (min) to right (max).
+		[b]Note:[/b] The [signal Range.changed] and [signal Range.value_changed] signals are part of the [Range] class which this class inherits from.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,6 +19,8 @@
 		</theme_item>
 		<theme_item name="grabber_area" type="StyleBox">
 			The background of the area to the left of the grabber.
+		</theme_item>
+		<theme_item name="grabber_area_highlight" type="StyleBox">
 		</theme_item>
 		<theme_item name="grabber_disabled" type="Texture2D">
 			The texture for the grabber when it's disabled.

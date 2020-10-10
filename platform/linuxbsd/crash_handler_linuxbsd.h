@@ -32,7 +32,6 @@
 #define CRASH_HANDLER_X11_H
 
 class CrashHandler {
-
 	bool disabled;
 
 public:

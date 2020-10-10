@@ -5,16 +5,19 @@
 	</brief_description>
 	<description>
 		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex] or [Semaphore] is advised if working with shared objects.
+		[b]Note:[/b] Breakpoints won't break on code if it's running in a thread. This is a current limitation of the GDScript debugger.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/threads/using_multiple_threads.html</link>
+		<link title="Using multiple threads">https://docs.godotengine.org/en/latest/tutorials/threads/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">https://docs.godotengine.org/en/latest/tutorials/threads/thread_safe_apis.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="get_id" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the current [Thread]'s ID, uniquely identifying it among all threads.
+				Returns the current [Thread]'s ID, uniquely identifying it among all threads. If the [Thread] is not running this returns an empty string.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">

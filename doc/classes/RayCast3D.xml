@@ -4,14 +4,15 @@
 		Query the closest object intersecting a ray.
 	</brief_description>
 	<description>
-		A RayCast represents a line from its origin to its destination position, [code]cast_to[/code]. It is used to query the 3D space in order to find the closest object along the path of the ray.
-		RayCast3D can ignore some objects by adding them to the exception list via [code]add_exception[/code] or by setting proper filtering with collision layers and masks.
+		A RayCast represents a line from its origin to its destination position, [member target_position]. It is used to query the 3D space in order to find the closest object along the path of the ray.
+		RayCast3D can ignore some objects by adding them to the exception list via [method add_exception] or by setting proper filtering with collision layers and masks.
 		RayCast3D can be configured to report collisions with [Area3D]s ([member collide_with_areas]) and/or [PhysicsBody3D]s ([member collide_with_bodies]).
 		Only enabled raycasts will be able to query the space and report collisions.
 		RayCast3D calculates intersection every physics frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between physics frames (or during the same frame), use [method force_raycast_update] after adjusting the raycast.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+		<link title="Ray-casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="add_exception">
@@ -45,7 +46,7 @@
 			<description>
 				Updates the collision information for the ray.
 				Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
-				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
+				[b]Note:[/b] [member enabled] does not need to be [code]true[/code] for this to work.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -126,9 +127,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to" default="Vector3( 0, -1, 0 )">
-			The ray's destination point, relative to the RayCast's [code]position[/code].
-		</member>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
 			If [code]true[/code], collision with [Area3D]s will be reported.
 		</member>
@@ -136,13 +134,16 @@
 			If [code]true[/code], collision with [PhysicsBody3D]s will be reported.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
+			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], collisions will be reported.
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
 			If [code]true[/code], collisions will be ignored for this RayCast3D's immediate parent.
+		</member>
+		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3( 0, -1, 0 )">
+			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 	</members>
 	<constants>

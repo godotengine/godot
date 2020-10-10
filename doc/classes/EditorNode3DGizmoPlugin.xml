@@ -7,7 +7,7 @@
 		EditorNode3DGizmoPlugin allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorNode3DGizmoPlugin] for the simpler gizmos, or creating a new [EditorNode3DGizmo] type. See the tutorial in the documentation for more info.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/spatial_gizmos.html</link>
+		<link title="Spatial gizmo plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/spatial_gizmos.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_material">
@@ -136,9 +136,11 @@
 			</description>
 		</method>
 		<method name="get_priority" qualifiers="virtual">
-			<return type="String">
+			<return type="int">
 			</return>
 			<description>
+				Override this method to set the gizmo's priority. Higher values correspond to higher priority. If a gizmo with higher priority conflicts with another gizmo, only the gizmo with higher priority will be used.
+				All built-in editor gizmos return a priority of [code]-1[/code]. If not overridden, this method will return [code]0[/code], which means custom gizmos will automatically override built-in gizmos.
 			</description>
 		</method>
 		<method name="has_gizmo" qualifiers="virtual">

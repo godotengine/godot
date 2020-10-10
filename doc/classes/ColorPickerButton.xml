@@ -5,8 +5,11 @@
 	</brief_description>
 	<description>
 		Encapsulates a [ColorPicker] making it accessible by pressing a button. Pressing the button will toggle the [ColorPicker] visibility.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
 	</tutorials>
 	<methods>
 		<method name="get_picker">

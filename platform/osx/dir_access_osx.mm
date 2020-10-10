@@ -38,7 +38,6 @@
 #include <Foundation/Foundation.h>
 
 String DirAccessOSX::fix_unicode_name(const char *p_name) const {
-
 	String fname;
 	NSString *nsstr = [[NSString stringWithUTF8String:p_name] precomposedStringWithCanonicalMapping];
 
@@ -67,6 +66,16 @@ String DirAccessOSX::get_drive(int p_drive) {
 	volname.parse_utf8([path UTF8String]);
 
 	return volname;
+}
+
+bool DirAccessOSX::is_hidden(const String &p_name) {
+	String f = get_current_dir().plus_file(p_name);
+	NSURL *url = [NSURL fileURLWithPath:@(f.utf8().get_data())];
+	NSNumber *hidden = nil;
+	if (![url getResourceValue:&hidden forKey:NSURLIsHiddenKey error:nil]) {
+		return DirAccessUnix::is_hidden(p_name);
+	}
+	return [hidden boolValue];
 }
 
 #endif //posix_enabled

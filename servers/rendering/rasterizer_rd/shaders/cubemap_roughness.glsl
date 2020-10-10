@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define GROUP_SIZE 8
 
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
@@ -119,10 +117,8 @@ void main() {
 	//vec4 color = color_interp;
 
 	if (params.use_direct_write) {
-
 		imageStore(dest_cubemap, ivec3(id), vec4(texture(source_cube, N).rgb, 1.0));
 	} else {
-
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
 
 		for (uint sampleNum = 0u; sampleNum < params.sample_count; sampleNum++) {
@@ -135,7 +131,6 @@ void main() {
 			float ndotl = clamp(dot(N, L), 0.0, 1.0);
 
 			if (ndotl > 0.0) {
-
 				sum.rgb += textureLod(source_cube, L, 0.0).rgb * ndotl;
 				sum.a += ndotl;
 			}

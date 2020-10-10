@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Native image datatype. Contains image data, which can be converted to a [Texture2D], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -153,7 +154,7 @@
 			<argument index="4" name="data" type="PackedByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then loads mipmaps for this image from [code]data[/code]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -187,13 +188,6 @@
 			<argument index="0" name="source" type="int" enum="Image.CompressSource" default="0">
 			</argument>
 			<description>
-			</description>
-		</method>
-		<method name="expand_x2_hq2x">
-			<return type="void">
-			</return>
-			<description>
-				Stretches the image and enlarges it by a factor of 2. No interpolation is done.
 			</description>
 		</method>
 		<method name="fill">
@@ -239,7 +233,7 @@
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Returns the image's raw data.
+				Returns a copy of the image's raw data.
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
@@ -349,7 +343,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads an image from file [code]path[/code].
+				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">
@@ -368,6 +362,15 @@
 			</argument>
 			<description>
 				Loads an image from the binary contents of a PNG file.
+			</description>
+		</method>
+		<method name="load_tga_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PackedByteArray">
+			</argument>
+			<description>
+				Loads an image from the binary contents of a TGA file.
 			</description>
 		</method>
 		<method name="load_webp_from_buffer">
@@ -440,6 +443,12 @@
 			</argument>
 			<description>
 				Saves the image as a PNG file to [code]path[/code].
+			</description>
+		</method>
+		<method name="save_png_to_buffer" qualifiers="const">
+			<return type="PackedByteArray">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_pixel">

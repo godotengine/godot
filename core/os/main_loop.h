@@ -36,7 +36,6 @@
 #include "core/script_language.h"
 
 class MainLoop : public Object {
-
 	GDCLASS(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 
@@ -53,8 +52,10 @@ public:
 		NOTIFICATION_WM_ABOUT = 2011,
 		NOTIFICATION_CRASH = 2012,
 		NOTIFICATION_OS_IME_UPDATE = 2013,
-		NOTIFICATION_APP_RESUMED = 2014,
-		NOTIFICATION_APP_PAUSED = 2015,
+		NOTIFICATION_APPLICATION_RESUMED = 2014,
+		NOTIFICATION_APPLICATION_PAUSED = 2015,
+		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
+		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
 	};
 
 	virtual void init();
@@ -64,8 +65,8 @@ public:
 
 	void set_init_script(const Ref<Script> &p_init_script);
 
-	MainLoop();
-	virtual ~MainLoop();
+	MainLoop() {}
+	virtual ~MainLoop() {}
 };
 
 #endif // MAIN_LOOP_H

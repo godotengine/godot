@@ -33,7 +33,6 @@
 
 #include "scene/gui/control.h"
 class Separator : public Control {
-
 	GDCLASS(Separator, Control);
 
 protected:
@@ -41,14 +40,13 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	Separator();
 	~Separator();
 };
 
 class VSeparator : public Separator {
-
 	GDCLASS(VSeparator, Separator);
 
 public:
@@ -56,7 +54,6 @@ public:
 };
 
 class HSeparator : public Separator {
-
 	GDCLASS(HSeparator, Separator);
 
 public:

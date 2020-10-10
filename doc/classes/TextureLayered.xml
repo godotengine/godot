@@ -9,14 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="create_from_images">
-			<return type="int" enum="Error">
-			</return>
-			<argument index="0" name="images" type="Array">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
@@ -40,6 +32,12 @@
 				Returns an [Image] resource with the data from specified [code]layer[/code].
 			</description>
 		</method>
+		<method name="get_layered_type" qualifiers="const">
+			<return type="int" enum="TextureLayered.LayeredType">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layers" qualifiers="const">
 			<return type="int">
 			</return>
@@ -53,17 +51,19 @@
 				Returns the width of the texture. Width is typically represented by the X-axis.
 			</description>
 		</method>
-		<method name="update_layer">
-			<return type="void">
+		<method name="has_mipmaps" qualifiers="const">
+			<return type="bool">
 			</return>
-			<argument index="0" name="image" type="Image">
-			</argument>
-			<argument index="1" name="layer" type="int">
-			</argument>
 			<description>
 			</description>
 		</method>
 	</methods>
 	<constants>
+		<constant name="LAYERED_TYPE_2D_ARRAY" value="0" enum="LayeredType">
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP" value="1" enum="LayeredType">
+		</constant>
+		<constant name="LAYERED_TYPE_CUBEMAP_ARRAY" value="2" enum="LayeredType">
+		</constant>
 	</constants>
 </class>

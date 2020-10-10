@@ -35,7 +35,6 @@
 #include "scene/3d/node_3d.h"
 
 class Navigation3D : public Node3D {
-
 	GDCLASS(Navigation3D, Node3D);
 
 	RID map;

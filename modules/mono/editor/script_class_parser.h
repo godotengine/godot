@@ -36,7 +36,6 @@
 #include "core/vector.h"
 
 class ScriptClassParser {
-
 public:
 	struct NameDecl {
 		enum Type {
@@ -54,7 +53,6 @@ public:
 		String namespace_;
 		Vector<String> base;
 		bool nested;
-		bool has_script_attr;
 	};
 
 private:

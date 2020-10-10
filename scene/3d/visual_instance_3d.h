@@ -37,7 +37,6 @@
 #include "scene/resources/material.h"
 
 class VisualInstance3D : public Node3D {
-
 	GDCLASS(VisualInstance3D, Node3D);
 	OBJ_CATEGORY("3D Visual Nodes");
 
@@ -81,17 +80,9 @@ public:
 };
 
 class GeometryInstance3D : public VisualInstance3D {
-
 	GDCLASS(GeometryInstance3D, VisualInstance3D);
 
 public:
-	enum Flags {
-		FLAG_USE_BAKED_LIGHT = RS::INSTANCE_FLAG_USE_BAKED_LIGHT,
-		FLAG_USE_DYNAMIC_GI = RS::INSTANCE_FLAG_USE_DYNAMIC_GI,
-		FLAG_DRAW_NEXT_FRAME_IF_VISIBLE = RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE,
-		FLAG_MAX = RS::INSTANCE_FLAG_MAX,
-	};
-
 	enum ShadowCastingSetting {
 		SHADOW_CASTING_SETTING_OFF = RS::SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON = RS::SHADOW_CASTING_SETTING_ON,
@@ -99,8 +90,21 @@ public:
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	};
 
+	enum GIMode {
+		GI_MODE_DISABLED,
+		GI_MODE_BAKED,
+		GI_MODE_DYNAMIC
+	};
+
+	enum LightmapScale {
+		LIGHTMAP_SCALE_1X,
+		LIGHTMAP_SCALE_2X,
+		LIGHTMAP_SCALE_4X,
+		LIGHTMAP_SCALE_8X,
+		LIGHTMAP_SCALE_MAX,
+	};
+
 private:
-	bool flags[FLAG_MAX];
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
 	float lod_min_distance;
@@ -108,16 +112,24 @@ private:
 	float lod_min_hysteresis;
 	float lod_max_hysteresis;
 
+	mutable HashMap<StringName, Variant> instance_uniforms;
+	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
+
 	float extra_cull_margin;
+	LightmapScale lightmap_scale;
+	GIMode gi_mode;
+
+	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_flag(Flags p_flag, bool p_value);
-	bool get_flag(Flags p_flag) const;
-
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
 
@@ -139,12 +151,22 @@ public:
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
 
+	void set_gi_mode(GIMode p_mode);
+	GIMode get_gi_mode() const;
+
+	void set_lightmap_scale(LightmapScale p_scale);
+	LightmapScale get_lightmap_scale() const;
+
+	void set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value);
+	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
+
 	void set_custom_aabb(AABB aabb);
 
 	GeometryInstance3D();
 };
 
-VARIANT_ENUM_CAST(GeometryInstance3D::Flags);
 VARIANT_ENUM_CAST(GeometryInstance3D::ShadowCastingSetting);
+VARIANT_ENUM_CAST(GeometryInstance3D::LightmapScale);
+VARIANT_ENUM_CAST(GeometryInstance3D::GIMode);
 
 #endif

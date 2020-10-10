@@ -140,8 +140,30 @@ Error CryptoCore::AESContext::encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst
 	return ret ? FAILED : OK;
 }
 
+Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
+	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
 Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]) {
 	int ret = mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
+	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
 	return ret ? FAILED : OK;
 }
 

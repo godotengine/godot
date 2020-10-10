@@ -30,6 +30,8 @@
 
 #include "image_loader_tga.h"
 
+#include "core/error_macros.h"
+#include "core/io/file_access_memory.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 
@@ -38,8 +40,9 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 
 	Vector<uint8_t> pixels;
 	error = pixels.resize(p_pixel_size);
-	if (error != OK)
+	if (error != OK) {
 		return error;
+	}
 
 	uint8_t *pixels_w = pixels.ptrw();
 
@@ -77,7 +80,6 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 }
 
 Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome) {
-
 #define TGA_PUT_PIXEL(r, g, b, a)             \
 	int image_data_ofs = ((y * width) + x);   \
 	image_data_w[image_data_ofs * 4 + 0] = r; \
@@ -199,13 +201,12 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		}
 	}
 
-	p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+	p_image->create(width, height, false, Image::FORMAT_RGBA8, image_data);
 
 	return OK;
 }
 
 Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	Vector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -234,8 +235,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	bool has_color_map = (tga_header.image_type == TGA_TYPE_RLE_INDEXED || tga_header.image_type == TGA_TYPE_INDEXED);
 	bool is_monochrome = (tga_header.image_type == TGA_TYPE_RLE_MONOCHROME || tga_header.image_type == TGA_TYPE_MONOCHROME);
 
-	if (tga_header.image_type == TGA_TYPE_NO_DATA)
+	if (tga_header.image_type == TGA_TYPE_NO_DATA) {
 		err = FAILED;
+	}
 
 	if (has_color_map) {
 		if (tga_header.color_map_length > 256 || (tga_header.color_map_depth != 24) || tga_header.color_map_type != 1) {
@@ -247,8 +249,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		}
 	}
 
-	if (tga_header.image_width <= 0 || tga_header.image_height <= 0)
+	if (tga_header.image_width <= 0 || tga_header.image_height <= 0) {
 		err = FAILED;
+	}
 
 	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
 		err = FAILED;
@@ -286,7 +289,6 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		const uint8_t *buffer = nullptr;
 
 		if (is_encoded) {
-
 			err = decode_tga_rle(src_image_r, pixel_size, uncompressed_buffer_w, buffer_size);
 
 			if (err == OK) {
@@ -308,9 +310,20 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderTGA::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("tga");
 }
 
+static Ref<Image> _tga_mem_loader_func(const uint8_t *p_png, int p_size) {
+	FileAccessMemory memfile;
+	Error open_memfile_error = memfile.open_custom(p_png, p_size);
+	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for TGA image buffer.");
+	Ref<Image> img;
+	img.instance();
+	Error load_error = ImageLoaderTGA().load_image(img, &memfile, false, 1.0f);
+	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load TGA image.");
+	return img;
+}
+
 ImageLoaderTGA::ImageLoaderTGA() {
+	Image::_tga_mem_loader_func = _tga_mem_loader_func;
 }

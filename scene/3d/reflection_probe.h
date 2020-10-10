@@ -45,6 +45,12 @@ public:
 		UPDATE_ALWAYS,
 	};
 
+	enum AmbientMode {
+		AMBIENT_DISABLED,
+		AMBIENT_ENVIRONMENT,
+		AMBIENT_COLOR
+	};
+
 private:
 	RID probe;
 	float intensity;
@@ -54,26 +60,29 @@ private:
 	bool box_projection;
 	bool enable_shadows;
 	bool interior;
-	Color interior_ambient;
-	float interior_ambient_energy;
-	float interior_ambient_probe_contribution;
+	AmbientMode ambient_mode;
+	Color ambient_color;
+	float ambient_color_energy;
 
 	uint32_t cull_mask;
 	UpdateMode update_mode;
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_intensity(float p_intensity);
 	float get_intensity() const;
 
-	void set_interior_ambient(Color p_ambient);
-	Color get_interior_ambient() const;
+	void set_ambient_mode(AmbientMode p_mode);
+	AmbientMode get_ambient_mode() const;
 
-	void set_interior_ambient_energy(float p_energy);
-	float get_interior_ambient_energy() const;
+	void set_ambient_color(Color p_ambient);
+	Color get_ambient_color() const;
+
+	void set_ambient_color_energy(float p_energy);
+	float get_ambient_color_energy() const;
 
 	void set_interior_ambient_probe_contribution(float p_contribution);
 	float get_interior_ambient_probe_contribution() const;
@@ -102,13 +111,14 @@ public:
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	ReflectionProbe();
 	~ReflectionProbe();
 };
 
+VARIANT_ENUM_CAST(ReflectionProbe::AmbientMode);
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
 
 #endif // REFLECTIONPROBE_H

@@ -9,10 +9,12 @@
 		Canvas items are drawn in tree order. By default, children are on top of their parents so a root [CanvasItem] will be drawn behind everything. This behavior can be changed on a per-item basis.
 		A [CanvasItem] can also be hidden, which will also hide its children. It provides many ways to change parameters such as modulation (for itself and its children) and self modulation (only for itself), as well as its blend mode.
 		Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
+		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GDScript.deg2rad].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="Audio Spectrum Demo">https://godotengine.org/asset-library/asset/528</link>
 	</tutorials>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
@@ -284,9 +286,9 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="rotation" type="float">
+			<argument index="1" name="rotation" type="float" default="0.0">
 			</argument>
-			<argument index="2" name="scale" type="Vector2">
+			<argument index="2" name="scale" type="Vector2" default="Vector2( 1, 1 )">
 			</argument>
 			<description>
 				Sets a custom transform for drawing via components. Anything drawn afterwards will be transformed by this.
@@ -315,7 +317,25 @@
 			<argument index="4" name="clip_w" type="int" default="-1">
 			</argument>
 			<description>
-				Draws a string using a custom font.
+				Draws [code]text[/code] using the specified [code]font[/code] at the [code]position[/code] (top-left corner). The text will have its color multiplied by [code]modulate[/code]. If [code]clip_w[/code] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				[b]Example using the default project font:[/b]
+				[codeblocks]
+				[gdscript]
+				# If using this method in a script that redraws constantly, move the
+				# `default_font` declaration to a member variable assigned in `_ready()`
+				# so the Control is only created once.
+				var default_font = Control.new().get_font("font")
+				draw_string(default_font, Vector2(64, 64), "Hello world")
+				[/gdscript]
+				[csharp]
+				// If using this method in a script that redraws constantly, move the
+				// `default_font` declaration to a member variable assigned in `_ready()`
+				// so the Control is only created once.
+				Font defaultFont = new Control().GetFont("font");
+				DrawString(defaultFont, new Vector2(64, 64), "Hello world");
+				[/csharp]
+				[/codeblocks]
+				See also [method Font.draw].
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -506,13 +526,6 @@
 				Returns [code]true[/code] if local transform notifications are communicated to children.
 			</description>
 		</method>
-		<method name="is_set_as_toplevel" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the node is set as top-level. See [method set_as_toplevel].
-			</description>
-		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -524,7 +537,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and its inherited visibility is also [code]true[/code].
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree.
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -543,15 +556,6 @@
 			</argument>
 			<description>
 				Transformations issued by [code]event[/code]'s inputs are applied in local space instead of global space.
-			</description>
-		</method>
-		<method name="set_as_toplevel">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				If [code]enable[/code] is [code]true[/code], the node won't inherit its transform from parent canvas items.
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
@@ -607,14 +611,20 @@
 			If [code]true[/code], the object draws on top of its parent.
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
+			The texture filtering mode to use on this [CanvasItem].
 		</member>
 		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
+			The texture repeating mode to use on this [CanvasItem].
+		</member>
+		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
+			If [code]true[/code], the node will not inherit its transform from parent [CanvasItem]s.
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 	</members>
 	<signals>
@@ -665,12 +675,18 @@
 			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="TextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. This is the fastest way to read from textures with mipmaps.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
+			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
+			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate.
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="7" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.

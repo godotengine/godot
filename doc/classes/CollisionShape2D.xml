@@ -7,13 +7,16 @@
 		Editor facility for creating and editing collision shapes in 2D space. You can use this node to represent all sorts of collision shapes, for example, add this to an [Area2D] to give it a detection shape, or add it to a [PhysicsBody2D] to create a solid object. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method CollisionObject2D.shape_owner_get_shape] to get the actual shape.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/121</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
-			A disabled collision shape has no effect in the world.
+			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).

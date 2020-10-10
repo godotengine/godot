@@ -281,7 +281,12 @@ enum {
   ucp_Makasar,
   ucp_Medefaidrin,
   ucp_Old_Sogdian,
-  ucp_Sogdian
+  ucp_Sogdian,
+  /* New for Unicode 12.0.0 */
+  ucp_Elymaic,
+  ucp_Nandinagari,
+  ucp_Nyiakeng_Puachue_Hmong,
+  ucp_Wancho
 };
 
 #endif  /* PCRE2_UCP_H_IDEMPOTENT_GUARD */

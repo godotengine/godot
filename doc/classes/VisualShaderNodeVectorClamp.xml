@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorClamp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Clamps a vector value within the visual shader graph.
 	</brief_description>
 	<description>
+		Constrains a value to lie between [code]min[/code] and [code]max[/code] values. The operation is performed on each component of the vector individually.
 	</description>
 	<tutorials>
 	</tutorials>

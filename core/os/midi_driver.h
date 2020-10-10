@@ -39,7 +39,6 @@
  */
 
 class MIDIDriver {
-
 	static MIDIDriver *singleton;
 	static uint8_t last_received_message;
 

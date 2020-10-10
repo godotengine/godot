@@ -32,7 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 
@@ -65,9 +65,9 @@ CurveEditor::CurveEditor() {
 }
 
 void CurveEditor::set_curve(Ref<Curve> curve) {
-
-	if (curve == _curve_ref)
+	if (curve == _curve_ref) {
 		return;
+	}
 
 	if (_curve_ref.is_valid()) {
 		_curve_ref->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEditor::_curve_changed));
@@ -96,24 +96,23 @@ Size2 CurveEditor::get_minimum_size() const {
 }
 
 void CurveEditor::_notification(int p_what) {
-	if (p_what == NOTIFICATION_DRAW)
+	if (p_what == NOTIFICATION_DRAW) {
 		_draw();
+	}
 }
 
 void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb_ref = p_event;
 	if (mb_ref.is_valid()) {
-
 		const InputEventMouseButton &mb = **mb_ref;
 
 		if (mb.is_pressed() && !_dragging) {
-
 			Vector2 mpos = mb.get_position();
 
 			_selected_tangent = get_tangent_at(mpos);
-			if (_selected_tangent == TANGENT_NONE)
+			if (_selected_tangent == TANGENT_NONE) {
 				set_selected_point(get_point_at(mpos));
+			}
 
 			switch (mb.get_button_index()) {
 				case BUTTON_RIGHT:
@@ -134,7 +133,6 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb.is_pressed() && _dragging && mb.get_button_index() == BUTTON_LEFT) {
 			_dragging = false;
 			if (_has_undo_data) {
-
 				UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
 
 				ur.create_action(_selected_tangent == TANGENT_NONE ? TTR("Modify Curve Point") : TTR("Modify Curve Tangent"));
@@ -151,13 +149,11 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm_ref = p_event;
 	if (mm_ref.is_valid()) {
-
 		const InputEventMouseMotion &mm = **mm_ref;
 
 		Vector2 mpos = mm.get_position();
 
 		if (_dragging && _curve_ref.is_valid()) {
-
 			if (_selected_point != -1) {
 				Curve &curve = **_curve_ref;
 
@@ -189,10 +185,11 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					set_selected_point(i);
 
 					// This is to prevent the user from losing a point out of view.
-					if (point_pos.y < curve.get_min_value())
+					if (point_pos.y < curve.get_min_value()) {
 						point_pos.y = curve.get_min_value();
-					else if (point_pos.y > curve.get_max_value())
+					} else if (point_pos.y > curve.get_max_value()) {
 						point_pos.y = curve.get_max_value();
+					}
 
 					curve.set_point_value(_selected_point, point_pos.y);
 
@@ -205,25 +202,28 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					Vector2 dir = (control_pos - point_pos).normalized();
 
 					real_t tangent;
-					if (!Math::is_zero_approx(dir.x))
+					if (!Math::is_zero_approx(dir.x)) {
 						tangent = dir.y / dir.x;
-					else
+					} else {
 						tangent = 9999 * (dir.y >= 0 ? 1 : -1);
+					}
 
-					bool link = !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool link = !Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 
 					if (_selected_tangent == TANGENT_LEFT) {
 						curve.set_point_left_tangent(_selected_point, tangent);
 
 						// Note: if a tangent is set to linear, it shouldn't be linked to the other
-						if (link && _selected_point != (curve.get_point_count() - 1) && curve.get_point_right_mode(_selected_point) != Curve::TANGENT_LINEAR)
+						if (link && _selected_point != (curve.get_point_count() - 1) && curve.get_point_right_mode(_selected_point) != Curve::TANGENT_LINEAR) {
 							curve.set_point_right_tangent(_selected_point, tangent);
+						}
 
 					} else {
 						curve.set_point_right_tangent(_selected_point, tangent);
 
-						if (link && _selected_point != 0 && curve.get_point_left_mode(_selected_point) != Curve::TANGENT_LINEAR)
+						if (link && _selected_point != 0 && curve.get_point_left_mode(_selected_point) != Curve::TANGENT_LINEAR) {
 							curve.set_point_left_tangent(_selected_point, tangent);
+						}
 					}
 				}
 			}
@@ -238,8 +238,9 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		const InputEventKey &key = **key_ref;
 
 		if (key.is_pressed() && _selected_point != -1) {
-			if (key.get_keycode() == KEY_DELETE)
+			if (key.get_keycode() == KEY_DELETE) {
 				remove_point(_selected_point);
+			}
 		}
 	}
 }
@@ -358,8 +359,9 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 				_context_menu->set_item_checked(_context_menu->get_item_index(CONTEXT_LINEAR), is_linear);
 
 			} else {
-				if (_selected_point > 0 || _selected_point + 1 < _curve_ref->get_point_count())
+				if (_selected_point > 0 || _selected_point + 1 < _curve_ref->get_point_count()) {
 					_context_menu->add_separator();
+				}
 
 				if (_selected_point > 0) {
 					_context_menu->add_check_item(TTR("Left Linear"), CONTEXT_LEFT_LINEAR);
@@ -384,8 +386,9 @@ void CurveEditor::open_context_menu(Vector2 pos) {
 }
 
 int CurveEditor::get_point_at(Vector2 pos) const {
-	if (_curve_ref.is_null())
+	if (_curve_ref.is_null()) {
 		return -1;
+	}
 	const Curve &curve = **_curve_ref;
 
 	const float r = _hover_radius * _hover_radius;
@@ -401,8 +404,9 @@ int CurveEditor::get_point_at(Vector2 pos) const {
 }
 
 CurveEditor::TangentIndex CurveEditor::get_tangent_at(Vector2 pos) const {
-	if (_curve_ref.is_null() || _selected_point < 0)
+	if (_curve_ref.is_null() || _selected_point < 0) {
 		return TANGENT_NONE;
+	}
 
 	if (_selected_point != 0) {
 		Vector2 control_pos = get_tangent_view_pos(_selected_point, TANGENT_LEFT);
@@ -428,10 +432,11 @@ void CurveEditor::add_point(Vector2 pos) {
 	ur.create_action(TTR("Remove Curve Point"));
 
 	Vector2 point_pos = get_world_pos(pos);
-	if (point_pos.y < 0.0)
+	if (point_pos.y < 0.0) {
 		point_pos.y = 0.0;
-	else if (point_pos.y > 1.0)
+	} else if (point_pos.y > 1.0) {
 		point_pos.y = 1.0;
+	}
 
 	// Small trick to get the point index to feed the undo method
 	int i = _curve_ref->add_point(point_pos);
@@ -454,11 +459,13 @@ void CurveEditor::remove_point(int index) {
 	ur.add_do_method(*_curve_ref, "remove_point", index);
 	ur.add_undo_method(*_curve_ref, "add_point", p.pos, p.left_tangent, p.right_tangent, p.left_mode, p.right_mode);
 
-	if (index == _selected_point)
+	if (index == _selected_point) {
 		set_selected_point(-1);
+	}
 
-	if (index == _hover_point)
+	if (index == _hover_point) {
 		set_hover_point_index(-1);
+	}
 
 	ur.commit_action();
 }
@@ -469,11 +476,11 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
 	ur.create_action(TTR("Toggle Curve Linear Tangent"));
 
-	if (tangent == TANGENT_NONE)
+	if (tangent == TANGENT_NONE) {
 		tangent = _selected_tangent;
+	}
 
 	if (tangent == TANGENT_LEFT) {
-
 		bool is_linear = _curve_ref->get_point_left_mode(_selected_point) == Curve::TANGENT_LINEAR;
 
 		Curve::TangentMode prev_mode = _curve_ref->get_point_left_mode(_selected_point);
@@ -483,7 +490,6 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 		ur.add_undo_method(*_curve_ref, "set_point_left_mode", _selected_point, prev_mode);
 
 	} else {
-
 		bool is_linear = _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
 
 		Curve::TangentMode prev_mode = _curve_ref->get_point_right_mode(_selected_point);
@@ -538,12 +544,12 @@ void CurveEditor::update_view_transform() {
 }
 
 Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
-
 	Vector2 dir;
-	if (tangent == TANGENT_LEFT)
+	if (tangent == TANGENT_LEFT) {
 		dir = -Vector2(1, _curve_ref->get_point_left_tangent(i));
-	else
+	} else {
 		dir = Vector2(1, _curve_ref->get_point_right_tangent(i));
+	}
 
 	Vector2 point_pos = get_view_pos(_curve_ref->get_point_position(i));
 	Vector2 control_pos = get_view_pos(_curve_ref->get_point_position(i) + dir);
@@ -562,7 +568,6 @@ Vector2 CurveEditor::get_world_pos(Vector2 view_pos) const {
 // Uses non-baked points, but takes advantage of ordered iteration to be faster
 template <typename T>
 static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
-
 	if (curve.get_point_count() <= 1) {
 		// Not enough points to make a curve, so it's just a straight line
 		float y = curve.interpolate(0);
@@ -600,7 +605,6 @@ static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 }
 
 struct CanvasItemPlotCurve {
-
 	CanvasItem &ci;
 	Color color1;
 	Color color2;
@@ -617,8 +621,9 @@ struct CanvasItemPlotCurve {
 };
 
 void CurveEditor::_draw() {
-	if (_curve_ref.is_null())
+	if (_curve_ref.is_null()) {
 		return;
+	}
 	Curve &curve = **_curve_ref;
 
 	update_view_transform();
@@ -685,7 +690,6 @@ void CurveEditor::_draw() {
 	// Draw tangents for current point
 
 	if (_selected_point >= 0) {
-
 		const Color tangent_color = get_theme_color("accent_color", "Editor");
 
 		int i = _selected_point;
@@ -754,12 +758,10 @@ void CurveEditor::_bind_methods() {
 //---------------
 
 bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
-
 	return Object::cast_to<Curve>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {
-
 	Curve *curve = Object::cast_to<Curve>(p_object);
 	ERR_FAIL_COND(!curve);
 	Ref<Curve> c(curve);
@@ -785,7 +787,6 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 }
 
 Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
-
 	Ref<Curve> curve_ref = p_from;
 	ERR_FAIL_COND_V_MSG(curve_ref.is_null(), Ref<Texture2D>(), "It's not a reference to a valid Resource object.");
 	Curve &curve = **curve_ref;
@@ -797,7 +798,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	img_ref.instance();
 	Image &im = **img_ref;
 
-	im.create(thumbnail_size, thumbnail_size / 2, 0, Image::FORMAT_RGBA8);
+	im.create(thumbnail_size, thumbnail_size / 2, false, Image::FORMAT_RGBA8);
 
 	Color bg_color(0.1, 0.1, 0.1, 1.0);
 	for (int i = 0; i < thumbnail_size; i++) {
@@ -811,7 +812,6 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 
 	int prev_y = 0;
 	for (int x = 0; x < im.get_width(); ++x) {
-
 		float t = static_cast<float>(x) / im.get_width();
 		float v = (curve.interpolate_baked(t) - curve.get_min_value()) / range_y;
 		int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height());

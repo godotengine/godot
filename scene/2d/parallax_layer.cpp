@@ -34,7 +34,6 @@
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
-
 	motion_scale = p_scale;
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
@@ -46,12 +45,10 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 }
 
 Size2 ParallaxLayer::get_motion_scale() const {
-
 	return motion_scale;
 }
 
 void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
-
 	motion_offset = p_offset;
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
@@ -63,18 +60,16 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 }
 
 Size2 ParallaxLayer::get_motion_offset() const {
-
 	return motion_offset;
 }
 
 void ParallaxLayer::_update_mirroring() {
-
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
-
 		RID c = pb->get_canvas();
 		RID ci = get_canvas_item();
 		Point2 mirrorScale = mirroring * get_scale();
@@ -83,33 +78,29 @@ void ParallaxLayer::_update_mirroring() {
 }
 
 void ParallaxLayer::set_mirroring(const Size2 &p_mirroring) {
-
 	mirroring = p_mirroring;
-	if (mirroring.x < 0)
+	if (mirroring.x < 0) {
 		mirroring.x = 0;
-	if (mirroring.y < 0)
+	}
+	if (mirroring.y < 0) {
 		mirroring.y = 0;
+	}
 
 	_update_mirroring();
 }
 
 Size2 ParallaxLayer::get_mirroring() const {
-
 	return mirroring;
 }
 
 void ParallaxLayer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			orig_offset = get_position();
 			orig_scale = get_scale();
 			_update_mirroring();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			set_position(orig_offset);
 			set_scale(orig_scale);
 		} break;
@@ -119,10 +110,12 @@ void ParallaxLayer::_notification(int p_what) {
 void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_scale, const Point2 &p_screen_offset) {
 	screen_offset = p_screen_offset;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
-	if (Engine::get_singleton()->is_editor_hint())
+	}
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Point2 new_ofs = (screen_offset + (p_offset - screen_offset) * motion_scale) + motion_offset * p_scale + orig_offset * p_scale;
 
@@ -143,16 +136,19 @@ void ParallaxLayer::set_base_offset_and_scale(const Point2 &p_offset, float p_sc
 }
 
 String ParallaxLayer::get_configuration_warning() const {
+	String warning = Node2D::get_configuration_warning();
 
 	if (!Object::cast_to<ParallaxBackground>(get_parent())) {
-		return TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ParallaxLayer node only works when set as child of a ParallaxBackground node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void ParallaxLayer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_motion_scale", "scale"), &ParallaxLayer::set_motion_scale);
 	ClassDB::bind_method(D_METHOD("get_motion_scale"), &ParallaxLayer::get_motion_scale);
 	ClassDB::bind_method(D_METHOD("set_motion_offset", "offset"), &ParallaxLayer::set_motion_offset);

@@ -35,22 +35,22 @@
 #include "physics_server_3d_sw.h"
 
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObject3DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
 	if (!(p_object->get_collision_layer() & p_collision_mask)) {
 		return false;
 	}
 
-	if (p_object->get_type() == CollisionObject3DSW::TYPE_AREA && !p_collide_with_areas)
+	if (p_object->get_type() == CollisionObject3DSW::TYPE_AREA && !p_collide_with_areas) {
 		return false;
+	}
 
-	if (p_object->get_type() == CollisionObject3DSW::TYPE_BODY && !p_collide_with_bodies)
+	if (p_object->get_type() == CollisionObject3DSW::TYPE_BODY && !p_collide_with_bodies) {
 		return false;
+	}
 
 	return true;
 }
 
 int PhysicsDirectSpaceState3DSW::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
 	ERR_FAIL_COND_V(space->locked, false);
 	int amount = space->broadphase->cull_point(p_point, space->intersection_query_results, Space3DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 	int cc = 0;
@@ -58,17 +58,19 @@ int PhysicsDirectSpaceState3DSW::intersect_point(const Vector3 &p_point, ShapeRe
 	//Transform ai = p_xform.affine_inverse();
 
 	for (int i = 0; i < amount; i++) {
-
-		if (cc >= p_result_max)
+		if (cc >= p_result_max) {
 			break;
+		}
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
 		//area can't be picked by ray (default)
 
-		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
+		if (p_exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue;
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
@@ -76,14 +78,16 @@ int PhysicsDirectSpaceState3DSW::intersect_point(const Vector3 &p_point, ShapeRe
 		Transform inv_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		inv_xform.affine_invert();
 
-		if (!col_obj->get_shape(shape_idx)->intersect_point(inv_xform.xform(p_point)))
+		if (!col_obj->get_shape(shape_idx)->intersect_point(inv_xform.xform(p_point))) {
 			continue;
+		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id.is_valid())
+		if (r_results[cc].collider_id.is_valid()) {
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
-		else
+		} else {
 			r_results[cc].collider = nullptr;
+		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
 
@@ -94,7 +98,6 @@ int PhysicsDirectSpaceState3DSW::intersect_point(const Vector3 &p_point, ShapeRe
 }
 
 bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
-
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector3 begin, end;
@@ -114,15 +117,17 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 	real_t min_d = 1e10;
 
 	for (int i = 0; i < amount; i++) {
-
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
-		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable()))
+		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable())) {
 			continue;
+		}
 
-		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
+		if (p_exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue;
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 
@@ -137,14 +142,12 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 		Vector3 shape_point, shape_normal;
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
-
 			Transform xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
 			real_t ld = normal.dot(shape_point);
 
 			if (ld < min_d) {
-
 				min_d = ld;
 				res_point = shape_point;
 				res_normal = inv_xform.basis.xform_inv(shape_normal).normalized();
@@ -155,14 +158,16 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 		}
 	}
 
-	if (!collided)
+	if (!collided) {
 		return false;
+	}
 
 	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid())
+	if (r_result.collider_id.is_valid()) {
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-	else
+	} else {
 		r_result.collider = nullptr;
+	}
 	r_result.normal = res_normal;
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
@@ -172,9 +177,9 @@ bool PhysicsDirectSpaceState3DSW::intersect_ray(const Vector3 &p_from, const Vec
 }
 
 int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Transform &p_xform, real_t p_margin, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
-	if (p_result_max <= 0)
+	if (p_result_max <= 0) {
 		return 0;
+	}
 
 	Shape3DSW *shape = static_cast<PhysicsServer3DSW *>(PhysicsServer3D::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
@@ -188,30 +193,34 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 	//Transform ai = p_xform.affine_inverse();
 
 	for (int i = 0; i < amount; i++) {
-
-		if (cc >= p_result_max)
+		if (cc >= p_result_max) {
 			break;
+		}
 
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
 		//area can't be picked by ray (default)
 
-		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
+		if (p_exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue;
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (!CollisionSolver3DSW::solve_static(shape, p_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), nullptr, nullptr, nullptr, p_margin, 0))
+		if (!CollisionSolver3DSW::solve_static(shape, p_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), nullptr, nullptr, nullptr, p_margin, 0)) {
 			continue;
+		}
 
 		if (r_results) {
 			r_results[cc].collider_id = col_obj->get_instance_id();
-			if (r_results[cc].collider_id.is_valid())
+			if (r_results[cc].collider_id.is_valid()) {
 				r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
-			else
+			} else {
 				r_results[cc].collider = nullptr;
+			}
 			r_results[cc].rid = col_obj->get_self();
 			r_results[cc].shape = shape_idx;
 		}
@@ -223,7 +232,6 @@ int PhysicsDirectSpaceState3DSW::intersect_shape(const RID &p_shape, const Trans
 }
 
 bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, real_t p_margin, real_t &p_closest_safe, real_t &p_closest_unsafe, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
-
 	Shape3DSW *shape = static_cast<PhysicsServer3DSW *>(PhysicsServer3D::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
@@ -246,12 +254,13 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 	Vector3 closest_A, closest_B;
 
 	for (int i = 0; i < amount; i++) {
-
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
-		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
+		if (p_exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue; //ignore excluded
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
@@ -290,10 +299,8 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 			bool collided = !CollisionSolver3DSW::solve_distance(&mshape, p_xform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, aabb, &sep);
 
 			if (collided) {
-
 				hi = ofs;
 			} else {
-
 				point_A = lA;
 				point_B = lB;
 				low = ofs;
@@ -329,9 +336,9 @@ bool PhysicsDirectSpaceState3DSW::cast_motion(const RID &p_shape, const Transfor
 }
 
 bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_shape_xform, real_t p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
-	if (p_result_max <= 0)
-		return 0;
+	if (p_result_max <= 0) {
+		return false;
+	}
 
 	Shape3DSW *shape = static_cast<PhysicsServer3DSW *>(PhysicsServer3D::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
@@ -353,9 +360,9 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 	PhysicsServer3DSW::CollCbkData *cbkptr = &cbk;
 
 	for (int i = 0; i < amount; i++) {
-
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
@@ -375,7 +382,6 @@ bool PhysicsDirectSpaceState3DSW::collide_shape(RID p_shape, const Transform &p_
 }
 
 struct _RestCallbackData {
-
 	const CollisionObject3DSW *object;
 	const CollisionObject3DSW *best_object;
 	int shape;
@@ -387,15 +393,16 @@ struct _RestCallbackData {
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
-
 	_RestCallbackData *rd = (_RestCallbackData *)p_userdata;
 
 	Vector3 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
-	if (len < rd->min_allowed_depth)
+	if (len < rd->min_allowed_depth) {
 		return;
-	if (len <= rd->best_len)
+	}
+	if (len <= rd->best_len) {
 		return;
+	}
 
 	rd->best_len = len;
 	rd->best_contact = p_point_B;
@@ -403,8 +410,8 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
 }
-bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
+bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	Shape3DSW *shape = static_cast<PhysicsServer3DSW *>(PhysicsServer3D::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
@@ -420,25 +427,28 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
 	for (int i = 0; i < amount; i++) {
-
-		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
+		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas)) {
 			continue;
+		}
 
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[i];
 		int shape_idx = space->intersection_query_subindex_results[i];
 
-		if (p_exclude.has(col_obj->get_self()))
+		if (p_exclude.has(col_obj->get_self())) {
 			continue;
+		}
 
 		rcd.object = col_obj;
 		rcd.shape = shape_idx;
 		bool sc = CollisionSolver3DSW::solve_static(shape, p_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
-		if (!sc)
+		if (!sc) {
 			continue;
+		}
 	}
 
-	if (rcd.best_len == 0 || !rcd.best_object)
+	if (rcd.best_len == 0 || !rcd.best_object) {
 		return false;
+	}
 
 	r_info->collider_id = rcd.best_object->get_instance_id();
 	r_info->shape = rcd.best_shape;
@@ -446,7 +456,6 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 	r_info->point = rcd.best_contact;
 	r_info->rid = rcd.best_object->get_self();
 	if (rcd.best_object->get_type() == CollisionObject3DSW::TYPE_BODY) {
-
 		const Body3DSW *body = static_cast<const Body3DSW *>(rcd.best_object);
 		r_info->linear_velocity = body->get_linear_velocity() +
 								  (body->get_angular_velocity()).cross(body->get_transform().origin - rcd.best_contact); // * mPos);
@@ -459,7 +468,6 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 }
 
 Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const {
-
 	CollisionObject3DSW *obj = PhysicsServer3DSW::singleton->area_owner.getornull(p_object);
 	if (!obj) {
 		obj = PhysicsServer3DSW::singleton->body_owner.getornull(p_object);
@@ -474,9 +482,9 @@ Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_ob
 	bool shapes_found = false;
 
 	for (int i = 0; i < obj->get_shape_count(); i++) {
-
-		if (obj->is_shape_set_as_disabled(i))
+		if (obj->is_shape_set_as_disabled(i)) {
 			continue;
+		}
 
 		Transform shape_xform = obj->get_transform() * obj->get_shape_transform(i);
 		Shape3DSW *shape = obj->get_shape(i);
@@ -500,33 +508,30 @@ Vector3 PhysicsDirectSpaceState3DSW::get_closest_point_to_object_volume(RID p_ob
 }
 
 PhysicsDirectSpaceState3DSW::PhysicsDirectSpaceState3DSW() {
-
 	space = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
-
 	int amount = broadphase->cull_aabb(p_aabb, intersection_query_results, INTERSECTION_QUERY_MAX, intersection_query_subindex_results);
 
 	for (int i = 0; i < amount; i++) {
-
 		bool keep = true;
 
-		if (intersection_query_results[i] == p_body)
+		if (intersection_query_results[i] == p_body) {
 			keep = false;
-		else if (intersection_query_results[i]->get_type() == CollisionObject3DSW::TYPE_AREA)
+		} else if (intersection_query_results[i]->get_type() == CollisionObject3DSW::TYPE_AREA) {
 			keep = false;
-		else if ((static_cast<Body3DSW *>(intersection_query_results[i])->test_collision_mask(p_body)) == 0)
+		} else if ((static_cast<Body3DSW *>(intersection_query_results[i])->test_collision_mask(p_body)) == 0) {
 			keep = false;
-		else if (static_cast<Body3DSW *>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self()))
+		} else if (static_cast<Body3DSW *>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self())) {
 			keep = false;
-		else if (static_cast<Body3DSW *>(intersection_query_results[i])->is_shape_set_as_disabled(intersection_query_subindex_results[i]))
+		} else if (static_cast<Body3DSW *>(intersection_query_results[i])->is_shape_set_as_disabled(intersection_query_subindex_results[i])) {
 			keep = false;
+		}
 
 		if (!keep) {
-
 			if (i < amount - 1) {
 				SWAP(intersection_query_results[i], intersection_query_results[amount - 1]);
 				SWAP(intersection_query_subindex_results[i], intersection_query_subindex_results[amount - 1]);
@@ -541,15 +546,14 @@ int Space3DSW::_cull_aabb_for_body(Body3DSW *p_body, const AABB &p_aabb) {
 }
 
 int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, real_t p_margin) {
-
 	AABB body_aabb;
 
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-
-		if (p_body->is_shape_set_as_disabled(i))
+		if (p_body->is_shape_set_as_disabled(i)) {
 			continue;
+		}
 
 		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
@@ -587,7 +591,6 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 		CollisionSolver3DSW::CallbackResult cbkres = PhysicsServer3DSW::_shape_col_cbk;
 
 		do {
-
 			Vector3 recover_motion;
 
 			bool collided = false;
@@ -595,18 +598,19 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j))
+				if (p_body->is_shape_set_as_disabled(j)) {
 					continue;
+				}
 
 				Shape3DSW *body_shape = p_body->get_shape(j);
 
-				if (body_shape->get_type() != PhysicsServer3D::SHAPE_RAY)
+				if (body_shape->get_type() != PhysicsServer3D::SHAPE_RAY) {
 					continue;
+				}
 
 				Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
 
 				for (int i = 0; i < amount; i++) {
-
 					const CollisionObject3DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
@@ -649,7 +653,6 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 
 								float depth = a.distance_to(b);
 								if (depth > result.collision_depth) {
-
 									result.collision_depth = depth;
 									result.collision_point = b;
 									result.collision_normal = (b - a).normalized();
@@ -696,7 +699,6 @@ int Space3DSW::test_body_ray_separation(Body3DSW *p_body, const Transform &p_tra
 }
 
 bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, real_t p_margin, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes) {
-
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -712,9 +714,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
-
-		if (p_body->is_shape_set_as_disabled(i))
+		if (p_body->is_shape_set_as_disabled(i)) {
 			continue;
+		}
 
 		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
@@ -747,7 +749,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		Vector3 sr[max_results * 2];
 
 		do {
-
 			PhysicsServer3DSW::CollCbkData cbk;
 			cbk.max = max_results;
 			cbk.amount = 0;
@@ -761,8 +762,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
-				if (p_body->is_shape_set_as_disabled(j))
+				if (p_body->is_shape_set_as_disabled(j)) {
 					continue;
+				}
 
 				Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
 				Shape3DSW *body_shape = p_body->get_shape(j);
@@ -771,7 +773,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 				}
 
 				for (int i = 0; i < amount; i++) {
-
 					const CollisionObject3DSW *col_obj = intersection_query_results[i];
 					int shape_idx = intersection_query_subindex_results[i];
 
@@ -788,7 +789,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			Vector3 recover_motion;
 
 			for (int i = 0; i < cbk.amount; i++) {
-
 				Vector3 a = sr[i * 2 + 0];
 				Vector3 b = sr[i * 2 + 1];
 				recover_motion += (b - a) * 0.4;
@@ -821,9 +821,9 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		int amount = _cull_aabb_for_body(p_body, motion_aabb);
 
 		for (int j = 0; j < p_body->get_shape_count(); j++) {
-
-			if (p_body->is_shape_set_as_disabled(j))
+			if (p_body->is_shape_set_as_disabled(j)) {
 				continue;
+			}
 
 			Transform body_shape_xform = body_transform * p_body->get_shape_transform(j);
 			Shape3DSW *body_shape = p_body->get_shape(j);
@@ -843,7 +843,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			real_t best_unsafe = 1;
 
 			for (int i = 0; i < amount; i++) {
-
 				const CollisionObject3DSW *col_obj = intersection_query_results[i];
 				int shape_idx = intersection_query_subindex_results[i];
 
@@ -881,10 +880,8 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 					bool collided = !CollisionSolver3DSW::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, lA, lB, motion_aabb, &sep);
 
 					if (collided) {
-
 						hi = ofs;
 					} else {
-
 						point_A = lA;
 						point_B = lB;
 						low = ofs;
@@ -898,7 +895,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			}
 
 			if (stuck) {
-
 				safe = 0;
 				unsafe = 0;
 				best_shape = j; //sadly it's the best
@@ -908,7 +904,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 				continue;
 			}
 			if (best_safe < safe) {
-
 				safe = best_safe;
 				unsafe = best_unsafe;
 				best_shape = j;
@@ -921,14 +916,12 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		//not collided
 		collided = false;
 		if (r_result) {
-
 			r_result->motion = p_motion;
 			r_result->remainder = Vector3();
 			r_result->motion += (body_transform.get_origin() - p_from.get_origin());
 		}
 
 	} else {
-
 		//it collided, let's get the rest info in unsafe advance
 		Transform ugt = body_transform;
 		ugt.origin += p_motion * unsafe;
@@ -947,19 +940,18 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 		int amount = _cull_aabb_for_body(p_body, body_aabb);
 
 		for (int i = 0; i < amount; i++) {
-
 			const CollisionObject3DSW *col_obj = intersection_query_results[i];
 			int shape_idx = intersection_query_subindex_results[i];
 
 			rcd.object = col_obj;
 			rcd.shape = shape_idx;
 			bool sc = CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, p_margin);
-			if (!sc)
+			if (!sc) {
 				continue;
+			}
 		}
 
 		if (rcd.best_len != 0) {
-
 			if (r_result) {
 				r_result->collider = rcd.best_object->get_self();
 				r_result->collider_id = rcd.best_object->get_instance_id();
@@ -982,7 +974,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 			collided = true;
 		} else {
 			if (r_result) {
-
 				r_result->motion = p_motion;
 				r_result->remainder = Vector3();
 				r_result->motion += (body_transform.get_origin() - p_from.get_origin());
@@ -996,11 +987,13 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_from, cons
 }
 
 void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_self) {
+	if (!A->test_collision_mask(B)) {
+		return nullptr;
+	}
 
 	CollisionObject3DSW::Type type_A = A->get_type();
 	CollisionObject3DSW::Type type_B = B->get_type();
 	if (type_A > type_B) {
-
 		SWAP(A, B);
 		SWAP(p_subindex_A, p_subindex_B);
 		SWAP(type_A, type_B);
@@ -1011,21 +1004,17 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 	self->collision_pairs++;
 
 	if (type_A == CollisionObject3DSW::TYPE_AREA) {
-
 		Area3DSW *area = static_cast<Area3DSW *>(A);
 		if (type_B == CollisionObject3DSW::TYPE_AREA) {
-
 			Area3DSW *area_b = static_cast<Area3DSW *>(B);
 			Area2Pair3DSW *area2_pair = memnew(Area2Pair3DSW(area_b, p_subindex_B, area, p_subindex_A));
 			return area2_pair;
 		} else {
-
 			Body3DSW *body = static_cast<Body3DSW *>(B);
 			AreaPair3DSW *area_pair = memnew(AreaPair3DSW(body, p_subindex_B, area, p_subindex_A));
 			return area_pair;
 		}
 	} else {
-
 		BodyPair3DSW *b = memnew(BodyPair3DSW((Body3DSW *)A, p_subindex_A, (Body3DSW *)B, p_subindex_B));
 		return b;
 	}
@@ -1034,6 +1023,9 @@ void *Space3DSW::_broadphase_pair(CollisionObject3DSW *A, int p_subindex_A, Coll
 }
 
 void Space3DSW::_broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, CollisionObject3DSW *B, int p_subindex_B, void *p_data, void *p_self) {
+	if (!p_data) {
+		return;
+	}
 
 	Space3DSW *self = (Space3DSW *)p_self;
 	self->collision_pairs--;
@@ -1042,94 +1034,79 @@ void Space3DSW::_broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, Col
 }
 
 const SelfList<Body3DSW>::List &Space3DSW::get_active_body_list() const {
-
 	return active_list;
 }
-void Space3DSW::body_add_to_active_list(SelfList<Body3DSW> *p_body) {
 
+void Space3DSW::body_add_to_active_list(SelfList<Body3DSW> *p_body) {
 	active_list.add(p_body);
 }
-void Space3DSW::body_remove_from_active_list(SelfList<Body3DSW> *p_body) {
 
+void Space3DSW::body_remove_from_active_list(SelfList<Body3DSW> *p_body) {
 	active_list.remove(p_body);
 }
 
 void Space3DSW::body_add_to_inertia_update_list(SelfList<Body3DSW> *p_body) {
-
 	inertia_update_list.add(p_body);
 }
 
 void Space3DSW::body_remove_from_inertia_update_list(SelfList<Body3DSW> *p_body) {
-
 	inertia_update_list.remove(p_body);
 }
 
 BroadPhase3DSW *Space3DSW::get_broadphase() {
-
 	return broadphase;
 }
 
 void Space3DSW::add_object(CollisionObject3DSW *p_object) {
-
 	ERR_FAIL_COND(objects.has(p_object));
 	objects.insert(p_object);
 }
 
 void Space3DSW::remove_object(CollisionObject3DSW *p_object) {
-
 	ERR_FAIL_COND(!objects.has(p_object));
 	objects.erase(p_object);
 }
 
 const Set<CollisionObject3DSW *> &Space3DSW::get_objects() const {
-
 	return objects;
 }
 
 void Space3DSW::body_add_to_state_query_list(SelfList<Body3DSW> *p_body) {
-
 	state_query_list.add(p_body);
 }
-void Space3DSW::body_remove_from_state_query_list(SelfList<Body3DSW> *p_body) {
 
+void Space3DSW::body_remove_from_state_query_list(SelfList<Body3DSW> *p_body) {
 	state_query_list.remove(p_body);
 }
 
 void Space3DSW::area_add_to_monitor_query_list(SelfList<Area3DSW> *p_area) {
-
 	monitor_query_list.add(p_area);
 }
-void Space3DSW::area_remove_from_monitor_query_list(SelfList<Area3DSW> *p_area) {
 
+void Space3DSW::area_remove_from_monitor_query_list(SelfList<Area3DSW> *p_area) {
 	monitor_query_list.remove(p_area);
 }
 
 void Space3DSW::area_add_to_moved_list(SelfList<Area3DSW> *p_area) {
-
 	area_moved_list.add(p_area);
 }
 
 void Space3DSW::area_remove_from_moved_list(SelfList<Area3DSW> *p_area) {
-
 	area_moved_list.remove(p_area);
 }
 
 const SelfList<Area3DSW>::List &Space3DSW::get_moved_area_list() const {
-
 	return area_moved_list;
 }
 
 void Space3DSW::call_queries() {
-
 	while (state_query_list.first()) {
-
 		Body3DSW *b = state_query_list.first()->self();
 		state_query_list.remove(state_query_list.first());
 		b->call_queries();
 	}
 
 	while (monitor_query_list.first()) {
-
 		Area3DSW *a = monitor_query_list.first()->self();
 		monitor_query_list.remove(monitor_query_list.first());
 		a->call_queries();
@@ -1137,7 +1114,6 @@ void Space3DSW::call_queries() {
 }
 
 void Space3DSW::setup() {
-
 	contact_debug_count = 0;
 	while (inertia_update_list.first()) {
 		inertia_update_list.first()->self()->update_inertias();
@@ -1146,65 +1122,82 @@ void Space3DSW::setup() {
 }
 
 void Space3DSW::update() {
-
 	broadphase->update();
 }
 
 void Space3DSW::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value) {
-
 	switch (p_param) {
-
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: contact_recycle_radius = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION: contact_max_separation = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: contact_max_allowed_penetration = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: body_linear_velocity_sleep_threshold = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: body_angular_velocity_sleep_threshold = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: body_angular_velocity_damp_ratio = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias = p_value; break;
-		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: test_motion_min_contact_depth = p_value; break;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+			contact_recycle_radius = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+			contact_max_separation = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+			contact_max_allowed_penetration = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+			body_linear_velocity_sleep_threshold = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+			body_angular_velocity_sleep_threshold = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+			body_time_to_sleep = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
+			body_angular_velocity_damp_ratio = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+			constraint_bias = p_value;
+			break;
+		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
+			test_motion_min_contact_depth = p_value;
+			break;
 	}
 }
 
 real_t Space3DSW::get_param(PhysicsServer3D::SpaceParameter p_param) const {
-
 	switch (p_param) {
-
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: return contact_recycle_radius;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION: return contact_max_separation;
-		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: return contact_max_allowed_penetration;
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: return body_linear_velocity_sleep_threshold;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: return body_angular_velocity_sleep_threshold;
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: return body_angular_velocity_damp_ratio;
-		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
-		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: return test_motion_min_contact_depth;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+			return contact_recycle_radius;
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+			return contact_max_separation;
+		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+			return contact_max_allowed_penetration;
+		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+			return body_linear_velocity_sleep_threshold;
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+			return body_angular_velocity_sleep_threshold;
+		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+			return body_time_to_sleep;
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
+			return body_angular_velocity_damp_ratio;
+		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+			return constraint_bias;
+		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
+			return test_motion_min_contact_depth;
 	}
 	return 0;
 }
 
 void Space3DSW::lock() {
-
 	locked = true;
 }
 
 void Space3DSW::unlock() {
-
 	locked = false;
 }
 
 bool Space3DSW::is_locked() const {
-
 	return locked;
 }
 
 PhysicsDirectSpaceState3DSW *Space3DSW::get_direct_state() {
-
 	return direct_access;
 }
 
 Space3DSW::Space3DSW() {
-
 	collision_pairs = 0;
 	active_objects = 0;
 	island_count = 0;
@@ -1231,12 +1224,12 @@ Space3DSW::Space3DSW() {
 	direct_access = memnew(PhysicsDirectSpaceState3DSW);
 	direct_access->space = this;
 
-	for (int i = 0; i < ELAPSED_TIME_MAX; i++)
+	for (int i = 0; i < ELAPSED_TIME_MAX; i++) {
 		elapsed_time[i] = 0;
+	}
 }
 
 Space3DSW::~Space3DSW() {
-
 	memdelete(broadphase);
 	memdelete(direct_access);
 }

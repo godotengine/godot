@@ -104,7 +104,6 @@ void HashingContext::_create_ctx(HashType p_type) {
 }
 
 void HashingContext::_delete_ctx() {
-
 	switch (type) {
 		case HASH_MD5:
 			memdelete((CryptoCore::MD5Context *)ctx);
@@ -128,11 +127,8 @@ void HashingContext::_bind_methods() {
 	BIND_ENUM_CONSTANT(HASH_SHA256);
 }
 
-HashingContext::HashingContext() {
-	ctx = nullptr;
-}
-
 HashingContext::~HashingContext() {
-	if (ctx != nullptr)
+	if (ctx != nullptr) {
 		_delete_ctx();
+	}
 }

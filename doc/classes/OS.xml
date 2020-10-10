@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="can_use_threads" qualifiers="const">
@@ -112,7 +113,18 @@
 			<return type="PackedStringArray">
 			</return>
 			<description>
-				Returns the command line arguments passed to the engine.
+				Returns the command-line arguments passed to the engine.
+				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
+				You can also incorporate environment variables using the [method get_environment] method.
+				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
+				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
+				[codeblock]
+				var arguments = {}
+				for argument in OS.get_cmdline_args():
+				    if argument.find("=") &gt; -1:
+				        var key_value = argument.split("=")
+				        arguments[key_value[0].lstrip("--")] = key_value[1]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">
@@ -205,7 +217,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"Haiku"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
+				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -221,13 +233,6 @@
 			</return>
 			<description>
 				Returns the number of threads available on the host machine.
-			</description>
-		</method>
-		<method name="get_splash_tick_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">
@@ -254,18 +259,22 @@
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
 			</description>
 		</method>
-		<method name="get_system_time_msecs" qualifiers="const">
+		<method name="get_tablet_driver_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the epoch time of the operating system in milliseconds.
+				Returns the total number of available tablet drivers.
+				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
-		<method name="get_system_time_secs" qualifiers="const">
-			<return type="int">
+		<method name="get_tablet_driver_name" qualifiers="const">
+			<return type="String">
 			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
 			<description>
-				Returns the epoch time of the operating system in seconds.
+				Returns the tablet driver name for the given index.
+				[b]Note:[/b] This method is implemented on Windows.
 			</description>
 		</method>
 		<method name="get_ticks_msec" qualifiers="const">
@@ -307,7 +316,7 @@
 			</description>
 		</method>
 		<method name="get_unix_time" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<description>
 				Returns the current UNIX epoch timestamp.
@@ -484,6 +493,7 @@
 				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://blog.escapecreative.com/customizing-mailto-links/]Customizing [code]mailto:[/code] Links[/url] for a list of fields that can be added.
+				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -498,6 +508,9 @@
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;&quot;">
+			The current tablet driver in use.
 		</member>
 	</members>
 	<constants>

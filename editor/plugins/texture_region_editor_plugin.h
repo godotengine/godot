@@ -45,7 +45,6 @@
 */
 
 class TextureRegionEditor : public VBoxContainer {
-
 	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {
@@ -57,9 +56,9 @@ class TextureRegionEditor : public VBoxContainer {
 
 	friend class TextureRegionEditorPlugin;
 	OptionButton *snap_mode_button;
-	ToolButton *zoom_in;
-	ToolButton *zoom_reset;
-	ToolButton *zoom_out;
+	Button *zoom_in;
+	Button *zoom_reset;
+	Button *zoom_out;
 	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;
@@ -125,7 +124,7 @@ protected:
 
 	Vector2 snap_point(Vector2 p_target) const;
 
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	void _edit_region();
@@ -156,13 +155,13 @@ protected:
 	void _editor_visiblity_changed();
 
 public:
-	virtual String get_name() const { return "TextureRegion"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	virtual String get_name() const override { return "TextureRegion"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	void set_state(const Dictionary &p_state) override;
+	Dictionary get_state() const override;
 
 	TextureRegionEditorPlugin(EditorNode *p_node);
 };

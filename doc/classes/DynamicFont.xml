@@ -4,7 +4,7 @@
 		DynamicFont renders vector font files at runtime.
 	</brief_description>
 	<description>
-		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths. DynamicFont also supports defining one or more fallbacks fonts, which will be used when displaying a character not supported by the main font.
+		DynamicFont renders vector font files (such as TTF or OTF) dynamically at runtime instead of using a prerendered texture atlas like [BitmapFont]. This trades the faster loading time of [BitmapFont]s for the ability to change font parameters like size and spacing during runtime. [DynamicFontData] is used for referencing the font file paths. DynamicFont also supports defining one or more fallback fonts, which will be used when displaying a character not supported by the main font.
 		DynamicFont uses the [url=https://www.freetype.org/]FreeType[/url] library for rasterization.
 		[codeblock]
 		var dynamic_font = DynamicFont.new()
@@ -12,8 +12,10 @@
 		dynamic_font.size = 64
 		$"Label".set("custom_fonts/font", dynamic_font)
 		[/codeblock]
+		[b]Note:[/b] DynamicFont doesn't support features such as kerning, right-to-left typesetting, ligatures, text shaping, variable fonts and optional font features yet. If you wish to "bake" an optional font feature into a TTF font file, you can use [url=https://fontforge.org/]FontForge[/url] to do so. In FontForge, use [b]File &gt; Generate Fonts[/b], click [b]Options[/b], choose the desired features then generate the font.
 	</description>
 	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="add_fallback">
@@ -23,6 +25,14 @@
 			</argument>
 			<description>
 				Adds a fallback font.
+			</description>
+		</method>
+		<method name="get_available_chars" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns a string containing all the characters available in the main and all the fallback fonts.
+				If a given character is included in more than one font, it appears only once in the returned string.
 			</description>
 		</method>
 		<method name="get_fallback" qualifiers="const">
@@ -87,10 +97,12 @@
 			Extra spacing at the bottom in pixels.
 		</member>
 		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra character spacing in pixels.
+			Extra spacing for each character in pixels.
+			This can be a negative number to make the distance between characters smaller.
 		</member>
 		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra space spacing in pixels.
+			Extra spacing for the space character (in addition to [member extra_spacing_char]) in pixels.
+			This can be a negative number to make the distance between words smaller.
 		</member>
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top in pixels.
@@ -117,10 +129,10 @@
 			Spacing at the bottom.
 		</constant>
 		<constant name="SPACING_CHAR" value="2" enum="SpacingType">
-			Character spacing.
+			Spacing for each character.
 		</constant>
 		<constant name="SPACING_SPACE" value="3" enum="SpacingType">
-			Space spacing.
+			Spacing for the space character.
 		</constant>
 	</constants>
 </class>

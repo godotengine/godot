@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if 0
 /*************************************************************************/
 /*  resource_importer_layered_texture.h                                  */
 /*************************************************************************/
@@ -65,16 +64,24 @@
 #include "core/image.h"
 #include "core/io/resource_importer.h"
 
-
-class StreamTexture;
+class StreamTexture2D;
 
 class ResourceImporterLayeredTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter);
+
 public:
 	enum Mode {
-		MODE_CUBEMAP,
 		MODE_2D_ARRAY,
-		MODE_CUBEMAP_ARRAY
+		MODE_CUBEMAP,
+		MODE_CUBEMAP_ARRAY,
+		MODE_3D,
+	};
+
+	enum CubemapFormat {
+		CUBEMAP_FORMAT_1X6,
+		CUBEMAP_FORMAT_2X3,
+		CUBEMAP_FORMAT_3X2,
+		CUBEMAP_FORMAT_6X1,
 	};
 
 	enum TextureFlags {
@@ -86,46 +93,43 @@ private:
 	static const char *compression_formats[];
 
 protected:
-	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
-	static void _texture_reimport_3d(const Ref<StreamTexture> &p_tex);
-	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
-
 	static ResourceImporterLayeredTexture *singleton;
 
 public:
 	static ResourceImporterLayeredTexture *get_singleton() { return singleton; }
-	virtual String get_importer_name() const;
-	virtual String get_visible_name() const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_save_extension() const;
-	virtual String get_resource_type() const;
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
 
 	enum CompressMode {
 		COMPRESS_LOSSLESS,
-		COMPRESS_VIDEO_RAM,
-		COMPRESS_UNCOMPRESSED
+		COMPRESS_LOSSY,
+		COMPRESS_VRAM_COMPRESSED,
+		COMPRESS_VRAM_UNCOMPRESSED,
+		COMPRESS_BASIS_UNIVERSAL
 	};
 
-	virtual int get_preset_count() const;
-	virtual String get_preset_name(int p_idx) const;
+	virtual int get_preset_count() const override;
+	virtual String get_preset_name(int p_idx) const override;
 
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 
-	void _save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps);
+	void _save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	void update_imports();
 
-	virtual bool are_import_settings_valid(const String &p_path) const;
-	virtual String get_import_settings_string() const;
+	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual String get_import_settings_string() const override;
 
 	void set_mode(Mode p_mode) { mode = p_mode; }
 
 	ResourceImporterLayeredTexture();
 	~ResourceImporterLayeredTexture();
 };
-#endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H
 
-#endif
+#endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H

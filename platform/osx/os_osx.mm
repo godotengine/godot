@@ -60,39 +60,31 @@ public:
 
 		switch (p_type) {
 			case ERR_WARNING:
-				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
-					os_log_info(OS_LOG_DEFAULT,
-							"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
-							err_details, p_function, p_file, p_line);
-				}
+				os_log_info(OS_LOG_DEFAULT,
+						"WARNING: %{public}s\nat: %{public}s (%{public}s:%i)",
+						err_details, p_function, p_file, p_line);
 				logf_error("\E[1;33mWARNING:\E[0;93m %s\n", err_details);
 				logf_error("\E[0;90m     at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SCRIPT:
-				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
-					os_log_error(OS_LOG_DEFAULT,
-							"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-							err_details, p_function, p_file, p_line);
-				}
+				os_log_error(OS_LOG_DEFAULT,
+						"SCRIPT ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+						err_details, p_function, p_file, p_line);
 				logf_error("\E[1;35mSCRIPT ERROR:\E[0;95m %s\n", err_details);
 				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_SHADER:
-				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
-					os_log_error(OS_LOG_DEFAULT,
-							"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-							err_details, p_function, p_file, p_line);
-				}
+				os_log_error(OS_LOG_DEFAULT,
+						"SHADER ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+						err_details, p_function, p_file, p_line);
 				logf_error("\E[1;36mSHADER ERROR:\E[0;96m %s\n", err_details);
 				logf_error("\E[0;90m          at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
 			case ERR_ERROR:
 			default:
-				if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_12) {
-					os_log_error(OS_LOG_DEFAULT,
-							"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
-							err_details, p_function, p_file, p_line);
-				}
+				os_log_error(OS_LOG_DEFAULT,
+						"ERROR: %{public}s\nat: %{public}s (%{public}s:%i)",
+						err_details, p_function, p_file, p_line);
 				logf_error("\E[1;31mERROR:\E[0;91m %s\n", err_details);
 				logf_error("\E[0;90m   at: %s (%s:%i)\E[0m\n", p_function, p_file, p_line);
 				break;
@@ -136,7 +128,7 @@ void OS_OSX::initialize_core() {
 }
 
 void OS_OSX::initialize_joypads() {
-	joypad_osx = memnew(JoypadOSX(InputFilter::get_singleton()));
+	joypad_osx = memnew(JoypadOSX(Input::get_singleton()));
 }
 
 void OS_OSX::initialize() {
@@ -147,14 +139,15 @@ void OS_OSX::initialize() {
 }
 
 void OS_OSX::finalize() {
-
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
 
 	delete_main_loop();
 
-	memdelete(joypad_osx);
+	if (joypad_osx) {
+		memdelete(joypad_osx);
+	}
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -269,10 +262,8 @@ String OS_OSX::get_system_dir(SystemDir p_dir) const {
 
 	String ret;
 	if (found) {
-
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-
 			char *utfs = strdup([[paths firstObject] UTF8String]);
 			ret.parse_utf8(utfs);
 			free(utfs);
@@ -283,7 +274,13 @@ String OS_OSX::get_system_dir(SystemDir p_dir) const {
 }
 
 Error OS_OSX::shell_open(String p_uri) {
-	[[NSWorkspace sharedWorkspace] openURL:[[NSURL alloc] initWithString:[[NSString stringWithUTF8String:p_uri.utf8().get_data()] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]]];
+	NSString *string = [NSString stringWithUTF8String:p_uri.utf8().get_data()];
+	NSURL *uri = [[NSURL alloc] initWithString:string];
+	// Escape special characters in filenames
+	if (!uri || !uri.scheme || [uri.scheme isEqual:@"file"]) {
+		uri = [[NSURL alloc] initWithString:[string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+	}
+	[[NSWorkspace sharedWorkspace] openURL:uri];
 	return OK;
 }
 
@@ -325,7 +322,7 @@ void OS_OSX::run() {
 			}
 			joypad_osx->process_joypads();
 
-			if (Main::iteration() == true) {
+			if (Main::iteration()) {
 				quit = true;
 			}
 		} @catch (NSException *exception) {

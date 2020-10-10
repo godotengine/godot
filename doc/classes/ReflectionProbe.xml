@@ -8,11 +8,17 @@
 		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [GIProbe]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
+		<link title="Reflection probes">https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
+		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="ambient_color_energy" type="float" setter="set_ambient_color_energy" getter="get_ambient_color_energy" default="1.0">
+		</member>
+		<member name="ambient_mode" type="int" setter="set_ambient_mode" getter="get_ambient_mode" enum="ReflectionProbe.AmbientMode" default="1">
+		</member>
 		<member name="box_projection" type="bool" setter="set_enable_box_projection" getter="is_box_projection_enabled" default="false">
 			If [code]true[/code], enables box projection. This makes reflections look more correct in rectangle-shaped rooms by offsetting the reflection center depending on the camera's location.
 		</member>
@@ -28,17 +34,8 @@
 		<member name="intensity" type="float" setter="set_intensity" getter="get_intensity" default="1.0">
 			Defines the reflection intensity. Intensity modulates the strength of the reflection.
 		</member>
-		<member name="interior_ambient_color" type="Color" setter="set_interior_ambient" getter="get_interior_ambient" default="Color( 0, 0, 0, 1 )">
-			Sets the ambient light color to be used when this probe is set to [member interior_enable].
-		</member>
-		<member name="interior_ambient_contrib" type="float" setter="set_interior_ambient_probe_contribution" getter="get_interior_ambient_probe_contribution" default="0.0">
-			Sets the contribution value for how much the reflection affects the ambient light for this reflection probe when set to [member interior_enable]. Useful so that ambient light matches the color of the room.
-		</member>
-		<member name="interior_ambient_energy" type="float" setter="set_interior_ambient_energy" getter="get_interior_ambient_energy" default="1.0">
-			Sets the energy multiplier for this reflection probe's ambient light contribution when set to [member interior_enable].
-		</member>
-		<member name="interior_enable" type="bool" setter="set_as_interior" getter="is_set_as_interior" default="false">
-			If [code]true[/code], reflections will ignore sky contribution. Ambient lighting is then controlled by the [code]interior_ambient_*[/code] properties.
+		<member name="interior" type="bool" setter="set_as_interior" getter="is_set_as_interior" default="false">
+			If [code]true[/code], reflections will ignore sky contribution.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			Sets the max distance away from the probe an object can be before it is culled.
@@ -56,6 +53,12 @@
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
 			Update the probe every frame. This is needed when you want to capture dynamic objects. However, it results in an increased render time. Use [constant UPDATE_ONCE] whenever possible.
+		</constant>
+		<constant name="AMBIENT_DISABLED" value="0" enum="AmbientMode">
+		</constant>
+		<constant name="AMBIENT_ENVIRONMENT" value="1" enum="AmbientMode">
+		</constant>
+		<constant name="AMBIENT_COLOR" value="2" enum="AmbientMode">
 		</constant>
 	</constants>
 </class>

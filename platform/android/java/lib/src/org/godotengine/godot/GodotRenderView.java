@@ -30,10 +30,11 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.input.GodotInputHandler;
+
 import android.view.SurfaceView;
 
 public interface GodotRenderView {
-
 	abstract public SurfaceView getView();
 
 	abstract public void initInputDevices();
@@ -44,4 +45,6 @@ public interface GodotRenderView {
 	abstract public void onActivityResumed();
 
 	abstract public void onBackPressed();
+
+	abstract public GodotInputHandler getInputHandler();
 }

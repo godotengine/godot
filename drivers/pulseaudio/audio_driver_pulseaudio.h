@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef PULSEAUDIO_ENABLED
-
 #ifndef AUDIO_DRIVER_PULSEAUDIO_H
 #define AUDIO_DRIVER_PULSEAUDIO_H
+
+#ifdef PULSEAUDIO_ENABLED
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -40,19 +40,18 @@
 #include <pulse/pulseaudio.h>
 
 class AudioDriverPulseAudio : public AudioDriver {
-
-	Thread *thread;
+	Thread *thread = nullptr;
 	Mutex mutex;
 
-	pa_mainloop *pa_ml;
-	pa_context *pa_ctx;
-	pa_stream *pa_str;
-	pa_stream *pa_rec_str;
+	pa_mainloop *pa_ml = nullptr;
+	pa_context *pa_ctx = nullptr;
+	pa_stream *pa_str = nullptr;
+	pa_stream *pa_rec_str = nullptr;
 	pa_channel_map pa_map;
 	pa_channel_map pa_rec_map;
 
-	String device_name;
-	String new_device;
+	String device_name = "Default";
+	String new_device = "Default";
 	String default_device;
 
 	String capture_device_name;
@@ -62,20 +61,20 @@ class AudioDriverPulseAudio : public AudioDriver {
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
 
-	unsigned int mix_rate;
-	unsigned int buffer_frames;
-	unsigned int pa_buffer_size;
-	int channels;
-	int pa_ready;
-	int pa_status;
+	unsigned int mix_rate = 0;
+	unsigned int buffer_frames = 0;
+	unsigned int pa_buffer_size = 0;
+	int channels = 0;
+	int pa_ready = 0;
+	int pa_status = 0;
 	Array pa_devices;
 	Array pa_rec_devices;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	bool active = false;
+	bool thread_exited = false;
+	mutable bool exit_thread = false;
 
-	float latency;
+	float latency = 0;
 
 	static void pa_state_cb(pa_context *c, void *userdata);
 	static void pa_sink_info_cb(pa_context *c, const pa_sink_info *l, int eol, void *userdata);
@@ -122,9 +121,9 @@ public:
 	virtual Error capture_stop();
 
 	AudioDriverPulseAudio();
-	~AudioDriverPulseAudio();
+	~AudioDriverPulseAudio() {}
 };
 
-#endif // AUDIO_DRIVER_PULSEAUDIO_H
-
 #endif // PULSEAUDIO_ENABLED
+
+#endif // AUDIO_DRIVER_PULSEAUDIO_H

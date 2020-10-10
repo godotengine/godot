@@ -1,12 +1,10 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 section;
@@ -20,7 +18,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
-
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
 
@@ -36,8 +33,7 @@ void main() {
 	}
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -51,19 +47,27 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	bool force_luminance;
 	bool alpha_to_zero;
-	uint pad[2];
-} params;
-
+	bool srgb;
+	uint pad;
+}
+params;
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_color;
-
+#ifdef MODE_TWO_SOURCES
+layout(set = 1, binding = 0) uniform sampler2D source_color2;
+#endif
 layout(location = 0) out vec4 frag_color;
 
-void main() {
+vec3 linear_to_srgb(vec3 color) {
+	//if going to srgb, clamp from 0 to 1.
+	color = clamp(color, vec3(0.0), vec3(1.0));
+	const vec3 a = vec3(0.055f);
+	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
+}
 
+void main() {
 	vec2 uv = uv_interp;
 
 #ifdef MODE_PANORAMA_TO_DP
@@ -83,8 +87,9 @@ void main() {
 
 	vec2 st = vec2(atan(normal.x, normal.z), acos(normal.y));
 
-	if (st.x < 0.0)
+	if (st.x < 0.0) {
 		st.x += M_PI * 2.0;
+	}
 
 	uv = st / vec2(M_PI * 2.0, M_PI);
 
@@ -94,11 +99,17 @@ void main() {
 	}
 #endif
 	vec4 color = textureLod(source_color, uv, 0.0);
+#ifdef MODE_TWO_SOURCES
+	color += textureLod(source_color2, uv, 0.0);
+#endif
 	if (params.force_luminance) {
 		color.rgb = vec3(max(max(color.r, color.g), color.b));
 	}
 	if (params.alpha_to_zero) {
 		color.rgb *= color.a;
+	}
+	if (params.srgb) {
+		color.rgb = linear_to_srgb(color.rgb);
 	}
 	frag_color = color;
 }

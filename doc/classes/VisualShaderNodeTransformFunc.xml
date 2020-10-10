@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTransformFunc" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Computes a [Transform] function within the visual shader graph.
 	</brief_description>
 	<description>
+		Computes an inverse or transpose function on the provided [Transform].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,12 +12,15 @@
 	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeTransformFunc.Function" default="0">
+			The function to be computed. See [enum Function] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="FUNC_INVERSE" value="0" enum="Function">
+			Perform the inverse operation on the [Transform] matrix.
 		</constant>
 		<constant name="FUNC_TRANSPOSE" value="1" enum="Function">
+			Perform the transpose operation on the [Transform] matrix.
 		</constant>
 	</constants>
 </class>

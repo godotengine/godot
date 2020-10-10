@@ -36,9 +36,8 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
-
 #if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
+	// MoltenVK - enable full component swizzling support
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 #endif
 
@@ -60,6 +59,9 @@ int main(int argc, char **argv) {
 
 	OS_OSX os;
 	Error err;
+
+	// We must override main when testing is enabled
+	TEST_MAIN_OVERRIDE
 
 	if (os.open_with_filename != "") {
 		char *argv_c = (char *)malloc(os.open_with_filename.utf8().size());

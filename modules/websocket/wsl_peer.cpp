@@ -60,8 +60,9 @@ String WSLPeer::compute_key_response(String p_key) {
 }
 
 void WSLPeer::_wsl_destroy(struct PeerData **p_data) {
-	if (!p_data || !(*p_data))
+	if (!p_data || !(*p_data)) {
 		return;
+	}
 	struct PeerData *data = *p_data;
 	if (data->polling) {
 		data->destroy = true;
@@ -147,8 +148,9 @@ void wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct wslay_event
 	}
 	WSLPeer *peer = (WSLPeer *)peer_data->peer;
 
-	if (peer->parse_message(arg) != OK)
+	if (peer->parse_message(arg) != OK) {
 		return;
+	}
 
 	if (peer_data->is_server) {
 		WSLServer *helper = (WSLServer *)peer_data->obj;
@@ -209,10 +211,11 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	_data->peer = this;
 	_data->valid = true;
 
-	if (_data->is_server)
+	if (_data->is_server) {
 		wslay_event_context_server_init(&(_data->ctx), &wsl_callbacks, _data);
-	else
+	} else {
 		wslay_event_context_client_init(&(_data->ctx), &wsl_callbacks, _data);
+	}
 	wslay_event_config_set_max_recv_msg_length(_data->ctx, (1ULL << p_in_buf_size));
 }
 
@@ -225,8 +228,9 @@ WSLPeer::WriteMode WSLPeer::get_write_mode() const {
 }
 
 void WSLPeer::poll() {
-	if (!_data)
+	if (!_data) {
 		return;
+	}
 
 	if (_wsl_poll(_data)) {
 		_data = nullptr;
@@ -234,7 +238,6 @@ void WSLPeer::poll() {
 }
 
 Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 
 	struct wslay_event_msg msg; // Should I use fragmented?
@@ -251,13 +254,13 @@ Error WSLPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 }
 
 Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-
 	r_buffer_size = 0;
 
 	ERR_FAIL_COND_V(!is_connected_to_host(), FAILED);
 
-	if (_in_buffer.packets_left() == 0)
+	if (_in_buffer.packets_left() == 0) {
 		return ERR_UNAVAILABLE;
+	}
 
 	int read = 0;
 	uint8_t *rw = _packet_buffer.ptrw();
@@ -270,20 +273,18 @@ Error WSLPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 }
 
 int WSLPeer::get_available_packet_count() const {
-
-	if (!is_connected_to_host())
+	if (!is_connected_to_host()) {
 		return 0;
+	}
 
 	return _in_buffer.packets_left();
 }
 
 bool WSLPeer::was_string_packet() const {
-
 	return _is_string;
 }
 
 bool WSLPeer::is_connected_to_host() const {
-
 	return _data != nullptr;
 }
 
@@ -305,28 +306,26 @@ void WSLPeer::close(int p_code, String p_reason) {
 }
 
 IP_Address WSLPeer::get_connected_host() const {
-
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IP_Address());
 
 	return _data->tcp->get_connected_host();
 }
 
 uint16_t WSLPeer::get_connected_port() const {
-
 	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
 	return _data->tcp->get_connected_port();
 }
 
 void WSLPeer::set_no_delay(bool p_enabled) {
-
 	ERR_FAIL_COND(!is_connected_to_host() || _data->tcp.is_null());
 	_data->tcp->set_no_delay(p_enabled);
 }
 
 void WSLPeer::invalidate() {
-	if (_data)
+	if (_data) {
 		_data->valid = false;
+	}
 }
 
 WSLPeer::WSLPeer() {
@@ -337,7 +336,6 @@ WSLPeer::WSLPeer() {
 }
 
 WSLPeer::~WSLPeer() {
-
 	close();
 	invalidate();
 	_wsl_destroy(&_data);

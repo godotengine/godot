@@ -39,6 +39,7 @@
 
 #include "core/cowdata.h"
 #include "core/error_macros.h"
+#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/sort_array.h"
 
@@ -69,7 +70,9 @@ public:
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
 		int idx = find(p_val);
-		if (idx >= 0) remove(idx);
+		if (idx >= 0) {
+			remove(idx);
+		}
 	}
 	void invert();
 
@@ -79,7 +82,7 @@ public:
 	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
 	_FORCE_INLINE_ T get(int p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const T get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
@@ -89,12 +92,16 @@ public:
 
 	void append_array(Vector<T> p_other);
 
+	bool has(const T &p_val) {
+		return find(p_val, 0) != -1;
+	}
+
 	template <class C>
 	void sort_custom() {
-
 		int len = _cowdata.size();
-		if (len == 0)
+		if (len == 0) {
 			return;
+		}
 
 		T *data = ptrw();
 		SortArray<T, C> sorter;
@@ -102,30 +109,32 @@ public:
 	}
 
 	void sort() {
-
 		sort_custom<_DefaultComparator<T>>();
 	}
 
 	void ordered_insert(const T &p_val) {
 		int i;
 		for (i = 0; i < _cowdata.size(); i++) {
-
 			if (p_val < operator[](i)) {
 				break;
-			};
-		};
+			}
+		}
 		insert(i, p_val);
 	}
 
-	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 	inline Vector &operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
 		return *this;
 	}
 
-	Vector<T> subarray(int p_from, int p_to) const {
+	Vector<uint8_t> to_byte_array() const {
+		Vector<uint8_t> ret;
+		ret.resize(size() * sizeof(T));
+		copymem(ret.ptrw(), ptr(), sizeof(T) * size());
+		return ret;
+	}
 
+	Vector<T> subarray(int p_from, int p_to) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
 		}
@@ -148,12 +157,14 @@ public:
 		return slice;
 	}
 
+	_FORCE_INLINE_ Vector() {}
+	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+
 	_FORCE_INLINE_ ~Vector() {}
 };
 
 template <class T>
 void Vector<T>::invert() {
-
 	for (int i = 0; i < size() / 2; i++) {
 		T *p = ptrw();
 		SWAP(p[i], p[size() - i - 1]);
@@ -163,17 +174,18 @@ void Vector<T>::invert() {
 template <class T>
 void Vector<T>::append_array(Vector<T> p_other) {
 	const int ds = p_other.size();
-	if (ds == 0)
+	if (ds == 0) {
 		return;
+	}
 	const int bs = size();
 	resize(bs + ds);
-	for (int i = 0; i < ds; ++i)
+	for (int i = 0; i < ds; ++i) {
 		ptrw()[bs + i] = p_other[i];
+	}
 }
 
 template <class T>
 bool Vector<T>::push_back(T p_elem) {
-
 	Error err = resize(size() + 1);
 	ERR_FAIL_COND_V(err, true);
 	set(size() - 1, p_elem);

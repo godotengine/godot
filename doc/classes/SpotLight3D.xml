@@ -7,11 +7,14 @@
 		A Spotlight is a type of [Light3D] node that emits lights in a specific direction, in the shape of a cone. The light is attenuated through the distance. This attenuation can be configured by changing the energy, radius and attenuation parameters of [Light3D].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.02" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" override="true" default="1.0" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
 		</member>
@@ -22,7 +25,7 @@
 			The spotlight's light energy attenuation curve.
 		</member>
 		<member name="spot_range" type="float" setter="set_param" getter="get_param" default="5.0">
-			The maximal range that can be reached by the spotlight.
+			The maximal range that can be reached by the spotlight. Note that the effectively lit area may appear to be smaller depending on the [member spot_attenuation] in use. No matter the [member spot_attenuation] in use, the light will never reach anything outside this range.
 		</member>
 	</members>
 	<constants>

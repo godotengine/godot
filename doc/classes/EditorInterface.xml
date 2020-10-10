@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		EditorInterface gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorPlugin.get_editor_interface].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,13 +23,14 @@
 			<return type="Control">
 			</return>
 			<description>
-				Returns the main container of Godot editor's window. You can use it, for example, to retrieve the size of the container and place your controls accordingly.
+				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the current path being viewed in the [FileSystemDock].
 			</description>
 		</method>
 		<method name="get_edited_scene_root">
@@ -42,26 +44,29 @@
 			<return type="EditorSettings">
 			</return>
 			<description>
-				Returns the [EditorSettings].
+				Returns the editor's [EditorSettings] instance.
 			</description>
 		</method>
 		<method name="get_editor_viewport">
 			<return type="Control">
 			</return>
 			<description>
-				Returns the editor [Viewport].
+				Returns the main editor control. Use this as a parent for main screens.
+				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
 			</description>
 		</method>
 		<method name="get_file_system_dock">
 			<return type="FileSystemDock">
 			</return>
 			<description>
+				Returns the editor's [FileSystemDock] instance.
 			</description>
 		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector">
 			</return>
 			<description>
+				Returns the editor's [EditorInspector] instance.
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
@@ -71,38 +76,46 @@
 				Returns an [Array] with the file paths of the currently opened scenes.
 			</description>
 		</method>
+		<method name="get_playing_scene" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the name of the scene that is being played. If no scene is currently being played, returns an empty string.
+			</description>
+		</method>
 		<method name="get_resource_filesystem">
 			<return type="EditorFileSystem">
 			</return>
 			<description>
-				Returns the [EditorFileSystem].
+				Returns the editor's [EditorFileSystem] instance.
 			</description>
 		</method>
 		<method name="get_resource_previewer">
 			<return type="EditorResourcePreview">
 			</return>
 			<description>
-				Returns the [EditorResourcePreview].
+				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
 		<method name="get_script_editor">
 			<return type="ScriptEditor">
 			</return>
 			<description>
-				Returns the [ScriptEditor].
+				Returns the editor's [ScriptEditor] instance.
 			</description>
 		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
 			</description>
 		</method>
 		<method name="get_selection">
 			<return type="EditorSelection">
 			</return>
 			<description>
-				Returns the [EditorSelection].
+				Returns the editor's [EditorSelection] instance.
 			</description>
 		</method>
 		<method name="inspect_object">
@@ -112,8 +125,17 @@
 			</argument>
 			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="2" name="inspector_only" type="bool" default="false">
+			</argument>
 			<description>
-				Shows the given property on the given [code]object[/code] in the Editor's Inspector dock.
+				Shows the given property on the given [code]object[/code] in the editor's Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins will not attempt to edit [code]object[/code].
+			</description>
+		</method>
+		<method name="is_playing_scene" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if a scene is currently being played, [code]false[/code] otherwise. Paused scenes are considered as being played.
 			</description>
 		</method>
 		<method name="is_plugin_enabled" qualifiers="const">
@@ -122,7 +144,7 @@
 			<argument index="0" name="plugin" type="String">
 			</argument>
 			<description>
-				Returns the enabled status of a plugin. The plugin name is the same as its directory name.
+				Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. The plugin name is the same as its directory name.
 			</description>
 		</method>
 		<method name="make_mesh_previews">
@@ -143,6 +165,29 @@
 			</argument>
 			<description>
 				Opens the scene at the given path.
+			</description>
+		</method>
+		<method name="play_current_scene">
+			<return type="void">
+			</return>
+			<description>
+				Plays the currently active scene.
+			</description>
+		</method>
+		<method name="play_custom_scene">
+			<return type="void">
+			</return>
+			<argument index="0" name="scene_filepath" type="String">
+			</argument>
+			<description>
+				Plays the scene specified by its filepath.
+			</description>
+		</method>
+		<method name="play_main_scene">
+			<return type="void">
+			</return>
+			<description>
+				Plays the main scene.
 			</description>
 		</method>
 		<method name="reload_scene_from_path">
@@ -181,20 +226,13 @@
 				Selects the file, with the path provided by [code]file[/code], in the FileSystem dock.
 			</description>
 		</method>
-		<method name="set_distraction_free_mode">
-			<return type="void">
-			</return>
-			<argument index="0" name="enter" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_main_screen_editor">
 			<return type="void">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
+				Sets the editor's current main screen to the one specified in [code]name[/code]. [code]name[/code] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
 			</description>
 		</method>
 		<method name="set_plugin_enabled">
@@ -208,7 +246,19 @@
 				Sets the enabled status of a plugin. The plugin name is the same as its directory name.
 			</description>
 		</method>
+		<method name="stop_playing_scene">
+			<return type="void">
+			</return>
+			<description>
+				Stops the scene that is currently playing.
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="distraction_free_mode" type="bool" setter="set_distraction_free_mode" getter="is_distraction_free_mode_enabled">
+			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

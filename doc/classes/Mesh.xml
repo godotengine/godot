@@ -7,6 +7,10 @@
 		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
 	</description>
 	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="create_convex_shape" qualifiers="const">
@@ -44,7 +48,7 @@
 			<return type="AABB">
 			</return>
 			<description>
-				Returns the smallest [AABB] enclosing this mesh. Not affected by [code]custom_aabb[/code].
+				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code]. See also [method VisualInstance3D.get_transformed_aabb].
 				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
 			</description>
 		</method>
@@ -102,7 +106,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
+		<member name="lightmap_size_hint" type="Vector2i" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2i( 0, 0 )">
 			Sets a hint to be used for lightmap resolution.
 		</member>
 	</members>

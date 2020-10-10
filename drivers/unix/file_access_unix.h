@@ -41,11 +41,10 @@
 typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 
 class FileAccessUnix : public FileAccess {
-
-	FILE *f;
-	int flags;
+	FILE *f = nullptr;
+	int flags = 0;
 	void check_errors() const;
-	mutable Error last_error;
+	mutable Error last_error = OK;
 	String save_path;
 	String path;
 	String path_src;
@@ -84,7 +83,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	FileAccessUnix();
+	FileAccessUnix() {}
 	virtual ~FileAccessUnix();
 };
 

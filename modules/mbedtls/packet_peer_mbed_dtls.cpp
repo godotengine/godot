@@ -35,8 +35,9 @@
 #include "core/os/file_access.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
-
-	if (buf == nullptr || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) {
+		return 0;
+	}
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
@@ -52,8 +53,9 @@ int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len
 }
 
 int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
-
-	if (buf == nullptr || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) {
+		return 0;
+	}
 
 	PacketPeerMbedDTLS *sp = (PacketPeerMbedDTLS *)ctx;
 
@@ -77,7 +79,6 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 }
 
 void PacketPeerMbedDTLS::_cleanup() {
-
 	ssl_ctx->clear();
 	base = Ref<PacketPeer>();
 	status = STATUS_DISCONNECTED;
@@ -114,7 +115,6 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 }
 
 Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs, const String &p_for_hostname, Ref<X509Certificate> p_ca_certs) {
-
 	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_connected_to_host(), ERR_INVALID_PARAMETER);
 
 	base = p_base;
@@ -139,7 +139,6 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 }
 
 Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
-
 	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
 	ERR_FAIL_COND_V(err != OK, err);
 
@@ -168,11 +167,11 @@ Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> 
 }
 
 Error PacketPeerMbedDTLS::put_packet(const uint8_t *p_buffer, int p_bytes) {
-
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
-	if (p_bytes == 0)
+	if (p_bytes == 0) {
 		return OK;
+	}
 
 	int ret = mbedtls_ssl_write(ssl_ctx->get_context(), p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -187,7 +186,6 @@ Error PacketPeerMbedDTLS::put_packet(const uint8_t *p_buffer, int p_bytes) {
 }
 
 Error PacketPeerMbedDTLS::get_packet(const uint8_t **r_buffer, int &r_bytes) {
-
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	r_bytes = 0;
@@ -213,7 +211,6 @@ Error PacketPeerMbedDTLS::get_packet(const uint8_t **r_buffer, int &r_bytes) {
 }
 
 void PacketPeerMbedDTLS::poll() {
-
 	if (status == STATUS_HANDSHAKING) {
 		_do_handshake();
 		return;
@@ -238,19 +235,16 @@ void PacketPeerMbedDTLS::poll() {
 }
 
 int PacketPeerMbedDTLS::get_available_packet_count() const {
-
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
 	return mbedtls_ssl_get_bytes_avail(&(ssl_ctx->ssl)) > 0 ? 1 : 0;
 }
 
 int PacketPeerMbedDTLS::get_max_packet_size() const {
-
 	return 488; // 512 (UDP in Godot) - 24 (DTLS header)
 }
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
-
 	ssl_ctx.instance();
 	status = STATUS_DISCONNECTED;
 }
@@ -260,33 +254,30 @@ PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {
 }
 
 void PacketPeerMbedDTLS::disconnect_from_peer() {
-
-	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING)
+	if (status != STATUS_CONNECTED && status != STATUS_HANDSHAKING) {
 		return;
+	}
 
 	if (status == STATUS_CONNECTED) {
 		int ret = 0;
 		// Send SSL close notification, blocking, but ignore other errors.
-		do
+		do {
 			ret = mbedtls_ssl_close_notify(ssl_ctx->get_context());
-		while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
+		} while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 	}
 
 	_cleanup();
 }
 
 PacketPeerMbedDTLS::Status PacketPeerMbedDTLS::get_status() const {
-
 	return status;
 }
 
 PacketPeerDTLS *PacketPeerMbedDTLS::_create_func() {
-
 	return memnew(PacketPeerMbedDTLS);
 }
 
 void PacketPeerMbedDTLS::initialize_dtls() {
-
 	_create = _create_func;
 	available = true;
 }

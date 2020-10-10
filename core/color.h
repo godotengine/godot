@@ -35,16 +35,14 @@
 #include "core/ustring.h"
 
 struct Color {
-
 	union {
-
 		struct {
 			float r;
 			float g;
 			float b;
 			float a;
 		};
-		float components[4];
+		float components[4] = { 0, 0, 0, 1.0 };
 	};
 
 	bool operator==(const Color &p_color) const { return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a); }
@@ -97,8 +95,7 @@ struct Color {
 	Color inverted() const;
 	Color contrasted() const;
 
-	_FORCE_INLINE_ Color linear_interpolate(const Color &p_b, float p_t) const {
-
+	_FORCE_INLINE_ Color lerp(const Color &p_b, float p_t) const {
 		Color res = *this;
 
 		res.r += (p_t * (p_b.r - r));
@@ -110,7 +107,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color darkened(float p_amount) const {
-
 		Color res = *this;
 		res.r = res.r * (1.0f - p_amount);
 		res.g = res.g * (1.0f - p_amount);
@@ -119,7 +115,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color lightened(float p_amount) const {
-
 		Color res = *this;
 		res.r = res.r + (1.0f - res.r) * p_amount;
 		res.g = res.g + (1.0f - res.g) * p_amount;
@@ -128,7 +123,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
-
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
 		//const float Emax = 31.0f;
@@ -162,7 +156,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
-
 		Color res;
 		float sa = 1.0 - p_over.a;
 		res.a = a * sa + p_over.a;
@@ -177,7 +170,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color to_linear() const {
-
 		return Color(
 				r < 0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
@@ -185,7 +177,6 @@ struct Color {
 				a);
 	}
 	_FORCE_INLINE_ Color to_srgb() const {
-
 		return Color(
 				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
 				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
@@ -194,7 +185,7 @@ struct Color {
 
 	static Color hex(uint32_t p_hex);
 	static Color hex64(uint64_t p_hex);
-	static Color html(const String &p_color);
+	static Color html(const String &p_rgba);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
 	String to_html(bool p_alpha = true) const;
@@ -204,15 +195,7 @@ struct Color {
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
 	operator String() const;
 
-	/**
-	 * No construct parameters, r=0, g=0, b=0. a=255
-	 */
-	_FORCE_INLINE_ Color() {
-		r = 0;
-		g = 0;
-		b = 0;
-		a = 1.0;
-	}
+	_FORCE_INLINE_ Color() {}
 
 	/**
 	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0
@@ -223,20 +206,36 @@ struct Color {
 		b = p_b;
 		a = p_a;
 	}
+
+	/**
+	 * Construct a Color from another Color, but with the specified alpha value.
+	 */
+	_FORCE_INLINE_ Color(const Color &p_c, float p_a) {
+		r = p_c.r;
+		g = p_c.g;
+		b = p_c.b;
+		a = p_a;
+	}
 };
 
 bool Color::operator<(const Color &p_color) const {
-
 	if (r == p_color.r) {
 		if (g == p_color.g) {
 			if (b == p_color.b) {
 				return (a < p_color.a);
-			} else
+			} else {
 				return (b < p_color.b);
-		} else
+			}
+		} else {
 			return g < p_color.g;
-	} else
+		}
+	} else {
 		return r < p_color.r;
+	}
+}
+
+_FORCE_INLINE_ Color operator*(const real_t &p_real, const Color &p_color) {
+	return p_color * p_real;
 }
 
 #endif // COLOR_H

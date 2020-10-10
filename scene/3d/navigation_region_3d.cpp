@@ -36,21 +36,19 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
-
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
-
 		NavigationServer3D::get_singleton()->region_set_map(region, RID());
 	} else {
-
 		if (navigation) {
-
 			NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
 		}
 	}
@@ -68,25 +66,19 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 }
 
 bool NavigationRegion3D::is_enabled() const {
-
 	return enabled;
 }
 
 /////////////////////////////
 
 void NavigationRegion3D::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			Node3D *c = this;
 			while (c) {
-
 				navigation = Object::cast_to<Navigation3D>(c);
 				if (navigation) {
-
 					if (enabled) {
-
 						NavigationServer3D::get_singleton()->region_set_map(region, navigation->get_rid());
 					}
 					break;
@@ -96,7 +88,6 @@ void NavigationRegion3D::_notification(int p_what) {
 			}
 
 			if (navmesh.is_valid() && get_tree()->is_debugging_navigation_hint()) {
-
 				MeshInstance3D *dm = memnew(MeshInstance3D);
 				dm->set_mesh(navmesh->get_debug_mesh());
 				if (is_enabled()) {
@@ -110,14 +101,11 @@ void NavigationRegion3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			if (navigation) {
-
 				NavigationServer3D::get_singleton()->region_set_map(region, RID());
 			}
 
@@ -131,9 +119,9 @@ void NavigationRegion3D::_notification(int p_what) {
 }
 
 void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
-
-	if (p_navmesh == navmesh)
+	if (p_navmesh == navmesh) {
 		return;
+	}
 
 	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
@@ -158,7 +146,6 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 }
 
 Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
-
 	return navmesh;
 }
 
@@ -176,7 +163,6 @@ void _bake_navigation_mesh(void *p_user_data) {
 		args->nav_region->call_deferred("_bake_finished", nav_mesh);
 		memdelete(args);
 	} else {
-
 		ERR_PRINT("Can't bake the navigation mesh if the `NavigationMesh` resource doesn't exist");
 		args->nav_region->call_deferred("_bake_finished", Ref<NavigationMesh>());
 		memdelete(args);
@@ -199,27 +185,35 @@ void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 }
 
 String NavigationRegion3D::get_configuration_warning() const {
-
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
+
+	String warning = Node3D::get_configuration_warning();
 
 	if (!navmesh.is_valid()) {
-		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
+
 	const Node3D *c = this;
 	while (c) {
-
-		if (Object::cast_to<Navigation3D>(c))
-			return String();
+		if (Object::cast_to<Navigation3D>(c)) {
+			return warning;
+		}
 
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
 
-	return TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
+	if (!warning.empty()) {
+		warning += "\n\n";
+	}
+	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
 }
 
 void NavigationRegion3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation_mesh", "navmesh"), &NavigationRegion3D::set_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_navigation_mesh"), &NavigationRegion3D::get_navigation_mesh);
 
@@ -242,18 +236,13 @@ void NavigationRegion3D::_changed_callback(Object *p_changed, const char *p_prop
 }
 
 NavigationRegion3D::NavigationRegion3D() {
-
-	enabled = true;
 	set_notify_transform(true);
 	region = NavigationServer3D::get_singleton()->region_create();
-
-	navigation = nullptr;
-	debug_view = nullptr;
-	bake_thread = nullptr;
 }
 
 NavigationRegion3D::~NavigationRegion3D() {
-	if (navmesh.is_valid())
+	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
+	}
 	NavigationServer3D::get_singleton()->free(region);
 }

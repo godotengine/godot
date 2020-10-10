@@ -76,9 +76,7 @@ bool RootMotionView::get_zero_y() const {
 }
 
 void RootMotionView::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		RS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
 		first = true;
 	}
@@ -87,7 +85,6 @@ void RootMotionView::_notification(int p_what) {
 		Transform transform;
 
 		if (has_node(path)) {
-
 			Node *node = get_node(path);
 
 			AnimationTree *tree = Object::cast_to<AnimationTree>(node);
@@ -129,7 +126,6 @@ void RootMotionView::_notification(int p_what) {
 		RS::get_singleton()->immediate_begin(immediate, RS::PRIMITIVE_LINES);
 		for (int i = -cells_in_radius; i < cells_in_radius; i++) {
 			for (int j = -cells_in_radius; j < cells_in_radius; j++) {
-
 				Vector3 from(i * cell_size, 0, j * cell_size);
 				Vector3 from_i((i + 1) * cell_size, 0, j * cell_size);
 				Vector3 from_j(i * cell_size, 0, (j + 1) * cell_size);
@@ -161,15 +157,14 @@ void RootMotionView::_notification(int p_what) {
 }
 
 AABB RootMotionView::get_aabb() const {
-
 	return AABB(Vector3(-radius, 0, -radius), Vector3(radius * 2, 0.001, radius * 2));
 }
+
 Vector<Face3> RootMotionView::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
 void RootMotionView::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_animation_path", "path"), &RootMotionView::set_animation_path);
 	ClassDB::bind_method(D_METHOD("get_animation_path"), &RootMotionView::get_animation_path);
 

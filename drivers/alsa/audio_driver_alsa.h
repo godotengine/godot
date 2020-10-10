@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ALSA_ENABLED
-
 #ifndef AUDIO_DRIVER_ALSA_H
 #define AUDIO_DRIVER_ALSA_H
+
+#ifdef ALSA_ENABLED
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -40,14 +40,13 @@
 #include <alsa/asoundlib.h>
 
 class AudioDriverALSA : public AudioDriver {
-
-	Thread *thread;
+	Thread *thread = nullptr;
 	Mutex mutex;
 
-	snd_pcm_t *pcm_handle;
+	snd_pcm_t *pcm_handle = nullptr;
 
-	String device_name;
-	String new_device;
+	String device_name = "Default";
+	String new_device = "Default";
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
@@ -85,10 +84,10 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
-	AudioDriverALSA();
-	~AudioDriverALSA();
+	AudioDriverALSA() {}
+	~AudioDriverALSA() {}
 };
 
-#endif // AUDIO_DRIVER_ALSA_H
-
 #endif // ALSA_ENABLED
+
+#endif // AUDIO_DRIVER_ALSA_H

@@ -68,7 +68,6 @@ void WebRTCDataChannelJS::_on_error() {
 }
 
 void WebRTCDataChannelJS::_on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
-
 	ERR_FAIL_COND_MSG(in_buffer.space_left() < (int)(p_size + 5), "Buffer full! Dropping data.");
 
 	uint8_t is_string = p_is_string ? 1 : 0;
@@ -312,14 +311,14 @@ WebRTCDataChannelJS::WebRTCDataChannelJS(int js_id) {
 				return;
 			}
 			var len = buffer.length*buffer.BYTES_PER_ELEMENT;
-			var out = Module._malloc(len);
-			Module.HEAPU8.set(buffer, out);
+			var out = _malloc(len);
+			HEAPU8.set(buffer, out);
 			ccall("_emrtc_on_ch_message",
 				"void",
 				["number", "number", "number", "number"],
 				[c_ptr, out, len, is_string]
 			);
-			Module._free(out);
+			_free(out);
 		}
 
 	}, this, js_id);

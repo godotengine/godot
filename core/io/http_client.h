@@ -37,7 +37,6 @@
 #include "core/reference.h"
 
 class HTTPClient : public Reference {
-
 	GDCLASS(HTTPClient, Reference);
 
 public:
@@ -158,32 +157,32 @@ private:
 	};
 
 #ifndef JAVASCRIPT_ENABLED
-	Status status;
-	IP::ResolverID resolving;
-	int conn_port;
+	Status status = STATUS_DISCONNECTED;
+	IP::ResolverID resolving = IP::RESOLVER_INVALID_ID;
+	int conn_port = -1;
 	String conn_host;
-	bool ssl;
-	bool ssl_verify_host;
-	bool blocking;
-	bool handshaking;
-	bool head_request;
+	bool ssl = false;
+	bool ssl_verify_host = false;
+	bool blocking = false;
+	bool handshaking = false;
+	bool head_request = false;
 
 	Vector<uint8_t> response_str;
 
-	bool chunked;
+	bool chunked = false;
 	Vector<uint8_t> chunk;
-	int chunk_left;
-	bool chunk_trailer_part;
-	int body_size;
-	int body_left;
-	bool read_until_eof;
+	int chunk_left = 0;
+	bool chunk_trailer_part = false;
+	int body_size = -1;
+	int body_left = 0;
+	bool read_until_eof = false;
 
 	Ref<StreamPeerTCP> tcp_connection;
 	Ref<StreamPeer> connection;
 
-	int response_num;
+	int response_num = 0;
 	Vector<String> response_headers;
-	int read_chunk_size;
+	int read_chunk_size = 4096;
 
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 

@@ -45,13 +45,11 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/texture_progress.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
-
 	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture2D> disabled_vu;
@@ -93,6 +91,7 @@ class EditorAudioBus : public PanelContainer {
 	mutable bool hovering_drop;
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 	void _bus_popup_pressed(int p_option);
 
 	void _name_changed(const String &p_new_name);
@@ -113,9 +112,9 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_rmb(const Vector2 &p_pos);
 	void _update_visible_channels();
 
-	virtual Variant get_drag_data(const Point2 &p_point);
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -137,11 +136,10 @@ public:
 };
 
 class EditorAudioBusDrop : public Control {
-
 	GDCLASS(EditorAudioBusDrop, Control);
 
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	mutable bool hovering_drop;
 
@@ -154,7 +152,6 @@ public:
 };
 
 class EditorAudioBuses : public VBoxContainer {
-
 	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
@@ -233,7 +230,7 @@ private:
 			render_db_value = n.render_db_value;
 		}
 
-		_FORCE_INLINE_ AudioNotch operator=(const EditorAudioMeterNotches::AudioNotch &n) {
+		_FORCE_INLINE_ AudioNotch &operator=(const EditorAudioMeterNotches::AudioNotch &n) {
 			relative_position = n.relative_position;
 			db_value = n.db_value;
 			render_db_value = n.render_db_value;
@@ -246,14 +243,14 @@ private:
 	List<AudioNotch> notches;
 
 public:
-	float line_length;
-	float label_space;
-	float btm_padding;
-	float top_padding;
+	float line_length = 5.0f;
+	float label_space = 2.0f;
+	float btm_padding = 9.0f;
+	float top_padding = 5.0f;
 	Color notch_color;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 private:
 	static void _bind_methods();
@@ -265,17 +262,16 @@ public:
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioBusesEditorPlugin, EditorPlugin);
 
 	EditorAudioBuses *audio_bus_editor;
 
 public:
-	virtual String get_name() const { return "SampleLibrary"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "SampleLibrary"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
 	~AudioBusesEditorPlugin();

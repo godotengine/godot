@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -42,7 +42,9 @@
 #include "arkit_session_delegate.h"
 
 // just a dirty workaround for now, declare these as globals. I'll probably encapsulate ARSession and associated logic into an mm object and change ARKitInterface to a normal cpp object that consumes it.
+API_AVAILABLE(ios(11.0))
 ARSession *ar_session;
+
 ARKitSessionDelegate *ar_delegate;
 NSTimeInterval last_timestamp;
 
@@ -55,22 +57,28 @@ void ARKitInterface::start_session() {
 	if (initialized) {
 		print_line("Starting ARKit session");
 
-		Class ARWorldTrackingConfigurationClass = NSClassFromString(@"ARWorldTrackingConfiguration");
-		ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfigurationClass new];
+		if (@available(iOS 11, *)) {
+			Class ARWorldTrackingConfigurationClass = NSClassFromString(@"ARWorldTrackingConfiguration");
+			ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfigurationClass new];
 
-		configuration.lightEstimationEnabled = light_estimation_is_enabled;
-		if (plane_detection_is_enabled) {
-			configuration.planeDetection = ARPlaneDetectionVertical | ARPlaneDetectionHorizontal;
-		} else {
-			configuration.planeDetection = 0;
+			configuration.lightEstimationEnabled = light_estimation_is_enabled;
+			if (plane_detection_is_enabled) {
+				if (@available(iOS 11.3, *)) {
+					configuration.planeDetection = ARPlaneDetectionVertical | ARPlaneDetectionHorizontal;
+				} else {
+					configuration.planeDetection = ARPlaneDetectionHorizontal;
+				}
+			} else {
+				configuration.planeDetection = 0;
+			}
+
+			// make sure our camera is on
+			if (feed.is_valid()) {
+				feed->set_active(true);
+			}
+
+			[ar_session runWithConfiguration:configuration];
 		}
-
-		// make sure our camera is on
-		if (feed.is_valid()) {
-			feed->set_active(true);
-		}
-
-		[ar_session runWithConfiguration:configuration];
 	}
 }
 
@@ -84,7 +92,9 @@ void ARKitInterface::stop_session() {
 			feed->set_active(false);
 		}
 
-		[ar_session pause];
+		if (@available(iOS 11.0, *)) {
+			[ar_session pause];
+		}
 	}
 }
 
@@ -92,12 +102,12 @@ void ARKitInterface::notification(int p_what) {
 	// TODO, this is not being called, need to find out why, possibly because this is not a node.
 	// in that case we need to find a way to get these notifications!
 	switch (p_what) {
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case DisplayServer::WINDOW_EVENT_FOCUS_IN: {
 			print_line("Focus in");
 
 			start_session();
 		}; break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case DisplayServer::WINDOW_EVENT_FOCUS_OUT: {
 			print_line("Focus out");
 
 			stop_session();
@@ -162,37 +172,42 @@ int ARKitInterface::get_capabilities() const {
 }
 
 Array ARKitInterface::raycast(Vector2 p_screen_coord) {
-	Array arr;
-	Size2 screen_size = OS::get_singleton()->get_window_size();
-	CGPoint point;
-	point.x = p_screen_coord.x / screen_size.x;
-	point.y = p_screen_coord.y / screen_size.y;
+	if (@available(iOS 11, *)) {
+		Array arr;
+		Size2 screen_size = DisplayServer::get_singleton()->screen_get_size();
+		CGPoint point;
+		point.x = p_screen_coord.x / screen_size.x;
+		point.y = p_screen_coord.y / screen_size.y;
 
-	///@TODO maybe give more options here, for now we're taking just ARAchors into account that were found during plane detection keeping their size into account
-	NSArray<ARHitTestResult *> *results = [ar_session.currentFrame hittest:point types:ARHitTestResultTypeExistingPlaneUsingExtent];
+		///@TODO maybe give more options here, for now we're taking just ARAchors into account that were found during plane detection keeping their size into account
 
-	for (ARHitTestResult *result in results) {
-		Transform transform;
+		NSArray<ARHitTestResult *> *results = [ar_session.currentFrame hitTest:point types:ARHitTestResultTypeExistingPlaneUsingExtent];
 
-		matrix_float4x4 m44 = result.worldTransform;
-		transform.basis.elements[0].x = m44.columns[0][0];
-		transform.basis.elements[1].x = m44.columns[0][1];
-		transform.basis.elements[2].x = m44.columns[0][2];
-		transform.basis.elements[0].y = m44.columns[1][0];
-		transform.basis.elements[1].y = m44.columns[1][1];
-		transform.basis.elements[2].y = m44.columns[1][2];
-		transform.basis.elements[0].z = m44.columns[2][0];
-		transform.basis.elements[1].z = m44.columns[2][1];
-		transform.basis.elements[2].z = m44.columns[2][2];
-		transform.origin.x = m44.columns[3][0];
-		transform.origin.y = m44.columns[3][1];
-		transform.origin.z = m44.columns[3][2];
+		for (ARHitTestResult *result in results) {
+			Transform transform;
 
-		/* important, NOT scaled to world_scale !! */
-		arr.push_back(transform);
+			matrix_float4x4 m44 = result.worldTransform;
+			transform.basis.elements[0].x = m44.columns[0][0];
+			transform.basis.elements[1].x = m44.columns[0][1];
+			transform.basis.elements[2].x = m44.columns[0][2];
+			transform.basis.elements[0].y = m44.columns[1][0];
+			transform.basis.elements[1].y = m44.columns[1][1];
+			transform.basis.elements[2].y = m44.columns[1][2];
+			transform.basis.elements[0].z = m44.columns[2][0];
+			transform.basis.elements[1].z = m44.columns[2][1];
+			transform.basis.elements[2].z = m44.columns[2][2];
+			transform.origin.x = m44.columns[3][0];
+			transform.origin.y = m44.columns[3][1];
+			transform.origin.z = m44.columns[3][2];
+
+			/* important, NOT scaled to world_scale !! */
+			arr.push_back(transform);
+		}
+
+		return arr;
+	} else {
+		return Array();
 	}
-
-	return arr;
 }
 
 void ARKitInterface::_bind_methods() {
@@ -221,51 +236,55 @@ bool ARKitInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, false);
 
-	if (!initialized) {
-		print_line("initializing ARKit");
+	if (@available(iOS 11, *)) {
+		if (!initialized) {
+			print_line("initializing ARKit");
 
-		// create our ar session and delegate
-		Class ARSessionClass = NSClassFromString(@"ARSession");
-		if (ARSessionClass == Nil) {
-			void *arkit_handle = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_NOW);
-			if (arkit_handle) {
-				ARSessionClass = NSClassFromString(@"ARSession");
-			} else {
-				print_line("ARKit init failed");
-				return false;
+			// create our ar session and delegate
+			Class ARSessionClass = NSClassFromString(@"ARSession");
+			if (ARSessionClass == Nil) {
+				void *arkit_handle = dlopen("/System/Library/Frameworks/ARKit.framework/ARKit", RTLD_NOW);
+				if (arkit_handle) {
+					ARSessionClass = NSClassFromString(@"ARSession");
+				} else {
+					print_line("ARKit init failed");
+					return false;
+				}
 			}
-		}
-		ar_session = [ARSessionClass new];
-		ar_delegate = [ARKitSessionDelegate new];
-		ar_delegate.arkit_interface = this;
-		ar_session.delegate = ar_delegate;
+			ar_session = [ARSessionClass new];
+			ar_delegate = [ARKitSessionDelegate new];
+			ar_delegate.arkit_interface = this;
+			ar_session.delegate = ar_delegate;
 
-		// reset our transform
-		transform = Transform();
+			// reset our transform
+			transform = Transform();
 
-		// make this our primary interface
-		xr_server->set_primary_interface(this);
+			// make this our primary interface
+			xr_server->set_primary_interface(this);
 
-		// make sure we have our feed setup
-		if (feed.is_null()) {
-			feed.instance();
-			feed->set_name("ARKit");
+			// make sure we have our feed setup
+			if (feed.is_null()) {
+				feed.instance();
+				feed->set_name("ARKit");
 
-			CameraServer *cs = CameraServer::get_singleton();
-			if (cs != NULL) {
-				cs->add_feed(feed);
+				CameraServer *cs = CameraServer::get_singleton();
+				if (cs != NULL) {
+					cs->add_feed(feed);
+				}
 			}
+			feed->set_active(true);
+
+			// yeah!
+			initialized = true;
+
+			// Start our session...
+			start_session();
 		}
-		feed->set_active(true);
 
-		// yeah!
-		initialized = true;
-
-		// Start our session...
-		start_session();
+		return true;
+	} else {
+		return false;
 	}
-
-	return true;
 }
 
 void ARKitInterface::uninitialize() {
@@ -286,25 +305,26 @@ void ARKitInterface::uninitialize() {
 
 		remove_all_anchors();
 
-		[ar_session release];
-		[ar_delegate release];
-		ar_session = NULL;
-		ar_delegate = NULL;
+		if (@available(iOS 11.0, *)) {
+			ar_session = nil;
+		}
+
+		ar_delegate = nil;
 		initialized = false;
 		session_was_started = false;
 	}
 }
 
 Size2 ARKitInterface::get_render_targetsize() {
-	_THREAD_SAFE_METHOD_
+	// _THREAD_SAFE_METHOD_
 
-	Size2 target_size = OS::get_singleton()->get_window_size();
+	Size2 target_size = DisplayServer::get_singleton()->screen_get_size();
 
 	return target_size;
 }
 
 Transform ARKitInterface::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) {
-	_THREAD_SAFE_METHOD_
+	// _THREAD_SAFE_METHOD_
 
 	Transform transform_for_eye;
 
@@ -336,7 +356,7 @@ CameraMatrix ARKitInterface::get_projection_for_eye(XRInterface::Eyes p_eye, rea
 }
 
 void ARKitInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
-	_THREAD_SAFE_METHOD_
+	// _THREAD_SAFE_METHOD_
 
 	// We must have a valid render target
 	ERR_FAIL_COND(!p_render_target.is_valid());
@@ -345,15 +365,15 @@ void ARKitInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target
 	ERR_FAIL_COND(p_screen_rect == Rect2());
 
 	// get the size of our screen
-	Rect2 screen_rect = p_screen_rect;
+	//	Rect2 screen_rect = p_screen_rect;
 
 	//		screen_rect.position.x += screen_rect.size.x;
 	//		screen_rect.size.x = -screen_rect.size.x;
 	//		screen_rect.position.y += screen_rect.size.y;
 	//		screen_rect.size.y = -screen_rect.size.y;
 
-	VSG::rasterizer->set_current_render_target(RID());
-	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
+	//	VSG::rasterizer->set_current_render_target(RID());
+	//	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
 }
 
 XRPositionalTracker *ARKitInterface::get_anchor_for_uuid(const unsigned char *p_uuid) {
@@ -432,7 +452,7 @@ void ARKitInterface::remove_all_anchors() {
 }
 
 void ARKitInterface::process() {
-	_THREAD_SAFE_METHOD_
+	// _THREAD_SAFE_METHOD_
 
 	if (@available(iOS 11.0, *)) {
 		if (initialized) {
@@ -443,8 +463,16 @@ void ARKitInterface::process() {
 				last_timestamp = current_frame.timestamp;
 
 				// get some info about our screen and orientation
-				Size2 screen_size = OS::get_singleton()->get_window_size();
-				UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+				Size2 screen_size = DisplayServer::get_singleton()->screen_get_size();
+				UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+
+				if (@available(iOS 13, *)) {
+					orientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
+#if !defined(TARGET_OS_SIMULATOR) || !TARGET_OS_SIMULATOR
+				} else {
+					orientation = [[UIApplication sharedApplication] statusBarOrientation];
+#endif
+				}
 
 				// Grab our camera image for our backbuffer
 				CVPixelBufferRef pixelBuffer = current_frame.capturedImage;
@@ -475,27 +503,27 @@ void ARKitInterface::process() {
 
 						{
 							// do Y
-							int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
-							int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
-							int bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+							size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0);
+							size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0);
+							size_t bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
 
 							if ((image_width[0] != new_width) || (image_height[0] != new_height)) {
 								printf("- Camera padding l:%lu r:%lu t:%lu b:%lu\n", extraLeft, extraRight, extraTop, extraBottom);
-								printf("- Camera Y plane size: %i, %i - %i\n", new_width, new_height, bytes_per_row);
+								printf("- Camera Y plane size: %lu, %lu - %lu\n", new_width, new_height, bytes_per_row);
 
 								image_width[0] = new_width;
 								image_height[0] = new_height;
 								img_data[0].resize(new_width * new_height);
 							}
 
-							uint8_t *w = img_data[0].write();
+							uint8_t *w = img_data[0].ptrw();
 							if (new_width == bytes_per_row) {
-								memcpy(w.ptr(), dataY, new_width * new_height);
+								memcpy(w, dataY, new_width * new_height);
 							} else {
-								int offset_a = 0;
-								int offset_b = extraLeft + (extraTop * bytes_per_row);
-								for (int r = 0; r < new_height; r++) {
-									memcpy(w.ptr() + offset_a, dataY + offset_b, new_width);
+								size_t offset_a = 0;
+								size_t offset_b = extraLeft + (extraTop * bytes_per_row);
+								for (size_t r = 0; r < new_height; r++) {
+									memcpy(w + offset_a, dataY + offset_b, new_width);
 									offset_a += new_width;
 									offset_b += bytes_per_row;
 								}
@@ -507,26 +535,26 @@ void ARKitInterface::process() {
 
 						{
 							// do CbCr
-							int new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
-							int new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
-							int bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
+							size_t new_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1);
+							size_t new_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1);
+							size_t bytes_per_row = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0);
 
 							if ((image_width[1] != new_width) || (image_height[1] != new_height)) {
-								printf("- Camera CbCr plane size: %i, %i - %i\n", new_width, new_height, bytes_per_row);
+								printf("- Camera CbCr plane size: %lu, %lu - %lu\n", new_width, new_height, bytes_per_row);
 
 								image_width[1] = new_width;
 								image_height[1] = new_height;
 								img_data[1].resize(2 * new_width * new_height);
 							}
 
-							uint8_t *w = img_data[1].write();
+							uint8_t *w = img_data[1].ptrw();
 							if ((2 * new_width) == bytes_per_row) {
-								memcpy(w.ptr(), dataCbCr, 2 * new_width * new_height);
+								memcpy(w, dataCbCr, 2 * new_width * new_height);
 							} else {
-								int offset_a = 0;
-								int offset_b = extraLeft + (extraTop * bytes_per_row);
-								for (int r = 0; r < new_height; r++) {
-									memcpy(w.ptr() + offset_a, dataCbCr + offset_b, 2 * new_width);
+								size_t offset_a = 0;
+								size_t offset_b = extraLeft + (extraTop * bytes_per_row);
+								for (size_t r = 0; r < new_height; r++) {
+									memcpy(w + offset_a, dataCbCr + offset_b, 2 * new_width);
 									offset_a += 2 * new_width;
 									offset_b += bytes_per_row;
 								}
@@ -657,70 +685,79 @@ void ARKitInterface::process() {
 	}
 }
 
-void ARKitInterface::_add_or_update_anchor(void *p_anchor) {
-	_THREAD_SAFE_METHOD_
+void ARKitInterface::_add_or_update_anchor(GodotARAnchor *p_anchor) {
+	// _THREAD_SAFE_METHOD_
 
-	ARAnchor *anchor = (ARAnchor *)p_anchor;
+	if (@available(iOS 11.0, *)) {
+		ARAnchor *anchor = (ARAnchor *)p_anchor;
 
-	unsigned char uuid[16];
-	[anchor.identifier getUUIDBytes:uuid];
+		unsigned char uuid[16];
+		[anchor.identifier getUUIDBytes:uuid];
 
-	XRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
-	if (tracker != NULL) {
-		// lets update our mesh! (using Arjens code as is for now)
-		// we should also probably limit how often we do this...
+		XRPositionalTracker *tracker = get_anchor_for_uuid(uuid);
+		if (tracker != NULL) {
+			// lets update our mesh! (using Arjens code as is for now)
+			// we should also probably limit how often we do this...
 
-		// can we safely cast this?
-		ARPlaneAnchor *planeAnchor = (ARPlaneAnchor *)anchor;
+			// can we safely cast this?
+			ARPlaneAnchor *planeAnchor = (ARPlaneAnchor *)anchor;
 
-		if (planeAnchor.geometry.triangleCount > 0) {
-			Ref<SurfaceTool> surftool;
-			surftool.instance();
-			surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
+			if (@available(iOS 11.3, *)) {
+				if (planeAnchor.geometry.triangleCount > 0) {
+					Ref<SurfaceTool> surftool;
+					surftool.instance();
+					surftool->begin(Mesh::PRIMITIVE_TRIANGLES);
 
-			for (int j = planeAnchor.geometry.triangleCount * 3 - 1; j >= 0; j--) {
-				int16_t index = planeAnchor.geometry.triangleIndices[j];
-				simd_float3 vrtx = planeAnchor.geometry.vertices[index];
-				simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
-				surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
-				surftool->add_color(Color(0.8, 0.8, 0.8));
-				surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
+					for (int j = planeAnchor.geometry.triangleCount * 3 - 1; j >= 0; j--) {
+						int16_t index = planeAnchor.geometry.triangleIndices[j];
+						simd_float3 vrtx = planeAnchor.geometry.vertices[index];
+						simd_float2 textcoord = planeAnchor.geometry.textureCoordinates[index];
+						surftool->add_uv(Vector2(textcoord[0], textcoord[1]));
+						surftool->add_color(Color(0.8, 0.8, 0.8));
+						surftool->add_vertex(Vector3(vrtx[0], vrtx[1], vrtx[2]));
+					}
+
+					surftool->generate_normals();
+					tracker->set_mesh(surftool->commit());
+				} else {
+					Ref<Mesh> nomesh;
+					tracker->set_mesh(nomesh);
+				}
+			} else {
+				Ref<Mesh> nomesh;
+				tracker->set_mesh(nomesh);
 			}
 
-			surftool->generate_normals();
-			tracker->set_mesh(surftool->commit());
-		} else {
-			Ref<Mesh> nomesh;
-			tracker->set_mesh(nomesh);
+			// Note, this also contains a scale factor which gives us an idea of the size of the anchor
+			// We may extract that in our XRAnchor class
+			Basis b;
+			matrix_float4x4 m44 = anchor.transform;
+			b.elements[0].x = m44.columns[0][0];
+			b.elements[1].x = m44.columns[0][1];
+			b.elements[2].x = m44.columns[0][2];
+			b.elements[0].y = m44.columns[1][0];
+			b.elements[1].y = m44.columns[1][1];
+			b.elements[2].y = m44.columns[1][2];
+			b.elements[0].z = m44.columns[2][0];
+			b.elements[1].z = m44.columns[2][1];
+			b.elements[2].z = m44.columns[2][2];
+			tracker->set_orientation(b);
+			tracker->set_rw_position(Vector3(m44.columns[3][0], m44.columns[3][1], m44.columns[3][2]));
 		}
-
-		// Note, this also contains a scale factor which gives us an idea of the size of the anchor
-		// We may extract that in our XRAnchor class
-		Basis b;
-		matrix_float4x4 m44 = anchor.transform;
-		b.elements[0].x = m44.columns[0][0];
-		b.elements[1].x = m44.columns[0][1];
-		b.elements[2].x = m44.columns[0][2];
-		b.elements[0].y = m44.columns[1][0];
-		b.elements[1].y = m44.columns[1][1];
-		b.elements[2].y = m44.columns[1][2];
-		b.elements[0].z = m44.columns[2][0];
-		b.elements[1].z = m44.columns[2][1];
-		b.elements[2].z = m44.columns[2][2];
-		tracker->set_orientation(b);
-		tracker->set_rw_position(Vector3(m44.columns[3][0], m44.columns[3][1], m44.columns[3][2]));
 	}
 }
 
-void ARKitInterface::_remove_anchor(void *p_anchor) {
-	_THREAD_SAFE_METHOD_
+void ARKitInterface::_remove_anchor(GodotARAnchor *p_anchor) {
+	// _THREAD_SAFE_METHOD_
 
-	ARAnchor *anchor = (ARAnchor *)p_anchor;
+	if (@available(iOS 11.0, *)) {
+		ARAnchor *anchor = (ARAnchor *)p_anchor;
 
-	unsigned char uuid[16];
-	[anchor.identifier getUUIDBytes:uuid];
+		unsigned char uuid[16];
+		[anchor.identifier getUUIDBytes:uuid];
 
-	remove_anchor_for_uuid(uuid);
+		remove_anchor_for_uuid(uuid);
+	}
 }
 
 ARKitInterface::ARKitInterface() {
@@ -728,7 +765,9 @@ ARKitInterface::ARKitInterface() {
 	session_was_started = false;
 	plane_detection_is_enabled = false;
 	light_estimation_is_enabled = false;
-	ar_session = NULL;
+	if (@available(iOS 11.0, *)) {
+		ar_session = nil;
+	}
 	z_near = 0.01;
 	z_far = 1000.0;
 	projection.set_perspective(60.0, 1.0, z_near, z_far, false);

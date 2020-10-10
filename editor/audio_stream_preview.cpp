@@ -35,10 +35,11 @@
 float AudioStreamPreview::get_length() const {
 	return length;
 }
-float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 
-	if (length == 0)
+float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
+	if (length == 0) {
 		return 0;
+	}
 
 	int max = preview.size() / 2;
 	int time_from = p_time / length * max;
@@ -53,7 +54,6 @@ float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 	uint8_t vmax = 0;
 
 	for (int i = time_from; i < time_to; i++) {
-
 		uint8_t v = preview[i * 2 + 1];
 		if (i == 0 || v > vmax) {
 			vmax = v;
@@ -62,10 +62,11 @@ float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 
 	return (vmax / 255.0) * 2.0 - 1.0;
 }
-float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 
-	if (length == 0)
+float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
+	if (length == 0) {
 		return 0;
+	}
 
 	int max = preview.size() / 2;
 	int time_from = p_time / length * max;
@@ -80,7 +81,6 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 	uint8_t vmin = 255;
 
 	for (int i = time_from; i < time_to; i++) {
-
 		uint8_t v = preview[i * 2];
 		if (i == 0 || v < vmin) {
 			vmin = v;
@@ -101,7 +101,6 @@ void AudioStreamPreviewGenerator::_update_emit(ObjectID p_id) {
 }
 
 void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
-
 	Preview *preview = (Preview *)p_preview;
 
 	float muxbuff_chunk_s = 0.25;
@@ -117,7 +116,6 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 	preview->playback->start();
 
 	while (frames_todo) {
-
 		int ofs_write = uint64_t(frames_total - frames_todo) * uint64_t(preview->preview->preview.size() / 2) / uint64_t(frames_total);
 		int to_read = MIN(frames_todo, mixbuff_chunk_frames);
 		int to_write = uint64_t(to_read) * uint64_t(preview->preview->preview.size() / 2) / uint64_t(frames_total);
@@ -137,7 +135,6 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			}
 
 			for (int j = from; j < to; j++) {
-
 				max = MAX(max, mix_chunk[j].l);
 				max = MAX(max, mix_chunk[j].r);
 
@@ -199,8 +196,9 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 
-	if (preview->playback.is_valid())
+	if (preview->playback.is_valid()) {
 		preview->thread = Thread::create(_preview_thread, preview);
+	}
 
 	return preview->preview;
 }

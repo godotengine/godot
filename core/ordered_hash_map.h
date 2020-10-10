@@ -55,9 +55,9 @@ public:
 	class Element {
 		friend class OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>;
 
-		typename InternalList::Element *list_element;
-		typename InternalList::Element *prev_element;
-		typename InternalList::Element *next_element;
+		typename InternalList::Element *list_element = nullptr;
+		typename InternalList::Element *prev_element = nullptr;
+		typename InternalList::Element *next_element = nullptr;
 
 		Element(typename InternalList::Element *p_element) {
 			list_element = p_element;
@@ -69,11 +69,7 @@ public:
 		}
 
 	public:
-		_FORCE_INLINE_ Element() :
-				list_element(nullptr),
-				prev_element(nullptr),
-				next_element(nullptr) {
-		}
+		_FORCE_INLINE_ Element() {}
 
 		Element next() const {
 			return Element(next_element);
@@ -110,42 +106,40 @@ public:
 		const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
-		};
+		}
 
 		V &value() {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		V &get() {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 	};
 
 	class ConstElement {
 		friend class OrderedHashMap<K, V, Hasher, Comparator, MIN_HASH_TABLE_POWER, RELATIONSHIP>;
 
-		const typename InternalList::Element *list_element;
+		const typename InternalList::Element *list_element = nullptr;
 
 		ConstElement(const typename InternalList::Element *p_element) :
 				list_element(p_element) {
 		}
 
 	public:
-		_FORCE_INLINE_ ConstElement() :
-				list_element(nullptr) {
-		}
+		_FORCE_INLINE_ ConstElement() {}
 
 		ConstElement(const ConstElement &other) :
 				list_element(other.list_element) {
@@ -178,17 +172,17 @@ public:
 		const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
-		};
+		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 	};
 
 	ConstElement find(const K &p_key) const {
@@ -299,8 +293,7 @@ public:
 		_copy_from(p_map);
 	}
 
-	_FORCE_INLINE_ OrderedHashMap() {
-	}
+	_FORCE_INLINE_ OrderedHashMap() {}
 };
 
 #endif // ORDERED_HASH_MAP_H

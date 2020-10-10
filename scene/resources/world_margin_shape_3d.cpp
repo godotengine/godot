@@ -32,8 +32,7 @@
 
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
-
+Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() const {
 	Plane p = get_plane();
 	Vector<Vector3> points;
 
@@ -62,13 +61,11 @@ Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 }
 
 void WorldMarginShape3D::_update_shape() {
-
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), plane);
 	Shape3D::_update_shape();
 }
 
 void WorldMarginShape3D::set_plane(Plane p_plane) {
-
 	plane = p_plane;
 	_update_shape();
 	notify_change_to_owners();
@@ -76,12 +73,10 @@ void WorldMarginShape3D::set_plane(Plane p_plane) {
 }
 
 Plane WorldMarginShape3D::get_plane() const {
-
 	return plane;
 }
 
 void WorldMarginShape3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_plane", "plane"), &WorldMarginShape3D::set_plane);
 	ClassDB::bind_method(D_METHOD("get_plane"), &WorldMarginShape3D::get_plane);
 
@@ -90,6 +85,5 @@ void WorldMarginShape3D::_bind_methods() {
 
 WorldMarginShape3D::WorldMarginShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_PLANE)) {
-
 	set_plane(Plane(0, 1, 0, 0));
 }

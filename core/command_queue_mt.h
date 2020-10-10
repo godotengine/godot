@@ -253,7 +253,8 @@
 		cmd->method = p_method;                                              \
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
 		unlock();                                                            \
-		if (sync) sync->post();                                              \
+		if (sync)                                                            \
+			sync->post();                                                    \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -269,7 +270,8 @@
 		cmd->ret = r_ret;                                                                      \
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
-		if (sync) sync->post();                                                                \
+		if (sync)                                                                              \
+			sync->post();                                                                      \
 		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
@@ -286,7 +288,8 @@
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
-		if (sync) sync->post();                                                       \
+		if (sync)                                                                     \
+			sync->post();                                                             \
 		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
@@ -294,22 +297,18 @@
 #define MAX_CMD_PARAMS 15
 
 class CommandQueueMT {
-
 	struct SyncSemaphore {
-
 		Semaphore sem;
-		bool in_use;
+		bool in_use = false;
 	};
 
 	struct CommandBase {
-
 		virtual void call() = 0;
-		virtual void post(){};
-		virtual ~CommandBase(){};
+		virtual void post() {}
+		virtual ~CommandBase() {}
 	};
 
 	struct SyncCommand : public CommandBase {
-
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
@@ -336,17 +335,16 @@ class CommandQueueMT {
 		SYNC_SEMAPHORES = 8
 	};
 
-	uint8_t *command_mem;
-	uint32_t read_ptr;
-	uint32_t write_ptr;
-	uint32_t dealloc_ptr;
+	uint8_t *command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
+	uint32_t read_ptr = 0;
+	uint32_t write_ptr = 0;
+	uint32_t dealloc_ptr = 0;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
-	Semaphore *sync;
+	Semaphore *sync = nullptr;
 
 	template <class T>
 	T *allocate() {
-
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
@@ -355,7 +353,6 @@ class CommandQueueMT {
 		if (write_ptr < dealloc_ptr) {
 			// behind dealloc_ptr, check that there is room
 			if ((dealloc_ptr - write_ptr) <= alloc_size) {
-
 				// There is no more room, try to deallocate something
 				if (dealloc_one()) {
 					goto tryagain;
@@ -402,12 +399,10 @@ class CommandQueueMT {
 
 	template <class T>
 	T *allocate_and_lock() {
-
 		lock();
 		T *ret;
 
 		while ((ret = allocate<T>()) == nullptr) {
-
 			unlock();
 			// sleep a little until fetch happened and some room is made
 			wait_for_flush();
@@ -418,12 +413,16 @@ class CommandQueueMT {
 	}
 
 	bool flush_one(bool p_lock = true) {
-		if (p_lock) lock();
+		if (p_lock) {
+			lock();
+		}
 	tryagain:
 
 		// tried to read an empty queue
 		if (read_ptr == write_ptr) {
-			if (p_lock) unlock();
+			if (p_lock) {
+				unlock();
+			}
 			return false;
 		}
 
@@ -442,15 +441,21 @@ class CommandQueueMT {
 
 		read_ptr += size;
 
-		if (p_lock) unlock();
+		if (p_lock) {
+			unlock();
+		}
 		cmd->call();
-		if (p_lock) lock();
+		if (p_lock) {
+			lock();
+		}
 
 		cmd->post();
 		cmd->~CommandBase();
 		*(uint32_t *)&command_mem[size_ptr] &= ~1;
 
-		if (p_lock) unlock();
+		if (p_lock) {
+			unlock();
+		}
 		return true;
 	}
 
@@ -480,11 +485,10 @@ public:
 	}
 
 	void flush_all() {
-
 		//ERR_FAIL_COND(sync);
 		lock();
-		while (flush_one(false))
-			;
+		while (flush_one(false)) {
+		}
 		unlock();
 	}
 

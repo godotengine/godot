@@ -33,19 +33,16 @@
 #include "core/engine.h"
 
 void TextureProgress::set_under_texture(const Ref<Texture2D> &p_texture) {
-
 	under = p_texture;
 	update();
 	minimum_size_changed();
 }
 
 Ref<Texture2D> TextureProgress::get_under_texture() const {
-
 	return under;
 }
 
 void TextureProgress::set_over_texture(const Ref<Texture2D> &p_texture) {
-
 	over = p_texture;
 	update();
 	if (under.is_null()) {
@@ -54,7 +51,6 @@ void TextureProgress::set_over_texture(const Ref<Texture2D> &p_texture) {
 }
 
 Ref<Texture2D> TextureProgress::get_over_texture() const {
-
 	return over;
 }
 
@@ -81,28 +77,26 @@ bool TextureProgress::get_nine_patch_stretch() const {
 }
 
 Size2 TextureProgress::get_minimum_size() const {
-
-	if (nine_patch_stretch)
+	if (nine_patch_stretch) {
 		return Size2(stretch_margin[MARGIN_LEFT] + stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_TOP] + stretch_margin[MARGIN_BOTTOM]);
-	else if (under.is_valid())
+	} else if (under.is_valid()) {
 		return under->get_size();
-	else if (over.is_valid())
+	} else if (over.is_valid()) {
 		return over->get_size();
-	else if (progress.is_valid())
+	} else if (progress.is_valid()) {
 		return progress->get_size();
+	}
 
 	return Size2(1, 1);
 }
 
 void TextureProgress::set_progress_texture(const Ref<Texture2D> &p_texture) {
-
 	progress = p_texture;
 	update();
 	minimum_size_changed();
 }
 
 Ref<Texture2D> TextureProgress::get_progress_texture() const {
-
 	return progress;
 }
 
@@ -134,13 +128,16 @@ Color TextureProgress::get_tint_over() const {
 }
 
 Point2 TextureProgress::unit_val_to_uv(float val) {
-	if (progress.is_null())
+	if (progress.is_null()) {
 		return Point2();
+	}
 
-	if (val < 0)
+	if (val < 0) {
 		val += 1;
-	if (val > 1)
+	}
+	if (val > 1) {
 		val -= 1;
+	}
 
 	Point2 p = get_relative_center();
 
@@ -158,40 +155,46 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 
 	for (int edge = 0; edge < 4; edge++) {
 		if (edge == 0) {
-			if (dir.x > 0)
+			if (dir.x > 0) {
 				continue;
+			}
 			cq = -(edgeLeft - p.x);
 			dir.x *= 2.0 * cq;
 			cp = -dir.x;
 		} else if (edge == 1) {
-			if (dir.x < 0)
+			if (dir.x < 0) {
 				continue;
+			}
 			cq = (edgeRight - p.x);
 			dir.x *= 2.0 * cq;
 			cp = dir.x;
 		} else if (edge == 2) {
-			if (dir.y > 0)
+			if (dir.y > 0) {
 				continue;
+			}
 			cq = -(edgeBottom - p.y);
 			dir.y *= 2.0 * cq;
 			cp = -dir.y;
 		} else if (edge == 3) {
-			if (dir.y < 0)
+			if (dir.y < 0) {
 				continue;
+			}
 			cq = (edgeTop - p.y);
 			dir.y *= 2.0 * cq;
 			cp = dir.y;
 		}
 		cr = cq / cp;
-		if (cr >= 0 && cr < t1)
+		if (cr >= 0 && cr < t1) {
 			t1 = cr;
+		}
 	}
 	return (p + t1 * dir);
 }
 
 Point2 TextureProgress::get_relative_center() {
-	if (progress.is_null())
+	if (progress.is_null()) {
 		return Point2();
+	}
 	Point2 p = progress->get_size() / 2;
 	p += rad_center_off;
 	p.x /= progress->get_width();
@@ -306,9 +309,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture2D> &p_texture,
 void TextureProgress::_notification(int p_what) {
 	const float corners[12] = { -0.125, -0.375, -0.625, -0.875, 0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625, 1.875 };
 	switch (p_what) {
-
 		case NOTIFICATION_DRAW: {
-
 			if (nine_patch_stretch && (mode == FILL_LEFT_TO_RIGHT || mode == FILL_RIGHT_TO_LEFT || mode == FILL_TOP_TO_BOTTOM || mode == FILL_BOTTOM_TO_TOP)) {
 				if (under.is_valid()) {
 					draw_nine_patch_stretched(under, FILL_LEFT_TO_RIGHT, 1.0, tint_under);
@@ -320,8 +321,9 @@ void TextureProgress::_notification(int p_what) {
 					draw_nine_patch_stretched(over, FILL_LEFT_TO_RIGHT, 1.0, tint_over);
 				}
 			} else {
-				if (under.is_valid())
+				if (under.is_valid()) {
 					draw_texture(under, Point2(), tint_under);
+				}
 				if (progress.is_valid()) {
 					Size2 s = progress->get_size();
 					switch (mode) {
@@ -344,8 +346,9 @@ void TextureProgress::_notification(int p_what) {
 						case FILL_CLOCKWISE:
 						case FILL_COUNTER_CLOCKWISE:
 						case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE: {
-							if (nine_patch_stretch)
+							if (nine_patch_stretch) {
 								s = get_size();
+							}
 
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
@@ -367,9 +370,11 @@ void TextureProgress::_notification(int p_what) {
 								pts.append(end);
 								float from = MIN(start, end);
 								float to = MAX(start, end);
-								for (int i = 0; i < 12; i++)
-									if (corners[i] > from && corners[i] < to)
+								for (int i = 0; i < 12; i++) {
+									if (corners[i] > from && corners[i] < to) {
 										pts.append(corners[i]);
+									}
+								}
 								pts.sort();
 								Vector<Point2> uvs;
 								Vector<Point2> points;
@@ -377,8 +382,9 @@ void TextureProgress::_notification(int p_what) {
 								points.push_back(Point2(s.x * get_relative_center().x, s.y * get_relative_center().y));
 								for (int i = 0; i < pts.size(); i++) {
 									Point2 uv = unit_val_to_uv(pts[i]);
-									if (uvs.find(uv) >= 0)
+									if (uvs.find(uv) >= 0) {
 										continue;
+									}
 									uvs.push_back(uv);
 									points.push_back(Point2(uv.x * s.x, uv.y * s.y));
 								}
@@ -389,10 +395,11 @@ void TextureProgress::_notification(int p_what) {
 							if (Engine::get_singleton()->is_editor_hint()) {
 								Point2 p;
 
-								if (nine_patch_stretch)
+								if (nine_patch_stretch) {
 									p = get_size();
-								else
+								} else {
 									p = progress->get_size();
+								}
 
 								p.x *= get_relative_center().x;
 								p.y *= get_relative_center().y;
@@ -413,10 +420,10 @@ void TextureProgress::_notification(int p_what) {
 							draw_texture_rect_region(progress, Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), Rect2(Point2(), Size2(s.x * get_as_ratio(), s.y)), tint_progress);
 					}
 				}
-				if (over.is_valid())
+				if (over.is_valid()) {
 					draw_texture(over, Point2(), tint_over);
+				}
 			}
-
 		} break;
 	}
 }
@@ -432,10 +439,12 @@ int TextureProgress::get_fill_mode() {
 }
 
 void TextureProgress::set_radial_initial_angle(float p_angle) {
-	while (p_angle > 360)
+	while (p_angle > 360) {
 		p_angle -= 360;
-	while (p_angle < 0)
+	}
+	while (p_angle < 0) {
 		p_angle += 360;
+	}
 	rad_init_angle = p_angle;
 	update();
 }
@@ -463,7 +472,6 @@ Point2 TextureProgress::get_radial_center_offset() {
 }
 
 void TextureProgress::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_under_texture", "tex"), &TextureProgress::set_under_texture);
 	ClassDB::bind_method(D_METHOD("get_under_texture"), &TextureProgress::get_under_texture);
 

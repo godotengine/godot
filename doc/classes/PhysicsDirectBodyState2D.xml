@@ -7,7 +7,7 @@
 		Provides direct access to a physics body in the [PhysicsServer2D], allowing safe changes to physics properties. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body. See [method RigidBody2D._integrate_forces].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+		<link title="Ray-casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_central_force">
@@ -22,9 +22,9 @@
 		<method name="add_force">
 			<return type="void">
 			</return>
-			<argument index="0" name="offset" type="Vector2">
+			<argument index="0" name="force" type="Vector2">
 			</argument>
-			<argument index="1" name="force" type="Vector2">
+			<argument index="1" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
@@ -51,9 +51,9 @@
 		<method name="apply_impulse">
 			<return type="void">
 			</return>
-			<argument index="0" name="offset" type="Vector2">
+			<argument index="0" name="impulse" type="Vector2">
 			</argument>
-			<argument index="1" name="impulse" type="Vector2">
+			<argument index="1" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Applies a positioned impulse to the body. An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise). The offset uses the rotation of the global coordinate system, but is centered at the object's origin.

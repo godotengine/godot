@@ -44,12 +44,12 @@ protected:
 	// bind helpers
 
 public:
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
 	Ref<MultiMesh> get_multimesh() const;
 
-	virtual AABB get_aabb() const;
+	virtual AABB get_aabb() const override;
 
 	MultiMeshInstance3D();
 	~MultiMeshInstance3D();

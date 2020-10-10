@@ -33,45 +33,47 @@
 #include "core/engine.h"
 
 void Timer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_READY: {
-
 			if (autostart) {
 #ifdef TOOLS_ENABLED
-				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this)))
+				if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root() == this || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
 					break;
+				}
 #endif
 				start();
 				autostart = false;
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal())
+			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
+			}
 			time_left -= get_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
+				if (!one_shot) {
 					time_left += wait_time;
-				else
+				} else {
 					stop();
+				}
 
 				emit_signal("timeout");
 			}
 
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal())
+			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
+			}
 			time_left -= get_physics_process_delta_time();
 
 			if (time_left < 0) {
-				if (!one_shot)
+				if (!one_shot) {
 					time_left += wait_time;
-				else
+				} else {
 					stop();
+				}
 				emit_signal("timeout");
 			}
 
@@ -83,31 +85,28 @@ void Timer::set_wait_time(float p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
 }
-float Timer::get_wait_time() const {
 
+float Timer::get_wait_time() const {
 	return wait_time;
 }
 
 void Timer::set_one_shot(bool p_one_shot) {
-
 	one_shot = p_one_shot;
 }
-bool Timer::is_one_shot() const {
 
+bool Timer::is_one_shot() const {
 	return one_shot;
 }
 
 void Timer::set_autostart(bool p_start) {
-
 	autostart = p_start;
 }
-bool Timer::has_autostart() const {
 
+bool Timer::has_autostart() const {
 	return autostart;
 }
 
 void Timer::start(float p_time) {
-
 	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree. Either add it or set autostart to true.");
 
 	if (p_time > 0) {
@@ -124,8 +123,9 @@ void Timer::stop() {
 }
 
 void Timer::set_paused(bool p_paused) {
-	if (paused == p_paused)
+	if (paused == p_paused) {
 		return;
+	}
 
 	paused = p_paused;
 	_set_process(processing);
@@ -140,14 +140,13 @@ bool Timer::is_stopped() const {
 }
 
 float Timer::get_time_left() const {
-
 	return time_left > 0 ? time_left : 0;
 }
 
 void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
-
-	if (timer_process_mode == p_mode)
+	if (timer_process_mode == p_mode) {
 		return;
+	}
 
 	switch (timer_process_mode) {
 		case TIMER_PROCESS_PHYSICS:
@@ -167,20 +166,22 @@ void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
 }
 
 Timer::TimerProcessMode Timer::get_timer_process_mode() const {
-
 	return timer_process_mode;
 }
 
 void Timer::_set_process(bool p_process, bool p_force) {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_PHYSICS: set_physics_process_internal(p_process && !paused); break;
-		case TIMER_PROCESS_IDLE: set_process_internal(p_process && !paused); break;
+		case TIMER_PROCESS_PHYSICS:
+			set_physics_process_internal(p_process && !paused);
+			break;
+		case TIMER_PROCESS_IDLE:
+			set_process_internal(p_process && !paused);
+			break;
 	}
 	processing = p_process;
 }
 
 void Timer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_wait_time", "time_sec"), &Timer::set_wait_time);
 	ClassDB::bind_method(D_METHOD("get_wait_time"), &Timer::get_wait_time);
 

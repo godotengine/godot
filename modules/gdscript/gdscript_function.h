@@ -43,20 +43,26 @@ class GDScriptInstance;
 class GDScript;
 
 struct GDScriptDataType {
-	bool has_type;
-	enum {
+	enum Kind {
 		UNINITIALIZED,
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
-	} kind;
-	Variant::Type builtin_type;
+	};
+
+	Kind kind = UNINITIALIZED;
+
+	bool has_type = false;
+	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
-	Ref<Script> script_type;
+	Script *script_type = nullptr;
+	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) return true; // Can't type check
+		if (!has_type) {
+			return true; // Can't type check
+		}
 
 		switch (kind) {
 			case UNINITIALIZED:
@@ -146,10 +152,7 @@ struct GDScriptDataType {
 		return info;
 	}
 
-	GDScriptDataType() :
-			has_type(false),
-			kind(UNINITIALIZED),
-			builtin_type(Variant::NIL) {}
+	GDScriptDataType() {}
 };
 
 class GDScriptFunction {
@@ -178,12 +181,11 @@ public:
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
+		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
-		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
-		OPCODE_YIELD,
-		OPCODE_YIELD_SIGNAL,
-		OPCODE_YIELD_RESUME,
+		OPCODE_AWAIT,
+		OPCODE_AWAIT_RESUME,
 		OPCODE_JUMP,
 		OPCODE_JUMP_IF,
 		OPCODE_JUMP_IF_NOT,
@@ -214,7 +216,6 @@ public:
 	};
 
 	struct StackDebug {
-
 		int line;
 		int pos;
 		bool added;
@@ -223,6 +224,7 @@ public:
 
 private:
 	friend class GDScriptCompiler;
+	friend class GDScriptByteCodeGenerator;
 
 	StringName source;
 
@@ -231,10 +233,6 @@ private:
 	int _constant_count;
 	const StringName *_global_names_ptr;
 	int _global_names_count;
-#ifdef TOOLS_ENABLED
-	const StringName *_named_globals_ptr;
-	int _named_globals_count;
-#endif
 	const int *_default_arg_ptr;
 	int _default_arg_count;
 	const int *_code_ptr;
@@ -251,9 +249,6 @@ private:
 	StringName name;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
-#ifdef TOOLS_ENABLED
-	Vector<StringName> named_globals;
-#endif
 	Vector<int> default_arguments;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
@@ -292,14 +287,16 @@ private:
 
 public:
 	struct CallState {
-
-		ObjectID instance_id;
+		GDScript *script;
 		GDScriptInstance *instance;
+#ifdef DEBUG_ENABLED
+		StringName function_name;
+		String script_path;
+#endif
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
@@ -341,13 +338,16 @@ public:
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 
+#ifdef DEBUG_ENABLED
+	void disassemble(const Vector<String> &p_code_lines) const;
+#endif
+
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
 	~GDScriptFunction();
 };
 
 class GDScriptFunctionState : public Reference {
-
 	GDCLASS(GDScriptFunctionState, Reference);
 	friend class GDScriptFunction;
 	GDScriptFunction *function;
@@ -355,12 +355,18 @@ class GDScriptFunctionState : public Reference {
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Ref<GDScriptFunctionState> first_state;
 
+	SelfList<GDScriptFunctionState> scripts_list;
+	SelfList<GDScriptFunctionState> instances_list;
+
 protected:
 	static void _bind_methods();
 
 public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
+
+	void _clear_stack();
+
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };

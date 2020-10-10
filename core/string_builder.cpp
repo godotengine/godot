@@ -33,9 +33,9 @@
 #include <string.h>
 
 StringBuilder &StringBuilder::append(const String &p_string) {
-
-	if (p_string == String())
+	if (p_string == String()) {
 		return *this;
+	}
 
 	strings.push_back(p_string);
 	appended_strings.push_back(-1);
@@ -46,7 +46,6 @@ StringBuilder &StringBuilder::append(const String &p_string) {
 }
 
 StringBuilder &StringBuilder::append(const char *p_cstring) {
-
 	int32_t len = strlen(p_cstring);
 
 	c_strings.push_back(p_cstring);
@@ -58,11 +57,11 @@ StringBuilder &StringBuilder::append(const char *p_cstring) {
 }
 
 String StringBuilder::as_string() const {
-
-	if (string_length == 0)
+	if (string_length == 0) {
 		return "";
+	}
 
-	CharType *buffer = memnew_arr(CharType, string_length);
+	char32_t *buffer = memnew_arr(char32_t, string_length);
 
 	int current_position = 0;
 
@@ -74,13 +73,12 @@ String StringBuilder::as_string() const {
 			// Godot string
 			const String &s = strings[godot_string_elem];
 
-			memcpy(buffer + current_position, s.ptr(), s.length() * sizeof(CharType));
+			memcpy(buffer + current_position, s.ptr(), s.length() * sizeof(char32_t));
 
 			current_position += s.length();
 
 			godot_string_elem++;
 		} else {
-
 			const char *s = c_strings[c_string_elem];
 
 			for (int32_t j = 0; j < appended_strings[i]; j++) {

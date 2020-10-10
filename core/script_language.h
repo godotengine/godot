@@ -112,12 +112,11 @@ class ScriptInstance;
 class PlaceHolderScriptInstance;
 
 class Script : public Resource {
-
 	GDCLASS(Script, Resource);
 	OBJ_SAVE_TYPE(Script);
 
 protected:
-	virtual bool editor_can_reload_from_file() { return false; } // this is handled by editor better
+	virtual bool editor_can_reload_from_file() override { return false; } // this is handled by editor better
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -134,6 +133,8 @@ public:
 	virtual bool can_instance() const = 0;
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
+
+	virtual bool inherits_script(const Ref<Script> &p_script) const = 0;
 
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
@@ -198,13 +199,11 @@ public:
 	virtual bool has_method(const StringName &p_method) const = 0;
 	virtual Variant call(const StringName &p_method, VARIANT_ARG_LIST);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) = 0;
-	virtual void call_multilevel(const StringName &p_method, VARIANT_ARG_LIST);
-	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
-	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void notification(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return String();
 	}
 
@@ -251,14 +250,13 @@ struct ScriptCodeCompletionOption {
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
 	};
-	Kind kind;
+	Kind kind = KIND_PLAIN_TEXT;
 	String display;
 	String insert_text;
+	Color font_color;
 	RES icon;
 
-	ScriptCodeCompletionOption() {
-		kind = KIND_PLAIN_TEXT;
-	}
+	ScriptCodeCompletionOption() {}
 
 	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
 		display = p_text;
@@ -268,7 +266,6 @@ struct ScriptCodeCompletionOption {
 };
 
 class ScriptCodeCompletionCache {
-
 	static ScriptCodeCompletionCache *singleton;
 
 public:
@@ -294,12 +291,14 @@ public:
 
 	/* EDITOR FUNCTIONS */
 	struct Warning {
-		int line;
+		int start_line = -1, end_line = -1;
+		int leftmost_column = -1, rightmost_column = -1;
 		int code;
 		String string_code;
 		String message;
 	};
 
+	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual void get_reserved_words(List<String> *p_words) const = 0;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
@@ -406,7 +405,6 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
@@ -427,8 +425,6 @@ public:
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
-	//virtual void call_multilevel(const StringName& p_method,VARIANT_ARG_LIST) { return Variant(); }
-	//virtual void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount,Callable::CallError &r_error) { return Variant(); }
 	virtual void notification(int p_notification) {}
 
 	virtual Ref<Script> get_script() const { return script; }

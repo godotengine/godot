@@ -52,13 +52,13 @@ void PluginConfigDialog::_clear_fields() {
 }
 
 void PluginConfigDialog::_on_confirmed() {
-
 	String path = "res://addons/" + subfolder_edit->get_text();
 
 	if (!_edit_mode) {
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		if (!d || d->make_dir_recursive(path) != OK)
+		if (!d || d->make_dir_recursive(path) != OK) {
 			return;
+		}
 	}
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);

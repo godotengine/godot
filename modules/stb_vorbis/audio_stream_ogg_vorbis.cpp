@@ -33,7 +33,6 @@
 #include "core/os/file_access.h"
 
 void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-
 	ERR_FAIL_COND(!active);
 
 	int todo = p_frames;
@@ -76,12 +75,10 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 }
 
 float AudioStreamPlaybackOGGVorbis::get_stream_sampling_rate() {
-
 	return vorbis_stream->sample_rate;
 }
 
 void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
-
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
@@ -89,27 +86,25 @@ void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 }
 
 void AudioStreamPlaybackOGGVorbis::stop() {
-
 	active = false;
 }
-bool AudioStreamPlaybackOGGVorbis::is_playing() const {
 
+bool AudioStreamPlaybackOGGVorbis::is_playing() const {
 	return active;
 }
 
 int AudioStreamPlaybackOGGVorbis::get_loop_count() const {
-
 	return loops;
 }
 
 float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
-
 	return float(frames_mixed) / vorbis_stream->sample_rate;
 }
-void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 
-	if (!active)
+void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= vorbis_stream->get_length()) {
 		p_time = 0;
@@ -127,7 +122,6 @@ AudioStreamPlaybackOGGVorbis::~AudioStreamPlaybackOGGVorbis() {
 }
 
 Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
-
 	Ref<AudioStreamPlaybackOGGVorbis> ovs;
 
 	ERR_FAIL_COND_V(data == nullptr, ovs);
@@ -142,7 +136,6 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 	int error;
 	ovs->ogg_stream = stb_vorbis_open_memory((const unsigned char *)data, data_len, &error, &ovs->ogg_alloc);
 	if (!ovs->ogg_stream) {
-
 		memfree(ovs->ogg_alloc.alloc_buffer);
 		ovs->ogg_alloc.alloc_buffer = nullptr;
 		ERR_FAIL_COND_V(!ovs->ogg_stream, Ref<AudioStreamPlaybackOGGVorbis>());
@@ -152,7 +145,6 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 }
 
 String AudioStreamOGGVorbis::get_stream_name() const {
-
 	return ""; //return stream_name;
 }
 
@@ -165,18 +157,18 @@ void AudioStreamOGGVorbis::clear_data() {
 }
 
 void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
-
 	int src_data_len = p_data.size();
-#define MAX_TEST_MEM (1 << 20)
-
 	uint32_t alloc_try = 1024;
 	Vector<char> alloc_mem;
 	char *w;
 	stb_vorbis *ogg_stream = nullptr;
 	stb_vorbis_alloc ogg_alloc;
 
-	while (alloc_try < MAX_TEST_MEM) {
+	// Vorbis comments may be up to UINT32_MAX, but that's arguably pretty rare.
+	// Let's go with 2^30 so we don't risk going out of bounds.
+	const uint32_t MAX_TEST_MEM = 1 << 30;
 
+	while (alloc_try < MAX_TEST_MEM) {
 		alloc_mem.resize(alloc_try);
 		w = alloc_mem.ptrw();
 
@@ -189,10 +181,8 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 		ogg_stream = stb_vorbis_open_memory((const unsigned char *)src_datar, src_data_len, &error, &ogg_alloc);
 
 		if (!ogg_stream && error == VORBIS_outofmem) {
-
 			alloc_try *= 2;
 		} else {
-
 			ERR_FAIL_COND(alloc_try == MAX_TEST_MEM);
 			ERR_FAIL_COND(ogg_stream == nullptr);
 
@@ -217,10 +207,11 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 			break;
 		}
 	}
+
+	ERR_FAIL_COND_MSG(alloc_try == MAX_TEST_MEM, vformat("Couldn't set vorbis data even with an alloc buffer of %d bytes, report bug.", MAX_TEST_MEM));
 }
 
 Vector<uint8_t> AudioStreamOGGVorbis::get_data() const {
-
 	Vector<uint8_t> vdata;
 
 	if (data_len && data) {
@@ -239,7 +230,6 @@ void AudioStreamOGGVorbis::set_loop(bool p_enable) {
 }
 
 bool AudioStreamOGGVorbis::has_loop() const {
-
 	return loop;
 }
 
@@ -252,12 +242,10 @@ float AudioStreamOGGVorbis::get_loop_offset() const {
 }
 
 float AudioStreamOGGVorbis::get_length() const {
-
 	return length;
 }
 
 void AudioStreamOGGVorbis::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOGGVorbis::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOGGVorbis::get_data);
 
@@ -273,7 +261,6 @@ void AudioStreamOGGVorbis::_bind_methods() {
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
-
 	data = nullptr;
 	data_len = 0;
 	length = 0;

@@ -106,7 +106,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 		// If VRAM compression is using ETC, but image has alpha, convert to RGBA4444 or LA8
 		// This saves space while maintaining the alpha channel
 		if (detected_channels == Image::USED_CHANNELS_RGBA) {
-			
+
 			if (p_img->has_mipmaps()) {
 				// Image doesn't support mipmaps with RGBA4444 textures
 				p_img->clear_mipmaps();
@@ -127,8 +127,9 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	Ref<Image> img = p_img->duplicate();
 
-	if (img->get_format() != Image::FORMAT_RGBA8)
+	if (img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+	}
 
 	if (img->has_mipmaps()) {
 		if (next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh) {
@@ -165,12 +166,13 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	int encoding_time = 0;
 	float effort = 0.0; //default, reasonable time
 
-	if (p_lossy_quality > 0.75)
+	if (p_lossy_quality > 0.75) {
 		effort = 0.4;
-	else if (p_lossy_quality > 0.85)
+	} else if (p_lossy_quality > 0.85) {
 		effort = 0.6;
-	else if (p_lossy_quality > 0.95)
+	} else if (p_lossy_quality > 0.95) {
 		effort = 0.8;
+	}
 
 	Etc::ErrorMetric error_metric = Etc::ErrorMetric::RGBX; // NOTE: we can experiment with other error metrics
 	Etc::Image::Format etc2comp_etc_format = _image_format_to_etc2comp_format(etc_format);
@@ -219,7 +221,6 @@ static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::UsedChann
 }
 
 void _register_etc_compress_func() {
-
 	Image::_image_compress_etc1_func = _compress_etc1;
 	Image::_image_compress_etc2_func = _compress_etc2;
 }

@@ -35,7 +35,6 @@ using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
 
 void JoypadUWP::register_events() {
-
 	Gamepad::GamepadAdded +=
 			ref new EventHandler<Gamepad ^>(this, &JoypadUWP::OnGamepadAdded);
 	Gamepad::GamepadRemoved +=
@@ -43,32 +42,28 @@ void JoypadUWP::register_events() {
 }
 
 void JoypadUWP::process_controllers() {
-
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-
 		ControllerDevice &joy = controllers[i];
 
-		if (!joy.connected) break;
+		if (!joy.connected)
+			break;
 
 		switch (joy.type) {
-
 			case ControllerType::GAMEPAD_CONTROLLER: {
-
 				GamepadReading reading = ((Gamepad ^) joy.controller_reference)->GetCurrentReading();
 
 				int button_mask = (int)GamepadButtons::Menu;
 				for (int j = 0; j < 14; j++) {
-
 					input->joy_button(joy.id, j, (int)reading.Buttons & button_mask);
 					button_mask *= 2;
 				}
 
-				input->joy_axis(joy.id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-				input->joy_axis(joy.id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+				input->joy_axis(joy.id, JOY_AXIS_LEFT_X, axis_correct(reading.LeftThumbstickX));
+				input->joy_axis(joy.id, JOY_AXIS_LEFT_Y, axis_correct(reading.LeftThumbstickY, true));
+				input->joy_axis(joy.id, JOY_AXIS_RIGHT_X, axis_correct(reading.RightThumbstickX));
+				input->joy_axis(joy.id, JOY_AXIS_RIGHT_Y, axis_correct(reading.RightThumbstickY, true));
+				input->joy_axis(joy.id, JOY_AXIS_TRIGGER_LEFT, axis_correct(reading.LeftTrigger, false, true));
+				input->joy_axis(joy.id, JOY_AXIS_TRIGGER_RIGHT, axis_correct(reading.RightTrigger, false, true));
 
 				uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
 				if (timestamp > joy.ff_timestamp) {
@@ -92,24 +87,20 @@ void JoypadUWP::process_controllers() {
 }
 
 JoypadUWP::JoypadUWP() {
-
 	for (int i = 0; i < MAX_CONTROLLERS; i++)
 		controllers[i].id = i;
 }
 
 JoypadUWP::JoypadUWP(InputDefault *p_input) {
-
 	input = p_input;
 
 	JoypadUWP();
 }
 
 void JoypadUWP::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
-
 	short idx = -1;
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-
 		if (!controllers[i].connected) {
 			idx = i;
 			break;
@@ -127,11 +118,9 @@ void JoypadUWP::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input
 }
 
 void JoypadUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
-
 	short idx = -1;
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
-
 		if (controllers[i].controller_reference == value) {
 			idx = i;
 			break;
@@ -146,7 +135,6 @@ void JoypadUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Inp
 }
 
 InputDefault::JoyAxis JoypadUWP::axis_correct(double p_val, bool p_negate, bool p_trigger) const {
-
 	InputDefault::JoyAxis jx;
 
 	jx.min = p_trigger ? 0 : -1;

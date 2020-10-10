@@ -43,20 +43,21 @@
 #include "scene/main/node.h"
 
 #include "modules/gdnative/gdnative.h"
+
 #include <nativescript/godot_nativescript.h>
 
 struct NativeScriptDesc {
-
 	struct Method {
-		godot_instance_method method;
+		godot_nativescript_instance_method method;
 		MethodInfo info;
 		int rpc_mode;
 		uint16_t rpc_method_id;
 		String documentation;
 	};
+
 	struct Property {
-		godot_property_set_func setter;
-		godot_property_get_func getter;
+		godot_nativescript_property_set_func setter;
+		godot_nativescript_property_get_func getter;
 		PropertyInfo info;
 		Variant default_value;
 		int rset_mode;
@@ -69,35 +70,26 @@ struct NativeScriptDesc {
 		String documentation;
 	};
 
-	uint16_t rpc_count;
+	uint16_t rpc_count = 0;
 	Map<StringName, Method> methods;
-	uint16_t rset_count;
+	uint16_t rset_count = 0;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
 	StringName base_native_type;
 	NativeScriptDesc *base_data;
-	godot_instance_create_func create_func;
-	godot_instance_destroy_func destroy_func;
+	godot_nativescript_instance_create_func create_func;
+	godot_nativescript_instance_destroy_func destroy_func;
 
 	String documentation;
 
-	const void *type_tag;
+	const void *type_tag = nullptr;
 
 	bool is_tool;
 
-	inline NativeScriptDesc() :
-			rpc_count(0),
-			methods(),
-			rset_count(0),
-			properties(),
-			signals_(),
-			base(),
-			base_native_type(),
-			documentation(),
-			type_tag(nullptr) {
-		zeromem(&create_func, sizeof(godot_instance_create_func));
-		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
+	inline NativeScriptDesc() {
+		zeromem(&create_func, sizeof(godot_nativescript_instance_create_func));
+		zeromem(&destroy_func, sizeof(godot_nativescript_instance_destroy_func));
 	}
 };
 
@@ -107,7 +99,7 @@ class NativeScript : public Script {
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 #endif
 
 	friend class NativeScriptInstance;
@@ -133,6 +125,8 @@ protected:
 public:
 	inline NativeScriptDesc *get_script_desc() const;
 
+	bool inherits_script(const Ref<Script> &p_script) const override;
+
 	void set_class_name(String p_class_name);
 	String get_class_name() const;
 
@@ -144,48 +138,48 @@ public:
 	void set_script_class_icon_path(String p_icon_path);
 	String get_script_class_icon_path() const;
 
-	virtual bool can_instance() const;
+	virtual bool can_instance() const override;
 
-	virtual Ref<Script> get_base_script() const; //for script inheritance
+	virtual Ref<Script> get_base_script() const override; //for script inheritance
 
-	virtual StringName get_instance_base_type() const; // this may not work in all scripts, will return empty if so
-	virtual ScriptInstance *instance_create(Object *p_this);
-	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this);
-	virtual bool instance_has(const Object *p_this) const;
+	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
+	virtual ScriptInstance *instance_create(Object *p_this) override;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
+	virtual bool instance_has(const Object *p_this) const override;
 
-	virtual bool has_source_code() const;
-	virtual String get_source_code() const;
-	virtual void set_source_code(const String &p_code);
-	virtual Error reload(bool p_keep_state = false);
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual bool has_method(const StringName &p_method) const;
-	virtual MethodInfo get_method_info(const StringName &p_method) const;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual bool is_tool() const;
-	virtual bool is_valid() const;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
 
-	virtual ScriptLanguage *get_language() const;
+	virtual ScriptLanguage *get_language() const override;
 
-	virtual bool has_script_signal(const StringName &p_signal) const;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
-	virtual void update_exports(); //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void update_exports() override; //editor tool
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual Vector<ScriptNetData> get_rpc_methods() const override;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const override;
+	virtual StringName get_rpc_method(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
 
-	virtual Vector<ScriptNetData> get_rset_properties() const;
-	virtual uint16_t get_rset_property_id(const StringName &p_variable) const;
-	virtual StringName get_rset_property(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual Vector<ScriptNetData> get_rset_properties() const override;
+	virtual uint16_t get_rset_property_id(const StringName &p_variable) const override;
+	virtual StringName get_rset_property(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(uint16_t p_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
 
 	String get_class_documentation() const;
 	String get_method_documentation(const StringName &p_method) const;
@@ -199,7 +193,6 @@ public:
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -238,9 +231,6 @@ public:
 
 	virtual ScriptLanguage *get_language();
 
-	virtual void call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount);
-	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
-
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();
 
@@ -250,7 +240,6 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;
@@ -275,7 +264,7 @@ private:
 
 	void call_libraries_cb(const StringName &name);
 
-	Vector<Pair<bool, godot_instance_binding_functions>> binding_functions;
+	Vector<Pair<bool, godot_nativescript_instance_binding_functions>> binding_functions;
 	Set<Vector<void *> *> binding_instances;
 
 	Map<int, HashMap<StringName, const void *>> global_type_tags;
@@ -368,7 +357,7 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max);
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max);
 
-	int register_binding_functions(godot_instance_binding_functions p_binding_functions);
+	int register_binding_functions(godot_nativescript_instance_binding_functions p_binding_functions);
 	void unregister_binding_functions(int p_idx);
 
 	void *get_instance_binding_data(int p_idx, Object *p_object);
@@ -394,19 +383,18 @@ inline NativeScriptDesc *NativeScript::get_script_desc() const {
 
 class NativeReloadNode : public Node {
 	GDCLASS(NativeReloadNode, Node);
-	bool unloaded;
+	bool unloaded = false;
 
 public:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	NativeReloadNode() :
-			unloaded(false) {}
+	NativeReloadNode() {}
 };
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

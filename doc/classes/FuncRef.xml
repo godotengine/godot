@@ -14,7 +14,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref].
+				Calls the referenced function previously set in [member function] or [method @GDScript.funcref].
 			</description>
 		</method>
 		<method name="call_funcv">
@@ -23,7 +23,7 @@
 			<argument index="0" name="arg_array" type="Array">
 			</argument>
 			<description>
-				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref]. Contrarily to [method call_func], this method does not support a variable number of arguments but expects all parameters to be passed via a single [Array].
+				Calls the referenced function previously set in [member function] or [method @GDScript.funcref]. Contrarily to [method call_func], this method does not support a variable number of arguments but expects all parameters to be passed via a single [Array].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
@@ -31,15 +31,6 @@
 			</return>
 			<description>
 				Returns whether the object still exists and has the function assigned.
-			</description>
-		</method>
-		<method name="set_function">
-			<return type="void">
-			</return>
-			<argument index="0" name="name" type="StringName">
-			</argument>
-			<description>
-				The name of the referenced function to call on the object, without parentheses or any parameters.
 			</description>
 		</method>
 		<method name="set_instance">
@@ -52,6 +43,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="function" type="StringName" setter="set_function" getter="get_function" default="@&quot;&quot;">
+			The name of the referenced function.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

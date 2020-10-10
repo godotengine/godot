@@ -39,7 +39,6 @@
 
 class Camera3D;
 class AudioStreamPlayer3D : public Node3D {
-
 	GDCLASS(AudioStreamPlayer3D, Node3D);
 
 public:
@@ -69,7 +68,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFilterSW filter;
 		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
@@ -143,7 +141,7 @@ private:
 	float _get_attenuation_db(float p_distance) const;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

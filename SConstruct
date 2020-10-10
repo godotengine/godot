@@ -8,11 +8,11 @@ import glob
 import os
 import pickle
 import sys
+from collections import OrderedDict
 
 # Local
 import methods
-import gles_builders
-from platform_methods import run_in_subprocess
+import glsl_builders
 
 # Scan possible build platforms
 
@@ -49,8 +49,6 @@ for x in sorted(glob.glob("platform/*")):
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-module_list = methods.detect_modules()
-
 methods.save_active_platforms(active_platforms, active_platform_ids)
 
 custom_tools = ["default"]
@@ -84,7 +82,9 @@ env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
+env_base.__class__.Run = methods.Run
 env_base.__class__.disable_warnings = methods.disable_warnings
+env_base.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
@@ -114,6 +114,7 @@ opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "releas
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size")))
 
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
+opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
@@ -121,12 +122,13 @@ opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise e
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
+opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 
 # Advanced options
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
-opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", True))
+opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
@@ -179,21 +181,49 @@ for k in platform_opts.keys():
     for o in opt_list:
         opts.Add(o)
 
-for x in module_list:
-    module_enabled = True
-    tmppath = "./modules/" + x
-    sys.path.insert(0, tmppath)
+# Update the environment now as the "custom_modules" option may be
+# defined in a file rather than specified via the command line.
+opts.Update(env_base)
+
+# Detect modules.
+modules_detected = OrderedDict()
+module_search_paths = ["modules"]  # Built-in path.
+
+if env_base["custom_modules"]:
+    paths = env_base["custom_modules"].split(",")
+    for p in paths:
+        try:
+            module_search_paths.append(methods.convert_custom_modules_path(p))
+        except ValueError as e:
+            print(e)
+            Exit(255)
+
+for path in module_search_paths:
+    # Note: custom modules can override built-in ones.
+    modules_detected.update(methods.detect_modules(path))
+    include_path = os.path.dirname(path)
+    if include_path:
+        env_base.Prepend(CPPPATH=[include_path])
+
+# Add module options.
+for name, path in modules_detected.items():
+    enabled = True
+    sys.path.insert(0, path)
     import config
 
-    enabled_attr = getattr(config, "is_enabled", None)
-    if callable(enabled_attr) and not config.is_enabled():
-        module_enabled = False
-    sys.path.remove(tmppath)
+    try:
+        enabled = config.is_enabled()
+    except AttributeError:
+        pass
+    sys.path.remove(path)
     sys.modules.pop("config")
-    opts.Add(BoolVariable("module_" + x + "_enabled", "Enable module '%s'" % (x,), module_enabled))
+    opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
-opts.Update(env_base)  # update environment
-Help(opts.GenerateHelpText(env_base))  # generate help
+methods.write_modules(modules_detected)
+
+# Update the environment again after all the module options are added.
+opts.Update(env_base)
+Help(opts.GenerateHelpText(env_base))
 
 # add default include paths
 
@@ -218,6 +248,10 @@ if env_base["target"] == "debug":
     # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption("implicit_cache", 1)
+
+if not env_base["tools"]:
+    # Export templates can't run unit test tool.
+    env_base["tests"] = False
 
 if env_base["no_editor_splash"]:
     env_base.Append(CPPDEFINES=["NO_EDITOR_SPLASH"])
@@ -270,35 +304,21 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
+    # Compilation DB requires SCons 3.1.1+.
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+
+    if scons_ver >= (4, 0, 0):
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
+
     if env["dev"]:
         env["verbose"] = True
         env["warnings"] = "extra"
         env["werror"] = True
-
-    if env["vsproj"]:
-        env.vs_incs = []
-        env.vs_srcs = []
-
-        def AddToVSProject(sources):
-            for x in sources:
-                if type(x) == type(""):
-                    fname = env.File(x).path
-                else:
-                    fname = env.File(x)[0].path
-                pieces = fname.split(".")
-                if len(pieces) > 0:
-                    basename = pieces[0]
-                    basename = basename.replace("\\\\", "/")
-                    if os.path.isfile(basename + ".h"):
-                        env.vs_incs = env.vs_incs + [basename + ".h"]
-                    elif os.path.isfile(basename + ".hpp"):
-                        env.vs_incs = env.vs_incs + [basename + ".hpp"]
-                    if os.path.isfile(basename + ".c"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".c"]
-                    elif os.path.isfile(basename + ".cpp"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-
-        env.AddToVSProject = AddToVSProject
+        if env["tools"]:
+            env["tests"] = True
 
     env.extra_suffix = ""
 
@@ -360,7 +380,7 @@ if selected_platform in platform_list:
                 'newer GCC version, or Clang 6 or later by passing "use_llvm=yes" '
                 "to the SCons command line."
             )
-            sys.exit(255)
+            Exit(255)
         elif cc_version_major < 7:
             print(
                 "Detected GCC version older than 7, which does not fully support "
@@ -368,7 +388,7 @@ if selected_platform in platform_list:
                 'version, or Clang 6 or later by passing "use_llvm=yes" to the '
                 "SCons command line."
             )
-            sys.exit(255)
+            Exit(255)
     elif methods.using_clang(env):
         # Apple LLVM versions differ from upstream LLVM version \o/, compare
         # in https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
@@ -379,22 +399,22 @@ if selected_platform in platform_list:
                     "Detected Clang version older than 6, which does not fully support "
                     "C++17. Supported versions are Clang 6 and later."
                 )
-                sys.exit(255)
+                Exit(255)
             elif not vanilla and cc_version_major < 10:
                 print(
                     "Detected Apple Clang version older than 10, which does not fully "
                     "support C++17. Supported versions are Apple Clang 10 and later."
                 )
-                sys.exit(255)
+                Exit(255)
         elif cc_version_major < 6:
             print(
                 "Detected Clang version older than 6, which does not fully support "
                 "C++17. Supported versions are Clang 6 and later."
             )
-            sys.exit(255)
+            Exit(255)
 
     # Configure compiler warnings
-    if env.msvc:
+    if env.msvc:  # MSVC
         # Truncations, narrowing conversions, signed/unsigned comparisons...
         disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
         if env["warnings"] == "extra":
@@ -407,20 +427,17 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/w"])
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=["/EHsc"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
-        # Force to use Unicode encoding
-        env.Append(MSVC_FLAGS=["/utf8"])
-    else:  # Rest of the world
-        shadow_local_warning = []
-        all_plus_warnings = ["-Wwrite-strings"]
+    else:  # GCC, Clang
+        gcc_common_warnings = []
 
         if methods.using_gcc(env):
-            if cc_version_major >= 7:
-                shadow_local_warning = ["-Wshadow-local"]
+            gcc_common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
 
         if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wno-unused-parameter"] + all_plus_warnings + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + gcc_common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -436,14 +453,15 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
                 if cc_version_major >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
-            if methods.using_clang(env):
+            elif methods.using_clang(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall"] + gcc_common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + gcc_common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
             # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
@@ -464,7 +482,7 @@ if selected_platform in platform_list:
     if env["target"] == "release":
         if env["tools"]:
             print("Tools can only be built with targets 'debug' and 'release_debug'.")
-            sys.exit(255)
+            Exit(255)
         suffix += ".opt"
         env.Append(CPPDEFINES=["NDEBUG"])
 
@@ -491,40 +509,40 @@ if selected_platform in platform_list:
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
-    env.module_list = []
+    modules_enabled = OrderedDict()
     env.module_icons_paths = []
     env.doc_class_path = {}
 
-    for x in sorted(module_list):
-        if not env["module_" + x + "_enabled"]:
+    for name, path in modules_detected.items():
+        if not env["module_" + name + "_enabled"]:
             continue
-        tmppath = "./modules/" + x
-        sys.path.insert(0, tmppath)
-        env.current_module = x
+        sys.path.insert(0, path)
+        env.current_module = name
         import config
 
         if config.can_build(env, selected_platform):
             config.configure(env)
-            env.module_list.append(x)
-
             # Get doc classes paths (if present)
             try:
                 doc_classes = config.get_doc_classes()
                 doc_path = config.get_doc_path()
                 for c in doc_classes:
-                    env.doc_class_path[c] = "modules/" + x + "/" + doc_path
+                    env.doc_class_path[c] = path + "/" + doc_path
             except:
                 pass
             # Get icon paths (if present)
             try:
                 icons_path = config.get_icons_path()
-                env.module_icons_paths.append("modules/" + x + "/" + icons_path)
+                env.module_icons_paths.append(path + "/" + icons_path)
             except:
                 # Default path for module icons
-                env.module_icons_paths.append("modules/" + x + "/" + "icons")
+                env.module_icons_paths.append(path + "/" + "icons")
+            modules_enabled[name] = path
 
-        sys.path.remove(tmppath)
+        sys.path.remove(path)
         sys.modules.pop("config")
+
+    env.module_list = modules_enabled
 
     methods.update_version(env.module_version_string)
 
@@ -553,7 +571,7 @@ if selected_platform in platform_list:
                 "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
-            sys.exit(255)
+            Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
     if env["disable_advanced_gui"]:
@@ -562,50 +580,51 @@ if selected_platform in platform_list:
                 "Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), "
                 "only with 'tools=no' (export template)."
             )
-            sys.exit(255)
+            Exit(255)
         else:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 
     editor_module_list = ["regex"]
-    for x in editor_module_list:
-        if not env["module_" + x + "_enabled"]:
-            if env["tools"]:
-                print(
-                    "Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), "
-                    "only with 'tools=no' (export template)."
-                )
-                sys.exit(255)
+    if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
+        print(
+            "Build option 'module_"
+            + x
+            + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
+        )
+        Exit(255)
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)
 
     if not env["platform"] == "server":
-        env.Append(
-            BUILDERS={
-                "GLES2_GLSL": env.Builder(
-                    action=run_in_subprocess(gles_builders.build_gles2_headers), suffix="glsl.gen.h", src_suffix=".glsl"
-                )
-            }
-        )
-        env.Append(
-            BUILDERS={
-                "RD_GLSL": env.Builder(
-                    action=run_in_subprocess(gles_builders.build_rd_headers), suffix="glsl.gen.h", src_suffix=".glsl"
-                )
-            }
-        )
+        GLSL_BUILDERS = {
+            "RD_GLSL": env.Builder(
+                action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+                suffix="glsl.gen.h",
+                src_suffix=".glsl",
+            ),
+            "GLSL_HEADER": env.Builder(
+                action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+                suffix="glsl.gen.h",
+                src_suffix=".glsl",
+            ),
+        }
+        env.Append(BUILDERS=GLSL_BUILDERS)
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:
         CacheDir(scons_cache_path)
         print("Scons cache enabled... (path: '" + scons_cache_path + "')")
 
+    if env["vsproj"]:
+        env.vs_incs = []
+        env.vs_srcs = []
+
     Export("env")
 
-    # build subdirs, the build order is dependent on link order.
-
+    # Build subdirs, the build order is dependent on link order.
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
@@ -614,9 +633,11 @@ if selected_platform in platform_list:
 
     SConscript("platform/SCsub")
     SConscript("modules/SCsub")
+    if env["tests"]:
+        SConscript("tests/SCsub")
     SConscript("main/SCsub")
 
-    SConscript("platform/" + selected_platform + "/SCsub")  # build selected platform
+    SConscript("platform/" + selected_platform + "/SCsub")  # Build selected platform.
 
     # Microsoft Visual Studio Project Generation
     if env["vsproj"]:
@@ -645,126 +666,13 @@ elif selected_platform != "":
 
     if selected_platform == "list":
         # Exit early to suppress the rest of the built-in SCons messages
-        sys.exit(0)
+        Exit()
     else:
-        sys.exit(255)
+        Exit(255)
 
-# The following only makes sense when the env is defined, and assumes it is
+# The following only makes sense when the 'env' is defined, and assumes it is.
 if "env" in locals():
-    screen = sys.stdout
-    # Progress reporting is not available in non-TTY environments since it
-    # messes with the output (for example, when writing to a file)
-    show_progress = env["progress"] and sys.stdout.isatty()
-    node_count = 0
-    node_count_max = 0
-    node_count_interval = 1
-    node_count_fname = str(env.Dir("#")) + "/.scons_node_count"
-
-    import time, math
-
-    class cache_progress:
-        # The default is 1 GB cache and 12 hours half life
-        def __init__(self, path=None, limit=1073741824, half_life=43200):
-            self.path = path
-            self.limit = limit
-            self.exponent_scale = math.log(2) / half_life
-            if env["verbose"] and path != None:
-                screen.write(
-                    "Current cache limit is {} (used: {})\n".format(
-                        self.convert_size(limit), self.convert_size(self.get_size(path))
-                    )
-                )
-            self.delete(self.file_list())
-
-        def __call__(self, node, *args, **kw):
-            global node_count, node_count_max, node_count_interval, node_count_fname, show_progress
-            if show_progress:
-                # Print the progress percentage
-                node_count += node_count_interval
-                if node_count_max > 0 and node_count <= node_count_max:
-                    screen.write("\r[%3d%%] " % (node_count * 100 / node_count_max))
-                    screen.flush()
-                elif node_count_max > 0 and node_count > node_count_max:
-                    screen.write("\r[100%] ")
-                    screen.flush()
-                else:
-                    screen.write("\r[Initial build] ")
-                    screen.flush()
-
-        def delete(self, files):
-            if len(files) == 0:
-                return
-            if env["verbose"]:
-                # Utter something
-                screen.write("\rPurging %d %s from cache...\n" % (len(files), len(files) > 1 and "files" or "file"))
-            [os.remove(f) for f in files]
-
-        def file_list(self):
-            if self.path is None:
-                # Nothing to do
-                return []
-            # Gather a list of (filename, (size, atime)) within the
-            # cache directory
-            file_stat = [(x, os.stat(x)[6:8]) for x in glob.glob(os.path.join(self.path, "*", "*"))]
-            if file_stat == []:
-                # Nothing to do
-                return []
-            # Weight the cache files by size (assumed to be roughly
-            # proportional to the recompilation time) times an exponential
-            # decay since the ctime, and return a list with the entries
-            # (filename, size, weight).
-            current_time = time.time()
-            file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
-            # Sort by the most recently accessed files (most sensible to keep) first
-            file_stat.sort(key=lambda x: x[2])
-            # Search for the first entry where the storage limit is
-            # reached
-            sum, mark = 0, None
-            for i, x in enumerate(file_stat):
-                sum += x[1]
-                if sum > self.limit:
-                    mark = i
-                    break
-            if mark is None:
-                return []
-            else:
-                return [x[0] for x in file_stat[mark:]]
-
-        def convert_size(self, size_bytes):
-            if size_bytes == 0:
-                return "0 bytes"
-            size_name = ("bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-            i = int(math.floor(math.log(size_bytes, 1024)))
-            p = math.pow(1024, i)
-            s = round(size_bytes / p, 2)
-            return "%s %s" % (int(s) if i == 0 else s, size_name[i])
-
-        def get_size(self, start_path="."):
-            total_size = 0
-            for dirpath, dirnames, filenames in os.walk(start_path):
-                for f in filenames:
-                    fp = os.path.join(dirpath, f)
-                    total_size += os.path.getsize(fp)
-            return total_size
-
-    def progress_finish(target, source, env):
-        global node_count, progressor
-        with open(node_count_fname, "w") as f:
-            f.write("%d\n" % node_count)
-        progressor.delete(progressor.file_list())
-
-    try:
-        with open(node_count_fname) as f:
-            node_count_max = int(f.readline())
-    except:
-        pass
-
-    cache_directory = os.environ.get("SCONS_CACHE")
-    # Simple cache pruning, attached to SCons' progress callback. Trim the
-    # cache directory to a size not larger than cache_limit.
-    cache_limit = float(os.getenv("SCONS_CACHE_LIMIT", 1024)) * 1024 * 1024
-    progressor = cache_progress(cache_directory, cache_limit)
-    Progress(progressor, interval=node_count_interval)
-
-    progress_finish_command = Command("progress_finish", [], progress_finish)
-    AlwaysBuild(progress_finish_command)
+    methods.show_progress(env)
+    # TODO: replace this with `env.Dump(format="json")`
+    # once we start requiring SCons 4.0 as min version.
+    methods.dump(env)

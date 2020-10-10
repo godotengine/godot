@@ -40,8 +40,7 @@
 #include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
-
-	MIDIClientRef client;
+	MIDIClientRef client = 0;
 	MIDIPortRef port_in;
 
 	Vector<MIDIEndpointRef> connected_sources;

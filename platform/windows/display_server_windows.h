@@ -33,7 +33,7 @@
 
 #include "servers/display_server.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_windows.h"
@@ -66,6 +66,87 @@
 #include <windows.h>
 #include <windowsx.h>
 
+// WinTab API
+#define WT_PACKET 0x7FF0
+#define WT_PROXIMITY 0x7FF5
+#define WT_INFOCHANGE 0x7FF6
+#define WT_CSRCHANGE 0x7FF7
+
+#define WTI_DEFSYSCTX 4
+#define WTI_DEVICES 100
+#define DVC_NPRESSURE 15
+#define DVC_TPRESSURE 16
+#define DVC_ORIENTATION 17
+#define DVC_ROTATION 18
+
+#define CXO_MESSAGES 0x0004
+#define PK_NORMAL_PRESSURE 0x0400
+#define PK_TANGENT_PRESSURE 0x0800
+#define PK_ORIENTATION 0x1000
+
+typedef struct tagLOGCONTEXTW {
+	WCHAR lcName[40];
+	UINT lcOptions;
+	UINT lcStatus;
+	UINT lcLocks;
+	UINT lcMsgBase;
+	UINT lcDevice;
+	UINT lcPktRate;
+	DWORD lcPktData;
+	DWORD lcPktMode;
+	DWORD lcMoveMask;
+	DWORD lcBtnDnMask;
+	DWORD lcBtnUpMask;
+	LONG lcInOrgX;
+	LONG lcInOrgY;
+	LONG lcInOrgZ;
+	LONG lcInExtX;
+	LONG lcInExtY;
+	LONG lcInExtZ;
+	LONG lcOutOrgX;
+	LONG lcOutOrgY;
+	LONG lcOutOrgZ;
+	LONG lcOutExtX;
+	LONG lcOutExtY;
+	LONG lcOutExtZ;
+	DWORD lcSensX;
+	DWORD lcSensY;
+	DWORD lcSensZ;
+	BOOL lcSysMode;
+	int lcSysOrgX;
+	int lcSysOrgY;
+	int lcSysExtX;
+	int lcSysExtY;
+	DWORD lcSysSensX;
+	DWORD lcSysSensY;
+} LOGCONTEXTW;
+
+typedef struct tagAXIS {
+	LONG axMin;
+	LONG axMax;
+	UINT axUnits;
+	DWORD axResolution;
+} AXIS;
+
+typedef struct tagORIENTATION {
+	int orAzimuth;
+	int orAltitude;
+	int orTwist;
+} ORIENTATION;
+
+typedef struct tagPACKET {
+	int pkNormalPressure;
+	int pkTangentPressure;
+	ORIENTATION pkOrientation;
+} PACKET;
+
+typedef HANDLE(WINAPI *WTOpenPtr)(HWND p_window, LOGCONTEXTW *p_ctx, BOOL p_enable);
+typedef BOOL(WINAPI *WTClosePtr)(HANDLE p_ctx);
+typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
+typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
+typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
+
+// Windows Ink API
 #ifndef POINTER_STRUCTURES
 
 #define POINTER_STRUCTURES
@@ -74,6 +155,22 @@ typedef DWORD POINTER_INPUT_TYPE;
 typedef UINT32 POINTER_FLAGS;
 typedef UINT32 PEN_FLAGS;
 typedef UINT32 PEN_MASK;
+
+#ifndef PEN_MASK_PRESSURE
+#define PEN_MASK_PRESSURE 0x00000001
+#endif
+
+#ifndef PEN_MASK_TILT_X
+#define PEN_MASK_TILT_X 0x00000004
+#endif
+
+#ifndef PEN_MASK_TILT_Y
+#define PEN_MASK_TILT_Y 0x00000008
+#endif
+
+#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
+#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
+#endif
 
 enum tagPOINTER_INPUT_TYPE {
 	PT_POINTER = 0x00000001,
@@ -128,6 +225,18 @@ typedef struct tagPOINTER_PEN_INFO {
 
 #endif //POINTER_STRUCTURES
 
+#ifndef WM_POINTERUPDATE
+#define WM_POINTERUPDATE 0x0245
+#endif
+
+#ifndef WM_POINTERENTER
+#define WM_POINTERENTER 0x0249
+#endif
+
+#ifndef WM_POINTERLEAVE
+#define WM_POINTERLEAVE 0x024A
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 
@@ -155,9 +264,23 @@ class DisplayServerWindows : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
+public:
+	// WinTab API
+	static bool wintab_available;
+	static WTOpenPtr wintab_WTOpen;
+	static WTClosePtr wintab_WTClose;
+	static WTInfoPtr wintab_WTInfo;
+	static WTPacketPtr wintab_WTPacket;
+	static WTEnablePtr wintab_WTEnable;
+
+	// Windows Ink API
+	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
+	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
+
+private:
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
 
 	enum {
@@ -165,7 +288,6 @@ class DisplayServerWindows : public DisplayServer {
 	};
 
 	struct KeyEvent {
-
 		WindowID window_id;
 		bool alt, shift, control, meta;
 		UINT uMsg;
@@ -195,10 +317,13 @@ class DisplayServerWindows : public DisplayServer {
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	String rendering_driver;
+	bool app_focused = false;
 
 	struct WindowData {
 		HWND hWnd;
 		//layered window
+
+		Vector<Vector2> mpath;
 
 		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
@@ -213,6 +338,17 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+
+		HANDLE wtctx;
+		LOGCONTEXTW wtlc;
+		int min_pressure;
+		int max_pressure;
+		bool tilt_supported;
+		bool block_mm = false;
+
+		int last_pressure_update;
+		float last_pressure;
+		Vector2 last_tilt;
 
 		HBITMAP hBitmap; //DIB section for layered window
 		uint8_t *dib_data = nullptr;
@@ -269,6 +405,7 @@ class DisplayServerWindows : public DisplayServer {
 	uint32_t last_button_state = 0;
 	bool use_raw_input = false;
 	bool drop_events = false;
+	bool in_dispatch_input_event = false;
 	bool console_visible = false;
 
 	WNDCLASSEXW wc;
@@ -281,6 +418,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_maximized = false);
+	void _update_window_mouse_passthrough(WindowID p_window);
 
 	void _update_real_mouse_position(WindowID p_window);
 
@@ -325,6 +463,7 @@ public:
 	virtual Vector<DisplayServer::WindowID> get_window_list() const;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
+	virtual void show_window(WindowID p_window);
 	virtual void delete_sub_window(WindowID p_window);
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const;
@@ -341,6 +480,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID);
@@ -385,11 +525,15 @@ public:
 	virtual CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
 
-	virtual bool get_swap_ok_cancel();
+	virtual bool get_swap_cancel_ok();
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid);
 
-	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+	virtual int keyboard_get_layout_count() const;
+	virtual int keyboard_get_current_layout() const;
+	virtual void keyboard_set_current_layout(int p_index);
+	virtual String keyboard_get_layout_language(int p_index) const;
+	virtual String keyboard_get_layout_name(int p_index) const;
 
 	virtual void process_events();
 

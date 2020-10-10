@@ -40,7 +40,6 @@
 #include "servers/rendering/rendering_device.h"
 
 class RasterizerCanvasRD : public RasterizerCanvas {
-
 	RasterizerStorageRD *storage;
 
 	enum ShaderVariant {
@@ -149,7 +148,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	} shader;
 
 	struct ShaderData : public RasterizerStorageRD::ShaderData {
-
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -185,6 +183,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -311,7 +311,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	/******************/
 
 	struct CanvasLight {
-
 		RID texture;
 		struct {
 			int size;
@@ -331,7 +330,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	};
 
 	struct OccluderPolygon {
-
 		RS::CanvasOccluderPolygonCullMode cull_mode;
 		int point_count;
 		RID vertex_buffer;
@@ -369,7 +367,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	//state that does not vary across rendering all items
 
 	struct ItemStateData : public Item::CustomData {
-
 		struct LightCache {
 			uint64_t light_version;
 			Light *light;
@@ -380,7 +377,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		RID state_uniform_set_with_light;
 		RID state_uniform_set;
 		ItemStateData() {
-
 			for (int i = 0; i < DEFAULT_MAX_LIGHTS_PER_ITEM; i++) {
 				light_cache[i].light_version = 0;
 				light_cache[i].light = nullptr;
@@ -399,7 +395,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	};
 
 	struct State {
-
 		//state buffer
 		struct Buffer {
 			float canvas_transform[16];
@@ -487,7 +482,7 @@ public:
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform);
 
-	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
+	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 

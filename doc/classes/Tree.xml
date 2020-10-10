@@ -16,7 +16,7 @@
 		    var subchild1 = tree.create_item(child1)
 		    subchild1.set_text(0, "Subchild1")
 		[/codeblock]
-		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root].
+		To iterate over all the [TreeItem] objects in a [Tree] object, use [method TreeItem.get_next] and [method TreeItem.get_children] after getting the root through [method get_root]. You can use [method Object.free] on a [TreeItem] to remove it from the [Tree].
 	</description>
 	<tutorials>
 	</tutorials>

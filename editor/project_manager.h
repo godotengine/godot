@@ -35,27 +35,34 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class ProjectDialog;
 class ProjectList;
-class ProjectListFilter;
+
+enum FilterOption {
+	NAME,
+	PATH,
+	EDIT_DATE,
+};
 
 class ProjectManager : public Control {
-
 	GDCLASS(ProjectManager, Control);
 
-	Button *erase_btn;
-	Button *erase_missing_btn;
+	TabContainer *tabs;
+
+	ProjectList *_project_list;
+
+	LineEdit *search_box;
+	OptionButton *filter_option;
+
+	Button *run_btn;
 	Button *open_btn;
 	Button *rename_btn;
-	Button *run_btn;
+	Button *erase_btn;
+	Button *erase_missing_btn;
 
 	EditorAssetLibrary *asset_library;
-
-	ProjectListFilter *project_filter;
-	ProjectListFilter *project_order_filter;
 
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
@@ -66,18 +73,12 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_scan_ask;
 	ConfirmationDialog *ask_update_settings;
 	ConfirmationDialog *open_templates;
+
 	AcceptDialog *run_error_diag;
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 
-	HBoxContainer *projects_hb;
-	TabContainer *tabs;
-	ProjectList *_project_list;
-
 	OptionButton *language_btn;
-	Control *gui_base;
-
-	bool importing;
 
 	void _open_asset_library();
 	void _scan_projects();
@@ -96,14 +97,13 @@ class ProjectManager : public Control {
 	void _language_selected(int p_id);
 	void _restart_confirm();
 	void _exit_dialog();
-	void _scan_begin(const String &p_base);
-
 	void _confirm_update_settings();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
 	void _on_projects_updated();
-	void _update_scroll_position(const String &dir);
+	void _scan_multiple_folders(PackedStringArray p_files);
+	void _scan_begin(const String &p_base);
 	void _scan_dir(const String &path, List<String> *r_projects);
 
 	void _install_project(const String &p_zip_path, const String &p_title);
@@ -111,10 +111,9 @@ class ProjectManager : public Control {
 	void _dim_window();
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
 	void _files_dropped(PackedStringArray p_files, int p_screen);
-	void _scan_multiple_folders(PackedStringArray p_files);
 
-	void _on_order_option_changed();
-	void _on_filter_option_changed();
+	void _on_order_option_changed(int p_idx);
+	void _on_search_term_changed(const String &p_term);
 
 protected:
 	void _notification(int p_what);
@@ -123,44 +122,6 @@ protected:
 public:
 	ProjectManager();
 	~ProjectManager();
-};
-
-class ProjectListFilter : public HBoxContainer {
-
-	GDCLASS(ProjectListFilter, HBoxContainer);
-
-public:
-	enum FilterOption {
-		FILTER_NAME,
-		FILTER_PATH,
-		FILTER_EDIT_DATE,
-	};
-
-private:
-	friend class ProjectManager;
-
-	OptionButton *filter_option;
-	LineEdit *search_box;
-	bool has_search_box;
-	FilterOption _current_filter;
-
-	void _search_text_changed(const String &p_newtext);
-	void _filter_option_selected(int p_idx);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	void _setup_filters(Vector<String> options);
-	void add_filter_option();
-	void add_search_box();
-	void set_filter_size(int h_size);
-	String get_search_term();
-	FilterOption get_filter_option();
-	void set_filter_option(FilterOption);
-	ProjectListFilter();
-	void clear();
 };
 
 #endif // PROJECT_MANAGER_H

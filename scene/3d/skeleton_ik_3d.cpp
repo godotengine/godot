@@ -55,7 +55,6 @@ FabrikInverseKinematic::ChainItem *FabrikInverseKinematic::ChainItem::add_child(
 
 /// Build a chain that starts from the root to tip
 bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain) {
-
 	ERR_FAIL_COND_V(-1 == p_task->root_bone, false);
 
 	Chain &chain(p_task->chain);
@@ -75,7 +74,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	chain_ids.resize(p_task->skeleton->get_bone_count());
 
 	for (int x = p_task->end_effectors.size() - 1; 0 <= x; --x) {
-
 		const EndEffector *ee(&p_task->end_effectors[x]);
 		ERR_FAIL_COND_V(p_task->root_bone >= ee->tip_bone, false);
 		ERR_FAIL_INDEX_V(ee->tip_bone, p_task->skeleton->get_bone_count(), false);
@@ -84,7 +82,6 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		// Picks all IDs that composing a single chain in reverse order (except the root)
 		BoneId chain_sub_tip(ee->tip_bone);
 		while (chain_sub_tip > p_task->root_bone) {
-
 			chain_ids.write[sub_chain_size++] = chain_sub_tip;
 			chain_sub_tip = p_task->skeleton->get_bone_parent(chain_sub_tip);
 		}
@@ -95,10 +92,8 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 		// For each chain item id will be created a ChainItem if doesn't exists
 		ChainItem *sub_chain(&chain.chain_root);
 		for (int i = sub_chain_size - 1; 0 <= i; --i) {
-
 			ChainItem *child_ci(sub_chain->find_child(chain_ids[i]));
 			if (!child_ci) {
-
 				child_ci = sub_chain->add_child(chain_ids[i]);
 
 				child_ci->pb = p_task->skeleton->get_physical_bone(child_ci->bone);
@@ -118,8 +113,9 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 			}
 		}
 
-		if (!middle_chain_item_id)
+		if (!middle_chain_item_id) {
 			chain.middle_chain_item = nullptr;
+		}
 
 		// Initialize current tip
 		chain.tips.write[x].chain_item = sub_chain;
@@ -137,9 +133,9 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 }
 
 void FabrikInverseKinematic::update_chain(const Skeleton3D *p_sk, ChainItem *p_chain_item) {
-
-	if (!p_chain_item)
+	if (!p_chain_item) {
 		return;
+	}
 
 	p_chain_item->initial_transform = p_sk->get_bone_global_pose(p_chain_item->bone);
 	p_chain_item->current_pos = p_chain_item->initial_transform.origin;
@@ -151,7 +147,6 @@ void FabrikInverseKinematic::update_chain(const Skeleton3D *p_sk, ChainItem *p_c
 }
 
 void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
-
 	real_t distance_to_goal(1e4);
 	real_t previous_distance_to_goal(0);
 	int can_solve(p_task->max_iterations);
@@ -167,7 +162,6 @@ void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet) {
 }
 
 void FabrikInverseKinematic::solve_simple_backwards(Chain &r_chain, bool p_solve_magnet) {
-
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}
@@ -200,7 +194,6 @@ void FabrikInverseKinematic::solve_simple_backwards(Chain &r_chain, bool p_solve
 }
 
 void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet) {
-
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}
@@ -212,7 +205,6 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 		sub_chain_root->current_pos = origin;
 
 		if (!sub_chain_root->children.empty()) {
-
 			ChainItem &child(sub_chain_root->children.write[0]);
 
 			// Is not tip
@@ -231,7 +223,6 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 				sub_chain_root = &child;
 			}
 		} else {
-
 			// Is tip
 			sub_chain_root = nullptr;
 		}
@@ -239,7 +230,6 @@ void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_
 }
 
 FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform) {
-
 	FabrikInverseKinematic::EndEffector ee;
 	ee.tip_bone = tip_bone;
 
@@ -258,8 +248,9 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 }
 
 void FabrikInverseKinematic::free_task(Task *p_task) {
-	if (p_task)
+	if (p_task) {
 		memdelete(p_task);
+	}
 }
 
 void FabrikInverseKinematic::set_goal(Task *p_task, const Transform &p_goal) {
@@ -267,12 +258,10 @@ void FabrikInverseKinematic::set_goal(Task *p_task, const Transform &p_goal) {
 }
 
 void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta) {
-
 	if (blending_delta >= 0.99f) {
 		// Update the end_effector (local transform) without blending
 		p_task->end_effectors.write[0].goal_transform = p_inverse_transf * p_task->goal_global_transform;
 	} else {
-
 		// End effector in local transform
 		const Transform end_effector_pose(p_task->skeleton->get_bone_global_pose(p_task->end_effectors.write[0].tip_bone));
 
@@ -282,19 +271,26 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform &p_inverse_
 }
 
 void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
-
 	if (blending_delta <= 0.01f) {
 		return; // Skip solving
 	}
 
-	p_task->skeleton->clear_bones_global_pose_override();
+	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform(), 0.0, true);
+
+	if (p_task->chain.middle_chain_item) {
+		p_task->skeleton->set_bone_global_pose_override(p_task->chain.middle_chain_item->bone, Transform(), 0.0, true);
+	}
+
+	for (int i = 0; i < p_task->chain.tips.size(); i += 1) {
+		p_task->skeleton->set_bone_global_pose_override(p_task->chain.tips[i].chain_item->bone, Transform(), 0.0, true);
+	}
 
 	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse().scaled(p_task->skeleton->get_global_transform().get_basis().get_scale()), blending_delta);
 
 	update_chain(p_task->skeleton, &p_task->chain.chain_root);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
-		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.linear_interpolate(p_magnet_position, blending_delta);
+		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.lerp(p_magnet_position, blending_delta);
 		solve_simple(p_task, true);
 	}
 	solve_simple(p_task, false);
@@ -306,7 +302,6 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.empty()) {
-
 			/// Rotate basis
 			const Vector3 initial_ori((ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized());
 			const Vector3 rot_axis(initial_ori.cross(ci->current_ori).normalized());
@@ -317,38 +312,37 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 			}
 		} else {
 			// Set target orientation to tip
-			if (override_tip_basis)
+			if (override_tip_basis) {
 				new_bone_pose.basis = p_task->chain.tips[0].end_effector->goal_transform.basis;
-			else
+			} else {
 				new_bone_pose.basis = new_bone_pose.basis * p_task->chain.tips[0].end_effector->goal_transform.basis;
+			}
 		}
 
 		p_task->skeleton->set_bone_global_pose_override(ci->bone, new_bone_pose, 1.0, true);
 
-		if (!ci->children.empty())
+		if (!ci->children.empty()) {
 			ci = &ci->children.write[0];
-		else
+		} else {
 			ci = nullptr;
+		}
 	}
 }
 
 void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "root_bone" || property.name == "tip_bone") {
-
 		if (skeleton) {
-
 			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					names += ",";
+				}
 				names += skeleton->get_bone_name(i);
 			}
 
 			property.hint = PROPERTY_HINT_ENUM;
 			property.hint_string = names;
 		} else {
-
 			property.hint = PROPERTY_HINT_NONE;
 			property.hint_string = "";
 		}
@@ -356,7 +350,6 @@ void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
 }
 
 void SkeletonIK3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_root_bone", "root_bone"), &SkeletonIK3D::set_root_bone);
 	ClassDB::bind_method(D_METHOD("get_root_bone"), &SkeletonIK3D::get_root_bone);
 
@@ -413,9 +406,9 @@ void SkeletonIK3D::_notification(int p_what) {
 			reload_chain();
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-
-			if (target_node_override)
+			if (target_node_override) {
 				reload_goal();
+			}
 
 			_solve_chain();
 
@@ -426,15 +419,7 @@ void SkeletonIK3D::_notification(int p_what) {
 	}
 }
 
-SkeletonIK3D::SkeletonIK3D() :
-		interpolation(1),
-		override_tip_basis(true),
-		use_magnet(false),
-		min_distance(0.01),
-		max_iterations(10),
-		skeleton(nullptr),
-		target_node_override(nullptr),
-		task(nullptr) {
+SkeletonIK3D::SkeletonIK3D() {
 }
 
 SkeletonIK3D::~SkeletonIK3D() {
@@ -526,6 +511,11 @@ bool SkeletonIK3D::is_running() {
 void SkeletonIK3D::start(bool p_one_time) {
 	if (p_one_time) {
 		set_process_internal(false);
+
+		if (target_node_override) {
+			reload_goal();
+		}
+
 		_solve_chain();
 	} else {
 		set_process_internal(true);
@@ -537,23 +527,24 @@ void SkeletonIK3D::stop() {
 }
 
 Transform SkeletonIK3D::_get_target_transform() {
-
-	if (!target_node_override && !target_node_path_override.is_empty())
+	if (!target_node_override && !target_node_path_override.is_empty()) {
 		target_node_override = Object::cast_to<Node3D>(get_node(target_node_path_override));
+	}
 
-	if (target_node_override)
+	if (target_node_override) {
 		return target_node_override->get_global_transform();
-	else
+	} else {
 		return target;
+	}
 }
 
 void SkeletonIK3D::reload_chain() {
-
 	FabrikInverseKinematic::free_task(task);
 	task = nullptr;
 
-	if (!skeleton)
+	if (!skeleton) {
 		return;
+	}
 
 	task = FabrikInverseKinematic::create_simple_task(skeleton, skeleton->find_bone(root_bone), skeleton->find_bone(tip_bone), _get_target_transform());
 	if (task) {
@@ -563,15 +554,17 @@ void SkeletonIK3D::reload_chain() {
 }
 
 void SkeletonIK3D::reload_goal() {
-	if (!task)
+	if (!task) {
 		return;
+	}
 
 	FabrikInverseKinematic::set_goal(task, _get_target_transform());
 }
 
 void SkeletonIK3D::_solve_chain() {
-	if (!task)
+	if (!task) {
 		return;
+	}
 	FabrikInverseKinematic::solve(task, interpolation, override_tip_basis, use_magnet, magnet_position);
 }
 

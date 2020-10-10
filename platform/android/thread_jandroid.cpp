@@ -48,17 +48,14 @@ pthread_key_t ThreadAndroid::thread_id_key = _create_thread_id_key();
 Thread::ID ThreadAndroid::next_thread_id = 0;
 
 Thread::ID ThreadAndroid::get_id() const {
-
 	return id;
 }
 
 Thread *ThreadAndroid::create_thread_jandroid() {
-
 	return memnew(ThreadAndroid);
 }
 
 void *ThreadAndroid::thread_callback(void *userdata) {
-
 	ThreadAndroid *t = reinterpret_cast<ThreadAndroid *>(userdata);
 	setup_thread();
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
@@ -70,7 +67,6 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 }
 
 Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
-
 	ThreadAndroid *tr = memnew(ThreadAndroid);
 	tr->callback = p_callback;
 	tr->user = p_user;
@@ -83,7 +79,6 @@ Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, voi
 }
 
 Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
-
 	void *value = pthread_getspecific(thread_id_key);
 
 	if (value)
@@ -95,7 +90,6 @@ Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
 }
 
 void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
-
 	ThreadAndroid *tp = static_cast<ThreadAndroid *>(p_thread);
 	ERR_FAIL_COND(!tp);
 	ERR_FAIL_COND(tp->pthread == 0);
@@ -105,7 +99,6 @@ void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
 }
 
 void ThreadAndroid::_thread_destroyed(void *value) {
-
 	/* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
 	JNIEnv *env = (JNIEnv *)value;
 	if (env != nullptr) {
@@ -118,7 +111,6 @@ pthread_key_t ThreadAndroid::jvm_key;
 JavaVM *ThreadAndroid::java_vm = nullptr;
 
 void ThreadAndroid::setup_thread() {
-
 	if (pthread_getspecific(jvm_key))
 		return; //already setup
 	JNIEnv *env;
@@ -127,7 +119,6 @@ void ThreadAndroid::setup_thread() {
 }
 
 void ThreadAndroid::make_default(JavaVM *p_java_vm) {
-
 	java_vm = p_java_vm;
 	create_func = create_func_jandroid;
 	get_thread_id_func = get_thread_id_func_jandroid;
@@ -137,7 +128,6 @@ void ThreadAndroid::make_default(JavaVM *p_java_vm) {
 }
 
 JNIEnv *ThreadAndroid::get_env() {
-
 	if (!pthread_getspecific(jvm_key)) {
 		setup_thread();
 	}
@@ -148,7 +138,6 @@ JNIEnv *ThreadAndroid::get_env() {
 }
 
 ThreadAndroid::ThreadAndroid() {
-
 	pthread = 0;
 }
 

@@ -4,28 +4,28 @@
 		Base class for keys events with modifiers.
 	</brief_description>
 	<description>
-		Contains keys events information with modifiers support like [code]Shift[/code] or [code]Alt[/code]. See [method Node._input].
+		Contains keys events information with modifiers support like [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
+		<link title="InputEvent">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="alt" type="bool" setter="set_alt" getter="get_alt" default="false">
-			State of the [code]Alt[/code] modifier.
+			State of the [kbd]Alt[/kbd] modifier.
 		</member>
 		<member name="command" type="bool" setter="set_command" getter="get_command" default="false">
-			State of the [code]Command[/code] modifier.
+			State of the [kbd]Cmd[/kbd] modifier.
 		</member>
 		<member name="control" type="bool" setter="set_control" getter="get_control" default="false">
-			State of the [code]Ctrl[/code] modifier.
+			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
 		<member name="meta" type="bool" setter="set_metakey" getter="get_metakey" default="false">
-			State of the [code]Meta[/code] modifier.
+			State of the [kbd]Meta[/kbd] modifier.
 		</member>
 		<member name="shift" type="bool" setter="set_shift" getter="get_shift" default="false">
-			State of the [code]Shift[/code] modifier.
+			State of the [kbd]Shift[/kbd] modifier.
 		</member>
 	</members>
 	<constants>

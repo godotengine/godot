@@ -41,7 +41,6 @@
  */
 
 class FileAccess {
-
 public:
 	enum AccessType {
 		ACCESS_RESOURCES,
@@ -53,8 +52,8 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef FileAccess *(*CreateFunc)();
-	bool endian_swap;
-	bool real_is_double;
+	bool endian_swap = false;
+	bool real_is_double = false;
 
 	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
@@ -69,11 +68,10 @@ protected:
 private:
 	static bool backup_save;
 
-	AccessType _access_type;
+	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <class T>
 	static FileAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -172,27 +170,29 @@ public:
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
-	FileAccess();
+	FileAccess() {}
 	virtual ~FileAccess() {}
 };
 
 struct FileAccessRef {
-
 	_FORCE_INLINE_ FileAccess *operator->() {
-
 		return f;
 	}
 
 	operator bool() const { return f != nullptr; }
+
 	FileAccess *f;
+
 	operator FileAccess *() { return f; }
+
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
-		if (f) memdelete(f);
+		if (f) {
+			memdelete(f);
+		}
 	}
 };
 

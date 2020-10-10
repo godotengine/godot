@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Security;
 using Microsoft.Build.Framework;
-using GodotTools.Core;
 
 namespace GodotTools.BuildLogger
 {
@@ -71,13 +70,14 @@ namespace GodotTools.BuildLogger
         {
             string line = $"{e.File}({e.LineNumber},{e.ColumnNumber}): error {e.Code}: {e.Message}";
 
-            if (e.ProjectFile.Length > 0)
+            if (!string.IsNullOrEmpty(e.ProjectFile))
                 line += $" [{e.ProjectFile}]";
 
             WriteLine(line);
 
             string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
-                               $@"{e.Code.CsvEscape()},{e.Message.CsvEscape()},{e.ProjectFile.CsvEscape()}";
+                               $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                               $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             issuesStreamWriter.WriteLine(errorLine);
         }
 
@@ -90,8 +90,9 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber},{e.Code.CsvEscape()}," +
-                                 $@"{e.Message.CsvEscape()},{(e.ProjectFile != null ? e.ProjectFile.CsvEscape() : string.Empty)}";
+            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+                                 $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
+                                 $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             issuesStreamWriter.WriteLine(warningLine);
         }
 
@@ -182,5 +183,18 @@ namespace GodotTools.BuildLogger
         private StreamWriter logStreamWriter;
         private StreamWriter issuesStreamWriter;
         private int indent;
+    }
+
+    internal static class StringExtensions
+    {
+        public static string CsvEscape(this string value, char delimiter = ',')
+        {
+            bool hasSpecialChar = value.IndexOfAny(new[] { '\"', '\n', '\r', delimiter }) != -1;
+
+            if (hasSpecialChar)
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+
+            return value;
+        }
     }
 }

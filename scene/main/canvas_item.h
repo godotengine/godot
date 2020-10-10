@@ -45,7 +45,6 @@ class Font;
 class StyleBox;
 
 class CanvasItemMaterial : public Material {
-
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
@@ -66,7 +65,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
@@ -99,7 +97,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
@@ -126,7 +123,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_blend_mode(BlendMode p_blend_mode);
@@ -152,7 +149,7 @@ public:
 
 	RID get_shader_rid() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	CanvasItemMaterial();
 	virtual ~CanvasItemMaterial();
@@ -162,7 +159,6 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 
 class CanvasItem : public Node {
-
 	GDCLASS(CanvasItem, Node);
 
 public:
@@ -205,7 +201,7 @@ private:
 	bool first_draw;
 	bool visible;
 	bool pending_update;
-	bool toplevel;
+	bool top_level;
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
@@ -224,7 +220,7 @@ private:
 	mutable Transform2D global_transform;
 	mutable bool global_invalid;
 
-	void _toplevel_raise_self();
+	void _top_level_raise_self();
 
 	void _propagate_visibility_changed(bool p_visible);
 
@@ -247,9 +243,13 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) return;
+		if (!is_inside_tree()) {
+			return;
+		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		if (!block_transform_notify && notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
 	}
 
 	void item_rect_changed(bool p_size_changed = true);
@@ -275,7 +275,7 @@ public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
 	// Save and restore a CanvasItem state
-	virtual void _edit_set_state(const Dictionary &p_state){};
+	virtual void _edit_set_state(const Dictionary &p_state) {}
 	virtual Dictionary _edit_get_state() const { return Dictionary(); };
 
 	// Used to move the node
@@ -288,18 +288,18 @@ public:
 
 	// Used to rotate the node
 	virtual bool _edit_use_rotation() const { return false; };
-	virtual void _edit_set_rotation(float p_rotation){};
+	virtual void _edit_set_rotation(float p_rotation) {}
 	virtual float _edit_get_rotation() const { return 0.0; };
 
 	// Used to resize/move the node
 	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
-	virtual void _edit_set_rect(const Rect2 &p_rect){};
+	virtual void _edit_set_rect(const Rect2 &p_rect) {}
 	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
 	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); }; // LOOKS WEIRD
 
 	// Used to set a pivot
 	virtual bool _edit_use_pivot() const { return false; };
-	virtual void _edit_set_pivot(const Point2 &p_pivot){};
+	virtual void _edit_set_pivot(const Point2 &p_pivot) {}
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
 	virtual Transform2D _edit_get_transform() const;
@@ -348,15 +348,15 @@ public:
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
 
-	void draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale);
+	void draw_set_transform(const Point2 &p_offset, float p_rot = 0.0, const Size2 &p_scale = Size2(1.0, 1.0));
 	void draw_set_transform_matrix(const Transform2D &p_matrix);
 
 	static CanvasItem *get_current_item_drawn();
 
 	/* RECT / TRANSFORM */
 
-	void set_as_toplevel(bool p_toplevel);
-	bool is_set_as_toplevel() const;
+	void set_as_top_level(bool p_top_level);
+	bool is_set_as_top_level() const;
 
 	void set_draw_behind_parent(bool p_enable);
 	bool is_draw_behind_parent_enabled() const;
@@ -369,7 +369,7 @@ public:
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 
-	CanvasItem *get_toplevel() const;
+	CanvasItem *get_top_level() const;
 	_FORCE_INLINE_ RID get_canvas_item() const {
 		return canvas_item;
 	}
@@ -405,10 +405,10 @@ public:
 
 	void force_update_transform();
 
-	void set_texture_filter(TextureFilter p_texture_filter);
+	virtual void set_texture_filter(TextureFilter p_texture_filter);
 	TextureFilter get_texture_filter() const;
 
-	void set_texture_repeat(TextureRepeat p_texture_repeat);
+	virtual void set_texture_repeat(TextureRepeat p_texture_repeat);
 	TextureRepeat get_texture_repeat() const;
 
 	// Used by control nodes to retrieve the parent's anchorable area

@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Tabs : public Control {
-
 	GDCLASS(Tabs, Control);
 
 public:
@@ -56,7 +55,6 @@ public:
 
 private:
 	struct Tab {
-
 		String text;
 		String xl_text;
 		Ref<Texture2D> icon;
@@ -79,6 +77,7 @@ private:
 	bool missing_right;
 	Vector<Tab> tabs;
 	int current;
+	int previous;
 	int _get_top_margin() const;
 	TabAlign tab_align;
 	int rb_hover;
@@ -109,9 +108,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	Variant get_drag_data(const Point2 &p_point);
-	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	void drop_data(const Point2 &p_point, const Variant &p_data);
+	Variant get_drag_data(const Point2 &p_point) override;
+	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 
 public:
@@ -140,6 +139,7 @@ public:
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
 	int get_tab_offset() const;
@@ -164,7 +164,7 @@ public:
 	void set_min_width(int p_width);
 
 	Rect2 get_tab_rect(int p_tab) const;
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 	Tabs();
 };

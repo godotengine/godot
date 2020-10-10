@@ -40,7 +40,7 @@
 
 class Quat {
 public:
-	real_t x, y, z, w;
+	real_t x = 0, y = 0, z = 0, w = 1;
 
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quat &p_quat) const;
@@ -112,7 +112,9 @@ public:
 		z = p_z;
 		w = p_w;
 	}
-	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+
+	_FORCE_INLINE_ Quat() {}
+	_FORCE_INLINE_ Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),
 			z(p_z),
@@ -128,7 +130,7 @@ public:
 			w(q.w) {
 	}
 
-	Quat operator=(const Quat &q) {
+	Quat &operator=(const Quat &q) {
 		x = q.x;
 		y = q.y;
 		z = q.z;
@@ -147,7 +149,6 @@ public:
 			z = 0;
 			w = 0;
 		} else {
-
 			real_t s = Math::sqrt((1.0 + d) * 2.0);
 			real_t rs = 1.0 / s;
 
@@ -156,13 +157,6 @@ public:
 			z = c.z * rs;
 			w = s * 0.5;
 		}
-	}
-
-	inline Quat() :
-			x(0),
-			y(0),
-			z(0),
-			w(1) {
 	}
 };
 
@@ -196,7 +190,6 @@ void Quat::operator*=(const real_t &s) {
 }
 
 void Quat::operator/=(const real_t &s) {
-
 	*this *= 1.0 / s;
 }
 
@@ -229,6 +222,10 @@ bool Quat::operator==(const Quat &p_quat) const {
 
 bool Quat::operator!=(const Quat &p_quat) const {
 	return x != p_quat.x || y != p_quat.y || z != p_quat.z || w != p_quat.w;
+}
+
+_FORCE_INLINE_ Quat operator*(const real_t &p_real, const Quat &p_quat) {
+	return p_quat * p_real;
 }
 
 #endif // QUAT_H

@@ -36,7 +36,6 @@
 class SoftBody3D;
 
 class SoftBodyRenderingServerHandler {
-
 	friend class SoftBody3D;
 
 	RID mesh;
@@ -68,14 +67,14 @@ class SoftBody3D : public MeshInstance3D {
 
 public:
 	struct PinnedPoint {
-		int point_index;
+		int point_index = -1;
 		NodePath spatial_attachment_path;
-		Node3D *spatial_attachment; // Cache
+		Node3D *spatial_attachment = nullptr; // Cache
 		Vector3 offset;
 
 		PinnedPoint();
 		PinnedPoint(const PinnedPoint &obj_tocopy);
-		PinnedPoint operator=(const PinnedPoint &obj);
+		PinnedPoint &operator=(const PinnedPoint &obj);
 	};
 
 private:
@@ -83,19 +82,19 @@ private:
 
 	RID physics_rid;
 
-	bool mesh_owner;
-	uint32_t collision_mask;
-	uint32_t collision_layer;
+	bool mesh_owner = false;
+	uint32_t collision_mask = 1;
+	uint32_t collision_layer = 1;
 	NodePath parent_collision_ignore;
 	Vector<PinnedPoint> pinned_points;
-	bool simulation_started;
-	bool pinned_points_cache_dirty;
+	bool simulation_started = false;
+	bool pinned_points_cache_dirty = true;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh;
 
 	bool capture_input_on_drag;
-	bool ray_pickable;
+	bool ray_pickable = true;
 
 	void _update_pickable();
 
@@ -108,12 +107,12 @@ protected:
 	bool _set_property_pinned_points_attachment(int p_item, const String &p_what, const Variant &p_value);
 	bool _get_property_pinned_points(int p_item, const String &p_what, Variant &r_ret) const;
 
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 protected:
 	void _update_physics_server();

@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SubViewport" inherits="Viewport" version="4.0">
 	<brief_description>
+		Creates a sub-view into the screen.
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
+		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
-			If [code]true[/code], the sub-viewport will be used in AR/VR process.
-		</member>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">
 			The clear mode when the sub-viewport is used as a render target.
+			[b]Note:[/b] This property is intended for 2D usage.
 		</member>
 		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="SubViewport.UpdateMode" default="2">
 			The update mode when the sub-viewport is used as a render target.
@@ -27,8 +34,20 @@
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
 			If [code]true[/code], the 2D size override affects stretch as well.
 		</member>
+		<member name="xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
+			If [code]true[/code], the sub-viewport will be used in AR/VR process.
+		</member>
 	</members>
 	<constants>
+		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
+			Always clear the render target before drawing.
+		</constant>
+		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
+			Never clear the render target.
+		</constant>
+		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
+			Clear the render target next frame, then switch to [constant CLEAR_MODE_NEVER].
+		</constant>
 		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
 			Do not update the render target.
 		</constant>
@@ -43,15 +62,6 @@
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="4" enum="UpdateMode">
 			Always update the render target.
-		</constant>
-		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
-			Always clear the render target before drawing.
-		</constant>
-		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
-			Never clear the render target.
-		</constant>
-		<constant name="CLEAR_MODE_ONLY_NEXT_FRAME" value="2" enum="ClearMode">
-			Clear the render target next frame, then switch to [constant CLEAR_MODE_NEVER].
 		</constant>
 	</constants>
 </class>

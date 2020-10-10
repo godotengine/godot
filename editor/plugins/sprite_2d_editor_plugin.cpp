@@ -31,6 +31,7 @@
 #include "sprite_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/math/geometry_2d.h"
 #include "editor/editor_scale.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/light_occluder_2d.h"
@@ -40,7 +41,6 @@
 #include "thirdparty/misc/clipper.hpp"
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 		options->hide();
@@ -48,7 +48,6 @@ void Sprite2DEditor::_node_removed(Node *p_node) {
 }
 
 void Sprite2DEditor::edit(Sprite2D *p_sprite) {
-
 	node = p_sprite;
 }
 
@@ -63,7 +62,6 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 	ClipperLib::PolyTree out;
 
 	for (int i = 0; i < points.size(); i++) {
-
 		subj << ClipperLib::IntPoint(points[i].x * PRECISION, points[i].y * PRECISION);
 	}
 	ClipperLib::ClipperOffset co;
@@ -104,7 +102,6 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 	int lasti = p2->Contour.size() - 1;
 	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
 	for (uint64_t i = 0; i < p2->Contour.size(); i++) {
-
 		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
 		if (cur.distance_to(prev) > 0.5) {
 			outPoints.push_back(cur);
@@ -115,7 +112,6 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 }
 
 void Sprite2DEditor::_menu_option(int p_option) {
-
 	if (!node) {
 		return;
 	}
@@ -124,7 +120,6 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CONVERT_TO_MESH_2D: {
-
 			debug_uv_dialog->get_ok()->set_text(TTR("Create Mesh2D"));
 			debug_uv_dialog->set_title(TTR("Mesh2D Preview"));
 
@@ -134,7 +129,6 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
-
 			debug_uv_dialog->get_ok()->set_text(TTR("Create Polygon2D"));
 			debug_uv_dialog->set_title(TTR("Polygon2D Preview"));
 
@@ -143,7 +137,6 @@ void Sprite2DEditor::_menu_option(int p_option) {
 			debug_uv->update();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
-
 			debug_uv_dialog->get_ok()->set_text(TTR("Create CollisionPolygon2D"));
 			debug_uv_dialog->set_title(TTR("CollisionPolygon2D Preview"));
 
@@ -153,7 +146,6 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
-
 			debug_uv_dialog->get_ok()->set_text(TTR("Create LightOccluder2D"));
 			debug_uv_dialog->set_title(TTR("LightOccluder2D Preview"));
 
@@ -166,7 +158,6 @@ void Sprite2DEditor::_menu_option(int p_option) {
 }
 
 void Sprite2DEditor::_update_mesh_data() {
-
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		err_dialog->set_text(TTR("Sprite2D is empty!"));
@@ -183,10 +174,11 @@ void Sprite2DEditor::_update_mesh_data() {
 	Ref<Image> image = texture->get_data();
 	ERR_FAIL_COND(image.is_null());
 	Rect2 rect;
-	if (node->is_region())
+	if (node->is_region()) {
 		rect = node->get_region_rect();
-	else
+	} else {
 		rect.size = Size2(image->get_width(), image->get_height());
+	}
 
 	Ref<BitMap> bm;
 	bm.instance();
@@ -218,7 +210,6 @@ void Sprite2DEditor::_update_mesh_data() {
 	}
 
 	if (selected_menu_item == MENU_OPTION_CONVERT_TO_MESH_2D) {
-
 		for (int j = 0; j < lines.size(); j++) {
 			int index_ofs = computed_vertices.size();
 
@@ -229,18 +220,21 @@ void Sprite2DEditor::_update_mesh_data() {
 				vtx -= rect.position; //offset by rect position
 
 				//flip if flipped
-				if (node->is_flipped_h())
+				if (node->is_flipped_h()) {
 					vtx.x = rect.size.x - vtx.x - 1.0;
-				if (node->is_flipped_v())
+				}
+				if (node->is_flipped_v()) {
 					vtx.y = rect.size.y - vtx.y - 1.0;
+				}
 
-				if (node->is_centered())
+				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
+				}
 
 				computed_vertices.push_back(vtx);
 			}
 
-			Vector<int> poly = Geometry::triangulate_polygon(lines[j]);
+			Vector<int> poly = Geometry2D::triangulate_polygon(lines[j]);
 
 			for (int i = 0; i < poly.size(); i += 3) {
 				for (int k = 0; k < 3; k++) {
@@ -262,7 +256,6 @@ void Sprite2DEditor::_update_mesh_data() {
 		outline_lines.resize(lines.size());
 		computed_outline_lines.resize(lines.size());
 		for (int pi = 0; pi < lines.size(); pi++) {
-
 			Vector<Vector2> ol;
 			Vector<Vector2> col;
 
@@ -277,13 +270,16 @@ void Sprite2DEditor::_update_mesh_data() {
 				vtx -= rect.position; //offset by rect position
 
 				//flip if flipped
-				if (node->is_flipped_h())
+				if (node->is_flipped_h()) {
 					vtx.x = rect.size.x - vtx.x - 1.0;
-				if (node->is_flipped_v())
+				}
+				if (node->is_flipped_v()) {
 					vtx.y = rect.size.y - vtx.y - 1.0;
+				}
 
-				if (node->is_centered())
+				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
+				}
 
 				col.write[i] = vtx;
 			}
@@ -314,7 +310,6 @@ void Sprite2DEditor::_create_node() {
 }
 
 void Sprite2DEditor::_convert_to_mesh_2d_node() {
-
 	if (computed_vertices.size() < 3) {
 		err_dialog->set_text(TTR("Invalid geometry, can't replace by mesh."));
 		err_dialog->popup_centered();
@@ -345,7 +340,6 @@ void Sprite2DEditor::_convert_to_mesh_2d_node() {
 }
 
 void Sprite2DEditor::_convert_to_polygon_2d_node() {
-
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create polygon."));
 		err_dialog->popup_centered();
@@ -355,8 +349,9 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	Polygon2D *polygon_2d_instance = memnew(Polygon2D);
 
 	int total_point_count = 0;
-	for (int i = 0; i < computed_outline_lines.size(); i++)
+	for (int i = 0; i < computed_outline_lines.size(); i++) {
 		total_point_count += computed_outline_lines[i].size();
+	}
 
 	PackedVector2Array polygon;
 	polygon.resize(total_point_count);
@@ -372,7 +367,6 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	polys.resize(computed_outline_lines.size());
 
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
-
 		Vector<Vector2> outline = computed_outline_lines[i];
 		Vector<Vector2> uv_outline = outline_lines[i];
 
@@ -404,7 +398,6 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 }
 
 void Sprite2DEditor::_create_collision_polygon_2d_node() {
-
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create collision polygon."));
 		err_dialog->popup_centered();
@@ -412,7 +405,6 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 	}
 
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
-
 		Vector<Vector2> outline = computed_outline_lines[i];
 
 		CollisionPolygon2D *collision_polygon_2d_instance = memnew(CollisionPolygon2D);
@@ -428,7 +420,6 @@ void Sprite2DEditor::_create_collision_polygon_2d_node() {
 }
 
 void Sprite2DEditor::_create_light_occluder_2d_node() {
-
 	if (computed_outline_lines.empty()) {
 		err_dialog->set_text(TTR("Invalid geometry, can't create light occluder."));
 		err_dialog->popup_centered();
@@ -436,7 +427,6 @@ void Sprite2DEditor::_create_light_occluder_2d_node() {
 	}
 
 	for (int i = 0; i < computed_outline_lines.size(); i++) {
-
 		Vector<Vector2> outline = computed_outline_lines[i];
 
 		Ref<OccluderPolygon2D> polygon;
@@ -475,7 +465,6 @@ void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node
 }
 
 void Sprite2DEditor::_debug_uv_draw() {
-
 	Ref<Texture2D> tex = node->get_texture();
 	ERR_FAIL_COND(!tex.is_valid());
 
@@ -503,12 +492,10 @@ void Sprite2DEditor::_debug_uv_draw() {
 }
 
 void Sprite2DEditor::_bind_methods() {
-
 	ClassDB::bind_method("_add_as_sibling_or_child", &Sprite2DEditor::_add_as_sibling_or_child);
 }
 
 Sprite2DEditor::Sprite2DEditor() {
-
 	options = memnew(MenuButton);
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
@@ -577,28 +564,23 @@ Sprite2DEditor::Sprite2DEditor() {
 }
 
 void Sprite2DEditorPlugin::edit(Object *p_object) {
-
 	sprite_editor->edit(Object::cast_to<Sprite2D>(p_object));
 }
 
 bool Sprite2DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("Sprite2D");
 }
 
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		sprite_editor->options->show();
 	} else {
-
 		sprite_editor->options->hide();
 		sprite_editor->edit(nullptr);
 	}
 }
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	sprite_editor = memnew(Sprite2DEditor);
 	editor->get_viewport()->add_child(sprite_editor);

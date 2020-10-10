@@ -31,17 +31,18 @@
 #include "skeleton_2d.h"
 
 void Bone2D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		Node *parent = get_parent();
 		parent_bone = Object::cast_to<Bone2D>(parent);
 		skeleton = nullptr;
 		while (parent) {
 			skeleton = Object::cast_to<Skeleton2D>(parent);
-			if (skeleton)
+			if (skeleton) {
 				break;
-			if (!Object::cast_to<Bone2D>(parent))
+			}
+			if (!Object::cast_to<Bone2D>(parent)) {
 				break; //skeletons must be chained to Bone2Ds.
+			}
 
 			parent = parent->get_parent();
 		}
@@ -78,8 +79,8 @@ void Bone2D::_notification(int p_what) {
 		parent_bone = nullptr;
 	}
 }
-void Bone2D::_bind_methods() {
 
+void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rest", "rest"), &Bone2D::set_rest);
 	ClassDB::bind_method(D_METHOD("get_rest"), &Bone2D::get_rest);
 	ClassDB::bind_method(D_METHOD("apply_rest"), &Bone2D::apply_rest);
@@ -95,8 +96,9 @@ void Bone2D::_bind_methods() {
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
 	rest = p_rest;
-	if (skeleton)
+	if (skeleton) {
 		skeleton->_make_bone_setup_dirty();
+	}
 
 	update_configuration_warning();
 }
@@ -106,7 +108,6 @@ Transform2D Bone2D::get_rest() const {
 }
 
 Transform2D Bone2D::get_skeleton_rest() const {
-
 	if (parent_bone) {
 		return parent_bone->get_skeleton_rest() * rest;
 	} else {
@@ -119,7 +120,6 @@ void Bone2D::apply_rest() {
 }
 
 void Bone2D::set_default_length(float p_length) {
-
 	default_length = p_length;
 }
 
@@ -132,11 +132,11 @@ int Bone2D::get_index_in_skeleton() const {
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
-String Bone2D::get_configuration_warning() const {
 
+String Bone2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		if (parent_bone) {
@@ -147,7 +147,7 @@ String Bone2D::get_configuration_warning() const {
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
@@ -171,9 +171,9 @@ Bone2D::Bone2D() {
 //////////////////////////////////////
 
 void Skeleton2D::_make_bone_setup_dirty() {
-
-	if (bone_setup_dirty)
+	if (bone_setup_dirty) {
 		return;
+	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
 		call_deferred("_update_bone_setup");
@@ -181,9 +181,9 @@ void Skeleton2D::_make_bone_setup_dirty() {
 }
 
 void Skeleton2D::_update_bone_setup() {
-
-	if (!bone_setup_dirty)
+	if (!bone_setup_dirty) {
 		return;
+	}
 
 	bone_setup_dirty = false;
 	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
@@ -207,9 +207,9 @@ void Skeleton2D::_update_bone_setup() {
 }
 
 void Skeleton2D::_make_transform_dirty() {
-
-	if (transform_dirty)
+	if (transform_dirty) {
 		return;
+	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
 		call_deferred("_update_transform");
@@ -217,18 +217,17 @@ void Skeleton2D::_make_transform_dirty() {
 }
 
 void Skeleton2D::_update_transform() {
-
 	if (bone_setup_dirty) {
 		_update_bone_setup();
 		return; //above will update transform anyway
 	}
-	if (!transform_dirty)
+	if (!transform_dirty) {
 		return;
+	}
 
 	transform_dirty = false;
 
 	for (int i = 0; i < bones.size(); i++) {
-
 		ERR_CONTINUE(bones[i].parent_index >= i);
 		if (bones[i].parent_index >= 0) {
 			bones.write[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
@@ -238,14 +237,12 @@ void Skeleton2D::_update_transform() {
 	}
 
 	for (int i = 0; i < bones.size(); i++) {
-
 		Transform2D final_xform = bones[i].accum_transform * bones[i].rest_inverse;
 		RS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
 	}
 }
 
 int Skeleton2D::get_bone_count() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), 0);
 
 	if (bone_setup_dirty) {
@@ -256,7 +253,6 @@ int Skeleton2D::get_bone_count() const {
 }
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	ERR_FAIL_INDEX_V(p_idx, bones.size(), nullptr);
 
@@ -264,13 +260,13 @@ Bone2D *Skeleton2D::get_bone(int p_idx) {
 }
 
 void Skeleton2D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
-
-		if (bone_setup_dirty)
+		if (bone_setup_dirty) {
 			_update_bone_setup();
-		if (transform_dirty)
+		}
+		if (transform_dirty) {
 			_update_transform();
+		}
 
 		request_ready();
 	}
@@ -283,8 +279,8 @@ void Skeleton2D::_notification(int p_what) {
 RID Skeleton2D::get_skeleton() const {
 	return skeleton;
 }
-void Skeleton2D::_bind_methods() {
 
+void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
 	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
 
@@ -305,6 +301,5 @@ Skeleton2D::Skeleton2D() {
 }
 
 Skeleton2D::~Skeleton2D() {
-
 	RS::get_singleton()->free(skeleton);
 }

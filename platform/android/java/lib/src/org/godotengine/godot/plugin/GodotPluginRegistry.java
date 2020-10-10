@@ -30,26 +30,28 @@
 
 package org.godotengine.godot.plugin;
 
+import org.godotengine.godot.Godot;
+
+import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.godotengine.godot.Godot;
 
 /**
  * Registry used to load and access the registered Godot Android plugins.
  */
 public final class GodotPluginRegistry {
-
 	private static final String TAG = GodotPluginRegistry.class.getSimpleName();
 
 	private static final String GODOT_PLUGIN_V1_NAME_PREFIX = "org.godotengine.plugin.v1.";
@@ -57,7 +59,9 @@ public final class GodotPluginRegistry {
 	/**
 	 * Name for the metadata containing the list of Godot plugins to enable.
 	 */
-	private static final String GODOT_ENABLED_PLUGINS_LABEL = "custom_template_plugins";
+	private static final String GODOT_ENABLED_PLUGINS_LABEL = "plugins";
+
+	private static final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|";
 
 	private static GodotPluginRegistry instance;
 	private final ConcurrentHashMap<String, GodotPlugin> registry;
@@ -118,22 +122,24 @@ public final class GodotPluginRegistry {
 
 	private void loadPlugins(Godot godot) {
 		try {
-			ApplicationInfo appInfo = godot
+			final Activity activity = godot.getActivity();
+			ApplicationInfo appInfo = activity
 											  .getPackageManager()
-											  .getApplicationInfo(godot.getPackageName(), PackageManager.GET_META_DATA);
+											  .getApplicationInfo(activity.getPackageName(),
+													  PackageManager.GET_META_DATA);
 			Bundle metaData = appInfo.metaData;
 			if (metaData == null || metaData.isEmpty()) {
 				return;
 			}
 
 			// When using the Godot editor for building and exporting the apk, this is used to check
-			// which plugins to enable since the custom build template may contain prebuilt plugins.
+			// which plugins to enable.
 			// When using a custom process to generate the apk, the metadata is not needed since
 			// it's assumed that the developer is aware of the dependencies included in the apk.
 			final Set<String> enabledPluginsSet;
 			if (metaData.containsKey(GODOT_ENABLED_PLUGINS_LABEL)) {
 				String enabledPlugins = metaData.getString(GODOT_ENABLED_PLUGINS_LABEL, "");
-				String[] enabledPluginsList = enabledPlugins.split(",");
+				String[] enabledPluginsList = enabledPlugins.split(PLUGIN_VALUE_SEPARATOR_REGEX);
 				if (enabledPluginsList.length == 0) {
 					// No plugins to enable. Aborting early.
 					return;
@@ -157,6 +163,8 @@ public final class GodotPluginRegistry {
 						continue;
 					}
 
+					Log.i(TAG, "Initializing Godot plugin " + pluginName);
+
 					// Retrieve the plugin class full name.
 					String pluginHandleClassFullName = metaData.getString(metaDataName);
 					if (!TextUtils.isEmpty(pluginHandleClassFullName)) {
@@ -176,6 +184,7 @@ public final class GodotPluginRegistry {
 										"Meta-data plugin name does not match the value returned by the plugin handle: " + pluginName + " =/= " + pluginHandle.getPluginName());
 							}
 							registry.put(pluginName, pluginHandle);
+							Log.i(TAG, "Completed initialization for Godot plugin " + pluginHandle.getPluginName());
 						} catch (ClassNotFoundException e) {
 							Log.w(TAG, "Unable to load Godot plugin " + pluginName, e);
 						} catch (IllegalAccessException e) {

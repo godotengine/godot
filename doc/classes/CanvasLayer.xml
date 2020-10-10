@@ -7,8 +7,9 @@
 		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Canvas layers">https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="get_canvas" qualifiers="const">

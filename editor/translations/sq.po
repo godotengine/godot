@@ -513,6 +513,7 @@ msgid "Seconds"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr ""
 
@@ -694,7 +695,7 @@ msgstr ""
 msgid "Whole Words"
 msgstr ""
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr ""
 
@@ -741,6 +742,10 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
+msgstr ""
+
+#: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
 msgstr ""
 
 #: editor/connections_dialog.cpp
@@ -829,7 +834,6 @@ msgstr "Lidh Sinjalin: "
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -889,6 +893,11 @@ msgid "Signals"
 msgstr "Sinjalet"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filtro Skedarët..."
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "A jeni i sigurt që doni të hiqni të gjitha lidhjet nga ky sinjal?"
 
@@ -926,7 +935,7 @@ msgid "Recent:"
 msgstr "Të fundit:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Kërko:"
@@ -1111,6 +1120,9 @@ msgstr "Themeluesit e Projektit"
 msgid "Lead Developer"
 msgstr "Krye Zhvilluesi"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Menaxheri Projektit "
@@ -1130,6 +1142,16 @@ msgstr "Sponsorat Platinium"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Sponsorat Flori"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Dhuruesit Argjend"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Dhuruesit Bronz"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1452,7 +1474,7 @@ msgstr "Lëviz Autoload-in"
 msgid "Remove Autoload"
 msgstr "Hiq Autoload-in"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Lejo"
 
@@ -1460,18 +1482,9 @@ msgstr "Lejo"
 msgid "Rearrange Autoloads"
 msgstr "Riorganizo Autoload-et"
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Invalid path."
-msgstr "Rruga e pasaktë."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr "Skedari nuk egziston."
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Jo në rrugën e resurseve."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1634,18 +1647,18 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "Import Dock"
-msgstr "Importo"
-
-#: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
 msgstr "Nyje"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
-msgid "FileSystem and Import Docks"
+msgid "FileSystem Dock"
 msgstr "FileSystem"
+
+#: editor/editor_feature_profile.cpp
+#, fuzzy
+msgid "Import Dock"
+msgstr "Importo"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1927,7 +1940,7 @@ msgstr "Direktorit & Skedarët:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Shikim paraprak:"
 
@@ -2378,11 +2391,6 @@ msgid "There is no defined scene to run."
 msgstr "Nuk ka një skenë të përcaktuar për të filluar."
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Skena aktuale nuk është ruajtur më parë, ju lutem ruajeni para se të filloni."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr "Nuk mund të fillojë subprocess-in!"
 
@@ -2468,12 +2476,15 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Nuk mund të ringarkojë një skenë që nuk është ruajtur më parë."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr "Rikthe"
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Ruaj Skenën"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
-msgstr "Ky veprim nuk mund të çbëhet. Rikthe gjithsesi?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2768,10 +2779,6 @@ msgid "Redo"
 msgstr "Ribëj"
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr "Rikthe Skenën"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Vegla të ndryshme për projektin ose skenën."
 
@@ -2835,24 +2842,28 @@ msgstr "Dorëzo me Rregullim në Largësi"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Kur eksporton ose dorëzon, rezultati i ekzekutueshëm do të tentoj të lidhet "
-"me IP-në e këtij kompjuteri në mënyrë që të rregullohet."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Dorëzim i Vogël me Rrjet FS"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Kur ky opsion është i aktivizuar, eksportimi ose dorëzimi do të prodhojë një "
 "të ekzekutueshëm minimal.\n"
@@ -2865,9 +2876,10 @@ msgid "Visible Collision Shapes"
 msgstr "Format e Përplasjes të Dukshme"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Format e përplasjes dhe nyjet 'raycast' (për 2D dhe 3D) do të jenë të "
 "dukshme gjatë ekzekutimit të lojës nëse ky opsion është i aktivizuar."
@@ -2877,38 +2889,43 @@ msgid "Visible Navigation"
 msgstr "Navigim i Dukshëm"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Rrjetat e navigimit dhe poligonet do të jenë të dukshme gjatë lojës nëse ky "
 "opsion është i aktivizuar."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sinkronizo Nryshimet e Skenës"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Kur ky opsion është i aktivizuar, çdo ndryshim i bërë në këtë skenë do të "
 "kopjohet dhe në lojën duke u ekzekutuar.\n"
 "Kur përdoret në largësi është më efikas me rrjet 'filesystem'."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Sinkronizo Ndryshimet e Shkrimit"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Kurbky opsion është aktivizuar, çdo shkrim që ruhet do të ringarkohet në "
 "lojën që është duke u ekzekutuar.\n"
@@ -2977,7 +2994,7 @@ msgstr "Ndihmë"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Kërko"
 
@@ -2991,8 +3008,13 @@ msgid "Q&A"
 msgstr "Pyetje&Përgjigje"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Gjurmuesi i Problemeve"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Ri-importo"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3388,9 +3410,11 @@ msgid "Add Key/Value Pair"
 msgstr "Shto Palë Çelës/Vlerë"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Nuk u gjet eksport paraprak i saktë për këtë platformë.\n"
 "Ju lutem shtoni një eksport paraprak të saktë në menu."
@@ -3418,6 +3442,10 @@ msgstr "Nuk mund të ekzekutonte shkrimin:"
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
 msgstr "A mos harrove metodën '_run'?"
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
+msgstr ""
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -4036,6 +4064,10 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Duke Ruajtur..."
 
@@ -4066,7 +4098,8 @@ msgid "Reimport"
 msgstr "Ri-importo"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Ruaj skenat, ri-importo dhe rifillo"
 
 #: editor/import_dock.cpp
@@ -5164,7 +5197,7 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr ""
 
@@ -6897,14 +6930,6 @@ msgid "Open Godot online documentation."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -6969,11 +6994,11 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
+msgid "[Ignore]"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
+msgid "Line"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -7343,6 +7368,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7432,17 +7461,26 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "XForm Dialog"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7791,7 +7829,7 @@ msgid "New Animation"
 msgstr "Animacionin i Ri"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+msgid "Speed:"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -9810,6 +9848,7 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr ""
@@ -9856,6 +9895,13 @@ msgstr ""
 msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -10236,11 +10282,16 @@ msgid "Batch Rename"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Zëvendëso: "
+
+#: editor/rename_dialog.cpp
+msgid "Prefix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+msgid "Suffix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10287,7 +10338,7 @@ msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10345,8 +10396,9 @@ msgid "Reset"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
-msgstr ""
+#, fuzzy
+msgid "Regular Expression Error:"
+msgstr "Versioni Aktual:"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -10416,8 +10468,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr ""
+#, fuzzy
+msgid "Detach Script"
+msgstr "Shkrim i Ri"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10450,6 +10503,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Fshi Nyjen"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10578,6 +10636,13 @@ msgid "Open Documentation"
 msgstr "Hap të Fundit"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10627,11 +10692,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10758,6 +10823,10 @@ msgid "A directory with the same name exists."
 msgstr "Një skedar ose folder me këtë emër ekziston që më parë."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr "Skedari nuk egziston."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Duhet të perdorësh një shtesë të lejuar."
@@ -10801,6 +10870,11 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
+msgid "Invalid path."
+msgstr "Rruga e pasaktë."
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Invalid class name."
 msgstr "Emër i palejuar."
 
@@ -10833,6 +10907,12 @@ msgstr ""
 #, fuzzy
 msgid "Script file already exists."
 msgstr "Emri i grupit ekziston që më parë."
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -10964,6 +11044,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Eksporto Projektin"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11848,6 +11933,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11867,6 +11956,32 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12048,6 +12163,12 @@ msgstr ""
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
+msgstr ""
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
@@ -12260,6 +12381,11 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
+msgstr ""
+
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
 msgstr ""
 
 #: scene/3d/light.cpp
@@ -12481,6 +12607,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr ""
@@ -12508,6 +12638,37 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "FileSystem"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Kur eksporton ose dorëzon, rezultati i ekzekutueshëm do të tentoj të "
+#~ "lidhet me IP-në e këtij kompjuteri në mënyrë që të rregullohet."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Skena aktuale nuk është ruajtur më parë, ju lutem ruajeni para se të "
+#~ "filloni."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Jo në rrugën e resurseve."
+
+#~ msgid "Revert"
+#~ msgstr "Rikthe"
+
+#~ msgid "This action cannot be undone. Revert anyway?"
+#~ msgstr "Ky veprim nuk mund të çbëhet. Rikthe gjithsesi?"
+
+#~ msgid "Revert Scene"
+#~ msgstr "Rikthe Skenën"
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Gjurmuesi i Problemeve"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

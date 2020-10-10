@@ -39,6 +39,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_dictionary) == sizeof(Dictionary), "Dictionary size mismatch");
+
 void GDAPI godot_dictionary_new(godot_dictionary *r_dest) {
 	Dictionary *dest = (Dictionary *)r_dest;
 	memnew_placement(dest, Dictionary);

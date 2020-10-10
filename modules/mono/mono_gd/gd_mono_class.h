@@ -31,8 +31,6 @@
 #ifndef GD_MONO_CLASS_H
 #define GD_MONO_CLASS_H
 
-#include <mono/metadata/debug-helpers.h>
-
 #include "core/map.h"
 #include "core/ustring.h"
 
@@ -107,21 +105,23 @@ public:
 	static MonoType *get_mono_type(MonoClass *p_mono_class);
 
 	String get_full_name() const;
-	MonoType *get_mono_type();
+	String get_type_desc() const;
+	MonoType *get_mono_type() const;
 
 	uint32_t get_flags() const;
 	bool is_static() const;
 
 	bool is_assignable_from(GDMonoClass *p_from) const;
 
-	_FORCE_INLINE_ StringName get_namespace() const { return namespace_name; }
+	StringName get_namespace() const;
 	_FORCE_INLINE_ StringName get_name() const { return class_name; }
+	String get_name_for_lookup() const;
 
 	_FORCE_INLINE_ MonoClass *get_mono_ptr() const { return mono_class; }
 	_FORCE_INLINE_ const GDMonoAssembly *get_assembly() const { return assembly; }
 
-	GDMonoClass *get_parent_class();
-	GDMonoClass *get_nesting_class();
+	GDMonoClass *get_parent_class() const;
+	GDMonoClass *get_nesting_class() const;
 
 #ifdef TOOLS_ENABLED
 	Vector<MonoClassField *> get_enum_fields();
@@ -137,6 +137,7 @@ public:
 	void fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base);
 
 	bool implements_interface(GDMonoClass *p_interface);
+	bool has_public_parameterless_ctor();
 
 	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);

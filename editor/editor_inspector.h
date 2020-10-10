@@ -47,7 +47,6 @@ public:
 };
 
 class EditorProperty : public Container {
-
 	GDCLASS(EditorProperty, Container);
 
 private:
@@ -64,6 +63,7 @@ private:
 	bool checked;
 	bool draw_red;
 	bool keying;
+	bool deletable;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -74,6 +74,8 @@ private:
 	bool revert_hover;
 	Rect2 check_rect;
 	bool check_hover;
+	Rect2 delete_rect;
+	bool delete_hover;
 
 	bool can_revert;
 
@@ -105,7 +107,7 @@ protected:
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_label(const String &p_label);
 	String get_label() const;
@@ -133,6 +135,8 @@ public:
 	void set_keying(bool p_keying);
 	bool is_keying() const;
 
+	void set_deletable(bool p_enable);
+	bool is_deletable() const;
 	void add_focusable(Control *p_control);
 	void select(int p_focusable = -1);
 	void deselect();
@@ -147,7 +151,7 @@ public:
 	virtual void expand_all_folding();
 	virtual void collapse_all_folding();
 
-	virtual Variant get_drag_data(const Point2 &p_point);
+	virtual Variant get_drag_data(const Point2 &p_point) override;
 
 	void set_selectable(bool p_selectable);
 	bool is_selectable() const;
@@ -156,7 +160,7 @@ public:
 	float get_name_split_ratio() const;
 
 	void set_object_and_property(Object *p_object, const StringName &p_property);
-	virtual Control *make_custom_tooltip(const String &p_text) const;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	String get_tooltip_text() const;
 
@@ -190,7 +194,7 @@ public:
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
 	virtual void parse_category(Object *p_object, const String &p_parse_category);
-	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
 	virtual void parse_end();
 };
 
@@ -208,8 +212,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const;
-	virtual Control *make_custom_tooltip(const String &p_text) const;
+	virtual Size2 get_minimum_size() const override;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	String get_tooltip_text() const;
 
@@ -227,6 +231,9 @@ class EditorInspectorSection : public Container {
 	Color bg_color;
 	bool foldable;
 
+	Timer *dropping_unfold_timer;
+	bool dropping;
+
 	void _test_unfold();
 
 protected:
@@ -235,7 +242,7 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable);
 	VBoxContainer *get_vbox();
@@ -283,6 +290,8 @@ class EditorInspector : public ScrollContainer {
 	bool read_only;
 	bool keying;
 	bool sub_inspector;
+	bool wide_editors;
+	bool deletable_properties;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -307,6 +316,7 @@ class EditorInspector : public ScrollContainer {
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
+	void _property_deleted(const String &p_path);
 
 	void _property_checked(const String &p_path, bool p_checked);
 
@@ -316,7 +326,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _node_removed(Node *p_node);
 
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	void _changed_callback(Object *p_changed, const char *p_prop) override;
 	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
@@ -325,6 +335,7 @@ class EditorInspector : public ScrollContainer {
 	void _vscroll_changed(double);
 
 	void _feature_profile_changed();
+	void _update_script_class_properties(const Object &p_object, List<PropertyInfo> &r_list) const;
 
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
@@ -337,7 +348,7 @@ public:
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
 
-	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
+	static EditorProperty *instantiate_property_editor(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide = false);
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 
@@ -380,7 +391,10 @@ public:
 	void set_object_class(const String &p_class);
 	String get_object_class() const;
 
+	void set_use_wide_editors(bool p_enable);
 	void set_sub_inspector(bool p_enable);
+
+	void set_use_deletable_properties(bool p_enabled);
 
 	EditorInspector();
 };

@@ -34,7 +34,6 @@
 #include "core/variant.h"
 
 class JSON {
-
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -58,7 +57,6 @@ class JSON {
 	};
 
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
@@ -67,10 +65,10 @@ class JSON {
 
 	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys);
 
-	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
-	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_array(Array &array, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
+	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str);
 
 public:
 	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);

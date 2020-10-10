@@ -50,7 +50,6 @@
 #include "scene/main/http_request.h"
 
 class EditorAssetLibraryItem : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
 
 	TextureButton *icon;
@@ -81,7 +80,6 @@ public:
 };
 
 class EditorAssetLibraryItemDescription : public ConfirmationDialog {
-
 	GDCLASS(EditorAssetLibraryItemDescription, ConfirmationDialog);
 
 	EditorAssetLibraryItem *item;
@@ -129,7 +127,6 @@ public:
 };
 
 class EditorAssetLibraryItemDownload : public PanelContainer {
-
 	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 	TextureRect *icon;
@@ -186,10 +183,10 @@ class EditorAssetLibrary : public PanelContainer {
 	Label *library_loading;
 	Label *library_error;
 	LineEdit *filter;
+	Timer *filter_debounce_timer;
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	Button *search;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;
@@ -237,7 +234,6 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	struct ImageQueue {
-
 		bool active;
 		int queue_id;
 		ImageType image_type;
@@ -284,10 +280,12 @@ class EditorAssetLibrary : public PanelContainer {
 
 	void _search(int p_page = 0);
 	void _rerun_search(int p_ignore);
+	void _search_text_changed(const String &p_text = "");
 	void _search_text_entered(const String &p_text = "");
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
 	void _http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
+	void _filter_debounce_timer_timeout();
 
 	void _repository_changed(int p_repository_id);
 	void _support_toggled(int p_support);
@@ -309,18 +307,17 @@ public:
 };
 
 class AssetLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
 	EditorAssetLibrary *addon_library;
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "AssetLib"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object) {}
-	virtual bool handles(Object *p_object) const { return false; }
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "AssetLib"; }
+	bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override {}
+	virtual bool handles(Object *p_object) const override { return false; }
+	virtual void make_visible(bool p_visible) override;
 	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
 	//virtual Dictionary get_state() const;
 	//virtual void set_state(const Dictionary& p_state);

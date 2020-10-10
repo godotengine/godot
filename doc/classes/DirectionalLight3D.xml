@@ -7,14 +7,11 @@
 		A directional light is a type of [Light3D] node that models an infinite number of parallel rays covering the entire scene. It is used for lights with strong intensity that are located far away from the scene to model sunlight or moonlight. The worldspace location of the DirectionalLight3D transform (origin) is ignored. Only the basis is used to determine light direction.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+		<link title="Lights and shadows">https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="directional_shadow_bias_split_scale" type="float" setter="set_param" getter="get_param" default="0.25">
-			Amount of extra bias for shadow splits that are far away. If self-shadowing occurs only on the splits far away, increasing this value can fix them.
-		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled" default="false">
 			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits.
 		</member>
@@ -22,6 +19,7 @@
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].
 		</member>
 		<member name="directional_shadow_fade_start" type="float" setter="set_param" getter="get_param" default="0.8">
+			Proportion of [member directional_shadow_max_distance] at which point the shadow starts to fade. At [member directional_shadow_max_distance] the shadow will disappear.
 		</member>
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
 			The maximum distance for shadow splits.
@@ -29,8 +27,8 @@
 		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="DirectionalLight3D.ShadowMode" default="2">
 			The light's shadow rendering algorithm. See [enum ShadowMode].
 		</member>
-		<member name="directional_shadow_normal_bias" type="float" setter="set_param" getter="get_param" default="0.8">
-			Can be used to fix special cases of self shadowing when objects are perpendicular to the light.
+		<member name="directional_shadow_pancake_size" type="float" setter="set_param" getter="get_param" default="20.0">
+			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</member>
 		<member name="directional_shadow_split_1" type="float" setter="set_param" getter="get_param" default="0.1">
 			The distance from camera to shadow split 1. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_2_SPLITS[/code] or [code]SHADOW_PARALLEL_4_SPLITS[/code].
@@ -41,23 +39,24 @@
 		<member name="directional_shadow_split_3" type="float" setter="set_param" getter="get_param" default="0.5">
 			The distance from shadow split 2 to split 3. Relative to [member directional_shadow_max_distance]. Only used when [member directional_shadow_mode] is [code]SHADOW_PARALLEL_4_SPLITS[/code].
 		</member>
-		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.1" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.05" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" override="true" default="1.0" />
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">
-			Renders the entire scene's shadow map from an orthogonal point of view. May result in blockier shadows on close objects.
+			Renders the entire scene's shadow map from an orthogonal point of view. This is the fastest directional shadow mode. May result in blurrier shadows on close objects.
 		</constant>
 		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1" enum="ShadowMode">
-			Splits the view frustum in 2 areas, each with its own shadow map.
+			Splits the view frustum in 2 areas, each with its own shadow map. This shadow mode is a compromise between [constant SHADOW_ORTHOGONAL] and [constant SHADOW_PARALLEL_4_SPLITS] in terms of performance.
 		</constant>
 		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2" enum="ShadowMode">
-			Splits the view frustum in 4 areas, each with its own shadow map.
+			Splits the view frustum in 4 areas, each with its own shadow map. This is the slowest directional shadow mode.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_STABLE" value="0" enum="ShadowDepthRange">
 			Keeps the shadow stable when the camera moves, at the cost of lower effective shadow resolution.
 		</constant>
 		<constant name="SHADOW_DEPTH_RANGE_OPTIMIZED" value="1" enum="ShadowDepthRange">
-			Tries to achieve maximum shadow resolution. May result in saw effect on shadow edges.
+			Tries to achieve maximum shadow resolution. May result in saw effect on shadow edges. This mode typically works best in games where the camera will often move at high speeds, such as most racing games.
 		</constant>
 	</constants>
 </class>

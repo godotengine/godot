@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -91,10 +90,11 @@ private:
 
 	bool shortcut_keys_enabled;
 
+	bool virtual_keyboard_enabled = true;
+
 	Ref<Texture2D> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;
@@ -136,6 +136,7 @@ private:
 	void update_placeholder_width();
 
 	bool caret_blink_enabled;
+	bool caret_force_displayed;
 	bool draw_caret;
 	bool window_has_focus;
 
@@ -166,11 +167,11 @@ public:
 	void set_align(Align p_align);
 	Align get_align() const;
 
-	virtual Variant get_drag_data(const Point2 &p_point);
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
@@ -203,6 +204,9 @@ public:
 	float cursor_get_blink_speed() const;
 	void cursor_set_blink_speed(const float p_speed);
 
+	bool cursor_get_force_displayed() const;
+	void cursor_set_force_displayed(const bool p_enabled);
+
 	void copy_text();
 	void cut_text();
 	void paste_text();
@@ -218,7 +222,7 @@ public:
 	void set_secret_character(const String &p_string);
 	String get_secret_character() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_expand_to_text_length(bool p_enabled);
 	bool get_expand_to_text_length() const;
@@ -229,13 +233,16 @@ public:
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
+	void set_virtual_keyboard_enabled(bool p_enable);
+	bool is_virtual_keyboard_enabled() const;
+
 	void set_selecting_enabled(bool p_enabled);
 	bool is_selecting_enabled() const;
 
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
 
-	virtual bool is_text_field() const;
+	virtual bool is_text_field() const override;
 	LineEdit();
 	~LineEdit();
 };

@@ -1,73 +1,104 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Godot;
-using GodotTools.IdeConnection;
+using GodotTools.IdeMessaging;
+using GodotTools.IdeMessaging.Requests;
 using GodotTools.Internals;
 
 namespace GodotTools.Ides
 {
-    public class GodotIdeManager : Node, ISerializationListener
+    public sealed class GodotIdeManager : Node, ISerializationListener
     {
-        public GodotIdeServer GodotIdeServer { get; private set; }
+        private MessagingServer MessagingServer { get; set; }
 
         private MonoDevelop.Instance monoDevelInstance;
         private MonoDevelop.Instance vsForMacInstance;
 
-        private GodotIdeServer GetRunningServer()
+        private MessagingServer GetRunningOrNewServer()
         {
-            if (GodotIdeServer != null && !GodotIdeServer.IsDisposed)
-                return GodotIdeServer;
-            StartServer();
-            return GodotIdeServer;
+            if (MessagingServer != null && !MessagingServer.IsDisposed)
+                return MessagingServer;
+
+            MessagingServer?.Dispose();
+            MessagingServer = new MessagingServer(OS.GetExecutablePath(), ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir), new GodotLogger());
+
+            _ = MessagingServer.Listen();
+
+            return MessagingServer;
         }
 
         public override void _Ready()
         {
-            StartServer();
+            _ = GetRunningOrNewServer();
         }
 
         public void OnBeforeSerialize()
         {
-            GodotIdeServer?.Dispose();
         }
 
         public void OnAfterDeserialize()
         {
-            StartServer();
-        }
-
-        private ILogger logger;
-
-        protected ILogger Logger
-        {
-            get => logger ?? (logger = new GodotLogger());
-        }
-
-        private void StartServer()
-        {
-            GodotIdeServer?.Dispose();
-            GodotIdeServer = new GodotIdeServer(LaunchIde,
-                OS.GetExecutablePath(),
-                ProjectSettings.GlobalizePath(GodotSharpDirs.ResMetadataDir));
-
-            GodotIdeServer.Logger = Logger;
-
-            GodotIdeServer.StartServer();
+            _ = GetRunningOrNewServer();
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
 
-            GodotIdeServer?.Dispose();
+            if (disposing)
+            {
+                MessagingServer?.Dispose();
+            }
         }
 
-        private void LaunchIde()
+        private string GetExternalEditorIdentity(ExternalEditorId editorId)
         {
-            var editor = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
-                .GetEditorSettings().GetSetting("mono/editor/external_editor");
+            // Manually convert to string to avoid breaking compatibility in case we rename the enum fields.
+            switch (editorId)
+            {
+                case ExternalEditorId.None:
+                    return null;
+                case ExternalEditorId.VisualStudio:
+                    return "VisualStudio";
+                case ExternalEditorId.VsCode:
+                    return "VisualStudioCode";
+                case ExternalEditorId.Rider:
+                    return "Rider";
+                case ExternalEditorId.VisualStudioForMac:
+                    return "VisualStudioForMac";
+                case ExternalEditorId.MonoDevelop:
+                    return "MonoDevelop";
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
-            switch (editor)
+        public async Task<EditorPick?> LaunchIdeAsync(int millisecondsTimeout = 10000)
+        {
+            var editorId = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
+                .GetEditorSettings().GetSetting("mono/editor/external_editor");
+            string editorIdentity = GetExternalEditorIdentity(editorId);
+
+            var runningServer = GetRunningOrNewServer();
+
+            if (runningServer.IsAnyConnected(editorIdentity))
+                return new EditorPick(editorIdentity);
+
+            LaunchIde(editorId, editorIdentity);
+
+            var timeoutTask = Task.Delay(millisecondsTimeout);
+            var completedTask = await Task.WhenAny(timeoutTask, runningServer.AwaitClientConnected(editorIdentity));
+
+            if (completedTask != timeoutTask)
+                return new EditorPick(editorIdentity);
+
+            return null;
+        }
+
+        private void LaunchIde(ExternalEditorId editorId, string editorIdentity)
+        {
+            switch (editorId)
             {
                 case ExternalEditorId.None:
                 case ExternalEditorId.VisualStudio:
@@ -80,14 +111,14 @@ namespace GodotTools.Ides
                 {
                     MonoDevelop.Instance GetMonoDevelopInstance(string solutionPath)
                     {
-                        if (Utils.OS.IsOSX && editor == ExternalEditorId.VisualStudioForMac)
+                        if (Utils.OS.IsMacOS && editorId == ExternalEditorId.VisualStudioForMac)
                         {
-                            vsForMacInstance = vsForMacInstance ??
+                            vsForMacInstance = (vsForMacInstance?.IsDisposed ?? true ? null : vsForMacInstance) ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);
                             return vsForMacInstance;
                         }
 
-                        monoDevelInstance = monoDevelInstance ??
+                        monoDevelInstance = (monoDevelInstance?.IsDisposed ?? true ? null : monoDevelInstance) ??
                                             new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.MonoDevelop);
                         return monoDevelInstance;
                     }
@@ -96,12 +127,25 @@ namespace GodotTools.Ides
                     {
                         var instance = GetMonoDevelopInstance(GodotSharpDirs.ProjectSlnPath);
 
-                        if (!instance.IsRunning)
+                        if (instance.IsRunning && !GetRunningOrNewServer().IsAnyConnected(editorIdentity))
+                        {
+                            // After launch we wait up to 30 seconds for the IDE to connect to our messaging server.
+                            var waitAfterLaunch = TimeSpan.FromSeconds(30);
+                            var timeSinceLaunch = DateTime.Now - instance.LaunchTime;
+                            if (timeSinceLaunch > waitAfterLaunch)
+                            {
+                                instance.Dispose();
+                                instance.Execute();
+                            }
+                        }
+                        else if (!instance.IsRunning)
+                        {
                             instance.Execute();
+                        }
                     }
                     catch (FileNotFoundException)
                     {
-                        string editorName = editor == ExternalEditorId.VisualStudioForMac ? "Visual Studio" : "MonoDevelop";
+                        string editorName = editorId == ExternalEditorId.VisualStudioForMac ? "Visual Studio" : "MonoDevelop";
                         GD.PushError($"Cannot find code editor: {editorName}");
                     }
 
@@ -113,25 +157,44 @@ namespace GodotTools.Ides
             }
         }
 
-        private void WriteMessage(string id, params string[] arguments)
+        public readonly struct EditorPick
         {
-            GetRunningServer().WriteMessage(new Message(id, arguments));
+            private readonly string identity;
+
+            public EditorPick(string identity)
+            {
+                this.identity = identity;
+            }
+
+            public bool IsAnyConnected() =>
+                GodotSharpEditor.Instance.GodotIdeManager.GetRunningOrNewServer().IsAnyConnected(identity);
+
+            private void SendRequest<TResponse>(Request request)
+                where TResponse : Response, new()
+            {
+                // Logs an error if no client is connected with the specified identity
+                GodotSharpEditor.Instance.GodotIdeManager
+                    .GetRunningOrNewServer()
+                    .BroadcastRequest<TResponse>(identity, request);
+            }
+
+            public void SendOpenFile(string file)
+            {
+                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file});
+            }
+
+            public void SendOpenFile(string file, int line)
+            {
+                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line});
+            }
+
+            public void SendOpenFile(string file, int line, int column)
+            {
+                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line, Column = column});
+            }
         }
 
-        public void SendOpenFile(string file)
-        {
-            WriteMessage("OpenFile", file);
-        }
-
-        public void SendOpenFile(string file, int line)
-        {
-            WriteMessage("OpenFile", file, line.ToString());
-        }
-
-        public void SendOpenFile(string file, int line, int column)
-        {
-            WriteMessage("OpenFile", file, line.ToString(), column.ToString());
-        }
+        public EditorPick PickEditor(ExternalEditorId editorId) => new EditorPick(GetExternalEditorIdentity(editorId));
 
         private class GodotLogger : ILogger
         {

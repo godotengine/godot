@@ -37,7 +37,6 @@
 #include "websocket_peer.h"
 
 class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {
-
 	GDCLASS(WebSocketMultiplayerPeer, NetworkedMultiplayerPeer);
 
 private:
@@ -80,21 +79,18 @@ protected:
 
 public:
 	/* NetworkedMultiplayerPeer */
-	void set_transfer_mode(TransferMode p_mode);
-	TransferMode get_transfer_mode() const;
-	void set_target_peer(int p_target_peer);
-	int get_packet_peer() const;
-	int get_unique_id() const;
-	virtual bool is_server() const = 0;
-	void set_refuse_new_connections(bool p_enable);
-	bool is_refusing_new_connections() const;
-	virtual ConnectionStatus get_connection_status() const = 0;
+	void set_transfer_mode(TransferMode p_mode) override;
+	TransferMode get_transfer_mode() const override;
+	void set_target_peer(int p_target_peer) override;
+	int get_packet_peer() const override;
+	int get_unique_id() const override;
+	void set_refuse_new_connections(bool p_enable) override;
+	bool is_refusing_new_connections() const override;
 
 	/* PacketPeer */
-	virtual int get_available_packet_count() const;
-	virtual int get_max_packet_size() const = 0;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
 	/* WebSocketPeer */
 	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;

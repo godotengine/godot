@@ -36,7 +36,6 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle3D::set_navigation_node);
 	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle3D::get_navigation_node);
 }
@@ -44,7 +43,6 @@ void NavigationObstacle3D::_bind_methods() {
 void NavigationObstacle3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			update_agent_shape();
 
 			// Search the navigation node and set it
@@ -53,10 +51,11 @@ void NavigationObstacle3D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -76,7 +75,6 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 			PhysicsBody3D *rigid = Object::cast_to<PhysicsBody3D>(get_parent());
 			if (rigid) {
-
 				Vector3 v = rigid->get_linear_velocity();
 				NavigationServer3D::get_singleton()->agent_set_velocity(agent, v);
 				NavigationServer3D::get_singleton()->agent_set_target_velocity(agent, v);
@@ -86,9 +84,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 	}
 }
 
-NavigationObstacle3D::NavigationObstacle3D() :
-		navigation(nullptr),
-		agent(RID()) {
+NavigationObstacle3D::NavigationObstacle3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
 }
 
@@ -98,8 +94,9 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 }
 
 void NavigationObstacle3D::set_navigation(Navigation3D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -116,12 +113,16 @@ Node *NavigationObstacle3D::get_navigation_node() const {
 }
 
 String NavigationObstacle3D::get_configuration_warning() const {
-	if (!Object::cast_to<Node3D>(get_parent())) {
+	String warning = Node::get_configuration_warning();
 
-		return TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
+	if (!Object::cast_to<Node3D>(get_parent())) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle3D::update_agent_shape() {
@@ -151,8 +152,9 @@ void NavigationObstacle3D::update_agent_shape() {
 		radius *= MAX(s.x, MAX(s.y, s.z));
 	}
 
-	if (radius == 0.0)
+	if (radius == 0.0) {
 		radius = 1.0; // Never a 0 radius
+	}
 
 	// Initialize the Agent as an object
 	NavigationServer3D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);

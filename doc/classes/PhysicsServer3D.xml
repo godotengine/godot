@@ -334,7 +334,7 @@
 			</argument>
 			<argument index="1" name="force" type="Vector3">
 			</argument>
-			<argument index="2" name="position" type="Vector3">
+			<argument index="2" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -379,9 +379,9 @@
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="position" type="Vector3">
+			<argument index="1" name="impulse" type="Vector3">
 			</argument>
-			<argument index="2" name="impulse" type="Vector3">
+			<argument index="2" name="position" type="Vector3" default="Vector3( 0, 0, 0 )">
 			</argument>
 			<description>
 				Gives the body a push at a [code]position[/code] in the direction of the [code]impulse[/code].

@@ -37,8 +37,12 @@
 extern "C" {
 #endif
 
-void GDAPI godot_vector3_new(godot_vector3 *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z) {
+static_assert(sizeof(godot_vector3) == sizeof(Vector3), "Vector3 size mismatch");
+static_assert(sizeof(godot_vector3i) == sizeof(Vector3i), "Vector3i size mismatch");
 
+// Vector3
+
+void GDAPI godot_vector3_new(godot_vector3 *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z) {
 	Vector3 *dest = (Vector3 *)r_dest;
 	*dest = Vector3(p_x, p_y, p_z);
 }
@@ -48,6 +52,13 @@ godot_string GDAPI godot_vector3_as_string(const godot_vector3 *p_self) {
 	const Vector3 *self = (const Vector3 *)p_self;
 	memnew_placement(&ret, String(*self));
 	return ret;
+}
+
+godot_vector3i GDAPI godot_vector3_as_vector3i(const godot_vector3 *p_self) {
+	godot_vector3i dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	*((Vector3i *)&dest) = Vector3i(*self);
+	return dest;
 }
 
 godot_int GDAPI godot_vector3_min_axis(const godot_vector3 *p_self) {
@@ -106,11 +117,11 @@ godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const god
 	return dest;
 }
 
-godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t) {
+godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
 	const Vector3 *b = (const Vector3 *)p_b;
-	*((Vector3 *)&dest) = self->linear_interpolate(*b, p_t);
+	*((Vector3 *)&dest) = self->lerp(*b, p_t);
 	return dest;
 }
 
@@ -165,6 +176,13 @@ godot_vector3 GDAPI godot_vector3_abs(const godot_vector3 *p_self) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;
 	*((Vector3 *)&dest) = self->abs();
+	return dest;
+}
+
+godot_vector3 GDAPI godot_vector3_sign(const godot_vector3 *p_self) {
+	godot_vector3 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	*((Vector3 *)&dest) = self->sign();
 	return dest;
 }
 
@@ -311,6 +329,133 @@ void GDAPI godot_vector3_set_axis(godot_vector3 *p_self, const godot_vector3_axi
 
 godot_real GDAPI godot_vector3_get_axis(const godot_vector3 *p_self, const godot_vector3_axis p_axis) {
 	const Vector3 *self = (const Vector3 *)p_self;
+	return self->get_axis(p_axis);
+}
+
+// Vector3i
+
+void GDAPI godot_vector3i_new(godot_vector3i *r_dest, const godot_int p_x, const godot_int p_y, const godot_int p_z) {
+	Vector3i *dest = (Vector3i *)r_dest;
+	*dest = Vector3i(p_x, p_y, p_z);
+}
+
+godot_string GDAPI godot_vector3i_as_string(const godot_vector3i *p_self) {
+	godot_string ret;
+	const Vector3i *self = (const Vector3i *)p_self;
+	memnew_placement(&ret, String(*self));
+	return ret;
+}
+
+godot_vector3 GDAPI godot_vector3i_as_vector3(const godot_vector3i *p_self) {
+	godot_vector3 dest;
+	const Vector3i *self = (const Vector3i *)p_self;
+	*((Vector3 *)&dest) = Vector3(*self);
+	return dest;
+}
+
+godot_int GDAPI godot_vector3i_min_axis(const godot_vector3i *p_self) {
+	const Vector3i *self = (const Vector3i *)p_self;
+	return self->min_axis();
+}
+
+godot_int GDAPI godot_vector3i_max_axis(const godot_vector3i *p_self) {
+	const Vector3i *self = (const Vector3i *)p_self;
+	return self->max_axis();
+}
+
+godot_vector3i GDAPI godot_vector3i_abs(const godot_vector3i *p_self) {
+	godot_vector3i dest;
+	const Vector3i *self = (const Vector3i *)p_self;
+	*((Vector3i *)&dest) = self->abs();
+	return dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_sign(const godot_vector3i *p_self) {
+	godot_vector3i dest;
+	const Vector3i *self = (const Vector3i *)p_self;
+	*((Vector3i *)&dest) = self->sign();
+	return dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_add(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	*dest = *self + *b;
+	return raw_dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_subtract(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	*dest = *self - *b;
+	return raw_dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_multiply_vector(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	*dest = *self * *b;
+	return raw_dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_multiply_scalar(const godot_vector3i *p_self, const godot_int p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	*dest = *self * p_b;
+	return raw_dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_divide_vector(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	*dest = *self / *b;
+	return raw_dest;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_divide_scalar(const godot_vector3i *p_self, const godot_int p_b) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	Vector3i *self = (Vector3i *)p_self;
+	*dest = *self / p_b;
+	return raw_dest;
+}
+
+godot_bool GDAPI godot_vector3i_operator_equal(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	return *self == *b;
+}
+
+godot_bool GDAPI godot_vector3i_operator_less(const godot_vector3i *p_self, const godot_vector3i *p_b) {
+	Vector3i *self = (Vector3i *)p_self;
+	const Vector3i *b = (const Vector3i *)p_b;
+	return *self < *b;
+}
+
+godot_vector3i GDAPI godot_vector3i_operator_neg(const godot_vector3i *p_self) {
+	godot_vector3i raw_dest;
+	Vector3i *dest = (Vector3i *)&raw_dest;
+	const Vector3i *self = (const Vector3i *)p_self;
+	*dest = -(*self);
+	return raw_dest;
+}
+
+void GDAPI godot_vector3i_set_axis(godot_vector3i *p_self, const godot_vector3_axis p_axis, const godot_int p_val) {
+	Vector3i *self = (Vector3i *)p_self;
+	self->set_axis(p_axis, p_val);
+}
+
+godot_int GDAPI godot_vector3i_get_axis(const godot_vector3i *p_self, const godot_vector3_axis p_axis) {
+	const Vector3i *self = (const Vector3i *)p_self;
 	return self->get_axis(p_axis);
 }
 

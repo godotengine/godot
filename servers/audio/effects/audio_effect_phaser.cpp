@@ -33,7 +33,6 @@
 #include "servers/audio_server.h"
 
 void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float sampling_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float dmin = base->range_min / (sampling_rate / 2.0);
@@ -42,7 +41,6 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 	float increment = 2.f * Math_PI * (base->rate / sampling_rate);
 
 	for (int i = 0; i < p_frame_count; i++) {
-
 		phase += increment;
 
 		while (phase >= Math_PI * 2.f) {
@@ -91,54 +89,46 @@ Ref<AudioEffectInstance> AudioEffectPhaser::instance() {
 }
 
 void AudioEffectPhaser::set_range_min_hz(float p_hz) {
-
 	range_min = p_hz;
 }
 
 float AudioEffectPhaser::get_range_min_hz() const {
-
 	return range_min;
 }
 
 void AudioEffectPhaser::set_range_max_hz(float p_hz) {
-
 	range_max = p_hz;
 }
-float AudioEffectPhaser::get_range_max_hz() const {
 
+float AudioEffectPhaser::get_range_max_hz() const {
 	return range_max;
 }
 
 void AudioEffectPhaser::set_rate_hz(float p_hz) {
-
 	rate = p_hz;
 }
-float AudioEffectPhaser::get_rate_hz() const {
 
+float AudioEffectPhaser::get_rate_hz() const {
 	return rate;
 }
 
 void AudioEffectPhaser::set_feedback(float p_fbk) {
-
 	feedback = p_fbk;
 }
-float AudioEffectPhaser::get_feedback() const {
 
+float AudioEffectPhaser::get_feedback() const {
 	return feedback;
 }
 
 void AudioEffectPhaser::set_depth(float p_depth) {
-
 	depth = p_depth;
 }
 
 float AudioEffectPhaser::get_depth() const {
-
 	return depth;
 }
 
 void AudioEffectPhaser::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_range_min_hz", "hz"), &AudioEffectPhaser::set_range_min_hz);
 	ClassDB::bind_method(D_METHOD("get_range_min_hz"), &AudioEffectPhaser::get_range_min_hz);
 

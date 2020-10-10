@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CameraEffects" inherits="Resource" version="4.0">
 	<brief_description>
+		Contains camera-specific effects such as depth of field and exposure override.
 	</brief_description>
 	<description>
+		Contains camera-specific effects such as depth of field and exposure override.
+		See also [Environment] for general 3D environment settings.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,22 +13,31 @@
 	</methods>
 	<members>
 		<member name="dof_blur_amount" type="float" setter="set_dof_blur_amount" getter="get_dof_blur_amount" default="0.1">
+			The amount of blur for both near and far depth-of-field effects. The amount of blur increases the radius of the blur effect, making the affected area blurrier. However, If the amount is too high, you might start to see lines appearing, especially when using a low quality blur.
 		</member>
 		<member name="dof_blur_far_distance" type="float" setter="set_dof_blur_far_distance" getter="get_dof_blur_far_distance" default="10.0">
+			The distance from the camera where the far blur effect affects the rendering.
 		</member>
 		<member name="dof_blur_far_enabled" type="bool" setter="set_dof_blur_far_enabled" getter="is_dof_blur_far_enabled" default="false">
+			If [code]true[/code], enables the depth-of-field far blur effect. This has a significant performance cost. Consider disabling it in scenes where there are no far away objects.
 		</member>
 		<member name="dof_blur_far_transition" type="float" setter="set_dof_blur_far_transition" getter="get_dof_blur_far_transition" default="5.0">
+			The length of the transition between the no-blur area and far blur.
 		</member>
 		<member name="dof_blur_near_distance" type="float" setter="set_dof_blur_near_distance" getter="get_dof_blur_near_distance" default="2.0">
+			Distance from the camera where the near blur effect affects the rendering.
 		</member>
 		<member name="dof_blur_near_enabled" type="bool" setter="set_dof_blur_near_enabled" getter="is_dof_blur_near_enabled" default="false">
+			If [code]true[/code], enables the depth-of-field near blur effect. This has a significant performance cost. Consider disabling it in scenes where there are no nearby objects.
 		</member>
 		<member name="dof_blur_near_transition" type="float" setter="set_dof_blur_near_transition" getter="get_dof_blur_near_transition" default="1.0">
+			The length of the transition between the near blur and no-blur area.
 		</member>
 		<member name="override_exposure" type="float" setter="set_override_exposure" getter="get_override_exposure" default="1.0">
+			The exposure override value to use. Higher values will result in a brighter scene. Only effective if [member override_exposure_enabled] is [code]true[/code].
 		</member>
-		<member name="override_exposure_enable" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
+		<member name="override_exposure_enabled" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
+			If [code]true[/code], overrides the manual or automatic exposure defined in the [Environment] with the value in [member override_exposure].
 		</member>
 	</members>
 	<constants>

@@ -8,6 +8,7 @@
 		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
 	</tutorials>
 	<methods>
 		<method name="PackedVector2Array">
@@ -42,6 +43,15 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="Vector2">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the array contains [code]value[/code].
 			</description>
 		</method>
 		<method name="insert">
@@ -105,6 +115,13 @@
 			</return>
 			<description>
 				Returns the size of the array.
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void">
+			</return>
+			<description>
+				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
 	</methods>

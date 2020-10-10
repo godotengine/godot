@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "base_object_glue.h"
-
 #ifdef MONO_GLUE_ENABLED
 
+#include "core/class_db.h"
+#include "core/object.h"
 #include "core/reference.h"
 #include "core/string_name.h"
 
@@ -39,6 +39,7 @@
 #include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"
+#include "../mono_gd/gd_mono_marshal.h"
 #include "../mono_gd/gd_mono_utils.h"
 #include "../signal_awaiter_utils.h"
 #include "arguments_vector.h"
@@ -140,16 +141,18 @@ MethodBind *godot_icall_Object_ClassDB_get_method(StringName *p_type, MonoString
 }
 
 MonoObject *godot_icall_Object_weakref(Object *p_ptr) {
-	if (!p_ptr)
+	if (!p_ptr) {
 		return nullptr;
+	}
 
 	Ref<WeakRef> wref;
 	Reference *ref = Object::cast_to<Reference>(p_ptr);
 
 	if (ref) {
 		REF r = ref;
-		if (!r.is_valid())
+		if (!r.is_valid()) {
 			return nullptr;
+		}
 
 		wref.instance();
 		wref->set_ref(r);
@@ -241,6 +244,7 @@ void godot_register_object_icalls() {
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Ctor", (void *)godot_icall_Object_Ctor);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Disposed", (void *)godot_icall_Object_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Reference_Disposed", (void *)godot_icall_Reference_Disposed);
+	mono_add_internal_call("Godot.Object::godot_icall_Object_ConnectEventSignals", (void *)godot_icall_Object_ConnectEventSignals);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", (void *)godot_icall_Object_ClassDB_get_method);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_ToString", (void *)godot_icall_Object_ToString);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_weakref", (void *)godot_icall_Object_weakref);

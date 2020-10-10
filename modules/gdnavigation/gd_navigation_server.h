@@ -78,7 +78,7 @@ class GdNavigationServer : public NavigationServer3D {
 	mutable RID_PtrOwner<NavRegion> region_owner;
 	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
-	bool active;
+	bool active = true;
 	Vector<NavMap *> active_maps;
 
 public:

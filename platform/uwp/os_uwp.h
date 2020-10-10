@@ -32,7 +32,7 @@
 #define OS_UWP_H
 
 #include "context_egl_uwp.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/transform_2d.h"
 #include "core/os/os.h"
 #include "core/ustring.h"
@@ -48,10 +48,8 @@
 #include <windows.h>
 
 class OS_UWP : public OS {
-
 public:
 	struct KeyEvent {
-
 		enum MessageType {
 			KEY_EVENT_MESSAGE,
 			CHAR_EVENT_MESSAGE
@@ -236,7 +234,7 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_input_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void hide_virtual_keyboard();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
@@ -247,7 +245,7 @@ public:
 
 	void run();
 
-	virtual bool get_swap_ok_cancel() { return true; }
+	virtual bool get_swap_cancel_ok() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
 

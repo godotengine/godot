@@ -37,13 +37,14 @@ extern "C" {
 }
 
 struct _PHashTranslationCmp {
-
 	int orig_len;
 	CharString compressed;
 	int offset;
 };
 
 void PHashTranslation::generate(const Ref<Translation> &p_from) {
+	// This method compresses a Translation instance.
+	// Right now it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
 #ifdef TOOLS_ENABLED
 	List<StringName> keys;
 	p_from->get_message_list(&keys);
@@ -65,7 +66,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	int total_string_size = 0;
 
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
-
 		//hash string
 		CharString cs = E->get().operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
@@ -108,21 +108,19 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	int bucket_table_size = 0;
 
 	for (int i = 0; i < size; i++) {
-
 		const Vector<Pair<int, CharString>> &b = buckets[i];
 		Map<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0)
+		if (b.size() == 0) {
 			continue;
+		}
 
 		int d = 1;
 		int item = 0;
 
 		while (item < b.size()) {
-
 			uint32_t slot = hash(d, b[item].second.get_data());
 			if (t.has(slot)) {
-
 				item = 0;
 				d++;
 				t.clear();
@@ -151,7 +149,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 	int collisions = 0;
 
 	for (int i = 0; i < size; i++) {
-
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
 			htw[i] = 0xFFFFFFFF; //nothing
@@ -165,7 +162,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		btw[btindex++] = hfunc_table[i];
 
 		for (Map<uint32_t, int>::Element *E = t.front(); E; E = E->next()) {
-
 			btw[btindex++] = E->key();
 			btw[btindex++] = compressed[E->get()].offset;
 			btw[btindex++] = compressed[E->get()].compressed.size();
@@ -187,7 +183,6 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 }
 
 bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
-
 	String name = p_name.operator String();
 	if (name == "hash_table") {
 		hash_table = p_value;
@@ -197,33 +192,36 @@ bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
 		strings = p_value;
 	} else if (name == "load_from") {
 		generate(p_value);
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
 bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String name = p_name.operator String();
-	if (name == "hash_table")
+	if (name == "hash_table") {
 		r_ret = hash_table;
-	else if (name == "bucket_table")
+	} else if (name == "bucket_table") {
 		r_ret = bucket_table;
-	else if (name == "strings")
+	} else if (name == "strings") {
 		r_ret = strings;
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
 
-StringName PHashTranslation::get_message(const StringName &p_src_text) const {
+StringName PHashTranslation::get_message(const StringName &p_src_text, const StringName &p_context) const {
+	// p_context passed in is ignore. The use of context is not yet supported in PHashTranslation.
 
 	int htsize = hash_table.size();
 
-	if (htsize == 0)
+	if (htsize == 0) {
 		return StringName();
+	}
 
 	CharString str = p_src_text.operator String().utf8();
 	uint32_t h = hash(0, str.get_data());
@@ -248,9 +246,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	int idx = -1;
 
 	for (int i = 0; i < bucket.size; i++) {
-
 		if (bucket.elem[i].key == h) {
-
 			idx = i;
 			break;
 		}
@@ -261,13 +257,11 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	}
 
 	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-
 		String rstr;
 		rstr.parse_utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 
 		return rstr;
 	} else {
-
 		CharString uncomp;
 		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
@@ -277,17 +271,18 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	}
 }
 
-void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
+StringName PHashTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+	// The use of plurals translation is not yet supported in PHashTranslation.
+	return get_message(p_src_text, p_context);
+}
 
+void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
 	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
+
 void PHashTranslation::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("generate", "from"), &PHashTranslation::generate);
-}
-
-PHashTranslation::PHashTranslation() {
 }

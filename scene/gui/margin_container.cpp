@@ -31,7 +31,6 @@
 #include "margin_container.h"
 
 Size2 MarginContainer::get_minimum_size() const {
-
 	int margin_left = get_theme_constant("margin_left");
 	int margin_top = get_theme_constant("margin_top");
 	int margin_right = get_theme_constant("margin_right");
@@ -40,20 +39,24 @@ Size2 MarginContainer::get_minimum_size() const {
 	Size2 max;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_top_level()) {
 			continue;
-		if (!c->is_visible())
+		}
+		if (!c->is_visible()) {
 			continue;
+		}
 
 		Size2 s = c->get_combined_minimum_size();
-		if (s.width > max.width)
+		if (s.width > max.width) {
 			max.width = s.width;
-		if (s.height > max.height)
+		}
+		if (s.height > max.height) {
 			max.height = s.height;
+		}
 	}
 
 	max.width += (margin_left + margin_right);
@@ -63,10 +66,8 @@ Size2 MarginContainer::get_minimum_size() const {
 }
 
 void MarginContainer::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			int margin_left = get_theme_constant("margin_left");
 			int margin_top = get_theme_constant("margin_top");
 			int margin_right = get_theme_constant("margin_right");
@@ -75,12 +76,13 @@ void MarginContainer::_notification(int p_what) {
 			Size2 s = get_size();
 
 			for (int i = 0; i < get_child_count(); i++) {
-
 				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c)
+				if (!c) {
 					continue;
-				if (c->is_set_as_toplevel())
+				}
+				if (c->is_set_as_top_level()) {
 					continue;
+				}
 
 				int w = s.width - margin_left - margin_right;
 				int h = s.height - margin_top - margin_bottom;
@@ -88,7 +90,6 @@ void MarginContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}

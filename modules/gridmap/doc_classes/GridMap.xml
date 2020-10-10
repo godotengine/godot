@@ -10,7 +10,9 @@
 		Internally, a GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
+		<link title="Using gridmaps">https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
 	</tutorials>
 	<methods>
 		<method name="clear">
@@ -43,27 +45,19 @@
 		<method name="get_cell_item" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
+			<argument index="0" name="position" type="Vector3i">
 			</argument>
 			<description>
-				The [MeshLibrary] item index located at the grid-based X, Y and Z coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
+				The [MeshLibrary] item index located at the given grid coordinates. If the cell is empty, [constant INVALID_CELL_ITEM] will be returned.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
+			<argument index="0" name="position" type="Vector3i">
 			</argument>
 			<description>
-				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is returned if the cell is empty.
+				The orientation of the cell at the given grid coordinates. [code]-1[/code] is returned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -111,11 +105,7 @@
 		<method name="map_to_world" qualifiers="const">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
+			<argument index="0" name="map_position" type="Vector3i">
 			</argument>
 			<description>
 				Returns the position of a grid cell in the GridMap's local coordinate space.
@@ -132,18 +122,14 @@
 		<method name="set_cell_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="x" type="int">
+			<argument index="0" name="position" type="Vector3i">
 			</argument>
-			<argument index="1" name="y" type="int">
+			<argument index="1" name="item" type="int">
 			</argument>
-			<argument index="2" name="z" type="int">
-			</argument>
-			<argument index="3" name="item" type="int">
-			</argument>
-			<argument index="4" name="orientation" type="int" default="0">
+			<argument index="2" name="orientation" type="int" default="0">
 			</argument>
 			<description>
-				Sets the mesh index for the cell referenced by its grid-based X, Y and Z coordinates.
+				Sets the mesh index for the cell referenced by its grid coordinates.
 				A negative item index such as [constant INVALID_CELL_ITEM] will clear the cell.
 				Optionally, the item's orientation can be passed. For valid orientation values, see [method Basis.get_orthogonal_index].
 			</description>
@@ -185,9 +171,9 @@
 			</description>
 		</method>
 		<method name="world_to_map" qualifiers="const">
-			<return type="Vector3">
+			<return type="Vector3i">
 			</return>
-			<argument index="0" name="pos" type="Vector3">
+			<argument index="0" name="world_position" type="Vector3">
 			</argument>
 			<description>
 				Returns the coordinates of the grid cell containing the given point.
@@ -221,7 +207,7 @@
 			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this GridMap detects collisions in.
+			The physics layers this GridMap detects collisions in. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].

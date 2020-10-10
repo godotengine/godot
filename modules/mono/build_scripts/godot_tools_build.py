@@ -13,13 +13,11 @@ def build_godot_tools(source, target, env):
     solution_path = os.path.join(module_dir, "editor/GodotTools/GodotTools.sln")
     build_config = "Debug" if env["target"] == "debug" else "Release"
 
-    # Custom build target to make sure output is always copied to the data dir.
-    extra_build_args = ["/Target:Build;GodotTools:BuildAlwaysCopyToDataDir"]
+    from .solution_builder import build_solution
 
-    from .solution_builder import build_solution, nuget_restore
+    extra_msbuild_args = ["/p:GodotPlatform=" + env["platform"]]
 
-    nuget_restore(env, solution_path)
-    build_solution(env, solution_path, build_config, extra_build_args)
+    build_solution(env, solution_path, build_config, extra_msbuild_args)
     # No need to copy targets. The GodotTools csproj takes care of copying them.
 
 

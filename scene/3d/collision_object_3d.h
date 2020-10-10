@@ -35,7 +35,6 @@
 #include "scene/resources/shape_3d.h"
 
 class CollisionObject3D : public Node3D {
-
 	GDCLASS(CollisionObject3D, Node3D);
 
 	bool area;
@@ -43,7 +42,6 @@ class CollisionObject3D : public Node3D {
 	RID rid;
 
 	struct ShapeData {
-
 		Object *owner;
 		Transform xform;
 		struct ShapeBase {
@@ -110,7 +108,7 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	CollisionObject3D();
 	~CollisionObject3D();

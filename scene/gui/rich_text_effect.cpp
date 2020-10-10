@@ -64,7 +64,6 @@ RichTextEffect::RichTextEffect() {
 }
 
 void CharFXTransform::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_relative_index"), &CharFXTransform::get_relative_index);
 	ClassDB::bind_method(D_METHOD("set_relative_index", "index"), &CharFXTransform::set_relative_index);
 

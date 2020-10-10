@@ -32,13 +32,11 @@
 #define RASTERIZER_H
 
 #include "core/math/camera_matrix.h"
-#include "servers/rendering_server.h"
-
 #include "core/pair.h"
 #include "core/self_list.h"
+#include "servers/rendering_server.h"
 
 class RasterizerScene {
-
 public:
 	/* SHADOW ATLAS API */
 
@@ -51,12 +49,23 @@ public:
 	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 
+	/* SDFGI UPDATE */
+
+	struct InstanceBase;
+
+	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) = 0;
+	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const = 0;
+	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const = 0;
+	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const = 0;
+	virtual void sdfgi_update_probes(RID p_render_buffers, RID p_environment, const RID *p_directional_light_instances, uint32_t p_directional_light_count, const RID *p_positional_light_instances, uint32_t p_positional_light_count) = 0;
+
 	/* SKY API */
 
 	virtual RID sky_create() = 0;
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
 	/* ENVIRONMENT API */
 
@@ -77,7 +86,14 @@ public:
 
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
-	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) = 0;
+	virtual void environment_glow_set_use_high_quality(bool p_enable) = 0;
+
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter) = 0;
+
+	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
+	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
+	virtual void environment_set_volumetric_fog_directional_shadow_shrink_size(int p_shrink_size) = 0;
+	virtual void environment_set_volumetric_fog_positional_shadow_shrink_size(int p_shrink_size) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) = 0;
 	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) = 0;
@@ -86,13 +102,18 @@ public:
 
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) = 0;
 
+	virtual void environment_set_sdfgi(RID p_env, bool p_enable, RS::EnvironmentSDFGICascades p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, bool p_use_multibounce, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) = 0;
+
+	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) = 0;
+	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) = 0;
+
 	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) = 0;
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
-	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
-	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density) = 0;
+
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
 	virtual bool is_environment(RID p_env) const = 0;
 	virtual RS::EnvironmentBG environment_get_background(RID p_env) const = 0;
@@ -108,8 +129,6 @@ public:
 
 	virtual void shadows_quality_set(RS::ShadowQuality p_quality) = 0;
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
-
-	struct InstanceBase;
 
 	struct InstanceDependency {
 		void instance_notify_changed(bool p_aabb, bool p_dependencies);
@@ -160,15 +179,28 @@ public:
 
 		SelfList<InstanceBase> dependency_item;
 
-		InstanceBase *lightmap_capture;
-		RID lightmap;
-		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
+		InstanceBase *lightmap;
+		Rect2 lightmap_uv_scale;
+		int lightmap_slice_index;
+		uint32_t lightmap_cull_index;
+		Vector<Color> lightmap_sh; //spherical harmonic
 
 		AABB aabb;
 		AABB transformed_aabb;
 
-		virtual void dependency_deleted(RID p_dependency) = 0;
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) = 0;
+		struct InstanceShaderParameter {
+			int32_t index = -1;
+			Variant value;
+			Variant default_value;
+			PropertyInfo info;
+		};
+
+		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		bool instance_allocated_shader_parameters = false;
+		int32_t instance_allocated_shader_parameters_offset = -1;
+
+		virtual void dependency_deleted(RID p_dependency) {}
+		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {}
 
 		Set<InstanceDependency *> dependencies;
 
@@ -211,7 +243,6 @@ public:
 
 		InstanceBase() :
 				dependency_item(this) {
-
 			base_type = RS::INSTANCE_NONE;
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -222,7 +253,9 @@ public:
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-			lightmap_capture = nullptr;
+			lightmap_slice_index = 0;
+			lightmap = nullptr;
+			lightmap_cull_index = 0;
 		}
 
 		virtual ~InstanceBase() {
@@ -232,6 +265,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light) = 0;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
+	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) = 0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
@@ -257,10 +291,15 @@ public:
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) = 0;
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void gi_probe_set_quality(RS::GIProbeQuality) = 0;
+
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) = 0;
+	virtual void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) = 0;
+	virtual void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, InstanceBase **p_cull_result, int p_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time, double p_step) = 0;
@@ -269,20 +308,23 @@ public:
 	virtual RID render_buffers_create() = 0;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa) = 0;
 
-	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
+	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_limit) = 0;
 	virtual bool screen_space_roughness_limiter_is_active() const = 0;
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) = 0;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
 
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
+
 	virtual bool free(RID p_rid) = 0;
+
+	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void update() = 0;
 	virtual ~RasterizerScene() {}
 };
 
 class RasterizerStorage {
-
 	Color default_clear_color;
 
 public:
@@ -290,22 +332,22 @@ public:
 
 	virtual RID texture_2d_create(const Ref<Image> &p_image) = 0;
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) = 0;
-	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) = 0; //all slices, then all the mipmaps, must be coherent
+	virtual RID texture_3d_create(Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) = 0;
 	virtual RID texture_proxy_create(RID p_base) = 0; //all slices, then all the mipmaps, must be coherent
 
 	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0; //mostly used for video and streaming
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
-	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) = 0;
+	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
-	virtual RID texture_2d_layered_placeholder_create() = 0;
+	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_placeholder_create() = 0;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
 	virtual Ref<Image> texture_2d_layer_get(RID p_texture, int p_layer) const = 0;
-	virtual Ref<Image> texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const = 0;
+	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const = 0;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
@@ -356,6 +398,14 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
+
+	struct InstanceShaderParam {
+		PropertyInfo info;
+		int index;
+		Variant default_value;
+	};
+
+	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
 	virtual void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
 
@@ -459,7 +509,8 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
-	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
+	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) = 0;
+	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RS::LightOmniShadowMode p_mode) = 0;
 
@@ -478,7 +529,8 @@ public:
 	virtual AABB light_get_aabb(RID p_light) const = 0;
 	virtual float light_get_param(RID p_light, RS::LightParam p_param) = 0;
 	virtual Color light_get_color(RID p_light) = 0;
-	virtual bool light_get_use_gi(RID p_light) = 0;
+	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) = 0;
+	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
 	/* PROBE API */
@@ -488,9 +540,9 @@ public:
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) = 0;
-	virtual void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) = 0;
-	virtual void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) = 0;
-	virtual void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) = 0;
+	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) = 0;
+	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) = 0;
+	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) = 0;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) = 0;
 	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) = 0;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) = 0;
@@ -574,29 +626,21 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	struct LightmapCaptureOctree {
+	virtual RID lightmap_create() = 0;
 
-		enum {
-			CHILD_EMPTY = 0xFFFFFFFF
-		};
-
-		uint16_t light[6][3]; //anisotropic light
-		float alpha;
-		uint32_t children[8];
-	};
-
-	virtual RID lightmap_capture_create() = 0;
-	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
-	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) = 0;
-	virtual Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
-	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) = 0;
-	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
-	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
-	virtual const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) = 0;
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) = 0;
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const = 0;
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
+	virtual AABB lightmap_get_aabb(RID p_lightmap) const = 0;
+	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) = 0;
+	virtual bool lightmap_is_interior(RID p_lightmap) const = 0;
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
+	virtual float lightmap_get_probe_capture_update_speed() const = 0;
 
 	/* PARTICLES */
 
@@ -617,7 +661,10 @@ public:
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
+	virtual void particles_set_collision_base_size(RID p_particles, float p_size) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
+	virtual void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
+	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	virtual bool particles_is_inactive(RID p_particles) const = 0;
 
@@ -634,6 +681,48 @@ public:
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
+
+	virtual void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) = 0;
+
+	virtual void particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) = 0;
+	virtual void particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) = 0;
+
+	virtual void update_particles() = 0;
+
+	/* PARTICLES COLLISION */
+
+	virtual RID particles_collision_create() = 0;
+	virtual void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) = 0;
+	virtual void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) = 0;
+	virtual void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) = 0; //for spheres
+	virtual void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) = 0; //for non-spheres
+	virtual void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) = 0;
+	virtual void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) = 0;
+	virtual void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) = 0;
+	virtual void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) = 0; //for SDF and vector field, heightfield is dynamic
+	virtual void particles_collision_height_field_update(RID p_particles_collision) = 0; //for SDF and vector field
+	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
+	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
+	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
+	virtual RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const = 0;
+
+	/* GLOBAL VARIABLES */
+
+	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
+	virtual void global_variable_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_variable_get_list() const = 0;
+
+	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual Variant global_variable_get(const StringName &p_name) const = 0;
+	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+
+	virtual void global_variables_load_settings(bool p_load_textures = true) = 0;
+	virtual void global_variables_clear() = 0;
+
+	virtual int32_t global_variables_instance_allocate(RID p_instance) = 0;
+	virtual void global_variables_instance_free(RID p_instance) = 0;
+	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
 
 	/* RENDER TARGET */
 
@@ -684,14 +773,16 @@ public:
 	Color get_default_clear_color() const {
 		return default_clear_color;
 	}
-#define TIMESTAMP_BEGIN()                                                                 \
-	{                                                                                     \
-		if (RSG::storage->capturing_timestamps) RSG::storage->capture_timestamps_begin(); \
+#define TIMESTAMP_BEGIN()                             \
+	{                                                 \
+		if (RSG::storage->capturing_timestamps)       \
+			RSG::storage->capture_timestamps_begin(); \
 	}
 
-#define RENDER_TIMESTAMP(m_text)                                                         \
-	{                                                                                    \
-		if (RSG::storage->capturing_timestamps) RSG::storage->capture_timestamp(m_text); \
+#define RENDER_TIMESTAMP(m_text)                     \
+	{                                                \
+		if (RSG::storage->capturing_timestamps)      \
+			RSG::storage->capture_timestamp(m_text); \
 	}
 
 	bool capturing_timestamps = false;
@@ -723,7 +814,6 @@ public:
 	};
 
 	struct Light {
-
 		bool enabled;
 		Color color;
 		Transform2D xform;
@@ -778,7 +868,7 @@ public:
 			item_mask = 1;
 			scale = 1.0;
 			energy = 1.0;
-			item_shadow_mask = -1;
+			item_shadow_mask = 1;
 			mode = RS::CANVAS_LIGHT_MODE_ADD;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;
@@ -802,7 +892,6 @@ public:
 	struct Item;
 
 	struct TextureBinding {
-
 		TextureBindingID binding_id;
 
 		_FORCE_INLINE_ void create(RS::CanvasItemTextureFilter p_item_filter, RS::CanvasItemTextureRepeat p_item_repeat, RID p_texture, RID p_normalmap, RID p_specular, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
@@ -820,7 +909,9 @@ public:
 
 		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
 		_FORCE_INLINE_ ~TextureBinding() {
-			if (binding_id) singleton->free_texture_binding(binding_id);
+			if (binding_id) {
+				singleton->free_texture_binding(binding_id);
+			}
 		}
 	};
 
@@ -830,7 +921,6 @@ public:
 
 	//also easier to wrap to avoid mistakes
 	struct Polygon {
-
 		PolygonID polygon_id;
 		Rect2 rect_cache;
 
@@ -849,14 +939,15 @@ public:
 
 		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
 		_FORCE_INLINE_ ~Polygon() {
-			if (polygon_id) singleton->free_polygon(polygon_id);
+			if (polygon_id) {
+				singleton->free_polygon(polygon_id);
+			}
 		}
 	};
 
 	//item
 
 	struct Item {
-
 		//commands are allocated in blocks of 4k to improve performance
 		//and cache coherence.
 		//blocks always grow but never shrink.
@@ -870,7 +961,6 @@ public:
 		};
 
 		struct Command {
-
 			enum Type {
 
 				TYPE_RECT,
@@ -890,7 +980,6 @@ public:
 		};
 
 		struct CommandRect : public Command {
-
 			Rect2 rect;
 			Color modulate;
 			Rect2 source;
@@ -906,7 +995,6 @@ public:
 		};
 
 		struct CommandNinePatch : public Command {
-
 			Rect2 rect;
 			Rect2 source;
 			float margin[4];
@@ -923,7 +1011,6 @@ public:
 		};
 
 		struct CommandPolygon : public Command {
-
 			RS::PrimitiveType primitive;
 			Polygon polygon;
 			Color specular_shininess;
@@ -934,7 +1021,6 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-
 			uint32_t point_count;
 			Vector2 points[4];
 			Vector2 uvs[4];
@@ -947,7 +1033,6 @@ public:
 		};
 
 		struct CommandMesh : public Command {
-
 			RID mesh;
 			Transform2D transform;
 			Color modulate;
@@ -957,7 +1042,6 @@ public:
 		};
 
 		struct CommandMultiMesh : public Command {
-
 			RID multimesh;
 			Color specular_shininess;
 			TextureBinding texture_binding;
@@ -965,7 +1049,6 @@ public:
 		};
 
 		struct CommandParticles : public Command {
-
 			RID particles;
 			Color specular_shininess;
 			TextureBinding texture_binding;
@@ -973,13 +1056,11 @@ public:
 		};
 
 		struct CommandTransform : public Command {
-
 			Transform2D xform;
 			CommandTransform() { type = TYPE_TRANSFORM; }
 		};
 
 		struct CommandClipIgnore : public Command {
-
 			bool ignore;
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
@@ -1029,13 +1110,13 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible))
+			if (custom_rect || (!rect_dirty && !update_when_visible)) {
 				return rect;
+			}
 
 			//must update rect
 
 			if (commands == nullptr) {
-
 				rect = Rect2();
 				rect_dirty = false;
 				return rect;
@@ -1048,29 +1129,24 @@ public:
 			const Item::Command *c = commands;
 
 			while (c) {
-
 				Rect2 r;
 
 				switch (c->type) {
 					case Item::Command::TYPE_RECT: {
-
 						const Item::CommandRect *crect = static_cast<const Item::CommandRect *>(c);
 						r = crect->rect;
 
 					} break;
 					case Item::Command::TYPE_NINEPATCH: {
-
 						const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
 						r = style->rect;
 					} break;
 
 					case Item::Command::TYPE_POLYGON: {
-
 						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 						r = polygon->polygon.rect_cache;
 					} break;
 					case Item::Command::TYPE_PRIMITIVE: {
-
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 						for (uint32_t j = 0; j < primitive->point_count; j++) {
 							if (j == 0) {
@@ -1081,7 +1157,6 @@ public:
 						}
 					} break;
 					case Item::Command::TYPE_MESH: {
-
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
 
@@ -1089,7 +1164,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
-
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
@@ -1097,7 +1171,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_PARTICLES: {
-
 						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
 						if (particles_cmd->particles.is_valid()) {
 							AABB aabb = RasterizerStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
@@ -1106,7 +1179,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {
-
 						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 						xf = transform->xform;
 						found_xform = true;
@@ -1189,7 +1261,6 @@ public:
 		}
 
 		struct CustomData {
-
 			virtual ~CustomData() {}
 		};
 
@@ -1251,7 +1322,9 @@ public:
 			for (int i = 0; i < blocks.size(); i++) {
 				memfree(blocks[i].memory);
 			}
-			if (copy_back_buffer) memdelete(copy_back_buffer);
+			if (copy_back_buffer) {
+				memdelete(copy_back_buffer);
+			}
 			if (custom_data) {
 				memdelete(custom_data);
 			}
@@ -1262,7 +1335,6 @@ public:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
-
 		bool enabled;
 		RID canvas;
 		RID polygon;
@@ -1328,6 +1400,8 @@ public:
 
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
+	virtual uint64_t get_frame_number() const = 0;
+	virtual float get_frame_delta_time() const = 0;
 
 	virtual bool is_low_end() const = 0;
 

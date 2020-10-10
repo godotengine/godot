@@ -5,8 +5,39 @@
 	</brief_description>
 	<description>
 		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
+		[b]Example of creating a button and assigning an action when pressed by code:[/b]
+		[codeblocks]
+		[gdscript]
+		func _ready():
+		    var button = Button.new()
+		    button.text = "Click me"
+		    button.connect("pressed", self, "_button_pressed")
+		    add_child(button)
+
+		func _button_pressed():
+		    print("Hello world!")
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    var button = new Button();
+		    button.Text = "Click me";
+		    button.Connect("pressed", this, nameof(ButtonPressed));
+		    AddChild(button);
+		}
+
+		private void ButtonPressed()
+		{
+		    GD.Print("Hello world!");
+		}
+		[/csharp]
+		[/codeblocks]
+		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 	</methods>

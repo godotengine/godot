@@ -15,9 +15,12 @@
 		print("position" in n) # Prints "True".
 		print("other_property" in n) # Prints "False".
 		[/codeblock]
+		The [code]in[/code] operator will evaluate to [code]true[/code] as long as the key exists, even if the value is [code]null[/code].
 		Objects also receive notifications. Notifications are a simple way to notify the object about different events, so they can all be handled together. See [method _notification].
+		[b]Note:[/b] Unlike references to a [Reference], references to an Object stored in a variable can become invalid without warning. Therefore, it's recommended to use [Reference] for data classes instead of [Object].
 	</description>
 	<tutorials>
+		<link title="When and how to avoid using nodes for everything">https://docs.godotengine.org/en/latest/getting_started/workflow/best_practices/node_alternatives.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get" qualifiers="virtual">
@@ -96,6 +99,7 @@
 				[codeblock]
 				call("set", "position", Vector2(42.0, 0.0))
 				[/codeblock]
+				[b]Note:[/b] In C#, the method name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined methods where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
@@ -108,6 +112,7 @@
 				[codeblock]
 				call_deferred("set", "position", Vector2(42.0, 0.0))
 				[/codeblock]
+				[b]Note:[/b] In C#, the method name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined methods where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
 		<method name="callv">
@@ -192,7 +197,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Deletes the object from memory. Any pre-existing reference to the freed object will now return [code]null[/code].
+				Deletes the object from memory. Any pre-existing reference to the freed object will become invalid, e.g. [code]is_instance_valid(object)[/code] will return [code]false[/code].
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
@@ -202,6 +207,7 @@
 			</argument>
 			<description>
 				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
+				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
@@ -389,7 +395,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Removes a given entry from the object's metadata.
+				Removes a given entry from the object's metadata. See also [method set_meta].
 			</description>
 		</method>
 		<method name="set">
@@ -401,6 +407,7 @@
 			</argument>
 			<description>
 				Assigns a new value to the given property. If the [code]property[/code] does not exist, nothing will happen.
+				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
 		<method name="set_block_signals">
@@ -421,6 +428,7 @@
 			</argument>
 			<description>
 				Assigns a new value to the given property, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", property, value)[/code].
+				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
 		<method name="set_indexed">
@@ -456,7 +464,8 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Adds or changes a given entry in the object's metadata. Metadata are serialized, and can take any [Variant] value.
+				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
+				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code].
 			</description>
 		</method>
 		<method name="set_script">
@@ -478,13 +487,35 @@
 			</description>
 		</method>
 		<method name="tr" qualifiers="const">
-			<return type="StringName">
+			<return type="String">
 			</return>
 			<argument index="0" name="message" type="StringName">
 			</argument>
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
 			<description>
-				Translates a message using translation catalogs configured in the Project Settings.
+				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
+				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
+			</description>
+		</method>
+		<method name="tr_n" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="message" type="StringName">
+			</argument>
+			<argument index="1" name="plural_message" type="StringName">
+			</argument>
+			<argument index="2" name="n" type="int">
+			</argument>
+			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
+				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
+				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
 			</description>
 		</method>
 	</methods>
@@ -512,7 +543,7 @@
 			One-shot connections disconnect themselves after emission.
 		</constant>
 		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">
-			Connect a signal as reference counted. This means that a given signal can be connected several times to the same target, and will only be fully disconnected once no references are left.
+			Connect a signal as reference-counted. This means that a given signal can be connected several times to the same target, and will only be fully disconnected once no references are left.
 		</constant>
 	</constants>
 </class>

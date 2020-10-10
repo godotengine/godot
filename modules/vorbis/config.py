@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return True
+    return env.module_check_dependencies("vorbis", ["ogg"])
 
 
 def configure(env):

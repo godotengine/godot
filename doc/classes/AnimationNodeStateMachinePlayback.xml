@@ -6,13 +6,19 @@
 	<description>
 		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
 		[b]Example:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var state_machine = $AnimationTree.get("parameters/playback")
 		state_machine.travel("some_state")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		stateMachine.Travel("some_state");
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_node" qualifiers="const">

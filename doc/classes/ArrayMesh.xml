@@ -6,25 +6,48 @@
 	<description>
 		The [ArrayMesh] is used to construct a [Mesh] by specifying the attributes as arrays.
 		The most basic example is the creation of a single triangle:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var vertices = PackedVector3Array()
 		vertices.push_back(Vector3(0, 1, 0))
 		vertices.push_back(Vector3(1, 0, 0))
 		vertices.push_back(Vector3(0, 0, 1))
+
 		# Initialize the ArrayMesh.
 		var arr_mesh = ArrayMesh.new()
 		var arrays = []
 		arrays.resize(ArrayMesh.ARRAY_MAX)
 		arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+
 		# Create the Mesh.
 		arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		var m = MeshInstance3D.new()
 		m.mesh = arr_mesh
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var vertices = new Godot.Collections.Array&lt;Vector3&gt;();
+		vertices.Add(new Vector3(0, 1, 0));
+		vertices.Add(new Vector3(1, 0, 0));
+		vertices.Add(new Vector3(0, 0, 1));
+
+		// Initialize the ArrayMesh.
+		var arrMesh = new ArrayMesh();
+		var arrays = new Godot.Collections.Array();
+		arrays.Resize((int)ArrayMesh.ArrayType.Max);
+		arrays[(int)ArrayMesh.ArrayType.Vertex] = vertices;
+
+		// Create the Mesh.
+		arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+		var m = new MeshInstance();
+		m.Mesh = arrMesh;
+		[/csharp]
+		[/codeblocks]
 		The [MeshInstance3D] is ready to be added to the [SceneTree] to be shown.
+		See also [ImmediateGeometry3D], [MeshDataTool] and [SurfaceTool] for procedural geometry generation.
+		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
+		<link title="Procedural geometry using the ArrayMesh">https://docs.godotengine.org/en/latest/tutorials/content/procedural_geometry/arraymesh.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_shape">
@@ -46,7 +69,6 @@
 			<argument index="2" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
 			<argument index="3" name="lods" type="Dictionary" default="{
-
 }">
 			</argument>
 			<argument index="4" name="compress_flags" type="int" default="31744">
@@ -56,7 +78,6 @@
 				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant ARRAY_INDEX] if it is used.
 				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
-				Godot uses clockwise winding order for front faces of triangle primitive modes.
 			</description>
 		</method>
 		<method name="clear_blend_shapes">

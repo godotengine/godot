@@ -36,30 +36,33 @@
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 class SpriteFramesEditor : public HSplitContainer {
-
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	ToolButton *load;
-	ToolButton *load_sheet;
-	ToolButton *_delete;
-	ToolButton *copy;
-	ToolButton *paste;
-	ToolButton *empty;
-	ToolButton *empty2;
-	ToolButton *move_up;
-	ToolButton *move_down;
+	Button *load;
+	Button *load_sheet;
+	Button *_delete;
+	Button *copy;
+	Button *paste;
+	Button *empty;
+	Button *empty2;
+	Button *move_up;
+	Button *move_down;
+	Button *zoom_out;
+	Button *zoom_1;
+	Button *zoom_in;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
 	HSplitContainer *split;
-	ToolButton *new_anim;
-	ToolButton *remove_anim;
+	Button *new_anim;
+	Button *remove_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;
@@ -80,9 +83,21 @@ class SpriteFramesEditor : public HSplitContainer {
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
+	Button *split_sheet_zoom_out;
+	Button *split_sheet_zoom_1;
+	Button *split_sheet_zoom_in;
 	EditorFileDialog *file_split_sheet;
 	Set<int> frames_selected;
 	int last_frame_selected;
+
+	float scale_ratio;
+	int thumbnail_default_size;
+	float thumbnail_zoom;
+	float max_thumbnail_zoom;
+	float min_thumbnail_zoom;
+	float sheet_zoom;
+	float max_sheet_zoom;
+	float min_sheet_zoom;
 
 	void _load_pressed();
 	void _load_scene_pressed();
@@ -104,6 +119,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_loop_changed();
 	void _animation_fps_changed(double p_value);
 
+	void _tree_input(const Ref<InputEvent> &p_event);
+	void _zoom_in();
+	void _zoom_out();
+	void _zoom_reset();
+
 	bool updating;
 
 	UndoRedo *undo_redo;
@@ -118,7 +138,11 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_preview_draw();
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
+	void _sheet_scroll_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_zoom_in();
+	void _sheet_zoom_out();
+	void _sheet_zoom_reset();
 	void _sheet_select_clear_all_frames();
 
 protected:
@@ -134,7 +158,6 @@ public:
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor;
@@ -142,11 +165,11 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "SpriteFrames"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "SpriteFrames"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	SpriteFramesEditorPlugin(EditorNode *p_node);
 	~SpriteFramesEditorPlugin();

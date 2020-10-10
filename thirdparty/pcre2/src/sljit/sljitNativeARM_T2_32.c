@@ -365,11 +365,13 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	sljit_u16 *buf_ptr;
 	sljit_u16 *buf_end;
 	sljit_uw half_count;
+	sljit_uw next_addr;
 	sljit_sw executable_offset;
 
 	struct sljit_label *label;
 	struct sljit_jump *jump;
 	struct sljit_const *const_;
+	struct sljit_put_label *put_label;
 
 	CHECK_ERROR_PTR();
 	CHECK_PTR(check_sljit_generate_code(compiler));
@@ -381,34 +383,46 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 
 	code_ptr = code;
 	half_count = 0;
+	next_addr = 0;
 	executable_offset = SLJIT_EXEC_OFFSET(code);
 
 	label = compiler->labels;
 	jump = compiler->jumps;
 	const_ = compiler->consts;
+	put_label = compiler->put_labels;
 
 	do {
 		buf_ptr = (sljit_u16*)buf->memory;
 		buf_end = buf_ptr + (buf->used_size >> 1);
 		do {
 			*code_ptr = *buf_ptr++;
-			/* These structures are ordered by their address. */
-			SLJIT_ASSERT(!label || label->size >= half_count);
-			SLJIT_ASSERT(!jump || jump->addr >= half_count);
-			SLJIT_ASSERT(!const_ || const_->addr >= half_count);
-			if (label && label->size == half_count) {
-				label->addr = ((sljit_uw)SLJIT_ADD_EXEC_OFFSET(code_ptr, executable_offset)) | 0x1;
-				label->size = code_ptr - code;
-				label = label->next;
-			}
-			if (jump && jump->addr == half_count) {
-					jump->addr = (sljit_uw)code_ptr - ((jump->flags & IS_COND) ? 10 : 8);
-					code_ptr -= detect_jump_type(jump, code_ptr, code, executable_offset);
-					jump = jump->next;
-			}
-			if (const_ && const_->addr == half_count) {
-				const_->addr = (sljit_uw)code_ptr;
-				const_ = const_->next;
+			if (next_addr == half_count) {
+				SLJIT_ASSERT(!label || label->size >= half_count);
+				SLJIT_ASSERT(!jump || jump->addr >= half_count);
+				SLJIT_ASSERT(!const_ || const_->addr >= half_count);
+				SLJIT_ASSERT(!put_label || put_label->addr >= half_count);
+
+				/* These structures are ordered by their address. */
+				if (label && label->size == half_count) {
+					label->addr = ((sljit_uw)SLJIT_ADD_EXEC_OFFSET(code_ptr, executable_offset)) | 0x1;
+					label->size = code_ptr - code;
+					label = label->next;
+				}
+				if (jump && jump->addr == half_count) {
+						jump->addr = (sljit_uw)code_ptr - ((jump->flags & IS_COND) ? 10 : 8);
+						code_ptr -= detect_jump_type(jump, code_ptr, code, executable_offset);
+						jump = jump->next;
+				}
+				if (const_ && const_->addr == half_count) {
+					const_->addr = (sljit_uw)code_ptr;
+					const_ = const_->next;
+				}
+				if (put_label && put_label->addr == half_count) {
+					SLJIT_ASSERT(put_label->label);
+					put_label->addr = (sljit_uw)code_ptr;
+					put_label = put_label->next;
+				}
+				next_addr = compute_next_addr(label, jump, const_, put_label);
 			}
 			code_ptr ++;
 			half_count ++;
@@ -426,12 +440,19 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	SLJIT_ASSERT(!label);
 	SLJIT_ASSERT(!jump);
 	SLJIT_ASSERT(!const_);
+	SLJIT_ASSERT(!put_label);
 	SLJIT_ASSERT(code_ptr - code <= (sljit_sw)compiler->size);
 
 	jump = compiler->jumps;
 	while (jump) {
 		set_jump_instruction(jump, executable_offset);
 		jump = jump->next;
+	}
+
+	put_label = compiler->put_labels;
+	while (put_label) {
+		modify_imm32_const((sljit_u16 *)put_label->addr, put_label->label->addr);
+		put_label = put_label->next;
 	}
 
 	compiler->error = SLJIT_ERR_COMPILED;
@@ -2309,6 +2330,27 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_const* sljit_emit_const(struct sljit_compi
 	if (dst & SLJIT_MEM)
 		PTR_FAIL_IF(emit_op_mem(compiler, WORD_SIZE | STORE, dst_r, dst, dstw, TMP_REG2));
 	return const_;
+}
+
+SLJIT_API_FUNC_ATTRIBUTE struct sljit_put_label* sljit_emit_put_label(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw)
+{
+	struct sljit_put_label *put_label;
+	sljit_s32 dst_r;
+
+	CHECK_ERROR_PTR();
+	CHECK_PTR(check_sljit_emit_put_label(compiler, dst, dstw));
+	ADJUST_LOCAL_OFFSET(dst, dstw);
+
+	put_label = (struct sljit_put_label*)ensure_abuf(compiler, sizeof(struct sljit_put_label));
+	PTR_FAIL_IF(!put_label);
+	set_put_label(put_label, compiler, 0);
+
+	dst_r = FAST_IS_REG(dst) ? dst : TMP_REG1;
+	PTR_FAIL_IF(emit_imm32_const(compiler, dst_r, 0));
+
+	if (dst & SLJIT_MEM)
+		PTR_FAIL_IF(emit_op_mem(compiler, WORD_SIZE | STORE, dst_r, dst, dstw, TMP_REG2));
+	return put_label;
 }
 
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)

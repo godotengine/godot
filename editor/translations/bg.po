@@ -6,14 +6,16 @@
 # Иван Пенев (Адмирал АнимЕ) <aeternus.arcis@gmail.com>, 2016-2017.
 # Любомир Василев <lyubomirv@abv.bg>, 2018, 2020.
 # MaresPW <marespw206@gmail.com>, 2018.
-# PakoSt <kokotekilata@gmail.com>, 2018.
+# PakoSt <kokotekilata@gmail.com>, 2018, 2020.
 # Damyan Dichev <mwshock2@gmail.com>, 2019.
+# Whod <whodizhod@gmail.com>, 2020.
+# Stoyan <stoyan.stoyanov99@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-28 13:33+0000\n"
-"Last-Translator: Любомир Василев <lyubomirv@abv.bg>\n"
+"PO-Revision-Date: 2020-09-15 07:17+0000\n"
+"Last-Translator: Stoyan <stoyan.stoyanov99@protonmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -21,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -42,11 +44,12 @@ msgstr "Недостатъчно байтове за разкодиране ил
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Неправилно въведени дани %i (не подаден) в израза"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
+"self не може да се ползва, тъй като инстанцията е null (не е била подадена)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -58,7 +61,7 @@ msgstr "Невалиден индекс от тип %s за базов тип %s
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Невалидно наименован индекс '%s' за базов тип %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -66,7 +69,7 @@ msgstr "Неправилни аргументи за създаване на „
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "При обаждане към '%s':"
 
 #: core/ustring.cpp
 msgid "B"
@@ -102,7 +105,7 @@ msgstr "Свободно"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Балансиран"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -118,15 +121,15 @@ msgstr "Стойност:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "Вмъкване на ключ тук"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "Копиране на избран(и) ключ(ове)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "Изтриване на избран(и) ключ(ове)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -138,31 +141,31 @@ msgstr "Преместване на точки на Безие"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Копиране на ключ(ове) (Анимация)"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Изтриване на ключ(ове) (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "Промяна на момент на ключов кадър (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "Промяна на вид преход (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr ""
+msgstr "Промяна на трансформация (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr ""
+msgstr "Промяна на стойност на ключов кадър (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr ""
+msgstr "Промяна на повикана функция (Анимация)"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -191,11 +194,11 @@ msgstr "Промяна на продължителността на анимац
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Промени анимационния цикъл"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "Път за промяна на свойството"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
@@ -515,6 +518,7 @@ msgid "Seconds"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr ""
 
@@ -642,9 +646,8 @@ msgid "Select All/None"
 msgstr "Избиране на всичко/нищо"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Добавяне на нови пътечки."
+msgstr "Добавяне на аудио клип"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -695,7 +698,7 @@ msgstr ""
 msgid "Whole Words"
 msgstr "Цели думи"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Замяна"
 
@@ -742,6 +745,10 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
+msgstr ""
+
+#: editor/connections_dialog.cpp
+msgid "Method name must be a valid identifier."
 msgstr ""
 
 #: editor/connections_dialog.cpp
@@ -824,7 +831,6 @@ msgstr "Сигналът не може да бъде свързан"
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -881,6 +887,11 @@ msgid "Signals"
 msgstr ""
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Поставяне на възелите"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 
@@ -918,7 +929,7 @@ msgid "Recent:"
 msgstr "Последни:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Търсене:"
@@ -1093,6 +1104,9 @@ msgstr "Основатели на проекта"
 msgid "Lead Developer"
 msgstr "Главен разработчик"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Ръководител на проекта "
@@ -1111,6 +1125,14 @@ msgstr ""
 
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr ""
+
+#: editor/editor_about.cpp
+msgid "Bronze Sponsors"
 msgstr ""
 
 #: editor/editor_about.cpp
@@ -1417,7 +1439,7 @@ msgstr ""
 msgid "Remove Autoload"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr ""
 
@@ -1425,17 +1447,9 @@ msgstr ""
 msgid "Rearrange Autoloads"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "Invalid path."
-msgstr "Неправилен път."
-
-#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-msgid "File does not exist."
-msgstr ""
-
 #: editor/editor_autoload_settings.cpp
-msgid "Not in resource path."
-msgstr "Не е в пътя на ресурсите."
+msgid "Can't add autoload:"
+msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1585,16 +1599,17 @@ msgid "Scene Tree Editing"
 msgstr "Редактиране на дървото на сцената"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Панел за внасяне"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Панел за възлите"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr ""
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Показване във файловата система"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Панел за внасяне"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1856,7 +1871,7 @@ msgstr "Папки и файлове:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr ""
 
@@ -2266,11 +2281,6 @@ msgid "There is no defined scene to run."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
-"Текущата сцена никога не е била запазена. Моля, запазете я преди изпълнение."
-
-#: editor/editor_node.cpp
 msgid "Could not start subprocess!"
 msgstr ""
 
@@ -2355,11 +2365,14 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Сцена, която никога не е била запазвана, не може да бъде презаредена."
 
 #: editor/editor_node.cpp
-msgid "Revert"
-msgstr ""
+#, fuzzy
+msgid "Reload Saved Scene"
+msgstr "Запазване на сцената"
 
 #: editor/editor_node.cpp
-msgid "This action cannot be undone. Revert anyway?"
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2625,10 +2638,6 @@ msgid "Redo"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Revert Scene"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -2688,22 +2697,26 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+msgid "Small Deploy with Network Filesystem"
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2712,8 +2725,8 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2722,32 +2735,32 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Sync Script Changes"
+msgid "Synchronize Scene Changes"
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Synchronize Script Changes"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
@@ -2807,7 +2820,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Търсене"
 
@@ -2821,7 +2834,12 @@ msgid "Q&A"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Повторно внасяне"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
@@ -3204,7 +3222,8 @@ msgstr ""
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 
 #: editor/editor_run_script.cpp
@@ -3229,6 +3248,10 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
+msgstr ""
+
+#: editor/editor_spin_slider.cpp
+msgid "Hold Ctrl to round to integers. Hold Shift for more precise changes."
 msgstr ""
 
 #: editor/editor_sub_scene.cpp
@@ -3816,6 +3839,10 @@ msgid "Error running post-import script:"
 msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
+msgid "Did you return a Node-derived object in the `post_import()` method?"
+msgstr ""
+
+#: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
 msgstr "Запазване..."
 
@@ -3844,7 +3871,7 @@ msgid "Reimport"
 msgstr "Повторно внасяне"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -4236,9 +4263,8 @@ msgid "Anim Clips"
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Audio Clips"
-msgstr "Добавяне на нови пътечки."
+msgstr "Аудио клипове"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Functions"
@@ -4399,9 +4425,8 @@ msgid "Onion Skinning Options"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Directions"
-msgstr "Описание:"
+msgstr "Указания"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -4758,9 +4783,8 @@ msgid "Redirect loop."
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Request failed, timeout"
-msgstr "Заявката се провали, върнат код:"
+msgstr "Заявката е неуспешна, изчакването е неуспешно"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Timeout."
@@ -4807,9 +4831,8 @@ msgid "Idle"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Инсталиране"
+msgstr "Инсталирате..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -4879,9 +4902,8 @@ msgid "Import..."
 msgstr "Повторно внасяне..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Plugins..."
-msgstr "Приставки"
+msgstr "Приставки ..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
@@ -4897,9 +4919,8 @@ msgid "Site:"
 msgstr "Уеб сайт:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Поддръжка..."
+msgstr "Поддръжка"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -4940,7 +4961,7 @@ msgid "Bake Lightmaps"
 msgstr ""
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Преглед"
 
@@ -4965,9 +4986,8 @@ msgid "steps"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotation Offset:"
-msgstr "Изместване при Завъртане:"
+msgstr "Изместване на въртенето:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation Step:"
@@ -6694,14 +6714,6 @@ msgid "Open Godot online documentation."
 msgstr "Отваряне на документацията на Godot в Интернет."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -6765,12 +6777,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Line"
-msgstr "Ред"
+msgid "[Ignore]"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-msgid "(ignore)"
-msgstr ""
+msgid "Line"
+msgstr "Ред"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
@@ -7139,6 +7151,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7230,17 +7246,26 @@ msgid "Freelook Slow Modifier"
 msgstr "Свободен Изглед Отпред"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid "XForm Dialog"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "XForm Dialog"
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7582,7 +7607,8 @@ msgid "New Animation"
 msgstr "Нова анимация"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Скорост (кадри в секунда):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -9635,6 +9661,7 @@ msgid ""
 "This could take a while."
 msgstr ""
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Управление на проектите"
@@ -9679,6 +9706,13 @@ msgstr "Проектът не може да бъде пуснат"
 msgid ""
 "You currently don't have any projects.\n"
 "Would you like to explore official example projects in the Asset Library?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
@@ -10058,11 +10092,16 @@ msgid "Batch Rename"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Замяна: "
+
+#: editor/rename_dialog.cpp
+msgid "Prefix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+msgid "Suffix:"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10108,7 +10147,7 @@ msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10166,8 +10205,9 @@ msgid "Reset"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
-msgstr ""
+#, fuzzy
+msgid "Regular Expression Error:"
+msgstr "Използване на регулярни изрази"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -10236,8 +10276,9 @@ msgid "Instance Child Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear Script"
-msgstr "Премахване на скрипта"
+#, fuzzy
+msgid "Detach Script"
+msgstr "Закачане на скрипт"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -10270,6 +10311,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Make node as Root"
 msgstr "Превръщане на възела в корен"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete %d nodes and any children?"
+msgstr "Изтриване на %d възела?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -10394,6 +10440,13 @@ msgid "Open Documentation"
 msgstr "Отваряне на документацията"
 
 #: editor/scene_tree_dock.cpp
+msgid ""
+"Cannot attach a script: there are no languages registered.\n"
+"This is probably because this editor was built with all language modules "
+"disabled."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
@@ -10444,11 +10497,11 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Attach a new or existing script for the selected node."
+msgid "Attach a new or existing script to the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Clear a script for the selected node."
+msgid "Detach the script from the selected node."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -10575,6 +10628,10 @@ msgid "A directory with the same name exists."
 msgstr "Вече съществува файл или папка с това име."
 
 #: editor/script_create_dialog.cpp
+msgid "File does not exist."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid extension."
 msgstr "Трябва да се използва правилно разширение."
@@ -10621,6 +10678,10 @@ msgid "File exists, it will be reused."
 msgstr "Файлът съществува. Искате ли да го презапишете?"
 
 #: editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "Неправилен път."
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Invalid class name."
 msgstr "невалидно име на Група."
@@ -10654,6 +10715,12 @@ msgstr ""
 #, fuzzy
 msgid "Script file already exists."
 msgstr "Група с това име вече съществува."
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
@@ -10785,6 +10852,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Изнасяне на профила"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11691,6 +11763,10 @@ msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Release keystore incorrectly configured in the export preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
 
@@ -11712,6 +11788,32 @@ msgstr ""
 #, fuzzy
 msgid "Invalid package name:"
 msgstr "невалидно име на Група."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Invalid \"GodotPaymentV3\" module included in the \"android/modules\" "
+"project setting (changed in Godot 3.2.2).\n"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "\"Use Custom Build\" must be enabled to use the plugins."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Degrees Of Freedom\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR"
+"\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Hand Tracking\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"\"Focus Awareness\" is only valid when \"Xr Mode\" is \"Oculus Mobile VR\"."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11818,9 +11920,8 @@ msgid "Invalid package publisher display name."
 msgstr "невалидно име на Група."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Име:"
+msgstr "Невалиден продуктов GUID."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
@@ -11918,6 +12019,12 @@ msgid ""
 msgstr ""
 "За да работи CollisionShape2D, е нужно да му се даде форма. Моля, създайте "
 "му Shape2D ресурс."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"Polygon-based shapes are not meant be used nor edited directly through the "
+"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12149,6 +12256,11 @@ msgid ""
 "Use a BakedLightmap instead."
 msgstr ""
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -12375,6 +12487,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr ""
@@ -12401,7 +12517,18 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Константите не могат да бъдат променени."
+
+#~ msgid "Current scene was never saved, please save it prior to running."
+#~ msgstr ""
+#~ "Текущата сцена никога не е била запазена. Моля, запазете я преди "
+#~ "изпълнение."
+
+#~ msgid "Not in resource path."
+#~ msgstr "Не е в пътя на ресурсите."
+
+#~ msgid "Clear Script"
+#~ msgstr "Премахване на скрипта"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Заменени съвпадения: %d ."

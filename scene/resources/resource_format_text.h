@@ -38,7 +38,6 @@
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {
-
 	bool translation_remapped;
 	String local_path;
 	String res_path;
@@ -62,12 +61,15 @@ class ResourceLoaderText {
 	//Map<String,String> remaps;
 
 	Map<int, ExtResource> ext_resources;
+	Map<int, RES> int_resources;
 
 	int resources_total;
 	int resource_current;
 	String resource_type;
 
 	VariantParser::Tag next_tag;
+
+	bool use_nocache;
 
 	bool use_sub_threads;
 	float *progress;
@@ -89,7 +91,6 @@ class ResourceLoaderText {
 	};
 
 	struct DummyReadData {
-
 		Map<RES, int> external_resources;
 		Map<int, RES> rev_external_resources;
 		Set<RES> resource_set;
@@ -106,7 +107,6 @@ class ResourceLoaderText {
 
 	friend class ResourceFormatLoaderText;
 
-	List<RES> resource_cache;
 	Error error;
 
 	RES resource;
@@ -134,7 +134,7 @@ public:
 class ResourceFormatLoaderText : public ResourceFormatLoader {
 public:
 	static ResourceFormatLoaderText *singleton;
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -148,7 +148,6 @@ public:
 };
 
 class ResourceFormatSaverTextInstance {
-
 	String local_path;
 
 	Ref<PackedScene> packed_scene;

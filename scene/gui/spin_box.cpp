@@ -30,28 +30,27 @@
 
 #include "spin_box.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/expression.h"
 
 Size2 SpinBox::get_minimum_size() const {
-
 	Size2 ms = line_edit->get_combined_minimum_size();
 	ms.width += last_w;
 	return ms;
 }
 
 void SpinBox::_value_changed(double) {
-
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
-	if (prefix != "")
+	if (prefix != "") {
 		value = prefix + " " + value;
-	if (suffix != "")
+	}
+	if (suffix != "") {
 		value += " " + suffix;
+	}
 	line_edit->set_text(value);
 }
 
 void SpinBox::_text_entered(const String &p_string) {
-
 	Ref<Expression> expr;
 	expr.instance();
 	// Ignore the prefix and suffix in the expression
@@ -63,12 +62,11 @@ void SpinBox::_text_entered(const String &p_string) {
 	Variant value = expr->execute(Array(), nullptr, false);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
-		_value_changed(0);
 	}
+	_value_changed(0);
 }
 
 LineEdit *SpinBox::get_line_edit() {
-
 	return line_edit;
 }
 
@@ -76,9 +74,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpinBox::_range_click_timeout() {
-
-	if (!drag.enabled && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
-
+	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
 
@@ -94,7 +90,6 @@ void SpinBox::_range_click_timeout() {
 }
 
 void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (!is_editable()) {
 		return;
 	}
@@ -102,13 +97,10 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed()) {
-
 		bool up = mb->get_position().y < (get_size().height / 2);
 
 		switch (mb->get_button_index()) {
-
 			case BUTTON_LEFT: {
-
 				line_edit->grab_focus();
 
 				set_value(get_value() + (up ? get_step() : -get_step()));
@@ -121,20 +113,17 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 				drag.capture_pos = mb->get_position();
 			} break;
 			case BUTTON_RIGHT: {
-
 				line_edit->grab_focus();
 				set_value((up ? get_max() : get_min()));
 			} break;
 			case BUTTON_WHEEL_UP: {
 				if (line_edit->has_focus()) {
-
 					set_value(get_value() + get_step() * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case BUTTON_WHEEL_DOWN: {
 				if (line_edit->has_focus()) {
-
 					set_value(get_value() - get_step() * mb->get_factor());
 					accept_event();
 				}
@@ -143,13 +132,12 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-
 		//set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
 
 		if (drag.enabled) {
 			drag.enabled = false;
-			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			warp_mouse(drag.capture_pos);
 		}
 		drag.allowed = false;
@@ -158,15 +146,12 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
-
 		if (drag.enabled) {
-
 			drag.diff_y += mm->get_relative().y;
 			float diff_y = -0.01 * Math::pow(ABS(drag.diff_y), 1.8f) * SGN(drag.diff_y);
 			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
-
-			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_CAPTURED);
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
 			drag.base_val = get_value();
 			drag.diff_y = 0;
@@ -175,16 +160,15 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpinBox::_line_edit_focus_exit() {
-
 	// discontinue because the focus_exit was caused by right-click context menu
-	if (line_edit->get_menu()->is_visible())
+	if (line_edit->get_menu()->is_visible()) {
 		return;
+	}
 
 	_text_entered(line_edit->get_text());
 }
 
 inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
-
 	int w = icon->get_width();
 	if (w != last_w) {
 		line_edit->set_margin(MARGIN_RIGHT, -w);
@@ -193,9 +177,7 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 }
 
 void SpinBox::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
 		Ref<Texture2D> updown = get_theme_icon("updown");
 
 		_adjust_width_for_icon(updown);
@@ -206,48 +188,39 @@ void SpinBox::_notification(int p_what) {
 		updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
 
 	} else if (p_what == NOTIFICATION_FOCUS_EXIT) {
-
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		_adjust_width_for_icon(get_theme_icon("updown"));
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-
 		call_deferred("minimum_size_changed");
 		get_line_edit()->call_deferred("minimum_size_changed");
 	}
 }
 
 void SpinBox::set_align(LineEdit::Align p_align) {
-
 	line_edit->set_align(p_align);
 }
 
 LineEdit::Align SpinBox::get_align() const {
-
 	return line_edit->get_align();
 }
 
 void SpinBox::set_suffix(const String &p_suffix) {
-
 	suffix = p_suffix;
 	_value_changed(0);
 }
 
 String SpinBox::get_suffix() const {
-
 	return suffix;
 }
 
 void SpinBox::set_prefix(const String &p_prefix) {
-
 	prefix = p_prefix;
 	_value_changed(0);
 }
 
 String SpinBox::get_prefix() const {
-
 	return prefix;
 }
 
@@ -256,7 +229,6 @@ void SpinBox::set_editable(bool p_editable) {
 }
 
 bool SpinBox::is_editable() const {
-
 	return line_edit->is_editable();
 }
 
@@ -265,7 +237,6 @@ void SpinBox::apply() {
 }
 
 void SpinBox::_bind_methods() {
-
 	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &SpinBox::_gui_input);
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &SpinBox::set_align);
@@ -286,7 +257,6 @@ void SpinBox::_bind_methods() {
 }
 
 SpinBox::SpinBox() {
-
 	last_w = 0;
 	line_edit = memnew(LineEdit);
 	add_child(line_edit);

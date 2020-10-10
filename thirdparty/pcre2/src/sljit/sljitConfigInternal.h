@@ -214,6 +214,10 @@
 #define SLJIT_MEMCPY(dest, src, len) memcpy(dest, src, len)
 #endif
 
+#ifndef SLJIT_MEMMOVE
+#define SLJIT_MEMMOVE(dest, src, len) memmove(dest, src, len)
+#endif
+
 #ifndef SLJIT_ZEROMEM
 #define SLJIT_ZEROMEM(dest, len) memset(dest, 0, len)
 #endif

@@ -40,7 +40,6 @@
 			<argument index="0" name="label" type="String">
 			</argument>
 			<argument index="1" name="options" type="Dictionary" default="{
-
 }">
 			</argument>
 			<description>
@@ -82,7 +81,6 @@
 			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="configuration" type="Dictionary" default="{
-
 }">
 			</argument>
 			<description>
@@ -97,7 +95,7 @@
 				        {
 				            "urls": [ "turn:turn.example.com:3478" ], # One or more TURN servers.
 				            "username": "a_username", # Optional username for the TURN server.
-				            "credentials": "a_password", # Optional password for the TURN server.
+				            "credential": "a_password", # Optional password for the TURN server.
 				        }
 				    ]
 				}
@@ -120,7 +118,7 @@
 			</argument>
 			<description>
 				Sets the SDP description of the local peer. This should be called in response to [signal session_description_created].
-				If [code]type[/code] is [code]answer[/code] the peer will start emitting [signal ice_candidate_created].
+				After calling this function the peer will start emitting [signal ice_candidate_created] (unless an [enum Error] different from [constant OK] is returned).
 			</description>
 		</method>
 		<method name="set_remote_description">

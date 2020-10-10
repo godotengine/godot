@@ -78,7 +78,6 @@ void AudioDriverPulseAudio::pa_source_info_cb(pa_context *c, const pa_source_inf
 }
 
 void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_info *i, void *userdata) {
-
 	ERR_FAIL_COND_MSG(!i, "PulseAudio server info is null.");
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
 
@@ -88,7 +87,6 @@ void AudioDriverPulseAudio::pa_server_info_cb(pa_context *c, const pa_server_inf
 }
 
 void AudioDriverPulseAudio::detect_channels(bool capture) {
-
 	pa_channel_map_init_stereo(capture ? &pa_rec_map : &pa_map);
 
 	String device = capture ? capture_device_name : device_name;
@@ -145,7 +143,6 @@ void AudioDriverPulseAudio::detect_channels(bool capture) {
 }
 
 Error AudioDriverPulseAudio::init_device() {
-
 	// If there is a specified device check that it is really present
 	if (device_name != "Default") {
 		Array list = get_device_list();
@@ -182,7 +179,7 @@ Error AudioDriverPulseAudio::init_device() {
 			break;
 	}
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_GET("audio/output_latency");
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
@@ -236,12 +233,11 @@ Error AudioDriverPulseAudio::init_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
-
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
@@ -298,7 +294,6 @@ Error AudioDriverPulseAudio::init() {
 }
 
 float AudioDriverPulseAudio::get_latency() {
-
 	if (latency == 0) { //only do this once since it's approximate anyway
 		lock();
 
@@ -324,14 +319,12 @@ float AudioDriverPulseAudio::get_latency() {
 }
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
-
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 	unsigned int write_ofs = 0;
 	size_t avail_bytes = 0;
 	uint32_t default_device_msec = OS::get_singleton()->get_ticks_msec();
 
 	while (!ad->exit_thread) {
-
 		size_t read_bytes = 0;
 		size_t written_bytes = 0;
 
@@ -421,7 +414,6 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
 		// If we're using the default device check that the current device is still the default
 		if (ad->device_name == "Default") {
-
 			uint32_t msec = OS::get_singleton()->get_ticks_msec();
 			if (msec > (default_device_msec + 1000)) {
 				String old_default_device = ad->default_device;
@@ -524,17 +516,14 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 }
 
 void AudioDriverPulseAudio::start() {
-
 	active = true;
 }
 
 int AudioDriverPulseAudio::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
-
 	return get_speaker_mode_by_total_channels(channels);
 }
 
@@ -551,7 +540,6 @@ void AudioDriverPulseAudio::pa_sinklist_cb(pa_context *c, const pa_sink_info *l,
 }
 
 Array AudioDriverPulseAudio::get_device_list() {
-
 	pa_devices.clear();
 	pa_devices.push_back("Default");
 
@@ -583,33 +571,30 @@ Array AudioDriverPulseAudio::get_device_list() {
 }
 
 String AudioDriverPulseAudio::get_device() {
-
 	return device_name;
 }
 
 void AudioDriverPulseAudio::set_device(String device) {
-
 	lock();
 	new_device = device;
 	unlock();
 }
 
 void AudioDriverPulseAudio::lock() {
-
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
-
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.unlock();
 }
 
 void AudioDriverPulseAudio::finish_device() {
-
 	if (pa_str) {
 		pa_stream_disconnect(pa_str);
 		pa_stream_unref(pa_str);
@@ -618,9 +603,9 @@ void AudioDriverPulseAudio::finish_device() {
 }
 
 void AudioDriverPulseAudio::finish() {
-
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 
 	exit_thread = true;
 	Thread::wait_to_finish(thread);
@@ -644,7 +629,6 @@ void AudioDriverPulseAudio::finish() {
 }
 
 Error AudioDriverPulseAudio::capture_init_device() {
-
 	// If there is a specified device check that it is really present
 	if (capture_device_name != "Default") {
 		Array list = capture_get_device_list();
@@ -702,7 +686,6 @@ Error AudioDriverPulseAudio::capture_init_device() {
 }
 
 void AudioDriverPulseAudio::capture_finish_device() {
-
 	if (pa_rec_str) {
 		int ret = pa_stream_disconnect(pa_rec_str);
 		if (ret != 0) {
@@ -714,7 +697,6 @@ void AudioDriverPulseAudio::capture_finish_device() {
 }
 
 Error AudioDriverPulseAudio::capture_start() {
-
 	lock();
 	Error err = capture_init_device();
 	unlock();
@@ -731,7 +713,6 @@ Error AudioDriverPulseAudio::capture_stop() {
 }
 
 void AudioDriverPulseAudio::capture_set_device(const String &p_name) {
-
 	lock();
 	capture_new_device = p_name;
 	unlock();
@@ -753,7 +734,6 @@ void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info
 }
 
 Array AudioDriverPulseAudio::capture_get_device_list() {
-
 	pa_rec_devices.clear();
 	pa_rec_devices.push_back("Default");
 
@@ -785,7 +765,6 @@ Array AudioDriverPulseAudio::capture_get_device_list() {
 }
 
 String AudioDriverPulseAudio::capture_get_device() {
-
 	lock();
 	String name = capture_device_name;
 	unlock();
@@ -793,30 +772,9 @@ String AudioDriverPulseAudio::capture_get_device() {
 	return name;
 }
 
-AudioDriverPulseAudio::AudioDriverPulseAudio() :
-		thread(nullptr),
-		pa_ml(nullptr),
-		pa_ctx(nullptr),
-		pa_str(nullptr),
-		pa_rec_str(nullptr),
-		device_name("Default"),
-		new_device("Default"),
-		default_device(""),
-		mix_rate(0),
-		buffer_frames(0),
-		pa_buffer_size(0),
-		channels(0),
-		pa_ready(0),
-		pa_status(0),
-		active(false),
-		thread_exited(false),
-		exit_thread(false),
-		latency(0) {
+AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	samples_in.clear();
 	samples_out.clear();
 }
 
-AudioDriverPulseAudio::~AudioDriverPulseAudio() {
-}
-
-#endif
+#endif // PULSEAUDIO_ENABLED

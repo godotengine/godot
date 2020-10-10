@@ -60,7 +60,7 @@ public:
 	virtual Rect2 get_rect() const { return Rect2(); }
 	/// Returns the radius of a circle that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 	Shape2D();
 	~Shape2D();
 };

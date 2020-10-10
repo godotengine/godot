@@ -38,7 +38,6 @@
 #include "scene/gui/box_container.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 
@@ -47,9 +46,7 @@ void NavigationMeshEditor::_node_removed(Node *p_node) {
 }
 
 void NavigationMeshEditor::_notification(int p_option) {
-
 	if (p_option == NOTIFICATION_ENTER_TREE) {
-
 		button_bake->set_icon(get_theme_icon("Bake", "EditorIcons"));
 		button_reset->set_icon(get_theme_icon("Reload", "EditorIcons"));
 	}
@@ -72,9 +69,9 @@ void NavigationMeshEditor::_bake_pressed() {
 }
 
 void NavigationMeshEditor::_clear_pressed() {
-
-	if (node)
+	if (node) {
 		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+	}
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");
@@ -85,7 +82,6 @@ void NavigationMeshEditor::_clear_pressed() {
 }
 
 void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
-
 	if (p_nav_region == nullptr || node == p_nav_region) {
 		return;
 	}
@@ -97,16 +93,17 @@ void NavigationMeshEditor::_bind_methods() {
 }
 
 NavigationMeshEditor::NavigationMeshEditor() {
-
 	bake_hbox = memnew(HBoxContainer);
 
-	button_bake = memnew(ToolButton);
+	button_bake = memnew(Button);
+	button_bake->set_flat(true);
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavMesh"));
 	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
-	button_reset = memnew(ToolButton);
+	button_reset = memnew(Button);
+	button_reset->set_flat(true);
 	bake_hbox->add_child(button_reset);
 	// No button text, we only use a revert icon which is set when entering the tree.
 	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
@@ -124,22 +121,18 @@ NavigationMeshEditor::~NavigationMeshEditor() {
 }
 
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
-
 	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion3D>(p_object));
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("NavigationRegion3D");
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		navigation_mesh_editor->show();
 		navigation_mesh_editor->bake_hbox->show();
 	} else {
-
 		navigation_mesh_editor->hide();
 		navigation_mesh_editor->bake_hbox->hide();
 		navigation_mesh_editor->edit(nullptr);
@@ -147,7 +140,6 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 }
 
 NavigationMeshEditorPlugin::NavigationMeshEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	navigation_mesh_editor = memnew(NavigationMeshEditor);
 	editor->get_viewport()->add_child(navigation_mesh_editor);

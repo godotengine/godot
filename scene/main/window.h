@@ -57,8 +57,8 @@ public:
 
 	enum ContentScaleMode {
 		CONTENT_SCALE_MODE_DISABLED,
-		CONTENT_SCALE_MODE_OBJECTS,
-		CONTENT_SCALE_MODE_PIXELS,
+		CONTENT_SCALE_MODE_CANVAS_ITEMS,
+		CONTENT_SCALE_MODE_VIEWPORT,
 	};
 
 	enum ContentScaleAspect {
@@ -92,6 +92,7 @@ private:
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
+	bool clamp_to_embedder = false;
 
 	void _update_child_controls();
 
@@ -130,10 +131,10 @@ private:
 	void _window_drop_files(const Vector<String> &p_files);
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
+	virtual bool _can_consume_input_events() const override;
 
 protected:
 	Viewport *_get_embedder() const;
-
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 
 	virtual void _post_popup() {}
@@ -141,8 +142,8 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
 public:
 	enum {
@@ -194,6 +195,9 @@ public:
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
+
+	void set_clamp_to_embedder(bool p_enable);
+	bool is_clamped_to_embedder() const;
 
 	bool can_draw() const;
 
@@ -251,7 +255,7 @@ public:
 	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	Rect2i get_parent_rect() const;
-	virtual DisplayServer::WindowID get_window_id() const;
+	virtual DisplayServer::WindowID get_window_id() const override;
 
 	Window();
 	~Window();

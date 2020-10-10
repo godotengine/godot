@@ -1,6 +1,7 @@
 import os
 
-from emscripten_helpers import parse_config, run_closure_compiler, create_engine_file
+from emscripten_helpers import run_closure_compiler, create_engine_file
+from SCons.Util import WhereIs
 
 
 def is_active():
@@ -12,7 +13,7 @@ def get_name():
 
 
 def can_build():
-    return "EM_CONFIG" in os.environ or os.path.exists(os.path.expanduser("~/.emscripten"))
+    return WhereIs("emcc") is not None
 
 
 def get_opts():
@@ -22,7 +23,7 @@ def get_opts():
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", False),
-        BoolVariable("use_closure_compiler", "Use closure compiler to minimize Javascript code", False),
+        BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
 
 
@@ -57,7 +58,7 @@ def configure(env):
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
-    else:  # 'debug'
+    else:  # "debug"
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
@@ -100,9 +101,6 @@ def configure(env):
     # Closure compiler extern and support for ecmascript specs (const, let, etc).
     env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT6"
 
-    em_config = parse_config()
-    env.PrependENVPath("PATH", em_config["EMCC_ROOT"])
-
     env["CC"] = "emcc"
     env["CXX"] = "em++"
     env["LINK"] = "emcc"
@@ -139,6 +137,7 @@ def configure(env):
         env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=4"])
         env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
+        env.extra_suffix = ".threads" + env.extra_suffix
     else:
         env.Append(CPPDEFINES=["NO_THREADS"])
 
@@ -150,7 +149,7 @@ def configure(env):
     env.Append(LIBS=["idbfs.js"])
 
     env.Append(LINKFLAGS=["-s", "BINARYEN=1"])
-    env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", 'EXPORT_NAME="Godot"'])
+    env.Append(LINKFLAGS=["-s", "MODULARIZE=1", "-s", "EXPORT_NAME='Godot'"])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
@@ -162,5 +161,10 @@ def configure(env):
 
     env.Append(LINKFLAGS=["-s", "INVOKE_RUN=0"])
 
-    # callMain for manual start, FS for preloading.
-    env.Append(LINKFLAGS=["-s", 'EXTRA_EXPORTED_RUNTIME_METHODS=["callMain", "FS"]'])
+    # Allow use to take control of swapping WebGL buffers.
+    env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
+
+    # callMain for manual start, FS for preloading, PATH and ERRNO_CODES for BrowserFS.
+    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS', 'PATH']"])
+    # Add code that allow exiting runtime.
+    env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])

@@ -31,7 +31,6 @@
 #include "audio_effect_reverb.h"
 #include "servers/audio_server.h"
 void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	for (int i = 0; i < 2; i++) {
 		Reverb &r = reverb[i];
 
@@ -49,7 +48,6 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 	int offset = 0;
 
 	while (todo) {
-
 		int to_mix = MIN(todo, Reverb::INPUT_BUFFER_MAX_SIZE);
 
 		for (int j = 0; j < to_mix; j++) {
@@ -75,7 +73,6 @@ void AudioEffectReverbInstance::process(const AudioFrame *p_src_frames, AudioFra
 }
 
 AudioEffectReverbInstance::AudioEffectReverbInstance() {
-
 	reverb[0].set_mix_rate(AudioServer::get_singleton()->get_mix_rate());
 	reverb[0].set_extra_spread_base(0);
 	reverb[1].set_mix_rate(AudioServer::get_singleton()->get_mix_rate());
@@ -90,75 +87,70 @@ Ref<AudioEffectInstance> AudioEffectReverb::instance() {
 }
 
 void AudioEffectReverb::set_predelay_msec(float p_msec) {
-
 	predelay = p_msec;
 }
 
 void AudioEffectReverb::set_predelay_feedback(float p_feedback) {
-
 	predelay_fb = CLAMP(p_feedback, 0, 0.98);
 }
-void AudioEffectReverb::set_room_size(float p_size) {
 
+void AudioEffectReverb::set_room_size(float p_size) {
 	room_size = p_size;
 }
-void AudioEffectReverb::set_damping(float p_damping) {
 
+void AudioEffectReverb::set_damping(float p_damping) {
 	damping = p_damping;
 }
-void AudioEffectReverb::set_spread(float p_spread) {
 
+void AudioEffectReverb::set_spread(float p_spread) {
 	spread = p_spread;
 }
 
 void AudioEffectReverb::set_dry(float p_dry) {
-
 	dry = p_dry;
 }
-void AudioEffectReverb::set_wet(float p_wet) {
 
+void AudioEffectReverb::set_wet(float p_wet) {
 	wet = p_wet;
 }
-void AudioEffectReverb::set_hpf(float p_hpf) {
 
+void AudioEffectReverb::set_hpf(float p_hpf) {
 	hpf = p_hpf;
 }
 
 float AudioEffectReverb::get_predelay_msec() const {
-
 	return predelay;
 }
-float AudioEffectReverb::get_predelay_feedback() const {
 
+float AudioEffectReverb::get_predelay_feedback() const {
 	return predelay_fb;
 }
-float AudioEffectReverb::get_room_size() const {
 
+float AudioEffectReverb::get_room_size() const {
 	return room_size;
 }
-float AudioEffectReverb::get_damping() const {
 
+float AudioEffectReverb::get_damping() const {
 	return damping;
 }
-float AudioEffectReverb::get_spread() const {
 
+float AudioEffectReverb::get_spread() const {
 	return spread;
 }
-float AudioEffectReverb::get_dry() const {
 
+float AudioEffectReverb::get_dry() const {
 	return dry;
 }
-float AudioEffectReverb::get_wet() const {
 
+float AudioEffectReverb::get_wet() const {
 	return wet;
 }
-float AudioEffectReverb::get_hpf() const {
 
+float AudioEffectReverb::get_hpf() const {
 	return hpf;
 }
 
 void AudioEffectReverb::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_predelay_msec", "msec"), &AudioEffectReverb::set_predelay_msec);
 	ClassDB::bind_method(D_METHOD("get_predelay_msec"), &AudioEffectReverb::get_predelay_msec);
 

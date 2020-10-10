@@ -34,7 +34,6 @@
 #include "core/reference.h"
 
 class FuncRef : public Reference {
-
 	GDCLASS(FuncRef, Reference);
 	ObjectID id;
 	StringName function;
@@ -47,8 +46,10 @@ public:
 	Variant call_funcv(const Array &p_args);
 	void set_instance(Object *p_obj);
 	void set_function(const StringName &p_func);
+	StringName get_function();
 	bool is_valid() const;
-	FuncRef();
+
+	FuncRef() {}
 };
 
 #endif // FUNC_REF_H

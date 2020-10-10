@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Geometry3D" inherits="Object" version="4.0">
+	<brief_description>
+		Helper node to calculate generic geometry operations in 3D space.
+	</brief_description>
+	<description>
+		Geometry3D provides users with a set of helper functions to create geometric shapes, compute intersections between shapes, and process various other geometric operations.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="build_box_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+				Returns an array with 6 [Plane]s that describe the sides of a box centered at the origin. The box size is defined by [code]extents[/code], which represents one (positive) corner of the box (i.e. half its actual size).
+			</description>
+		</method>
+		<method name="build_capsule_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<argument index="1" name="height" type="float">
+			</argument>
+			<argument index="2" name="sides" type="int">
+			</argument>
+			<argument index="3" name="lats" type="int">
+			</argument>
+			<argument index="4" name="axis" type="int" enum="Vector3.Axis" default="2">
+			</argument>
+			<description>
+				Returns an array of [Plane]s closely bounding a faceted capsule centered at the origin with radius [code]radius[/code] and height [code]height[/code]. The parameter [code]sides[/code] defines how many planes will be generated for the side part of the capsule, whereas [code]lats[/code] gives the number of latitudinal steps at the bottom and top of the capsule. The parameter [code]axis[/code] describes the axis along which the capsule is oriented (0 for X, 1 for Y, 2 for Z).
+			</description>
+		</method>
+		<method name="build_cylinder_planes">
+			<return type="Array">
+			</return>
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<argument index="1" name="height" type="float">
+			</argument>
+			<argument index="2" name="sides" type="int">
+			</argument>
+			<argument index="3" name="axis" type="int" enum="Vector3.Axis" default="2">
+			</argument>
+			<description>
+				Returns an array of [Plane]s closely bounding a faceted cylinder centered at the origin with radius [code]radius[/code] and height [code]height[/code]. The parameter [code]sides[/code] defines how many planes will be generated for the round part of the cylinder. The parameter [code]axis[/code] describes the axis along which the cylinder is oriented (0 for X, 1 for Y, 2 for Z).
+			</description>
+		</method>
+		<method name="clip_polygon">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="points" type="PackedVector3Array">
+			</argument>
+			<argument index="1" name="plane" type="Plane">
+			</argument>
+			<description>
+				Clips the polygon defined by the points in [code]points[/code] against the [code]plane[/code] and returns the points of the clipped polygon.
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+				Returns the 3D point on the 3D segment ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point will always be inside the specified segment.
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_uncapped">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+				Returns the 3D point on the 3D line defined by ([code]s1[/code], [code]s2[/code]) that is closest to [code]point[/code]. The returned point can be inside the segment ([code]s1[/code], [code]s2[/code]) or outside of it, i.e. somewhere on the line extending from the segment.
+			</description>
+		</method>
+		<method name="get_closest_points_between_segments">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="p1" type="Vector3">
+			</argument>
+			<argument index="1" name="p2" type="Vector3">
+			</argument>
+			<argument index="2" name="q1" type="Vector3">
+			</argument>
+			<argument index="3" name="q2" type="Vector3">
+			</argument>
+			<description>
+				Given the two 3D segments ([code]p1[/code], [code]p2[/code]) and ([code]q1[/code], [code]q2[/code]), finds those two points on the two segments that are closest to each other. Returns a [PackedVector3Array] that contains this point on ([code]p1[/code], [code]p2[/code]) as well the accompanying point on ([code]q1[/code], [code]q2[/code]).
+			</description>
+		</method>
+		<method name="ray_intersects_triangle">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+				Tests if the 3D ray starting at [code]from[/code] with the direction of [code]dir[/code] intersects the triangle specified by [code]a[/code], [code]b[/code] and [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
+			</description>
+		</method>
+		<method name="segment_intersects_convex">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="planes" type="Array">
+			</argument>
+			<description>
+				Given a convex hull defined though the [Plane]s in the array [code]planes[/code], tests if the segment ([code]from[/code], [code]to[/code]) intersects with that hull. If an intersection is found, returns a [PackedVector3Array] containing the point the intersection and the hull's normal. If no intersecion is found, an the returned array is empty.
+			</description>
+		</method>
+		<method name="segment_intersects_cylinder">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="height" type="float">
+			</argument>
+			<argument index="3" name="radius" type="float">
+			</argument>
+			<description>
+				Checks if the segment ([code]from[/code], [code]to[/code]) intersects the cylinder with height [code]height[/code] that is centered at the origin and has radius [code]radius[/code]. If no, returns an empty [PackedVector3Array]. If an intersection takes place, the returned array contains the point of intersection and the cylinder's normal at the point of intersection.
+			</description>
+		</method>
+		<method name="segment_intersects_sphere">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="sphere_position" type="Vector3">
+			</argument>
+			<argument index="3" name="sphere_radius" type="float">
+			</argument>
+			<description>
+				Checks if the segment ([code]from[/code], [code]to[/code]) intersects the sphere that is located at [code]sphere_position[/code] and has radius [code]sphere_radius[/code]. If no, returns an empty [PackedVector3Array]. If yes, returns a [PackedVector3Array] containing the point of intersection and the sphere's normal at the point of intersection.
+			</description>
+		</method>
+		<method name="segment_intersects_triangle">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+				Tests if the segment ([code]from[/code], [code]to[/code]) intersects the triangle [code]a[/code], [code]b[/code], [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

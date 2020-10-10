@@ -7,7 +7,7 @@
 		Manages all [InputEventAction] which can be created/modified from the project settings menu [b]Project &gt; Project Settings &gt; Input Map[/b] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#inputmap</link>
+		<link title="InputEvent: InputMap">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#inputmap</link>
 	</tutorials>
 	<methods>
 		<method name="action_add_event">
@@ -39,6 +39,15 @@
 			</argument>
 			<description>
 				Removes all events from an action.
+			</description>
+		</method>
+		<method name="action_get_events">
+			<return type="Array">
+			</return>
+			<argument index="0" name="action" type="StringName">
+			</argument>
+			<description>
+				Returns an array of [InputEvent]s associated with a given action.
 			</description>
 		</method>
 		<method name="action_has_event">
@@ -93,15 +102,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
-			</description>
-		</method>
-		<method name="get_action_list">
-			<return type="Array">
-			</return>
-			<argument index="0" name="action" type="StringName">
-			</argument>
-			<description>
-				Returns an array of [InputEvent]s associated with a given action.
 			</description>
 		</method>
 		<method name="get_actions">

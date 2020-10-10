@@ -114,7 +114,7 @@ protected:
 	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	Array get_meshes() const;
@@ -124,8 +124,8 @@ public:
 
 	virtual Vector<Vector3> get_brush_faces();
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
@@ -159,7 +159,7 @@ class CSGCombiner3D : public CSGShape3D {
 	GDCLASS(CSGCombiner3D, CSGShape3D);
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 public:
 	CSGCombiner3D();
@@ -185,7 +185,7 @@ public:
 class CSGMesh3D : public CSGPrimitive3D {
 	GDCLASS(CSGMesh3D, CSGPrimitive3D);
 
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
 	Ref<Material> material;
@@ -204,9 +204,8 @@ public:
 };
 
 class CSGSphere3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGSphere3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -237,9 +236,8 @@ public:
 };
 
 class CSGBox3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGBox3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float width;
@@ -266,9 +264,8 @@ public:
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float radius;
@@ -303,9 +300,8 @@ public:
 };
 
 class CSGTorus3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGTorus3D, CSGPrimitive3D);
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float inner_radius;
@@ -340,7 +336,6 @@ public:
 };
 
 class CSGPolygon3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:
@@ -357,7 +352,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;
@@ -388,7 +383,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 
 public:

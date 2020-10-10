@@ -40,7 +40,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/split_container.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
@@ -148,11 +147,9 @@ private:
 	class FileOrFolder {
 	public:
 		String path;
-		bool is_file;
+		bool is_file = false;
 
-		FileOrFolder() :
-				path(""),
-				is_file(false) {}
+		FileOrFolder() {}
 		FileOrFolder(const String &p_path, bool p_is_file) :
 				path(p_path),
 				is_file(p_is_file) {}
@@ -198,6 +195,7 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
+	void _get_imported_files(const String &p_path, Vector<String> &files) const;
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;

@@ -4,6 +4,7 @@
 		Godot editor's script editor.
 	</brief_description>
 	<description>
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -32,6 +33,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_current_editor" qualifiers="const">
+			<return type="ScriptEditorBase">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_current_script">
 			<return type="Script">
 			</return>
@@ -46,6 +53,12 @@
 			</argument>
 			<argument index="1" name="from" type="Control">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_open_script_editors" qualifiers="const">
+			<return type="Array">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -71,6 +84,23 @@
 			<argument index="0" name="base_name" type="String">
 			</argument>
 			<argument index="1" name="base_path" type="String">
+			</argument>
+			<description>
+				Opens the script create dialog. The script will extend [code]base_name[/code]. The file extension can be omitted from [code]base_path[/code]. It will be added based on the selected scripting language.
+			</description>
+		</method>
+		<method name="register_syntax_highlighter">
+			<return type="void">
+			</return>
+			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="unregister_syntax_highlighter">
+			<return type="void">
+			</return>
+			<argument index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter">
 			</argument>
 			<description>
 			</description>

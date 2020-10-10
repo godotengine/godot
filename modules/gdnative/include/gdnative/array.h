@@ -51,7 +51,7 @@ typedef struct {
 }
 #endif
 
-#include <gdnative/pool_arrays.h>
+#include <gdnative/packed_arrays.h>
 #include <gdnative/variant.h>
 
 #include <gdnative/gdnative.h>
@@ -66,8 +66,10 @@ void GDAPI godot_array_new_packed_color_array(godot_array *r_dest, const godot_p
 void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot_packed_vector3_array *p_pv3a);
 void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a);
 void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa);
-void GDAPI godot_array_new_packed_real_array(godot_array *r_dest, const godot_packed_real_array *p_pra);
-void GDAPI godot_array_new_packed_int_array(godot_array *r_dest, const godot_packed_int_array *p_pia);
+void GDAPI godot_array_new_packed_float32_array(godot_array *r_dest, const godot_packed_float32_array *p_pra);
+void GDAPI godot_array_new_packed_float64_array(godot_array *r_dest, const godot_packed_float64_array *p_pra);
+void GDAPI godot_array_new_packed_int32_array(godot_array *r_dest, const godot_packed_int32_array *p_pia);
+void GDAPI godot_array_new_packed_int64_array(godot_array *r_dest, const godot_packed_int64_array *p_pia);
 void GDAPI godot_array_new_packed_byte_array(godot_array *r_dest, const godot_packed_byte_array *p_pba);
 
 void GDAPI godot_array_set(godot_array *p_self, const godot_int p_idx, const godot_variant *p_value);

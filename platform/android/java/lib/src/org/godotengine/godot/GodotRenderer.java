@@ -30,19 +30,20 @@
 
 package org.godotengine.godot;
 
-import android.content.Context;
-import android.opengl.GLSurfaceView;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.utils.GLUtils;
+
+import android.content.Context;
+import android.opengl.GLSurfaceView;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 /**
  * Godot's renderer implementation.
  */
 class GodotRenderer implements GLSurfaceView.Renderer {
-
 	private final GodotPluginRegistry pluginRegistry;
 	private boolean activityJustResumed = false;
 
@@ -63,7 +64,7 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		GodotLib.resize(width, height);
+		GodotLib.resize(null, width, height);
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onGLSurfaceChanged(gl, width, height);
 		}

@@ -35,16 +35,15 @@
 #include "core/os/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
-
-	Compression::Mode cmode;
-	bool writing;
-	uint32_t write_pos;
-	uint8_t *write_ptr;
-	uint32_t write_buffer_size;
-	uint32_t write_max;
-	uint32_t block_size;
-	mutable bool read_eof;
-	mutable bool at_end;
+	Compression::Mode cmode = Compression::MODE_ZSTD;
+	bool writing = false;
+	uint32_t write_pos = 0;
+	uint8_t *write_ptr = nullptr;
+	uint32_t write_buffer_size = 0;
+	uint32_t write_max = 0;
+	uint32_t block_size = 0;
+	mutable bool read_eof = false;
+	mutable bool at_end = false;
 
 	struct ReadBlock {
 		int csize;
@@ -52,17 +51,17 @@ class FileAccessCompressed : public FileAccess {
 	};
 
 	mutable Vector<uint8_t> comp_buffer;
-	uint8_t *read_ptr;
-	mutable int read_block;
-	int read_block_count;
-	mutable int read_block_size;
-	mutable int read_pos;
+	uint8_t *read_ptr = nullptr;
+	mutable int read_block = 0;
+	int read_block_count = 0;
+	mutable int read_block_size = 0;
+	mutable int read_pos = 0;
 	Vector<ReadBlock> read_blocks;
-	uint32_t read_total;
+	uint32_t read_total = 0;
 
-	String magic;
+	String magic = "GCMP";
 	mutable Vector<uint8_t> buffer;
-	FileAccess *f;
+	FileAccess *f = nullptr;
 
 public:
 	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, int p_block_size = 4096);
@@ -94,7 +93,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file);
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
-	FileAccessCompressed();
+	FileAccessCompressed() {}
 	virtual ~FileAccessCompressed();
 };
 

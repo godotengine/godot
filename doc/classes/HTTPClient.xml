@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HTTPClient" inherits="Reference" version="4.0">
 	<brief_description>
-		Hyper-text transfer protocol client.
+		Low-level hyper-text transfer protocol client.
 	</brief_description>
 	<description>
-		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases. See [HTTPRequest] for an higher-level alternative.
+		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases. [b]See the [HTTPRequest] node for an higher-level alternative.[/b]
 		[b]Note:[/b] This client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
 		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports SSL and SSL server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
+		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link title="HTTP client class">https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
+		<link title="SSL certificates">https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="close">
@@ -151,6 +152,7 @@
 				var headers = ["Content-Type: application/x-www-form-urlencoded", "Content-Length: " + str(query_string.length())]
 				var result = http_client.request(http_client.METHOD_POST, "index.php", headers, query_string)
 				[/codeblock]
+				[b]Note:[/b] The [code]request_data[/code] parameter is ignored if [code]method[/code] is [constant HTTPClient.METHOD_GET]. This is because GET methods can't contain request data. As a workaround, you can pass request data as a query string in the URL. See [method String.http_escape] for an example.
 			</description>
 		</method>
 		<method name="request_raw">

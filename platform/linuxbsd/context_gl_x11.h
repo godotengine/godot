@@ -42,7 +42,6 @@
 struct ContextGL_X11_Private;
 
 class ContextGL_X11 {
-
 public:
 	enum ContextType {
 		GLES_2_0_COMPATIBLE,

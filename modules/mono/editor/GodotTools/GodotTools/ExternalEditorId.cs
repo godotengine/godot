@@ -1,6 +1,6 @@
 namespace GodotTools
 {
-    public enum ExternalEditorId
+    public enum ExternalEditorId : long
     {
         None,
         VisualStudio, // TODO (Windows-only)

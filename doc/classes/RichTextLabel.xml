@@ -6,9 +6,12 @@
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
 		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="BBCode in RichTextLabel">https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link title="GUI Rich Text/BBcode Demo">https://godotengine.org/asset-library/asset/132</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="add_image">
@@ -20,8 +23,10 @@
 			</argument>
 			<argument index="2" name="height" type="int" default="0">
 			</argument>
+			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
-				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image.
+				Adds an image's opening and closing tags to the tag stack, optionally providing a [code]width[/code] and [code]height[/code] to resize the image and a [code]color[/code] to tint the image.
 				If [code]width[/code] or [code]height[/code] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
 			</description>
 		</method>
@@ -41,6 +46,7 @@
 			</argument>
 			<description>
 				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
+				[b]Note:[/b] Using this method, you can't close a tag that was opened in a previous [method append_bbcode] call. This is done to improve performance, especially when updating large RichTextLabels since rebuilding the whole BBCode every time would be slower. If you absolutely need to close a tag in a future method call, append the [member bbcode_text] instead of using [method append_bbcode].
 			</description>
 		</method>
 		<method name="clear">
@@ -50,7 +56,7 @@
 				Clears the tag stack and sets [member bbcode_text] to an empty string.
 			</description>
 		</method>
-		<method name="get_content_height">
+		<method name="get_content_height" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -286,11 +292,15 @@
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] It is unadvised to use [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead.
+			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
+		</member>
+		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
+			If [code]true[/code], the label's height will be automatically updated to fit its content.
+			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].

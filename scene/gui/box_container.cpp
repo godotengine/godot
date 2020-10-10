@@ -33,14 +33,12 @@
 #include "margin_container.h"
 
 struct _MinSizeCache {
-
 	int min_size;
 	bool will_stretch;
 	int final_size;
 };
 
 void BoxContainer::_resort() {
-
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 	Size2i new_size = get_size();
@@ -56,10 +54,12 @@ void BoxContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_top_level()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 		_MinSizeCache msc;
@@ -84,8 +84,9 @@ void BoxContainer::_resort() {
 		children_count++;
 	}
 
-	if (children_count == 0)
+	if (children_count == 0) {
 		return;
+	}
 
 	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
 	int stretch_diff = stretch_max - stretch_min;
@@ -95,7 +96,7 @@ void BoxContainer::_resort() {
 	}
 
 	stretch_avail += stretch_diff; //available stretch space.
-	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
+	/** Second, pass successively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
 	bool has_stretched = false;
@@ -103,22 +104,25 @@ void BoxContainer::_resort() {
 
 		has_stretched = true;
 		bool refit_successful = true; //assume refit-test will go well
+		float error = 0; // Keep track of accumulated error in pixels
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c || !c->is_visible_in_tree())
+			if (!c || !c->is_visible_in_tree()) {
 				continue;
-			if (c->is_set_as_toplevel())
+			}
+			if (c->is_set_as_top_level()) {
 				continue;
+			}
 
 			ERR_FAIL_COND(!min_size_cache.has(c));
 			_MinSizeCache &msc = min_size_cache[c];
 
 			if (msc.will_stretch) { //wants to stretch
 				//let's see if it can really stretch
-
-				int final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				float final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				// Add leftover fractional pixels to error accumulator
+				error += final_pixel_size - (int)final_pixel_size;
 				if (final_pixel_size < msc.min_size) {
 					//if available stretching area is too small for widget,
 					//then remove it from stretching area
@@ -130,12 +134,18 @@ void BoxContainer::_resort() {
 					break;
 				} else {
 					msc.final_size = final_pixel_size;
+					// Dump accumulated error if one pixel or more
+					if (error >= 1) {
+						msc.final_size += 1;
+						error -= 1;
+					}
 				}
 			}
 		}
 
-		if (refit_successful) //uf refit went well, break
+		if (refit_successful) { //uf refit went well, break
 			break;
+		}
 	}
 
 	/** Final pass, draw and stretch elements **/
@@ -158,19 +168,21 @@ void BoxContainer::_resort() {
 	int idx = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_top_level()) {
 			continue;
+		}
 
 		_MinSizeCache &msc = min_size_cache[c];
 
-		if (first)
+		if (first) {
 			first = false;
-		else
+		} else {
 			ofs += sep;
+		}
 
 		int from = ofs;
 		int to = ofs + msc.final_size;
@@ -187,10 +199,8 @@ void BoxContainer::_resort() {
 		Rect2 rect;
 
 		if (vertical) {
-
 			rect = Rect2(0, from, new_size.width, size);
 		} else {
-
 			rect = Rect2(from, 0, size, new_size.height);
 		}
 
@@ -202,7 +212,6 @@ void BoxContainer::_resort() {
 }
 
 Size2 BoxContainer::get_minimum_size() const {
-
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
@@ -212,10 +221,12 @@ Size2 BoxContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_top_level()) {
 			continue;
+		}
 
 		if (!c->is_visible()) {
 			continue;
@@ -247,15 +258,11 @@ Size2 BoxContainer::get_minimum_size() const {
 }
 
 void BoxContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			_resort();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
@@ -271,28 +278,27 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 }
 
 void BoxContainer::add_spacer(bool p_begin) {
-
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
-	if (vertical)
+	if (vertical) {
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
-	else
+	} else {
 		c->set_h_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	add_child(c);
-	if (p_begin)
+	if (p_begin) {
 		move_child(c, 0);
+	}
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
-
 	vertical = p_vertical;
 	align = ALIGN_BEGIN;
 }
 
 void BoxContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_spacer", "begin"), &BoxContainer::add_spacer);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
@@ -305,7 +311,6 @@ void BoxContainer::_bind_methods() {
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {
-
 	Label *l = memnew(Label);
 	l->set_text(p_label);
 	add_child(l);
@@ -313,8 +318,9 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control);
 	add_child(mc);
-	if (p_expand)
+	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	return mc;
 }

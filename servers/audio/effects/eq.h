@@ -52,7 +52,6 @@ public:
 	};
 
 	class BandProcess {
-
 		friend class EQ;
 		float c1, c2, c3;
 		struct History {
@@ -69,7 +68,6 @@ public:
 
 private:
 	struct Band {
-
 		float freq;
 		float c1, c2, c3;
 	};
@@ -96,7 +94,6 @@ public:
 /* Inline Function */
 
 inline void EQ::BandProcess::process_one(float &p_data) {
-
 	history.a1 = p_data;
 
 	history.b1 = c1 * (history.a1 - history.a3) + c3 * history.b2 - c2 * history.b3;

@@ -50,7 +50,6 @@ btRayShape::~btRayShape() {
 }
 
 void btRayShape::setLength(btScalar p_length) {
-
 	m_length = p_length;
 	reload_cache();
 }
@@ -61,7 +60,6 @@ void btRayShape::setMargin(btScalar margin) {
 }
 
 void btRayShape::setSlipsOnSlope(bool p_slipsOnSlope) {
-
 	slipsOnSlope = p_slipsOnSlope;
 }
 
@@ -70,10 +68,11 @@ btVector3 btRayShape::localGetSupportingVertex(const btVector3 &vec) const {
 }
 
 btVector3 btRayShape::localGetSupportingVertexWithoutMargin(const btVector3 &vec) const {
-	if (vec.z() > 0)
+	if (vec.z() > 0) {
 		return m_shapeAxis * m_cacheScaledLength;
-	else
+	} else {
 		return btVector3(0, 0, 0);
+	}
 }
 
 void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3 *vectors, btVector3 *supportVerticesOut, int numVectors) const {
@@ -101,7 +100,6 @@ void btRayShape::getPreferredPenetrationDirection(int index, btVector3 &penetrat
 }
 
 void btRayShape::reload_cache() {
-
 	m_cacheScaledLength = m_length * m_localScaling[2];
 
 	m_cacheSupportPoint.setIdentity();

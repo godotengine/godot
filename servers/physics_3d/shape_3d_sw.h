@@ -31,7 +31,7 @@
 #ifndef SHAPE_SW_H
 #define SHAPE_SW_H
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "servers/physics_server_3d.h"
 /*
 
@@ -56,7 +56,6 @@ public:
 };
 
 class Shape3DSW {
-
 	RID self;
 	AABB aabb;
 	bool configured;
@@ -108,7 +107,6 @@ public:
 };
 
 class ConcaveShape3DSW : public Shape3DSW {
-
 public:
 	virtual bool is_concave() const { return true; }
 	typedef void (*Callback)(void *p_userdata, Shape3DSW *p_convex);
@@ -120,7 +118,6 @@ public:
 };
 
 class PlaneShape3DSW : public Shape3DSW {
-
 	Plane plane;
 
 	void _setup(const Plane &p_plane);
@@ -146,7 +143,6 @@ public:
 };
 
 class RayShape3DSW : public Shape3DSW {
-
 	real_t length;
 	bool slips_on_slope;
 
@@ -175,7 +171,6 @@ public:
 };
 
 class SphereShape3DSW : public Shape3DSW {
-
 	real_t radius;
 
 	void _setup(real_t p_radius);
@@ -203,7 +198,6 @@ public:
 };
 
 class BoxShape3DSW : public Shape3DSW {
-
 	Vector3 half_extents;
 	void _setup(const Vector3 &p_half_extents);
 
@@ -229,7 +223,6 @@ public:
 };
 
 class CapsuleShape3DSW : public Shape3DSW {
-
 	real_t height;
 	real_t radius;
 
@@ -259,13 +252,12 @@ public:
 };
 
 struct ConvexPolygonShape3DSW : public Shape3DSW {
-
-	Geometry::MeshData mesh;
+	Geometry3D::MeshData mesh;
 
 	void _setup(const Vector<Vector3> &p_vertices);
 
 public:
-	const Geometry::MeshData &get_mesh() const { return mesh; }
+	const Geometry3D::MeshData &get_mesh() const { return mesh; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONVEX_POLYGON; }
 
@@ -291,7 +283,6 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	// always a trimesh
 
 	struct Face {
-
 		Vector3 normal;
 		int indices[3];
 	};
@@ -300,7 +291,6 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	Vector<Vector3> vertices;
 
 	struct BVH {
-
 		AABB aabb;
 		int left;
 		int right;
@@ -311,7 +301,6 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	Vector<BVH> bvh;
 
 	struct _CullParams {
-
 		AABB aabb;
 		Callback callback;
 		void *userdata;
@@ -322,7 +311,6 @@ struct ConcavePolygonShape3DSW : public ConcaveShape3DSW {
 	};
 
 	struct _SegmentCullParams {
-
 		Vector3 from;
 		Vector3 to;
 		const Face *faces;
@@ -366,7 +354,6 @@ public:
 };
 
 struct HeightMapShape3DSW : public ConcaveShape3DSW {
-
 	Vector<real_t> heights;
 	int width;
 	int depth;
@@ -403,7 +390,6 @@ public:
 
 //used internally
 struct FaceShape3DSW : public Shape3DSW {
-
 	Vector3 normal; //cache
 	Vector3 vertex[3];
 
@@ -427,14 +413,12 @@ struct FaceShape3DSW : public Shape3DSW {
 };
 
 struct MotionShape3DSW : public Shape3DSW {
-
 	Shape3DSW *shape;
 	Vector3 motion;
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_CONVEX_POLYGON; }
 
 	void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
-
 		Vector3 cast = p_transform.basis.xform(motion);
 		real_t mina, maxa;
 		real_t minb, maxb;
@@ -447,7 +431,6 @@ struct MotionShape3DSW : public Shape3DSW {
 	}
 
 	Vector3 get_support(const Vector3 &p_normal) const {
-
 		Vector3 support = shape->get_support(p_normal);
 		if (p_normal.dot(motion) > 0) {
 			support += motion;

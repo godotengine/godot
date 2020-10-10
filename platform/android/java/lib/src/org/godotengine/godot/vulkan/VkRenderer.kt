@@ -59,9 +59,7 @@ internal class VkRenderer {
 	 * Called when the surface is created and signals the beginning of rendering.
 	 */
 	fun onVkSurfaceCreated(surface: Surface) {
-		// TODO: properly implement surface re-creation:
-		// GodotLib.newcontext should be called here once it's done.
-		//GodotLib.newcontext(surface, false)
+		GodotLib.newcontext(surface, false)
 
 		for (plugin in pluginRegistry.getAllPlugins()) {
 			plugin.onVkSurfaceCreated(surface)
@@ -72,13 +70,8 @@ internal class VkRenderer {
 	 * Called after the surface is created and whenever its size changes.
 	 */
 	fun onVkSurfaceChanged(surface: Surface, width: Int, height: Int) {
-		GodotLib.resize(width, height)
-		
-		// TODO: properly implement surface re-creation:
-		// Update the native renderer instead of restarting the app.
-		// GodotLib.newcontext should not be called here once it's done.
-		GodotLib.newcontext(surface, false)
-		
+		GodotLib.resize(surface, width, height)
+
 		for (plugin in pluginRegistry.getAllPlugins()) {
 			plugin.onVkSurfaceChanged(surface, width, height)
 		}

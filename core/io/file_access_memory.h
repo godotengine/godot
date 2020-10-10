@@ -34,8 +34,7 @@
 #include "core/os/file_access.h"
 
 class FileAccessMemory : public FileAccess {
-
-	uint8_t *data;
+	uint8_t *data = nullptr;
 	int length;
 	mutable int pos;
 
@@ -73,7 +72,7 @@ public:
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
-	FileAccessMemory();
+	FileAccessMemory() {}
 };
 
 #endif // FILE_ACCESS_MEMORY_H

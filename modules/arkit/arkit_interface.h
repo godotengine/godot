@@ -44,6 +44,15 @@
 // forward declaration for some needed objects
 class ARKitShader;
 
+#ifdef __OBJC__
+
+typedef ARAnchor GodotARAnchor;
+
+#else
+
+typedef void GodotARAnchor;
+#endif
+
 class ARKitInterface : public XRInterface {
 	GDCLASS(ARKitInterface, XRInterface);
 
@@ -60,8 +69,8 @@ private:
 	float eye_height, z_near, z_far;
 
 	Ref<CameraFeed> feed;
-	int image_width[2];
-	int image_height[2];
+	size_t image_width[2];
+	size_t image_height[2];
 	Vector<uint8_t> img_data[2];
 
 	struct anchor_map {
@@ -84,9 +93,9 @@ public:
 	void start_session();
 	void stop_session();
 
-	bool get_anchor_detection_is_enabled() const;
-	void set_anchor_detection_is_enabled(bool p_enable);
-	virtual int get_camera_feed_id();
+	bool get_anchor_detection_is_enabled() const override;
+	void set_anchor_detection_is_enabled(bool p_enable) override;
+	virtual int get_camera_feed_id() override;
 
 	bool get_light_estimation_is_enabled() const;
 	void set_light_estimation_is_enabled(bool p_enable);
@@ -97,26 +106,26 @@ public:
 	/* while Godot has its own raycast logic this takes ARKits camera into account and hits on any ARAnchor */
 	Array raycast(Vector2 p_screen_coord);
 
-	void notification(int p_what);
+	virtual void notification(int p_what) override;
 
-	virtual StringName get_name() const;
-	virtual int get_capabilities() const;
+	virtual StringName get_name() const override;
+	virtual int get_capabilities() const override;
 
-	virtual bool is_initialized() const;
-	virtual bool initialize();
-	virtual void uninitialize();
+	virtual bool is_initialized() const override;
+	virtual bool initialize() override;
+	virtual void uninitialize() override;
 
-	virtual Size2 get_render_targetsize();
-	virtual bool is_stereo();
-	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform);
-	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far);
-	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect);
+	virtual Size2 get_render_targetsize() override;
+	virtual bool is_stereo() override;
+	virtual Transform get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) override;
+	virtual CameraMatrix get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) override;
+	virtual void commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) override;
 
-	virtual void process();
+	virtual void process() override;
 
 	// called by delegate (void * because C++ and Obj-C don't always mix, should really change all platform/iphone/*.cpp files to .mm)
-	void _add_or_update_anchor(void *p_anchor);
-	void _remove_anchor(void *p_anchor);
+	void _add_or_update_anchor(GodotARAnchor *p_anchor);
+	void _remove_anchor(GodotARAnchor *p_anchor);
 
 	ARKitInterface();
 	~ARKitInterface();

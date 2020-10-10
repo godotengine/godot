@@ -36,19 +36,20 @@
 // Kept for compatibility from 3.x to 4.0.
 
 void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return;
+	}
 
 	const Vector<Vector3> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 4) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const Vector3 *r = xforms.ptr();
 
 	for (int i = 0; i < len / 4; i++) {
-
 		Transform t;
 		t.basis[0] = r[i * 4 + 0];
 		t.basis[1] = r[i * 4 + 1];
@@ -60,12 +61,13 @@ void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
 }
 
 Vector<Vector3> MultiMesh::_get_transform_array() const {
-
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return Vector<Vector3>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return Vector<Vector3>();
+	}
 
 	Vector<Vector3> xforms;
 	xforms.resize(instance_count * 4);
@@ -73,7 +75,6 @@ Vector<Vector3> MultiMesh::_get_transform_array() const {
 	Vector3 *w = xforms.ptrw();
 
 	for (int i = 0; i < instance_count; i++) {
-
 		Transform t = get_instance_transform(i);
 		w[i * 4 + 0] = t.basis[0];
 		w[i * 4 + 1] = t.basis[1];
@@ -85,20 +86,20 @@ Vector<Vector3> MultiMesh::_get_transform_array() const {
 }
 
 void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
-
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return;
+	}
 
 	const Vector<Vector2> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 3) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const Vector2 *r = xforms.ptr();
 
 	for (int i = 0; i < len / 3; i++) {
-
 		Transform2D t;
 		t.elements[0] = r[i * 3 + 0];
 		t.elements[1] = r[i * 3 + 1];
@@ -109,12 +110,13 @@ void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
 }
 
 Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
-
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return Vector<Vector2>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return Vector<Vector2>();
+	}
 
 	Vector<Vector2> xforms;
 	xforms.resize(instance_count * 3);
@@ -122,7 +124,6 @@ Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
 	Vector2 *w = xforms.ptrw();
 
 	for (int i = 0; i < instance_count; i++) {
-
 		Transform2D t = get_instance_transform_2d(i);
 		w[i * 3 + 0] = t.elements[0];
 		w[i * 3 + 1] = t.elements[1];
@@ -133,31 +134,29 @@ Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
 }
 
 void MultiMesh::_set_color_array(const Vector<Color> &p_array) {
-
 	const Vector<Color> &colors = p_array;
 	int len = colors.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	const Color *r = colors.ptr();
 
 	for (int i = 0; i < len; i++) {
-
 		set_instance_color(i, r[i]);
 	}
 }
 
 Vector<Color> MultiMesh::_get_color_array() const {
-
-	if (instance_count == 0 || !use_colors)
+	if (instance_count == 0 || !use_colors) {
 		return Vector<Color>();
+	}
 
 	Vector<Color> colors;
 	colors.resize(instance_count);
 
 	for (int i = 0; i < instance_count; i++) {
-
 		colors.set(i, get_instance_color(i));
 	}
 
@@ -165,31 +164,29 @@ Vector<Color> MultiMesh::_get_color_array() const {
 }
 
 void MultiMesh::_set_custom_data_array(const Vector<Color> &p_array) {
-
 	const Vector<Color> &custom_datas = p_array;
 	int len = custom_datas.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	const Color *r = custom_datas.ptr();
 
 	for (int i = 0; i < len; i++) {
-
 		set_instance_custom_data(i, r[i]);
 	}
 }
 
 Vector<Color> MultiMesh::_get_custom_data_array() const {
-
-	if (instance_count == 0 || !use_custom_data)
+	if (instance_count == 0 || !use_custom_data) {
 		return Vector<Color>();
+	}
 
 	Vector<Color> custom_datas;
 	custom_datas.resize(instance_count);
 
 	for (int i = 0; i < instance_count; i++) {
-
 		custom_datas.set(i, get_instance_custom_data(i));
 	}
 
@@ -206,16 +203,15 @@ Vector<float> MultiMesh::get_buffer() const {
 }
 
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
-
 	mesh = p_mesh;
-	if (!mesh.is_null())
+	if (!mesh.is_null()) {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
-	else
+	} else {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, RID());
+	}
 }
 
 Ref<Mesh> MultiMesh::get_mesh() const {
-
 	return mesh;
 }
 
@@ -224,8 +220,8 @@ void MultiMesh::set_instance_count(int p_count) {
 	RenderingServer::get_singleton()->multimesh_allocate(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
 }
-int MultiMesh::get_instance_count() const {
 
+int MultiMesh::get_instance_count() const {
 	return instance_count;
 }
 
@@ -235,56 +231,48 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, p_count);
 	visible_instance_count = p_count;
 }
-int MultiMesh::get_visible_instance_count() const {
 
+int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
-
 	RenderingServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
 }
 
 void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_transform) {
-
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
 }
 
 Transform MultiMesh::get_instance_transform(int p_instance) const {
-
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
 }
 
 Transform2D MultiMesh::get_instance_transform_2d(int p_instance) const {
-
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform_2d(multimesh, p_instance);
 }
 
 void MultiMesh::set_instance_color(int p_instance, const Color &p_color) {
-
 	RenderingServer::get_singleton()->multimesh_instance_set_color(multimesh, p_instance, p_color);
 }
-Color MultiMesh::get_instance_color(int p_instance) const {
 
+Color MultiMesh::get_instance_color(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_color(multimesh, p_instance);
 }
 
 void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_data) {
-
 	RenderingServer::get_singleton()->multimesh_instance_set_custom_data(multimesh, p_instance, p_custom_data);
 }
-Color MultiMesh::get_instance_custom_data(int p_instance) const {
 
+Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
 }
 
 AABB MultiMesh::get_aabb() const {
-
 	return RenderingServer::get_singleton()->multimesh_get_aabb(multimesh);
 }
 
 RID MultiMesh::get_rid() const {
-
 	return multimesh;
 }
 
@@ -307,17 +295,15 @@ bool MultiMesh::is_using_custom_data() const {
 }
 
 void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
-
 	ERR_FAIL_COND(instance_count > 0);
 	transform_format = p_transform_format;
 }
-MultiMesh::TransformFormat MultiMesh::get_transform_format() const {
 
+MultiMesh::TransformFormat MultiMesh::get_transform_format() const {
 	return transform_format;
 }
 
 void MultiMesh::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MultiMesh::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MultiMesh::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_use_colors", "enable"), &MultiMesh::set_use_colors);
@@ -374,7 +360,6 @@ void MultiMesh::_bind_methods() {
 }
 
 MultiMesh::MultiMesh() {
-
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	use_colors = false;
 	use_custom_data = false;
@@ -384,6 +369,5 @@ MultiMesh::MultiMesh() {
 }
 
 MultiMesh::~MultiMesh() {
-
 	RenderingServer::get_singleton()->free(multimesh);
 }

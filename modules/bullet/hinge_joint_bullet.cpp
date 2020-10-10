@@ -42,7 +42,6 @@
 
 HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameA, const Transform &frameB) :
 		JointBullet() {
-
 	Transform scaled_AFrame(frameA.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
@@ -50,7 +49,6 @@ HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, c
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-
 		Transform scaled_BFrame(frameB.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
@@ -59,7 +57,6 @@ HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, c
 
 		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btFrameA, btFrameB));
 	} else {
-
 		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), btFrameA));
 	}
 
@@ -68,7 +65,6 @@ HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, c
 
 HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB) :
 		JointBullet() {
-
 	btVector3 btPivotA;
 	btVector3 btAxisA;
 	G_TO_B(pivotInA * rbA->get_body_scale(), btPivotA);
@@ -82,7 +78,6 @@ HingeJointBullet::HingeJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, c
 
 		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), *rbB->get_bt_rigid_body(), btPivotA, btPivotB, btAxisA, btAxisB));
 	} else {
-
 		hingeConstraint = bulletnew(btHingeConstraint(*rbA->get_bt_rigid_body(), btPivotA, btAxisA));
 	}
 
@@ -162,7 +157,8 @@ void HingeJointBullet::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_v
 		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR:
 			hingeConstraint->enableMotor(p_value);
 			break;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 

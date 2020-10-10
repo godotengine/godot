@@ -38,17 +38,12 @@ extern void (*_print_func)(String);
 typedef void (*PrintHandlerFunc)(void *, const String &p_string, bool p_error);
 
 struct PrintHandlerList {
+	PrintHandlerFunc printfunc = nullptr;
+	void *userdata = nullptr;
 
-	PrintHandlerFunc printfunc;
-	void *userdata;
+	PrintHandlerList *next = nullptr;
 
-	PrintHandlerList *next;
-
-	PrintHandlerList() {
-		printfunc = 0;
-		next = 0;
-		userdata = 0;
-	}
+	PrintHandlerList() {}
 };
 
 void add_print_handler(PrintHandlerList *p_handler);

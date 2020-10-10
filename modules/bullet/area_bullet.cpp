@@ -44,19 +44,7 @@
 */
 
 AreaBullet::AreaBullet() :
-		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA),
-		monitorable(true),
-		spOv_mode(PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED),
-		spOv_gravityPoint(false),
-		spOv_gravityPointDistanceScale(0),
-		spOv_gravityPointAttenuation(1),
-		spOv_gravityVec(0, -1, 0),
-		spOv_gravityMag(10),
-		spOv_linearDump(0.1),
-		spOv_angularDump(1),
-		spOv_priority(0),
-		isScratched(false) {
-
+		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_AREA) {
 	btGhost = bulletnew(btGhostObject);
 	reload_shapes();
 	setupBulletCollisionObject(btGhost);
@@ -64,19 +52,22 @@ AreaBullet::AreaBullet() :
 	/// In order to use collision objects as trigger, you have to disable the collision response.
 	set_collision_enabled(false);
 
-	for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 5; ++i) {
 		call_event_res_ptr[i] = &call_event_res[i];
+	}
 }
 
 AreaBullet::~AreaBullet() {
 	// signal are handled by godot, so just clear without notify
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i)
+	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		overlappingObjects[i].object->on_exit_area(this);
+	}
 }
 
 void AreaBullet::dispatch_callbacks() {
-	if (!isScratched)
+	if (!isScratched) {
 		return;
+	}
 	isScratched = false;
 
 	// Reverse order because I've to remove EXIT objects
@@ -102,7 +93,6 @@ void AreaBullet::dispatch_callbacks() {
 }
 
 void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3D::AreaBodyStatus p_status) {
-
 	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_otherObject->getType())];
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
@@ -122,15 +112,17 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer3
 }
 
 void AreaBullet::scratch() {
-	if (isScratched)
+	if (isScratched) {
 		return;
+	}
 	isScratched = true;
 }
 
 void AreaBullet::clear_overlaps(bool p_notify) {
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		if (p_notify)
+		if (p_notify) {
 			call_event(overlappingObjects[i].object, PhysicsServer3D::AREA_BODY_REMOVED);
+		}
 		overlappingObjects[i].object->on_exit_area(this);
 	}
 	overlappingObjects.clear();
@@ -139,8 +131,9 @@ void AreaBullet::clear_overlaps(bool p_notify) {
 void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) {
 	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
 		if (overlappingObjects[i].object == p_object) {
-			if (p_notify)
+			if (p_notify) {
 				call_event(overlappingObjects[i].object, PhysicsServer3D::AREA_BODY_REMOVED);
+			}
 			overlappingObjects[i].object->on_exit_area(this);
 			overlappingObjects.remove(i);
 			break;
@@ -181,6 +174,7 @@ void AreaBullet::reload_body() {
 void AreaBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
+		clear_overlaps(false);
 		isScratched = false;
 
 		// Remove this object form the physics world

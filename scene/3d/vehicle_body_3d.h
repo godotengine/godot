@@ -36,7 +36,6 @@
 class VehicleBody3D;
 
 class VehicleWheel3D : public Node3D {
-
 	GDCLASS(VehicleWheel3D, Node3D);
 
 	friend class VehicleBody3D;
@@ -146,13 +145,12 @@ public:
 	void set_steering(float p_steering);
 	float get_steering() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	VehicleWheel3D();
 };
 
 class VehicleBody3D : public RigidBody3D {
-
 	GDCLASS(VehicleBody3D, RigidBody3D);
 
 	float engine_force;
@@ -194,7 +192,7 @@ class VehicleBody3D : public RigidBody3D {
 
 	static void _bind_methods();
 
-	void _direct_state_changed(Object *p_state);
+	void _direct_state_changed(Object *p_state) override;
 
 public:
 	void set_engine_force(float p_engine_force);

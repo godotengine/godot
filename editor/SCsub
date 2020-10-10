@@ -6,7 +6,7 @@ env.editor_sources = []
 
 import os
 import os.path
-from platform_methods import run_in_subprocess
+import glob
 import editor_builders
 
 
@@ -40,28 +40,31 @@ if env["tools"]:
         f.write(reg_exporters_inc)
         f.write(reg_exporters)
 
-    # API documentation
+    # Core API documentation.
     docs = []
-    doc_dirs = ["doc/classes"]
+    docs += Glob("#doc/classes/*.xml")
 
-    for p in env.doc_class_path.values():
-        if p not in doc_dirs:
-            doc_dirs.append(p)
+    # Module API documentation.
+    module_dirs = []
+    for d in env.doc_class_path.values():
+        if d not in module_dirs:
+            module_dirs.append(d)
 
-    for d in doc_dirs:
-        try:
-            for f in os.listdir(os.path.join(env.Dir("#").abspath, d)):
-                docs.append("#" + os.path.join(d, f))
-        except OSError:
-            pass
+    for d in module_dirs:
+        if not os.path.isabs(d):
+            docs += Glob("#" + d + "/*.xml")  # Built-in.
+        else:
+            docs += Glob(d + "/*.xml")  # Custom.
 
     _make_doc_data_class_path(os.path.join(env.Dir("#").abspath, "editor"))
 
     docs = sorted(docs)
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
-    env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, run_in_subprocess(editor_builders.make_doc_header))
-
-    import glob
+    env.CommandNoCache(
+        "#editor/doc_data_compressed.gen.h",
+        docs,
+        env.Run(editor_builders.make_doc_header, "Generating documentation header."),
+    )
 
     path = env.Dir(".").abspath
 
@@ -69,14 +72,18 @@ if env["tools"]:
     tlist = glob.glob(path + "/translations/*.po")
     env.Depends("#editor/editor_translations.gen.h", tlist)
     env.CommandNoCache(
-        "#editor/editor_translations.gen.h", tlist, run_in_subprocess(editor_builders.make_editor_translations_header)
+        "#editor/editor_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
     )
 
     # Documentation translations
     tlist = glob.glob(env.Dir("#doc").abspath + "/translations/*.po")
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
-        "#editor/doc_translations.gen.h", tlist, run_in_subprocess(editor_builders.make_doc_translations_header)
+        "#editor/doc_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
     )
 
     # Fonts
@@ -84,7 +91,11 @@ if env["tools"]:
     flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
     flist.sort()
     env.Depends("#editor/builtin_fonts.gen.h", flist)
-    env.CommandNoCache("#editor/builtin_fonts.gen.h", flist, run_in_subprocess(editor_builders.make_fonts_header))
+    env.CommandNoCache(
+        "#editor/builtin_fonts.gen.h",
+        flist,
+        env.Run(editor_builders.make_fonts_header, "Generating builtin fonts header."),
+    )
 
     env.add_source_files(env.editor_sources, "*.cpp")
 

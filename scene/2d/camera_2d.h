@@ -35,7 +35,6 @@
 #include "scene/main/window.h"
 
 class Camera2D : public Node2D {
-
 	GDCLASS(Camera2D, Node2D);
 
 public:
@@ -94,6 +93,8 @@ protected:
 	bool margin_drawing_enabled;
 
 	Camera2DProcessMode process_mode;
+
+	Size2 _get_camera_screen_size() const;
 
 protected:
 	virtual Transform2D get_camera_transform();

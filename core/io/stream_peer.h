@@ -47,7 +47,7 @@ protected:
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
 
-	bool big_endian;
+	bool big_endian = false;
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
@@ -89,27 +89,26 @@ public:
 	String get_utf8_string(int p_bytes = -1);
 	Variant get_var(bool p_allow_objects = false);
 
-	StreamPeer() { big_endian = false; }
+	StreamPeer() {}
 };
 
 class StreamPeerBuffer : public StreamPeer {
-
 	GDCLASS(StreamPeerBuffer, StreamPeer);
 
 	Vector<uint8_t> data;
-	int pointer;
+	int pointer = 0;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	Error put_data(const uint8_t *p_data, int p_bytes) override;
+	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
 
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const;
+	virtual int get_available_bytes() const override;
 
 	void seek(int p_pos);
 	int get_size() const;
@@ -123,7 +122,7 @@ public:
 
 	Ref<StreamPeerBuffer> duplicate() const;
 
-	StreamPeerBuffer();
+	StreamPeerBuffer() {}
 };
 
 #endif // STREAM_PEER_H

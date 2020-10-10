@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SyntaxHighlighter" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_line_syntax_highlighting" qualifiers="virtual">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="p_line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_update_cache" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_highlighting_cache">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_syntax_highlighting">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="p_line" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_text_edit">
+			<return type="TextEdit">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="update_cache">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -30,28 +30,58 @@
 
 #include "audio_driver_javascript.h"
 
+#include "core/project_settings.h"
+#include "godot_audio.h"
+
 #include <emscripten.h>
 
 AudioDriverJavaScript *AudioDriverJavaScript::singleton = nullptr;
 
-const char *AudioDriverJavaScript::get_name() const {
+bool AudioDriverJavaScript::is_available() {
+	return godot_audio_is_available() != 0;
+}
 
+const char *AudioDriverJavaScript::get_name() const {
 	return "JavaScript";
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_js_mix() {
+#ifndef NO_THREADS
+void AudioDriverJavaScript::_audio_thread_func(void *p_data) {
+	AudioDriverJavaScript *obj = static_cast<AudioDriverJavaScript *>(p_data);
+	while (!obj->quit) {
+		obj->lock();
+		if (!obj->needs_process) {
+			obj->unlock();
+			OS::get_singleton()->delay_usec(1000); // Give the browser some slack.
+			continue;
+		}
+		obj->_js_driver_process();
+		obj->needs_process = false;
+		obj->unlock();
+	}
+}
+#endif
 
-	AudioDriverJavaScript::singleton->mix_to_js();
+extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_start() {
+#ifndef NO_THREADS
+	AudioDriverJavaScript::singleton->lock();
+#else
+	AudioDriverJavaScript::singleton->_js_driver_process();
+#endif
+}
+
+extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_end() {
+#ifndef NO_THREADS
+	AudioDriverJavaScript::singleton->needs_process = true;
+	AudioDriverJavaScript::singleton->unlock();
+#endif
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_capture(float sample) {
-
 	AudioDriverJavaScript::singleton->process_capture(sample);
 }
 
-void AudioDriverJavaScript::mix_to_js() {
-
-	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
+void AudioDriverJavaScript::_js_driver_process() {
 	int sample_count = memarr_len(internal_buffer) / channel_count;
 	int32_t *stream_buffer = reinterpret_cast<int32_t *>(internal_buffer);
 	audio_server_process(sample_count, stream_buffer);
@@ -61,46 +91,17 @@ void AudioDriverJavaScript::mix_to_js() {
 }
 
 void AudioDriverJavaScript::process_capture(float sample) {
-
 	int32_t sample32 = int32_t(sample * 32768.f) * (1U << 16);
 	input_buffer_write(sample32);
 }
 
 Error AudioDriverJavaScript::init() {
+	mix_rate = GLOBAL_GET("audio/mix_rate");
+	int latency = GLOBAL_GET("audio/output_latency");
 
-	/* clang-format off */
-	_driver_id = EM_ASM_INT({
-		return Module.IDHandler.add({
-			'context': new (window.AudioContext || window.webkitAudioContext),
-			'input': null,
-			'stream': null,
-			'script': null
-		});
-	});
-	/* clang-format on */
-
-	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
-	/* clang-format off */
-	buffer_length = EM_ASM_INT({
-		var ref = Module.IDHandler.get($0);
-		var ctx = ref['context'];
-		var CHANNEL_COUNT = $1;
-
-		var channelCount = ctx.destination.channelCount;
-		var script = null;
-		try {
-			// Try letting the browser recommend a buffer length.
-			script = ctx.createScriptProcessor(0, 2, channelCount);
-		} catch (e) {
-			// ...otherwise, default to 4096.
-			script = ctx.createScriptProcessor(4096, 2, channelCount);
-		}
-		script.connect(ctx.destination);
-		ref['script'] = script;
-
-		return script.bufferSize;
-	}, _driver_id, channel_count);
-	/* clang-format on */
+	channel_count = godot_audio_init(mix_rate, latency);
+	buffer_length = closest_power_of_2((latency * mix_rate / 1000) * channel_count);
+	buffer_length = godot_audio_create_processor(buffer_length, channel_count);
 	if (!buffer_length) {
 		return FAILED;
 	}
@@ -111,161 +112,78 @@ Error AudioDriverJavaScript::init() {
 		internal_buffer = memnew_arr(float, buffer_length *channel_count);
 	}
 
-	return internal_buffer ? OK : ERR_OUT_OF_MEMORY;
+	if (!internal_buffer) {
+		return ERR_OUT_OF_MEMORY;
+	}
+	return OK;
 }
 
 void AudioDriverJavaScript::start() {
-
-	/* clang-format off */
-	EM_ASM({
-		const ref = Module.IDHandler.get($0);
-		var INTERNAL_BUFFER_PTR = $1;
-
-		var audioDriverMixFunction = cwrap('audio_driver_js_mix');
-		var audioDriverProcessCapture = cwrap('audio_driver_process_capture', null, ['number']);
-		ref['script'].onaudioprocess = function(audioProcessingEvent) {
-			audioDriverMixFunction();
-
-			var input = audioProcessingEvent.inputBuffer;
-			var output = audioProcessingEvent.outputBuffer;
-			var internalBuffer = HEAPF32.subarray(
-					INTERNAL_BUFFER_PTR / HEAPF32.BYTES_PER_ELEMENT,
-					INTERNAL_BUFFER_PTR / HEAPF32.BYTES_PER_ELEMENT + output.length * output.numberOfChannels);
-
-			for (var channel = 0; channel < output.numberOfChannels; channel++) {
-				var outputData = output.getChannelData(channel);
-				// Loop through samples.
-				for (var sample = 0; sample < outputData.length; sample++) {
-					outputData[sample] = internalBuffer[sample * output.numberOfChannels + channel];
-				}
-			}
-
-			if (ref['input']) {
-				var inputDataL = input.getChannelData(0);
-				var inputDataR = input.getChannelData(1);
-				for (var i = 0; i < inputDataL.length; i++) {
-					audioDriverProcessCapture(inputDataL[i]);
-					audioDriverProcessCapture(inputDataR[i]);
-				}
-			}
-		};
-	}, _driver_id, internal_buffer);
-	/* clang-format on */
+#ifndef NO_THREADS
+	thread = Thread::create(_audio_thread_func, this);
+#endif
+	godot_audio_start(internal_buffer);
 }
 
 void AudioDriverJavaScript::resume() {
-	/* clang-format off */
-	EM_ASM({
-		const ref = Module.IDHandler.get($0);
-		if (ref && ref['context'] && ref['context'].resume)
-			ref['context'].resume();
-	}, _driver_id);
-	/* clang-format on */
+	godot_audio_resume();
+}
+
+float AudioDriverJavaScript::get_latency() {
+	return godot_audio_get_latency();
 }
 
 int AudioDriverJavaScript::get_mix_rate() const {
-
-	/* clang-format off */
-	return EM_ASM_INT({
-		const ref = Module.IDHandler.get($0);
-		return ref && ref['context'] ? ref['context'].sampleRate : 0;
-	}, _driver_id);
-	/* clang-format on */
+	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
-
-	/* clang-format off */
-	return get_speaker_mode_by_total_channels(EM_ASM_INT({
-		const ref = Module.IDHandler.get($0);
-		return ref && ref['context'] ? ref['context'].destination.channelCount : 0;
-	}, _driver_id));
-	/* clang-format on */
+	return get_speaker_mode_by_total_channels(channel_count);
 }
 
-// No locking, as threads are not supported.
 void AudioDriverJavaScript::lock() {
+#ifndef NO_THREADS
+	mutex.lock();
+#endif
 }
 
 void AudioDriverJavaScript::unlock() {
+#ifndef NO_THREADS
+	mutex.unlock();
+#endif
+}
+
+void AudioDriverJavaScript::finish_async() {
+#ifndef NO_THREADS
+	quit = true; // Ask thread to quit.
+#endif
+	godot_audio_finish_async();
 }
 
 void AudioDriverJavaScript::finish() {
-
-	/* clang-format off */
-	EM_ASM({
-		Module.IDHandler.remove($0);
-	}, _driver_id);
-	/* clang-format on */
-
+#ifndef NO_THREADS
+	Thread::wait_to_finish(thread);
+	memdelete(thread);
+	thread = NULL;
+#endif
 	if (internal_buffer) {
 		memdelete_arr(internal_buffer);
 		internal_buffer = nullptr;
 	}
-	_driver_id = 0;
 }
 
 Error AudioDriverJavaScript::capture_start() {
-
+	godot_audio_capture_stop();
 	input_buffer_init(buffer_length);
-
-	/* clang-format off */
-	EM_ASM({
-		function gotMediaInput(stream) {
-			var ref = Module.IDHandler.get($0);
-			ref['stream'] = stream;
-			ref['input'] = ref['context'].createMediaStreamSource(stream);
-			ref['input'].connect(ref['script']);
-		}
-
-		function gotMediaInputError(e) {
-			out(e);
-		}
-
-		if (navigator.mediaDevices.getUserMedia) {
-			navigator.mediaDevices.getUserMedia({"audio": true}).then(gotMediaInput, gotMediaInputError);
-		} else {
-			if (!navigator.getUserMedia)
-				navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-			navigator.getUserMedia({"audio": true}, gotMediaInput, gotMediaInputError);
-		}
-	}, _driver_id);
-	/* clang-format on */
-
+	godot_audio_capture_start();
 	return OK;
 }
 
 Error AudioDriverJavaScript::capture_stop() {
-
-	/* clang-format off */
-	EM_ASM({
-		var ref = Module.IDHandler.get($0);
-		if (ref['stream']) {
-			const tracks = ref['stream'].getTracks();
-			for (var i = 0; i < tracks.length; i++) {
-				tracks[i].stop();
-			}
-			ref['stream'] = null;
-		}
-
-		if (ref['input']) {
-			ref['input'].disconnect();
-			ref['input'] = null;
-		}
-
-	}, _driver_id);
-	/* clang-format on */
-
 	input_buffer.clear();
-
 	return OK;
 }
 
 AudioDriverJavaScript::AudioDriverJavaScript() {
-
-	_driver_id = 0;
-	internal_buffer = nullptr;
-	buffer_length = 0;
-
 	singleton = this;
 }

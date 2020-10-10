@@ -69,7 +69,7 @@ public:
 	bool has_cached(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 
-	_ResourceLoader();
+	_ResourceLoader() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_ResourceLoader::ThreadLoadStatus);
@@ -98,7 +98,7 @@ public:
 	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	Vector<String> get_recognized_extensions(const RES &p_resource);
 
-	_ResourceSaver();
+	_ResourceSaver() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
@@ -199,9 +199,7 @@ public:
 	Dictionary get_datetime_from_unix_time(int64_t unix_time_val) const;
 	int64_t get_unix_time_from_datetime(Dictionary datetime) const;
 	Dictionary get_time_zone_info() const;
-	uint64_t get_unix_time() const;
-	uint64_t get_system_time_secs() const;
-	uint64_t get_system_time_msecs() const;
+	double get_unix_time() const;
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
@@ -210,7 +208,6 @@ public:
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
-	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
 
@@ -243,9 +240,14 @@ public:
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
 
+	int get_tablet_driver_count() const;
+	String get_tablet_driver_name(int p_driver) const;
+	String get_current_tablet_driver() const;
+	void set_current_tablet_driver(const String &p_driver);
+
 	static _OS *get_singleton() { return singleton; }
 
-	_OS();
+	_OS() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_OS::VideoDriver);
@@ -253,45 +255,31 @@ VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);
 VARIANT_ENUM_CAST(_OS::SystemDir);
 
-class _Geometry : public Object {
+class _Geometry2D : public Object {
+	GDCLASS(_Geometry2D, Object);
 
-	GDCLASS(_Geometry, Object);
-
-	static _Geometry *singleton;
+	static _Geometry2D *singleton;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static _Geometry *get_singleton();
-	Vector<Plane> build_box_planes(const Vector3 &p_extents);
-	Vector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	Vector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	Variant segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
-	Variant line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
-	Vector<Vector2> get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
-	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
-	Vector2 get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
-	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
-	Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
-	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
-	Variant ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
-	Variant segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
+	static _Geometry2D *get_singleton();
+	Variant segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
+	Variant line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
+	Vector<Vector2> get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
+	Vector2 get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
+	Vector2 get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
 	bool point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const;
 
-	Vector<Vector3> segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius);
-	Vector<Vector3> segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius);
-	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes);
 	bool is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius);
 	real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius);
-	int get_uv84_normal_bit(const Vector3 &p_vector);
 
 	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
 	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
-	Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points);
-	Vector<Point2> convex_hull_2d(const Vector<Point2> &p_points);
-	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
+	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
+	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
 
 	enum PolyBooleanOperation {
 		OPERATION_UNION,
@@ -300,14 +288,14 @@ public:
 		OPERATION_XOR
 	};
 	// 2D polygon boolean operations.
-	Array merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
-	Array clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
-	Array intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
-	Array exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
+	Array merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
+	Array clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
+	Array intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
+	Array exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
 
 	// 2D polyline vs polygon operations.
-	Array clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
-	Array intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
+	Array clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
+	Array intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
 
 	// 2D offset polygons/polylines.
 	enum PolyJoinType {
@@ -322,23 +310,51 @@ public:
 		END_SQUARE,
 		END_ROUND
 	};
-	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
-	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
+	Array offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
+	Array offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
-	_Geometry();
+	_Geometry2D() { singleton = this; }
 };
 
-VARIANT_ENUM_CAST(_Geometry::PolyBooleanOperation);
-VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
-VARIANT_ENUM_CAST(_Geometry::PolyEndType);
+VARIANT_ENUM_CAST(_Geometry2D::PolyBooleanOperation);
+VARIANT_ENUM_CAST(_Geometry2D::PolyJoinType);
+VARIANT_ENUM_CAST(_Geometry2D::PolyEndType);
+
+class _Geometry3D : public Object {
+	GDCLASS(_Geometry3D, Object);
+
+	static _Geometry3D *singleton;
+
+protected:
+	static void _bind_methods();
+
+public:
+	static _Geometry3D *get_singleton();
+	Vector<Plane> build_box_planes(const Vector3 &p_extents);
+	Vector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	Vector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
+	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
+	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
+	Variant ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
+	Variant segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
+
+	Vector<Vector3> segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius);
+	Vector<Vector3> segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius);
+	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes);
+
+	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
+
+	_Geometry3D() { singleton = this; }
+};
 
 class _File : public Reference {
-
 	GDCLASS(_File, Reference);
-	FileAccess *f;
-	bool eswap;
+
+	FileAccess *f = nullptr;
+	bool eswap = false;
 
 protected:
 	static void _bind_methods();
@@ -429,7 +445,7 @@ public:
 
 	uint64_t get_modified_time(const String &p_file) const;
 
-	_File();
+	_File() {}
 	virtual ~_File();
 };
 
@@ -437,15 +453,17 @@ VARIANT_ENUM_CAST(_File::ModeFlags);
 VARIANT_ENUM_CAST(_File::CompressionMode);
 
 class _Directory : public Reference {
-
 	GDCLASS(_Directory, Reference);
 	DirAccess *d;
+	bool dir_open = false;
 
 protected:
 	static void _bind_methods();
 
 public:
 	Error open(const String &p_path);
+
+	bool is_open() const;
 
 	Error list_dir_begin(bool p_skip_navigational = false, bool p_skip_hidden = false); // This starts dir listing.
 	String get_next();
@@ -481,7 +499,6 @@ private:
 };
 
 class _Marshalls : public Object {
-
 	GDCLASS(_Marshalls, Object);
 
 	static _Marshalls *singleton;
@@ -506,7 +523,6 @@ public:
 };
 
 class _Mutex : public Reference {
-
 	GDCLASS(_Mutex, Reference);
 	Mutex mutex;
 
@@ -519,7 +535,6 @@ public:
 };
 
 class _Semaphore : public Reference {
-
 	GDCLASS(_Semaphore, Reference);
 	Semaphore semaphore;
 
@@ -532,16 +547,15 @@ public:
 };
 
 class _Thread : public Reference {
-
 	GDCLASS(_Thread, Reference);
 
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
-	Object *target_instance;
+	volatile bool active = false;
+	Object *target_instance = nullptr;
 	StringName target_method;
-	Thread *thread;
+	Thread *thread = nullptr;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
@@ -559,14 +573,13 @@ public:
 	bool is_active() const;
 	Variant wait_to_finish();
 
-	_Thread();
+	_Thread() {}
 	~_Thread();
 };
 
 VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
-
 	GDCLASS(_ClassDB, Object);
 
 protected:
@@ -600,8 +613,8 @@ public:
 
 	bool is_class_enabled(StringName p_class) const;
 
-	_ClassDB();
-	~_ClassDB();
+	_ClassDB() {}
+	~_ClassDB() {}
 };
 
 class _Engine : public Object {
@@ -649,7 +662,7 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
-	_Engine();
+	_Engine() { singleton = this; }
 };
 
 class _JSON;
@@ -661,7 +674,7 @@ class JSONParseResult : public Reference {
 
 	Error error;
 	String error_string;
-	int error_line;
+	int error_line = -1;
 
 	Variant result;
 
@@ -681,8 +694,7 @@ public:
 	void set_result(const Variant &p_result);
 	Variant get_result() const;
 
-	JSONParseResult() :
-			error_line(-1) {}
+	JSONParseResult() {}
 };
 
 class _JSON : public Object {
@@ -698,7 +710,61 @@ public:
 	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
-	_JSON();
+	_JSON() { singleton = this; }
+};
+
+class _EngineDebugger : public Object {
+	GDCLASS(_EngineDebugger, Object);
+
+	class ProfilerCallable {
+		friend class _EngineDebugger;
+
+		Callable callable_toggle;
+		Callable callable_add;
+		Callable callable_tick;
+
+	public:
+		ProfilerCallable() {}
+
+		ProfilerCallable(const Callable &p_toggle, const Callable &p_add, const Callable &p_tick) {
+			callable_toggle = p_toggle;
+			callable_add = p_add;
+			callable_tick = p_tick;
+		}
+	};
+
+	Map<StringName, Callable> captures;
+	Map<StringName, ProfilerCallable> profilers;
+
+protected:
+	static void _bind_methods();
+	static _EngineDebugger *singleton;
+
+public:
+	static _EngineDebugger *get_singleton() { return singleton; }
+
+	bool is_active();
+
+	void register_profiler(const StringName &p_name, const Callable &p_toggle, const Callable &p_add, const Callable &p_tick);
+	void unregister_profiler(const StringName &p_name);
+	bool is_profiling(const StringName &p_name);
+	bool has_profiler(const StringName &p_name);
+	void profiler_add_frame_data(const StringName &p_name, const Array &p_data);
+	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
+
+	void register_message_capture(const StringName &p_name, const Callable &p_callable);
+	void unregister_message_capture(const StringName &p_name);
+	bool has_capture(const StringName &p_name);
+
+	void send_message(const String &p_msg, const Array &p_data);
+
+	static void call_toggle(void *p_user, bool p_enable, const Array &p_opts);
+	static void call_add(void *p_user, const Array &p_data);
+	static void call_tick(void *p_user, float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+
+	_EngineDebugger() { singleton = this; }
+	~_EngineDebugger();
 };
 
 #endif // CORE_BIND_H

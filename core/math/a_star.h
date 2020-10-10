@@ -41,23 +41,19 @@
 */
 
 class AStar : public Reference {
-
 	GDCLASS(AStar, Reference);
 	friend class AStar2D;
 
 	struct Point {
-
-		Point() :
-				neighbours(4u),
-				unlinked_neighbours(4u) {}
+		Point() {}
 
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
 		bool enabled;
 
-		OAHashMap<int, Point *> neighbours;
-		OAHashMap<int, Point *> unlinked_neighbours;
+		OAHashMap<int, Point *> neighbours = 4u;
+		OAHashMap<int, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
 		Point *prev_point;
@@ -85,7 +81,7 @@ class AStar : public Reference {
 				int32_t u;
 				int32_t v;
 			};
-			uint64_t key;
+			uint64_t key = 0;
 		};
 
 		enum {
@@ -94,13 +90,11 @@ class AStar : public Reference {
 			BACKWARD = 2,
 			BIDIRECTIONAL = FORWARD | BACKWARD
 		};
-		unsigned char direction;
+		unsigned char direction = NONE;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() {
-			key = 0;
-			direction = NONE;
-		}
+
+		Segment() {}
 		Segment(int p_from, int p_to) {
 			if (p_from < p_to) {
 				u = p_from;
@@ -114,8 +108,8 @@ class AStar : public Reference {
 		}
 	};
 
-	int last_free_id;
-	uint64_t pass;
+	int last_free_id = 0;
+	uint64_t pass = 1;
 
 	OAHashMap<int, Point *> points;
 	Set<Segment> segments;
@@ -159,7 +153,7 @@ public:
 	Vector<Vector3> get_point_path(int p_from_id, int p_to_id);
 	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar();
+	AStar() {}
 	~AStar();
 };
 
@@ -206,8 +200,8 @@ public:
 	Vector<Vector2> get_point_path(int p_from_id, int p_to_id);
 	Vector<int> get_id_path(int p_from_id, int p_to_id);
 
-	AStar2D();
-	~AStar2D();
+	AStar2D() {}
+	~AStar2D() {}
 };
 
 #endif // A_STAR_H

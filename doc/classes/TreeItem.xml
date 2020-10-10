@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
+		You can remove a [TreeItem] by using [method Object.free].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -117,7 +118,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the TreeItem's child items.
+				Returns the TreeItem's first child item or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_custom_bg_color" qualifiers="const">
@@ -195,7 +196,7 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the next TreeItem in the tree.
+				Returns the next TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_next_visible">
@@ -204,7 +205,7 @@
 			<argument index="0" name="wrap" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the next visible TreeItem in the tree.
+				Returns the next visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the first visible element in the tree when called on the last visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -212,14 +213,14 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the parent TreeItem.
+				Returns the parent TreeItem or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev">
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the previous TreeItem in the tree.
+				Returns the previous TreeItem in the tree or a null object if there is none.
 			</description>
 		</method>
 		<method name="get_prev_visible">
@@ -228,7 +229,7 @@
 			<argument index="0" name="wrap" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the previous visible TreeItem in the tree.
+				Returns the previous visible TreeItem in the tree or a null object if there is none.
 				If [code]wrap[/code] is enabled, the method will wrap around to the last visible element in the tree when called on the first visible element, otherwise it returns [code]null[/code].
 			</description>
 		</method>
@@ -242,6 +243,14 @@
 		</method>
 		<method name="get_range_config">
 			<return type="Dictionary">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_suffix" qualifiers="const">
+			<return type="String">
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
@@ -350,7 +359,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
-				Removes the given child TreeItem.
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
 		</method>
 		<method name="select">
@@ -569,6 +578,16 @@
 			</argument>
 			<description>
 				If [code]true[/code], the given column is selectable.
+			</description>
+		</method>
+		<method name="set_suffix">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_text">

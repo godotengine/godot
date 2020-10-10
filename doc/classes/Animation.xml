@@ -5,19 +5,30 @@
 	</brief_description>
 	<description>
 		An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		# This creates an animation that makes the node "Enemy" move to the right by
-		# 100 pixels in 1 second.
+		# 100 pixels in 0.5 seconds.
 		var animation = Animation.new()
 		var track_index = animation.add_track(Animation.TYPE_VALUE)
-		animation.track_set_path(track_index, "Enemy:position.x")
+		animation.track_set_path(track_index, "Enemy:position:x")
 		animation.track_insert_key(track_index, 0.0, 0)
 		animation.track_insert_key(track_index, 0.5, 100)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		// This creates an animation that makes the node "Enemy" move to the right by
+		// 100 pixels in 0.5 seconds.
+		var animation = new Animation();
+		int trackIndex = animation.AddTrack(Animation.TrackType.Value);
+		animation.TrackSetPath(trackIndex, "Enemy:position:x");
+		animation.TrackInsertKey(trackIndex, 0.0f, 0);
+		animation.TrackInsertKey(trackIndex, 0.5f, 100);
+		[/csharp]
+		[/codeblocks]
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="Animation tutorial index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_track">
@@ -668,6 +679,17 @@
 			</argument>
 			<description>
 				Returns the update mode of a value track.
+			</description>
+		</method>
+		<method name="value_track_interpolate" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="track_idx" type="int">
+			</argument>
+			<argument index="1" name="time_sec" type="float">
+			</argument>
+			<description>
+				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">

@@ -31,15 +31,9 @@
 #ifndef WEBSOCKETMACTOS_H
 #define WEBSOCKETMACTOS_H
 
-#define WSC_IN_BUF "network/limits/websocket_client/max_in_buffer_kb"
-#define WSC_IN_PKT "network/limits/websocket_client/max_in_packets"
-#define WSC_OUT_BUF "network/limits/websocket_client/max_out_buffer_kb"
-#define WSC_OUT_PKT "network/limits/websocket_client/max_out_packets"
-
-#define WSS_IN_BUF "network/limits/websocket_server/max_in_buffer_kb"
-#define WSS_IN_PKT "network/limits/websocket_server/max_in_packets"
-#define WSS_OUT_BUF "network/limits/websocket_server/max_out_buffer_kb"
-#define WSS_OUT_PKT "network/limits/websocket_server/max_out_packets"
+// Defaults per peer buffers, 1024 packets with a shared 65536 bytes payload.
+#define DEF_PKT_SHIFT 10
+#define DEF_BUF_SHIFT 16
 
 /* clang-format off */
 #define GDCICLASS(CNAME) \

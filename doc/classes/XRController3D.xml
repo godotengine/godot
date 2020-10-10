@@ -9,7 +9,7 @@
 		The position of the controller node is automatically updated by the [XRServer]. This makes this node ideal to add child nodes to visualize the controller.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_controller_name" qualifiers="const">
@@ -62,7 +62,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoystickList], in particular the [code]JOY_VR_*[/code] constants.
+				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButtonList].
 			</description>
 		</method>
 	</methods>

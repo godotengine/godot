@@ -38,7 +38,6 @@
 #include "skeleton_3d.h"
 
 class PhysicsBody3D : public CollisionObject3D {
-
 	GDCLASS(PhysicsBody3D, CollisionObject3D);
 
 	uint32_t collision_layer;
@@ -68,7 +67,7 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	Array get_collision_exceptions();
+	TypedArray<PhysicsBody3D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
@@ -76,7 +75,6 @@ public:
 };
 
 class StaticBody3D : public PhysicsBody3D {
-
 	GDCLASS(StaticBody3D, PhysicsBody3D);
 
 	Vector3 constant_linear_velocity;
@@ -105,7 +103,6 @@ private:
 };
 
 class RigidBody3D : public PhysicsBody3D {
-
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 
 public:
@@ -126,6 +123,7 @@ protected:
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
+	Basis inverse_inertia_tensor;
 	real_t gravity_scale;
 	real_t linear_damp;
 	real_t angular_damp;
@@ -138,15 +136,15 @@ protected:
 	bool custom_integrator;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return local_shape < p_sp.local_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -157,19 +155,16 @@ protected:
 		}
 	};
 	struct RigidBody3D_RemoveAction {
-
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
 		//int rc;
 		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -191,7 +186,7 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
-	virtual float get_inverse_mass() const { return 1.0 / mass; }
+	virtual float get_inverse_mass() const override { return 1.0 / mass; }
 
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
@@ -200,12 +195,14 @@ public:
 	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_linear_velocity(const Vector3 &p_velocity);
-	Vector3 get_linear_velocity() const;
+	Vector3 get_linear_velocity() const override;
 
 	void set_axis_velocity(const Vector3 &p_axis);
 
 	void set_angular_velocity(const Vector3 &p_velocity);
-	Vector3 get_angular_velocity() const;
+	Vector3 get_angular_velocity() const override;
+
+	Basis get_inverse_inertia_tensor();
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
@@ -240,14 +237,14 @@ public:
 	Array get_colliding_bodies() const;
 
 	void add_central_force(const Vector3 &p_force);
-	void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
 	void add_torque(const Vector3 &p_torque);
 
 	void apply_central_impulse(const Vector3 &p_impulse);
-	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	RigidBody3D();
 	~RigidBody3D();
@@ -261,7 +258,6 @@ VARIANT_ENUM_CAST(RigidBody3D::Mode);
 class KinematicCollision3D;
 
 class KinematicBody3D : public PhysicsBody3D {
-
 	GDCLASS(KinematicBody3D, PhysicsBody3D);
 
 public:
@@ -308,8 +304,8 @@ protected:
 	virtual void _direct_state_changed(Object *p_state);
 
 public:
-	virtual Vector3 get_linear_velocity() const;
-	virtual Vector3 get_angular_velocity() const;
+	virtual Vector3 get_linear_velocity() const override;
+	virtual Vector3 get_angular_velocity() const override;
 
 	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
@@ -338,7 +334,6 @@ public:
 };
 
 class KinematicCollision3D : public Reference {
-
 	GDCLASS(KinematicCollision3D, Reference);
 
 	KinematicBody3D *owner;
@@ -365,7 +360,6 @@ public:
 };
 
 class PhysicalBone3D : public PhysicsBody3D {
-
 	GDCLASS(PhysicalBone3D, PhysicsBody3D);
 
 public:
@@ -396,14 +390,11 @@ public:
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
-		real_t bias;
-		real_t damping;
-		real_t impulse_clamp;
+		real_t bias = 0.3;
+		real_t damping = 1.;
+		real_t impulse_clamp = 0;
 
-		PinJointData() :
-				bias(0.3),
-				damping(1.),
-				impulse_clamp(0) {}
+		PinJointData() {}
 	};
 
 	struct ConeJointData : public JointData {
@@ -414,17 +405,13 @@ public:
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
 		real_t swing_span;
-		real_t twist_span;
-		real_t bias;
-		real_t softness;
-		real_t relaxation;
+		real_t twist_span = Math_PI;
+		real_t bias = 0.3;
+		real_t softness = 0.8;
+		real_t relaxation = 1.;
 
 		ConeJointData() :
-				swing_span(Math_PI * 0.25),
-				twist_span(Math_PI),
-				bias(0.3),
-				softness(0.8),
-				relaxation(1.) {}
+				swing_span(Math_PI * 0.25) {}
 	};
 
 	struct HingeJointData : public JointData {
@@ -434,20 +421,17 @@ public:
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
-		bool angular_limit_enabled;
+		bool angular_limit_enabled = false;
 		real_t angular_limit_upper;
 		real_t angular_limit_lower;
-		real_t angular_limit_bias;
-		real_t angular_limit_softness;
-		real_t angular_limit_relaxation;
+		real_t angular_limit_bias = 0.3;
+		real_t angular_limit_softness = 0.9;
+		real_t angular_limit_relaxation = 1.;
 
 		HingeJointData() :
-				angular_limit_enabled(false),
+
 				angular_limit_upper(Math_PI * 0.5),
-				angular_limit_lower(-Math_PI * 0.5),
-				angular_limit_bias(0.3),
-				angular_limit_softness(0.9),
-				angular_limit_relaxation(1.) {}
+				angular_limit_lower(-Math_PI * 0.5) {}
 	};
 
 	struct SliderJointData : public JointData {
@@ -457,76 +441,45 @@ public:
 		virtual bool _get(const StringName &p_name, Variant &r_ret) const;
 		virtual void _get_property_list(List<PropertyInfo> *p_list) const;
 
-		real_t linear_limit_upper;
-		real_t linear_limit_lower;
-		real_t linear_limit_softness;
-		real_t linear_limit_restitution;
-		real_t linear_limit_damping;
-		real_t angular_limit_upper;
-		real_t angular_limit_lower;
-		real_t angular_limit_softness;
-		real_t angular_limit_restitution;
-		real_t angular_limit_damping;
+		real_t linear_limit_upper = 1.;
+		real_t linear_limit_lower = -1.;
+		real_t linear_limit_softness = 1.;
+		real_t linear_limit_restitution = 0.7;
+		real_t linear_limit_damping = 1.;
+		real_t angular_limit_upper = 0;
+		real_t angular_limit_lower = 0;
+		real_t angular_limit_softness = 1.;
+		real_t angular_limit_restitution = 0.7;
+		real_t angular_limit_damping = 1.;
 
-		SliderJointData() :
-				linear_limit_upper(1.),
-				linear_limit_lower(-1.),
-				linear_limit_softness(1.),
-				linear_limit_restitution(0.7),
-				linear_limit_damping(1.),
-				angular_limit_upper(0),
-				angular_limit_lower(0),
-				angular_limit_softness(1.),
-				angular_limit_restitution(0.7),
-				angular_limit_damping(1.) {}
+		SliderJointData() {}
 	};
 
 	struct SixDOFJointData : public JointData {
 		struct SixDOFAxisData {
-			bool linear_limit_enabled;
-			real_t linear_limit_upper;
-			real_t linear_limit_lower;
-			real_t linear_limit_softness;
-			real_t linear_restitution;
-			real_t linear_damping;
-			bool linear_spring_enabled;
-			real_t linear_spring_stiffness;
-			real_t linear_spring_damping;
-			real_t linear_equilibrium_point;
-			bool angular_limit_enabled;
-			real_t angular_limit_upper;
-			real_t angular_limit_lower;
-			real_t angular_limit_softness;
-			real_t angular_restitution;
-			real_t angular_damping;
-			real_t erp;
-			bool angular_spring_enabled;
-			real_t angular_spring_stiffness;
-			real_t angular_spring_damping;
-			real_t angular_equilibrium_point;
+			bool linear_limit_enabled = true;
+			real_t linear_limit_upper = 0;
+			real_t linear_limit_lower = 0;
+			real_t linear_limit_softness = 0.7;
+			real_t linear_restitution = 0.5;
+			real_t linear_damping = 1.;
+			bool linear_spring_enabled = false;
+			real_t linear_spring_stiffness = 0;
+			real_t linear_spring_damping = 0;
+			real_t linear_equilibrium_point = 0;
+			bool angular_limit_enabled = true;
+			real_t angular_limit_upper = 0;
+			real_t angular_limit_lower = 0;
+			real_t angular_limit_softness = 0.5;
+			real_t angular_restitution = 0;
+			real_t angular_damping = 1.;
+			real_t erp = 0.5;
+			bool angular_spring_enabled = false;
+			real_t angular_spring_stiffness = 0;
+			real_t angular_spring_damping = 0.;
+			real_t angular_equilibrium_point = 0;
 
-			SixDOFAxisData() :
-					linear_limit_enabled(true),
-					linear_limit_upper(0),
-					linear_limit_lower(0),
-					linear_limit_softness(0.7),
-					linear_restitution(0.5),
-					linear_damping(1.),
-					linear_spring_enabled(false),
-					linear_spring_stiffness(0),
-					linear_spring_damping(0),
-					linear_equilibrium_point(0),
-					angular_limit_enabled(true),
-					angular_limit_upper(0),
-					angular_limit_lower(0),
-					angular_limit_softness(0.5),
-					angular_restitution(0),
-					angular_damping(1.),
-					erp(0.5),
-					angular_spring_enabled(false),
-					angular_spring_stiffness(0),
-					angular_spring_damping(0.),
-					angular_equilibrium_point(0) {}
+			SixDOFAxisData() {}
 		};
 
 		virtual JointType get_joint_type() { return JOINT_TYPE_6DOF; }
@@ -543,28 +496,28 @@ public:
 private:
 #ifdef TOOLS_ENABLED
 	// if false gizmo move body
-	bool gizmo_move_joint;
+	bool gizmo_move_joint = false;
 #endif
 
-	JointData *joint_data;
+	JointData *joint_data = nullptr;
 	Transform joint_offset;
 	RID joint;
 
-	Skeleton3D *parent_skeleton;
+	Skeleton3D *parent_skeleton = nullptr;
 	Transform body_offset;
 	Transform body_offset_inverse;
-	bool simulate_physics;
-	bool _internal_simulate_physics;
-	int bone_id;
+	bool simulate_physics = false;
+	bool _internal_simulate_physics = false;
+	int bone_id = -1;
 
 	String bone_name;
-	real_t bounce;
-	real_t mass;
-	real_t friction;
-	real_t gravity_scale;
-	real_t linear_damp;
-	real_t angular_damp;
-	bool can_sleep;
+	real_t bounce = 0;
+	real_t mass = 1;
+	real_t friction = 1;
+	real_t gravity_scale = 1;
+	real_t linear_damp = -1;
+	real_t angular_damp = -1;
+	bool can_sleep = true;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -588,8 +541,8 @@ public:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Transform get_global_gizmo_transform() const;
-	virtual Transform get_local_gizmo_transform() const;
+	virtual Transform get_global_gizmo_transform() const override;
+	virtual Transform get_local_gizmo_transform() const override;
 #endif
 
 	const JointData *get_joint_data() const;
@@ -647,7 +600,7 @@ public:
 	bool get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const;
 
 	void apply_central_impulse(const Vector3 &p_impulse);
-	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
+	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 
 	void reset_physics_simulation_state();
 	void reset_to_rest_position();

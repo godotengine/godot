@@ -34,9 +34,9 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/math/delaunay.h"
+#include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
@@ -48,9 +48,9 @@
 #include "scene/scene_string_names.h"
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
-
-	if (tree == p_tree)
+	if (tree == p_tree) {
 		return;
+	}
 
 	tree = p_tree;
 
@@ -64,7 +64,6 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 }
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
-
 	edited_path.clear();
 	for (int i = 0; i <= p_path; i++) {
 		edited_path.push_back(button_path[i]);
@@ -80,7 +79,7 @@ void AnimationTreeEditor::_update_path() {
 	group.instance();
 
 	Button *b = memnew(Button);
-	b->set_text("root");
+	b->set_text("Root");
 	b->set_toggle_mode(true);
 	b->set_button_group(group);
 	b->set_pressed(true);
@@ -100,7 +99,6 @@ void AnimationTreeEditor::_update_path() {
 }
 
 void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
-
 	button_path.clear();
 
 	Ref<AnimationNode> node = tree->get_tree_root();
@@ -109,7 +107,6 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 		current_root = node->get_instance_id();
 
 		for (int i = 0; i < p_path.size(); i++) {
-
 			Ref<AnimationNode> child = node->get_child_by_name(p_path[i]);
 			ERR_BREAK(child.is_null());
 			node = child;
@@ -140,7 +137,6 @@ Vector<String> AnimationTreeEditor::get_edited_path() const {
 }
 
 void AnimationTreeEditor::enter_editor(const String &p_path) {
-
 	Vector<String> path = edited_path;
 	path.push_back(p_path);
 	edit_path(path);
@@ -204,19 +200,20 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 Vector<String> AnimationTreeEditor::get_animation_list() {
-
 	if (!singleton->is_visible()) {
 		return Vector<String>();
 	}
 
 	AnimationTree *tree = singleton->tree;
-	if (!tree || !tree->has_node(tree->get_animation_player()))
+	if (!tree || !tree->has_node(tree->get_animation_player())) {
 		return Vector<String>();
+	}
 
 	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(tree->get_node(tree->get_animation_player()));
 
-	if (!ap)
+	if (!ap) {
 		return Vector<String>();
+	}
 
 	List<StringName> anims;
 	ap->get_animation_list(&anims);
@@ -229,7 +226,6 @@ Vector<String> AnimationTreeEditor::get_animation_list() {
 }
 
 AnimationTreeEditor::AnimationTreeEditor() {
-
 	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
 	path_edit = memnew(ScrollContainer);
 	add_child(path_edit);
@@ -242,7 +238,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	add_child(memnew(HSeparator));
 
 	singleton = this;
-	editor_base = memnew(PanelContainer);
+	editor_base = memnew(MarginContainer);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(editor_base);
 
@@ -253,17 +249,14 @@ AnimationTreeEditor::AnimationTreeEditor() {
 }
 
 void AnimationTreeEditorPlugin::edit(Object *p_object) {
-
 	anim_tree_editor->edit(Object::cast_to<AnimationTree>(p_object));
 }
 
 bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("AnimationTree");
 }
 
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		//editor->hide_animation_player_editors();
 		//editor->animation_panel_make_visible(true);
@@ -271,16 +264,15 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
-
-		if (anim_tree_editor->is_visible_in_tree())
+		if (anim_tree_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 		button->hide();
 		anim_tree_editor->set_process(false);
 	}
 }
 
 AnimationTreeEditorPlugin::AnimationTreeEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);

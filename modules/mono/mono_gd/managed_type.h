@@ -36,18 +36,15 @@
 #include "gd_mono_header.h"
 
 struct ManagedType {
-	int type_encoding;
-	GDMonoClass *type_class;
+	int type_encoding = 0;
+	GDMonoClass *type_class = nullptr;
 
 	static ManagedType from_class(GDMonoClass *p_class);
 	static ManagedType from_class(MonoClass *p_mono_class);
 	static ManagedType from_type(MonoType *p_mono_type);
 	static ManagedType from_reftype(MonoReflectionType *p_mono_reftype);
 
-	ManagedType() :
-			type_encoding(0),
-			type_class(nullptr) {
-	}
+	ManagedType() {}
 
 	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
 			type_encoding(p_type_encoding),

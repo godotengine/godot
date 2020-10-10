@@ -44,9 +44,9 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
 			</argument>
-			<argument index="1" name="rect" type="int">
+			<argument index="1" name="flags" type="int">
 			</argument>
-			<argument index="2" name="arg2" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="2" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
 			</argument>
 			<description>
 			</description>
@@ -127,12 +127,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_latin_keyboard_variant" qualifiers="const">
-			<return type="int" enum="DisplayServer.LatinKeyboardVariant">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="String">
 			</return>
@@ -145,7 +139,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_swap_ok_cancel">
+		<method name="get_swap_cancel_ok">
 			<return type="bool">
 			</return>
 			<description>
@@ -389,6 +383,52 @@
 			<description>
 			</description>
 		</method>
+		<method name="keyboard_get_current_layout" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns active keyboard layout index.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of keyboard layouts.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_language" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_get_layout_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Returns the localized name of the keyboard layout at position [code]index[/code].
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="keyboard_set_current_layout">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Sets active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="mouse_get_absolute_position" qualifiers="const">
 			<return type="Vector2i">
 			</return>
@@ -481,6 +521,27 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]SCREEN_OF_MAIN_WINDOW[/code] (the default value), a screen with the main window will be used.
+				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
+				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
+				[codeblock]
+				   ldpi - 120 dpi
+				   mdpi - 160 dpi
+				   hdpi - 240 dpi
+				  xhdpi - 320 dpi
+				 xxhdpi - 480 dpi
+				xxxhdpi - 640 dpi
+				[/codeblock]
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows. Returns [code]72[/code] on unsupported platforms.
+			</description>
+		</method>
+		<method name="screen_get_max_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Return the greatest scale factor of all screens.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -505,6 +566,9 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
+				Return the scale factor of the specified screen by index.
+				[b]Note:[/b] On macOS returned value is [code]2.0[/code] for hiDPI (Retina) screen, and [code]1.0[/code] for all other cases.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -575,12 +639,14 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
 			<return type="void">
 			</return>
 			<description>
+				Hides the virtual keyboard if it is shown, does nothing otherwise.
 			</description>
 		</method>
 		<method name="virtual_keyboard_show">
@@ -590,9 +656,23 @@
 			</argument>
 			<argument index="1" name="position" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
 			</argument>
-			<argument index="2" name="max_length" type="int" default="-1">
+			<argument index="2" name="multiline" type="bool" default="false">
+			</argument>
+			<argument index="3" name="max_length" type="int" default="-1">
+			</argument>
+			<argument index="4" name="cursor_start" type="int" default="-1">
+			</argument>
+			<argument index="5" name="cursor_end" type="int" default="-1">
 			</argument>
 			<description>
+				Shows the virtual keyboard if the platform has one.
+				[code]existing_text[/code] parameter is useful for implementing your own [LineEdit] or [TextEdit], as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
+				[code]position[/code] parameter is the screen space [Rect2] of the edited text.
+				[code]multiline[/code] parameter needs to be set to [code]true[/code] to be able to enter multiple lines of text, as in [TextEdit].
+				[code]max_length[/code] limits the number of characters that can be entered if different from [code]-1[/code].
+				[code]cursor_start[/code] can optionally define the current text cursor position if [code]cursor_end[/code] is not set.
+				[code]cursor_start[/code] and [code]cursor_end[/code] can optionally define the current text selection.
+				[b]Note:[/b] This method is implemented on Android, iOS and UWP.
 			</description>
 		</method>
 		<method name="vsync_is_enabled" qualifiers="const">
@@ -833,6 +913,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="window_set_mouse_passthrough">
+			<return type="void">
+			</return>
+			<argument index="0" name="region" type="PackedVector2Array">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+				Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+				Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+				[codeblock]
+				# Set region, using Path2D node.
+				DisplayServer.window_set_mouse_passthrough($Path2D.curve.get_baked_points())
+
+				# Set region, using Polygon2D node.
+				DisplayServer.window_set_mouse_passthrough($Polygon2D.polygon)
+
+				# Reset region to default.
+				DisplayServer.window_set_mouse_passthrough([])
+				[/codeblock]
+				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux and macOS it is.
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+			</description>
+		</method>
 		<method name="window_set_position">
 			<return type="void">
 			</return>
@@ -1016,20 +1120,6 @@
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="5" enum="WindowFlags">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QWERTY" value="0" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QWERTZ" value="1" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_AZERTY" value="2" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_QZERTY" value="3" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_DVORAK" value="4" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_NEO" value="5" enum="LatinKeyboardVariant">
-		</constant>
-		<constant name="LATIN_KEYBOARD_COLEMAK" value="6" enum="LatinKeyboardVariant">
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
 		</constant>

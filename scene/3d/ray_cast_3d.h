@@ -34,7 +34,6 @@
 #include "scene/3d/node_3d.h"
 
 class RayCast3D : public Node3D {
-
 	GDCLASS(RayCast3D, Node3D);
 
 	bool enabled;
@@ -44,7 +43,7 @@ class RayCast3D : public Node3D {
 	Vector3 collision_point;
 	Vector3 collision_normal;
 
-	Vector3 cast_to;
+	Vector3 target_position;
 	Set<RID> exclude;
 
 	uint32_t collision_mask;
@@ -75,8 +74,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_cast_to(const Vector3 &p_point);
-	Vector3 get_cast_to() const;
+	void set_target_position(const Vector3 &p_point);
+	Vector3 get_target_position() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;

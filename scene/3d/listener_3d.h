@@ -35,7 +35,6 @@
 #include "scene/main/window.h"
 
 class Listener3D : public Node3D {
-
 	GDCLASS(Listener3D, Node3D);
 
 private:

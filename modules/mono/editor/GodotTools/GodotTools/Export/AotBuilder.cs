@@ -120,7 +120,7 @@ namespace GodotTools.Export
                 string assemblyPath = assembly.Value;
 
                 string outputFileExtension = platform == OS.Platforms.Windows ? ".dll" :
-                    platform == OS.Platforms.OSX ? ".dylib" :
+                    platform == OS.Platforms.MacOS ? ".dylib" :
                     ".so";
 
                 string outputFileName = assemblyName + ".dll" + outputFileExtension;
@@ -132,7 +132,7 @@ namespace GodotTools.Export
 
                 ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
-                if (platform == OS.Platforms.OSX)
+                if (platform == OS.Platforms.MacOS)
                 {
                     exporter.AddSharedObject(tempOutputFilePath, tags: null);
                 }
@@ -328,7 +328,7 @@ MONO_AOT_MODE_LAST = 1000,
             if (lipoExitCode != 0)
                 throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
 
-            // TODO: Add the AOT lib and interpreter libs as device only to supress warnings when targeting the simulator
+            // TODO: Add the AOT lib and interpreter libs as device only to suppress warnings when targeting the simulator
 
             // Add the fat AOT static library to the Xcode project
             exporter.AddIosProjectStaticLib(fatOutputFilePath);
@@ -581,13 +581,13 @@ MONO_AOT_MODE_LAST = 1000,
                         string arch = bits == "64" ? "x86_64" : "i686";
                         return $"windows-{arch}";
                     }
-                case OS.Platforms.OSX:
+                case OS.Platforms.MacOS:
                     {
                         Debug.Assert(bits == null || bits == "64");
                         string arch = "x86_64";
                         return $"{platform}-{arch}";
                     }
-                case OS.Platforms.X11:
+                case OS.Platforms.LinuxBSD:
                 case OS.Platforms.Server:
                     {
                         string arch = bits == "64" ? "x86_64" : "i686";

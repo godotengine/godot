@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		The editor inspector is by default located on the right-hand side of the editor. It's used to edit the properties of the selected node. For example, you can select a node such as the Sprite2D then edit its transform through the inspector tool. The editor inspector is an essential tool in the game development workflow.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_inspector].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,6 +14,8 @@
 			<return type="void">
 			</return>
 			<description>
+				Refreshes the inspector.
+				[b]Note:[/b] To save on CPU resources, calling this method will do nothing if the time specified in [code]docks/property_editor/auto_refresh_interval[/code] editor setting hasn't passed yet since this method was last called. (By default, this interval is set to 0.3 seconds.)
 			</description>
 		</method>
 	</methods>
@@ -24,24 +27,35 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Emitted when the Edit button of an [Object] has been pressed in the inspector. This is mainly used in the remote scene tree inspector.
+			</description>
+		</signal>
+		<signal name="property_deleted">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+				Emitted when a property is removed from the inspector.
 			</description>
 		</signal>
 		<signal name="property_edited">
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
+				Emitted when a property is edited in the inspector.
 			</description>
 		</signal>
 		<signal name="property_keyed">
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
+				Emitted when a property is keyed in the inspector. Properties can be keyed by clicking the "key" icon next to a property when the Animation panel is toggled.
 			</description>
 		</signal>
 		<signal name="property_selected">
 			<argument index="0" name="property" type="String">
 			</argument>
 			<description>
+				Emitted when a property is selected in the inspector.
 			</description>
 		</signal>
 		<signal name="property_toggled">
@@ -50,6 +64,8 @@
 			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
+				Emitted when a boolean property is toggled in the inspector.
+				[b]Note:[/b] This signal is never emitted if the internal [code]autoclear[/code] property enabled. Since this property is always enabled in the editor inspector, this signal is never emitted by the editor itself.
 			</description>
 		</signal>
 		<signal name="resource_selected">
@@ -58,10 +74,12 @@
 			<argument index="1" name="prop" type="String">
 			</argument>
 			<description>
+				Emitted when a resource is selected in the inspector.
 			</description>
 		</signal>
 		<signal name="restart_requested">
 			<description>
+				Emitted when a property that requires a restart to be applied is edited in the inspector. This is only used in the Project Settings and Editor Settings.
 			</description>
 		</signal>
 	</signals>

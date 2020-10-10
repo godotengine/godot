@@ -30,1503 +30,1384 @@
 
 #include "gdscript_tokenizer.h"
 
-#include "core/io/marshalls.h"
-#include "core/map.h"
-#include "core/print_string.h"
-#include "gdscript_functions.h"
+#include "core/error_macros.h"
 
-const char *GDScriptTokenizer::token_names[TK_MAX] = {
-	"Empty",
-	"Identifier",
-	"Constant",
-	"Self",
-	"Built-In Type",
-	"Built-In Func",
-	"In",
-	"'=='",
-	"'!='",
-	"'<'",
-	"'<='",
-	"'>'",
-	"'>='",
-	"'and'",
-	"'or'",
-	"'not'",
-	"'+'",
-	"'-'",
-	"'*'",
-	"'/'",
-	"'%'",
-	"'<<'",
-	"'>>'",
-	"'='",
-	"'+='",
-	"'-='",
-	"'*='",
-	"'/='",
-	"'%='",
-	"'<<='",
-	"'>>='",
-	"'&='",
-	"'|='",
-	"'^='",
-	"'&'",
-	"'|'",
-	"'^'",
-	"'~'",
-	//"Plus Plus",
-	//"Minus Minus",
-	"if",
-	"elif",
-	"else",
-	"for",
-	"while",
-	"break",
-	"continue",
-	"pass",
-	"return",
-	"match",
-	"func",
-	"class",
-	"class_name",
-	"extends",
-	"is",
-	"onready",
-	"tool",
-	"static",
-	"export",
-	"setget",
-	"const",
-	"var",
-	"as",
-	"void",
-	"enum",
-	"preload",
-	"assert",
-	"yield",
-	"signal",
-	"breakpoint",
-	"remote",
-	"master",
-	"puppet",
-	"remotesync",
-	"mastersync",
-	"puppetsync",
-	"'['",
-	"']'",
-	"'{'",
-	"'}'",
-	"'('",
-	"')'",
-	"','",
-	"';'",
-	"'.'",
-	"'?'",
-	"':'",
-	"'$'",
-	"'->'",
-	"'\\n'",
-	"PI",
-	"TAU",
-	"_",
-	"INF",
-	"NAN",
-	"Error",
-	"EOF",
-	"Cursor"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
+
+static const char *token_names[] = {
+	"Empty", // EMPTY,
+	// Basic
+	"Annotation", // ANNOTATION
+	"Identifier", // IDENTIFIER,
+	"Literal", // LITERAL,
+	// Comparison
+	"<", // LESS,
+	"<=", // LESS_EQUAL,
+	">", // GREATER,
+	">=", // GREATER_EQUAL,
+	"==", // EQUAL_EQUAL,
+	"!=", // BANG_EQUAL,
+	// Logical
+	"and", // AND,
+	"or", // OR,
+	"not", // NOT,
+	"&&", // AMPERSAND_AMPERSAND,
+	"||", // PIPE_PIPE,
+	"!", // BANG,
+	// Bitwise
+	"&", // AMPERSAND,
+	"|", // PIPE,
+	"~", // TILDE,
+	"^", // CARET,
+	"<<", // LESS_LESS,
+	">>", // GREATER_GREATER,
+	// Math
+	"+", // PLUS,
+	"-", // MINUS,
+	"*", // STAR,
+	"/", // SLASH,
+	"%", // PERCENT,
+	// Assignment
+	"=", // EQUAL,
+	"+=", // PLUS_EQUAL,
+	"-=", // MINUS_EQUAL,
+	"*=", // STAR_EQUAL,
+	"/=", // SLASH_EQUAL,
+	"%=", // PERCENT_EQUAL,
+	"<<=", // LESS_LESS_EQUAL,
+	">>=", // GREATER_GREATER_EQUAL,
+	"&=", // AMPERSAND_EQUAL,
+	"|=", // PIPE_EQUAL,
+	"^=", // CARET_EQUAL,
+	// Control flow
+	"if", // IF,
+	"elif", // ELIF,
+	"else", // ELSE,
+	"for", // FOR,
+	"while", // WHILE,
+	"break", // BREAK,
+	"continue", // CONTINUE,
+	"pass", // PASS,
+	"return", // RETURN,
+	"match", // MATCH,
+	// Keywords
+	"as", // AS,
+	"assert", // ASSERT,
+	"await", // AWAIT,
+	"breakpoint", // BREAKPOINT,
+	"class", // CLASS,
+	"class_name", // CLASS_NAME,
+	"const", // CONST,
+	"enum", // ENUM,
+	"extends", // EXTENDS,
+	"func", // FUNC,
+	"in", // IN,
+	"is", // IS,
+	"namespace", // NAMESPACE
+	"preload", // PRELOAD,
+	"self", // SELF,
+	"signal", // SIGNAL,
+	"static", // STATIC,
+	"super", // SUPER,
+	"trait", // TRAIT,
+	"var", // VAR,
+	"void", // VOID,
+	"yield", // YIELD,
+	// Punctuation
+	"[", // BRACKET_OPEN,
+	"]", // BRACKET_CLOSE,
+	"{", // BRACE_OPEN,
+	"}", // BRACE_CLOSE,
+	"(", // PARENTHESIS_OPEN,
+	")", // PARENTHESIS_CLOSE,
+	",", // COMMA,
+	";", // SEMICOLON,
+	".", // PERIOD,
+	"..", // PERIOD_PERIOD,
+	":", // COLON,
+	"$", // DOLLAR,
+	"->", // FORWARD_ARROW,
+	"_", // UNDERSCORE,
+	// Whitespace
+	"Newline", // NEWLINE,
+	"Indent", // INDENT,
+	"Dedent", // DEDENT,
+	// Constants
+	"PI", // CONST_PI,
+	"TAU", // CONST_TAU,
+	"INF", // CONST_INF,
+	"NaN", // CONST_NAN,
+	// Error message improvement
+	"VCS conflict marker", // VCS_CONFLICT_MARKER,
+	"`", // BACKTICK,
+	"?", // QUESTION_MARK,
+	// Special
+	"Error", // ERROR,
+	"End of file", // EOF,
 };
 
-struct _bit {
-	Variant::Type type;
-	const char *text;
-};
-//built in types
+// Avoid desync.
+static_assert(sizeof(token_names) / sizeof(token_names[0]) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
 
-static const _bit _type_list[] = {
-	//types
-	{ Variant::BOOL, "bool" },
-	{ Variant::INT, "int" },
-	{ Variant::FLOAT, "float" },
-	{ Variant::STRING, "String" },
-	{ Variant::VECTOR2, "Vector2" },
-	{ Variant::VECTOR2I, "Vector2i" },
-	{ Variant::RECT2, "Rect2" },
-	{ Variant::RECT2I, "Rect2i" },
-	{ Variant::TRANSFORM2D, "Transform2D" },
-	{ Variant::VECTOR3, "Vector3" },
-	{ Variant::VECTOR3I, "Vector3i" },
-	{ Variant::AABB, "AABB" },
-	{ Variant::PLANE, "Plane" },
-	{ Variant::QUAT, "Quat" },
-	{ Variant::BASIS, "Basis" },
-	{ Variant::TRANSFORM, "Transform" },
-	{ Variant::COLOR, "Color" },
-	{ Variant::_RID, "RID" },
-	{ Variant::OBJECT, "Object" },
-	{ Variant::STRING_NAME, "StringName" },
-	{ Variant::NODE_PATH, "NodePath" },
-	{ Variant::DICTIONARY, "Dictionary" },
-	{ Variant::CALLABLE, "Callable" },
-	{ Variant::SIGNAL, "Signal" },
-	{ Variant::ARRAY, "Array" },
-	{ Variant::PACKED_BYTE_ARRAY, "PackedByteArray" },
-	{ Variant::PACKED_INT32_ARRAY, "PackedInt32Array" },
-	{ Variant::PACKED_INT64_ARRAY, "PackedInt64Array" },
-	{ Variant::PACKED_FLOAT32_ARRAY, "PackedFloat32Array" },
-	{ Variant::PACKED_FLOAT64_ARRAY, "PackedFloat64Array" },
-	{ Variant::PACKED_STRING_ARRAY, "PackedStringArray" },
-	{ Variant::PACKED_VECTOR2_ARRAY, "PackedVector2Array" },
-	{ Variant::PACKED_VECTOR3_ARRAY, "PackedVector3Array" },
-	{ Variant::PACKED_COLOR_ARRAY, "PackedColorArray" },
-	{ Variant::VARIANT_MAX, nullptr },
-};
-
-struct _kws {
-	GDScriptTokenizer::Token token;
-	const char *text;
-};
-
-static const _kws _keyword_list[] = {
-	//ops
-	{ GDScriptTokenizer::TK_OP_IN, "in" },
-	{ GDScriptTokenizer::TK_OP_NOT, "not" },
-	{ GDScriptTokenizer::TK_OP_OR, "or" },
-	{ GDScriptTokenizer::TK_OP_AND, "and" },
-	//func
-	{ GDScriptTokenizer::TK_PR_FUNCTION, "func" },
-	{ GDScriptTokenizer::TK_PR_CLASS, "class" },
-	{ GDScriptTokenizer::TK_PR_CLASS_NAME, "class_name" },
-	{ GDScriptTokenizer::TK_PR_EXTENDS, "extends" },
-	{ GDScriptTokenizer::TK_PR_IS, "is" },
-	{ GDScriptTokenizer::TK_PR_ONREADY, "onready" },
-	{ GDScriptTokenizer::TK_PR_TOOL, "tool" },
-	{ GDScriptTokenizer::TK_PR_STATIC, "static" },
-	{ GDScriptTokenizer::TK_PR_EXPORT, "export" },
-	{ GDScriptTokenizer::TK_PR_SETGET, "setget" },
-	{ GDScriptTokenizer::TK_PR_VAR, "var" },
-	{ GDScriptTokenizer::TK_PR_AS, "as" },
-	{ GDScriptTokenizer::TK_PR_VOID, "void" },
-	{ GDScriptTokenizer::TK_PR_PRELOAD, "preload" },
-	{ GDScriptTokenizer::TK_PR_ASSERT, "assert" },
-	{ GDScriptTokenizer::TK_PR_YIELD, "yield" },
-	{ GDScriptTokenizer::TK_PR_SIGNAL, "signal" },
-	{ GDScriptTokenizer::TK_PR_BREAKPOINT, "breakpoint" },
-	{ GDScriptTokenizer::TK_PR_REMOTE, "remote" },
-	{ GDScriptTokenizer::TK_PR_MASTER, "master" },
-	{ GDScriptTokenizer::TK_PR_PUPPET, "puppet" },
-	{ GDScriptTokenizer::TK_PR_REMOTESYNC, "remotesync" },
-	{ GDScriptTokenizer::TK_PR_MASTERSYNC, "mastersync" },
-	{ GDScriptTokenizer::TK_PR_PUPPETSYNC, "puppetsync" },
-	{ GDScriptTokenizer::TK_PR_CONST, "const" },
-	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
-	//controlflow
-	{ GDScriptTokenizer::TK_CF_IF, "if" },
-	{ GDScriptTokenizer::TK_CF_ELIF, "elif" },
-	{ GDScriptTokenizer::TK_CF_ELSE, "else" },
-	{ GDScriptTokenizer::TK_CF_FOR, "for" },
-	{ GDScriptTokenizer::TK_CF_WHILE, "while" },
-	{ GDScriptTokenizer::TK_CF_BREAK, "break" },
-	{ GDScriptTokenizer::TK_CF_CONTINUE, "continue" },
-	{ GDScriptTokenizer::TK_CF_RETURN, "return" },
-	{ GDScriptTokenizer::TK_CF_MATCH, "match" },
-	{ GDScriptTokenizer::TK_CF_PASS, "pass" },
-	{ GDScriptTokenizer::TK_SELF, "self" },
-	{ GDScriptTokenizer::TK_CONST_PI, "PI" },
-	{ GDScriptTokenizer::TK_CONST_TAU, "TAU" },
-	{ GDScriptTokenizer::TK_WILDCARD, "_" },
-	{ GDScriptTokenizer::TK_CONST_INF, "INF" },
-	{ GDScriptTokenizer::TK_CONST_NAN, "NAN" },
-	{ GDScriptTokenizer::TK_ERROR, nullptr }
-};
-
-const char *GDScriptTokenizer::get_token_name(Token p_token) {
-
-	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
-	return token_names[p_token];
+const char *GDScriptTokenizer::Token::get_name() const {
+	ERR_FAIL_INDEX_V_MSG(type, TK_MAX, "<error>", "Using token type out of the enum.");
+	return token_names[type];
 }
 
-bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const {
-	switch (get_token(p_offset)) {
-		// Can always be literal:
-		case TK_IDENTIFIER:
-
-		case TK_PR_ONREADY:
-		case TK_PR_TOOL:
-		case TK_PR_STATIC:
-		case TK_PR_EXPORT:
-		case TK_PR_SETGET:
-		case TK_PR_SIGNAL:
-		case TK_PR_REMOTE:
-		case TK_PR_MASTER:
-		case TK_PR_PUPPET:
-		case TK_PR_REMOTESYNC:
-		case TK_PR_MASTERSYNC:
-		case TK_PR_PUPPETSYNC:
+bool GDScriptTokenizer::Token::is_identifier() const {
+	// Note: Most keywords should not be recognized as identifiers.
+	// These are only exceptions for stuff that already is on the engine's API.
+	switch (type) {
+		case IDENTIFIER:
+		case MATCH: // Used in String.match().
 			return true;
-
-		// Literal for non-variables only:
-		case TK_BUILT_IN_TYPE:
-		case TK_BUILT_IN_FUNC:
-
-		case TK_OP_IN:
-			//case TK_OP_NOT:
-			//case TK_OP_OR:
-			//case TK_OP_AND:
-
-		case TK_PR_CLASS:
-		case TK_PR_CONST:
-		case TK_PR_ENUM:
-		case TK_PR_PRELOAD:
-		case TK_PR_FUNCTION:
-		case TK_PR_EXTENDS:
-		case TK_PR_ASSERT:
-		case TK_PR_YIELD:
-		case TK_PR_VAR:
-
-		case TK_CF_IF:
-		case TK_CF_ELIF:
-		case TK_CF_ELSE:
-		case TK_CF_FOR:
-		case TK_CF_WHILE:
-		case TK_CF_BREAK:
-		case TK_CF_CONTINUE:
-		case TK_CF_RETURN:
-		case TK_CF_MATCH:
-		case TK_CF_PASS:
-		case TK_SELF:
-		case TK_CONST_PI:
-		case TK_CONST_TAU:
-		case TK_WILDCARD:
-		case TK_CONST_INF:
-		case TK_CONST_NAN:
-		case TK_ERROR:
-			return !variable_safe;
-
-		case TK_CONSTANT: {
-			switch (get_token_constant(p_offset).get_type()) {
-				case Variant::NIL:
-				case Variant::BOOL:
-					return true;
-				default:
-					return false;
-			}
-		}
 		default:
 			return false;
 	}
 }
 
-StringName GDScriptTokenizer::get_token_literal(int p_offset) const {
-	Token token = get_token(p_offset);
-	switch (token) {
-		case TK_IDENTIFIER:
-			return get_token_identifier(p_offset);
-		case TK_BUILT_IN_TYPE: {
-			Variant::Type type = get_token_type(p_offset);
-			int idx = 0;
-
-			while (_type_list[idx].text) {
-				if (type == _type_list[idx].type) {
-					return _type_list[idx].text;
-				}
-				idx++;
-			}
-		} break; // Shouldn't get here, stuff happens
-		case TK_BUILT_IN_FUNC:
-			return GDScriptFunctions::get_func_name(get_token_built_in_func(p_offset));
-		case TK_CONSTANT: {
-			const Variant value = get_token_constant(p_offset);
-
-			switch (value.get_type()) {
-				case Variant::NIL:
-					return "null";
-				case Variant::BOOL:
-					return value ? "true" : "false";
-				default: {
-				}
-			}
-		} break;
-		case TK_OP_AND:
-		case TK_OP_OR:
-			break; // Don't get into default, since they can be non-literal
-		default: {
-			int idx = 0;
-
-			while (_keyword_list[idx].text) {
-				if (token == _keyword_list[idx].token) {
-					return _keyword_list[idx].text;
-				}
-				idx++;
-			}
-		}
+bool GDScriptTokenizer::Token::is_node_name() const {
+	// This is meant to allow keywords with the $ notation, but not as general identifiers.
+	switch (type) {
+		case IDENTIFIER:
+		case AND:
+		case AS:
+		case ASSERT:
+		case AWAIT:
+		case BREAK:
+		case BREAKPOINT:
+		case CLASS_NAME:
+		case CLASS:
+		case CONST:
+		case CONTINUE:
+		case ELIF:
+		case ELSE:
+		case ENUM:
+		case EXTENDS:
+		case FOR:
+		case FUNC:
+		case IF:
+		case IN:
+		case IS:
+		case MATCH:
+		case NAMESPACE:
+		case NOT:
+		case OR:
+		case PASS:
+		case PRELOAD:
+		case RETURN:
+		case SELF:
+		case SIGNAL:
+		case STATIC:
+		case SUPER:
+		case TRAIT:
+		case UNDERSCORE:
+		case VAR:
+		case VOID:
+		case WHILE:
+		case YIELD:
+			return true;
+		default:
+			return false;
 	}
-	ERR_FAIL_V_MSG("", "Failed to get token literal.");
 }
 
-static bool _is_text_char(CharType c) {
+String GDScriptTokenizer::get_token_name(Token::Type p_token_type) {
+	ERR_FAIL_INDEX_V_MSG(p_token_type, Token::TK_MAX, "<error>", "Using token type out of the enum.");
+	return token_names[p_token_type];
+}
 
+void GDScriptTokenizer::set_source_code(const String &p_source_code) {
+	source = p_source_code;
+	if (source.empty()) {
+		_source = U"";
+	} else {
+		_source = source.ptr();
+	}
+	_current = _source;
+	line = 1;
+	column = 1;
+	length = p_source_code.length();
+	position = 0;
+}
+
+void GDScriptTokenizer::set_cursor_position(int p_line, int p_column) {
+	cursor_line = p_line;
+	cursor_column = p_column;
+}
+
+void GDScriptTokenizer::set_multiline_mode(bool p_state) {
+	multiline_mode = p_state;
+}
+
+int GDScriptTokenizer::get_cursor_line() const {
+	return cursor_line;
+}
+
+int GDScriptTokenizer::get_cursor_column() const {
+	return cursor_column;
+}
+
+bool GDScriptTokenizer::is_past_cursor() const {
+	if (line < cursor_line) {
+		return false;
+	}
+	if (line > cursor_line) {
+		return true;
+	}
+	if (column < cursor_column) {
+		return false;
+	}
+	return true;
+}
+
+char32_t GDScriptTokenizer::_advance() {
+	if (unlikely(_is_at_end())) {
+		return '\0';
+	}
+	_current++;
+	column++;
+	position++;
+	if (column > rightmost_column) {
+		rightmost_column = column;
+	}
+	if (unlikely(_is_at_end())) {
+		// Add extra newline even if it's not there, to satisfy the parser.
+		newline(true);
+		// Also add needed unindent.
+		check_indent();
+	}
+	return _peek(-1);
+}
+
+void GDScriptTokenizer::push_paren(char32_t p_char) {
+	paren_stack.push_back(p_char);
+}
+
+bool GDScriptTokenizer::pop_paren(char32_t p_expected) {
+	if (paren_stack.empty()) {
+		return false;
+	}
+	char32_t actual = paren_stack.back()->get();
+	paren_stack.pop_back();
+
+	return actual == p_expected;
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::pop_error() {
+	Token error = error_stack.back()->get();
+	error_stack.pop_back();
+	return error;
+}
+
+static bool _is_alphanumeric(char32_t c) {
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 }
 
-static bool _is_number(CharType c) {
-
+static bool _is_digit(char32_t c) {
 	return (c >= '0' && c <= '9');
 }
 
-static bool _is_hex(CharType c) {
-
+static bool _is_hex_digit(char32_t c) {
 	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
-static bool _is_bin(CharType c) {
-
+static bool _is_binary_digit(char32_t c) {
 	return (c == '0' || c == '1');
 }
 
-void GDScriptTokenizerText::_make_token(Token p_type) {
+GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
+	Token token(p_type);
+	token.start_line = start_line;
+	token.end_line = line;
+	token.start_column = start_column;
+	token.end_column = column;
+	token.leftmost_column = leftmost_column;
+	token.rightmost_column = rightmost_column;
+	token.source = String(_start, _current - _start);
 
-	TokenData &tk = tk_rb[tk_rb_pos];
-
-	tk.type = p_type;
-	tk.line = line;
-	tk.col = column;
-
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-
-	tk.type = TK_IDENTIFIER;
-	tk.identifier = p_identifier;
-	tk.line = line;
-	tk.col = column;
-
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-
-void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_func) {
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-
-	tk.type = TK_BUILT_IN_FUNC;
-	tk.func = p_func;
-	tk.line = line;
-	tk.col = column;
-
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-
-	tk.type = TK_CONSTANT;
-	tk.constant = p_constant;
-	tk.line = line;
-	tk.col = column;
-
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-
-void GDScriptTokenizerText::_make_type(const Variant::Type &p_type) {
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-
-	tk.type = TK_BUILT_IN_TYPE;
-	tk.vtype = p_type;
-	tk.line = line;
-	tk.col = column;
-
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-
-void GDScriptTokenizerText::_make_error(const String &p_error) {
-
-	error_flag = true;
-	last_error = p_error;
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-	tk.type = TK_ERROR;
-	tk.constant = p_error;
-	tk.line = line;
-	tk.col = column;
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-
-void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
-
-	TokenData &tk = tk_rb[tk_rb_pos];
-	tk.type = TK_NEWLINE;
-	tk.constant = Vector2(p_indentation, p_tabs);
-	tk.line = line;
-	tk.col = column;
-	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
-}
-
-void GDScriptTokenizerText::_advance() {
-
-	if (error_flag) {
-		//parser broke
-		_make_error(last_error);
-		return;
-	}
-
-	if (code_pos >= len) {
-		_make_token(TK_EOF);
-		return;
-	}
-#define GETCHAR(m_ofs) ((m_ofs + code_pos) >= len ? 0 : _code[m_ofs + code_pos])
-#define INCPOS(m_amount)      \
-	{                         \
-		code_pos += m_amount; \
-		column += m_amount;   \
-	}
-	while (true) {
-
-		bool is_string_name = false;
-		StringMode string_mode = STRING_DOUBLE_QUOTE;
-
-		switch (GETCHAR(0)) {
-			case 0:
-				_make_token(TK_EOF);
-				break;
-			case '\\':
-				INCPOS(1);
-				if (GETCHAR(0) == '\r') {
-					INCPOS(1);
+	if (p_type != Token::ERROR && cursor_line > -1) {
+		// Also count whitespace after token.
+		int offset = 0;
+		while (_peek(offset) == ' ' || _peek(offset) == '\t') {
+			offset++;
+		}
+		int last_column = column + offset;
+		// Check cursor position in token.
+		if (start_line == line) {
+			// Single line token.
+			if (cursor_line == start_line && cursor_column >= start_column && cursor_column <= last_column) {
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column == start_column) {
+					token.cursor_place = CURSOR_BEGINNING;
+				} else if (cursor_column < column) {
+					token.cursor_place = CURSOR_MIDDLE;
+				} else {
+					token.cursor_place = CURSOR_END;
 				}
-
-				if (GETCHAR(0) != '\n') {
-					_make_error("Expected newline after '\\'.");
-					return;
-				}
-
-				INCPOS(1);
-				line++;
-
-				while (GETCHAR(0) == ' ' || GETCHAR(0) == '\t') {
-					INCPOS(1);
-				}
-
-				continue;
-			case '\t':
-			case '\r':
-			case ' ':
-				INCPOS(1);
-				continue;
-			case '#': { // line comment skip
-#ifdef DEBUG_ENABLED
-				String comment;
-#endif // DEBUG_ENABLED
-				while (GETCHAR(0) != '\n') {
-#ifdef DEBUG_ENABLED
-					comment += GETCHAR(0);
-#endif // DEBUG_ENABLED
-					code_pos++;
-					if (GETCHAR(0) == 0) { //end of file
-						//_make_error("Unterminated Comment");
-						_make_token(TK_EOF);
-						return;
-					}
-				}
-#ifdef DEBUG_ENABLED
-				String comment_content = comment.trim_prefix("#").trim_prefix(" ");
-				if (comment_content.begins_with("warning-ignore:")) {
-					String code = comment_content.get_slice(":", 1);
-					warning_skips.push_back(Pair<int, String>(line, code.strip_edges().to_lower()));
-				} else if (comment_content.begins_with("warning-ignore-all:")) {
-					String code = comment_content.get_slice(":", 1);
-					warning_global_skips.insert(code.strip_edges().to_lower());
-				} else if (comment_content.strip_edges() == "warnings-disable") {
-					ignore_warnings = true;
-				}
-#endif // DEBUG_ENABLED
-				[[fallthrough]];
 			}
-			case '\n': {
-				line++;
-				INCPOS(1);
-				bool used_spaces = false;
-				int tabs = 0;
-				column = 1;
-				int i = 0;
-				while (true) {
-					if (GETCHAR(i) == ' ') {
-						i++;
-						used_spaces = true;
-					} else if (GETCHAR(i) == '\t') {
-						if (used_spaces) {
-							_make_error("Spaces used before tabs on a line");
-							return;
-						}
-						i++;
-						tabs++;
-					} else {
-						break; // not indentation anymore
-					}
+		} else {
+			// Multi line token.
+			if (cursor_line == start_line && cursor_column >= start_column) {
+				// Is in first line.
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column == start_column) {
+					token.cursor_place = CURSOR_BEGINNING;
+				} else {
+					token.cursor_place = CURSOR_MIDDLE;
 				}
-
-				_make_newline(i, tabs);
-				return;
+			} else if (cursor_line == line && cursor_column <= last_column) {
+				// Is in last line.
+				token.cursor_position = cursor_column - start_column;
+				if (cursor_column < column) {
+					token.cursor_place = CURSOR_MIDDLE;
+				} else {
+					token.cursor_place = CURSOR_END;
+				}
+			} else if (cursor_line > start_line && cursor_line < line) {
+				// Is in middle line.
+				token.cursor_position = CURSOR_MIDDLE;
 			}
-			case '/': {
+		}
+	}
 
-				switch (GETCHAR(1)) {
-					case '=': { // diveq
+	return token;
+}
 
-						_make_token(TK_OP_ASSIGN_DIV);
-						INCPOS(1);
+GDScriptTokenizer::Token GDScriptTokenizer::make_literal(const Variant &p_literal) {
+	Token token = make_token(Token::LITERAL);
+	token.literal = p_literal;
+	return token;
+}
 
-					} break;
-					default:
-						_make_token(TK_OP_DIV);
-				}
-			} break;
-			case '=': {
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_EQUAL);
-					INCPOS(1);
+GDScriptTokenizer::Token GDScriptTokenizer::make_identifier(const StringName &p_identifier) {
+	Token identifier = make_token(Token::IDENTIFIER);
+	identifier.literal = p_identifier;
+	return identifier;
+}
 
-				} else
-					_make_token(TK_OP_ASSIGN);
+GDScriptTokenizer::Token GDScriptTokenizer::make_error(const String &p_message) {
+	Token error = make_token(Token::ERROR);
+	error.literal = p_message;
 
-			} break;
-			case '<': {
-				if (GETCHAR(1) == '=') {
+	return error;
+}
 
-					_make_token(TK_OP_LESS_EQUAL);
-					INCPOS(1);
-				} else if (GETCHAR(1) == '<') {
-					if (GETCHAR(2) == '=') {
-						_make_token(TK_OP_ASSIGN_SHIFT_LEFT);
-						INCPOS(1);
-					} else {
-						_make_token(TK_OP_SHIFT_LEFT);
+void GDScriptTokenizer::push_error(const String &p_message) {
+	Token error = make_error(p_message);
+	error_stack.push_back(error);
+}
+
+void GDScriptTokenizer::push_error(const Token &p_error) {
+	error_stack.push_back(p_error);
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::make_paren_error(char32_t p_paren) {
+	if (paren_stack.empty()) {
+		return make_error(vformat("Closing \"%c\" doesn't have an opening counterpart.", p_paren));
+	}
+	Token error = make_error(vformat("Closing \"%c\" doesn't match the opening \"%c\".", p_paren, paren_stack.back()->get()));
+	paren_stack.pop_back(); // Remove opening one anyway.
+	return error;
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, Token::Type p_double_type) {
+	const char32_t *next = _current + 1;
+	int chars = 2; // Two already matched.
+
+	// Test before consuming characters, since we don't want to consume more than needed.
+	while (*next == p_test) {
+		chars++;
+		next++;
+	}
+	if (chars >= 7) {
+		// It is a VCS conflict marker.
+		while (chars > 1) {
+			// Consume all characters (first was already consumed by scan()).
+			_advance();
+			chars--;
+		}
+		return make_token(Token::VCS_CONFLICT_MARKER);
+	} else {
+		// It is only a regular double character token, so we consume the second character.
+		_advance();
+		return make_token(p_double_type);
+	}
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
+	if (!_is_alphanumeric(_peek())) {
+		push_error("Expected annotation identifier after \"@\".");
+	}
+	while (_is_alphanumeric(_peek())) {
+		// Consume all identifier characters.
+		_advance();
+	}
+	Token annotation = make_token(Token::ANNOTATION);
+	annotation.literal = StringName(annotation.source);
+	return annotation;
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
+#define KEYWORDS(KEYWORD_GROUP, KEYWORD)     \
+	KEYWORD_GROUP('a')                       \
+	KEYWORD("as", Token::AS)                 \
+	KEYWORD("and", Token::AND)               \
+	KEYWORD("assert", Token::ASSERT)         \
+	KEYWORD("await", Token::AWAIT)           \
+	KEYWORD_GROUP('b')                       \
+	KEYWORD("break", Token::BREAK)           \
+	KEYWORD("breakpoint", Token::BREAKPOINT) \
+	KEYWORD_GROUP('c')                       \
+	KEYWORD("class", Token::CLASS)           \
+	KEYWORD("class_name", Token::CLASS_NAME) \
+	KEYWORD("const", Token::CONST)           \
+	KEYWORD("continue", Token::CONTINUE)     \
+	KEYWORD_GROUP('e')                       \
+	KEYWORD("elif", Token::ELIF)             \
+	KEYWORD("else", Token::ELSE)             \
+	KEYWORD("enum", Token::ENUM)             \
+	KEYWORD("extends", Token::EXTENDS)       \
+	KEYWORD_GROUP('f')                       \
+	KEYWORD("for", Token::FOR)               \
+	KEYWORD("func", Token::FUNC)             \
+	KEYWORD_GROUP('i')                       \
+	KEYWORD("if", Token::IF)                 \
+	KEYWORD("in", Token::IN)                 \
+	KEYWORD("is", Token::IS)                 \
+	KEYWORD_GROUP('m')                       \
+	KEYWORD("match", Token::MATCH)           \
+	KEYWORD_GROUP('n')                       \
+	KEYWORD("namespace", Token::NAMESPACE)   \
+	KEYWORD("not", Token::NOT)               \
+	KEYWORD_GROUP('o')                       \
+	KEYWORD("or", Token::OR)                 \
+	KEYWORD_GROUP('p')                       \
+	KEYWORD("pass", Token::PASS)             \
+	KEYWORD("preload", Token::PRELOAD)       \
+	KEYWORD_GROUP('r')                       \
+	KEYWORD("return", Token::RETURN)         \
+	KEYWORD_GROUP('s')                       \
+	KEYWORD("self", Token::SELF)             \
+	KEYWORD("signal", Token::SIGNAL)         \
+	KEYWORD("static", Token::STATIC)         \
+	KEYWORD("super", Token::SUPER)           \
+	KEYWORD_GROUP('t')                       \
+	KEYWORD("trait", Token::TRAIT)           \
+	KEYWORD_GROUP('v')                       \
+	KEYWORD("var", Token::VAR)               \
+	KEYWORD("void", Token::VOID)             \
+	KEYWORD_GROUP('w')                       \
+	KEYWORD("while", Token::WHILE)           \
+	KEYWORD_GROUP('y')                       \
+	KEYWORD("yield", Token::YIELD)           \
+	KEYWORD_GROUP('I')                       \
+	KEYWORD("INF", Token::CONST_INF)         \
+	KEYWORD_GROUP('N')                       \
+	KEYWORD("NAN", Token::CONST_NAN)         \
+	KEYWORD_GROUP('P')                       \
+	KEYWORD("PI", Token::CONST_PI)           \
+	KEYWORD_GROUP('T')                       \
+	KEYWORD("TAU", Token::CONST_TAU)
+
+#define MIN_KEYWORD_LENGTH 2
+#define MAX_KEYWORD_LENGTH 10
+
+	// Consume all alphanumeric characters.
+	while (_is_alphanumeric(_peek())) {
+		_advance();
+	}
+
+	int length = _current - _start;
+
+	if (length == 1 && _peek(-1) == '_') {
+		// Lone underscore.
+		return make_token(Token::UNDERSCORE);
+	}
+
+	String name(_start, length);
+	if (length < MIN_KEYWORD_LENGTH || length > MAX_KEYWORD_LENGTH) {
+		// Cannot be a keyword, as the length doesn't match any.
+		return make_identifier(name);
+	}
+
+	// Define some helper macros for the switch case.
+#define KEYWORD_GROUP_CASE(char) \
+	break;                       \
+	case char:
+#define KEYWORD(keyword, token_type)                                                                                      \
+	{                                                                                                                     \
+		const int keyword_length = sizeof(keyword) - 1;                                                                   \
+		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length");  \
+		static_assert(keyword_length >= MIN_KEYWORD_LENGTH, "There's a keyword shorter than the defined minimum length"); \
+		if (keyword_length == length && name == keyword) {                                                                \
+			return make_token(token_type);                                                                                \
+		}                                                                                                                 \
+	}
+
+	// Find if it's a keyword.
+	switch (_start[0]) {
+		default:
+			KEYWORDS(KEYWORD_GROUP_CASE, KEYWORD)
+			break;
+	}
+
+	// Check if it's a special literal
+	if (length == 4) {
+		if (name == "true") {
+			return make_literal(true);
+		} else if (name == "null") {
+			return make_literal(Variant());
+		}
+	} else if (length == 5) {
+		if (name == "false") {
+			return make_literal(false);
+		}
+	}
+
+	// Not a keyword, so must be an identifier.
+	return make_identifier(name);
+
+#undef KEYWORDS
+#undef MIN_KEYWORD_LENGTH
+#undef MAX_KEYWORD_LENGTH
+#undef KEYWORD_GROUP_CASE
+#undef KEYWORD
+}
+
+void GDScriptTokenizer::newline(bool p_make_token) {
+	// Don't overwrite previous newline, nor create if we want a line continuation.
+	if (p_make_token && !pending_newline && !line_continuation) {
+		Token newline(Token::NEWLINE);
+		newline.start_line = line;
+		newline.end_line = line;
+		newline.start_column = column - 1;
+		newline.end_column = column;
+		newline.leftmost_column = newline.start_column;
+		newline.rightmost_column = newline.end_column;
+		pending_newline = true;
+		last_newline = newline;
+	}
+
+	// Increment line/column counters.
+	line++;
+	column = 1;
+	leftmost_column = 1;
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::number() {
+	int base = 10;
+	bool has_decimal = false;
+	bool has_exponent = false;
+	bool has_error = false;
+	bool (*digit_check_func)(char32_t) = _is_digit;
+
+	if (_peek(-1) == '.') {
+		has_decimal = true;
+	} else if (_peek(-1) == '0') {
+		if (_peek() == 'x') {
+			// Hexadecimal.
+			base = 16;
+			digit_check_func = _is_hex_digit;
+			_advance();
+		} else if (_peek() == 'b') {
+			// Binary.
+			base = 2;
+			digit_check_func = _is_binary_digit;
+			_advance();
+		}
+	}
+
+	// Allow '_' to be used in a number, for readability.
+	bool previous_was_underscore = false;
+	while (digit_check_func(_peek()) || _peek() == '_') {
+		if (_peek() == '_') {
+			if (previous_was_underscore) {
+				Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = true;
+		}
+		_advance();
+	}
+
+	// It might be a ".." token (instead of decimal point) so we check if it's not.
+	if (_peek() == '.' && _peek(1) != '.') {
+		if (base == 10 && !has_decimal) {
+			has_decimal = true;
+		} else if (base == 10) {
+			Token error = make_error("Cannot use a decimal point twice in a number.");
+			error.start_column = column;
+			error.leftmost_column = column;
+			error.end_column = column + 1;
+			error.rightmost_column = column + 1;
+			push_error(error);
+			has_error = true;
+		} else if (base == 16) {
+			Token error = make_error("Cannot use a decimal point in a hexadecimal number.");
+			error.start_column = column;
+			error.leftmost_column = column;
+			error.end_column = column + 1;
+			error.rightmost_column = column + 1;
+			push_error(error);
+			has_error = true;
+		} else {
+			Token error = make_error("Cannot use a decimal point in a binary number.");
+			error.start_column = column;
+			error.leftmost_column = column;
+			error.end_column = column + 1;
+			error.rightmost_column = column + 1;
+			push_error(error);
+			has_error = true;
+		}
+		if (!has_error) {
+			_advance();
+
+			// Consume decimal digits.
+			while (_is_digit(_peek()) || _peek() == '_') {
+				_advance();
+			}
+		}
+	}
+	if (base == 10) {
+		if (_peek() == 'e' || _peek() == 'E') {
+			has_exponent = true;
+			_advance();
+			if (_peek() == '+' || _peek() == '-') {
+				// Exponent sign.
+				_advance();
+			}
+			// Consume exponent digits.
+			if (!_is_digit(_peek())) {
+				Token error = make_error(R"(Expected exponent value after "e".)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+			}
+			previous_was_underscore = false;
+			while (_is_digit(_peek()) || _peek() == '_') {
+				if (_peek() == '_') {
+					if (previous_was_underscore) {
+						Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+						error.start_column = column;
+						error.leftmost_column = column;
+						error.end_column = column + 1;
+						error.rightmost_column = column + 1;
+						push_error(error);
 					}
-					INCPOS(1);
-				} else
-					_make_token(TK_OP_LESS);
-
-			} break;
-			case '>': {
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_GREATER_EQUAL);
-					INCPOS(1);
-				} else if (GETCHAR(1) == '>') {
-					if (GETCHAR(2) == '=') {
-						_make_token(TK_OP_ASSIGN_SHIFT_RIGHT);
-						INCPOS(1);
-
-					} else {
-						_make_token(TK_OP_SHIFT_RIGHT);
-					}
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_GREATER);
+					previous_was_underscore = true;
 				}
+				_advance();
+			}
+		}
+	}
 
-			} break;
-			case '!': {
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_NOT_EQUAL);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_NOT);
-				}
+	// Detect extra decimal point.
+	if (!has_error && has_decimal && _peek() == '.' && _peek(1) != '.') {
+		Token error = make_error("Cannot use a decimal point twice in a number.");
+		error.start_column = column;
+		error.leftmost_column = column;
+		error.end_column = column + 1;
+		error.rightmost_column = column + 1;
+		push_error(error);
+		has_error = true;
+	} else if (_is_alphanumeric(_peek())) {
+		// Letter at the end of the number.
+		push_error("Invalid numeric notation.");
+	}
 
-			} break;
-			//case '"' //string - no strings in shader
-			//case '\'' //string - no strings in shader
-			case '{':
-				_make_token(TK_CURLY_BRACKET_OPEN);
-				break;
-			case '}':
-				_make_token(TK_CURLY_BRACKET_CLOSE);
-				break;
-			case '[':
-				_make_token(TK_BRACKET_OPEN);
-				break;
-			case ']':
-				_make_token(TK_BRACKET_CLOSE);
-				break;
-			case '(':
-				_make_token(TK_PARENTHESIS_OPEN);
-				break;
-			case ')':
-				_make_token(TK_PARENTHESIS_CLOSE);
-				break;
-			case ',':
-				_make_token(TK_COMMA);
-				break;
-			case ';':
-				_make_token(TK_SEMICOLON);
-				break;
-			case '?':
-				_make_token(TK_QUESTION_MARK);
-				break;
-			case ':':
-				_make_token(TK_COLON); //for methods maybe but now useless.
-				break;
-			case '$':
-				_make_token(TK_DOLLAR); //for the get_node() shortener
-				break;
-			case '^': {
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_XOR);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_BIT_XOR);
-				}
+	// Create a string with the whole number.
+	int length = _current - _start;
+	String number = String(_start, length).replace("_", "");
 
-			} break;
-			case '~':
-				_make_token(TK_OP_BIT_INVERT);
-				break;
-			case '&': {
-				if (GETCHAR(1) == '&') {
+	// Convert to the appropriate literal type.
+	if (base == 16) {
+		int64_t value = number.hex_to_int();
+		return make_literal(value);
+	} else if (base == 2) {
+		int64_t value = number.bin_to_int();
+		return make_literal(value);
+	} else if (has_decimal || has_exponent) {
+		double value = number.to_float();
+		return make_literal(value);
+	} else {
+		int64_t value = number.to_int();
+		return make_literal(value);
+	}
+}
 
-					_make_token(TK_OP_AND);
-					INCPOS(1);
-				} else if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_AND);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_BIT_AND);
-				}
-			} break;
-			case '|': {
-				if (GETCHAR(1) == '|') {
+GDScriptTokenizer::Token GDScriptTokenizer::string() {
+	enum StringType {
+		STRING_REGULAR,
+		STRING_NAME,
+		STRING_NODEPATH,
+	};
 
-					_make_token(TK_OP_OR);
-					INCPOS(1);
-				} else if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_OR);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_BIT_OR);
-				}
-			} break;
-			case '*': {
+	bool is_multiline = false;
+	StringType type = STRING_REGULAR;
 
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_MUL);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_MUL);
-				}
-			} break;
-			case '+': {
+	if (_peek(-1) == '&') {
+		type = STRING_NAME;
+		_advance();
+	} else if (_peek(-1) == '^') {
+		type = STRING_NODEPATH;
+		_advance();
+	}
 
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_ADD);
-					INCPOS(1);
-					/*
-				}  else if (GETCHAR(1)=='+') {
-					_make_token(TK_OP_PLUS_PLUS);
-					INCPOS(1);
-				*/
-				} else {
-					_make_token(TK_OP_ADD);
-				}
+	char32_t quote_char = _peek(-1);
 
-			} break;
-			case '-': {
+	if (_peek() == quote_char && _peek(1) == quote_char) {
+		is_multiline = true;
+		// Consume all quotes.
+		_advance();
+		_advance();
+	}
 
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_SUB);
-					INCPOS(1);
-				} else if (GETCHAR(1) == '>') {
-					_make_token(TK_FORWARD_ARROW);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_SUB);
-				}
-			} break;
-			case '%': {
+	String result;
 
-				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_MOD);
-					INCPOS(1);
-				} else {
-					_make_token(TK_OP_MOD);
-				}
-			} break;
-			case '@':
-				if (CharType(GETCHAR(1)) != '"' && CharType(GETCHAR(1)) != '\'') {
-					_make_error("Unexpected '@'");
-					return;
-				}
-				INCPOS(1);
-				is_string_name = true;
-				[[fallthrough]];
-			case '\'':
-			case '"': {
+	for (;;) {
+		// Consume actual string.
+		if (_is_at_end()) {
+			return make_error("Unterminated string.");
+		}
 
-				if (GETCHAR(0) == '\'')
-					string_mode = STRING_SINGLE_QUOTE;
+		char32_t ch = _peek();
 
-				int i = 1;
-				if (string_mode == STRING_DOUBLE_QUOTE && GETCHAR(i) == '"' && GETCHAR(i + 1) == '"') {
-					i += 2;
-					string_mode = STRING_MULTILINE;
-				}
+		if (ch == '\\') {
+			// Escape pattern.
+			_advance();
+			if (_is_at_end()) {
+				return make_error("Unterminated string.");
+			}
 
-				String str;
-				while (true) {
-					if (CharType(GETCHAR(i)) == 0) {
+			// Grab escape character.
+			char32_t code = _peek();
+			_advance();
+			if (_is_at_end()) {
+				return make_error("Unterminated string.");
+			}
 
-						_make_error("Unterminated String");
-						return;
-					} else if (string_mode == STRING_DOUBLE_QUOTE && CharType(GETCHAR(i)) == '"') {
-						break;
-					} else if (string_mode == STRING_SINGLE_QUOTE && CharType(GETCHAR(i)) == '\'') {
-						break;
-					} else if (string_mode == STRING_MULTILINE && CharType(GETCHAR(i)) == '\"' && CharType(GETCHAR(i + 1)) == '\"' && CharType(GETCHAR(i + 2)) == '\"') {
-						i += 2;
-						break;
-					} else if (string_mode != STRING_MULTILINE && CharType(GETCHAR(i)) == '\n') {
-						_make_error("Unexpected EOL at String.");
-						return;
-					} else if (CharType(GETCHAR(i)) == 0xFFFF) {
-						//string ends here, next will be TK
-						i--;
-						break;
-					} else if (CharType(GETCHAR(i)) == '\\') {
-						//escaped characters...
-						i++;
-						CharType next = GETCHAR(i);
-						if (next == 0) {
-							_make_error("Unterminated String");
-							return;
-						}
-						CharType res = 0;
+			char32_t escaped = 0;
+			bool valid_escape = true;
 
-						switch (next) {
-
-							case 'a': res = 7; break;
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'v': res = 11; break;
-							case 'f': res = 12; break;
-							case 'r': res = 13; break;
-							case '\'': res = '\''; break;
-							case '\"': res = '\"'; break;
-							case '\\': res = '\\'; break;
-							case '/':
-								res = '/';
-								break; //wtf
-
-							case 'u': {
-								// hex number
-								i += 1;
-								for (int j = 0; j < 4; j++) {
-									CharType c = GETCHAR(i + j);
-									if (c == 0) {
-										_make_error("Unterminated String");
-										return;
-									}
-
-									CharType v = 0;
-									if (c >= '0' && c <= '9') {
-										v = c - '0';
-									} else if (c >= 'a' && c <= 'f') {
-										v = c - 'a';
-										v += 10;
-									} else if (c >= 'A' && c <= 'F') {
-										v = c - 'A';
-										v += 10;
-									} else {
-										_make_error("Malformed hex constant in string");
-										return;
-									}
-
-									res <<= 4;
-									res |= v;
-								}
-								i += 3;
-
-							} break;
-							default: {
-
-								_make_error("Invalid escape sequence");
-								return;
-							} break;
+			switch (code) {
+				case 'a':
+					escaped = '\a';
+					break;
+				case 'b':
+					escaped = '\b';
+					break;
+				case 'f':
+					escaped = '\f';
+					break;
+				case 'n':
+					escaped = '\n';
+					break;
+				case 'r':
+					escaped = '\r';
+					break;
+				case 't':
+					escaped = '\t';
+					break;
+				case 'v':
+					escaped = '\v';
+					break;
+				case '\'':
+					escaped = '\'';
+					break;
+				case '\"':
+					escaped = '\"';
+					break;
+				case '\\':
+					escaped = '\\';
+					break;
+				case 'u':
+					// Hexadecimal sequence.
+					for (int i = 0; i < 4; i++) {
+						if (_is_at_end()) {
+							return make_error("Unterminated string.");
 						}
 
-						str += res;
-
-					} else {
-						if (CharType(GETCHAR(i)) == '\n') {
-							line++;
-							column = 1;
-						}
-
-						str += CharType(GETCHAR(i));
-					}
-					i++;
-				}
-				INCPOS(i);
-
-				if (is_string_name) {
-					_make_constant(StringName(str));
-				} else {
-					_make_constant(str);
-				}
-
-			} break;
-			case 0xFFFF: {
-				_make_token(TK_CURSOR);
-			} break;
-			default: {
-
-				if (_is_number(GETCHAR(0)) || (GETCHAR(0) == '.' && _is_number(GETCHAR(1)))) {
-					// parse number
-					bool period_found = false;
-					bool exponent_found = false;
-					bool hexa_found = false;
-					bool bin_found = false;
-					bool sign_found = false;
-
-					String str;
-					int i = 0;
-
-					while (true) {
-						if (GETCHAR(i) == '.') {
-							if (period_found || exponent_found) {
-								_make_error("Invalid numeric constant at '.'");
-								return;
-							} else if (bin_found) {
-								_make_error("Invalid binary constant at '.'");
-								return;
-							} else if (hexa_found) {
-								_make_error("Invalid hexadecimal constant at '.'");
-								return;
-							}
-							period_found = true;
-						} else if (GETCHAR(i) == 'x') {
-							if (hexa_found || bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
-								_make_error("Invalid numeric constant at 'x'");
-								return;
-							}
-							hexa_found = true;
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
-
-						} else if (!hexa_found && GETCHAR(i) == 'b') {
-							if (bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
-								_make_error("Invalid numeric constant at 'b'");
-								return;
-							}
-							bin_found = true;
-						} else if (!hexa_found && GETCHAR(i) == 'e') {
-							if (exponent_found || bin_found) {
-								_make_error("Invalid numeric constant at 'e'");
-								return;
-							}
-							exponent_found = true;
-						} else if (_is_number(GETCHAR(i))) {
-							//all ok
-
-						} else if (bin_found && _is_bin(GETCHAR(i))) {
-
-						} else if ((GETCHAR(i) == '-' || GETCHAR(i) == '+') && exponent_found) {
-							if (sign_found) {
-								_make_error("Invalid numeric constant at '-'");
-								return;
-							}
-							sign_found = true;
-						} else if (GETCHAR(i) == '_') {
-							i++;
-							continue; // Included for readability, shouldn't be a part of the string
-						} else
+						char32_t digit = _peek();
+						char32_t value = 0;
+						if (digit >= '0' && digit <= '9') {
+							value = digit - '0';
+						} else if (digit >= 'a' && digit <= 'f') {
+							value = digit - 'a';
+							value += 10;
+						} else if (digit >= 'A' && digit <= 'F') {
+							value = digit - 'A';
+							value += 10;
+						} else {
+							// Make error, but keep parsing the string.
+							Token error = make_error("Invalid hexadecimal digit in unicode escape sequence.");
+							error.start_column = column;
+							error.leftmost_column = error.start_column;
+							error.end_column = column + 1;
+							error.rightmost_column = error.end_column;
+							push_error(error);
+							valid_escape = false;
 							break;
+						}
 
-						str += CharType(GETCHAR(i));
-						i++;
+						escaped <<= 4;
+						escaped |= value;
+
+						_advance();
 					}
-
-					if (!(_is_number(str[str.length() - 1]) || (hexa_found && _is_hex(str[str.length() - 1])))) {
-						_make_error("Invalid numeric constant: " + str);
-						return;
+					break;
+				case '\r':
+					if (_peek() != '\n') {
+						// Carriage return without newline in string. (???)
+						// Just add it to the string and keep going.
+						result += ch;
+						_advance();
+						break;
 					}
+					[[fallthrough]];
+				case '\n':
+					// Escaping newline.
+					newline(false);
+					valid_escape = false; // Don't add to the string.
+					break;
+				default:
+					Token error = make_error("Invalid escape in string.");
+					error.start_column = column - 2;
+					error.leftmost_column = error.start_column;
+					push_error(error);
+					valid_escape = false;
+					break;
+			}
 
-					INCPOS(i);
-					if (hexa_found) {
-						int64_t val = str.hex_to_int64();
-						_make_constant(val);
-					} else if (bin_found) {
-						int64_t val = str.bin_to_int64();
-						_make_constant(val);
-					} else if (period_found || exponent_found) {
-						double val = str.to_double();
-						_make_constant(val);
-					} else {
-						int64_t val = str.to_int64();
-						_make_constant(val);
-					}
-
-					return;
-				}
-
-				if (GETCHAR(0) == '.') {
-					//parse period
-					_make_token(TK_PERIOD);
+			if (valid_escape) {
+				result += escaped;
+			}
+		} else if (ch == quote_char) {
+			_advance();
+			if (is_multiline) {
+				if (_peek() == quote_char && _peek(1) == quote_char) {
+					// Ended the multiline string. Consume all quotes.
+					_advance();
+					_advance();
 					break;
 				}
+			} else {
+				// Ended single-line string.
+				break;
+			}
+		} else {
+			result += ch;
+			_advance();
+			if (ch == '\n') {
+				newline(false);
+			}
+		}
+	}
 
-				if (_is_text_char(GETCHAR(0))) {
-					// parse identifier
-					String str;
-					str += CharType(GETCHAR(0));
+	// Make the literal.
+	Variant string;
+	switch (type) {
+		case STRING_NAME:
+			string = StringName(result);
+			break;
+		case STRING_NODEPATH:
+			string = NodePath(result);
+			break;
+		case STRING_REGULAR:
+			string = result;
+			break;
+	}
 
-					int i = 1;
-					while (_is_text_char(GETCHAR(i))) {
-						str += CharType(GETCHAR(i));
-						i++;
-					}
+	return make_literal(string);
+}
 
-					bool identifier = false;
+void GDScriptTokenizer::check_indent() {
+	ERR_FAIL_COND_MSG(column != 1, "Checking tokenizer indentation in the middle of a line.");
 
-					if (str == "null") {
-						_make_constant(Variant());
+	if (_is_at_end()) {
+		// Send dedents for every indent level.
+		pending_indents -= indent_level();
+		indent_stack.clear();
+		return;
+	}
 
-					} else if (str == "true") {
-						_make_constant(true);
+	for (;;) {
+		char32_t current_indent_char = _peek();
+		int indent_count = 0;
 
-					} else if (str == "false") {
-						_make_constant(false);
-					} else {
+		if (current_indent_char != ' ' && current_indent_char != '\t' && current_indent_char != '\r' && current_indent_char != '\n' && current_indent_char != '#') {
+			// First character of the line is not whitespace, so we clear all indentation levels.
+			// Unless we are in a continuation or in multiline mode (inside expression).
+			if (line_continuation || multiline_mode) {
+				return;
+			}
+			pending_indents -= indent_level();
+			indent_stack.clear();
+			return;
+		}
 
-						bool found = false;
+		if (_peek() == '\r') {
+			_advance();
+			if (_peek() != '\n') {
+				push_error("Stray carriage return character in source code.");
+			}
+		}
+		if (_peek() == '\n') {
+			// Empty line, keep going.
+			_advance();
+			newline(false);
+			continue;
+		}
 
-						{
+		// Check indent level.
+		bool mixed = false;
+		while (!_is_at_end()) {
+			char32_t space = _peek();
+			if (space == '\t') {
+				// Consider individual tab columns.
+				column += tab_size - 1;
+				indent_count += tab_size;
+			} else if (space == ' ') {
+				indent_count += 1;
+			} else {
+				break;
+			}
+			mixed = mixed || space != current_indent_char;
+			_advance();
+		}
 
-							int idx = 0;
+		if (mixed) {
+			Token error = make_error("Mixed use of tabs and spaces for indentation.");
+			error.start_line = line;
+			error.start_column = 1;
+			error.leftmost_column = 1;
+			error.rightmost_column = column;
+			push_error(error);
+		}
 
-							while (_type_list[idx].text) {
+		if (_is_at_end()) {
+			// Reached the end with an empty line, so just dedent as much as needed.
+			pending_indents -= indent_level();
+			indent_stack.clear();
+			return;
+		}
 
-								if (str == _type_list[idx].text) {
-									_make_type(_type_list[idx].type);
-									found = true;
-									break;
-								}
-								idx++;
-							}
-						}
+		if (_peek() == '\r') {
+			_advance();
+			if (_peek() != '\n') {
+				push_error("Stray carriage return character in source code.");
+			}
+		}
+		if (_peek() == '\n') {
+			// Empty line, keep going.
+			_advance();
+			newline(false);
+			continue;
+		}
+		if (_peek() == '#') {
+			// Comment. Advance to the next line.
+			while (_peek() != '\n' && !_is_at_end()) {
+				_advance();
+			}
+			if (_is_at_end()) {
+				// Reached the end with an empty line, so just dedent as much as needed.
+				pending_indents -= indent_level();
+				indent_stack.clear();
+				return;
+			}
+			_advance(); // Consume '\n'.
+			newline(false);
+			continue;
+		}
 
-						if (!found) {
+		if (line_continuation || multiline_mode) {
+			// We cleared up all the whitespace at the beginning of the line.
+			// But if this is a continuation or multiline mode and we don't want any indentation change.
+			return;
+		}
 
-							//built in func?
+		// Check if indentation character is consistent.
+		if (indent_char == '\0') {
+			// First time indenting, choose character now.
+			indent_char = current_indent_char;
+		} else if (current_indent_char != indent_char) {
+			Token error = make_error(vformat("Used \"%s\" for indentation instead \"%s\" as used before in the file.", String(&current_indent_char, 1).c_escape(), String(&indent_char, 1).c_escape()));
+			error.start_line = line;
+			error.start_column = 1;
+			error.leftmost_column = 1;
+			error.rightmost_column = column;
+			push_error(error);
+		}
 
-							for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
+		// Now we can do actual indentation changes.
 
-								if (str == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(j))) {
+		// Check if indent or dedent.
+		int previous_indent = 0;
+		if (indent_level() > 0) {
+			previous_indent = indent_stack.back()->get();
+		}
+		if (indent_count == previous_indent) {
+			// No change in indentation.
+			return;
+		}
+		if (indent_count > previous_indent) {
+			// Indentation increased.
+			indent_stack.push_back(indent_count);
+			pending_indents++;
+		} else {
+			// Indentation decreased (dedent).
+			if (indent_level() == 0) {
+				push_error("Tokenizer bug: trying to dedent without previous indent.");
+				return;
+			}
+			while (indent_level() > 0 && indent_stack.back()->get() > indent_count) {
+				indent_stack.pop_back();
+				pending_indents--;
+			}
+			if ((indent_level() > 0 && indent_stack.back()->get() != indent_count) || (indent_level() == 0 && indent_count != 0)) {
+				// Mismatched indentation alignment.
+				Token error = make_error("Unindent doesn't match the previous indentation level.");
+				error.start_line = line;
+				error.start_column = 1;
+				error.leftmost_column = 1;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+				// Still, we'll be lenient and keep going, so keep this level in the stack.
+				indent_stack.push_back(indent_count);
+			}
+		}
+		break; // Get out of the loop in any case.
+	}
+}
 
-									_make_built_in_func(GDScriptFunctions::Function(j));
-									found = true;
-									break;
-								}
-							}
-						}
+void GDScriptTokenizer::_skip_whitespace() {
+	if (pending_indents != 0) {
+		// Still have some indent/dedent tokens to give.
+		return;
+	}
 
-						if (!found) {
-							//keyword
+	bool is_bol = column == 1; // Beginning of line.
 
-							int idx = 0;
-							found = false;
+	if (is_bol) {
+		check_indent();
+		return;
+	}
 
-							while (_keyword_list[idx].text) {
-
-								if (str == _keyword_list[idx].text) {
-									_make_token(_keyword_list[idx].token);
-									found = true;
-									break;
-								}
-								idx++;
-							}
-						}
-
-						if (!found)
-							identifier = true;
-					}
-
-					if (identifier) {
-						_make_identifier(str);
-					}
-					INCPOS(str.length());
+	for (;;) {
+		char32_t c = _peek();
+		switch (c) {
+			case ' ':
+				_advance();
+				break;
+			case '\t':
+				_advance();
+				// Consider individual tab columns.
+				column += tab_size - 1;
+				break;
+			case '\r':
+				_advance(); // Consume either way.
+				if (_peek() != '\n') {
+					push_error("Stray carriage return character in source code.");
 					return;
 				}
-
-				_make_error("Unknown character");
+				break;
+			case '\n':
+				_advance();
+				newline(!is_bol); // Don't create new line token if line is empty.
+				check_indent();
+				break;
+			case '#':
+				// Comment.
+				while (_peek() != '\n' && !_is_at_end()) {
+					_advance();
+				}
+				if (_is_at_end()) {
+					return;
+				}
+				_advance(); // Consume '\n'
+				newline(!is_bol);
+				check_indent();
+				break;
+			default:
 				return;
-
-			} break;
 		}
-
-		INCPOS(1);
-		break;
 	}
 }
 
-void GDScriptTokenizerText::set_code(const String &p_code) {
-
-	code = p_code;
-	len = p_code.length();
-	if (len) {
-		_code = &code[0];
-	} else {
-		_code = nullptr;
+GDScriptTokenizer::Token GDScriptTokenizer::scan() {
+	if (has_error()) {
+		return pop_error();
 	}
-	code_pos = 0;
-	line = 1; //it is stand-ar-ized that lines begin in 1 in code..
-	column = 1; //the same holds for columns
-	tk_rb_pos = 0;
-	error_flag = false;
-#ifdef DEBUG_ENABLED
-	ignore_warnings = false;
-#endif // DEBUG_ENABLED
-	last_error = "";
-	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
-		_advance();
-}
 
-GDScriptTokenizerText::Token GDScriptTokenizerText::get_token(int p_offset) const {
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, TK_ERROR);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, TK_ERROR);
+	_skip_whitespace();
 
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	return tk_rb[ofs].type;
-}
-
-int GDScriptTokenizerText::get_token_line(int p_offset) const {
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, -1);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, -1);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	return tk_rb[ofs].line;
-}
-
-int GDScriptTokenizerText::get_token_column(int p_offset) const {
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, -1);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, -1);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	return tk_rb[ofs].col;
-}
-
-const Variant &GDScriptTokenizerText::get_token_constant(int p_offset) const {
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, tk_rb[0].constant);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, tk_rb[0].constant);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_CONSTANT, tk_rb[0].constant);
-	return tk_rb[ofs].constant;
-}
-
-StringName GDScriptTokenizerText::get_token_identifier(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, StringName());
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, StringName());
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_IDENTIFIER, StringName());
-	return tk_rb[ofs].identifier;
-}
-
-GDScriptFunctions::Function GDScriptTokenizerText::get_token_built_in_func(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, GDScriptFunctions::FUNC_MAX);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, GDScriptFunctions::FUNC_MAX);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_BUILT_IN_FUNC, GDScriptFunctions::FUNC_MAX);
-	return tk_rb[ofs].func;
-}
-
-Variant::Type GDScriptTokenizerText::get_token_type(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, Variant::NIL);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, Variant::NIL);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_BUILT_IN_TYPE, Variant::NIL);
-	return tk_rb[ofs].vtype;
-}
-
-int GDScriptTokenizerText::get_token_line_indent(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, 0);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, 0);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
-	return tk_rb[ofs].constant.operator Vector2().x;
-}
-
-int GDScriptTokenizerText::get_token_line_tab_indent(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, 0);
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, 0);
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
-	return tk_rb[ofs].constant.operator Vector2().y;
-}
-
-String GDScriptTokenizerText::get_token_error(int p_offset) const {
-
-	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, String());
-	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, String());
-
-	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
-	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_ERROR, String());
-	return tk_rb[ofs].constant;
-}
-
-void GDScriptTokenizerText::advance(int p_amount) {
-
-	ERR_FAIL_COND(p_amount <= 0);
-	for (int i = 0; i < p_amount; i++)
-		_advance();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define BYTECODE_VERSION 13
-
-Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) {
-
-	const uint8_t *buf = p_buffer.ptr();
-	int total_len = p_buffer.size();
-	ERR_FAIL_COND_V(p_buffer.size() < 24 || p_buffer[0] != 'G' || p_buffer[1] != 'D' || p_buffer[2] != 'S' || p_buffer[3] != 'C', ERR_INVALID_DATA);
-
-	int version = decode_uint32(&buf[4]);
-	ERR_FAIL_COND_V_MSG(version > BYTECODE_VERSION, ERR_INVALID_DATA, "Bytecode is too recent! Please use a newer engine version.");
-
-	int identifier_count = decode_uint32(&buf[8]);
-	int constant_count = decode_uint32(&buf[12]);
-	int line_count = decode_uint32(&buf[16]);
-	int token_count = decode_uint32(&buf[20]);
-
-	const uint8_t *b = &buf[24];
-	total_len -= 24;
-
-	identifiers.resize(identifier_count);
-	for (int i = 0; i < identifier_count; i++) {
-
-		int len = decode_uint32(b);
-		ERR_FAIL_COND_V(len > total_len, ERR_INVALID_DATA);
-		b += 4;
-		Vector<uint8_t> cs;
-		cs.resize(len);
-		for (int j = 0; j < len; j++) {
-			cs.write[j] = b[j] ^ 0xb6;
+	if (pending_newline) {
+		pending_newline = false;
+		if (!multiline_mode) {
+			// Don't return newline tokens on multine mode.
+			return last_newline;
 		}
-
-		cs.write[cs.size() - 1] = 0;
-		String s;
-		s.parse_utf8((const char *)cs.ptr());
-		b += len;
-		total_len -= len + 4;
-		identifiers.write[i] = s;
 	}
 
-	constants.resize(constant_count);
-	for (int i = 0; i < constant_count; i++) {
-
-		Variant v;
-		int len;
-		// An object cannot be constant, never decode objects
-		Error err = decode_variant(v, b, total_len, &len, false);
-		if (err)
-			return err;
-		b += len;
-		total_len -= len;
-		constants.write[i] = v;
+	// Check for potential errors after skipping whitespace().
+	if (has_error()) {
+		return pop_error();
 	}
 
-	ERR_FAIL_COND_V(line_count * 8 > total_len, ERR_INVALID_DATA);
+	_start = _current;
+	start_line = line;
+	start_column = column;
+	leftmost_column = column;
+	rightmost_column = column;
 
-	for (int i = 0; i < line_count; i++) {
-
-		uint32_t token = decode_uint32(b);
-		b += 4;
-		uint32_t linecol = decode_uint32(b);
-		b += 4;
-
-		lines.insert(token, linecol);
-		total_len -= 8;
-	}
-
-	tokens.resize(token_count);
-
-	for (int i = 0; i < token_count; i++) {
-
-		ERR_FAIL_COND_V(total_len < 1, ERR_INVALID_DATA);
-
-		if ((*b) & TOKEN_BYTE_MASK) { //little endian always
-			ERR_FAIL_COND_V(total_len < 4, ERR_INVALID_DATA);
-
-			tokens.write[i] = decode_uint32(b) & ~TOKEN_BYTE_MASK;
-			b += 4;
+	if (pending_indents != 0) {
+		// Adjust position for indent.
+		_start -= start_column - 1;
+		start_column = 1;
+		leftmost_column = 1;
+		if (pending_indents > 0) {
+			// Indents.
+			pending_indents--;
+			return make_token(Token::INDENT);
 		} else {
-			tokens.write[i] = *b;
-			b += 1;
-			total_len--;
+			// Dedents.
+			pending_indents++;
+			Token dedent = make_token(Token::DEDENT);
+			dedent.end_column += 1;
+			dedent.rightmost_column += 1;
+			return dedent;
 		}
 	}
 
-	token = 0;
+	if (_is_at_end()) {
+		return make_token(Token::TK_EOF);
+	}
 
-	return OK;
-}
+	const char32_t c = _advance();
 
-Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code) {
-
-	Vector<uint8_t> buf;
-
-	Map<StringName, int> identifier_map;
-	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
-	Map<uint32_t, int> line_map;
-	Vector<uint32_t> token_array;
-
-	GDScriptTokenizerText tt;
-	tt.set_code(p_code);
-	int line = -1;
-
-	while (true) {
-
-		if (tt.get_token_line() != line) {
-
-			line = tt.get_token_line();
-			line_map[line] = token_array.size();
-		}
-
-		uint32_t token = tt.get_token();
-		switch (tt.get_token()) {
-
-			case TK_IDENTIFIER: {
-				StringName id = tt.get_token_identifier();
-				if (!identifier_map.has(id)) {
-					int idx = identifier_map.size();
-					identifier_map[id] = idx;
-				}
-				token |= identifier_map[id] << TOKEN_BITS;
-			} break;
-			case TK_CONSTANT: {
-
-				const Variant &c = tt.get_token_constant();
-				if (!constant_map.has(c)) {
-					int idx = constant_map.size();
-					constant_map[c] = idx;
-				}
-				token |= constant_map[c] << TOKEN_BITS;
-			} break;
-			case TK_BUILT_IN_TYPE: {
-
-				token |= tt.get_token_type() << TOKEN_BITS;
-			} break;
-			case TK_BUILT_IN_FUNC: {
-
-				token |= tt.get_token_built_in_func() << TOKEN_BITS;
-
-			} break;
-			case TK_NEWLINE: {
-
-				token |= tt.get_token_line_indent() << TOKEN_BITS;
-			} break;
-			case TK_ERROR: {
-
-				ERR_FAIL_V(Vector<uint8_t>());
-			} break;
-			default: {
+	if (c == '\\') {
+		// Line continuation with backslash.
+		if (_peek() == '\r') {
+			if (_peek(1) != '\n') {
+				return make_error("Unexpected carriage return character.");
 			}
-		};
-
-		token_array.push_back(token);
-
-		if (tt.get_token() == TK_EOF)
-			break;
-		tt.advance();
-	}
-
-	//reverse maps
-
-	Map<int, StringName> rev_identifier_map;
-	for (Map<StringName, int>::Element *E = identifier_map.front(); E; E = E->next()) {
-		rev_identifier_map[E->get()] = E->key();
-	}
-
-	Map<int, Variant> rev_constant_map;
-	const Variant *K = nullptr;
-	while ((K = constant_map.next(K))) {
-		rev_constant_map[constant_map[*K]] = *K;
-	}
-
-	Map<int, uint32_t> rev_line_map;
-	for (Map<uint32_t, int>::Element *E = line_map.front(); E; E = E->next()) {
-		rev_line_map[E->get()] = E->key();
-	}
-
-	//save header
-	buf.resize(24);
-	buf.write[0] = 'G';
-	buf.write[1] = 'D';
-	buf.write[2] = 'S';
-	buf.write[3] = 'C';
-	encode_uint32(BYTECODE_VERSION, &buf.write[4]);
-	encode_uint32(identifier_map.size(), &buf.write[8]);
-	encode_uint32(constant_map.size(), &buf.write[12]);
-	encode_uint32(line_map.size(), &buf.write[16]);
-	encode_uint32(token_array.size(), &buf.write[20]);
-
-	//save identifiers
-
-	for (Map<int, StringName>::Element *E = rev_identifier_map.front(); E; E = E->next()) {
-
-		CharString cs = String(E->get()).utf8();
-		int len = cs.length() + 1;
-		int extra = 4 - (len % 4);
-		if (extra == 4)
-			extra = 0;
-
-		uint8_t ibuf[4];
-		encode_uint32(len + extra, ibuf);
-		for (int i = 0; i < 4; i++) {
-			buf.push_back(ibuf[i]);
+			_advance();
 		}
-		for (int i = 0; i < len; i++) {
-			buf.push_back(cs[i] ^ 0xb6);
+		if (_peek() != '\n') {
+			return make_error("Expected new line after \"\\\".");
 		}
-		for (int i = 0; i < extra; i++) {
-			buf.push_back(0 ^ 0xb6);
-		}
+		_advance();
+		newline(false);
+		line_continuation = true;
+		return scan(); // Recurse to get next token.
 	}
 
-	for (Map<int, Variant>::Element *E = rev_constant_map.front(); E; E = E->next()) {
+	line_continuation = false;
 
-		int len;
-		// Objects cannot be constant, never encode objects
-		Error err = encode_variant(E->get(), nullptr, len, false);
-		ERR_FAIL_COND_V_MSG(err != OK, Vector<uint8_t>(), "Error when trying to encode Variant.");
-		int pos = buf.size();
-		buf.resize(pos + len);
-		encode_variant(E->get(), &buf.write[pos], len, false);
+	if (_is_digit(c)) {
+		return number();
+	} else if (_is_alphanumeric(c)) {
+		return potential_identifier();
 	}
 
-	for (Map<int, uint32_t>::Element *E = rev_line_map.front(); E; E = E->next()) {
+	switch (c) {
+		// String literals.
+		case '"':
+		case '\'':
+			return string();
 
-		uint8_t ibuf[8];
-		encode_uint32(E->key(), &ibuf[0]);
-		encode_uint32(E->get(), &ibuf[4]);
-		for (int i = 0; i < 8; i++)
-			buf.push_back(ibuf[i]);
-	}
+		// Annotation.
+		case '@':
+			return annotation();
 
-	for (int i = 0; i < token_array.size(); i++) {
+		// Single characters.
+		case '~':
+			return make_token(Token::TILDE);
+		case ',':
+			return make_token(Token::COMMA);
+		case ':':
+			return make_token(Token::COLON);
+		case ';':
+			return make_token(Token::SEMICOLON);
+		case '$':
+			return make_token(Token::DOLLAR);
+		case '?':
+			return make_token(Token::QUESTION_MARK);
+		case '`':
+			return make_token(Token::BACKTICK);
 
-		uint32_t token = token_array[i];
-
-		if (token & ~TOKEN_MASK) {
-			uint8_t buf4[4];
-			encode_uint32(token_array[i] | TOKEN_BYTE_MASK, &buf4[0]);
-			for (int j = 0; j < 4; j++) {
-				buf.push_back(buf4[j]);
+		// Parens.
+		case '(':
+			push_paren('(');
+			return make_token(Token::PARENTHESIS_OPEN);
+		case '[':
+			push_paren('[');
+			return make_token(Token::BRACKET_OPEN);
+		case '{':
+			push_paren('{');
+			return make_token(Token::BRACE_OPEN);
+		case ')':
+			if (!pop_paren('(')) {
+				return make_paren_error(c);
 			}
-		} else {
-			buf.push_back(token);
-		}
+			return make_token(Token::PARENTHESIS_CLOSE);
+		case ']':
+			if (!pop_paren('[')) {
+				return make_paren_error(c);
+			}
+			return make_token(Token::BRACKET_CLOSE);
+		case '}':
+			if (!pop_paren('{')) {
+				return make_paren_error(c);
+			}
+			return make_token(Token::BRACE_CLOSE);
+
+		// Double characters.
+		case '!':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::BANG_EQUAL);
+			} else {
+				return make_token(Token::BANG);
+			}
+		case '.':
+			if (_peek() == '.') {
+				_advance();
+				return make_token(Token::PERIOD_PERIOD);
+			} else if (_is_digit(_peek())) {
+				// Number starting with '.'.
+				return number();
+			} else {
+				return make_token(Token::PERIOD);
+			}
+		case '+':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::PLUS_EQUAL);
+			} else {
+				return make_token(Token::PLUS);
+			}
+		case '-':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::MINUS_EQUAL);
+			} else if (_peek() == '>') {
+				_advance();
+				return make_token(Token::FORWARD_ARROW);
+			} else {
+				return make_token(Token::MINUS);
+			}
+		case '*':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::STAR_EQUAL);
+			} else {
+				return make_token(Token::STAR);
+			}
+		case '/':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::SLASH_EQUAL);
+			} else {
+				return make_token(Token::SLASH);
+			}
+		case '%':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::PERCENT_EQUAL);
+			} else {
+				return make_token(Token::PERCENT);
+			}
+		case '^':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::CARET_EQUAL);
+			} else if (_peek() == '"' || _peek() == '\'') {
+				// Node path
+				return string();
+			} else {
+				return make_token(Token::CARET);
+			}
+		case '&':
+			if (_peek() == '&') {
+				_advance();
+				return make_token(Token::AMPERSAND_AMPERSAND);
+			} else if (_peek() == '=') {
+				_advance();
+				return make_token(Token::AMPERSAND_EQUAL);
+			} else if (_peek() == '"' || _peek() == '\'') {
+				// String Name
+				return string();
+			} else {
+				return make_token(Token::AMPERSAND);
+			}
+		case '|':
+			if (_peek() == '|') {
+				_advance();
+				return make_token(Token::PIPE_PIPE);
+			} else if (_peek() == '=') {
+				_advance();
+				return make_token(Token::PIPE_EQUAL);
+			} else {
+				return make_token(Token::PIPE);
+			}
+
+		// Potential VCS conflict markers.
+		case '=':
+			if (_peek() == '=') {
+				return check_vcs_marker('=', Token::EQUAL_EQUAL);
+			} else {
+				return make_token(Token::EQUAL);
+			}
+		case '<':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::LESS_EQUAL);
+			} else if (_peek() == '<') {
+				if (_peek(1) == '=') {
+					_advance();
+					_advance(); // Advance both '<' and '='
+					return make_token(Token::LESS_LESS_EQUAL);
+				} else {
+					return check_vcs_marker('<', Token::LESS_LESS);
+				}
+			} else {
+				return make_token(Token::LESS);
+			}
+		case '>':
+			if (_peek() == '=') {
+				_advance();
+				return make_token(Token::GREATER_EQUAL);
+			} else if (_peek() == '>') {
+				if (_peek(1) == '=') {
+					_advance();
+					_advance(); // Advance both '>' and '='
+					return make_token(Token::GREATER_GREATER_EQUAL);
+				} else {
+					return check_vcs_marker('>', Token::GREATER_GREATER);
+				}
+			} else {
+				return make_token(Token::GREATER);
+			}
+
+		default:
+			return make_error(vformat(R"(Unknown character "%s".")", String(&c, 1)));
 	}
-
-	return buf;
 }
 
-GDScriptTokenizerBuffer::Token GDScriptTokenizerBuffer::get_token(int p_offset) const {
-
-	int offset = token + p_offset;
-
-	if (offset < 0 || offset >= tokens.size())
-		return TK_EOF;
-
-	return GDScriptTokenizerBuffer::Token(tokens[offset] & TOKEN_MASK);
-}
-
-StringName GDScriptTokenizerBuffer::get_token_identifier(int p_offset) const {
-
-	int offset = token + p_offset;
-
-	ERR_FAIL_INDEX_V(offset, tokens.size(), StringName());
-	uint32_t identifier = tokens[offset] >> TOKEN_BITS;
-	ERR_FAIL_UNSIGNED_INDEX_V(identifier, (uint32_t)identifiers.size(), StringName());
-
-	return identifiers[identifier];
-}
-
-GDScriptFunctions::Function GDScriptTokenizerBuffer::get_token_built_in_func(int p_offset) const {
-
-	int offset = token + p_offset;
-	ERR_FAIL_INDEX_V(offset, tokens.size(), GDScriptFunctions::FUNC_MAX);
-	return GDScriptFunctions::Function(tokens[offset] >> TOKEN_BITS);
-}
-
-Variant::Type GDScriptTokenizerBuffer::get_token_type(int p_offset) const {
-
-	int offset = token + p_offset;
-	ERR_FAIL_INDEX_V(offset, tokens.size(), Variant::NIL);
-
-	return Variant::Type(tokens[offset] >> TOKEN_BITS);
-}
-
-int GDScriptTokenizerBuffer::get_token_line(int p_offset) const {
-
-	int offset = token + p_offset;
-	int pos = lines.find_nearest(offset);
-
-	if (pos < 0)
-		return -1;
-	if (pos >= lines.size())
-		pos = lines.size() - 1;
-
-	uint32_t l = lines.getv(pos);
-	return l & TOKEN_LINE_MASK;
-}
-int GDScriptTokenizerBuffer::get_token_column(int p_offset) const {
-
-	int offset = token + p_offset;
-	int pos = lines.find_nearest(offset);
-	if (pos < 0)
-		return -1;
-	if (pos >= lines.size())
-		pos = lines.size() - 1;
-
-	uint32_t l = lines.getv(pos);
-	return l >> TOKEN_LINE_BITS;
-}
-int GDScriptTokenizerBuffer::get_token_line_indent(int p_offset) const {
-
-	int offset = token + p_offset;
-	ERR_FAIL_INDEX_V(offset, tokens.size(), 0);
-	return tokens[offset] >> TOKEN_BITS;
-}
-const Variant &GDScriptTokenizerBuffer::get_token_constant(int p_offset) const {
-
-	int offset = token + p_offset;
-	ERR_FAIL_INDEX_V(offset, tokens.size(), nil);
-	uint32_t constant = tokens[offset] >> TOKEN_BITS;
-	ERR_FAIL_UNSIGNED_INDEX_V(constant, (uint32_t)constants.size(), nil);
-	return constants[constant];
-}
-String GDScriptTokenizerBuffer::get_token_error(int p_offset) const {
-
-	ERR_FAIL_V(String());
-}
-
-void GDScriptTokenizerBuffer::advance(int p_amount) {
-
-	ERR_FAIL_INDEX(p_amount + token, tokens.size());
-	token += p_amount;
-}
-GDScriptTokenizerBuffer::GDScriptTokenizerBuffer() {
-
-	token = 0;
+GDScriptTokenizer::GDScriptTokenizer() {
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/indent/size");
+	}
+#endif // TOOLS_ENABLED
 }

@@ -6,13 +6,19 @@
 	<description>
 		Contains multiple nodes representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
 		[b]Example:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var state_machine = $AnimationTree.get("parameters/playback")
 		state_machine.travel("some_state")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var stateMachine = GetNode&lt;AnimationTree&gt;("AnimationTree").Get("parameters/playback") as AnimationNodeStateMachinePlayback;
+		stateMachine.Travel("some_state");
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

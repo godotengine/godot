@@ -32,81 +32,73 @@
 #include "collision_object_3d_sw.h"
 
 BroadPhase3DSW::ID BroadPhaseOctree::create(CollisionObject3DSW *p_object, int p_subindex) {
-
 	ID oid = octree.create(p_object, AABB(), p_subindex, false, 1 << p_object->get_type(), 0);
 	return oid;
 }
 
 void BroadPhaseOctree::move(ID p_id, const AABB &p_aabb) {
-
 	octree.move(p_id, p_aabb);
 }
 
 void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
-
 	CollisionObject3DSW *it = octree.get(p_id);
 	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
-void BroadPhaseOctree::remove(ID p_id) {
 
+void BroadPhaseOctree::remove(ID p_id) {
 	octree.erase(p_id);
 }
 
 CollisionObject3DSW *BroadPhaseOctree::get_object(ID p_id) const {
-
 	CollisionObject3DSW *it = octree.get(p_id);
 	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
-bool BroadPhaseOctree::is_static(ID p_id) const {
 
+bool BroadPhaseOctree::is_static(ID p_id) const {
 	return !octree.is_pairable(p_id);
 }
-int BroadPhaseOctree::get_subindex(ID p_id) const {
 
+int BroadPhaseOctree::get_subindex(ID p_id) const {
 	return octree.get_subindex(p_id);
 }
 
 int BroadPhaseOctree::cull_point(const Vector3 &p_point, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-
 	return octree.cull_point(p_point, p_results, p_max_results, p_result_indices);
 }
 
 int BroadPhaseOctree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-
 	return octree.cull_segment(p_from, p_to, p_results, p_max_results, p_result_indices);
 }
 
 int BroadPhaseOctree::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-
 	return octree.cull_aabb(p_aabb, p_results, p_max_results, p_result_indices);
 }
 
 void *BroadPhaseOctree::_pair_callback(void *self, OctreeElementID p_A, CollisionObject3DSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObject3DSW *p_object_B, int subindex_B) {
-
 	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
-	if (!bpo->pair_callback)
+	if (!bpo->pair_callback) {
 		return nullptr;
+	}
 
 	return bpo->pair_callback(p_object_A, subindex_A, p_object_B, subindex_B, bpo->pair_userdata);
 }
 
 void BroadPhaseOctree::_unpair_callback(void *self, OctreeElementID p_A, CollisionObject3DSW *p_object_A, int subindex_A, OctreeElementID p_B, CollisionObject3DSW *p_object_B, int subindex_B, void *pairdata) {
-
 	BroadPhaseOctree *bpo = (BroadPhaseOctree *)(self);
-	if (!bpo->unpair_callback)
+	if (!bpo->unpair_callback) {
 		return;
+	}
 
 	bpo->unpair_callback(p_object_A, subindex_A, p_object_B, subindex_B, pairdata, bpo->unpair_userdata);
 }
 
 void BroadPhaseOctree::set_pair_callback(PairCallback p_pair_callback, void *p_userdata) {
-
 	pair_callback = p_pair_callback;
 	pair_userdata = p_userdata;
 }
-void BroadPhaseOctree::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 
+void BroadPhaseOctree::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_callback = p_unpair_callback;
 	unpair_userdata = p_userdata;
 }
@@ -116,7 +108,6 @@ void BroadPhaseOctree::update() {
 }
 
 BroadPhase3DSW *BroadPhaseOctree::_create() {
-
 	return memnew(BroadPhaseOctree);
 }
 

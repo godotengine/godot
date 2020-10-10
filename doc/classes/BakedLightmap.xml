@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BakedLightmap" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
+		</member>
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="1">
+		</member>
+		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
+		</member>
+		<member name="environment_custom_color" type="Color" setter="set_environment_custom_color" getter="get_environment_custom_color">
+		</member>
+		<member name="environment_custom_energy" type="float" setter="set_environment_custom_energy" getter="get_environment_custom_energy">
+		</member>
+		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
+		</member>
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="BakedLightmap.EnvironmentMode" default="0">
+		</member>
+		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="BakedLightmap.GenerateProbes" default="0">
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
+		</member>
+		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data">
+		</member>
+		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
+		</member>
+		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality" default="1">
+		</member>
+		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
+		</member>
+	</members>
+	<constants>
+		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
+		</constant>
+		<constant name="BAKE_QUALITY_MEDIUM" value="1" enum="BakeQuality">
+		</constant>
+		<constant name="BAKE_QUALITY_HIGH" value="2" enum="BakeQuality">
+		</constant>
+		<constant name="BAKE_QUALITY_ULTRA" value="3" enum="BakeQuality">
+		</constant>
+		<constant name="GENERATE_PROBES_DISABLED" value="0" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_4" value="1" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_8" value="2" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_16" value="3" enum="GenerateProbes">
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_32" value="4" enum="GenerateProbes">
+		</constant>
+		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="1" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="2" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_NO_MESHES" value="3" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_MESHES_INVALID" value="4" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="5" enum="BakeError">
+		</constant>
+		<constant name="BAKE_ERROR_USER_ABORTED" value="6" enum="BakeError">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_SCENE" value="1" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_SKY" value="2" enum="EnvironmentMode">
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_COLOR" value="3" enum="EnvironmentMode">
+		</constant>
+	</constants>
+</class>

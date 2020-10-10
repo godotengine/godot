@@ -31,10 +31,9 @@
 #ifndef JOYPAD_UWP_H
 #define JOYPAD_UWP_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 
 ref class JoypadUWP sealed {
-
 	/** clang-format breaks this, it does not understand this token. */
 	/* clang-format off */
 internal:
@@ -57,7 +56,6 @@ private:
 	};
 
 	struct ControllerDevice {
-
 		Windows::Gaming::Input::IGameController ^ controller_reference;
 
 		int id;

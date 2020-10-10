@@ -5,15 +5,15 @@
 	</brief_description>
 	<description>
 		By inheriting this class you can create a custom [VisualShader] script addon which will be automatically added to the Visual Shader Editor. The [VisualShaderNode]'s behavior is defined by overriding the provided virtual methods.
-		In order for the node to be registered as an editor addon, you must use the [code]tool[/code] keyword and provide a [code]class_name[/code] for your custom script. For example:
+		In order for the node to be registered as an editor addon, you must use the [code]@tool[/code] annotation and provide a [code]class_name[/code] for your custom script. For example:
 		[codeblock]
-		tool
+		@tool
 		extends VisualShaderNodeCustom
 		class_name VisualShaderNodeNoise
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
+		<link title="Visual Shader plugins">https://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_category" qualifiers="virtual">

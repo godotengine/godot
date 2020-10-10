@@ -5,6 +5,9 @@ Import("env_modules")
 
 env_arkit = env_modules.Clone()
 
+# (iOS) Enable module support
+env_arkit.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
 # (iOS) Build as separate static library
 modules_sources = []
 env_arkit.add_source_files(modules_sources, "*.cpp")

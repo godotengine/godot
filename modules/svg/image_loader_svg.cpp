@@ -40,6 +40,7 @@ void SVGRasterizer::rasterize(NSVGimage *p_image, float p_tx, float p_ty, float 
 SVGRasterizer::SVGRasterizer() {
 	rasterizer = nsvgCreateRasterizer();
 }
+
 SVGRasterizer::~SVGRasterizer() {
 	nsvgDeleteRasterizer(rasterizer);
 }
@@ -47,7 +48,6 @@ SVGRasterizer::~SVGRasterizer() {
 SVGRasterizer ImageLoaderSVG::rasterizer;
 
 inline void change_nsvg_paint_color(NSVGpaint *p_paint, const uint32_t p_old, const uint32_t p_new) {
-
 	if (p_paint->type == NSVG_PAINT_COLOR) {
 		if (p_paint->color << 8 == p_old << 8) {
 			p_paint->color = (p_paint->color & 0xFF000000) | (p_new & 0x00FFFFFF);
@@ -64,9 +64,7 @@ inline void change_nsvg_paint_color(NSVGpaint *p_paint, const uint32_t p_old, co
 }
 
 void ImageLoaderSVG::_convert_colors(NSVGimage *p_svg_image) {
-
 	for (NSVGshape *shape = p_svg_image->shapes; shape != nullptr; shape = shape->next) {
-
 		for (int i = 0; i < replace_colors.old_colors.size(); i++) {
 			change_nsvg_paint_color(&(shape->stroke), replace_colors.old_colors[i], replace_colors.new_colors[i]);
 			change_nsvg_paint_color(&(shape->fill), replace_colors.old_colors[i], replace_colors.new_colors[i]);
@@ -75,7 +73,6 @@ void ImageLoaderSVG::_convert_colors(NSVGimage *p_svg_image) {
 }
 
 void ImageLoaderSVG::set_convert_colors(Dictionary *p_replace_color) {
-
 	if (p_replace_color) {
 		Dictionary replace_color = *p_replace_color;
 		for (int i = 0; i < replace_color.keys().size(); i++) {
@@ -133,7 +130,6 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const Vector<uint8_t> *p
 }
 
 Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p_svg_str, float p_scale, bool upsample, bool convert_colors) {
-
 	size_t str_len = strlen(p_svg_str);
 	Vector<uint8_t> src_data;
 	src_data.resize(str_len + 1);
@@ -144,7 +140,6 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	uint32_t size = f->get_len();
 	Vector<uint8_t> src_image;
 	src_image.resize(size + 1);
@@ -156,7 +151,6 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("svg");
 	p_extensions->push_back("svgz");
 }

@@ -34,7 +34,6 @@
 #include "core/os/file_access.h"
 #include "java_godot_lib_jni.h"
 class FileAccessJAndroid : public FileAccess {
-
 	static jobject io;
 	static jclass cls;
 

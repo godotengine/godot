@@ -31,8 +31,7 @@
 #include "cylinder_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() {
-
+Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 	float radius = get_radius();
 	float height = get_height();
 
@@ -40,7 +39,6 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() {
 
 	Vector3 d(0, height * 0.5, 0);
 	for (int i = 0; i < 360; i++) {
-
 		float ra = Math::deg2rad((float)i);
 		float rb = Math::deg2rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
@@ -53,7 +51,6 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() {
 		points.push_back(Vector3(b.x, 0, b.y) - d);
 
 		if (i % 90 == 0) {
-
 			points.push_back(Vector3(a.x, 0, a.y) + d);
 			points.push_back(Vector3(a.x, 0, a.y) - d);
 		}
@@ -67,7 +64,6 @@ real_t CylinderShape3D::get_enclosing_radius() const {
 }
 
 void CylinderShape3D::_update_shape() {
-
 	Dictionary d;
 	d["radius"] = radius;
 	d["height"] = height;
@@ -76,7 +72,6 @@ void CylinderShape3D::_update_shape() {
 }
 
 void CylinderShape3D::set_radius(float p_radius) {
-
 	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
@@ -84,12 +79,10 @@ void CylinderShape3D::set_radius(float p_radius) {
 }
 
 float CylinderShape3D::get_radius() const {
-
 	return radius;
 }
 
 void CylinderShape3D::set_height(float p_height) {
-
 	height = p_height;
 	_update_shape();
 	notify_change_to_owners();
@@ -97,12 +90,10 @@ void CylinderShape3D::set_height(float p_height) {
 }
 
 float CylinderShape3D::get_height() const {
-
 	return height;
 }
 
 void CylinderShape3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CylinderShape3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CylinderShape3D::get_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderShape3D::set_height);
@@ -114,7 +105,6 @@ void CylinderShape3D::_bind_methods() {
 
 CylinderShape3D::CylinderShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CYLINDER)) {
-
 	radius = 1.0;
 	height = 2.0;
 	_update_shape();

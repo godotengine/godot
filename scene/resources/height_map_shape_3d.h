@@ -44,7 +44,7 @@ class HeightMapShape3D : public Shape3D {
 
 protected:
 	static void _bind_methods();
-	virtual void _update_shape();
+	virtual void _update_shape() override;
 
 public:
 	void set_map_width(int p_new);
@@ -54,8 +54,8 @@ public:
 	void set_map_data(PackedFloat32Array p_new);
 	PackedFloat32Array get_map_data() const;
 
-	virtual Vector<Vector3> get_debug_mesh_lines();
-	virtual real_t get_enclosing_radius() const;
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
 
 	HeightMapShape3D();
 };

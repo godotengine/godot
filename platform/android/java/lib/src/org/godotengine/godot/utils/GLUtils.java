@@ -31,6 +31,7 @@
 package org.godotengine.godot.utils;
 
 import android.util.Log;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
@@ -39,7 +40,6 @@ import javax.microedition.khronos.egl.EGLDisplay;
  * Contains GL utilities methods.
  */
 public class GLUtils {
-
 	private static final String TAG = GLUtils.class.getSimpleName();
 
 	public static final boolean DEBUG = false;

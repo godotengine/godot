@@ -33,16 +33,15 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
-#include "core/input/input_filter.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
 #include "ios.h"
+#include "joypad_iphone.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rasterizer.h"
-#include "servers/rendering_server.h"
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
@@ -50,17 +49,9 @@
 #endif
 
 class OSIPhone : public OS_Unix {
-
 private:
-	enum {
-		MAX_MOUSE_COUNT = 8,
-		MAX_EVENTS = 64,
-	};
-
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
-
-	RenderingServer *rendering_server;
 
 	AudioDriverCoreAudio audio_driver;
 
@@ -75,140 +66,68 @@ private:
 #endif
 	iOS *ios;
 
+	JoypadIPhone *joypad_iphone;
+
 	MainLoop *main_loop;
 
-#if defined(VULKAN_ENABLED)
-	VulkanContextIPhone *context_vulkan;
-	RenderingDeviceVulkan *rendering_device_vulkan;
-#endif
-	VideoMode video_mode;
+	virtual void initialize_core() override;
+	virtual void initialize() override;
 
-	virtual int get_video_driver_count() const;
-	virtual const char *get_video_driver_name(int p_driver) const;
+	virtual void initialize_joypads() override {
+	}
 
-	virtual int get_current_video_driver() const;
+	virtual void set_main_loop(MainLoop *p_main_loop) override;
+	virtual MainLoop *get_main_loop() const override;
 
-	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
+	virtual void delete_main_loop() override;
 
-	virtual void set_main_loop(MainLoop *p_main_loop);
-	virtual MainLoop *get_main_loop() const;
+	virtual void finalize() override;
 
-	virtual void delete_main_loop();
+	String user_data_dir;
 
-	virtual void finalize();
+	bool is_focused = false;
 
-	struct MouseList {
-
-		bool pressed[MAX_MOUSE_COUNT];
-		MouseList() {
-			for (int i = 0; i < MAX_MOUSE_COUNT; i++)
-				pressed[i] = false;
-		};
-	};
-
-	MouseList touch_list;
-
-	Vector3 last_accel;
-
-	Ref<InputEvent> event_queue[MAX_EVENTS];
-	int event_count;
-	void queue_event(const Ref<InputEvent> &p_event);
-
-	String data_dir;
-	String unique_id;
-	String locale_code;
-
-	InputDefault *input;
-
-	int virtual_keyboard_height;
-
-	int video_driver_index;
+	void deinitialize_modules();
 
 public:
-	bool iterate();
-
-	uint8_t get_orientations() const;
-
-	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
-	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y);
-	void touches_cancelled();
-	void key(uint32_t p_key, bool p_pressed);
-	void set_virtual_keyboard_height(int p_height);
-
-	int set_base_framebuffer(int p_fb);
-
-	void update_gravity(float p_x, float p_y, float p_z);
-	void update_accelerometer(float p_x, float p_y, float p_z);
-	void update_magnetometer(float p_x, float p_y, float p_z);
-	void update_gyroscope(float p_x, float p_y, float p_z);
-
-	int get_unused_joy_id();
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
-	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value);
-
 	static OSIPhone *get_singleton();
 
-	virtual void set_mouse_show(bool p_show);
-	virtual void set_mouse_grab(bool p_grab);
-	virtual bool is_mouse_grab_enabled() const;
-	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String &p_title);
-
-	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
-
-	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
-	virtual Error close_dynamic_library(void *p_library_handle);
-	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false);
-
-	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
-	virtual VideoMode get_video_mode(int p_screen = 0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
-
-	virtual void set_keep_screen_on(bool p_enabled);
-
-	virtual bool can_draw() const;
-
-	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), int p_max_input_length = -1);
-	virtual void hide_virtual_keyboard();
-	virtual int get_virtual_keyboard_height() const;
-
-	virtual Size2 get_window_size() const;
-	virtual Rect2 get_window_safe_area() const;
-
-	virtual bool has_touchscreen_ui_hint() const;
-
-	void set_data_dir(String p_dir);
-
-	virtual String get_name() const;
-	virtual String get_model_name() const;
-
-	Error shell_open(String p_uri);
-
-	String get_user_data_dir() const;
-
-	void set_locale(String p_locale);
-	String get_locale() const;
-
-	void set_unique_id(String p_id);
-	String get_unique_id() const;
-
-	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
-	virtual bool native_video_is_playing() const;
-	virtual void native_video_pause();
-	virtual void native_video_unpause();
-	virtual void native_video_focus_out();
-	virtual void native_video_stop();
-	virtual void vibrate_handheld(int p_duration_ms = 500);
-
-	virtual bool _check_internal_feature_support(const String &p_feature);
-	OSIPhone(int width, int height, String p_data_dir);
+	OSIPhone(String p_data_dir);
 	~OSIPhone();
+
+	void initialize_modules();
+
+	bool iterate();
+
+	void start();
+
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) override;
+	virtual Error close_dynamic_library(void *p_library_handle) override;
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+
+	virtual void alert(const String &p_alert,
+			const String &p_title = "ALERT!") override;
+
+	virtual String get_name() const override;
+	virtual String get_model_name() const override;
+
+	virtual Error shell_open(String p_uri) override;
+
+	void set_user_data_dir(String p_dir);
+	virtual String get_user_data_dir() const override;
+
+	virtual String get_locale() const override;
+
+	virtual String get_unique_id() const override;
+
+	virtual void vibrate_handheld(int p_duration_ms = 500) override;
+
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
+	void on_focus_out();
+	void on_focus_in();
 };
 
 #endif // OS_IPHONE_H
 
-#endif
+#endif // IPHONE_ENABLED

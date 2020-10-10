@@ -7,14 +7,16 @@ using GodotTools.Utils;
 
 namespace GodotTools.Ides.MonoDevelop
 {
-    public class Instance
+    public class Instance : IDisposable
     {
+        public DateTime LaunchTime { get; private set; }
         private readonly string solutionFile;
         private readonly EditorId editorId;
 
         private Process process;
 
         public bool IsRunning => process != null && !process.HasExited;
+        public bool IsDisposed { get; private set; }
 
         public void Execute()
         {
@@ -24,7 +26,7 @@ namespace GodotTools.Ides.MonoDevelop
 
             string command;
 
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
             {
                 string bundleId = BundleIds[editorId];
 
@@ -59,6 +61,8 @@ namespace GodotTools.Ides.MonoDevelop
             if (command == null)
                 throw new FileNotFoundException();
 
+            LaunchTime = DateTime.Now;
+
             if (newWindow)
             {
                 process = Process.Start(new ProcessStartInfo
@@ -81,11 +85,17 @@ namespace GodotTools.Ides.MonoDevelop
 
         public Instance(string solutionFile, EditorId editorId)
         {
-            if (editorId == EditorId.VisualStudioForMac && !OS.IsOSX)
+            if (editorId == EditorId.VisualStudioForMac && !OS.IsMacOS)
                 throw new InvalidOperationException($"{nameof(EditorId.VisualStudioForMac)} not supported on this platform");
 
             this.solutionFile = solutionFile;
             this.editorId = editorId;
+        }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+            process?.Dispose();
         }
 
         private static readonly IReadOnlyDictionary<EditorId, string> ExecutableNames;
@@ -93,7 +103,7 @@ namespace GodotTools.Ides.MonoDevelop
 
         static Instance()
         {
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -118,7 +128,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.MonoDevelop, "MonoDevelop.exe"}
                 };
             }
-            else if (OS.IsUnixLike())
+            else if (OS.IsUnixLike)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {

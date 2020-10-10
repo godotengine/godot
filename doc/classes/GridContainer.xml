@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GridContainer" inherits="Container" version="4.0">
 	<brief_description>
-		Grid container used to arrange elements in a grid like layout.
+		Grid container used to arrange Control-derived children in a grid like layout.
 	</brief_description>
 	<description>
-		Grid container will arrange its children in a grid like structure, the grid columns are specified using the [member columns] property and the number of rows will be equal to the number of children in the container divided by the number of columns. For example, if the container has 5 children, and 2 columns, there will be 3 rows in the container.
+		GridContainer will arrange its Control-derived children in a grid like structure, the grid columns are specified using the [member columns] property and the number of rows will be equal to the number of children in the container divided by the number of columns. For example, if the container has 5 children, and 2 columns, there will be 3 rows in the container.
 		Notice that grid layout will preserve the columns and rows for every size of the container, and that empty columns will be expanded automatically.
+		[b]Note:[/b] GridContainer only works with child nodes inheriting from Control. It won't rearrange child nodes inheriting from Node2D.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
-			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its children to accommodate the new layout.
+			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its Control-derived children to accommodate the new layout.
 		</member>
 	</members>
 	<constants>

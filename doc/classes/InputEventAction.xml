@@ -7,7 +7,9 @@
 		Contains a generic action which can be targeted from several types of inputs. Actions can be created from the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b] menu. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
+		<link title="InputEvent: Actions">https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#actions</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 	</methods>

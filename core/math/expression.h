@@ -118,23 +118,20 @@ private:
 	static const char *func_name[FUNC_MAX];
 
 	struct Input {
-
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		String name;
 
-		Input() :
-				type(Variant::NIL) {
-		}
+		Input() {}
 	};
 
 	Vector<Input> inputs;
-	Variant::Type output_type;
+	Variant::Type output_type = Variant::NIL;
 
 	String expression;
 
-	bool sequenced;
-	int str_ofs;
-	bool expression_dirty;
+	bool sequenced = false;
+	int str_ofs = 0;
+	bool expression_dirty = false;
 
 	bool _compile_expression();
 
@@ -182,14 +179,14 @@ private:
 
 	static const char *token_name[TK_MAX];
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	void _set_error(const String &p_err) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 		error_str = p_err;
 		error_set = true;
 	}
@@ -197,10 +194,9 @@ private:
 	Error _get_token(Token &r_token);
 
 	String error_str;
-	bool error_set;
+	bool error_set = true;
 
 	struct ENode {
-
 		enum Type {
 			TYPE_INPUT,
 			TYPE_CONSTANT,
@@ -215,11 +211,11 @@ private:
 			TYPE_CALL
 		};
 
-		ENode *next;
+		ENode *next = nullptr;
 
 		Type type;
 
-		ENode() { next = nullptr; }
+		ENode() {}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -228,7 +224,6 @@ private:
 	};
 
 	struct ExpressionNode {
-
 		bool is_op;
 		union {
 			Variant::Operator op;
@@ -239,7 +234,6 @@ private:
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-
 		int index;
 		InputNode() {
 			type = TYPE_INPUT;
@@ -247,7 +241,6 @@ private:
 	};
 
 	struct ConstantNode : public ENode {
-
 		Variant value;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
@@ -255,7 +248,6 @@ private:
 	};
 
 	struct OperatorNode : public ENode {
-
 		Variant::Operator op;
 
 		ENode *nodes[2];
@@ -266,7 +258,6 @@ private:
 	};
 
 	struct SelfNode : public ENode {
-
 		SelfNode() {
 			type = TYPE_SELF;
 		}
@@ -339,12 +330,12 @@ private:
 		return node;
 	}
 
-	ENode *root;
-	ENode *nodes;
+	ENode *root = nullptr;
+	ENode *nodes = nullptr;
 
 	Vector<String> input_names;
 
-	bool execution_error;
+	bool execution_error = false;
 	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
 
 protected:
@@ -352,11 +343,11 @@ protected:
 
 public:
 	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
-	Variant execute(Array p_inputs, Object *p_base = nullptr, bool p_show_error = true);
+	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true);
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
-	Expression();
+	Expression() {}
 	~Expression();
 };
 

@@ -8,7 +8,7 @@
 		Theme resources can alternatively be loaded by writing them in a [code].theme[/code] file, see the documentation for more information.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/gui_skinning.html</link>
+		<link title="GUI skinning">https://docs.godotengine.org/en/latest/tutorials/gui/gui_skinning.html</link>
 	</tutorials>
 	<methods>
 		<method name="clear">

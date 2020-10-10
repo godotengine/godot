@@ -37,7 +37,6 @@
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
 void NavigationServer3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer3D::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer3D::map_set_active);
 	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &NavigationServer3D::map_is_active);

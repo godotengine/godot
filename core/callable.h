@@ -45,11 +45,10 @@ class CallableCustom;
 // but can be optimized or customized.
 
 class Callable {
-
 	//needs to be max 16 bytes in 64 bits
 	StringName method;
 	union {
-		uint64_t object;
+		uint64_t object = 0;
 		CallableCustom *custom;
 	};
 
@@ -75,11 +74,14 @@ public:
 		return method == StringName() && object == 0;
 	}
 	_FORCE_INLINE_ bool is_custom() const {
-		return method == StringName() && custom != 0;
+		return method == StringName() && custom != nullptr;
 	}
 	_FORCE_INLINE_ bool is_standard() const {
 		return method != StringName();
 	}
+
+	Callable bind(const Variant **p_arguments, int p_argcount) const;
+	Callable unbind(int p_argcount) const;
 
 	Object *get_object() const;
 	ObjectID get_object_id() const;
@@ -87,6 +89,8 @@ public:
 	CallableCustom *get_custom() const;
 
 	uint32_t hash() const;
+
+	const Callable *get_base_comparator() const; //used for bind/unbind to do less precise comparisons (ignoring binds) in signal connect/disconnect
 
 	bool operator==(const Callable &p_callable) const;
 	bool operator!=(const Callable &p_callable) const;
@@ -100,14 +104,14 @@ public:
 	Callable(ObjectID p_object, const StringName &p_method);
 	Callable(CallableCustom *p_custom);
 	Callable(const Callable &p_callable);
-	Callable();
+	Callable() {}
 	~Callable();
 };
 
 class CallableCustom {
 	friend class Callable;
 	SafeRefCount ref_count;
-	bool referenced;
+	bool referenced = false;
 
 public:
 	typedef bool (*CompareEqualFunc)(const CallableCustom *p_a, const CallableCustom *p_b);
@@ -120,6 +124,7 @@ public:
 	virtual CompareLessFunc get_compare_less_func() const = 0;
 	virtual ObjectID get_object() const = 0; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const = 0;
+	virtual const Callable *get_base_comparator() const;
 
 	CallableCustom();
 	virtual ~CallableCustom() {}
@@ -156,7 +161,7 @@ public:
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);
 	Signal(ObjectID p_object, const StringName &p_name);
-	Signal();
+	Signal() {}
 };
 
 #endif // CALLABLE_H

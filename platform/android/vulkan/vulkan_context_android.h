@@ -36,7 +36,6 @@
 struct ANativeWindow;
 
 class VulkanContextAndroid : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:

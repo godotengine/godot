@@ -32,6 +32,7 @@
 #define WORLD_3D_H
 
 #include "core/resource.h"
+#include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"

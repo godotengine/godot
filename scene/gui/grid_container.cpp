@@ -31,11 +31,8 @@
 #include "grid_container.h"
 
 void GridContainer::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_SORT_CHILDREN: {
-
 			Map<int, int> col_minw; // Max of min_width  of all controls in each col (indexed by col).
 			Map<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			Set<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
@@ -50,22 +47,25 @@ void GridContainer::_notification(int p_what) {
 			int valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree())
+				if (!c || !c->is_visible_in_tree()) {
 					continue;
+				}
 
 				int row = valid_controls_index / columns;
 				int col = valid_controls_index % columns;
 				valid_controls_index++;
 
 				Size2i ms = c->get_combined_minimum_size();
-				if (col_minw.has(col))
+				if (col_minw.has(col)) {
 					col_minw[col] = MAX(col_minw[col], ms.width);
-				else
+				} else {
 					col_minw[col] = ms.width;
-				if (row_minh.has(row))
+				}
+				if (row_minh.has(row)) {
 					row_minh[row] = MAX(row_minh[row], ms.height);
-				else
+				} else {
 					row_minh[row] = ms.height;
+				}
 
 				if (c->get_h_size_flags() & SIZE_EXPAND) {
 					col_expanded.insert(col);
@@ -83,13 +83,15 @@ void GridContainer::_notification(int p_what) {
 			// Evaluate the remaining space for expanded columns/rows.
 			Size2 remaining_space = get_size();
 			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
-				if (!col_expanded.has(E->key()))
+				if (!col_expanded.has(E->key())) {
 					remaining_space.width -= E->get();
+				}
 			}
 
 			for (Map<int, int>::Element *E = row_minh.front(); E; E = E->next()) {
-				if (!row_expanded.has(E->key()))
+				if (!row_expanded.has(E->key())) {
 					remaining_space.height -= E->get();
+				}
 			}
 			remaining_space.height -= vsep * MAX(max_row - 1, 0);
 			remaining_space.width -= hsep * MAX(max_col - 1, 0);
@@ -146,16 +148,18 @@ void GridContainer::_notification(int p_what) {
 			valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c || !c->is_visible_in_tree())
+				if (!c || !c->is_visible_in_tree()) {
 					continue;
+				}
 				int row = valid_controls_index / columns;
 				int col = valid_controls_index % columns;
 				valid_controls_index++;
 
 				if (col == 0) {
 					col_ofs = 0;
-					if (row > 0)
+					if (row > 0) {
 						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + vsep;
+					}
 				}
 
 				Point2 p(col_ofs, row_ofs);
@@ -168,14 +172,12 @@ void GridContainer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 		} break;
 	}
 }
 
 void GridContainer::set_columns(int p_columns) {
-
 	ERR_FAIL_COND(p_columns < 1);
 	columns = p_columns;
 	queue_sort();
@@ -183,12 +185,10 @@ void GridContainer::set_columns(int p_columns) {
 }
 
 int GridContainer::get_columns() const {
-
 	return columns;
 }
 
 void GridContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_columns", "columns"), &GridContainer::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &GridContainer::get_columns);
 
@@ -196,7 +196,6 @@ void GridContainer::_bind_methods() {
 }
 
 Size2 GridContainer::get_minimum_size() const {
-
 	Map<int, int> col_minw;
 	Map<int, int> row_minh;
 
@@ -208,24 +207,26 @@ Size2 GridContainer::get_minimum_size() const {
 
 	int valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible()) {
 			continue;
+		}
 		int row = valid_controls_index / columns;
 		int col = valid_controls_index % columns;
 		valid_controls_index++;
 
 		Size2i ms = c->get_combined_minimum_size();
-		if (col_minw.has(col))
+		if (col_minw.has(col)) {
 			col_minw[col] = MAX(col_minw[col], ms.width);
-		else
+		} else {
 			col_minw[col] = ms.width;
+		}
 
-		if (row_minh.has(row))
+		if (row_minh.has(row)) {
 			row_minh[row] = MAX(row_minh[row], ms.height);
-		else
+		} else {
 			row_minh[row] = ms.height;
+		}
 		max_col = MAX(col, max_col);
 		max_row = MAX(row, max_row);
 	}

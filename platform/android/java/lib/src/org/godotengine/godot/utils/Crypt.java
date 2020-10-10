@@ -34,7 +34,6 @@ import java.security.MessageDigest;
 import java.util.Random;
 
 public class Crypt {
-
 	public static String md5(String input) {
 		try {
 			// Create MD5 Hash

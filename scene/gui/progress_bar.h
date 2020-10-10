@@ -34,7 +34,6 @@
 #include "scene/gui/range.h"
 
 class ProgressBar : public Range {
-
 	GDCLASS(ProgressBar, Range);
 
 	bool percent_visible;
@@ -47,7 +46,7 @@ public:
 	void set_percent_visible(bool p_visible);
 	bool is_percent_visible() const;
 
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 	ProgressBar();
 };
 

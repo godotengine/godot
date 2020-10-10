@@ -148,13 +148,14 @@ enum {
 	AKEYCODE_BUTTON_START = 108,
 	AKEYCODE_BUTTON_SELECT = 109,
 	AKEYCODE_BUTTON_MODE = 110,
+	AKEYCODE_CONTROL_LEFT = 113,
+	AKEYCODE_CONTROL_RIGHT = 114,
 
 	// NOTE: If you add a new keycode here you must also add it to several other files.
 	//       Refer to frameworks/base/core/java/android/view/KeyEvent.java for the full list.
 };
 
 struct _WinTranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };
@@ -247,6 +248,8 @@ static _WinTranslatePair _ak_to_keycode[] = {
 	{ KEY_BACKSLASH, AKEYCODE_BACKSLASH },
 	{ KEY_BRACKETLEFT, AKEYCODE_LEFT_BRACKET },
 	{ KEY_BRACKETRIGHT, AKEYCODE_RIGHT_BRACKET },
+	{ KEY_CONTROL, AKEYCODE_CONTROL_LEFT },
+	{ KEY_CONTROL, AKEYCODE_CONTROL_RIGHT },
 	{ KEY_UNKNOWN, 0 }
 };
 /*

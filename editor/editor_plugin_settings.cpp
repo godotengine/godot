@@ -39,8 +39,7 @@
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
+	if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
 		plugin_config_dialog->connect_compat("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
@@ -49,7 +48,6 @@ void EditorPluginSettings::_notification(int p_what) {
 }
 
 void EditorPluginSettings::update_plugins() {
-
 	plugin_list->clear();
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -70,12 +68,10 @@ void EditorPluginSettings::update_plugins() {
 	Vector<String> plugins;
 
 	while (d != String()) {
-
 		bool dir = da->current_is_dir();
 		String path = "res://addons/" + d + "/plugin.cfg";
 
 		if (dir && FileAccess::exists(path)) {
-
 			plugins.push_back(d);
 		}
 
@@ -88,7 +84,6 @@ void EditorPluginSettings::update_plugins() {
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
-
 		Ref<ConfigFile> cf;
 		cf.instance();
 		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
@@ -151,9 +146,9 @@ void EditorPluginSettings::update_plugins() {
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
-
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
@@ -178,8 +173,9 @@ void EditorPluginSettings::_create_clicked() {
 
 void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	if (!item)
+	if (!item) {
 		return;
+	}
 	if (p_id == BUTTON_PLUGIN_EDIT) {
 		if (p_column == 4) {
 			String dir = item->get_metadata(0);
@@ -193,7 +189,6 @@ void EditorPluginSettings::_bind_methods() {
 }
 
 EditorPluginSettings::EditorPluginSettings() {
-
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);

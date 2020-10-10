@@ -42,21 +42,21 @@ static void (*_base_image_compress_pvrtc2_func)(Image *) = nullptr;
 static void (*_base_image_compress_pvrtc4_func)(Image *) = nullptr;
 
 static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
-
 	String ttpath = EditorSettings::get_singleton()->get("filesystem/import/pvrtc_texture_tool");
 
 	if (ttpath.strip_edges() == "" || !FileAccess::exists(ttpath)) {
 		switch (p_mode) {
-
 			case Image::COMPRESS_PVRTC2:
-				if (_base_image_compress_pvrtc2_func)
+				if (_base_image_compress_pvrtc2_func) {
 					_base_image_compress_pvrtc2_func(p_image);
-				else if (_base_image_compress_pvrtc4_func)
+				} else if (_base_image_compress_pvrtc4_func) {
 					_base_image_compress_pvrtc4_func(p_image);
+				}
 				break;
 			case Image::COMPRESS_PVRTC4:
-				if (_base_image_compress_pvrtc4_func)
+				if (_base_image_compress_pvrtc4_func) {
 					_base_image_compress_pvrtc4_func(p_image);
+				}
 				break;
 			default:
 				ERR_FAIL_MSG("Unsupported Image compress mode used in PVRTC module.");
@@ -125,17 +125,14 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 }
 
 static void _compress_pvrtc2(Image *p_image) {
-
 	_compress_image(Image::COMPRESS_PVRTC2, p_image);
 }
 
 static void _compress_pvrtc4(Image *p_image) {
-
 	_compress_image(Image::COMPRESS_PVRTC4, p_image);
 }
 
 void _pvrtc_register_compressors() {
-
 	_base_image_compress_pvrtc2_func = Image::_image_compress_pvrtc2_func;
 	_base_image_compress_pvrtc4_func = Image::_image_compress_pvrtc4_func;
 

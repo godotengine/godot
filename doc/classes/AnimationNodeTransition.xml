@@ -7,7 +7,9 @@
 		Simple state machine for cases which don't require a more advanced [AnimationNodeStateMachine]. Animations can be connected to the inputs and transition times can be specified.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="AnimationTree">https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="get_input_caption" qualifiers="const">

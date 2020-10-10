@@ -46,7 +46,6 @@ public:
 	};
 
 	struct Settings {
-
 		Priority priority;
 		Settings() { priority = PRIORITY_NORMAL; }
 	};
@@ -63,7 +62,7 @@ protected:
 
 	static ID _main_thread_id;
 
-	Thread();
+	Thread() {}
 
 public:
 	virtual ID get_id() const = 0;
@@ -74,7 +73,7 @@ public:
 	static void wait_to_finish(Thread *p_thread); ///< waits until thread is finished, and deallocates it.
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings()); ///< Static function to create a thread, will call p_callback
 
-	virtual ~Thread();
+	virtual ~Thread() {}
 };
 
 #endif // THREAD_H

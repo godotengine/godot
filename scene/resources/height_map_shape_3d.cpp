@@ -31,11 +31,10 @@
 #include "height_map_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() {
+Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 
 	if ((map_width != 0) && (map_depth != 0)) {
-
 		// This will be slow for large maps...
 		// also we'll have to figure out how well bullet centers this shape...
 
@@ -81,7 +80,6 @@ real_t HeightMapShape3D::get_enclosing_radius() const {
 }
 
 void HeightMapShape3D::_update_shape() {
-
 	Dictionary d;
 	d["width"] = map_width;
 	d["depth"] = map_depth;
@@ -161,11 +159,13 @@ void HeightMapShape3D::set_map_data(PackedFloat32Array p_new) {
 			min_height = val;
 			max_height = val;
 		} else {
-			if (min_height > val)
+			if (min_height > val) {
 				min_height = val;
+			}
 
-			if (max_height < val)
+			if (max_height < val) {
 				max_height = val;
+			}
 		}
 	}
 
@@ -193,7 +193,6 @@ void HeightMapShape3D::_bind_methods() {
 
 HeightMapShape3D::HeightMapShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_HEIGHTMAP)) {
-
 	map_width = 2;
 	map_depth = 2;
 	map_data.resize(map_width * map_depth);

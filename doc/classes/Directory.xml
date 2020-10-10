@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Directory type. It is used to manage directories and their content (not restricted to the project folder).
-		When creating a new [Directory], its default opened directory will be [code]res://[/code]. This may change in the future, so it is advised to always use [method open] to initialize your [Directory] where you want to operate, with explicit error checking.
+		When creating a new [Directory], it must be explicitly opened using [method open] before most methods can be used. However, [method file_exists] and [method dir_exists] can be used without opening a directory. If so, they use a path relative to [code]res://[/code].
 		Here is an example on how to iterate through the files of a directory:
 		[codeblock]
 		func dir_contents(path):
@@ -24,7 +24,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">
@@ -63,6 +63,7 @@
 			</argument>
 			<description>
 				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
+				If the [Directory] is not open, the path is relative to [code]res://[/code].
 			</description>
 		</method>
 		<method name="file_exists">
@@ -72,6 +73,7 @@
 			</argument>
 			<description>
 				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
+				If the [Directory] is not open, the path is relative to [code]res://[/code].
 			</description>
 		</method>
 		<method name="get_current_dir">

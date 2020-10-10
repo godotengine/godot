@@ -1,28 +1,56 @@
 #!/usr/bin/env python
 
-Import("env")
-
 import modules_builders
+import os
+
+Import("env")
 
 env_modules = env.Clone()
 
 Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
-env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_builders.generate_modules_enabled)
+env.CommandNoCache(
+    "modules_enabled.gen.h",
+    Value(env.module_list),
+    env.Run(
+        modules_builders.generate_modules_enabled,
+        "Generating enabled modules header.",
+        # NOTE: No need to run in subprocess since this is still executed serially.
+        subprocess=False,
+    ),
+)
+
+# Header to be included in `tests/test_main.cpp` to run module-specific tests.
+if env["tests"]:
+    env.CommandNoCache(
+        "modules_tests.gen.h",
+        Value(env.module_list),
+        env.Run(
+            modules_builders.generate_modules_tests,
+            "Generating modules tests header.",
+            # NOTE: No need to run in subprocess since this is still executed serially.
+            subprocess=False,
+        ),
+    )
+    env.AlwaysBuild("modules_tests.gen.h")
 
 vs_sources = []
 # libmodule_<name>.a for each active module.
-for module in env.module_list:
+for name, path in env.module_list.items():
     env.modules_sources = []
-    SConscript(module + "/SCsub")
+
+    if not os.path.isabs(path):
+        SConscript(name + "/SCsub")  # Built-in.
+    else:
+        SConscript(path + "/SCsub")  # Custom.
 
     # Some modules are not linked automatically but can be enabled optionally
     # on iOS, so we handle those specially.
-    if env["platform"] == "iphone" and module in ["arkit", "camera"]:
+    if env["platform"] == "iphone" and name in ["arkit", "camera"]:
         continue
 
-    lib = env_modules.add_library("module_%s" % module, env.modules_sources)
+    lib = env_modules.add_library("module_%s" % name, env.modules_sources)
     env.Prepend(LIBS=[lib])
     if env["vsproj"]:
         vs_sources += env.modules_sources

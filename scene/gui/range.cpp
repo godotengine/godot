@@ -34,7 +34,7 @@ String Range::get_configuration_warning() const {
 	String warning = Control::get_configuration_warning();
 
 	if (shared->exp_ratio && shared->min <= 0) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0.");
@@ -44,7 +44,6 @@ String Range::get_configuration_warning() const {
 }
 
 void Range::_value_changed_notify() {
-
 	_value_changed(shared->val);
 	emit_signal("value_changed", shared->val);
 	update();
@@ -52,53 +51,57 @@ void Range::_value_changed_notify() {
 }
 
 void Range::Shared::emit_value_changed() {
-
 	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
 		Range *r = E->get();
-		if (!r->is_inside_tree())
+		if (!r->is_inside_tree()) {
 			continue;
+		}
 		r->_value_changed_notify();
 	}
 }
 
 void Range::_changed_notify(const char *p_what) {
-
 	emit_signal("changed");
 	update();
 	_change_notify(p_what);
 }
 
 void Range::Shared::emit_changed(const char *p_what) {
-
 	for (Set<Range *>::Element *E = owners.front(); E; E = E->next()) {
 		Range *r = E->get();
-		if (!r->is_inside_tree())
+		if (!r->is_inside_tree()) {
 			continue;
+		}
 		r->_changed_notify(p_what);
 	}
 }
 
 void Range::set_value(double p_val) {
-
-	if (shared->step > 0)
+	if (shared->step > 0) {
 		p_val = Math::round(p_val / shared->step) * shared->step;
+	}
 
-	if (_rounded_values)
+	if (_rounded_values) {
 		p_val = Math::round(p_val);
+	}
 
-	if (!shared->allow_greater && p_val > shared->max - shared->page)
+	if (!shared->allow_greater && p_val > shared->max - shared->page) {
 		p_val = shared->max - shared->page;
+	}
 
-	if (!shared->allow_lesser && p_val < shared->min)
+	if (!shared->allow_lesser && p_val < shared->min) {
 		p_val = shared->min;
+	}
 
-	if (shared->val == p_val)
+	if (shared->val == p_val) {
 		return;
+	}
 
 	shared->val = p_val;
 
 	shared->emit_value_changed();
 }
+
 void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
@@ -107,19 +110,20 @@ void Range::set_min(double p_min) {
 
 	update_configuration_warning();
 }
+
 void Range::set_max(double p_max) {
 	shared->max = p_max;
 	set_value(shared->val);
 
 	shared->emit_changed("max");
 }
-void Range::set_step(double p_step) {
 
+void Range::set_step(double p_step) {
 	shared->step = p_step;
 	shared->emit_changed("step");
 }
-void Range::set_page(double p_page) {
 
+void Range::set_page(double p_page) {
 	shared->page = p_page;
 	set_value(shared->val);
 
@@ -127,37 +131,33 @@ void Range::set_page(double p_page) {
 }
 
 double Range::get_value() const {
-
 	return shared->val;
 }
-double Range::get_min() const {
 
+double Range::get_min() const {
 	return shared->min;
 }
-double Range::get_max() const {
 
+double Range::get_max() const {
 	return shared->max;
 }
-double Range::get_step() const {
 
+double Range::get_step() const {
 	return shared->step;
 }
-double Range::get_page() const {
 
+double Range::get_page() const {
 	return shared->page;
 }
 
 void Range::set_as_ratio(double p_value) {
-
 	double v;
 
 	if (shared->exp_ratio && get_min() >= 0) {
-
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
 		v = Math::pow(2, exp_min + (exp_max - exp_min) * p_value);
 	} else {
-
 		double percent = (get_max() - get_min()) * p_value;
 		if (get_step() > 0) {
 			double steps = round(percent / get_step());
@@ -169,12 +169,11 @@ void Range::set_as_ratio(double p_value) {
 	v = CLAMP(v, get_min(), get_max());
 	set_value(v);
 }
-double Range::get_as_ratio() const {
 
+double Range::get_as_ratio() const {
 	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(get_max(), get_min()), 0.0, "Cannot get ratio when minimum and maximum value are equal.");
 
 	if (shared->exp_ratio && get_min() >= 0) {
-
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
 		float value = CLAMP(get_value(), shared->min, shared->max);
@@ -183,21 +182,18 @@ double Range::get_as_ratio() const {
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
 
 	} else {
-
 		float value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
 	}
 }
 
 void Range::_share(Node *p_range) {
-
 	Range *r = Object::cast_to<Range>(p_range);
 	ERR_FAIL_COND(!r);
 	share(r);
 }
 
 void Range::share(Range *p_range) {
-
 	ERR_FAIL_NULL(p_range);
 
 	p_range->_ref_shared(shared);
@@ -206,7 +202,6 @@ void Range::share(Range *p_range) {
 }
 
 void Range::unshare() {
-
 	Shared *nshared = memnew(Shared);
 	nshared->min = shared->min;
 	nshared->max = shared->max;
@@ -221,9 +216,9 @@ void Range::unshare() {
 }
 
 void Range::_ref_shared(Shared *p_shared) {
-
-	if (shared && p_shared == shared)
+	if (shared && p_shared == shared) {
 		return;
+	}
 
 	_unref_shared();
 	shared = p_shared;
@@ -231,7 +226,6 @@ void Range::_ref_shared(Shared *p_shared) {
 }
 
 void Range::_unref_shared() {
-
 	if (shared) {
 		shared->owners.erase(this);
 		if (shared->owners.size() == 0) {
@@ -242,7 +236,6 @@ void Range::_unref_shared() {
 }
 
 void Range::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_value"), &Range::get_value);
 	ClassDB::bind_method(D_METHOD("get_min"), &Range::get_min);
 	ClassDB::bind_method(D_METHOD("get_max"), &Range::get_max);
@@ -283,49 +276,40 @@ void Range::_bind_methods() {
 }
 
 void Range::set_use_rounded_values(bool p_enable) {
-
 	_rounded_values = p_enable;
 }
 
 bool Range::is_using_rounded_values() const {
-
 	return _rounded_values;
 }
 
 void Range::set_exp_ratio(bool p_enable) {
-
 	shared->exp_ratio = p_enable;
 
 	update_configuration_warning();
 }
 
 bool Range::is_ratio_exp() const {
-
 	return shared->exp_ratio;
 }
 
 void Range::set_allow_greater(bool p_allow) {
-
 	shared->allow_greater = p_allow;
 }
 
 bool Range::is_greater_allowed() const {
-
 	return shared->allow_greater;
 }
 
 void Range::set_allow_lesser(bool p_allow) {
-
 	shared->allow_lesser = p_allow;
 }
 
 bool Range::is_lesser_allowed() const {
-
 	return shared->allow_lesser;
 }
 
 Range::Range() {
-
 	shared = memnew(Shared);
 	shared->min = 0;
 	shared->max = 100;
@@ -341,6 +325,5 @@ Range::Range() {
 }
 
 Range::~Range() {
-
 	_unref_shared();
 }

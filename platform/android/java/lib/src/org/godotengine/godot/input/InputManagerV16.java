@@ -23,12 +23,12 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public class InputManagerV16 implements InputManagerCompat {
-
 	private final InputManager mInputManager;
 	private final Map<InputManagerCompat.InputDeviceListener, V16InputDeviceListener> mListeners;
 

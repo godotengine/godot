@@ -34,24 +34,25 @@
 #include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
-
 	Size2 minsize = get_theme_font("font")->get_string_size(xl_text);
-	if (clip_text)
+	if (clip_text) {
 		minsize.width = 0;
+	}
 
 	if (!expand_icon) {
 		Ref<Texture2D> _icon;
-		if (icon.is_null() && has_theme_icon("icon"))
+		if (icon.is_null() && has_theme_icon("icon")) {
 			_icon = Control::get_theme_icon("icon");
-		else
+		} else {
 			_icon = icon;
+		}
 
 		if (!_icon.is_null()) {
-
 			minsize.height = MAX(minsize.height, _icon->get_height());
 			minsize.width += _icon->get_width();
-			if (xl_text != "")
+			if (xl_text != "") {
 				minsize.width += get_theme_constant("hseparation");
+			}
 		}
 	}
 
@@ -59,21 +60,17 @@ Size2 Button::get_minimum_size() const {
 }
 
 void Button::_set_internal_margin(Margin p_margin, float p_value) {
-
 	_internal_margin[p_margin] = p_value;
 }
 
 void Button::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-
 			xl_text = tr(text);
 			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
 			Color color;
@@ -83,82 +80,88 @@ void Button::_notification(int p_what) {
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
-
 					style = get_theme_stylebox("normal");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_theme_color("font_color");
-					if (has_theme_color("icon_color_normal"))
+					if (has_theme_color("icon_color_normal")) {
 						color_icon = get_theme_color("icon_color_normal");
+					}
 				} break;
 				case DRAW_HOVER_PRESSED: {
-
 					if (has_theme_stylebox("hover_pressed") && has_theme_stylebox_override("hover_pressed")) {
 						style = get_theme_stylebox("hover_pressed");
-						if (!flat)
+						if (!flat) {
 							style->draw(ci, Rect2(Point2(0, 0), size));
-						if (has_theme_color("font_color_hover_pressed"))
+						}
+						if (has_theme_color("font_color_hover_pressed")) {
 							color = get_theme_color("font_color_hover_pressed");
-						else
+						} else {
 							color = get_theme_color("font_color");
-						if (has_theme_color("icon_color_hover_pressed"))
+						}
+						if (has_theme_color("icon_color_hover_pressed")) {
 							color_icon = get_theme_color("icon_color_hover_pressed");
+						}
 
 						break;
 					}
 					[[fallthrough]];
 				}
 				case DRAW_PRESSED: {
-
 					style = get_theme_stylebox("pressed");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					if (has_theme_color("font_color_pressed"))
+					}
+					if (has_theme_color("font_color_pressed")) {
 						color = get_theme_color("font_color_pressed");
-					else
+					} else {
 						color = get_theme_color("font_color");
-					if (has_theme_color("icon_color_pressed"))
+					}
+					if (has_theme_color("icon_color_pressed")) {
 						color_icon = get_theme_color("icon_color_pressed");
+					}
 
 				} break;
 				case DRAW_HOVER: {
-
 					style = get_theme_stylebox("hover");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_theme_color("font_color_hover");
-					if (has_theme_color("icon_color_hover"))
+					if (has_theme_color("icon_color_hover")) {
 						color_icon = get_theme_color("icon_color_hover");
+					}
 
 				} break;
 				case DRAW_DISABLED: {
-
 					style = get_theme_stylebox("disabled");
-					if (!flat)
+					if (!flat) {
 						style->draw(ci, Rect2(Point2(0, 0), size));
+					}
 					color = get_theme_color("font_color_disabled");
-					if (has_theme_color("icon_color_disabled"))
+					if (has_theme_color("icon_color_disabled")) {
 						color_icon = get_theme_color("icon_color_disabled");
+					}
 
 				} break;
 			}
 
 			if (has_focus()) {
-
 				Ref<StyleBox> style2 = get_theme_stylebox("focus");
 				style2->draw(ci, Rect2(Point2(), size));
 			}
 
 			Ref<Font> font = get_theme_font("font");
 			Ref<Texture2D> _icon;
-			if (icon.is_null() && has_theme_icon("icon"))
+			if (icon.is_null() && has_theme_icon("icon")) {
 				_icon = Control::get_theme_icon("icon");
-			else
+			} else {
 				_icon = icon;
+			}
 
 			Rect2 icon_region = Rect2();
 			if (!_icon.is_null()) {
-
 				int valign = size.height - style->get_minimum_size().y;
 				if (is_disabled()) {
 					color_icon.a = 0.4;
@@ -172,8 +175,9 @@ void Button::_notification(int p_what) {
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
 					_size.width -= get_theme_constant("hseparation") + icon_ofs_region;
-					if (!clip_text)
+					if (!clip_text) {
 						_size.width -= get_theme_font("font")->get_string_size(xl_text).width;
+					}
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
 
@@ -209,8 +213,9 @@ void Button::_notification(int p_what) {
 					text_ofs.y += style->get_offset().y;
 				} break;
 				case ALIGN_CENTER: {
-					if (text_ofs.x < 0)
+					if (text_ofs.x < 0) {
 						text_ofs.x = 0;
+					}
 					text_ofs += icon_ofs;
 					text_ofs += style->get_offset();
 				} break;
@@ -235,24 +240,24 @@ void Button::_notification(int p_what) {
 }
 
 void Button::set_text(const String &p_text) {
-
-	if (text == p_text)
+	if (text == p_text) {
 		return;
+	}
 	text = p_text;
 	xl_text = tr(p_text);
 	update();
 	_change_notify("text");
 	minimum_size_changed();
 }
-String Button::get_text() const {
 
+String Button::get_text() const {
 	return text;
 }
 
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
-
-	if (icon == p_icon)
+	if (icon == p_icon) {
 		return;
+	}
 	icon = p_icon;
 	update();
 	_change_notify("icon");
@@ -260,59 +265,49 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 }
 
 Ref<Texture2D> Button::get_icon() const {
-
 	return icon;
 }
 
 void Button::set_expand_icon(bool p_expand_icon) {
-
 	expand_icon = p_expand_icon;
 	update();
 	minimum_size_changed();
 }
 
 bool Button::is_expand_icon() const {
-
 	return expand_icon;
 }
 
 void Button::set_flat(bool p_flat) {
-
 	flat = p_flat;
 	update();
 	_change_notify("flat");
 }
 
 bool Button::is_flat() const {
-
 	return flat;
 }
 
 void Button::set_clip_text(bool p_clip_text) {
-
 	clip_text = p_clip_text;
 	update();
 	minimum_size_changed();
 }
 
 bool Button::get_clip_text() const {
-
 	return clip_text;
 }
 
 void Button::set_text_align(TextAlign p_align) {
-
 	align = p_align;
 	update();
 }
 
 Button::TextAlign Button::get_text_align() const {
-
 	return align;
 }
 
 void Button::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
 	ClassDB::bind_method(D_METHOD("set_button_icon", "texture"), &Button::set_icon);
@@ -339,7 +334,6 @@ void Button::_bind_methods() {
 }
 
 Button::Button(const String &p_text) {
-
 	flat = false;
 	clip_text = false;
 	expand_icon = false;

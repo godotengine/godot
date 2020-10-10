@@ -7,6 +7,8 @@
 		Class representing a square [PrimitiveMesh]. This flat mesh does not have a thickness. By default, this mesh is aligned on the X and Y axes; this default rotation is more suited for use with billboarded materials. Unlike [PlaneMesh], this mesh doesn't provide subdivision options.
 	</description>
 	<tutorials>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
 	</tutorials>
 	<methods>
 	</methods>

@@ -4,7 +4,7 @@
 		Dialog for selecting files or directories in the filesystem.
 	</brief_description>
 	<description>
-		FileDialog is a preset dialog used to choose files and directories in the filesystem. It supports filter masks.
+		FileDialog is a preset dialog used to choose files and directories in the filesystem. It supports filter masks. The FileDialog automatically sets its window title according to the [member file_mode]. If you want to use a custom title, disable this by setting [member mode_overrides_title] to [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -57,6 +57,7 @@
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
 			The file system access scope. See enum [code]Access[/code] constants.
+			[b]Warning:[/b] Currently, in sandboxed environments such as HTML5 builds or sandboxed macOS apps, FileDialog cannot access the host file system. See [url=https://github.com/godotengine/godot-proposals/issues/1123]godot-proposals#1123[/url].
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir" default="&quot;res://&quot;">
 			The current working directory of the file dialog.
@@ -132,6 +133,12 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="file" type="Texture2D">
+			Custom icon for files.
+		</theme_item>
+		<theme_item name="file_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			The color modulation applied to the file icon.
+		</theme_item>
 		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
 			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>

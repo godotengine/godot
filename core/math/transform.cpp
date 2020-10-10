@@ -35,20 +35,17 @@
 #include "core/print_string.h"
 
 void Transform::affine_invert() {
-
 	basis.invert();
 	origin = basis.xform(-origin);
 }
 
 Transform Transform::affine_inverse() const {
-
 	Transform ret = *this;
 	ret.affine_invert();
 	return ret;
 }
 
 void Transform::invert() {
-
 	basis.transpose();
 	origin = basis.xform(-origin);
 }
@@ -62,22 +59,18 @@ Transform Transform::inverse() const {
 }
 
 void Transform::rotate(const Vector3 &p_axis, real_t p_phi) {
-
 	*this = rotated(p_axis, p_phi);
 }
 
 Transform Transform::rotated(const Vector3 &p_axis, real_t p_phi) const {
-
 	return Transform(Basis(p_axis, p_phi), Vector3()) * (*this);
 }
 
 void Transform::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
-
 	basis.rotate(p_axis, p_phi);
 }
 
 Transform Transform::looking_at(const Vector3 &p_target, const Vector3 &p_up) const {
-
 	Transform t = *this;
 	t.set_look_at(origin, p_target, p_up);
 	return t;
@@ -117,7 +110,6 @@ void Transform::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, const
 }
 
 Transform Transform::interpolate_with(const Transform &p_transform, real_t p_c) const {
-
 	/* not sure if very "efficient" but good enough? */
 
 	Vector3 src_scale = basis.get_scale();
@@ -129,88 +121,77 @@ Transform Transform::interpolate_with(const Transform &p_transform, real_t p_c) 
 	Vector3 dst_loc = p_transform.origin;
 
 	Transform interp;
-	interp.basis.set_quat_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.linear_interpolate(dst_scale, p_c));
-	interp.origin = src_loc.linear_interpolate(dst_loc, p_c);
+	interp.basis.set_quat_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
+	interp.origin = src_loc.lerp(dst_loc, p_c);
 
 	return interp;
 }
 
 void Transform::scale(const Vector3 &p_scale) {
-
 	basis.scale(p_scale);
 	origin *= p_scale;
 }
 
 Transform Transform::scaled(const Vector3 &p_scale) const {
-
 	Transform t = *this;
 	t.scale(p_scale);
 	return t;
 }
 
 void Transform::scale_basis(const Vector3 &p_scale) {
-
 	basis.scale(p_scale);
 }
 
 void Transform::translate(real_t p_tx, real_t p_ty, real_t p_tz) {
 	translate(Vector3(p_tx, p_ty, p_tz));
 }
-void Transform::translate(const Vector3 &p_translation) {
 
+void Transform::translate(const Vector3 &p_translation) {
 	for (int i = 0; i < 3; i++) {
 		origin[i] += basis[i].dot(p_translation);
 	}
 }
 
 Transform Transform::translated(const Vector3 &p_translation) const {
-
 	Transform t = *this;
 	t.translate(p_translation);
 	return t;
 }
 
 void Transform::orthonormalize() {
-
 	basis.orthonormalize();
 }
 
 Transform Transform::orthonormalized() const {
-
 	Transform _copy = *this;
 	_copy.orthonormalize();
 	return _copy;
 }
 
 bool Transform::is_equal_approx(const Transform &p_transform) const {
-
 	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
 }
 
 bool Transform::operator==(const Transform &p_transform) const {
-
 	return (basis == p_transform.basis && origin == p_transform.origin);
 }
-bool Transform::operator!=(const Transform &p_transform) const {
 
+bool Transform::operator!=(const Transform &p_transform) const {
 	return (basis != p_transform.basis || origin != p_transform.origin);
 }
 
 void Transform::operator*=(const Transform &p_transform) {
-
 	origin = xform(p_transform.origin);
 	basis *= p_transform.basis;
 }
 
 Transform Transform::operator*(const Transform &p_transform) const {
-
 	Transform t = *this;
 	t *= p_transform;
 	return t;
 }
 
 Transform::operator String() const {
-
 	return basis.operator String() + " - " + origin.operator String();
 }
 

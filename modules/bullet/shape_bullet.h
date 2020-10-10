@@ -31,7 +31,7 @@
 #ifndef SHAPE_BULLET_H
 #define SHAPE_BULLET_H
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/variant.h"
 #include "rid_bullet.h"
 #include "servers/physics_server_3d.h"
@@ -50,9 +50,8 @@ class ShapeOwnerBullet;
 class btBvhTriangleMeshShape;
 
 class ShapeBullet : public RIDBullet {
-
 	Map<ShapeOwnerBullet *, int> owners;
-	real_t margin;
+	real_t margin = 0.04;
 
 protected:
 	/// return self
@@ -95,7 +94,6 @@ public:
 };
 
 class PlaneShapeBullet : public ShapeBullet {
-
 	Plane plane;
 
 public:
@@ -111,7 +109,6 @@ private:
 };
 
 class SphereShapeBullet : public ShapeBullet {
-
 	real_t radius;
 
 public:
@@ -128,7 +125,6 @@ private:
 };
 
 class BoxShapeBullet : public ShapeBullet {
-
 	btVector3 half_extents;
 
 public:
@@ -145,7 +141,6 @@ private:
 };
 
 class CapsuleShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -164,7 +159,6 @@ private:
 };
 
 class CylinderShapeBullet : public ShapeBullet {
-
 	real_t height;
 	real_t radius;
 
@@ -183,7 +177,6 @@ private:
 };
 
 class ConvexPolygonShapeBullet : public ShapeBullet {
-
 public:
 	btAlignedObjectArray<btVector3> vertices;
 
@@ -200,7 +193,7 @@ private:
 };
 
 class ConcavePolygonShapeBullet : public ShapeBullet {
-	class btBvhTriangleMeshShape *meshShape;
+	class btBvhTriangleMeshShape *meshShape = nullptr;
 
 public:
 	Vector<Vector3> faces;
@@ -218,7 +211,6 @@ private:
 };
 
 class HeightMapShapeBullet : public ShapeBullet {
-
 public:
 	Vector<real_t> heights;
 	int width;
@@ -238,10 +230,9 @@ private:
 };
 
 class RayShapeBullet : public ShapeBullet {
-
 public:
-	real_t length;
-	bool slips_on_slope;
+	real_t length = 1;
+	bool slips_on_slope = false;
 
 	RayShapeBullet();
 

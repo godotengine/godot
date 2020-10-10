@@ -36,31 +36,30 @@
 #include "servers/rendering_server.h"
 
 AABB CPUParticles3D::get_aabb() const {
-
 	return AABB();
 }
-Vector<Face3> CPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 
+Vector<Face3> CPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
 void CPUParticles3D::set_emitting(bool p_emitting) {
-
-	if (emitting == p_emitting)
+	if (emitting == p_emitting) {
 		return;
+	}
 
 	emitting = p_emitting;
 	if (emitting) {
 		set_process_internal(true);
 
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (time == 0)
+		if (time == 0) {
 			_update_internal();
+		}
 	}
 }
 
 void CPUParticles3D::set_amount(int p_amount) {
-
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles must be greater than 0.");
 
 	particles.resize(p_amount);
@@ -69,6 +68,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 		for (int i = 0; i < p_amount; i++) {
 			w[i].active = false;
+			w[i].custom[3] = 0.0; // Make sure w component isn't garbage data
 		}
 	}
 
@@ -77,98 +77,89 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 	particle_order.resize(p_amount);
 }
-void CPUParticles3D::set_lifetime(float p_lifetime) {
 
+void CPUParticles3D::set_lifetime(float p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 }
 
 void CPUParticles3D::set_one_shot(bool p_one_shot) {
-
 	one_shot = p_one_shot;
 }
 
 void CPUParticles3D::set_pre_process_time(float p_time) {
-
 	pre_process_time = p_time;
 }
-void CPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 
+void CPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 	explosiveness_ratio = p_ratio;
 }
-void CPUParticles3D::set_randomness_ratio(float p_ratio) {
 
+void CPUParticles3D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 }
-void CPUParticles3D::set_lifetime_randomness(float p_random) {
 
+void CPUParticles3D::set_lifetime_randomness(float p_random) {
 	lifetime_randomness = p_random;
 }
-void CPUParticles3D::set_use_local_coordinates(bool p_enable) {
 
+void CPUParticles3D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 }
-void CPUParticles3D::set_speed_scale(float p_scale) {
 
+void CPUParticles3D::set_speed_scale(float p_scale) {
 	speed_scale = p_scale;
 }
 
 bool CPUParticles3D::is_emitting() const {
-
 	return emitting;
 }
-int CPUParticles3D::get_amount() const {
 
+int CPUParticles3D::get_amount() const {
 	return particles.size();
 }
-float CPUParticles3D::get_lifetime() const {
 
+float CPUParticles3D::get_lifetime() const {
 	return lifetime;
 }
-bool CPUParticles3D::get_one_shot() const {
 
+bool CPUParticles3D::get_one_shot() const {
 	return one_shot;
 }
 
 float CPUParticles3D::get_pre_process_time() const {
-
 	return pre_process_time;
 }
-float CPUParticles3D::get_explosiveness_ratio() const {
 
+float CPUParticles3D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
-float CPUParticles3D::get_randomness_ratio() const {
 
+float CPUParticles3D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
-float CPUParticles3D::get_lifetime_randomness() const {
 
+float CPUParticles3D::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
 bool CPUParticles3D::get_use_local_coordinates() const {
-
 	return local_coords;
 }
 
 float CPUParticles3D::get_speed_scale() const {
-
 	return speed_scale;
 }
 
 void CPUParticles3D::set_draw_order(DrawOrder p_order) {
-
 	draw_order = p_order;
 }
 
 CPUParticles3D::DrawOrder CPUParticles3D::get_draw_order() const {
-
 	return draw_order;
 }
 
 void CPUParticles3D::set_mesh(const Ref<Mesh> &p_mesh) {
-
 	mesh = p_mesh;
 	if (mesh.is_valid()) {
 		RS::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
@@ -178,7 +169,6 @@ void CPUParticles3D::set_mesh(const Ref<Mesh> &p_mesh) {
 }
 
 Ref<Mesh> CPUParticles3D::get_mesh() const {
-
 	return mesh;
 }
 
@@ -199,8 +189,7 @@ bool CPUParticles3D::get_fractional_delta() const {
 }
 
 String CPUParticles3D::get_configuration_warning() const {
-
-	String warnings;
+	String warnings = GeometryInstance3D::get_configuration_warning();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;
@@ -219,15 +208,17 @@ String CPUParticles3D::get_configuration_warning() const {
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
 	if (!mesh_found) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("Nothing is visible because no mesh has been assigned.");
 	}
 
 	if (!anim_material_found && (get_param(PARAM_ANIM_SPEED) != 0.0 || get_param(PARAM_ANIM_OFFSET) != 0.0 ||
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
@@ -235,7 +226,6 @@ String CPUParticles3D::get_configuration_warning() const {
 }
 
 void CPUParticles3D::restart() {
-
 	time = 0;
 	inactive_time = 0;
 	frame_remainder = 0;
@@ -255,71 +245,63 @@ void CPUParticles3D::restart() {
 }
 
 void CPUParticles3D::set_direction(Vector3 p_direction) {
-
 	direction = p_direction;
 }
 
 Vector3 CPUParticles3D::get_direction() const {
-
 	return direction;
 }
 
 void CPUParticles3D::set_spread(float p_spread) {
-
 	spread = p_spread;
 }
 
 float CPUParticles3D::get_spread() const {
-
 	return spread;
 }
 
 void CPUParticles3D::set_flatness(float p_flatness) {
-
 	flatness = p_flatness;
 }
-float CPUParticles3D::get_flatness() const {
 
+float CPUParticles3D::get_flatness() const {
 	return flatness;
 }
 
 void CPUParticles3D::set_param(Parameter p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	parameters[p_param] = p_value;
 }
-float CPUParticles3D::get_param(Parameter p_param) const {
 
+float CPUParticles3D::get_param(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return parameters[p_param];
 }
 
 void CPUParticles3D::set_param_randomness(Parameter p_param, float p_value) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	randomness[p_param] = p_value;
 }
-float CPUParticles3D::get_param_randomness(Parameter p_param) const {
 
+float CPUParticles3D::get_param_randomness(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return randomness[p_param];
 }
 
 static void _adjust_curve_range(const Ref<Curve> &p_curve, float p_min, float p_max) {
-
 	Ref<Curve> curve = p_curve;
-	if (!curve.is_valid())
+	if (!curve.is_valid()) {
 		return;
+	}
 
 	curve->ensure_default_setup(p_min, p_max);
 }
 
 void CPUParticles3D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curve) {
-
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	curve_parameters[p_param] = p_curve;
@@ -350,7 +332,6 @@ void CPUParticles3D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 			_adjust_curve_range(p_curve, -360, 360);
 		} break;
 		case PARAM_SCALE: {
-
 		} break;
 		case PARAM_HUE_VARIATION: {
 			_adjust_curve_range(p_curve, -1, 1);
@@ -364,30 +345,26 @@ void CPUParticles3D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 		}
 	}
 }
-Ref<Curve> CPUParticles3D::get_param_curve(Parameter p_param) const {
 
+Ref<Curve> CPUParticles3D::get_param_curve(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Curve>());
 
 	return curve_parameters[p_param];
 }
 
 void CPUParticles3D::set_color(const Color &p_color) {
-
 	color = p_color;
 }
 
 Color CPUParticles3D::get_color() const {
-
 	return color;
 }
 
 void CPUParticles3D::set_color_ramp(const Ref<Gradient> &p_ramp) {
-
 	color_ramp = p_ramp;
 }
 
 Ref<Gradient> CPUParticles3D::get_color_ramp() const {
-
 	return color_ramp;
 }
 
@@ -410,67 +387,58 @@ void CPUParticles3D::set_emission_shape(EmissionShape p_shape) {
 }
 
 void CPUParticles3D::set_emission_sphere_radius(float p_radius) {
-
 	emission_sphere_radius = p_radius;
 }
 
 void CPUParticles3D::set_emission_box_extents(Vector3 p_extents) {
-
 	emission_box_extents = p_extents;
 }
 
 void CPUParticles3D::set_emission_points(const Vector<Vector3> &p_points) {
-
 	emission_points = p_points;
 }
 
 void CPUParticles3D::set_emission_normals(const Vector<Vector3> &p_normals) {
-
 	emission_normals = p_normals;
 }
 
 void CPUParticles3D::set_emission_colors(const Vector<Color> &p_colors) {
-
 	emission_colors = p_colors;
 }
 
 float CPUParticles3D::get_emission_sphere_radius() const {
-
 	return emission_sphere_radius;
 }
-Vector3 CPUParticles3D::get_emission_box_extents() const {
 
+Vector3 CPUParticles3D::get_emission_box_extents() const {
 	return emission_box_extents;
 }
-Vector<Vector3> CPUParticles3D::get_emission_points() const {
 
+Vector<Vector3> CPUParticles3D::get_emission_points() const {
 	return emission_points;
 }
-Vector<Vector3> CPUParticles3D::get_emission_normals() const {
 
+Vector<Vector3> CPUParticles3D::get_emission_normals() const {
 	return emission_normals;
 }
 
 Vector<Color> CPUParticles3D::get_emission_colors() const {
-
 	return emission_colors;
 }
 
 CPUParticles3D::EmissionShape CPUParticles3D::get_emission_shape() const {
 	return emission_shape;
 }
-void CPUParticles3D::set_gravity(const Vector3 &p_gravity) {
 
+void CPUParticles3D::set_gravity(const Vector3 &p_gravity) {
 	gravity = p_gravity;
 }
 
 Vector3 CPUParticles3D::get_gravity() const {
-
 	return gravity;
 }
 
 void CPUParticles3D::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "color" && color_ramp.is_valid()) {
 		property.usage = 0;
 	}
@@ -497,7 +465,6 @@ void CPUParticles3D::_validate_property(PropertyInfo &property) const {
 }
 
 static uint32_t idhash(uint32_t x) {
-
 	x = ((x >> uint32_t(16)) ^ x) * uint32_t(0x45d9f3b);
 	x = ((x >> uint32_t(16)) ^ x) * uint32_t(0x45d9f3b);
 	x = (x >> uint32_t(16)) ^ x;
@@ -507,18 +474,19 @@ static uint32_t idhash(uint32_t x) {
 static float rand_from_seed(uint32_t &seed) {
 	int k;
 	int s = int(seed);
-	if (s == 0)
+	if (s == 0) {
 		s = 305420679;
+	}
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
+	if (s < 0) {
 		s += 2147483647;
+	}
 	seed = uint32_t(s);
 	return float(seed % uint32_t(65536)) / 65535.0;
 }
 
 void CPUParticles3D::_update_internal() {
-
 	if (particles.size() == 0 || !is_visible_in_tree()) {
 		_set_redraw(false);
 		return;
@@ -546,12 +514,12 @@ void CPUParticles3D::_update_internal() {
 	bool processed = false;
 
 	if (time == 0 && pre_process_time > 0.0) {
-
 		float frame_time;
-		if (fixed_fps > 0)
+		if (fixed_fps > 0) {
 			frame_time = 1.0 / fixed_fps;
-		else
+		} else {
 			frame_time = 1.0 / 30.0;
+		}
 
 		float todo = pre_process_time;
 
@@ -593,7 +561,6 @@ void CPUParticles3D::_update_internal() {
 }
 
 void CPUParticles3D::_particles_process(float p_delta) {
-
 	p_delta *= speed_scale;
 
 	int pcount = particles.size();
@@ -622,11 +589,11 @@ void CPUParticles3D::_particles_process(float p_delta) {
 	float system_phase = time / lifetime;
 
 	for (int i = 0; i < pcount; i++) {
-
 		Particle &p = parray[i];
 
-		if (!emitting && !p.active)
+		if (!emitting && !p.active) {
 			continue;
+		}
 
 		float local_delta = p_delta;
 
@@ -680,7 +647,6 @@ void CPUParticles3D::_particles_process(float p_delta) {
 		}
 
 		if (restart) {
-
 			if (!emitting) {
 				p.active = false;
 				continue;
@@ -749,10 +715,10 @@ void CPUParticles3D::_particles_process(float p_delta) {
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
-
 					int pc = emission_points.size();
-					if (pc == 0)
+					if (pc == 0) {
 						break;
+					}
 
 					int random_idx = Math::rand() % pc;
 
@@ -760,13 +726,15 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
 						if (flags[FLAG_DISABLE_Z]) {
-							/*
-							mat2 rotm;
-							";
-									rotm[0] = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xy;
-							rotm[1] = rotm[0].yx * vec2(1.0, -1.0);
-							VELOCITY.xy = rotm * VELOCITY.xy;
-							*/
+							Vector3 normal = emission_normals.get(random_idx);
+							Vector2 normal_2d(normal.x, normal.y);
+							Transform2D m2;
+							m2.set_axis(0, normal_2d);
+							m2.set_axis(1, normal_2d.tangent());
+							Vector2 velocity_2d(p.velocity.x, p.velocity.y);
+							velocity_2d = m2.basis_xform(velocity_2d);
+							p.velocity.x = velocity_2d.x;
+							p.velocity.y = velocity_2d.y;
 						} else {
 							Vector3 normal = emission_normals.get(random_idx);
 							Vector3 v0 = Math::abs(normal.z) < 0.999 ? Vector3(0.0, 0.0, 1.0) : Vector3(0, 1.0, 0.0);
@@ -804,7 +772,6 @@ void CPUParticles3D::_particles_process(float p_delta) {
 		} else if (p.time > p.lifetime) {
 			p.active = false;
 		} else {
-
 			uint32_t alt_seed = p.seed;
 
 			p.time += local_delta;
@@ -874,7 +841,6 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector3();
 			//apply tangential acceleration;
 			if (flags[FLAG_DISABLE_Z]) {
-
 				Vector2 yx = Vector2(diff.y, diff.x);
 				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
 				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
@@ -902,7 +868,6 @@ void CPUParticles3D::_particles_process(float p_delta) {
 				p.velocity = p.velocity.normalized() * tex_linear_velocity;
 			}
 			if (parameters[PARAM_DAMPING] + tex_damping > 0.0) {
-
 				float v = p.velocity.length();
 				float damp = (parameters[PARAM_DAMPING] + tex_damping) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_DAMPING]);
 				v -= damp * local_delta;
@@ -959,7 +924,6 @@ void CPUParticles3D::_particles_process(float p_delta) {
 		p.color *= p.base_color;
 
 		if (flags[FLAG_DISABLE_Z]) {
-
 			if (flags[FLAG_ALIGN_Y_TO_VELOCITY]) {
 				if (p.velocity.length() > 0.0) {
 					p.transform.basis.set_axis(1, p.velocity.normalized());
@@ -1003,7 +967,9 @@ void CPUParticles3D::_particles_process(float p_delta) {
 
 		//scale by scale
 		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale < 0.000001) base_scale = 0.000001;
+		if (base_scale < 0.000001) {
+			base_scale = 0.000001;
+		}
 
 		p.transform.basis.scale(Vector3(1, 1, 1) * base_scale);
 
@@ -1045,7 +1011,6 @@ void CPUParticles3D::_update_particle_data_buffer() {
 				Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
 
 				if (local_coords) {
-
 					// will look different from Particles in editor as this is based on the camera in the scenetree
 					// and not the editor camera
 					dir = inv_emission_transform.xform(dir).normalized();
@@ -1062,7 +1027,6 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	}
 
 	for (int i = 0; i < pc; i++) {
-
 		int idx = order ? order[i] : i;
 
 		Transform t = r[idx].transform;
@@ -1107,8 +1071,9 @@ void CPUParticles3D::_update_particle_data_buffer() {
 }
 
 void CPUParticles3D::_set_redraw(bool p_redraw) {
-	if (redraw == p_redraw)
+	if (redraw == p_redraw) {
 		return;
+	}
 	redraw = p_redraw;
 
 	{
@@ -1129,7 +1094,6 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 }
 
 void CPUParticles3D::_update_render_thread() {
-
 	MutexLock lock(update_mutex);
 
 	if (can_update) {
@@ -1139,13 +1103,13 @@ void CPUParticles3D::_update_render_thread() {
 }
 
 void CPUParticles3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		set_process_internal(emitting);
 
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -1154,8 +1118,9 @@ void CPUParticles3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		// first update before rendering to avoid one frame delay after emitting starts
-		if (emitting && (time == 0))
+		if (emitting && (time == 0)) {
 			_update_internal();
+		}
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1163,11 +1128,9 @@ void CPUParticles3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-
 		inv_emission_transform = get_global_transform().affine_inverse();
 
 		if (!local_coords) {
-
 			int pc = particles.size();
 
 			float *w = particle_data.ptrw();
@@ -1175,7 +1138,6 @@ void CPUParticles3D::_notification(int p_what) {
 			float *ptr = w;
 
 			for (int i = 0; i < pc; i++) {
-
 				Transform t = inv_emission_transform * r[i].transform;
 
 				if (r[i].active) {
@@ -1204,7 +1166,6 @@ void CPUParticles3D::_notification(int p_what) {
 }
 
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
-
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
 	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
@@ -1223,8 +1184,9 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_mesh(particles->get_draw_pass_mesh(0));
 
 	Ref<ParticlesMaterial> material = particles->get_process_material();
-	if (material.is_null())
+	if (material.is_null()) {
 		return;
+	}
 
 	set_direction(material->get_direction());
 	set_spread(material->get_spread());
@@ -1252,7 +1214,8 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_param(m_param, material->get_param(ParticlesMaterial::m_param));                  \
 	{                                                                                     \
 		Ref<CurveTexture> ctex = material->get_param_texture(ParticlesMaterial::m_param); \
-		if (ctex.is_valid()) set_param_curve(m_param, ctex->get_curve());                 \
+		if (ctex.is_valid())                                                              \
+			set_param_curve(m_param, ctex->get_curve());                                  \
 	}                                                                                     \
 	set_param_randomness(m_param, material->get_param_randomness(ParticlesMaterial::m_param));
 
@@ -1273,7 +1236,6 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 }
 
 void CPUParticles3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &CPUParticles3D::set_emitting);
 	ClassDB::bind_method(D_METHOD("set_amount", "amount"), &CPUParticles3D::set_amount);
 	ClassDB::bind_method(D_METHOD("set_lifetime", "secs"), &CPUParticles3D::set_lifetime);
@@ -1383,7 +1345,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles3D::convert_from_particles);
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
@@ -1478,7 +1440,6 @@ void CPUParticles3D::_bind_methods() {
 }
 
 CPUParticles3D::CPUParticles3D() {
-
 	time = 0;
 	inactive_time = 0;
 	frame_remainder = 0;

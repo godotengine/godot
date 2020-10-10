@@ -32,9 +32,10 @@
 #define SCENARIO_FX_H
 
 #include "scene/3d/node_3d.h"
+#include "scene/resources/camera_effects.h"
+#include "scene/resources/environment.h"
 
 class WorldEnvironment : public Node {
-
 	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;
@@ -51,7 +52,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	WorldEnvironment();
 };

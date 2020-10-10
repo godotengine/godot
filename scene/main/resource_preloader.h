@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class ResourcePreloader : public Node {
-
 	GDCLASS(ResourcePreloader, Node);
 
 	Map<StringName, RES> resources;

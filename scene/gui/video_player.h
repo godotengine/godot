@@ -37,11 +37,9 @@
 #include "servers/audio_server.h"
 
 class VideoPlayer : public Control {
-
 	GDCLASS(VideoPlayer, Control);
 
 	struct Output {
-
 		AudioFrame vol;
 		int bus_index;
 		Viewport *viewport; //pointer only used for reference to previous mix
@@ -79,10 +77,10 @@ class VideoPlayer : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
-	void _validate_property(PropertyInfo &p_property) const;
+	void _validate_property(PropertyInfo &p_property) const override;
 
 public:
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 

@@ -44,7 +44,6 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tool_button.h"
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
@@ -59,7 +58,7 @@ class AnimationTimelineEdit : public Range {
 
 	HBoxContainer *len_hb;
 	EditorSpinSlider *length;
-	ToolButton *loop;
+	Button *loop;
 	TextureRect *time_icon;
 
 	MenuButton *add_track;
@@ -98,7 +97,7 @@ public:
 
 	float get_zoom_scale() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void set_animation(const Ref<Animation> &p_animation);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
@@ -121,7 +120,6 @@ public:
 class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
-
 	GDCLASS(AnimationTrackEdit, Control);
 
 	enum {
@@ -194,11 +192,11 @@ protected:
 	virtual void _gui_input(const Ref<InputEvent> &p_event);
 
 public:
-	virtual Variant get_drag_data(const Point2 &p_point);
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual Variant get_drag_data(const Point2 &p_point) override;
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
@@ -220,7 +218,7 @@ public:
 	UndoRedo *get_undo_redo() const { return undo_redo; }
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
@@ -266,7 +264,7 @@ protected:
 
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
 
@@ -311,7 +309,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	HSlider *zoom;
 	EditorSpinSlider *step;
 	TextureRect *zoom_icon;
-	ToolButton *snap;
+	Button *snap;
 	OptionButton *snap_mode;
 
 	Button *imported_anim_warning;
@@ -354,7 +352,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	bool keying;
 
 	struct InsertData {
-
 		Animation::TrackType type;
 		NodePath path;
 		int track_idx;
@@ -395,14 +392,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	//selection
 
 	struct SelectedKey {
-
 		int track;
 		int key;
 		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; };
 	};
 
 	struct KeyInfo {
-
 		float pos;
 	};
 
@@ -461,8 +456,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _anim_duplicate_keys(bool transpose);
 
 	void _view_group_toggle();
-	ToolButton *view_group;
-	ToolButton *selected_filter;
+	Button *view_group;
+	Button *selected_filter;
 
 	void _selection_changed();
 

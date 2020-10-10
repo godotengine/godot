@@ -40,6 +40,7 @@ void RasterizerScene::InstanceDependency::instance_notify_changed(bool p_aabb, b
 		E->key()->dependency_changed(p_aabb, p_dependencies);
 	}
 }
+
 void RasterizerScene::InstanceDependency::instance_notify_deleted(RID p_deleted) {
 	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependency_deleted(p_deleted);
@@ -63,7 +64,6 @@ RasterizerScene::InstanceDependency::~InstanceDependency() {
 }
 
 Rasterizer *Rasterizer::create() {
-
 	return _create_func();
 }
 
@@ -72,6 +72,5 @@ RasterizerCanvas *RasterizerCanvas::singleton = nullptr;
 RasterizerStorage *RasterizerStorage::base_singleton = nullptr;
 
 RasterizerStorage::RasterizerStorage() {
-
 	base_singleton = this;
 }

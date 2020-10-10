@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTexture" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Performs a 2D texture lookup within the visual shader graph.
 	</brief_description>
 	<description>
+		Performs a lookup operation on the provided texture, with support for multiple texture sources to choose from.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,30 +12,42 @@
 	</methods>
 	<members>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeTexture.Source" default="0">
+			Determines the source for the lookup. See [enum Source] for options.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			The source texture, if needed for the selected [member source].
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTexture.TextureType" default="0">
+			Specifies the type of the texture if [member source] is set to [constant SOURCE_TEXTURE]. See [enum TextureType] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="SOURCE_TEXTURE" value="0" enum="Source">
+			Use the texture given as an argument for this function.
 		</constant>
 		<constant name="SOURCE_SCREEN" value="1" enum="Source">
+			Use the current viewport's texture as the source.
 		</constant>
 		<constant name="SOURCE_2D_TEXTURE" value="2" enum="Source">
+			Use the texture from this shader's texture built-in (e.g. a texture of a [Sprite2D]).
 		</constant>
 		<constant name="SOURCE_2D_NORMAL" value="3" enum="Source">
+			Use the texture from this shader's normal map built-in.
 		</constant>
 		<constant name="SOURCE_DEPTH" value="4" enum="Source">
+			Use the depth texture available for this shader.
 		</constant>
 		<constant name="SOURCE_PORT" value="5" enum="Source">
+			Use the texture provided in the input port for this function.
 		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
+			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
+			Adds [code]hint_albedo[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
 		</constant>
 		<constant name="TYPE_NORMALMAP" value="2" enum="TextureType">
+			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.
 		</constant>
 	</constants>
 </class>

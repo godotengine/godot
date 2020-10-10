@@ -40,7 +40,15 @@
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 1
+#define PACK_FORMAT_VERSION 2
+
+enum PackFlags {
+	PACK_DIR_ENCRYPTED = 1 << 0
+};
+
+enum PackFileFlags {
+	PACK_FILE_ENCRYPTED = 1 << 0
+};
 
 class PackSource;
 
@@ -51,27 +59,26 @@ class PackedData {
 
 public:
 	struct PackedFile {
-
 		String pack;
 		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
+		bool encrypted;
 	};
 
 private:
 	struct PackedDir {
-		PackedDir *parent;
+		PackedDir *parent = nullptr;
 		String name;
 		Map<String, PackedDir *> subdirs;
 		Set<String> files;
 	};
 
 	struct PathMD5 {
-		uint64_t a;
-		uint64_t b;
+		uint64_t a = 0;
+		uint64_t b = 0;
 		bool operator<(const PathMD5 &p_md5) const {
-
 			if (p_md5.a == a) {
 				return b < p_md5.b;
 			} else {
@@ -81,16 +88,14 @@ private:
 
 		bool operator==(const PathMD5 &p_md5) const {
 			return a == p_md5.a && b == p_md5.b;
-		};
+		}
 
-		PathMD5() {
-			a = b = 0;
-		};
+		PathMD5() {}
 
 		PathMD5(const Vector<uint8_t> p_buf) {
 			a = *((uint64_t *)&p_buf[0]);
 			b = *((uint64_t *)&p_buf[8]);
-		};
+		}
 	};
 
 	Map<PathMD5, PackedFile> files;
@@ -98,22 +103,21 @@ private:
 	Vector<PackSource *> sources;
 
 	PackedDir *root;
-	//Map<String,PackedDir*> dirs;
 
 	static PackedData *singleton;
-	bool disabled;
+	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files); // for PackSource
+	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path, bool p_replace_files);
+	Error add_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
@@ -123,26 +127,24 @@ public:
 };
 
 class PackSource {
-
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {
-
 public:
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
 class FileAccessPack : public FileAccess {
-
 	PackedData::PackedFile pf;
 
 	mutable size_t pos;
 	mutable bool eof;
+	uint64_t off;
 
 	FileAccess *f;
 	virtual Error _open(const String &p_path, int p_mode_flags);
@@ -181,29 +183,28 @@ public:
 };
 
 FileAccess *PackedData::try_open_path(const String &p_path) {
-
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
-	if (!E)
+	if (!E) {
 		return nullptr; //not found
-	if (E->get().offset == 0)
+	}
+	if (E->get().offset == 0) {
 		return nullptr; //was erased
+	}
 
 	return E->get().src->get_file(p_path, &E->get());
 }
 
 bool PackedData::has_path(const String &p_path) {
-
 	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
 class DirAccessPack : public DirAccess {
-
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;
 	List<String> list_files;
-	bool cdir;
+	bool cdir = false;
 
 public:
 	virtual Error list_dir_begin();
@@ -231,7 +232,7 @@ public:
 	virtual String get_filesystem_type() const;
 
 	DirAccessPack();
-	~DirAccessPack();
+	~DirAccessPack() {}
 };
 
 #endif // FILE_ACCESS_PACK_H

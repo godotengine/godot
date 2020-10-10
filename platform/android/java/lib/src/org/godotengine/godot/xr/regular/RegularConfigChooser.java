@@ -30,17 +30,18 @@
 
 package org.godotengine.godot.xr.regular;
 
+import org.godotengine.godot.utils.GLUtils;
+
 import android.opengl.GLSurfaceView;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.utils.GLUtils;
 
 /**
  * Used to select the egl config for pancake games.
  */
 public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
-
 	private static final String TAG = RegularConfigChooser.class.getSimpleName();
 
 	private int[] mValue = new int[1];
@@ -72,7 +73,6 @@ public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 	}
 
 	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
-
 		/* Get the number of minimally matching EGL configurations
 		 */
 		int[] num_config = new int[1];
@@ -127,7 +127,6 @@ public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 
 	private int findConfigAttrib(EGL10 egl, EGLDisplay display,
 			EGLConfig config, int attribute, int defaultValue) {
-
 		if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
 			return mValue[0];
 		}

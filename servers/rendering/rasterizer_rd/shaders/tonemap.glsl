@@ -1,29 +1,24 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
-
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
 	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
@@ -260,7 +255,6 @@ vec3 apply_color_correction(vec3 color, sampler3D correction_tex) {
 }
 
 vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
-
 	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
@@ -298,10 +292,11 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 											textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz * exposure);
 
 	float lumaB = dot(rgbB, luma);
-	if ((lumaB < lumaMin) || (lumaB > lumaMax))
+	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
 		return rgbA;
-	else
+	} else {
 		return rgbB;
+	}
 }
 
 void main() {
@@ -320,7 +315,6 @@ void main() {
 	// Early Tonemap & SRGB Conversion
 
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
-
 		vec3 glow = gather_glow(source_glow, uv_interp);
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
@@ -335,7 +329,6 @@ void main() {
 	// Glow
 
 	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
-
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
 
 		// high dynamic range -> SRGB

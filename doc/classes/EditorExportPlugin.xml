@@ -70,12 +70,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="add_ios_embedded_framework">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
+				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
+				This method should not be used for System libraries as they are already present on the device.
+			</description>
+		</method>
 		<method name="add_ios_framework">
 			<return type="void">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Adds a static library (*.a) or dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project.
 			</description>
 		</method>
 		<method name="add_ios_linker_flags">

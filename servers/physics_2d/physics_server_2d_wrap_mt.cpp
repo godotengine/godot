@@ -33,25 +33,21 @@
 #include "core/os/os.h"
 
 void PhysicsServer2DWrapMT::thread_exit() {
-
 	exit = true;
 }
 
 void PhysicsServer2DWrapMT::thread_step(real_t p_delta) {
-
 	physics_2d_server->step(p_delta);
 	step_sem.post();
 }
 
 void PhysicsServer2DWrapMT::_thread_callback(void *_instance) {
-
 	PhysicsServer2DWrapMT *vsmt = reinterpret_cast<PhysicsServer2DWrapMT *>(_instance);
 
 	vsmt->thread_loop();
 }
 
 void PhysicsServer2DWrapMT::thread_loop() {
-
 	server_thread = Thread::get_caller_id();
 
 	physics_2d_server->init();
@@ -71,57 +67,47 @@ void PhysicsServer2DWrapMT::thread_loop() {
 /* EVENT QUEUING */
 
 void PhysicsServer2DWrapMT::step(real_t p_step) {
-
 	if (create_thread) {
-
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_step, p_step);
 	} else {
-
 		command_queue.flush_all(); //flush all pending from other threads
 		physics_2d_server->step(p_step);
 	}
 }
 
 void PhysicsServer2DWrapMT::sync() {
-
 	if (thread) {
-		if (first_frame)
+		if (first_frame) {
 			first_frame = false;
-		else
+		} else {
 			step_sem.wait(); //must not wait if a step was not issued
+		}
 	}
 	physics_2d_server->sync();
 }
 
 void PhysicsServer2DWrapMT::flush_queries() {
-
 	physics_2d_server->flush_queries();
 }
 
 void PhysicsServer2DWrapMT::end_sync() {
-
 	physics_2d_server->end_sync();
 }
 
 void PhysicsServer2DWrapMT::init() {
-
 	if (create_thread) {
-
 		//OS::get_singleton()->release_rendering_thread();
 		thread = Thread::create(_thread_callback, this);
 		while (!step_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	} else {
-
 		physics_2d_server->init();
 	}
 }
 
 void PhysicsServer2DWrapMT::finish() {
-
 	if (thread) {
-
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_exit);
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
@@ -147,7 +133,6 @@ void PhysicsServer2DWrapMT::finish() {
 
 PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
-
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
 	thread = nullptr;
@@ -167,7 +152,6 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 }
 
 PhysicsServer2DWrapMT::~PhysicsServer2DWrapMT() {
-
 	memdelete(physics_2d_server);
 	//finish();
 }

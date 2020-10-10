@@ -61,12 +61,10 @@ public:
 	};
 
 	struct OverlappingObjectData {
-		CollisionObjectBullet *object;
-		OverlapState state;
+		CollisionObjectBullet *object = nullptr;
+		OverlapState state = OVERLAP_STATE_ENTER;
 
-		OverlappingObjectData() :
-				object(nullptr),
-				state(OVERLAP_STATE_ENTER) {}
+		OverlappingObjectData() {}
 		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
 				object(p_object),
 				state(p_state) {}
@@ -86,19 +84,19 @@ private:
 
 	btGhostObject *btGhost;
 	Vector<OverlappingObjectData> overlappingObjects;
-	bool monitorable;
+	bool monitorable = true;
 
-	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode;
-	bool spOv_gravityPoint;
-	real_t spOv_gravityPointDistanceScale;
-	real_t spOv_gravityPointAttenuation;
-	Vector3 spOv_gravityVec;
-	real_t spOv_gravityMag;
-	real_t spOv_linearDump;
-	real_t spOv_angularDump;
-	int spOv_priority;
+	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	bool spOv_gravityPoint = false;
+	real_t spOv_gravityPointDistanceScale = 0;
+	real_t spOv_gravityPointAttenuation = 1;
+	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
+	real_t spOv_gravityMag = 10;
+	real_t spOv_linearDump = 0.1;
+	real_t spOv_angularDump = 0.1;
+	int spOv_priority = 0;
 
-	bool isScratched;
+	bool isScratched = false;
 
 	InOutEventCallback eventsCallbacks[2];
 

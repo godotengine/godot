@@ -32,12 +32,12 @@
 #define PERFORMANCE_H
 
 #include "core/object.h"
+#include "core/ordered_hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
 
 class Performance : public Object {
-
 	GDCLASS(Performance, Object);
 
 	static Performance *singleton;
@@ -47,6 +47,19 @@ class Performance : public Object {
 
 	float _process_time;
 	float _physics_process_time;
+
+	class MonitorCall {
+		Callable _callable;
+		Vector<Variant> _arguments;
+
+	public:
+		MonitorCall(Callable p_callable, Vector<Variant> p_arguments);
+		MonitorCall();
+		Variant call(bool &r_error, String &r_error_message);
+	};
+
+	OrderedHashMap<StringName, MonitorCall> _monitor_map;
+	uint64_t _monitor_modification_time;
 
 public:
 	enum Monitor {
@@ -95,6 +108,14 @@ public:
 
 	void set_process_time(float p_pt);
 	void set_physics_process_time(float p_pt);
+
+	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
+	void remove_custom_monitor(const StringName &p_id);
+	bool has_custom_monitor(const StringName &p_id);
+	Variant get_custom_monitor(const StringName &p_id);
+	Array get_custom_monitor_names();
+
+	uint64_t get_monitor_modification_time();
 
 	static Performance *get_singleton() { return singleton; }
 

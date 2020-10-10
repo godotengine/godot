@@ -38,7 +38,6 @@
 #include "scene/gui/box_container.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 		options->hide();
@@ -46,12 +45,10 @@ void MeshInstance3DEditor::_node_removed(Node *p_node) {
 }
 
 void MeshInstance3DEditor::edit(MeshInstance3D *p_mesh) {
-
 	node = p_mesh;
 }
 
 void MeshInstance3DEditor::_menu_option(int p_option) {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("Mesh is empty!"));
@@ -61,7 +58,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
 		case MENU_OPTION_CREATE_STATIC_TRIMESH_BODY: {
-
 			EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
@@ -95,18 +91,20 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Create Static Trimesh Body"));
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-
 				MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E->get());
-				if (!instance)
+				if (!instance) {
 					continue;
+				}
 
 				Ref<Mesh> m = instance->get_mesh();
-				if (m.is_null())
+				if (m.is_null()) {
 					continue;
+				}
 
 				Ref<Shape3D> shape = m->create_trimesh_shape();
-				if (shape.is_null())
+				if (shape.is_null()) {
 					continue;
+				}
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
@@ -127,7 +125,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("This doesn't work on scene root!"));
 				err_dialog->popup_centered();
@@ -135,11 +132,13 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 
 			Ref<Shape3D> shape = mesh->create_trimesh_shape();
-			if (shape.is_null())
+			if (shape.is_null()) {
 				return;
+			}
 
 			CollisionShape3D *cshape = memnew(CollisionShape3D);
 			cshape->set_shape(shape);
+			cshape->set_transform(node->get_transform());
 
 			Node *owner = node->get_owner();
 
@@ -155,7 +154,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->commit_action();
 		} break;
 		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
 				err_dialog->popup_centered();
@@ -189,7 +187,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES: {
-
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create multiple convex collision shapes for the scene root."));
 				err_dialog->popup_centered();
@@ -208,7 +205,6 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Create Multiple Convex Shapes"));
 
 			for (int i = 0; i < shapes.size(); i++) {
-
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shapes[i]);
 				cshape->set_transform(node->get_transform());
@@ -226,11 +222,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_NAVMESH: {
-
 			Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 
-			if (nmesh.is_null())
+			if (nmesh.is_null()) {
 				return;
+			}
 
 			nmesh->create_from_mesh(mesh);
 			NavigationRegion3D *nmi = memnew(NavigationRegion3D);
@@ -250,11 +246,9 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
-
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
-
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
@@ -292,15 +286,15 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 }
 
 struct MeshInstance3DEditorEdgeSort {
-
 	Vector2 a;
 	Vector2 b;
 
 	bool operator<(const MeshInstance3DEditorEdgeSort &p_b) const {
-		if (a == p_b.a)
+		if (a == p_b.a) {
 			return b < p_b.b;
-		else
+		} else {
 			return a < p_b.a;
+		}
 	}
 
 	MeshInstance3DEditorEdgeSort() {}
@@ -316,15 +310,15 @@ struct MeshInstance3DEditorEdgeSort {
 };
 
 void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(!mesh.is_valid());
 
 	Set<MeshInstance3DEditorEdgeSort> edges;
 	uv_lines.clear();
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 		Array a = mesh->surface_get_arrays(i);
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
@@ -349,9 +343,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		}
 
 		for (int j = 0; j < ic; j += 3) {
-
 			for (int k = 0; k < 3; k++) {
-
 				MeshInstance3DEditorEdgeSort edge;
 				if (ri) {
 					edge.a = r[ri[j + k]];
@@ -361,8 +353,9 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 					edge.b = r[j + ((k + 1) % 3)];
 				}
 
-				if (edges.has(edge))
+				if (edges.has(edge)) {
 					continue;
+				}
 
 				uv_lines.push_back(edge.a);
 				uv_lines.push_back(edge.b);
@@ -375,9 +368,9 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstance3DEditor::_debug_uv_draw() {
-
-	if (uv_lines.size() == 0)
+	if (uv_lines.size() == 0) {
 		return;
+	}
 
 	debug_uv->set_clip_contents(true);
 	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), Color(0.2, 0.2, 0.0));
@@ -386,7 +379,6 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
-
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
@@ -435,7 +427,6 @@ void MeshInstance3DEditor::_bind_methods() {
 }
 
 MeshInstance3DEditor::MeshInstance3DEditor() {
-
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
@@ -495,28 +486,23 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 }
 
 void MeshInstance3DEditorPlugin::edit(Object *p_object) {
-
 	mesh_editor->edit(Object::cast_to<MeshInstance3D>(p_object));
 }
 
 bool MeshInstance3DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("MeshInstance3D");
 }
 
 void MeshInstance3DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		mesh_editor->options->show();
 	} else {
-
 		mesh_editor->options->hide();
 		mesh_editor->edit(nullptr);
 	}
 }
 
 MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	mesh_editor = memnew(MeshInstance3DEditor);
 	editor->get_viewport()->add_child(mesh_editor);

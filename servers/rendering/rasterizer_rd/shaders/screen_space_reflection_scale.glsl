@@ -1,14 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_ssr;
 layout(set = 1, binding = 0) uniform sampler2D source_depth;
@@ -18,7 +14,6 @@ layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_depth
 layout(rgba8, set = 3, binding = 1) uniform restrict writeonly image2D dest_normal;
 
 layout(push_constant, binding = 1, std430) uniform Params {
-
 	ivec2 screen_size;
 	float camera_z_near;
 	float camera_z_far;
@@ -30,11 +25,10 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThan(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 	//do not filter, SSR will generate arctifacts if this is done
@@ -45,13 +39,11 @@ void main() {
 	vec3 normal;
 
 	if (params.filtered) {
-
 		color = vec4(0.0);
 		depth = 0.0;
 		normal = vec3(0.0);
 
 		for (int i = 0; i < 4; i++) {
-
 			ivec2 ofs = ssC << 1;
 			if (bool(i & 1)) {
 				ofs.x += 1;
@@ -75,7 +67,6 @@ void main() {
 		color /= 4.0;
 		depth /= 4.0;
 		normal = normalize(normal / 4.0) * 0.5 + 0.5;
-
 	} else {
 		color = texelFetch(source_ssr, ssC << 1, 0);
 		depth = texelFetch(source_depth, ssC << 1, 0).r;

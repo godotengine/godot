@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Label : public Control {
-
 	GDCLASS(Label, Control);
 
 public:
@@ -55,48 +54,40 @@ public:
 	};
 
 private:
-	Align align;
-	VAlign valign;
+	Align align = ALIGN_LEFT;
+	VAlign valign = VALIGN_TOP;
 	String text;
 	String xl_text;
-	bool autowrap;
-	bool clip;
+	bool autowrap = false;
+	bool clip = false;
 	Size2 minsize;
-	int line_count;
-	bool uppercase;
+	int line_count = 0;
+	bool uppercase = false;
 
 	int get_longest_line_width() const;
 
 	struct WordCache {
-
 		enum {
 			CHAR_NEWLINE = -1,
 			CHAR_WRAPLINE = -2
 		};
-		int char_pos; // if -1, then newline
-		int word_len;
-		int pixel_width;
-		int space_count;
-		WordCache *next;
-		WordCache() {
-			char_pos = 0;
-			word_len = 0;
-			pixel_width = 0;
-			next = 0;
-			space_count = 0;
-		}
+		int char_pos = 0; // if -1, then newline
+		int word_len = 0;
+		int pixel_width = 0;
+		int space_count = 0;
+		WordCache *next = nullptr;
 	};
 
-	bool word_cache_dirty;
+	bool word_cache_dirty = true;
 	void regenerate_word_cache();
 
-	float percent_visible;
+	float percent_visible = 1;
 
-	WordCache *word_cache;
-	int total_char_cache;
-	int visible_chars;
-	int lines_skipped;
-	int max_lines_visible;
+	WordCache *word_cache = nullptr;
+	int total_char_cache = 0;
+	int visible_chars = -1;
+	int lines_skipped = 0;
+	int max_lines_visible = -1;
 
 protected:
 	void _notification(int p_what);
@@ -104,7 +95,7 @@ protected:
 	static void _bind_methods();
 	// bind helpers
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_align(Align p_align);
 	Align get_align() const;

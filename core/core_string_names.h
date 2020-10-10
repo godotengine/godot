@@ -34,7 +34,6 @@
 #include "core/string_name.h"
 
 class CoreStringNames {
-
 	friend void register_core_types();
 	friend void unregister_core_types();
 
@@ -93,6 +92,8 @@ public:
 
 	StringName call;
 	StringName call_deferred;
+	StringName bind;
+	StringName unbind;
 	StringName emit;
 	StringName notification;
 };

@@ -7,6 +7,8 @@
 		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
 	</description>
 	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 	</methods>
@@ -17,7 +19,7 @@
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 			Sets the render priority for transparent objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects.
-			[b]Note:[/b] this only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are sorted based on depth, while transparent objects are sorted from back to front (subject to priority).
+			[b]Note:[/b] this only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
 		</member>
 	</members>
 	<constants>

@@ -40,7 +40,6 @@
 #include "scene/resources/texture.h"
 
 class TileSet : public Resource {
-
 	GDCLASS(TileSet, Resource);
 
 public:
@@ -48,13 +47,10 @@ public:
 		Ref<Shape2D> shape;
 		Transform2D shape_transform;
 		Vector2 autotile_coord;
-		bool one_way_collision;
-		float one_way_collision_margin;
+		bool one_way_collision = false;
+		float one_way_collision_margin = 1.0;
 
-		ShapeData() {
-			one_way_collision = false;
-			one_way_collision_margin = 1.0;
-		}
+		ShapeData() {}
 	};
 
 	enum BitmaskMode {
@@ -92,27 +88,22 @@ public:
 	};
 
 	struct AutotileData {
-		BitmaskMode bitmask_mode;
-		Size2 size;
-		int spacing;
-		Vector2 icon_coord;
+		BitmaskMode bitmask_mode = BITMASK_2X2;
+		// Default size to prevent invalid value
+		Size2 size = Size2(64, 64);
+		Vector2 icon_coord = Vector2(0, 0);
+		int spacing = 0;
 		Map<Vector2, uint32_t> flags;
 		Map<Vector2, Ref<OccluderPolygon2D>> occluder_map;
 		Map<Vector2, Ref<NavigationPolygon>> navpoly_map;
 		Map<Vector2, int> priority_map;
 		Map<Vector2, int> z_index_map;
 
-		// Default size to prevent invalid value
-		explicit AutotileData() :
-				bitmask_mode(BITMASK_2X2),
-				size(64, 64),
-				spacing(0),
-				icon_coord(0, 0) {}
+		explicit AutotileData() {}
 	};
 
 private:
 	struct TileData {
-
 		String name;
 		Ref<Texture2D> texture;
 		Ref<Texture2D> normal_map;
@@ -124,16 +115,13 @@ private:
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<ShaderMaterial> material;
-		TileMode tile_mode;
-		Color modulate;
-		AutotileData autotile_data;
-		int z_index;
-
+		TileMode tile_mode = SINGLE_TILE;
 		// Default modulate for back-compat
-		explicit TileData() :
-				tile_mode(SINGLE_TILE),
-				modulate(1, 1, 1),
-				z_index(0) {}
+		Color modulate = Color(1, 1, 1);
+		AutotileData autotile_data;
+		int z_index = 0;
+
+		explicit TileData() {}
 	};
 
 	Map<int, TileData> tile_map;

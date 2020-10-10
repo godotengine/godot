@@ -8,6 +8,7 @@
 		[b]Note:[/b] This type is passed by value and not by reference.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="PackedStringArray">
@@ -42,6 +43,15 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the array is empty.
+			</description>
+		</method>
+		<method name="has">
+			<return type="bool">
+			</return>
+			<argument index="0" name="value" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the array contains [code]value[/code].
 			</description>
 		</method>
 		<method name="insert">
@@ -105,6 +115,13 @@
 			</return>
 			<description>
 				Returns the size of the array.
+			</description>
+		</method>
+		<method name="sort">
+			<return type="void">
+			</return>
+			<description>
+				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
 	</methods>

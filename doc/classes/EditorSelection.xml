@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This object manages the SceneTree selection in the editor.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_selection].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,7 +27,7 @@
 			</description>
 		</method>
 		<method name="get_selected_nodes">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Gets the list of selected nodes.

@@ -31,7 +31,7 @@
 #ifndef OS_LINUXBSD_H
 #define OS_LINUXBSD_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "crash_handler_linuxbsd.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -43,13 +43,12 @@
 #include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
-
 	virtual void delete_main_loop();
 
 	bool force_quit;
 
 #ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad;
+	JoypadLinux *joypad = nullptr;
 #endif
 
 #ifdef ALSA_ENABLED

@@ -5,8 +5,10 @@
 	</brief_description>
 	<description>
 		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
+		[b]Note:[/b] To create an one-shot timer without instantiating a node, use [method SceneTree.create_timer].
 	</description>
 	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
 		<method name="is_stopped" qualifiers="const">

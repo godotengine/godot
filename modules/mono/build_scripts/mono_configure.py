@@ -1,6 +1,5 @@
 import os
 import os.path
-import sys
 import subprocess
 
 from SCons.Script import Dir, Environment
@@ -125,7 +124,8 @@ def configure(env, env_mono):
 
     if not mono_prefix and (os.getenv("MONO32_PREFIX") or os.getenv("MONO64_PREFIX")):
         print(
-            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the 'mono_prefix' SCons parameter instead"
+            "WARNING: The environment variables 'MONO32_PREFIX' and 'MONO64_PREFIX' are deprecated; use the"
+            " 'mono_prefix' SCons parameter instead"
         )
 
     # Although we don't support building with tools for any platform where we currently use static AOT,
@@ -191,17 +191,16 @@ def configure(env, env_mono):
                 env.Append(LIBS=["psapi"])
                 env.Append(LIBS=["version"])
         else:
-            mono_lib_name = find_name_in_dir_files(
-                mono_lib_path, mono_lib_names, prefixes=["", "lib"], extensions=lib_suffixes
-            )
+            mono_lib_file = find_file_in_dir(mono_lib_path, mono_lib_names, extensions=lib_suffixes)
 
-            if not mono_lib_name:
+            if not mono_lib_file:
                 raise RuntimeError("Could not find mono library in: " + mono_lib_path)
 
             if env.msvc:
-                env.Append(LINKFLAGS=mono_lib_name + ".lib")
+                env.Append(LINKFLAGS=mono_lib_file)
             else:
-                env.Append(LIBS=[mono_lib_name])
+                mono_lib_file_path = os.path.join(mono_lib_path, mono_lib_file)
+                env.Append(LINKFLAGS=mono_lib_file_path)
 
             mono_bin_path = os.path.join(mono_root, "bin")
 
@@ -397,9 +396,8 @@ def configure(env, env_mono):
             mono_root = subprocess.check_output(["pkg-config", "mono-2", "--variable=prefix"]).decode("utf8").strip()
 
         if tools_enabled:
+            # Only supported for editor builds.
             copy_mono_root_files(env, mono_root)
-        else:
-            print("Ignoring option: 'copy_mono_root'; only available for builds with 'tools' enabled.")
 
 
 def make_template_dir(env, mono_root):

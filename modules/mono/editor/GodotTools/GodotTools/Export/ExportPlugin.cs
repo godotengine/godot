@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using GodotTools.Core;
 using GodotTools.Internals;
+using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using Directory = GodotTools.Utils.Directory;
 using File = GodotTools.Utils.File;
@@ -18,7 +19,7 @@ namespace GodotTools.Export
     public class ExportPlugin : EditorExportPlugin
     {
         [Flags]
-        enum I18NCodesets
+        enum I18NCodesets : long
         {
             None = 0,
             CJK = 1,
@@ -145,9 +146,7 @@ namespace GodotTools.Export
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return;
 
-            string platform = DeterminePlatformFromFeatures(features);
-
-            if (platform == null)
+            if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported");
 
             string outputDir = new FileInfo(path).Directory?.FullName ??
@@ -160,21 +159,18 @@ namespace GodotTools.Export
 
             AddFile(scriptsMetadataPath, scriptsMetadataPath);
 
-            // Turn export features into defines
-            var godotDefines = features;
-
-            if (!BuildManager.BuildProjectBlocking(buildConfig, godotDefines))
+            if (!BuildManager.BuildProjectBlocking(buildConfig, platform))
                 throw new Exception("Failed to build project");
 
             // Add dependency assemblies
 
-            var dependencies = new Godot.Collections.Dictionary<string, string>();
+            var assemblies = new Godot.Collections.Dictionary<string, string>();
 
             string projectDllName = GodotSharpEditor.ProjectAssemblyName;
             string projectDllSrcDir = Path.Combine(GodotSharpDirs.ResTempAssembliesBaseDir, buildConfig);
             string projectDllSrcPath = Path.Combine(projectDllSrcDir, $"{projectDllName}.dll");
 
-            dependencies[projectDllName] = projectDllSrcPath;
+            assemblies[projectDllName] = projectDllSrcPath;
 
             if (platform == OS.Platforms.Android)
             {
@@ -184,15 +180,15 @@ namespace GodotTools.Export
                 if (!File.Exists(monoAndroidAssemblyPath))
                     throw new FileNotFoundException("Assembly not found: 'Mono.Android'", monoAndroidAssemblyPath);
 
-                dependencies["Mono.Android"] = monoAndroidAssemblyPath;
+                assemblies["Mono.Android"] = monoAndroidAssemblyPath;
             }
 
             string bclDir = DeterminePlatformBclDir(platform);
 
-            var initialDependencies = dependencies.Duplicate();
-            internal_GetExportedAssemblyDependencies(initialDependencies, buildConfig, bclDir, dependencies);
+            var initialAssemblies = assemblies.Duplicate();
+            internal_GetExportedAssemblyDependencies(initialAssemblies, buildConfig, bclDir, assemblies);
 
-            AddI18NAssemblies(dependencies, bclDir);
+            AddI18NAssemblies(assemblies, bclDir);
 
             string outputDataDir = null;
 
@@ -211,20 +207,32 @@ namespace GodotTools.Export
                     Directory.CreateDirectory(outputDataGameAssembliesDir);
             }
 
-            foreach (var dependency in dependencies)
+            foreach (var assembly in assemblies)
             {
-                string dependSrcPath = dependency.Value;
+                void AddToAssembliesDir(string fileSrcPath)
+                {
+                    if (assembliesInsidePck)
+                    {
+                        string fileDstPath = Path.Combine(resAssembliesDir, fileSrcPath.GetFile());
+                        AddFile(fileSrcPath, fileDstPath);
+                    }
+                    else
+                    {
+                        Debug.Assert(outputDataDir != null);
+                        string fileDstPath = Path.Combine(outputDataDir, "Assemblies", fileSrcPath.GetFile());
+                        File.Copy(fileSrcPath, fileDstPath);
+                    }
+                }
 
-                if (assembliesInsidePck)
-                {
-                    string dependDstPath = Path.Combine(resAssembliesDir, dependSrcPath.GetFile());
-                    AddFile(dependSrcPath, dependDstPath);
-                }
-                else
-                {
-                    string dependDstPath = Path.Combine(outputDataDir, "Assemblies", dependSrcPath.GetFile());
-                    File.Copy(dependSrcPath, dependDstPath);
-                }
+                string assemblySrcPath = assembly.Value;
+
+                string assemblyPathWithoutExtension = Path.ChangeExtension(assemblySrcPath, null);
+                string pdbSrcPath = assemblyPathWithoutExtension + ".pdb";
+
+                AddToAssembliesDir(assemblySrcPath);
+
+                if (File.Exists(pdbSrcPath))
+                    AddToAssembliesDir(pdbSrcPath);
             }
 
             // AOT compilation
@@ -254,7 +262,7 @@ namespace GodotTools.Export
                     ToolchainPath = aotToolchainPath
                 };
 
-                AotBuilder.CompileAssemblies(this, aotOpts, features, platform, isDebug, bclDir, outputDir, outputDataDir, dependencies);
+                AotBuilder.CompileAssemblies(this, aotOpts, features, platform, isDebug, bclDir, outputDir, outputDataDir, assemblies);
             }
         }
 
@@ -277,6 +285,7 @@ namespace GodotTools.Export
             }
         }
 
+        [NotNull]
         private static string ExportDataDirectory(string[] features, string platform, bool isDebug, string outputDir)
         {
             string target = isDebug ? "release_debug" : "release";
@@ -331,18 +340,19 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] { OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform);
+            return !new[] {OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
         }
 
-        private static string DeterminePlatformFromFeatures(IEnumerable<string> features)
+        private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
         {
             foreach (var feature in features)
             {
-                if (OS.PlatformNameMap.TryGetValue(feature, out string platform))
-                    return platform;
+                if (OS.PlatformNameMap.TryGetValue(feature, out platform))
+                    return true;
             }
 
-            return null;
+            platform = null;
+            return false;
         }
 
         private static string GetBclProfileDir(string profile)
@@ -366,7 +376,7 @@ namespace GodotTools.Export
                     if (PlatformRequiresCustomBcl(platform))
                         throw new FileNotFoundException($"Missing BCL (Base Class Library) for platform: {platform}");
 
-                    platformBclDir = typeof(object).Assembly.Location; // Use the one we're running on
+                    platformBclDir = typeof(object).Assembly.Location.GetBaseDir(); // Use the one we're running on
                 }
             }
 
@@ -379,7 +389,7 @@ namespace GodotTools.Export
         /// </summary>
         private static bool PlatformRequiresCustomBcl(string platform)
         {
-            if (new[] { OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5 }.Contains(platform))
+            if (new[] {OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform))
                 return true;
 
             // The 'net_4_x' BCL is not compatible between Windows and the other platforms.
@@ -401,8 +411,8 @@ namespace GodotTools.Export
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
                     return "net_4_x_win";
-                case OS.Platforms.OSX:
-                case OS.Platforms.X11:
+                case OS.Platforms.MacOS:
+                case OS.Platforms.LinuxBSD:
                 case OS.Platforms.Server:
                 case OS.Platforms.Haiku:
                     return "net_4_x";
@@ -420,12 +430,12 @@ namespace GodotTools.Export
         private static string DetermineDataDirNameForProject()
         {
             var appName = (string)ProjectSettings.GetSetting("application/config/name");
-            string appNameSafe = appName.ToSafeDirName(allowDirSeparator: false);
+            string appNameSafe = appName.ToSafeDirName();
             return $"data_{appNameSafe}";
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_GetExportedAssemblyDependencies(Godot.Collections.Dictionary<string, string> initialDependencies,
-            string buildConfig, string customBclDir, Godot.Collections.Dictionary<string, string> dependencies);
+        private static extern void internal_GetExportedAssemblyDependencies(Godot.Collections.Dictionary<string, string> initialAssemblies,
+            string buildConfig, string customBclDir, Godot.Collections.Dictionary<string, string> dependencyAssemblies);
     }
 }

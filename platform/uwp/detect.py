@@ -65,18 +65,23 @@ def configure(env):
         env.Append(CCFLAGS=["/MD"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["/Zi"])
         env.Append(CCFLAGS=["/MDd"])
-        env.Append(CPPDEFINES=["DEBUG_ENABLED", "DEBUG_MEMORY_ENABLED"])
+        env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     ## Compiler configuration
 
     env["ENV"] = os.environ
     vc_base_path = os.environ["VCTOOLSINSTALLDIR"] if "VCTOOLSINSTALLDIR" in os.environ else os.environ["VCINSTALLDIR"]
+
+    # Force to use Unicode encoding
+    env.AppendUnique(CCFLAGS=["/utf-8"])
 
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")
@@ -120,7 +125,9 @@ def configure(env):
             print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
         else:
             print(
-                "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
+                "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings"
+                " (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture"
+                " this build is compiled for. You should check your settings/compilation setup."
             )
             env["bits"] = "32"
 
@@ -160,7 +167,10 @@ def configure(env):
     env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/x86/store/references"])
 
     env.Append(
-        CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split()
+        CCFLAGS=(
+            '/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX-'
+            " /Zc:forScope /Gd /EHsc /nologo".split()
+        )
     )
     env.Append(CPPDEFINES=["_UNICODE", "UNICODE", ("WINAPI_FAMILY", "WINAPI_FAMILY_APP")])
     env.Append(CXXFLAGS=["/ZW"])

@@ -11,7 +11,7 @@
 		regex.compile("\\w-(\\d+)")
 		[/codeblock]
 		The search pattern must be escaped first for GDScript before it is escaped for the expression. For example, [code]compile("\\d+")[/code] would be read by RegEx as [code]\d+[/code]. Similarly, [code]compile("\"(?:\\\\.|[^\"])*\"")[/code] would be read as [code]"(?:\\.|[^"])*"[/code].
-		Using [method search] you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using functions such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
+		Using [method search], you can find the pattern within the given text. If a pattern is found, [RegExMatch] is returned and you can retrieve details of the results using methods such as [method RegExMatch.get_string] and [method RegExMatch.get_start].
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\w-(\\d+)")
@@ -19,7 +19,7 @@
 		if result:
 		    print(result.get_string()) # Would print n-0123
 		[/codeblock]
-		The results of capturing groups [code]()[/code] can be retrieved by passing the group number to the various functions in [RegExMatch]. Group 0 is the default and will always refer to the entire pattern. In the above example, calling [code]result.get_string(1)[/code] would give you [code]0123[/code].
+		The results of capturing groups [code]()[/code] can be retrieved by passing the group number to the various methods in [RegExMatch]. Group 0 is the default and will always refer to the entire pattern. In the above example, calling [code]result.get_string(1)[/code] would give you [code]0123[/code].
 		This version of RegEx also supports named capturing groups, and the names can be used to retrieve the results. If two or more groups have the same name, the name would only refer to the first one with a match.
 		[codeblock]
 		var regex = RegEx.new()
@@ -32,8 +32,16 @@
 		[codeblock]
 		for result in regex.search_all("d01, d03, d0c, x3f and x42"):
 		    print(result.get_string("digit"))
-		# Would print 01 03 3f 42
-		# Note that d0c would not match
+		# Would print 01 03 0 3f 42
+		[/codeblock]
+		[b]Example of splitting a string using a RegEx:[/b]
+		[codeblock]
+		var regex = RegEx.new()
+		regex.compile("\\S+") # Negated whitespace character class.
+		var results = []
+		for match in regex.search_all("One  Two \n\tThree"):
+		    results.push_back(match.get_string())
+		# The `results` array now contains "One", "Two", "Three".
 		[/codeblock]
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.

@@ -45,7 +45,7 @@ class AudioEffectCompressorInstance : public AudioEffectInstance {
 
 public:
 	void set_current_channel(int p_channel) { current_channel = p_channel; }
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 };
 
 class AudioEffectCompressor : public AudioEffect {
@@ -61,11 +61,11 @@ class AudioEffectCompressor : public AudioEffect {
 	StringName sidechain;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instance() override;
 
 	void set_threshold(float p_threshold);
 	float get_threshold() const;

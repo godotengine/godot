@@ -44,7 +44,7 @@ public:
 
 	real_t getDiagonal() const { return m_Adiag; }
 
-	btVehicleJacobianEntry(){};
+	btVehicleJacobianEntry() {}
 	//constraint between two different rigidbodies
 	btVehicleJacobianEntry(
 			const Basis &world2A,
@@ -79,12 +79,11 @@ public:
 };
 
 void VehicleWheel3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		body = cb;
 		local_xform = get_transform();
 		cb->wheels.push_back(this);
@@ -94,25 +93,29 @@ void VehicleWheel3D::_notification(int p_what) {
 		m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		cb->wheels.erase(this);
 		body = nullptr;
 	}
 }
 
 String VehicleWheel3D::get_configuration_warning() const {
+	String warning = Node3D::get_configuration_warning();
+
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		return TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D.");
 	}
 
-	return String();
+	return warning;
 }
 
 void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
-
 	if (m_raycastInfo.m_isInContact)
 
 	{
@@ -145,77 +148,68 @@ void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
 }
 
 void VehicleWheel3D::set_radius(float p_radius) {
-
 	m_wheelRadius = p_radius;
 	update_gizmo();
 }
 
 float VehicleWheel3D::get_radius() const {
-
 	return m_wheelRadius;
 }
 
 void VehicleWheel3D::set_suspension_rest_length(float p_length) {
-
 	m_suspensionRestLength = p_length;
 	update_gizmo();
 }
-float VehicleWheel3D::get_suspension_rest_length() const {
 
+float VehicleWheel3D::get_suspension_rest_length() const {
 	return m_suspensionRestLength;
 }
 
 void VehicleWheel3D::set_suspension_travel(float p_length) {
-
 	m_maxSuspensionTravelCm = p_length / 0.01;
 }
-float VehicleWheel3D::get_suspension_travel() const {
 
+float VehicleWheel3D::get_suspension_travel() const {
 	return m_maxSuspensionTravelCm * 0.01;
 }
 
 void VehicleWheel3D::set_suspension_stiffness(float p_value) {
-
 	m_suspensionStiffness = p_value;
 }
-float VehicleWheel3D::get_suspension_stiffness() const {
 
+float VehicleWheel3D::get_suspension_stiffness() const {
 	return m_suspensionStiffness;
 }
 
 void VehicleWheel3D::set_suspension_max_force(float p_value) {
-
 	m_maxSuspensionForce = p_value;
 }
-float VehicleWheel3D::get_suspension_max_force() const {
 
+float VehicleWheel3D::get_suspension_max_force() const {
 	return m_maxSuspensionForce;
 }
 
 void VehicleWheel3D::set_damping_compression(float p_value) {
-
 	m_wheelsDampingCompression = p_value;
 }
-float VehicleWheel3D::get_damping_compression() const {
 
+float VehicleWheel3D::get_damping_compression() const {
 	return m_wheelsDampingCompression;
 }
 
 void VehicleWheel3D::set_damping_relaxation(float p_value) {
-
 	m_wheelsDampingRelaxation = p_value;
 }
-float VehicleWheel3D::get_damping_relaxation() const {
 
+float VehicleWheel3D::get_damping_relaxation() const {
 	return m_wheelsDampingRelaxation;
 }
 
 void VehicleWheel3D::set_friction_slip(float p_value) {
-
 	m_frictionSlip = p_value;
 }
-float VehicleWheel3D::get_friction_slip() const {
 
+float VehicleWheel3D::get_friction_slip() const {
 	return m_frictionSlip;
 }
 
@@ -232,7 +226,6 @@ bool VehicleWheel3D::is_in_contact() const {
 }
 
 void VehicleWheel3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radius", "length"), &VehicleWheel3D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &VehicleWheel3D::get_radius);
 
@@ -303,65 +296,54 @@ void VehicleWheel3D::_bind_methods() {
 }
 
 void VehicleWheel3D::set_engine_force(float p_engine_force) {
-
 	m_engineForce = p_engine_force;
 }
 
 float VehicleWheel3D::get_engine_force() const {
-
 	return m_engineForce;
 }
 
 void VehicleWheel3D::set_brake(float p_brake) {
-
 	m_brake = p_brake;
 }
-float VehicleWheel3D::get_brake() const {
 
+float VehicleWheel3D::get_brake() const {
 	return m_brake;
 }
 
 void VehicleWheel3D::set_steering(float p_steering) {
-
 	m_steering = p_steering;
 }
-float VehicleWheel3D::get_steering() const {
 
+float VehicleWheel3D::get_steering() const {
 	return m_steering;
 }
 
 void VehicleWheel3D::set_use_as_traction(bool p_enable) {
-
 	engine_traction = p_enable;
 }
 
 bool VehicleWheel3D::is_used_as_traction() const {
-
 	return engine_traction;
 }
 
 void VehicleWheel3D::set_use_as_steering(bool p_enabled) {
-
 	steers = p_enabled;
 }
 
 bool VehicleWheel3D::is_used_as_steering() const {
-
 	return steers;
 }
 
 float VehicleWheel3D::get_skidinfo() const {
-
 	return m_skidInfo;
 }
 
 float VehicleWheel3D::get_rpm() const {
-
 	return m_rpm;
 }
 
 VehicleWheel3D::VehicleWheel3D() {
-
 	steers = false;
 	engine_traction = false;
 	m_steering = real_t(0.);
@@ -389,7 +371,6 @@ VehicleWheel3D::VehicleWheel3D() {
 }
 
 void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {
-
 	wheel.m_raycastInfo.m_isInContact = false;
 
 	Transform chassisTrans = s->get_transform();
@@ -406,7 +387,6 @@ void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirect
 }
 
 void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
-
 	VehicleWheel3D &wheel = *wheels[p_idx];
 	_update_wheel_transform(wheel, s);
 
@@ -431,7 +411,6 @@ void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
 }
 
 real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
-
 	VehicleWheel3D &wheel = *wheels[p_idx];
 
 	_update_wheel_transform(wheel, s);
@@ -462,8 +441,9 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
-		if (rr.collider)
+		if (rr.collider) {
 			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
+		}
 
 		real_t hitDistance = param * raylen;
 		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
@@ -514,7 +494,6 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 }
 
 void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
-
 	real_t chassisMass = mass;
 
 	for (int w_it = 0; w_it < wheels.size(); w_it++) {
@@ -560,7 +539,6 @@ void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 //bilateral constraint between two dynamic objects
 void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const Vector3 &pos1,
 		PhysicsBody3D *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
-
 	real_t normalLenSqr = normal.length_squared();
 	//ERR_FAIL_COND( normalLenSqr < real_t(1.1));
 
@@ -571,15 +549,17 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 
 	Vector3 rel_pos1 = pos1 - s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (body2)
+	if (body2) {
 		rel_pos2 = pos2 - body2->get_global_transform().origin;
+	}
 	//this jacobian entry could be re-used for all iterations
 
 	Vector3 vel1 = s->get_linear_velocity() + (s->get_angular_velocity()).cross(rel_pos1); // * mPos);
 	Vector3 vel2;
 
-	if (body2)
+	if (body2) {
 		vel2 = body2->get_linear_velocity() + body2->get_angular_velocity().cross(rel_pos2);
+	}
 
 	Vector3 vel = vel1 - vel2;
 
@@ -668,15 +648,15 @@ VehicleBody3D::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDir
 }
 
 real_t VehicleBody3D::_calc_rolling_friction(btVehicleWheelContactPoint &contactPoint) {
-
 	real_t j1 = 0.f;
 
 	const Vector3 &contactPosWorld = contactPoint.m_frictionPositionWorld;
 
 	Vector3 rel_pos1 = contactPosWorld - contactPoint.m_s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (contactPoint.m_body1)
+	if (contactPoint.m_body1) {
 		rel_pos2 = contactPosWorld - contactPoint.m_body1->get_global_transform().origin;
+	}
 
 	real_t maxImpulse = contactPoint.m_maxImpulse;
 
@@ -699,11 +679,11 @@ real_t VehicleBody3D::_calc_rolling_friction(btVehicleWheelContactPoint &contact
 
 static const real_t sideFrictionStiffness2 = real_t(1.0);
 void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
-
 	//calculate the impulse, so that the wheels don't move sidewards
 	int numWheel = wheels.size();
-	if (!numWheel)
+	if (!numWheel) {
 		return;
+	}
 
 	m_forwardWS.resize(numWheel);
 	m_axle.resize(numWheel);
@@ -717,13 +697,10 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 	}
 
 	{
-
 		for (int i = 0; i < wheels.size(); i++) {
-
 			VehicleWheel3D &wheelInfo = *wheels[i];
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-
 				//const btTransform& wheelTrans = getWheelTransformWS( i );
 
 				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis; //get_global_transform().basis;
@@ -822,7 +799,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 							  s->get_transform().origin;
 
 			if (m_forwardImpulse[wheel] != real_t(0.)) {
-				s->apply_impulse(rel_pos, m_forwardWS[wheel] * (m_forwardImpulse[wheel]));
+				s->apply_impulse(m_forwardWS[wheel] * (m_forwardImpulse[wheel]), rel_pos);
 			}
 			if (m_sideImpulse[wheel] != real_t(0.)) {
 				PhysicsBody3D *groundObject = wheelInfo.m_raycastInfo.m_groundObject;
@@ -840,7 +817,7 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 #else
 				rel_pos[1] *= wheelInfo.m_rollInfluence; //?
 #endif
-				s->apply_impulse(rel_pos, sideImp);
+				s->apply_impulse(sideImp, rel_pos);
 
 				//apply friction impulse on the ground
 				//todo
@@ -851,7 +828,6 @@ void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 }
 
 void VehicleBody3D::_direct_state_changed(Object *p_state) {
-
 	RigidBody3D::_direct_state_changed(p_state);
 
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
@@ -859,12 +835,10 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 	float step = state->get_step();
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		_update_wheel(i, state);
 	}
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		_ray_cast(i, state);
 		wheels[i]->set_transform(state->get_transform().inverse() * wheels[i]->m_worldTransform);
 	}
@@ -872,7 +846,6 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 	_update_suspension(state);
 
 	for (int i = 0; i < wheels.size(); i++) {
-
 		//apply suspension force
 		VehicleWheel3D &wheel = *wheels[i];
 
@@ -882,10 +855,9 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 			suspensionForce = wheel.m_maxSuspensionForce;
 		}
 		Vector3 impulse = wheel.m_raycastInfo.m_contactNormalWS * suspensionForce * step;
-		Vector3 relpos = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
+		Vector3 relative_position = wheel.m_raycastInfo.m_contactPointWS - state->get_transform().origin;
 
-		state->apply_impulse(relpos, impulse);
-		//getRigidBody()->applyImpulse(impulse, relpos);
+		state->apply_impulse(impulse, relative_position);
 	}
 
 	_update_friction(state);
@@ -921,49 +893,46 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 }
 
 void VehicleBody3D::set_engine_force(float p_engine_force) {
-
 	engine_force = p_engine_force;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
-		if (wheelInfo.engine_traction)
+		if (wheelInfo.engine_traction) {
 			wheelInfo.m_engineForce = p_engine_force;
+		}
 	}
 }
 
 float VehicleBody3D::get_engine_force() const {
-
 	return engine_force;
 }
 
 void VehicleBody3D::set_brake(float p_brake) {
-
 	brake = p_brake;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
 		wheelInfo.m_brake = p_brake;
 	}
 }
-float VehicleBody3D::get_brake() const {
 
+float VehicleBody3D::get_brake() const {
 	return brake;
 }
 
 void VehicleBody3D::set_steering(float p_steering) {
-
 	m_steeringValue = p_steering;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
-		if (wheelInfo.steers)
+		if (wheelInfo.steers) {
 			wheelInfo.m_steering = p_steering;
+		}
 	}
 }
-float VehicleBody3D::get_steering() const {
 
+float VehicleBody3D::get_steering() const {
 	return m_steeringValue;
 }
 
 void VehicleBody3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_engine_force", "engine_force"), &VehicleBody3D::set_engine_force);
 	ClassDB::bind_method(D_METHOD("get_engine_force"), &VehicleBody3D::get_engine_force);
 
@@ -980,7 +949,6 @@ void VehicleBody3D::_bind_methods() {
 }
 
 VehicleBody3D::VehicleBody3D() {
-
 	m_pitchControl = 0;
 	m_currentVehicleSpeedKmHour = real_t(0.);
 	m_steeringValue = real_t(0.);

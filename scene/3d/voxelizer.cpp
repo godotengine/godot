@@ -29,194 +29,13 @@
 /*************************************************************************/
 
 #include "voxelizer.h"
+#include "core/math/geometry_3d.h"
 #include "core/os/os.h"
 #include "core/os/threaded_array_processor.h"
 
 #include <stdlib.h>
 
-#define FINDMINMAX(x0, x1, x2, min, max) \
-	min = max = x0;                      \
-	if (x1 < min) min = x1;              \
-	if (x1 > max) max = x1;              \
-	if (x2 < min) min = x2;              \
-	if (x2 > max) max = x2;
-
-static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
-	int q;
-	Vector3 vmin, vmax;
-	for (q = 0; q <= 2; q++) {
-		if (normal[q] > 0.0f) {
-			vmin[q] = -maxbox[q];
-			vmax[q] = maxbox[q];
-		} else {
-			vmin[q] = maxbox[q];
-			vmax[q] = -maxbox[q];
-		}
-	}
-	if (normal.dot(vmin) + d > 0.0f) return false;
-	if (normal.dot(vmax) + d >= 0.0f) return true;
-
-	return false;
-}
-
-/*======================== X-tests ========================*/
-#define AXISTEST_X01(a, b, fa, fb)                 \
-	p0 = a * v0.y - b * v0.z;                      \
-	p2 = a * v2.y - b * v2.z;                      \
-	if (p0 < p2) {                                 \
-		min = p0;                                  \
-		max = p2;                                  \
-	} else {                                       \
-		min = p2;                                  \
-		max = p0;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
-
-#define AXISTEST_X2(a, b, fa, fb)                  \
-	p0 = a * v0.y - b * v0.z;                      \
-	p1 = a * v1.y - b * v1.z;                      \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
-
-/*======================== Y-tests ========================*/
-#define AXISTEST_Y02(a, b, fa, fb)                 \
-	p0 = -a * v0.x + b * v0.z;                     \
-	p2 = -a * v2.x + b * v2.z;                     \
-	if (p0 < p2) {                                 \
-		min = p0;                                  \
-		max = p2;                                  \
-	} else {                                       \
-		min = p2;                                  \
-		max = p0;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
-
-#define AXISTEST_Y1(a, b, fa, fb)                  \
-	p0 = -a * v0.x + b * v0.z;                     \
-	p1 = -a * v1.x + b * v1.z;                     \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
-
-/*======================== Z-tests ========================*/
-
-#define AXISTEST_Z12(a, b, fa, fb)                 \
-	p1 = a * v1.x - b * v1.y;                      \
-	p2 = a * v2.x - b * v2.y;                      \
-	if (p2 < p1) {                                 \
-		min = p2;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p2;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) return false;
-
-#define AXISTEST_Z0(a, b, fa, fb)                  \
-	p0 = a * v0.x - b * v0.y;                      \
-	p1 = a * v1.x - b * v1.y;                      \
-	if (p0 < p1) {                                 \
-		min = p0;                                  \
-		max = p1;                                  \
-	} else {                                       \
-		min = p1;                                  \
-		max = p0;                                  \
-	}                                              \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) return false;
-
-static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
-
-	/*    use separating axis theorem to test overlap between triangle and box */
-	/*    need to test for overlap in these directions: */
-	/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
-	/*       we do not even need to test these) */
-	/*    2) normal of the triangle */
-	/*    3) crossproduct(edge from tri, {x,y,z}-directin) */
-	/*       this gives 3x3=9 more tests */
-	Vector3 v0, v1, v2;
-	float min, max, d, p0, p1, p2, rad, fex, fey, fez;
-	Vector3 normal, e0, e1, e2;
-
-	/* This is the fastest branch on Sun */
-	/* move everything so that the boxcenter is in (0,0,0) */
-
-	v0 = triverts[0] - boxcenter;
-	v1 = triverts[1] - boxcenter;
-	v2 = triverts[2] - boxcenter;
-
-	/* compute triangle edges */
-	e0 = v1 - v0; /* tri edge 0 */
-	e1 = v2 - v1; /* tri edge 1 */
-	e2 = v0 - v2; /* tri edge 2 */
-
-	/* Bullet 3:  */
-	/*  test the 9 tests first (this was faster) */
-	fex = Math::abs(e0.x);
-	fey = Math::abs(e0.y);
-	fez = Math::abs(e0.z);
-	AXISTEST_X01(e0.z, e0.y, fez, fey);
-	AXISTEST_Y02(e0.z, e0.x, fez, fex);
-	AXISTEST_Z12(e0.y, e0.x, fey, fex);
-
-	fex = Math::abs(e1.x);
-	fey = Math::abs(e1.y);
-	fez = Math::abs(e1.z);
-	AXISTEST_X01(e1.z, e1.y, fez, fey);
-	AXISTEST_Y02(e1.z, e1.x, fez, fex);
-	AXISTEST_Z0(e1.y, e1.x, fey, fex);
-
-	fex = Math::abs(e2.x);
-	fey = Math::abs(e2.y);
-	fez = Math::abs(e2.z);
-	AXISTEST_X2(e2.z, e2.y, fez, fey);
-	AXISTEST_Y1(e2.z, e2.x, fez, fex);
-	AXISTEST_Z12(e2.y, e2.x, fey, fex);
-
-	/* Bullet 1: */
-	/*  first test overlap in the {x,y,z}-directions */
-	/*  find min, max of the triangle each direction, and test for overlap in */
-	/*  that direction -- this is equivalent to testing a minimal AABB around */
-	/*  the triangle against the AABB */
-
-	/* test in X-direction */
-	FINDMINMAX(v0.x, v1.x, v2.x, min, max);
-	if (min > boxhalfsize.x || max < -boxhalfsize.x) return false;
-
-	/* test in Y-direction */
-	FINDMINMAX(v0.y, v1.y, v2.y, min, max);
-	if (min > boxhalfsize.y || max < -boxhalfsize.y) return false;
-
-	/* test in Z-direction */
-	FINDMINMAX(v0.z, v1.z, v2.z, min, max);
-	if (min > boxhalfsize.z || max < -boxhalfsize.z) return false;
-
-	/* Bullet 2: */
-	/*  test if the box intersects the plane of the triangle */
-	/*  compute plane equation of triangle: normal*x+d=0 */
-	normal = e0.cross(e1);
-	d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
-	return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
-}
-
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
-
 	if (p_pos.distance_squared_to(p_vtx[0]) < CMP_EPSILON2) {
 		r_uv = p_uv[0];
 		r_normal = p_normal[0];
@@ -257,7 +76,6 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 }
 
 void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
-
 	if (p_level == cell_subdiv) {
 		//plot the face by guessing its albedo and emission value
 
@@ -269,7 +87,6 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		Vector3 normal = plane.normal;
 
 		for (int i = 0; i < 3; i++) {
-
 			Vector3 axis;
 			axis[i] = 1.0;
 			float dot = ABS(normal.dot(axis));
@@ -297,11 +114,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 		//map to a grid average in the best axis for this face
 		for (int i = 0; i < color_scan_cell_width; i++) {
-
 			Vector3 ofs_i = float(i) * t1;
 
 			for (int j = 0; j < color_scan_cell_width; j++) {
-
 				Vector3 ofs_j = float(j) * t2;
 
 				Vector3 from = p_aabb.position + ofs_i + ofs_j;
@@ -309,7 +124,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 half = (to - from) * 0.5;
 
 				//is in this cell?
-				if (!fast_tri_box_overlap(from + half, half, p_vtx)) {
+				if (!Geometry3D::triangle_box_overlap(from + half, half, p_vtx)) {
 					continue; //face does not span this cell
 				}
 
@@ -327,7 +142,6 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 					if (ABS(plane.distance_to(ray_from)) < ABS(plane.distance_to(ray_to))) {
 						intersection = plane.project(ray_from);
 					} else {
-
 						intersection = plane.project(ray_to);
 					}
 				}
@@ -337,8 +151,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal as nor provided
 					lnormal = normal;
+				}
 
 				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
 				int uv_y = CLAMP(int(Math::fposmod(uv.y, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
@@ -368,8 +183,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal as nor provided
 				lnormal = normal;
+			}
 
 			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
 			int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -390,7 +206,6 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			normal_accum = lnormal * alpha;
 
 		} else {
-
 			float accdiv = 1.0 / (color_scan_cell_width * color_scan_cell_width);
 			alpha *= accdiv;
 
@@ -423,7 +238,6 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 		int half = (1 << cell_subdiv) >> (p_level + 1);
 		for (int i = 0; i < 8; i++) {
-
 			AABB aabb = p_aabb;
 			aabb.size *= 0.5;
 
@@ -444,15 +258,16 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				nz += half;
 			}
 			//make sure to not plot beyond limits
-			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2])
+			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2]) {
 				continue;
+			}
 
 			{
 				AABB test_aabb = aabb;
 				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size * 0.5; //quarter size, for fast aabb test
 
-				if (!fast_tri_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
+				if (!Geometry3D::triangle_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
 					//if (!Face3(p_vtx[0],p_vtx[1],p_vtx[2]).intersects_aabb2(aabb)) {
 					//does not fit in child, go on
 					continue;
@@ -477,11 +292,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 }
 
 Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_color_mul, const Color &p_color_add) {
-
 	Vector<Color> ret;
 
 	if (p_image.is_null() || p_image->empty()) {
-
 		ret.resize(bake_texture_size * bake_texture_size);
 		for (int i = 0; i < bake_texture_size * bake_texture_size; i++) {
 			ret.write[i] = p_color_add;
@@ -515,7 +328,6 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 }
 
 Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material) {
-
 	//this way of obtaining materials is inaccurate and also does not support some compressed formats very well
 	Ref<StandardMaterial3D> mat = p_material;
 
@@ -528,12 +340,10 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	MaterialCache mc;
 
 	if (mat.is_valid()) {
-
 		Ref<Texture2D> albedo_tex = mat->get_texture(StandardMaterial3D::TEXTURE_ALBEDO);
 
 		Ref<Image> img_albedo;
 		if (albedo_tex.is_valid()) {
-
 			img_albedo = albedo_tex->get_data();
 			mc.albedo = _get_bake_texture(img_albedo, mat->get_albedo(), Color(0, 0, 0)); // albedo texture, color is multiplicative
 		} else {
@@ -548,7 +358,6 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Image> img_emission;
 
 		if (emission_tex.is_valid()) {
-
 			img_emission = emission_tex->get_data();
 		}
 
@@ -570,11 +379,10 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 }
 
 void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
-
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
+		}
 
 		Ref<Material> src_material;
 
@@ -592,32 +400,24 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 		const Vector3 *vr = vertices.ptr();
 		Vector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
-		const Vector2 *uvr;
+		const Vector2 *uvr = nullptr;
 		Vector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
-		const Vector3 *nr;
+		const Vector3 *nr = nullptr;
 		Vector<int> index = a[Mesh::ARRAY_INDEX];
 
-		bool read_uv = false;
-		bool read_normals = false;
-
 		if (uv.size()) {
-
 			uvr = uv.ptr();
-			read_uv = true;
 		}
 
 		if (normals.size()) {
-			read_normals = true;
 			nr = normals.ptr();
 		}
 
 		if (index.size()) {
-
 			int facecount = index.size() / 3;
 			const int *ir = index.ptr();
 
 			for (int j = 0; j < facecount; j++) {
-
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
 				Vector3 normal[3];
@@ -626,31 +426,30 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					vtxs[k] = p_xform.xform(vr[ir[j * 3 + k]]);
 				}
 
-				if (read_uv) {
+				if (uvr) {
 					for (int k = 0; k < 3; k++) {
 						uvs[k] = uvr[ir[j * 3 + k]];
 					}
 				}
 
-				if (read_normals) {
+				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = nr[ir[j * 3 + k]];
 					}
 				}
 
 				//test against original bounds
-				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
 
 		} else {
-
 			int facecount = vertices.size() / 3;
 
 			for (int j = 0; j < facecount; j++) {
-
 				Vector3 vtxs[3];
 				Vector2 uvs[3];
 				Vector3 normal[3];
@@ -659,21 +458,22 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					vtxs[k] = p_xform.xform(vr[j * 3 + k]);
 				}
 
-				if (read_uv) {
+				if (uvr) {
 					for (int k = 0; k < 3; k++) {
 						uvs[k] = uvr[j * 3 + k];
 					}
 				}
 
-				if (read_normals) {
+				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = nr[j * 3 + k];
 					}
 				}
 
 				//test against original bounds
-				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!Geometry3D::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot face
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
@@ -684,7 +484,6 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 }
 
 void Voxelizer::_sort() {
-
 	// cells need to be sorted by level and coordinates
 	// it is important that level has more priority (for compute), and that Z has the least,
 	// given it may aid older implementations plot using GPU
@@ -693,7 +492,6 @@ void Voxelizer::_sort() {
 	uint32_t cell_count = bake_cells.size();
 	sorted_cells.resize(cell_count);
 	{
-
 		CellSort *sort_cellsp = sorted_cells.ptrw();
 		const Cell *bake_cellsp = bake_cells.ptr();
 
@@ -726,7 +524,6 @@ void Voxelizer::_sort() {
 	}
 
 	{
-
 		const CellSort *sort_cellsp = sorted_cells.ptr();
 		const Cell *bake_cellsp = bake_cells.ptr();
 		const uint32_t *reverse_mapp = reverse_map.ptr();
@@ -749,9 +546,7 @@ void Voxelizer::_sort() {
 }
 
 void Voxelizer::_fixup_plot(int p_idx, int p_level) {
-
 	if (p_level == cell_subdiv) {
-
 		leaf_voxel_count++;
 		float alpha = bake_cells[p_idx].alpha;
 
@@ -790,7 +585,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		}*/
 
 	} else {
-
 		//go down
 
 		bake_cells.write[p_idx].emission[0] = 0;
@@ -807,11 +601,11 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		int children_found = 0;
 
 		for (int i = 0; i < 8; i++) {
-
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY)
+			if (child == CHILD_EMPTY) {
 				continue;
+			}
 
 			_fixup_plot(child, p_level + 1);
 			alpha_average += bake_cells[child].alpha;
@@ -824,7 +618,6 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 }
 
 void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
-
 	sorted = false;
 	original_bounds = p_bounds;
 	cell_subdiv = p_subdiv;
@@ -839,9 +632,9 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 	leaf_voxel_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-
-		if (i == longest_axis)
+		if (i == longest_axis) {
 			continue;
+		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = po2_bounds.size[longest_axis];
@@ -879,9 +672,11 @@ void Voxelizer::end_bake() {
 int Voxelizer::get_gi_probe_octree_depth() const {
 	return cell_subdiv;
 }
+
 Vector3i Voxelizer::get_giprobe_octree_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
+
 int Voxelizer::get_giprobe_cell_count() const {
 	return bake_cells.size();
 }
@@ -897,7 +692,6 @@ Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 		uint32_t cell_count = bake_cells.size();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-
 			for (uint32_t j = 0; j < 8; j++) {
 				children_cells[i * 8 + j] = cells[i].children[j];
 			}
@@ -906,6 +700,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 
 	return data;
 }
+
 Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 	Vector<uint8_t> data;
 	data.resize((4 * 4) * bake_cells.size()); //8 uint32t values
@@ -917,7 +712,6 @@ Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 		uint32_t cell_count = bake_cells.size();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-
 			{ //position
 
 				uint32_t x = cells[i].x;
@@ -989,7 +783,6 @@ Vector<int> Voxelizer::get_giprobe_level_cell_count() const {
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
-
 	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
 	int *v = (int *)&(d[n]);
 	float *z = (float *)&v[n];
@@ -1013,8 +806,9 @@ static void edt(float *f, int stride, int n) {
 
 	k = 0;
 	for (int q = 0; q <= n - 1; q++) {
-		while (z[k + 1] < q)
+		while (z[k + 1] < q) {
 			k++;
+		}
 		d[q] = square(q - v[k]) + f[v[k] * stride];
 	}
 
@@ -1026,7 +820,6 @@ static void edt(float *f, int stride, int n) {
 #undef square
 
 Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
-
 	Vector3i octree_size = get_giprobe_octree_size();
 
 	uint32_t float_count = octree_size.x * octree_size.y * octree_size.z;
@@ -1044,7 +837,6 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		uint32_t cell_count = bake_cells.size();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-
 			if (cells[i].level < (cell_subdiv - 1)) {
 				continue; //do not care about this level
 			}
@@ -1098,9 +890,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 #undef INF
 
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
-
 	if (p_level == cell_subdiv - 1) {
-
 		Vector3 center = p_aabb.position + p_aabb.size * 0.5;
 		Transform xform;
 		xform.origin = center;
@@ -1114,23 +904,25 @@ void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<Mult
 		idx++;
 
 	} else {
-
 		for (int i = 0; i < 8; i++) {
-
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells)
+			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells) {
 				continue;
+			}
 
 			AABB aabb = p_aabb;
 			aabb.size *= 0.5;
 
-			if (i & 1)
+			if (i & 1) {
 				aabb.position.x += aabb.size.x;
-			if (i & 2)
+			}
+			if (i & 2) {
 				aabb.position.y += aabb.size.y;
-			if (i & 4)
+			}
+			if (i & 4) {
 				aabb.position.z += aabb.size.z;
+			}
 
 			_debug_mesh(bake_cells[p_idx].children[i], p_level + 1, aabb, p_multimesh, idx);
 		}
@@ -1138,7 +930,6 @@ void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<Mult
 }
 
 Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
-
 	Ref<MultiMesh> mm;
 
 	mm.instance();
@@ -1161,22 +952,20 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 	colors.push_back(Color(1, 1, 1, 1));
 
 		for (int i = 0; i < 6; i++) {
-
 			Vector3 face_points[4];
 
 			for (int j = 0; j < 4; j++) {
-
 				float v[3];
 				v[0] = 1.0;
 				v[1] = 1 - 2 * ((j >> 1) & 1);
 				v[2] = v[1] * (1 - 2 * (j & 1));
 
 				for (int k = 0; k < 3; k++) {
-
-					if (i < 3)
+					if (i < 3) {
 						face_points[j][(i + k) % 3] = v[k];
-					else
+					} else {
 						face_points[3 - j][(i + k) % 3] = -v[k];
+					}
 				}
 			}
 
@@ -1217,6 +1006,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 Transform Voxelizer::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
+
 Voxelizer::Voxelizer() {
 	sorted = false;
 	color_scan_cell_width = 4;

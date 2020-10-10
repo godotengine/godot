@@ -35,11 +35,9 @@
 #include "scene/resources/animation.h"
 
 class AnimationCache : public Object {
-
 	GDCLASS(AnimationCache, Object);
 
 	struct Path {
-
 		RES resource;
 		Object *object;
 		Skeleton3D *skeleton; // haxor

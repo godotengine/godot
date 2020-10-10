@@ -66,40 +66,26 @@ T *unbox_addr(MonoObject *p_obj) {
 Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = nullptr);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
-bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
 
 // String
 
-String mono_to_utf8_string(MonoString *p_mono_string);
-String mono_to_utf16_string(MonoString *p_mono_string);
-
 _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
-	if (sizeof(CharType) == 2)
-		return mono_to_utf16_string(p_mono_string);
-
-	return mono_to_utf8_string(p_mono_string);
+	char32_t *utf32 = (char32_t *)mono_string_to_utf32(p_mono_string);
+	String ret = String(utf32);
+	mono_free(utf32);
+	return ret;
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
-	if (p_mono_string == nullptr)
+	if (p_mono_string == nullptr) {
 		return String();
+	}
 
 	return mono_string_to_godot_not_null(p_mono_string);
 }
 
-_FORCE_INLINE_ MonoString *mono_from_utf8_string(const String &p_string) {
-	return mono_string_new(mono_domain_get(), p_string.utf8().get_data());
-}
-
-_FORCE_INLINE_ MonoString *mono_from_utf16_string(const String &p_string) {
-	return mono_string_from_utf16((mono_unichar2 *)p_string.c_str());
-}
-
 _FORCE_INLINE_ MonoString *mono_string_from_godot(const String &p_string) {
-	if (sizeof(CharType) == 2)
-		return mono_from_utf16_string(p_string);
-
-	return mono_from_utf8_string(p_string);
+	return mono_string_from_utf32((mono_unichar4 *)(p_string.get_data()));
 }
 
 // Variant
@@ -123,9 +109,18 @@ Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_ty
 /// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 
+// System.Collections.Generic
+
+MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
+MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PackedInt32Array

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2018-2019 Jonathan Young
+Copyright (c) 2018-2020 Jonathan Young
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -42,18 +42,19 @@ struct ChartType
 		Planar,
 		Ortho,
 		LSCM,
-		Piecewise
+		Piecewise,
+		Invalid
 	};
 };
 
 // A group of connected faces, belonging to a single atlas.
 struct Chart
 {
-	uint32_t atlasIndex; // Sub-atlas index.
 	uint32_t *faceArray;
+	uint32_t atlasIndex; // Sub-atlas index.
 	uint32_t faceCount;
-	uint32_t material;
 	ChartType::Enum type;
+	uint32_t material;
 };
 
 // Output vertex.
@@ -69,10 +70,10 @@ struct Vertex
 struct Mesh
 {
 	Chart *chartArray;
-	uint32_t chartCount;
 	uint32_t *indexArray;
-	uint32_t indexCount;
 	Vertex *vertexArray;
+	uint32_t chartCount;
+	uint32_t indexCount;
 	uint32_t vertexCount;
 };
 
@@ -84,15 +85,15 @@ static const uint32_t kImageIsPaddingBit = 0x20000000;
 // Empty on creation. Populated after charts are packed.
 struct Atlas
 {
+	uint32_t *image;
+	Mesh *meshes; // The output meshes, corresponding to each AddMesh call.
 	uint32_t width; // Atlas width in texels.
 	uint32_t height; // Atlas height in texels.
 	uint32_t atlasCount; // Number of sub-atlases. Equal to 0 unless PackOptions resolution is changed from default (0).
 	uint32_t chartCount; // Total number of charts in all meshes.
 	uint32_t meshCount; // Number of output meshes. Equal to the number of times AddMesh was called.
-	Mesh *meshes; // The output meshes, corresponding to each AddMesh call.
 	float *utilization; // Normalized atlas texel utilization array. E.g. a value of 0.8 means 20% empty space. atlasCount in length.
 	float texelsPerUnit; // Equal to PackOptions texelsPerUnit if texelsPerUnit > 0, otherwise an estimated value to match PackOptions resolution.
-	uint32_t *image;
 };
 
 // Create an empty atlas.
@@ -112,21 +113,22 @@ struct IndexFormat
 // Input mesh declaration.
 struct MeshDecl
 {
-	uint32_t vertexCount = 0;
 	const void *vertexPositionData = nullptr;
-	uint32_t vertexPositionStride = 0;
 	const void *vertexNormalData = nullptr; // optional
-	uint32_t vertexNormalStride = 0; // optional
 	const void *vertexUvData = nullptr; // optional. The input UVs are provided as a hint to the chart generator.
-	uint32_t vertexUvStride = 0; // optional
-	uint32_t indexCount = 0;
 	const void *indexData = nullptr; // optional
-	int32_t indexOffset = 0; // optional. Add this offset to all indices.
-	IndexFormat::Enum indexFormat = IndexFormat::UInt16;
 	
 	// Optional. indexCount / 3 (triangle count) in length.
 	// Don't atlas faces set to true. Ignored faces still exist in the output meshes, Vertex uv is set to (0, 0) and Vertex atlasIndex to -1.
 	const bool *faceIgnoreData = nullptr;
+
+	uint32_t vertexCount = 0;
+	uint32_t vertexPositionStride = 0;
+	uint32_t vertexNormalStride = 0; // optional
+	uint32_t vertexUvStride = 0; // optional
+	uint32_t indexCount = 0;
+	int32_t indexOffset = 0; // optional. Add this offset to all indices.
+	IndexFormat::Enum indexFormat = IndexFormat::UInt16;
 
 	// Vertex positions within epsilon distance of each other are considered colocal.
 	float epsilon = 1.192092896e-07F;
@@ -151,14 +153,14 @@ void AddMeshJoin(Atlas *atlas);
 
 struct UvMeshDecl
 {
+	const void *vertexUvData = nullptr;
+	const void *indexData = nullptr; // optional
+	const uint32_t *faceMaterialData = nullptr; // Optional. Faces with different materials won't be assigned to the same chart. Must be indexCount / 3 in length.
 	uint32_t vertexCount = 0;
 	uint32_t vertexStride = 0;
-	const void *vertexUvData = nullptr;
 	uint32_t indexCount = 0;
-	const void *indexData = nullptr; // optional
 	int32_t indexOffset = 0; // optional. Add this offset to all indices.
 	IndexFormat::Enum indexFormat = IndexFormat::UInt16;
-	const uint32_t *faceMaterialData = nullptr; // Optional. Faces with different materials won't be assigned to the same chart. Must be indexCount / 3 in length.
 	bool rotateCharts = true;
 };
 
@@ -170,24 +172,31 @@ struct ChartOptions
 	float maxBoundaryLength = 0.0f; // Don't grow charts to have a longer boundary than this. 0 means no limit.
 
 	// Weights determine chart growth. Higher weights mean higher cost for that metric.
-	float proxyFitMetricWeight = 2.0f; // Angle between face and average chart normal.
-	float roundnessMetricWeight = 0.01f;
-	float straightnessMetricWeight = 6.0f;
-	float normalSeamMetricWeight = 4.0f; // If > 1000, normal seams are fully respected.
-	float textureSeamMetricWeight = 0.5f;
+	float normalDeviationWeight = 2.0f; // Angle between face and average chart normal.
+	float roundnessWeight = 0.01f;
+	float straightnessWeight = 6.0f;
+	float normalSeamWeight = 4.0f; // If > 1000, normal seams are fully respected.
+	float textureSeamWeight = 0.5f;
 
-	float maxThreshold = 2.0f; // If total of all metrics * weights > maxThreshold, don't grow chart. Lower values result in more charts.
+	float maxCost = 2.0f; // If total of all metrics * weights > maxCost, don't grow chart. Lower values result in more charts.
 	uint32_t maxIterations = 1; // Number of iterations of the chart growing and seeding phases. Higher values result in better charts.
 };
 
 // Call after all AddMesh calls. Can be called multiple times to recompute charts with different options.
-void ComputeCharts(Atlas *atlas, ChartOptions chartOptions = ChartOptions());
+void ComputeCharts(Atlas *atlas, ChartOptions options = ChartOptions());
 
 // Custom parameterization function. texcoords initial values are an orthogonal parameterization.
 typedef void (*ParameterizeFunc)(const float *positions, float *texcoords, uint32_t vertexCount, const uint32_t *indices, uint32_t indexCount);
 
+struct ParameterizeOptions
+{
+	ParameterizeFunc func = nullptr;
+	bool closeHoles = true; // If the custom parameterization function works with multiple boundaries, this can be set to false to improve performance.
+	bool fixTJunctions = true; // If meshes don't have T-junctions, this can be set to false to improve performance.
+};
+
 // Call after ComputeCharts. Can be called multiple times to re-parameterize charts with a different ParameterizeFunc.
-void ParameterizeCharts(Atlas *atlas, ParameterizeFunc func = nullptr);
+void ParameterizeCharts(Atlas *atlas, ParameterizeOptions options = ParameterizeOptions());
 
 struct PackOptions
 {
@@ -224,7 +233,7 @@ struct PackOptions
 void PackCharts(Atlas *atlas, PackOptions packOptions = PackOptions());
 
 // Equivalent to calling ComputeCharts, ParameterizeCharts and PackCharts in sequence. Can be called multiple times to regenerate with different options.
-void Generate(Atlas *atlas, ChartOptions chartOptions = ChartOptions(), ParameterizeFunc paramFunc = nullptr, PackOptions packOptions = PackOptions());
+void Generate(Atlas *atlas, ChartOptions chartOptions = ChartOptions(), ParameterizeOptions parameterizeOptions = ParameterizeOptions(), PackOptions packOptions = PackOptions());
 
 // Progress tracking.
 struct ProgressCategory

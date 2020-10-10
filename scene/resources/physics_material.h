@@ -28,22 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef physics_material_override_H
-#define physics_material_override_H
+#ifndef PHYSICS_MATERIAL_H
+#define PHYSICS_MATERIAL_H
 
 #include "core/resource.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {
-
 	GDCLASS(PhysicsMaterial, Resource);
 	OBJ_SAVE_TYPE(PhysicsMaterial);
 	RES_BASE_EXTENSION("phymat");
 
-	real_t friction;
-	bool rough;
-	real_t bounce;
-	bool absorbent;
+	real_t friction = 1;
+	bool rough = false;
+	real_t bounce = 0;
+	bool absorbent = false;
 
 protected:
 	static void _bind_methods();
@@ -69,7 +68,7 @@ public:
 		return absorbent ? -bounce : bounce;
 	}
 
-	PhysicsMaterial();
+	PhysicsMaterial() {}
 };
 
-#endif // physics_material_override_H
+#endif // PHYSICS_MATERIAL_H

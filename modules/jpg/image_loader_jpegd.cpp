@@ -37,7 +37,6 @@
 #include <string.h>
 
 Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
-
 	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);
 
 	jpgd::jpeg_decoder decoder(&mem_stream);
@@ -49,11 +48,13 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	const int image_width = decoder.get_width();
 	const int image_height = decoder.get_height();
 	const int comps = decoder.get_num_components();
-	if (comps != 1 && comps != 3)
+	if (comps != 1 && comps != 3) {
 		return ERR_FILE_CORRUPT;
+	}
 
-	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS)
+	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS) {
 		return ERR_FILE_CORRUPT;
+	}
 
 	const int dst_bpl = image_width * comps;
 
@@ -91,18 +92,18 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	//all good
 
 	Image::Format fmt;
-	if (comps == 1)
+	if (comps == 1) {
 		fmt = Image::FORMAT_L8;
-	else
+	} else {
 		fmt = Image::FORMAT_RGB8;
+	}
 
-	p_image->create(image_width, image_height, 0, fmt, data);
+	p_image->create(image_width, image_height, false, fmt, data);
 
 	return OK;
 }
 
 Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-
 	Vector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
@@ -120,13 +121,11 @@ Error ImageLoaderJPG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 }
 
 void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("jpg");
 	p_extensions->push_back("jpeg");
 }
 
 static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
-
 	Ref<Image> img;
 	img.instance();
 	Error err = jpeg_load_image_from_buffer(img.ptr(), p_png, p_size);
@@ -135,6 +134,5 @@ static Ref<Image> _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 }
 
 ImageLoaderJPG::ImageLoaderJPG() {
-
 	Image::_jpg_mem_loader_func = _jpegd_mem_loader_func;
 }

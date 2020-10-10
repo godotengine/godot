@@ -35,7 +35,6 @@
 #include "scene/gui/box_container.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 		hide();
@@ -43,24 +42,21 @@ void MultiMeshEditor::_node_removed(Node *p_node) {
 }
 
 void MultiMeshEditor::_populate() {
-
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	Ref<Mesh> mesh;
 
 	if (mesh_source->get_text() == "") {
-
 		Ref<MultiMesh> multimesh;
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
-
 			err_dialog->set_text(TTR("No mesh source specified (and no MultiMesh set in node)."));
 			err_dialog->popup_centered();
 			return;
 		}
 		if (multimesh->get_mesh().is_null()) {
-
 			err_dialog->set_text(TTR("No mesh source specified (and MultiMesh contains no Mesh)."));
 			err_dialog->popup_centered();
 			return;
@@ -68,11 +64,9 @@ void MultiMeshEditor::_populate() {
 
 		mesh = multimesh->get_mesh();
 	} else {
-
 		Node *ms_node = node->get_node(mesh_source->get_text());
 
 		if (!ms_node) {
-
 			err_dialog->set_text(TTR("Mesh source is invalid (invalid path)."));
 			err_dialog->popup_centered();
 			return;
@@ -81,7 +75,6 @@ void MultiMeshEditor::_populate() {
 		MeshInstance3D *ms_instance = Object::cast_to<MeshInstance3D>(ms_node);
 
 		if (!ms_instance) {
-
 			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance3D)."));
 			err_dialog->popup_centered();
 			return;
@@ -90,7 +83,6 @@ void MultiMeshEditor::_populate() {
 		mesh = ms_instance->get_mesh();
 
 		if (mesh.is_null()) {
-
 			err_dialog->set_text(TTR("Mesh source is invalid (contains no Mesh resource)."));
 			err_dialog->popup_centered();
 			return;
@@ -98,7 +90,6 @@ void MultiMeshEditor::_populate() {
 	}
 
 	if (surface_source->get_text() == "") {
-
 		err_dialog->set_text(TTR("No surface source specified."));
 		err_dialog->popup_centered();
 		return;
@@ -107,7 +98,6 @@ void MultiMeshEditor::_populate() {
 	Node *ss_node = node->get_node(surface_source->get_text());
 
 	if (!ss_node) {
-
 		err_dialog->set_text(TTR("Surface source is invalid (invalid path)."));
 		err_dialog->popup_centered();
 		return;
@@ -116,7 +106,6 @@ void MultiMeshEditor::_populate() {
 	GeometryInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
 	if (!ss_instance) {
-
 		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered();
 		return;
@@ -127,7 +116,6 @@ void MultiMeshEditor::_populate() {
 	Vector<Face3> geometry = ss_instance->get_faces(VisualInstance3D::FACES_SOLID);
 
 	if (geometry.size() == 0) {
-
 		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
 		err_dialog->popup_centered();
 		return;
@@ -153,10 +141,10 @@ void MultiMeshEditor::_populate() {
 	float area_accum = 0;
 	Map<float, int> triangle_area_map;
 	for (int i = 0; i < facecount; i++) {
-
 		float area = r[i].get_area();
-		if (area < CMP_EPSILON)
+		if (area < CMP_EPSILON) {
 			continue;
+		}
 		triangle_area_map[area_accum] = i;
 		area_accum += area;
 	}
@@ -188,7 +176,6 @@ void MultiMeshEditor::_populate() {
 	}
 
 	for (int i = 0; i < instance_count; i++) {
-
 		float areapos = Math::random(0.0f, area_accum);
 
 		Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
@@ -227,23 +214,19 @@ void MultiMeshEditor::_populate() {
 }
 
 void MultiMeshEditor::_browsed(const NodePath &p_path) {
-
 	NodePath path = node->get_path_to(get_node(p_path));
 
-	if (browsing_source)
+	if (browsing_source) {
 		mesh_source->set_text(path);
-	else
+	} else {
 		surface_source->set_text(path);
+	}
 }
 
 void MultiMeshEditor::_menu_option(int p_option) {
-
 	switch (p_option) {
-
 		case MENU_OPTION_POPULATE: {
-
 			if (_last_pp_node != node) {
-
 				surface_source->set_text("..");
 				mesh_source->set_text("..");
 				populate_axis->select(1);
@@ -262,26 +245,24 @@ void MultiMeshEditor::_menu_option(int p_option) {
 }
 
 void MultiMeshEditor::edit(MultiMeshInstance3D *p_multimesh) {
-
 	node = p_multimesh;
 }
 
 void MultiMeshEditor::_browse(bool p_source) {
-
 	browsing_source = p_source;
 	std->get_scene_tree()->set_marked(node, false);
-	std->popup_centered_ratio();
-	if (p_source)
+	std->popup_scenetree_dialog();
+	if (p_source) {
 		std->set_title(TTR("Select a Source Mesh:"));
-	else
+	} else {
 		std->set_title(TTR("Select a Target Surface:"));
+	}
 }
 
 void MultiMeshEditor::_bind_methods() {
 }
 
 MultiMeshEditor::MultiMeshEditor() {
-
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
@@ -378,28 +359,23 @@ MultiMeshEditor::MultiMeshEditor() {
 }
 
 void MultiMeshEditorPlugin::edit(Object *p_object) {
-
 	multimesh_editor->edit(Object::cast_to<MultiMeshInstance3D>(p_object));
 }
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("MultiMeshInstance3D");
 }
 
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		multimesh_editor->options->show();
 	} else {
-
 		multimesh_editor->options->hide();
 		multimesh_editor->edit(nullptr);
 	}
 }
 
 MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	multimesh_editor = memnew(MultiMeshEditor);
 	editor->get_viewport()->add_child(multimesh_editor);

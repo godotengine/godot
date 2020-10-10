@@ -63,7 +63,6 @@ GDNativeLibrary::~GDNativeLibrary() {
 }
 
 bool GDNativeLibrary::_set(const StringName &p_name, const Variant &p_property) {
-
 	String name = p_name;
 
 	if (name.begins_with("entry/")) {
@@ -115,8 +114,9 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	// set entries
 	List<String> entry_key_list;
 
-	if (config_file->has_section("entry"))
+	if (config_file->has_section("entry")) {
 		config_file->get_section_keys("entry", &entry_key_list);
+	}
 
 	for (List<String>::Element *E = entry_key_list.front(); E; E = E->next()) {
 		String key = E->get();
@@ -132,8 +132,9 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	// set dependencies
 	List<String> dependency_key_list;
 
-	if (config_file->has_section("dependencies"))
+	if (config_file->has_section("dependencies")) {
 		config_file->get_section_keys("dependencies", &dependency_key_list);
+	}
 
 	for (List<String>::Element *E = dependency_key_list.front(); E; E = E->next()) {
 		String key = E->get();
@@ -148,7 +149,6 @@ void GDNativeLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
-
 	set_singleton(p_config_file->get_value("general", "singleton", default_singleton));
 	set_load_once(p_config_file->get_value("general", "load_once", default_load_once));
 	set_symbol_prefix(p_config_file->get_value("general", "symbol_prefix", default_symbol_prefix));
@@ -156,11 +156,11 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 	String entry_lib_path;
 	{
-
 		List<String> entry_keys;
 
-		if (p_config_file->has_section("entry"))
+		if (p_config_file->has_section("entry")) {
 			p_config_file->get_section_keys("entry", &entry_keys);
+		}
 
 		for (List<String>::Element *E = entry_keys.front(); E; E = E->next()) {
 			String key = E->get();
@@ -188,11 +188,11 @@ void GDNativeLibrary::set_config_file(Ref<ConfigFile> p_config_file) {
 
 	Vector<String> dependency_paths;
 	{
-
 		List<String> dependency_keys;
 
-		if (p_config_file->has_section("dependencies"))
+		if (p_config_file->has_section("dependencies")) {
 			p_config_file->get_section_keys("dependencies", &dependency_keys);
+		}
 
 		for (List<String>::Element *E = dependency_keys.front(); E; E = E->next()) {
 			String key = E->get();
@@ -291,8 +291,26 @@ bool GDNative::initialize() {
 		return false;
 	}
 #ifdef IPHONE_ENABLED
-	// on iOS we use static linking
+	// On iOS we use static linking by default.
 	String path = "";
+
+	// On iOS dylibs is not allowed, but can be replaced with .framework or .xcframework.
+	// If they are used, we can run dlopen on them.
+	// They should be located under Frameworks directory, so we need to replace library path.
+	if (!lib_path.ends_with(".a")) {
+		path = ProjectSettings::get_singleton()->globalize_path(lib_path);
+
+		if (!FileAccess::exists(path)) {
+			String lib_name = lib_path.get_basename().get_file();
+			String framework_path_format = "Frameworks/$name.framework/$name";
+
+			Dictionary format_dict;
+			format_dict["name"] = lib_name;
+			String framework_path = framework_path_format.format(format_dict, "$_");
+
+			path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file(framework_path);
+		}
+	}
 #elif defined(ANDROID_ENABLED)
 	// On Android dynamic libraries are located separately from resource assets,
 	// we should pass library name to dlopen(). The library name is flattened
@@ -383,7 +401,6 @@ bool GDNative::initialize() {
 }
 
 bool GDNative::terminate() {
-
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't terminate GDNative object");
 		return false;
@@ -452,7 +469,6 @@ Vector<StringName> GDNativeCallRegistry::get_native_call_types() {
 }
 
 Variant GDNative::call_native(StringName p_native_call_type, StringName p_procedure_name, Array p_arguments) {
-
 	Map<StringName, native_call_cb>::Element *E = GDNativeCallRegistry::singleton->native_calls.find(p_native_call_type);
 	if (!E) {
 		ERR_PRINT((String("No handler for native call type \"" + p_native_call_type) + "\" found").utf8().get_data());
@@ -478,7 +494,6 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 }
 
 Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_optional) const {
-
 	if (!initialized) {
 		ERR_PRINT("No valid library handle, can't get symbol from GDNative object");
 		return ERR_CANT_OPEN;
@@ -493,7 +508,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 
@@ -520,13 +535,13 @@ bool GDNativeLibraryResourceLoader::handles_type(const String &p_type) const {
 
 String GDNativeLibraryResourceLoader::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "gdnlib")
+	if (el == "gdnlib") {
 		return "GDNativeLibrary";
+	}
 	return "";
 }
 
 Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
-
 	Ref<GDNativeLibrary> lib = p_resource;
 
 	if (lib.is_null()) {

@@ -36,7 +36,6 @@
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle2D::set_navigation_node);
 	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle2D::get_navigation_node);
 }
@@ -44,7 +43,6 @@ void NavigationObstacle2D::_bind_methods() {
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			update_agent_shape();
 
 			// Search the navigation node and set it
@@ -53,10 +51,11 @@ void NavigationObstacle2D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -78,9 +77,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 	}
 }
 
-NavigationObstacle2D::NavigationObstacle2D() :
-		navigation(nullptr),
-		agent(RID()) {
+NavigationObstacle2D::NavigationObstacle2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
 }
 
@@ -90,8 +87,9 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 }
 
 void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -108,11 +106,16 @@ Node *NavigationObstacle2D::get_navigation_node() const {
 }
 
 String NavigationObstacle2D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		return TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle2D::update_agent_shape() {
@@ -142,8 +145,9 @@ void NavigationObstacle2D::update_agent_shape() {
 		radius *= MAX(s.x, s.y);
 	}
 
-	if (radius == 0.0)
+	if (radius == 0.0) {
 		radius = 1.0; // Never a 0 radius
+	}
 
 	// Initialize the Agent as an object
 	NavigationServer2D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);

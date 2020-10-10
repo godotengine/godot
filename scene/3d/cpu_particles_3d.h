@@ -122,7 +122,6 @@ private:
 		const Particle *particles;
 		Vector3 axis;
 		bool operator()(int p_a, int p_b) const {
-
 			return axis.dot(particles[p_a].transform.origin) < axis.dot(particles[p_b].transform.origin);
 		}
 	};
@@ -187,11 +186,11 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
-	AABB get_aabb() const;
-	Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	AABB get_aabb() const override;
+	Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	void set_emitting(bool p_emitting);
 	void set_amount(int p_amount);
@@ -280,7 +279,7 @@ public:
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void restart();
 

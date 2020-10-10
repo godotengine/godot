@@ -35,11 +35,9 @@
 #include "core/reference.h"
 
 class TriangleMesh : public Reference {
-
 	GDCLASS(TriangleMesh, Reference);
 
 	struct Triangle {
-
 		Vector3 normal;
 		int indices[3];
 	};
@@ -48,7 +46,6 @@ class TriangleMesh : public Reference {
 	Vector<Vector3> vertices;
 
 	struct BVH {
-
 		AABB aabb;
 		Vector3 center; //used for sorting
 		int left;
@@ -58,24 +55,18 @@ class TriangleMesh : public Reference {
 	};
 
 	struct BVHCmpX {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.x < p_right->center.x;
 		}
 	};
 
 	struct BVHCmpY {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.y < p_right->center.y;
 		}
 	};
 	struct BVHCmpZ {
-
 		bool operator()(const BVH *p_left, const BVH *p_right) const {
-
 			return p_left->center.z < p_right->center.z;
 		}
 	};
@@ -90,8 +81,8 @@ public:
 	bool is_valid() const;
 	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const;
 	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal) const;
-	bool intersect_convex_shape(const Plane *p_planes, int p_plane_count) const;
-	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
+	bool intersect_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
+	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector3 get_area_normal(const AABB &p_aabb) const;
 	Vector<Face3> get_faces() const;
 

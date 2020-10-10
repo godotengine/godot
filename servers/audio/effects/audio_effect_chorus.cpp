@@ -33,11 +33,9 @@
 #include "servers/audio_server.h"
 
 void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	int todo = p_frame_count;
 
 	while (todo) {
-
 		int to_mix = MIN(todo, 256); //can't mix too much
 
 		_process_chunk(p_src_frames, p_dst_frames, to_mix);
@@ -50,7 +48,6 @@ void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFra
 }
 
 void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	//fill ringbuffer
 	for (int i = 0; i < p_frame_count; i++) {
 		audio_buffer.write[(buffer_pos + i) & buffer_mask] = p_src_frames[i];
@@ -61,7 +58,6 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 	/* process voices */
 	for (int vc = 0; vc < base->voice_count; vc++) {
-
 		AudioEffectChorus::Voice &v = base->voice[vc];
 
 		double time_to_mix = (float)p_frame_count / mix_rate;
@@ -85,8 +81,9 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		}
 
 		//low pass filter
-		if (v.cutoff == 0)
+		if (v.cutoff == 0) {
 			continue;
+		}
 		float auxlp = expf(-2.0 * Math_PI * v.cutoff / mix_rate);
 		float c1 = 1.0 - auxlp;
 		float c2 = auxlp;
@@ -103,7 +100,6 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		vol_modifier.r *= CLAMP(1.0 + v.pan, 0, 1);
 
 		for (int i = 0; i < p_frame_count; i++) {
-
 			/** COMPUTE WAVEFORM **/
 
 			float phase = (float)(local_cycles & AudioEffectChorus::CYCLES_MASK) / (float)(1 << AudioEffectChorus::CYCLES_FRAC);
@@ -146,7 +142,6 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 }
 
 Ref<AudioEffectInstance> AudioEffectChorus::instance() {
-
 	Ref<AudioEffectChorusInstance> ins;
 	ins.instance();
 	ins->base = Ref<AudioEffectChorus>(this);
@@ -182,24 +177,21 @@ Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 }
 
 void AudioEffectChorus::set_voice_count(int p_voices) {
-
 	ERR_FAIL_COND(p_voices < 1 || p_voices > MAX_VOICES);
 	voice_count = p_voices;
 }
 
 int AudioEffectChorus::get_voice_count() const {
-
 	return voice_count;
 }
 
 void AudioEffectChorus::set_voice_delay_ms(int p_voice, float p_delay_ms) {
-
 	ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
 	voice[p_voice].delay = p_delay_ms;
 }
-float AudioEffectChorus::get_voice_delay_ms(int p_voice) const {
 
+float AudioEffectChorus::get_voice_delay_ms(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 	return voice[p_voice].delay;
 }
@@ -209,85 +201,78 @@ void AudioEffectChorus::set_voice_rate_hz(int p_voice, float p_rate_hz) {
 
 	voice[p_voice].rate = p_rate_hz;
 }
-float AudioEffectChorus::get_voice_rate_hz(int p_voice) const {
 
+float AudioEffectChorus::get_voice_rate_hz(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
 	return voice[p_voice].rate;
 }
 
 void AudioEffectChorus::set_voice_depth_ms(int p_voice, float p_depth_ms) {
-
 	ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
 	voice[p_voice].depth = p_depth_ms;
 }
-float AudioEffectChorus::get_voice_depth_ms(int p_voice) const {
 
+float AudioEffectChorus::get_voice_depth_ms(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
 	return voice[p_voice].depth;
 }
 
 void AudioEffectChorus::set_voice_level_db(int p_voice, float p_level_db) {
-
 	ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
 	voice[p_voice].level = p_level_db;
 }
-float AudioEffectChorus::get_voice_level_db(int p_voice) const {
 
+float AudioEffectChorus::get_voice_level_db(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
 	return voice[p_voice].level;
 }
 
 void AudioEffectChorus::set_voice_cutoff_hz(int p_voice, float p_cutoff_hz) {
-
 	ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
 	voice[p_voice].cutoff = p_cutoff_hz;
 }
-float AudioEffectChorus::get_voice_cutoff_hz(int p_voice) const {
 
+float AudioEffectChorus::get_voice_cutoff_hz(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
 	return voice[p_voice].cutoff;
 }
 
 void AudioEffectChorus::set_voice_pan(int p_voice, float p_pan) {
-
 	ERR_FAIL_INDEX(p_voice, MAX_VOICES);
 
 	voice[p_voice].pan = p_pan;
 }
-float AudioEffectChorus::get_voice_pan(int p_voice) const {
 
+float AudioEffectChorus::get_voice_pan(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
 	return voice[p_voice].pan;
 }
 
 void AudioEffectChorus::set_wet(float amount) {
-
 	wet = amount;
 }
-float AudioEffectChorus::get_wet() const {
 
+float AudioEffectChorus::get_wet() const {
 	return wet;
 }
 
 void AudioEffectChorus::set_dry(float amount) {
-
 	dry = amount;
 }
-float AudioEffectChorus::get_dry() const {
 
+float AudioEffectChorus::get_dry() const {
 	return dry;
 }
 
 void AudioEffectChorus::_validate_property(PropertyInfo &property) const {
-
 	if (property.name.begins_with("voice/")) {
 		int voice_idx = property.name.get_slice("/", 1).to_int();
 		if (voice_idx > voice_count) {
@@ -297,7 +282,6 @@ void AudioEffectChorus::_validate_property(PropertyInfo &property) const {
 }
 
 void AudioEffectChorus::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_voice_count", "voices"), &AudioEffectChorus::set_voice_count);
 	ClassDB::bind_method(D_METHOD("get_voice_count"), &AudioEffectChorus::get_voice_count);
 

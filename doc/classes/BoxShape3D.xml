@@ -7,6 +7,9 @@
 		3D box shape that can be a child of a [PhysicsBody3D] or [Area3D].
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/126</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
 	</tutorials>
 	<methods>
 	</methods>

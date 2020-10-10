@@ -31,7 +31,7 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/midi_driver_coremidi.h"
@@ -44,7 +44,7 @@ class OS_OSX : public OS_Unix {
 
 	bool force_quit;
 
-	JoypadOSX *joypad_osx;
+	JoypadOSX *joypad_osx = nullptr;
 
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;

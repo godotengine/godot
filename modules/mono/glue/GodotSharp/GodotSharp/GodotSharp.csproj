@@ -1,37 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AEBF0036-DA76-4341-B651-A3F2856AB2FA}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <OutputPath>bin/$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
-    <AssemblyName>GodotSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
-    <BaseIntermediateOutputPath>obj</BaseIntermediateOutputPath>
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>portable</DebugType>
-    <Optimize>false</Optimize>
-    <DefineConstants>$(GodotDefineConstants);GODOT;DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);GODOT</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>portable</DebugType>
-    <Optimize>true</Optimize>
-    <DefineConstants>$(GodotDefineConstants);GODOT;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AABB.cs" />
     <Compile Include="Core\Array.cs" />
@@ -52,6 +31,7 @@
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
     <Compile Include="Core\Extensions\ObjectExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
+    <Compile Include="Core\Extensions\SceneTreeExtensions.cs" />
     <Compile Include="Core\GD.cs" />
     <Compile Include="Core\GodotSynchronizationContext.cs" />
     <Compile Include="Core\GodotTaskScheduler.cs" />
@@ -88,5 +68,4 @@
   Fortunately code completion, go to definition and such still work.
   -->
   <Import Project="Generated\GeneratedIncludes.props" />
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

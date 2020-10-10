@@ -33,7 +33,6 @@
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {
-
 	printf("%s:%04d: %s", file, line, str);
 	fflush(stdout);
 }
@@ -68,8 +67,9 @@ Error CookieContextMbedTLS::setup() {
 }
 
 void CookieContextMbedTLS::clear() {
-	if (!inited)
+	if (!inited) {
 		return;
+	}
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
 	mbedtls_ssl_cookie_free(&cookie_ctx);
@@ -121,10 +121,12 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 	// Locking key and certificate(s)
 	pkey = p_pkey;
 	certs = p_cert;
-	if (pkey.is_valid())
+	if (pkey.is_valid()) {
 		pkey->lock();
-	if (certs.is_valid())
+	}
+	if (certs.is_valid()) {
 		certs->lock();
+	}
 
 	// Adding key and certificate
 	int ret = mbedtls_ssl_conf_own_cert(&conf, &(certs->cert), &(pkey->pkey));
@@ -176,19 +178,22 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 }
 
 void SSLContextMbedTLS::clear() {
-	if (!inited)
+	if (!inited) {
 		return;
+	}
 	mbedtls_ssl_free(&ssl);
 	mbedtls_ssl_config_free(&conf);
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
 
 	// Unlock and key and certificates
-	if (certs.is_valid())
+	if (certs.is_valid()) {
 		certs->unlock();
+	}
 	certs = Ref<X509Certificate>();
-	if (pkey.is_valid())
+	if (pkey.is_valid()) {
 		pkey->unlock();
+	}
 	pkey = Ref<CryptoKeyMbedTLS>();
 	cookies = Ref<CookieContextMbedTLS>();
 	inited = false;

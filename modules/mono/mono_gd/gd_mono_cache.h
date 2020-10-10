@@ -37,7 +37,6 @@
 namespace GDMonoCache {
 
 struct CachedData {
-
 	// -----------------------------------------------
 	// corlib classes
 
@@ -58,6 +57,7 @@ struct CachedData {
 	GDMonoClass *class_IntPtr; // System.IntPtr
 
 	GDMonoClass *class_System_Collections_IEnumerable;
+	GDMonoClass *class_System_Collections_ICollection;
 	GDMonoClass *class_System_Collections_IDictionary;
 
 #ifdef DEBUG_ENABLED
@@ -141,21 +141,17 @@ struct CachedData {
 
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericArray;
 	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericDictionary;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericList;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericDictionary;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
+	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
 
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
 	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
 
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType_with_info;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType_with_info;
-
 	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericArrayType;
 	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericDictionaryType;
-
-	GDMonoMethodThunk<MonoObject *, Array *> methodthunk_MarshalUtils_EnumerableToArray;
-	GDMonoMethodThunk<MonoObject *, Dictionary *> methodthunk_MarshalUtils_IDictionaryToDictionary;
-	GDMonoMethodThunk<MonoObject *, Dictionary *> methodthunk_MarshalUtils_GenericIDictionaryToDictionary;
 
 	// End of MarshalUtils methods
 
@@ -184,14 +180,6 @@ inline void clear_corlib_cache() {
 
 inline void clear_godot_api_cache() {
 	cached_data.clear_godot_api_cache();
-}
-
-_FORCE_INLINE_ bool tools_godot_api_check() {
-#ifdef TOOLS_ENABLED
-	return cached_data.godot_api_cache_updated;
-#else
-	return true; // Assume it's updated if this was called, otherwise it's a bug
-#endif
 }
 
 } // namespace GDMonoCache

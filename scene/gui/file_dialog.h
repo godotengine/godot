@@ -36,11 +36,9 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class FileDialog : public ConfirmationDialog {
-
 	GDCLASS(FileDialog, ConfirmationDialog);
 
 public:
@@ -88,10 +86,10 @@ private:
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
-	ToolButton *dir_up;
+	Button *dir_up;
 
-	ToolButton *refresh;
-	ToolButton *show_hidden;
+	Button *refresh;
+	Button *show_hidden;
 
 	Vector<String> filters;
 
@@ -128,7 +126,7 @@ private:
 
 	bool _is_open_should_be_disabled();
 
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 protected:
 	void _theme_changed();
@@ -137,6 +135,7 @@ protected:
 	static void _bind_methods();
 	//bind helpers
 public:
+	void popup_file_dialog();
 	void clear_filters();
 	void add_filter(const String &p_filter);
 	void set_filters(const Vector<String> &p_filters);

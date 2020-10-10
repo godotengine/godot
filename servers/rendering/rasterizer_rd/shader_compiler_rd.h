@@ -39,7 +39,6 @@
 class ShaderCompilerRD {
 public:
 	struct IdentifierActions {
-
 		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
@@ -49,7 +48,6 @@ public:
 	};
 
 	struct GeneratedCode {
-
 		Vector<String> defines;
 		struct Texture {
 			StringName name;
@@ -57,6 +55,7 @@ public:
 			ShaderLanguage::ShaderNode::Uniform::Hint hint;
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
+			bool global;
 		};
 
 		Vector<Texture> texture_uniforms;
@@ -69,13 +68,15 @@ public:
 		String fragment_global;
 		String fragment;
 		String light;
+		String compute_global;
+		String compute;
 
+		bool uses_global_textures;
 		bool uses_fragment_time;
 		bool uses_vertex_time;
 	};
 
 	struct DefaultIdentifierActions {
-
 		Map<StringName, String> renames;
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
@@ -86,6 +87,8 @@ public:
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;
 		String base_uniform_string;
+		String global_buffer_array_variable;
+		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
 	};
 
@@ -95,7 +98,7 @@ private:
 	String _get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat);
 
 	void _dump_function_deps(const ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
-	String _dump_node_code(const ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning);
+	String _dump_node_code(const ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning, bool p_scope = true);
 
 	const ShaderLanguage::ShaderNode *shader;
 	const ShaderLanguage::FunctionNode *function;
@@ -103,6 +106,7 @@ private:
 	StringName vertex_name;
 	StringName fragment_name;
 	StringName light_name;
+	StringName compute_name;
 	StringName time_name;
 	Set<StringName> texture_functions;
 
@@ -112,6 +116,8 @@ private:
 	Set<StringName> internal_functions;
 
 	DefaultIdentifierActions actions;
+
+	static ShaderLanguage::DataType _get_variable_type(const StringName &p_type);
 
 public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);

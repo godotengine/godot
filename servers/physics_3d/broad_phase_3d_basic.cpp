@@ -33,7 +33,6 @@
 #include "core/print_string.h"
 
 BroadPhase3DSW::ID BroadPhase3DBasic::create(CollisionObject3DSW *p_object, int p_subindex) {
-
 	ERR_FAIL_COND_V(p_object == nullptr, 0);
 
 	current++;
@@ -48,27 +47,24 @@ BroadPhase3DSW::ID BroadPhase3DBasic::create(CollisionObject3DSW *p_object, int 
 }
 
 void BroadPhase3DBasic::move(ID p_id, const AABB &p_aabb) {
-
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	E->get().aabb = p_aabb;
 }
-void BroadPhase3DBasic::set_static(ID p_id, bool p_static) {
 
+void BroadPhase3DBasic::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	E->get()._static = p_static;
 }
-void BroadPhase3DBasic::remove(ID p_id) {
 
+void BroadPhase3DBasic::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	List<PairKey> to_erase;
 	//unpair must be done immediately on removal to avoid potential invalid pointers
 	for (Map<PairKey, void *>::Element *F = pair_map.front(); F; F = F->next()) {
-
 		if (F->key().a == p_id || F->key().b == p_id) {
-
 			if (unpair_callback) {
 				Element *elem_A = &element_map[F->key().a];
 				Element *elem_B = &element_map[F->key().b];
@@ -78,7 +74,6 @@ void BroadPhase3DBasic::remove(ID p_id) {
 		}
 	}
 	while (to_erase.size()) {
-
 		pair_map.erase(to_erase.front()->get());
 		to_erase.pop_front();
 	}
@@ -86,38 +81,35 @@ void BroadPhase3DBasic::remove(ID p_id) {
 }
 
 CollisionObject3DSW *BroadPhase3DBasic::get_object(ID p_id) const {
-
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
-bool BroadPhase3DBasic::is_static(ID p_id) const {
 
+bool BroadPhase3DBasic::is_static(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, false);
 	return E->get()._static;
 }
-int BroadPhase3DBasic::get_subindex(ID p_id) const {
 
+int BroadPhase3DBasic::get_subindex(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, -1);
 	return E->get().subindex;
 }
 
 int BroadPhase3DBasic::cull_point(const Vector3 &p_point, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-
 	int rc = 0;
 
 	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
-
 		const AABB aabb = E->get().aabb;
 		if (aabb.has_point(p_point)) {
-
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -125,38 +117,35 @@ int BroadPhase3DBasic::cull_point(const Vector3 &p_point, CollisionObject3DSW **
 }
 
 int BroadPhase3DBasic::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
-
 	int rc = 0;
 
 	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
-
 		const AABB aabb = E->get().aabb;
 		if (aabb.intersects_segment(p_from, p_to)) {
-
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
 	return rc;
 }
-int BroadPhase3DBasic::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
 
+int BroadPhase3DBasic::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
 	int rc = 0;
 
 	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
-
 		const AABB aabb = E->get().aabb;
 		if (aabb.intersects(p_aabb)) {
-
 			p_results[rc] = E->get().owner;
 			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc >= p_max_results)
+			if (rc >= p_max_results) {
 				break;
+			}
 		}
 	}
 
@@ -164,28 +153,25 @@ int BroadPhase3DBasic::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_res
 }
 
 void BroadPhase3DBasic::set_pair_callback(PairCallback p_pair_callback, void *p_userdata) {
-
 	pair_userdata = p_userdata;
 	pair_callback = p_pair_callback;
 }
-void BroadPhase3DBasic::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 
+void BroadPhase3DBasic::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_userdata = p_userdata;
 	unpair_callback = p_unpair_callback;
 }
 
 void BroadPhase3DBasic::update() {
-
 	// recompute pairs
 	for (Map<ID, Element>::Element *I = element_map.front(); I; I = I->next()) {
-
 		for (Map<ID, Element>::Element *J = I->next(); J; J = J->next()) {
-
 			Element *elem_A = &I->get();
 			Element *elem_B = &J->get();
 
-			if (elem_A->owner == elem_B->owner)
+			if (elem_A->owner == elem_B->owner) {
 				continue;
+			}
 
 			bool pair_ok = elem_A->aabb.intersects(elem_B->aabb) && (!elem_A->_static || !elem_B->_static);
 
@@ -194,29 +180,30 @@ void BroadPhase3DBasic::update() {
 			Map<PairKey, void *>::Element *E = pair_map.find(key);
 
 			if (!pair_ok && E) {
-				if (unpair_callback)
+				if (unpair_callback) {
 					unpair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, E->get(), unpair_userdata);
+				}
 				pair_map.erase(key);
 			}
 
 			if (pair_ok && !E) {
-
 				void *data = nullptr;
-				if (pair_callback)
+				if (pair_callback) {
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
-				pair_map.insert(key, data);
+					if (data) {
+						pair_map.insert(key, data);
+					}
+				}
 			}
 		}
 	}
 }
 
 BroadPhase3DSW *BroadPhase3DBasic::_create() {
-
 	return memnew(BroadPhase3DBasic);
 }
 
 BroadPhase3DBasic::BroadPhase3DBasic() {
-
 	current = 1;
 	unpair_callback = nullptr;
 	unpair_userdata = nullptr;

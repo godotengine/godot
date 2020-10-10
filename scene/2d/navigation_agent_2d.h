@@ -40,29 +40,29 @@ class Navigation2D;
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
 
-	Node2D *agent_parent;
-	Navigation2D *navigation;
+	Node2D *agent_parent = nullptr;
+	Navigation2D *navigation = nullptr;
 
 	RID agent;
 
-	real_t target_desired_distance;
+	real_t target_desired_distance = 1.0;
 	real_t radius;
 	real_t neighbor_dist;
 	int max_neighbors;
 	real_t time_horizon;
 	real_t max_speed;
 
-	real_t path_max_distance;
+	real_t path_max_distance = 3.0;
 
 	Vector2 target_location;
 	Vector<Vector2> navigation_path;
 	int nav_path_index;
-	bool velocity_submitted;
+	bool velocity_submitted = false;
 	Vector2 prev_safe_velocity;
 	/// The submitted target velocity
 	Vector2 target_velocity;
-	bool target_reached;
-	bool navigation_finished;
+	bool target_reached = false;
+	bool navigation_finished = true;
 	// No initialized on purpose
 	uint32_t update_frame_id;
 
@@ -141,7 +141,7 @@ public:
 	void set_velocity(Vector2 p_velocity);
 	void _avoidance_done(Vector3 p_new_velocity);
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 private:
 	void update_navigation();

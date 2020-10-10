@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "core/io/http_client.h"
+
 #include "http_request.h"
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
-
 	close();
 	if (p_ssl && !p_verify_host) {
 		WARN_PRINT("Disabling HTTPClient's host verification is not supported for the HTML5 platform, host will be verified");
@@ -67,17 +67,14 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 }
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
-
 	ERR_FAIL_MSG("Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Ref<StreamPeer> HTTPClient::get_connection() const {
-
 	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers) {
-
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
@@ -104,7 +101,6 @@ Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Ve
 }
 
 Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body) {
-
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
@@ -113,7 +109,6 @@ Error HTTPClient::request_raw(Method p_method, const String &p_url, const Vector
 }
 
 Error HTTPClient::request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body) {
-
 	Error err = prepare_request(p_method, p_url, p_headers);
 	if (err != OK)
 		return err;
@@ -122,7 +117,6 @@ Error HTTPClient::request(Method p_method, const String &p_url, const Vector<Str
 }
 
 void HTTPClient::close() {
-
 	host = "";
 	port = -1;
 	use_tls = false;
@@ -134,28 +128,23 @@ void HTTPClient::close() {
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
-
 	return status;
 }
 
 bool HTTPClient::has_response() const {
-
 	return !polled_response_header.empty();
 }
 
 bool HTTPClient::is_response_chunked() const {
-
 	// TODO evaluate using moz-chunked-arraybuffer, fetch & ReadableStream
 	return false;
 }
 
 int HTTPClient::get_response_code() const {
-
 	return polled_response_code;
 }
 
 Error HTTPClient::get_response_headers(List<String> *r_response) {
-
 	if (polled_response_header.empty())
 		return ERR_INVALID_PARAMETER;
 
@@ -168,12 +157,10 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 }
 
 int HTTPClient::get_response_body_length() const {
-
 	return polled_response.size();
 }
 
 PackedByteArray HTTPClient::read_response_body_chunk() {
-
 	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
 	int to_read = MIN(read_limit, polled_response.size() - response_read_offset);
@@ -192,17 +179,14 @@ PackedByteArray HTTPClient::read_response_body_chunk() {
 }
 
 void HTTPClient::set_blocking_mode(bool p_enable) {
-
 	ERR_FAIL_COND_MSG(p_enable, "HTTPClient blocking mode is not supported for the HTML5 platform.");
 }
 
 bool HTTPClient::is_blocking_mode_enabled() const {
-
 	return false;
 }
 
 void HTTPClient::set_read_chunk_size(int p_size) {
-
 	read_limit = p_size;
 }
 
@@ -211,9 +195,7 @@ int HTTPClient::get_read_chunk_size() const {
 }
 
 Error HTTPClient::poll() {
-
 	switch (status) {
-
 		case STATUS_DISCONNECTED:
 			return ERR_UNCONFIGURED;
 
@@ -233,7 +215,6 @@ Error HTTPClient::poll() {
 			return ERR_CONNECTION_ERROR;
 
 		case STATUS_REQUESTING: {
-
 #ifdef DEBUG_ENABLED
 			if (!has_polled) {
 				has_polled = true;
@@ -279,20 +260,9 @@ Error HTTPClient::poll() {
 }
 
 HTTPClient::HTTPClient() {
-
 	xhr_id = godot_xhr_new();
-	read_limit = 4096;
-	status = STATUS_DISCONNECTED;
-	port = -1;
-	use_tls = false;
-	polled_response_code = 0;
-#ifdef DEBUG_ENABLED
-	has_polled = false;
-	last_polling_frame = 0;
-#endif
 }
 
 HTTPClient::~HTTPClient() {
-
 	godot_xhr_free(xhr_id);
 }

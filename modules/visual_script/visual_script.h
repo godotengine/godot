@@ -89,7 +89,6 @@ public:
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance) = 0;
 
 	struct TypeGuess {
-
 		Variant::Type type;
 		StringName gdclass;
 		Ref<Script> script;
@@ -166,16 +165,13 @@ public:
 };
 
 class VisualScript : public Script {
-
 	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 
 public:
 	struct SequenceConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_output : 16;
@@ -185,15 +181,12 @@ public:
 		};
 
 		bool operator<(const SequenceConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
 
 	struct DataConnection {
-
 		union {
-
 			struct {
 				uint64_t from_node : 24;
 				uint64_t from_port : 8;
@@ -204,7 +197,6 @@ public:
 		};
 
 		bool operator<(const DataConnection &p_connection) const {
-
 			return id < p_connection.id;
 		}
 	};
@@ -257,7 +249,7 @@ private:
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_placeholders();
 #endif
 
@@ -272,6 +264,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool inherits_script(const Ref<Script> &p_script) const override;
+
 	// TODO: Remove it in future when breaking changes are acceptable
 	StringName get_default_func() const;
 	void add_function(const StringName &p_name);
@@ -336,47 +330,47 @@ public:
 
 	void set_instance_base_type(const StringName &p_type);
 
-	virtual bool can_instance() const;
+	virtual bool can_instance() const override;
 
-	virtual Ref<Script> get_base_script() const;
-	virtual StringName get_instance_base_type() const;
-	virtual ScriptInstance *instance_create(Object *p_this);
-	virtual bool instance_has(const Object *p_this) const;
+	virtual Ref<Script> get_base_script() const override;
+	virtual StringName get_instance_base_type() const override;
+	virtual ScriptInstance *instance_create(Object *p_this) override;
+	virtual bool instance_has(const Object *p_this) const override;
 
-	virtual bool has_source_code() const;
-	virtual String get_source_code() const;
-	virtual void set_source_code(const String &p_code);
-	virtual Error reload(bool p_keep_state = false);
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
 
-	virtual bool is_tool() const;
-	virtual bool is_valid() const;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
 
-	virtual ScriptLanguage *get_language() const;
+	virtual ScriptLanguage *get_language() const override;
 
-	virtual bool has_script_signal(const StringName &p_signal) const;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 
-	virtual bool has_method(const StringName &p_method) const;
-	virtual MethodInfo get_method_info(const StringName &p_method) const;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
-	virtual int get_member_line(const StringName &p_member) const;
+	virtual int get_member_line(const StringName &p_member) const override;
 
-	virtual Vector<ScriptNetData> get_rpc_methods() const;
-	virtual uint16_t get_rpc_method_id(const StringName &p_method) const;
-	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const;
-	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const;
+	virtual Vector<ScriptNetData> get_rpc_methods() const override;
+	virtual uint16_t get_rpc_method_id(const StringName &p_method) const override;
+	virtual StringName get_rpc_method(const uint16_t p_rpc_method_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const override;
 
-	virtual Vector<ScriptNetData> get_rset_properties() const;
-	virtual uint16_t get_rset_property_id(const StringName &p_property) const;
-	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const;
-	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const;
+	virtual Vector<ScriptNetData> get_rset_properties() const override;
+	virtual uint16_t get_rset_property_id(const StringName &p_property) const override;
+	virtual StringName get_rset_property(const uint16_t p_rset_property_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode_by_id(const uint16_t p_rpc_method_id) const override;
+	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
@@ -429,20 +423,20 @@ public:
 	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
-
 		Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		E->get() = p_value;
 		return true;
 	}
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
-
 		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		*r_variable = E->get();
 		return true;
@@ -474,7 +468,6 @@ public:
 };
 
 class VisualScriptFunctionState : public Reference {
-
 	GDCLASS(VisualScriptFunctionState, Reference);
 	friend class VisualScriptInstance;
 
@@ -505,11 +498,9 @@ public:
 typedef Ref<VisualScriptNode> (*VisualScriptNodeRegisterFunc)(const String &p_type);
 
 class VisualScriptLanguage : public ScriptLanguage {
-
 	Map<String, VisualScriptNodeRegisterFunc> register_funcs;
 
 	struct CallLevel {
-
 		Variant *stack;
 		Variant **work_mem;
 		const StringName *function;
@@ -538,12 +529,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -561,15 +553,15 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			EngineDebugger::get_script_debugger()->debug(this);
 			return;
@@ -643,7 +635,6 @@ public:
 //aid for registering
 template <class T>
 static Ref<VisualScriptNode> create_node_generic(const String &p_name) {
-
 	Ref<T> node;
 	node.instance();
 	return node;

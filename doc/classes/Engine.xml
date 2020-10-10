@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Engine" inherits="Object" version="4.0">
 	<brief_description>
-		Access to basic engine properties.
+		Access to engine properties.
 	</brief_description>
 	<description>
-		The [Engine] class allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
+		The [Engine] singleton allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,7 +34,7 @@
 			</return>
 			<description>
 				Returns a Dictionary of Arrays of donor names.
-				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
+				{[code]platinum_sponsors[/code], [code]gold_sponsors[/code], [code]silver_sponsors[/code], [code]bronze_sponsors[/code], [code]mini_sponsors[/code], [code]gold_donors[/code], [code]silver_donors[/code], [code]bronze_donors[/code]}
 			</description>
 		</method>
 		<method name="get_frames_drawn">

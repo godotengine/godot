@@ -98,6 +98,10 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 	if (p_action.get_type() == Variant::DICTIONARY) {
 		Dictionary dict = p_action;
 		String method = dict.get("method", "");
+		if (method.begins_with("$/")) {
+			return ret;
+		}
+
 		Array args;
 		if (dict.has("params")) {
 			Variant params = dict.get("params", Variant());
@@ -120,7 +124,7 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 		}
 
 		if (object == nullptr || !object->has_method(method)) {
-			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found", id);
+			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
 		} else {
 			Variant call_ret = object->callv(method, args);
 			if (id.get_type() != Variant::NIL) {
@@ -147,8 +151,9 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 }
 
 String JSONRPC::process_string(const String &p_input) {
-
-	if (p_input.empty()) return String();
+	if (p_input.empty()) {
+		return String();
+	}
 
 	Variant ret;
 	Variant input;
