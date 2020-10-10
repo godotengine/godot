@@ -682,102 +682,78 @@ void SpaceBullet::destroy_world() {
 }
 
 void SpaceBullet::check_ghost_overlaps() {
-	/// Algorithm support variables
-	btCollisionShape *other_body_shape;
-	btConvexShape *area_shape;
-	btGjkPairDetector::ClosestPointInput gjk_input;
-	AreaBullet *area;
-	int x(-1), i(-1), y(-1), z(-1), indexOverlap(-1);
-
-	/// For each areas
-	for (x = areas.size() - 1; 0 <= x; --x) {
-		area = areas[x];
-
-		btVector3 area_scale(area->get_bt_body_scale());
-
+	// For each area
+	for (int area_idx = 0; area_idx < areas.size(); area_idx++) {
+		AreaBullet *area = areas[area_idx];
 		if (!area->is_monitoring()) {
 			continue;
 		}
 
-		/// 1. Reset all states
-		for (i = area->overlappingObjects.size() - 1; 0 <= i; --i) {
-			AreaBullet::OverlappingObjectData &otherObj = area->overlappingObjects.write[i];
-			// This check prevent the overwrite of ENTER state
-			// if this function is called more times before dispatchCallbacks
-			if (otherObj.state != AreaBullet::OVERLAP_STATE_ENTER) {
-				otherObj.state = AreaBullet::OVERLAP_STATE_DIRTY;
-			}
-		}
+		btGhostObject *bt_ghost = area->get_bt_ghost();
+		const btTransform &area_transform = area->get_transform__bullet();
+		const btVector3 &area_scale(area->get_bt_body_scale());
 
-		/// 2. Check all overlapping objects using GJK
+		// Mark all current overlapping shapes dirty.
+		area->mark_all_overlaps_dirty();
 
-		const btAlignedObjectArray<btCollisionObject *> ghostOverlaps = area->get_bt_ghost()->getOverlappingPairs();
+		// Broadphase
+		const btAlignedObjectArray<btCollisionObject *> overlapping_pairs = bt_ghost->getOverlappingPairs();
+		// Narrowphase
+		for (int pair_idx = 0; pair_idx < overlapping_pairs.size(); pair_idx++) {
+			btCollisionObject *other_bt_collision_object = overlapping_pairs[pair_idx];
+			RigidCollisionObjectBullet *other_object = static_cast<RigidCollisionObjectBullet *>(other_bt_collision_object->getUserPointer());
+			const btTransform &other_transform = other_object->get_transform__bullet();
+			const btVector3 &other_scale(other_object->get_bt_body_scale());
 
-		// For each overlapping
-		for (i = ghostOverlaps.size() - 1; 0 <= i; --i) {
-			bool hasOverlap = false;
-			btCollisionObject *overlapped_bt_co = ghostOverlaps[i];
-			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
-			btVector3 other_body_scale(otherObject->get_bt_body_scale());
-
-			if (!area->is_updated() && !otherObject->is_updated()) {
-				hasOverlap = -1 != area->find_overlapping_object(otherObject);
-				goto collision_found;
+			if (!area->is_updated() && !other_object->is_updated()) {
+				area->mark_object_overlaps_inside(other_object);
+				continue;
 			}
 
-			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
-				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable()) {
+			if (other_bt_collision_object->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
+				if (!static_cast<AreaBullet *>(other_bt_collision_object->getUserPointer())->is_monitorable()) {
 					continue;
 				}
-			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY) {
+			} else if (other_bt_collision_object->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY) {
 				continue;
 			}
 
 			// For each area shape
-			for (y = area->get_shape_count() - 1; 0 <= y; --y) {
-				if (!area->get_bt_shape(y)->isConvex()) {
+			for (int our_shape_id = 0; our_shape_id < area->get_shape_count(); our_shape_id++) {
+				btCollisionShape *area_shape = area->get_bt_shape(our_shape_id);
+				if (!area_shape->isConvex()) {
 					continue;
 				}
+				btConvexShape *area_convex_shape = static_cast<btConvexShape *>(area_shape);
 
-				btTransform area_shape_treansform(area->get_bt_shape_transform(y));
-				area_shape_treansform.getOrigin() *= area_scale;
-
-				gjk_input.m_transformA =
-						area->get_transform__bullet() *
-						area_shape_treansform;
-
-				area_shape = static_cast<btConvexShape *>(area->get_bt_shape(y));
+				btTransform area_shape_transform(area->get_bt_shape_transform(our_shape_id));
+				area_shape_transform.getOrigin() *= area_scale;
+				btGjkPairDetector::ClosestPointInput gjk_input;
+				gjk_input.m_transformA = area_transform * area_shape_transform;
 
 				// For each other object shape
-				for (z = otherObject->get_shape_count() - 1; 0 <= z; --z) {
-					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
+				for (int other_shape_id = 0; other_shape_id < other_object->get_shape_count(); other_shape_id++) {
+					btCollisionShape *other_shape = other_object->get_bt_shape(other_shape_id);
+					btTransform other_shape_transform(other_object->get_bt_shape_transform(other_shape_id));
+					other_shape_transform.getOrigin() *= other_scale;
+					gjk_input.m_transformB = other_transform * other_shape_transform;
 
-					btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
-					other_shape_transform.getOrigin() *= other_body_scale;
-
-					gjk_input.m_transformB =
-							otherObject->get_transform__bullet() *
-							other_shape_transform;
-
-					if (other_body_shape->isConvex()) {
+					if (other_shape->isConvex()) {
 						btPointCollector result;
 						btGjkPairDetector gjk_pair_detector(
-								area_shape,
-								static_cast<btConvexShape *>(other_body_shape),
+								area_convex_shape,
+								static_cast<btConvexShape *>(other_shape),
 								gjk_simplex_solver,
 								gjk_epa_pen_solver);
-						gjk_pair_detector.getClosestPoints(gjk_input, result, nullptr);
 
-						if (0 >= result.m_distance) {
-							hasOverlap = true;
-							goto collision_found;
+						gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
+						if (result.m_distance <= 0) {
+							area->set_overlap(other_object, other_shape_id, our_shape_id);
 						}
-
-					} else {
-						btCollisionObjectWrapper obA(nullptr, area_shape, area->get_bt_ghost(), gjk_input.m_transformA, -1, y);
-						btCollisionObjectWrapper obB(nullptr, other_body_shape, otherObject->get_bt_collision_object(), gjk_input.m_transformB, -1, z);
-
-						btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, nullptr, BT_CONTACT_POINT_ALGORITHMS);
+					} else { // Other shape is not convex.
+						btCollisionObjectWrapper obA(NULL, area_convex_shape, bt_ghost, gjk_input.m_transformA, -1, our_shape_id);
+						btCollisionObjectWrapper obB(NULL, other_shape, other_bt_collision_object, gjk_input.m_transformB, -1, other_shape_id);
+						btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, NULL, BT_CONTACT_POINT_ALGORITHMS);
 
 						if (!algorithm) {
 							continue;
@@ -785,42 +761,20 @@ void SpaceBullet::check_ghost_overlaps() {
 
 						GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
 						algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
-
 						algorithm->~btCollisionAlgorithm();
 						dispatcher->freeCollisionAlgorithm(algorithm);
 
 						if (contactPointResult.hasHit()) {
-							hasOverlap = true;
-							goto collision_found;
+							area->set_overlap(other_object, our_shape_id, other_shape_id);
 						}
 					}
+				} // End for each other object shape
+			} // End for each area shape
+		} // End for each overlapping pair
 
-				} // ~For each other object shape
-			} // ~For each area shape
-
-		collision_found:
-			if (!hasOverlap) {
-				continue;
-			}
-
-			indexOverlap = area->find_overlapping_object(otherObject);
-			if (-1 == indexOverlap) {
-				// Not found
-				area->add_overlap(otherObject);
-			} else {
-				// Found
-				area->put_overlap_as_inside(indexOverlap);
-			}
-		}
-
-		/// 3. Remove not overlapping
-		for (i = area->overlappingObjects.size() - 1; 0 <= i; --i) {
-			// If the overlap has DIRTY state it means that it's no more overlapping
-			if (area->overlappingObjects[i].state == AreaBullet::OVERLAP_STATE_DIRTY) {
-				area->put_overlap_as_exit(i);
-			}
-		}
-	}
+		// All overlapping shapes still marked dirty must have exited.
+		area->mark_all_dirty_overlaps_as_exit();
+	} // End for each area
 }
 
 void SpaceBullet::check_body_collision() {

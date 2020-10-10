@@ -70,8 +70,8 @@ AreaBullet::AreaBullet() :
 
 AreaBullet::~AreaBullet() {
 	// signal are handled by godot, so just clear without notify
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		overlappingObjects[i].object->on_exit_area(this);
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		overlapping_shapes[i].other_object->on_exit_area(this);
 	}
 }
 
@@ -81,24 +81,30 @@ void AreaBullet::dispatch_callbacks() {
 	}
 	isScratched = false;
 
-	// Reverse order because I've to remove EXIT objects
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		OverlappingObjectData &otherObj = overlappingObjects.write[i];
+	// Reverse order so items can be removed.
+	for (int i = overlapping_shapes.size() - 1; i >= 0; i--) {
+		OverlappingShapeData &overlapping_shape = overlapping_shapes.write[i];
 
-		switch (otherObj.state) {
+		switch (overlapping_shape.state) {
 			case OVERLAP_STATE_ENTER:
-				otherObj.state = OVERLAP_STATE_INSIDE;
-				call_event(otherObj.object, PhysicsServer::AREA_BODY_ADDED);
-				otherObj.object->on_enter_area(this);
+				overlapping_shape.state = OVERLAP_STATE_INSIDE;
+				call_event(overlapping_shape, PhysicsServer::AREA_BODY_ADDED);
+				if (_overlapping_shape_count(overlapping_shape.other_object) == 1) {
+					// This object's first shape being added.
+					overlapping_shape.other_object->on_enter_area(this);
+				}
 				break;
 			case OVERLAP_STATE_EXIT:
-				call_event(otherObj.object, PhysicsServer::AREA_BODY_REMOVED);
-				otherObj.object->on_exit_area(this);
-				overlappingObjects.remove(i); // Remove after callback
+				call_event(overlapping_shape, PhysicsServer::AREA_BODY_REMOVED);
+				if (_overlapping_shape_count(overlapping_shape.other_object) == 1) {
+					// This object's last shape being removed.
+					overlapping_shape.other_object->on_exit_area(this);
+				}
+				overlapping_shapes.remove(i); // Remove after callback
 				break;
 			case OVERLAP_STATE_INSIDE: {
-				if (otherObj.object->getType() == TYPE_RIGID_BODY) {
-					RigidBodyBullet *body = static_cast<RigidBodyBullet *>(otherObj.object);
+				if (overlapping_shape.other_object->getType() == TYPE_RIGID_BODY) {
+					RigidBodyBullet *body = static_cast<RigidBodyBullet *>(overlapping_shape.other_object);
 					body->scratch_space_override_modificator();
 				}
 				break;
@@ -109,8 +115,8 @@ void AreaBullet::dispatch_callbacks() {
 	}
 }
 
-void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer::AreaBodyStatus p_status) {
-	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_otherObject->getType())];
+void AreaBullet::call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer::AreaBodyStatus p_status) {
+	InOutEventCallback &event = eventsCallbacks[static_cast<int>(p_overlapping_shape.other_object->getType())];
 	Object *areaGodoObject = ObjectDB::get_instance(event.event_callback_id);
 
 	if (!areaGodoObject) {
@@ -119,53 +125,91 @@ void AreaBullet::call_event(CollisionObjectBullet *p_otherObject, PhysicsServer:
 	}
 
 	call_event_res[0] = p_status;
-	call_event_res[1] = p_otherObject->get_self(); // Other body
-	call_event_res[2] = p_otherObject->get_instance_id(); // instance ID
-	call_event_res[3] = 0; // other_body_shape ID
-	call_event_res[4] = 0; // self_shape ID
+	call_event_res[1] = p_overlapping_shape.other_object->get_self(); // RID
+	call_event_res[2] = p_overlapping_shape.other_object->get_instance_id(); // Object ID
+	call_event_res[3] = p_overlapping_shape.other_shape_id; // Other object's shape ID
+	call_event_res[4] = p_overlapping_shape.our_shape_id; // This area's shape ID
 
 	Variant::CallError outResp;
 	areaGodoObject->call(event.event_callback_method, (const Variant **)call_event_res_ptr, 5, outResp);
 }
 
-void AreaBullet::scratch() {
-	if (isScratched) {
-		return;
-	}
-	isScratched = true;
-}
-
-void AreaBullet::clear_overlaps(bool p_notify) {
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		if (p_notify) {
-			call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
-		}
-		overlappingObjects[i].object->on_exit_area(this);
-	}
-	overlappingObjects.clear();
-}
-
-void AreaBullet::remove_overlap(CollisionObjectBullet *p_object, bool p_notify) {
-	for (int i = overlappingObjects.size() - 1; 0 <= i; --i) {
-		if (overlappingObjects[i].object == p_object) {
-			if (p_notify) {
-				call_event(overlappingObjects[i].object, PhysicsServer::AREA_BODY_REMOVED);
-			}
-			overlappingObjects[i].object->on_exit_area(this);
-			overlappingObjects.remove(i);
-			break;
+int AreaBullet::_overlapping_shape_count(CollisionObjectBullet *p_other_object) {
+	int count = 0;
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		if (overlapping_shapes[i].other_object == p_other_object) {
+			count++;
 		}
 	}
+	return count;
 }
 
-int AreaBullet::find_overlapping_object(CollisionObjectBullet *p_colObj) {
-	const int size = overlappingObjects.size();
-	for (int i = 0; i < size; ++i) {
-		if (overlappingObjects[i].object == p_colObj) {
+int AreaBullet::_find_overlapping_shape(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id) {
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		const OverlappingShapeData &overlapping_shape = overlapping_shapes[i];
+		if (overlapping_shape.other_object == p_other_object && overlapping_shape.other_shape_id == p_other_shape_id && overlapping_shape.our_shape_id == p_our_shape_id) {
 			return i;
 		}
 	}
 	return -1;
+}
+
+void AreaBullet::mark_all_overlaps_dirty() {
+	OverlappingShapeData *overlapping_shapes_w = overlapping_shapes.ptrw();
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		// Don't overwrite OVERLAP_STATE_ENTER state.
+		if (overlapping_shapes_w[i].state != OVERLAP_STATE_ENTER) {
+			overlapping_shapes_w[i].state = OVERLAP_STATE_DIRTY;
+		}
+	}
+}
+
+void AreaBullet::mark_object_overlaps_inside(CollisionObjectBullet *p_other_object) {
+	OverlappingShapeData *overlapping_shapes_w = overlapping_shapes.ptrw();
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		if (overlapping_shapes_w[i].other_object == p_other_object && overlapping_shapes_w[i].state == OVERLAP_STATE_DIRTY) {
+			overlapping_shapes_w[i].state = OVERLAP_STATE_INSIDE;
+		}
+	}
+}
+
+void AreaBullet::set_overlap(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id) {
+	int i = _find_overlapping_shape(p_other_object, p_other_shape_id, p_our_shape_id);
+	if (i == -1) { // Not found, create new one.
+		OverlappingShapeData overlapping_shape(p_other_object, OVERLAP_STATE_ENTER, p_other_shape_id, p_our_shape_id);
+		overlapping_shapes.push_back(overlapping_shape);
+		p_other_object->notify_new_overlap(this);
+		isScratched = true;
+	} else {
+		overlapping_shapes.ptrw()[i].state = OVERLAP_STATE_INSIDE;
+	}
+}
+
+void AreaBullet::mark_all_dirty_overlaps_as_exit() {
+	OverlappingShapeData *overlapping_shapes_w = overlapping_shapes.ptrw();
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		if (overlapping_shapes[i].state == OVERLAP_STATE_DIRTY) {
+			overlapping_shapes_w[i].state = OVERLAP_STATE_EXIT;
+			isScratched = true;
+		}
+	}
+}
+
+void AreaBullet::remove_object_overlaps(CollisionObjectBullet *p_object) {
+	// Reverse order so items can be removed.
+	for (int i = overlapping_shapes.size() - 1; i >= 0; i--) {
+		if (overlapping_shapes[i].other_object == p_object) {
+			overlapping_shapes.remove(i);
+		}
+	}
+}
+
+void AreaBullet::clear_overlaps() {
+	for (int i = 0; i < overlapping_shapes.size(); i++) {
+		call_event(overlapping_shapes[i], PhysicsServer::AREA_BODY_REMOVED);
+		overlapping_shapes[i].other_object->on_exit_area(this);
+	}
+	overlapping_shapes.clear();
 }
 
 void AreaBullet::set_monitorable(bool p_monitorable) {
@@ -193,7 +237,7 @@ void AreaBullet::reload_body() {
 void AreaBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
-		clear_overlaps(false);
+		clear_overlaps();
 		isScratched = false;
 
 		// Remove this object form the physics world
@@ -212,24 +256,6 @@ void AreaBullet::on_collision_filters_change() {
 		space->reload_collision_filters(this);
 	}
 	updated = true;
-}
-
-void AreaBullet::add_overlap(CollisionObjectBullet *p_otherObject) {
-	scratch();
-	overlappingObjects.push_back(OverlappingObjectData(p_otherObject, OVERLAP_STATE_ENTER));
-	p_otherObject->notify_new_overlap(this);
-}
-
-void AreaBullet::put_overlap_as_exit(int p_index) {
-	scratch();
-	overlappingObjects.write[p_index].state = OVERLAP_STATE_EXIT;
-}
-
-void AreaBullet::put_overlap_as_inside(int p_index) {
-	// This check is required to be sure this body was inside
-	if (OVERLAP_STATE_DIRTY == overlappingObjects[p_index].state) {
-		overlappingObjects.write[p_index].state = OVERLAP_STATE_INSIDE;
-	}
 }
 
 void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
@@ -261,7 +287,7 @@ void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &
 		default:
 			WARN_PRINT("Area doesn't support this parameter in the Bullet backend: " + itos(p_param));
 	}
-	scratch();
+	isScratched = true;
 }
 
 Variant AreaBullet::get_param(PhysicsServer::AreaParameter p_param) const {
@@ -298,7 +324,7 @@ void AreaBullet::set_event_callback(Type p_callbackObjectType, ObjectID p_id, co
 		set_godot_object_flags(get_godot_object_flags() | GOF_IS_MONITORING_AREA);
 	} else {
 		set_godot_object_flags(get_godot_object_flags() & (~GOF_IS_MONITORING_AREA));
-		clear_overlaps(true);
+		clear_overlaps();
 	}
 }
 
