@@ -92,6 +92,8 @@ public:
 
 	StringName call;
 	StringName call_deferred;
+	StringName bind;
+	StringName unbind;
 	StringName emit;
 	StringName notification;
 };

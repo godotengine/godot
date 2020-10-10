@@ -1141,7 +1141,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts->add_child(button_custom);
 			button_custom->set_text(TTR("Other Node"));
 			button_custom->set_icon(get_theme_icon("Add", "EditorIcons"));
-			button_custom->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_NEW, false));
+			button_custom->connect("pressed", callable_bind(callable_mp(this, &SceneTreeDock::_tool_selected), TOOL_NEW, false));
 
 			node_shortcuts->add_spacer();
 			create_root_dialog->add_child(node_shortcuts);

@@ -80,12 +80,17 @@ public:
 		return method != StringName();
 	}
 
+	Callable bind(const Variant **p_arguments, int p_argcount) const;
+	Callable unbind(int p_argcount) const;
+
 	Object *get_object() const;
 	ObjectID get_object_id() const;
 	StringName get_method() const;
 	CallableCustom *get_custom() const;
 
 	uint32_t hash() const;
+
+	const Callable *get_base_comparator() const; //used for bind/unbind to do less precise comparisons (ignoring binds) in signal connect/disconnect
 
 	bool operator==(const Callable &p_callable) const;
 	bool operator!=(const Callable &p_callable) const;
@@ -119,6 +124,7 @@ public:
 	virtual CompareLessFunc get_compare_less_func() const = 0;
 	virtual ObjectID get_object() const = 0; //must always be able to provide an object
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const = 0;
+	virtual const Callable *get_base_comparator() const;
 
 	CallableCustom();
 	virtual ~CallableCustom() {}

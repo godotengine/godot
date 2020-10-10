@@ -30,6 +30,7 @@
 
 #include "callable.h"
 
+#include "callable_bind.h"
 #include "core/script_language.h"
 #include "message_queue.h"
 #include "object.h"
@@ -51,6 +52,18 @@ void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_retu
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
 		r_return_value = obj->call(method, p_arguments, p_argcount, r_call_error);
 	}
+}
+
+Callable Callable::bind(const Variant **p_arguments, int p_argcount) const {
+	Vector<Variant> args;
+	args.resize(p_argcount);
+	for (int i = 0; i < p_argcount; i++) {
+		args.write[i] = *p_arguments[i];
+	}
+	return Callable(memnew(CallableCustomBind(*this, args)));
+}
+Callable Callable::unbind(int p_argcount) const {
+	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
 }
 
 Object *Callable::get_object() const {
@@ -83,6 +96,18 @@ CallableCustom *Callable::get_custom() const {
 	ERR_FAIL_COND_V_MSG(!is_custom(), nullptr,
 			vformat("Can't get custom on non-CallableCustom \"%s\".", operator String()));
 	return custom;
+}
+
+const Callable *Callable::get_base_comparator() const {
+	const Callable *comparator = nullptr;
+	if (is_custom()) {
+		comparator = custom->get_base_comparator();
+	}
+	if (comparator) {
+		return comparator;
+	} else {
+		return this;
+	}
 }
 
 uint32_t Callable::hash() const {
@@ -256,6 +281,10 @@ Callable::~Callable() {
 			memdelete(custom);
 		}
 	}
+}
+
+const Callable *CallableCustom::get_base_comparator() const {
+	return nullptr;
 }
 
 CallableCustom::CallableCustom() {
