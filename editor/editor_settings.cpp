@@ -959,27 +959,16 @@ void EditorSettings::create() {
 
 		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
 
-		if (dir->change_dir("projects") != OK) {
-			dir->make_dir("projects");
-		} else {
-			dir->change_dir("..");
+		{
+			// Validate/create project-specific editor settings dir.
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			if (da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
+				Error err = da->make_dir_recursive(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH);
+				if (err || da->change_dir(EditorSettings::PROJECT_EDITOR_SETTINGS_PATH) != OK) {
+					ERR_FAIL_MSG("Failed to create '" + EditorSettings::PROJECT_EDITOR_SETTINGS_PATH + "' folder.");
+				}
+			}
 		}
-
-		// Validate/create project-specific config dir
-
-		dir->change_dir("projects");
-		String project_config_dir = ProjectSettings::get_singleton()->get_resource_path();
-		if (project_config_dir.ends_with("/")) {
-			project_config_dir = config_path.substr(0, project_config_dir.size() - 1);
-		}
-		project_config_dir = project_config_dir.get_file() + "-" + project_config_dir.md5_text();
-
-		if (dir->change_dir(project_config_dir) != OK) {
-			dir->make_dir(project_config_dir);
-		} else {
-			dir->change_dir("..");
-		}
-		dir->change_dir("..");
 
 		// Validate editor config file
 
@@ -1001,7 +990,6 @@ void EditorSettings::create() {
 
 		singleton->save_changed_setting = true;
 		singleton->config_file_path = config_file_path;
-		singleton->project_config_dir = project_config_dir;
 		singleton->settings_dir = config_dir;
 		singleton->data_dir = data_dir;
 		singleton->cache_dir = cache_dir;
@@ -1277,7 +1265,7 @@ String EditorSettings::get_settings_dir() const {
 }
 
 String EditorSettings::get_project_settings_dir() const {
-	return get_settings_dir().plus_file("projects").plus_file(project_config_dir);
+	return EditorSettings::PROJECT_EDITOR_SETTINGS_PATH;
 }
 
 String EditorSettings::get_text_editor_themes_dir() const {
