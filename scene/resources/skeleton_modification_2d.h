@@ -497,6 +497,10 @@ private:
 	ObjectID joint_two_bone2d_node_cache;
 	int joint_two_bone_idx = -1;
 
+#ifdef TOOLS_ENABLED
+	bool editor_draw_min_max = false;
+#endif // TOOLS_ENABLED
+
 	void update_target_cache();
 	void update_joint_one_bone2d_cache();
 	void update_joint_two_bone2d_cache();
@@ -531,6 +535,11 @@ public:
 	NodePath get_joint_two_bone2d_node() const;
 	void set_joint_two_bone_idx(int p_bone_idx);
 	int get_joint_two_bone_idx() const;
+
+#ifdef TOOLS_ENABLED
+	void set_editor_draw_min_max(bool p_draw);
+	bool get_editor_draw_min_max() const;
+#endif // TOOLS_ENABLED
 
 	SkeletonModification2DTwoBoneIK();
 	~SkeletonModification2DTwoBoneIK();

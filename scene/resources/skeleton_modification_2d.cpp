@@ -2624,6 +2624,8 @@ bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Varia
 #ifdef TOOLS_ENABLED
 	if (path.begins_with("editor/draw_gizmo")) {
 		set_editor_draw_gizmo(p_value);
+	} else if (path.begins_with("editor/draw_min_max")) {
+		set_editor_draw_min_max(p_value);
 	}
 #endif // TOOLS_ENABLED
 
@@ -2646,6 +2648,8 @@ bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 #ifdef TOOLS_ENABLED
 	if (path.begins_with("editor/draw_gizmo")) {
 		r_ret = get_editor_draw_gizmo();
+	} else if (path.begins_with("editor/draw_min_max")) {
+		r_ret = get_editor_draw_min_max();
 	}
 #endif // TOOLS_ENABLED
 
@@ -2662,6 +2666,7 @@ void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_l
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_min_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 	}
 #endif // TOOLS_ENABLED
 }
@@ -2786,11 +2791,30 @@ void SkeletonModification2DTwoBoneIK::draw_editor_gizmo() {
 
 	if (flip_bend_direction) {
 		float angle = -(Math_PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 1.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	} else {
 		float angle = (Math_PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 1.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (editor_draw_min_max) {
+			if (target_maximum_distance != 0.0 || target_minimum_distance != 0.0) {
+				Vector2 target_direction = Vector2(0, 1);
+				if (target_node_cache.is_valid()) {
+					stack->skeleton->draw_set_transform(Vector2(0, 0), 0.0);
+					Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
+					target_direction = operation_bone_one->get_global_position().direction_to(target->get_global_position());
+				}
+
+				stack->skeleton->draw_circle(target_direction * target_minimum_distance, 8, bone_ik_color);
+				stack->skeleton->draw_circle(target_direction * target_maximum_distance, 8, bone_ik_color);
+				stack->skeleton->draw_line(target_direction * target_minimum_distance, target_direction * target_maximum_distance, bone_ik_color, 2.0);
+			}
+		}
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SkeletonModification2DTwoBoneIK::update_target_cache() {
@@ -2988,6 +3012,16 @@ void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
 int SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx() const {
 	return joint_two_bone_idx;
 }
+
+#ifdef TOOLS_ENABLED
+void SkeletonModification2DTwoBoneIK::set_editor_draw_min_max(bool p_draw) {
+	editor_draw_min_max = p_draw;
+}
+
+bool SkeletonModification2DTwoBoneIK::get_editor_draw_min_max() const {
+	return editor_draw_min_max;
+}
+#endif // TOOLS_ENABLED
 
 void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification2DTwoBoneIK::set_target_node);
