@@ -2530,6 +2530,132 @@ bool ShaderLanguage::_compare_datatypes_in_nodes(Node *a, Node *b) const {
 	return true;
 }
 
+void ShaderLanguage::_convert_datatypes(Node *p_a, Node *p_b) {
+	if (!p_a || !p_b) {
+		return;
+	}
+
+	ShaderNode::Type type_a = p_a->type;
+	ShaderNode::Type type_b = p_b->type;
+
+	if (type_a == ShaderNode::TYPE_OPERATOR) {
+		OperatorNode *op = (OperatorNode *)p_a;
+		if (op->op == Operator::OP_CALL) {
+			return;
+		}
+	}
+	if (type_b == ShaderNode::TYPE_OPERATOR) {
+		OperatorNode *op = (OperatorNode *)p_b;
+		if (op->op == Operator::OP_CALL) {
+			return;
+		}
+	}
+
+	DataType from_type = TYPE_VOID;
+	DataType to_type = TYPE_VOID;
+
+	DataType a = p_a->get_datatype();
+	DataType b = p_b->get_datatype();
+
+	if (a == b) {
+		return; // conversion doesn't required
+	}
+
+	bool reverse = false;
+
+	Set<DataType> integer_types;
+	integer_types.insert(TYPE_INT);
+	integer_types.insert(TYPE_IVEC2);
+	integer_types.insert(TYPE_IVEC3);
+	integer_types.insert(TYPE_IVEC4);
+
+	Set<DataType> float_types;
+	float_types.insert(TYPE_FLOAT);
+	float_types.insert(TYPE_VEC2);
+	float_types.insert(TYPE_VEC3);
+	float_types.insert(TYPE_VEC4);
+
+	Set<DataType> scalar_types;
+	scalar_types.insert(TYPE_INT);
+	scalar_types.insert(TYPE_FLOAT);
+
+	Set<DataType> vector_types;
+	vector_types.insert(TYPE_IVEC2);
+	vector_types.insert(TYPE_IVEC3);
+	vector_types.insert(TYPE_IVEC4);
+	vector_types.insert(TYPE_VEC2);
+	vector_types.insert(TYPE_VEC3);
+	vector_types.insert(TYPE_VEC4);
+
+	bool is_a_scalar = scalar_types.has(a);
+	bool is_a_vector = vector_types.has(a);
+	bool is_b_vector = vector_types.has(b);
+
+	if ((!scalar_types.has(a) && !vector_types.has(a)) || (!scalar_types.has(b) && !vector_types.has(b))) {
+		return; // unsupported type
+	}
+
+	if ((float_types.has(a) && float_types.has(b)) || (integer_types.has(a) && integer_types.has(b))) {
+		return; // conversion doesn't required
+	}
+
+	if (is_a_vector && (is_a_vector == is_b_vector)) {
+		return; // vector to vector - unsupported conversion
+	}
+
+	if (is_a_scalar && is_b_vector) {
+		reverse = true;
+	}
+
+	if (reverse) {
+		if (a == TYPE_FLOAT) {
+			from_type = TYPE_FLOAT;
+			to_type = TYPE_INT;
+		} else {
+			from_type = TYPE_INT;
+			to_type = TYPE_FLOAT;
+		}
+	} else {
+		if (b == TYPE_FLOAT) {
+			from_type = TYPE_FLOAT;
+			to_type = TYPE_INT;
+		} else {
+			from_type = TYPE_INT;
+			to_type = TYPE_FLOAT;
+		}
+	}
+
+	if (to_type != TYPE_VOID) {
+		if (reverse) {
+			if (type_a == ShaderNode::TYPE_CONSTANT) {
+				ConstantNode *constant = (ShaderLanguage::ConstantNode *)p_a;
+				if (from_type == TYPE_INT && to_type == TYPE_FLOAT) {
+					constant->values.write[0].real = (float)constant->values[0].sint;
+				} else if (from_type == TYPE_FLOAT && to_type == TYPE_INT) {
+					constant->values.write[0].sint = (int)constant->values[0].real;
+				}
+				constant->datatype = to_type;
+			} else if (type_a == ShaderNode::TYPE_OPERATOR) {
+				OperatorNode *op = (ShaderLanguage::OperatorNode *)p_a;
+				op->return_cache = to_type;
+			}
+		} else {
+			if (type_b == ShaderNode::TYPE_CONSTANT) {
+				ConstantNode *constant = (ShaderLanguage::ConstantNode *)p_b;
+				if (from_type == TYPE_INT && to_type == TYPE_FLOAT) {
+					constant->values.write[0].real = (float)constant->values[0].sint;
+				} else if (from_type == TYPE_FLOAT && to_type == TYPE_INT) {
+					constant->values.write[0].sint = (int)constant->values[0].real;
+				}
+				constant->datatype = to_type;
+			} else if (type_b == ShaderNode::TYPE_OPERATOR) {
+				OperatorNode *op = (ShaderLanguage::OperatorNode *)p_b;
+				op->return_cache = to_type;
+			}
+		}
+	}
+}
+
 bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg) {
 	TkPos pos = _get_tkpos();
 	Token tk = _get_token();
@@ -4737,6 +4863,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				_set_error("Parser bug...");
 			}
 
+			_convert_datatypes(expression[next_op - 1].node, expression[next_op + 1].node);
+
 			op->arguments.push_back(expression[next_op - 1].node); //expression goes as left
 			op->arguments.push_back(expression[next_op + 1].node); //next expression goes as right
 			expression.write[next_op - 1].node = op;
@@ -5247,6 +5375,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					if (!n) {
 						return ERR_PARSE_ERROR;
 					}
+
+					_convert_datatypes(node, n);
+
 					if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
 						_set_error("Expected constant expression after '='");
 						return ERR_PARSE_ERROR;
@@ -5701,6 +5832,8 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				if (!expr) {
 					return ERR_PARSE_ERROR;
 				}
+
+				_convert_datatypes(b->parent_function, expr);
 
 				if (b->parent_function->return_type != expr->get_datatype()) {
 					_set_error("Expected return expression of type '" + get_datatype_name(b->parent_function->return_type) + "'");

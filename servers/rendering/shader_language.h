@@ -567,6 +567,9 @@ public:
 		BlockNode *body = nullptr;
 		bool can_discard = false;
 
+		virtual DataType get_datatype() const { return return_type; }
+		virtual String get_datatype_name() const { return String(return_struct_name); }
+
 		FunctionNode() :
 				Node(TYPE_FUNCTION) {}
 	};
@@ -854,6 +857,7 @@ private:
 
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b) const;
+	void _convert_datatypes(Node *p_a, Node *p_b);
 
 	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
