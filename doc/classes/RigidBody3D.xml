@@ -204,14 +204,16 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when a collision with another [PhysicsBody3D] or [GridMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a body shape exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
+				Emitted when the collision with another [PhysicsBody3D] or [GridMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -224,8 +226,11 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
-				This signal not only receives the body that collided with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body collided with.
+				Emitted when one of this RigidBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
+				[code]local_shape[/code] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
@@ -239,8 +244,11 @@
 			<argument index="3" name="local_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a body shape exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
-				This signal not only receives the body that stopped colliding with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body stopped colliding with.
+				Emitted when the collision between one of this RigidBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body_id[/code] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
+				[code]local_shape[/code] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D].
 				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>

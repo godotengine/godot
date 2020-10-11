@@ -150,14 +150,16 @@
 			<argument index="0" name="area" type="Area3D">
 			</argument>
 			<description>
-				Emitted when another area enters.
+				Emitted when another Area3D enters this Area3D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area3D.
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<argument index="0" name="area" type="Area3D">
 			</argument>
 			<description>
-				Emitted when another area exits.
+				Emitted when another Area3D exits this Area3D. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area[/code] the other Area3D.
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -170,7 +172,11 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area enters, reporting which areas overlapped. [code]shape_owner_get_owner(shape_find_owner(shape))[/code] returns the parent object of the owner of the [code]shape[/code].
+				Emitted when one of another Area3D's [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]area[/code] the other Area3D.
+				[code]area_shape[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D].
+				[code]self_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -183,23 +189,27 @@
 			<argument index="3" name="self_shape" type="int">
 			</argument>
 			<description>
-				Emitted when another area exits, reporting which areas were overlapping.
+				Emitted when one of another Area3D's [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
+				[code]area_id[/code] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]area[/code] the other Area3D.
+				[code]area_shape[/code] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D].
+				[code]self_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body enters.
-				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody3D] or [GridMap] enters this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				Emitted when a physics body exits.
-				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when a [PhysicsBody3D] or [GridMap] exits this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body[/code] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -212,8 +222,11 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body enters, reporting which shapes overlapped.
-				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
+				[code]area_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -226,8 +239,11 @@
 			<argument index="3" name="area_shape" type="int">
 			</argument>
 			<description>
-				Emitted when a physics body exits, reporting which shapes were overlapping.
-				The [code]body[/code] argument can either be a [PhysicsBody3D] or a [GridMap] instance (while GridMaps are not physics body themselves, they register their tiles with collision shapes as a virtual physics body).
+				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				[code]body_id[/code] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
+				[code]body[/code] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
+				[code]body_shape[/code] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D].
+				[code]area_shape[/code] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D].
 			</description>
 		</signal>
 	</signals>
