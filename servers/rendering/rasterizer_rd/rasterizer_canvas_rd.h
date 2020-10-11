@@ -184,6 +184,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		Map<StringName, RID> default_texture_params;
 
 		bool uses_screen_texture;
+		int light_mode;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);

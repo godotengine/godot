@@ -403,10 +403,18 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 	uint32_t base_flags = 0;
 
+	int item_light_mode = 0;
+	if (p_item->material.is_valid()) {
+		MaterialData *md = (MaterialData *)storage->material_get_data(p_item->material, RasterizerStorageRD::SHADER_TYPE_2D);
+		if (md && md->shader_data->valid) {
+			item_light_mode = md->shader_data->light_mode;
+		}
+	}
+
 	uint16_t light_count = 0;
 	PipelineLightMode light_mode;
 
-	{
+	if (item_light_mode != ShaderData::LIGHT_MODE_UNSHADED) {
 		Light *light = p_lights;
 
 		while (light) {
@@ -428,6 +436,10 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 		}
 
 		base_flags |= light_count << FLAGS_LIGHT_COUNT_SHIFT;
+	}
+
+	if (item_light_mode == ShaderData::LIGHT_MODE_LIGHT_ONLY && light_count == 0) {
+		return;
 	}
 
 	light_mode = light_count > 0 ? PIPELINE_LIGHT_MODE_ENABLED : PIPELINE_LIGHT_MODE_DISABLED;
@@ -1239,6 +1251,8 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			}
 			Transform2D to_light_xform = (p_canvas_transform * l->light_shader_xform).affine_inverse();
 
+			state.light_uniforms[index].flags = 0;
+
 			Vector2 canvas_light_pos = p_canvas_transform.xform(l->xform.get_origin()); //convert light position to canvas coordinates, as all computation is done in canvas coords to avoid precision loss
 			state.light_uniforms[index].position[0] = canvas_light_pos.x;
 			state.light_uniforms[index].position[1] = canvas_light_pos.y;
@@ -1611,7 +1625,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 
 	ShaderCompilerRD::GeneratedCode gen_code;
 
-	int light_mode = LIGHT_MODE_NORMAL;
+	light_mode = LIGHT_MODE_NORMAL;
 	int blend_mode = BLEND_MODE_MIX;
 	uses_screen_texture = false;
 
@@ -2106,6 +2120,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+		actions.render_mode_defines["light_only"] = "#define LIGHT_ONLY_MODE\n";
 
 		actions.custom_samplers["TEXTURE"] = "texture_sampler";
 		actions.custom_samplers["NORMAL_TEXTURE"] = "texture_sampler";

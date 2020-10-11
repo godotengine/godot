@@ -401,13 +401,13 @@ FRAGMENT_SHADER_CODE
 		normal = normalize((canvas_data.canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
 
-	vec4 base_color = color;
-	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
-		color = vec4(0.0); //invisible by default due to using light mask
-	}
-
 	color *= canvas_data.canvas_modulation;
 #ifdef USE_LIGHTING
+	vec4 light_add = vec4(0.0);
+	vec4 light_mix = vec4(0.0);
+	float base_influence = 1.0;
+	vec4 light_mask = vec4(1.0);
+	bool masked = false;
 	for (uint i = 0; i < MAX_LIGHTS_PER_ITEM; i++) {
 		if (i >= light_count) {
 			break;
@@ -430,6 +430,10 @@ FRAGMENT_SHADER_CODE
 		light_base &= 0xFF;
 
 		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array.data[light_base].texture_matrix[0], light_array.data[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
+			//if outside the light texture, skip entirely
+			continue;
+		}
 		vec2 tex_uv_atlas = tex_uv * light_array.data[light_base].atlas_rect.zw + light_array.data[light_base].atlas_rect.xy;
 		vec4 light_color = textureLod(sampler2D(atlas_texture, texture_sampler), tex_uv_atlas, 0.0);
 		vec4 light_base_color = light_array.data[light_base].color;
@@ -439,11 +443,11 @@ FRAGMENT_SHADER_CODE
 		vec4 shadow_modulate = vec4(1.0);
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 
-		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv);
+		light_color *= light_base_color;
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color);
 #else
 
-		light_color.rgb *= light_base_color.rgb * light_base_color.a;
+		light_color *= light_base_color;
 
 		if (normal_used) {
 			vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
@@ -471,10 +475,7 @@ FRAGMENT_SHADER_CODE
 			}
 		}
 #endif
-		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
-			//if outside the light texture, light color is zero
-			light_color.a = 0.0;
-		}
+		light_color *= color;
 
 		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
@@ -554,23 +555,57 @@ FRAGMENT_SHADER_CODE
 
 		uint blend_mode = light_array.data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
 
+#ifndef LIGHT_ONLY_MODE
 		switch (blend_mode) {
 			case LIGHT_FLAGS_BLEND_MODE_ADD: {
-				color.rgb += light_color.rgb * light_color.a;
+				light_add.rgb += light_color.rgb * light_color.a;
 			} break;
 			case LIGHT_FLAGS_BLEND_MODE_SUB: {
-				color.rgb -= light_color.rgb * light_color.a;
+				light_add.rgb -= light_color.rgb * light_color.a;
 			} break;
 			case LIGHT_FLAGS_BLEND_MODE_MIX: {
-				color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
+				light_mix.rgb = mix(light_mix.rgb, light_color.rgb, light_color.a);
+				base_influence *= 1.0 - light_color.a;
 			} break;
 			case LIGHT_FLAGS_BLEND_MODE_MASK: {
-				light_color.a *= base_color.a;
-				color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
+				light_mask *= light_color;
+				masked = true;
 			} break;
 		}
 	}
+
+	vec4 base_color = masked ? light_mask : color;
+	base_color.rgb = base_influence * base_color.rgb + light_mix.rgb;
+	frag_color = base_color + light_add;
+
+#else
+		switch (blend_mode) {
+			case LIGHT_FLAGS_BLEND_MODE_ADD: {
+				light_add.rgb += light_color.rgb * light_color.a;
+				light_add.a += light_color.a;
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_SUB: {
+				light_add.rgb -= light_color.rgb * light_color.a;
+				light_add.a += light_color.a;
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_MIX: {
+				light_mix = mix(light_mix, light_color, light_color.a);
+				base_influence *= 1.0 - light_color.a;
+			} break;
+			case LIGHT_FLAGS_BLEND_MODE_MASK: {
+				light_mask *= light_color;
+				masked = true;
+			} break;
+		}
+	}
+
+	vec4 base_color = masked ? light_mask : vec4(0.0);
+	base_color = base_influence * base_color + light_mix;
+	frag_color.rgb = base_color.rgb + light_add.rgb;
+	frag_color.a = base_color.a + (1.0 - base_color.a) * light_add.a;
 #endif
 
+#else
 	frag_color = color;
+#endif
 }
