@@ -318,15 +318,15 @@ void TextEdit::_click_selection_held() {
 	// Warning: is_mouse_button_pressed(BUTTON_LEFT) returns false for double+ clicks, so this doesn't work for MODE_WORD
 	// and MODE_LINE. However, moving the mouse triggers _gui_input, which calls these functions too, so that's not a huge problem.
 	// I'm unsure if there's an actual fix that doesn't have a ton of side effects.
-	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != Selection::MODE_NONE) {
+	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != SelectionMode::SELECTION_MODE_NONE) {
 		switch (selection.selecting_mode) {
-			case Selection::MODE_POINTER: {
+			case SelectionMode::SELECTION_MODE_POINTER: {
 				_update_selection_mode_pointer();
 			} break;
-			case Selection::MODE_WORD: {
+			case SelectionMode::SELECTION_MODE_WORD: {
 				_update_selection_mode_word();
 			} break;
-			case Selection::MODE_LINE: {
+			case SelectionMode::SELECTION_MODE_LINE: {
 				_update_selection_mode_line();
 			} break;
 			default: {
@@ -2165,7 +2165,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (mb->get_shift() && (cursor.column != prev_col || cursor.line != prev_line)) {
 					if (!selection.active) {
 						selection.active = true;
-						selection.selecting_mode = Selection::MODE_POINTER;
+						selection.selecting_mode = SelectionMode::SELECTION_MODE_POINTER;
 						selection.from_column = prev_col;
 						selection.from_line = prev_line;
 						selection.to_column = cursor.column;
@@ -2209,19 +2209,19 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				} else {
 					selection.active = false;
-					selection.selecting_mode = Selection::MODE_POINTER;
+					selection.selecting_mode = SelectionMode::SELECTION_MODE_POINTER;
 					selection.selecting_line = row;
 					selection.selecting_column = col;
 				}
 
 				if (!mb->is_doubleclick() && (OS::get_singleton()->get_ticks_msec() - last_dblclk) < 600 && cursor.line == prev_line) {
 					// Triple-click select line.
-					selection.selecting_mode = Selection::MODE_LINE;
+					selection.selecting_mode = SelectionMode::SELECTION_MODE_LINE;
 					_update_selection_mode_line();
 					last_dblclk = 0;
 				} else if (mb->is_doubleclick() && text[cursor.line].length()) {
 					// Double-click select word.
-					selection.selecting_mode = Selection::MODE_WORD;
+					selection.selecting_mode = SelectionMode::SELECTION_MODE_WORD;
 					_update_selection_mode_word();
 					last_dblclk = OS::get_singleton()->get_ticks_msec();
 				}
@@ -2321,13 +2321,13 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (!dragging_minimap) {
 				switch (selection.selecting_mode) {
-					case Selection::MODE_POINTER: {
+					case SelectionMode::SELECTION_MODE_POINTER: {
 						_update_selection_mode_pointer();
 					} break;
-					case Selection::MODE_WORD: {
+					case SelectionMode::SELECTION_MODE_WORD: {
 						_update_selection_mode_word();
 					} break;
-					case Selection::MODE_LINE: {
+					case SelectionMode::SELECTION_MODE_LINE: {
 						_update_selection_mode_line();
 					} break;
 					default: {
@@ -2604,7 +2604,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			if (unselect) {
 				selection.active = false;
-				selection.selecting_mode = Selection::MODE_NONE;
+				selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 				update();
 			}
 			if (clear) {
@@ -3632,17 +3632,17 @@ void TextEdit::_scroll_down(real_t p_delta) {
 }
 
 void TextEdit::_pre_shift_selection() {
-	if (!selection.active || selection.selecting_mode == Selection::MODE_NONE) {
+	if (!selection.active || selection.selecting_mode == SelectionMode::SELECTION_MODE_NONE) {
 		selection.selecting_line = cursor.line;
 		selection.selecting_column = cursor.column;
 		selection.active = true;
 	}
 
-	selection.selecting_mode = Selection::MODE_SHIFT;
+	selection.selecting_mode = SelectionMode::SELECTION_MODE_SHIFT;
 }
 
 void TextEdit::_post_shift_selection() {
-	if (selection.active && selection.selecting_mode == Selection::MODE_SHIFT) {
+	if (selection.active && selection.selecting_mode == SelectionMode::SELECTION_MODE_SHIFT) {
 		select(selection.selecting_line, selection.selecting_column, cursor.line, cursor.column);
 		update();
 	}
@@ -4352,6 +4352,30 @@ bool TextEdit::is_right_click_moving_caret() const {
 	return right_click_moves_caret;
 }
 
+TextEdit::SelectionMode TextEdit::get_selection_mode() const {
+	return selection.selecting_mode;
+}
+
+void TextEdit::set_selection_mode(SelectionMode p_mode, int p_line, int p_column) {
+	selection.selecting_mode = p_mode;
+	if (p_line >= 0) {
+		ERR_FAIL_INDEX(p_line, text.size());
+		selection.selecting_line = p_line;
+	}
+	if (p_column >= 0) {
+		ERR_FAIL_INDEX(p_line, text[selection.selecting_line].length());
+		selection.selecting_column = p_column;
+	}
+}
+
+int TextEdit::get_selection_line() const {
+	return selection.selecting_line;
+};
+
+int TextEdit::get_selection_column() const {
+	return selection.selecting_column;
+};
+
 void TextEdit::_v_scroll_input() {
 	scrolling = false;
 	minimap_clicked = false;
@@ -4495,7 +4519,7 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		selection.active = false;
-		selection.selecting_mode = Selection::MODE_NONE;
+		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 	}
 
 	_insert_text_at_cursor(p_text);
@@ -5004,7 +5028,7 @@ void TextEdit::cut() {
 		cursor_set_column(selection.from_column);
 
 		selection.active = false;
-		selection.selecting_mode = Selection::MODE_NONE;
+		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 		update();
 		cut_copy_line = "";
 	}
@@ -5030,7 +5054,7 @@ void TextEdit::paste() {
 	begin_complex_operation();
 	if (selection.active) {
 		selection.active = false;
-		selection.selecting_mode = Selection::MODE_NONE;
+		selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 		_remove_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
 		cursor_set_line(selection.from_line);
 		cursor_set_column(selection.from_column);
@@ -5062,7 +5086,7 @@ void TextEdit::select_all() {
 	selection.selecting_column = 0;
 	selection.to_line = text.size() - 1;
 	selection.to_column = text[selection.to_line].length();
-	selection.selecting_mode = Selection::MODE_SHIFT;
+	selection.selecting_mode = SelectionMode::SELECTION_MODE_SHIFT;
 	selection.shiftclick_left = true;
 	cursor_set_line(selection.to_line, false);
 	cursor_set_column(selection.to_column, false);
@@ -6613,6 +6637,12 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
 
+	BIND_ENUM_CONSTANT(SELECTION_MODE_NONE);
+	BIND_ENUM_CONSTANT(SELECTION_MODE_SHIFT);
+	BIND_ENUM_CONSTANT(SELECTION_MODE_POINTER);
+	BIND_ENUM_CONSTANT(SELECTION_MODE_WORD);
+	BIND_ENUM_CONSTANT(SELECTION_MODE_LINE);
+
 	/*
 	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
 	ClassDB::bind_method(D_METHOD("delete_line"),&TextEdit::delete_line);
@@ -6641,6 +6671,11 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_right_click_moves_caret", "enable"), &TextEdit::set_right_click_moves_caret);
 	ClassDB::bind_method(D_METHOD("is_right_click_moving_caret"), &TextEdit::is_right_click_moving_caret);
+
+	ClassDB::bind_method(D_METHOD("get_selection_mode"), &TextEdit::get_selection_mode);
+	ClassDB::bind_method(D_METHOD("set_selection_mode", "mode", "line", "column"), &TextEdit::set_selection_mode, DEFVAL(-1), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_selection_line"), &TextEdit::get_selection_line);
+	ClassDB::bind_method(D_METHOD("get_selection_column"), &TextEdit::get_selection_column);
 
 	ClassDB::bind_method(D_METHOD("set_readonly", "enable"), &TextEdit::set_readonly);
 	ClassDB::bind_method(D_METHOD("is_readonly"), &TextEdit::is_readonly);
@@ -6850,7 +6885,7 @@ TextEdit::TextEdit() {
 	cursor_changed_dirty = false;
 	text_changed_dirty = false;
 
-	selection.selecting_mode = Selection::MODE_NONE;
+	selection.selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 	selection.selecting_line = 0;
 	selection.selecting_column = 0;
 	selection.selecting_text = false;

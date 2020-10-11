@@ -47,6 +47,14 @@ public:
 		GUTTER_TPYE_CUSTOM
 	};
 
+	enum SelectionMode {
+		SELECTION_MODE_NONE,
+		SELECTION_MODE_SHIFT,
+		SELECTION_MODE_POINTER,
+		SELECTION_MODE_WORD,
+		SELECTION_MODE_LINE
+	};
+
 private:
 	struct GutterInfo {
 		GutterType type = GutterType::GUTTER_TYPE_STRING;
@@ -157,16 +165,7 @@ private:
 	} cursor;
 
 	struct Selection {
-		enum Mode {
-
-			MODE_NONE,
-			MODE_SHIFT,
-			MODE_POINTER,
-			MODE_WORD,
-			MODE_LINE
-		};
-
-		Mode selecting_mode;
+		SelectionMode selecting_mode;
 		int selecting_line, selecting_column;
 		int selected_word_beg, selected_word_end, selected_word_origin;
 		bool selecting_text;
@@ -178,7 +177,7 @@ private:
 
 		bool shiftclick_left;
 		Selection() {
-			selecting_mode = MODE_NONE;
+			selecting_mode = SelectionMode::SELECTION_MODE_NONE;
 			selecting_line = 0;
 			selecting_column = 0;
 			selected_word_beg = 0;
@@ -636,6 +635,11 @@ public:
 	void set_right_click_moves_caret(bool p_enable);
 	bool is_right_click_moving_caret() const;
 
+	SelectionMode get_selection_mode() const;
+	void set_selection_mode(SelectionMode p_mode, int p_line = -1, int p_column = -1);
+	int get_selection_line() const;
+	int get_selection_column() const;
+
 	void set_readonly(bool p_readonly);
 	bool is_readonly() const;
 
@@ -761,6 +765,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(TextEdit::GutterType);
+VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
 

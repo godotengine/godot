@@ -341,7 +341,10 @@ void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
 	}
 
 	if (p_gutter == line_number_gutter) {
-		cursor_set_line(p_line);
+		set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_LINE, p_line, 0);
+		select(p_line, 0, p_line + 1, 0);
+		cursor_set_line(p_line + 1);
+		cursor_set_column(0);
 		return;
 	}
 
