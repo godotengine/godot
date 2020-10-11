@@ -63,13 +63,13 @@
 			<argument index="3" name="a" type="float">
 			</argument>
 			<description>
-				Constructs a [Color] from an RGBA profile using values between 0 and 1.
+				Constructs a [Color] from RGBA values, typically between 0 and 1.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to `Color8(51, 255, 178, 204)`
 				[/gdscript]
 				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Equivalent to RGBA(51, 255, 178, 255, 204)
+				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Similar to `Color.Color8(51, 255, 178, 255, 204)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -84,13 +84,13 @@
 			<argument index="2" name="b" type="float">
 			</argument>
 			<description>
-				Constructs a color from an RGB profile using values between 0 and 1. Alpha will always be 1.
+				Constructs a [Color] from RGB values, typically between 0 and 1. Alpha will be 1.
 				[codeblocks]
 				[gdscript]
-				var color = Color(0.2, 1.0, 0.7) # Equivalent to RGBA(51, 255, 178, 255)
+				var color = Color(0.2, 1.0, 0.7) # Similar to `Color8(51, 255, 178, 255)`
 				[/gdscript]
 				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f); // Equivalent to RGBA(51, 255, 178, 255)
+				var color = new Color(0.2f, 1.0f, 0.7f); // Similar to `Color.Color8(51, 255, 178, 255)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -143,11 +143,11 @@
 				[codeblocks]
 				[gdscript]
 				var color = Color(0.3, 0.4, 0.9)
-				var inverted_color = color.inverted() # A color of an RGBA(178, 153, 26, 255)
+				var inverted_color = color.inverted() # Equivalent to `Color(0.7, 0.6, 0.1)`
 				[/gdscript]
 				[csharp]
 				var color = new Color(0.3f, 0.4f, 0.9f);
-				Color invertedColor = color.Inverted(); // A color of an RGBA(178, 153, 26, 255)
+				Color invertedColor = color.Inverted(); // Equivalent to `new Color(0.7f, 0.6f, 0.1f)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -174,12 +174,12 @@
 				[gdscript]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
-				var lerp_color = c1.lerp(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
+				var lerp_color = c1.lerp(c2, 0.5) # Equivalent to `Color(0.5, 0.5, 0.0)`
 				[/gdscript]
 				[csharp]
 				var c1 = new Color(1.0f, 0.0f, 0.0f);
 				var c2 = new Color(0.0f, 1.0f, 0.0f);
-				Color lerpColor = c1.Lerp(c2, 0.5f); // A color of an RGBA(128, 128, 0, 255)
+				Color lerpColor = c1.Lerp(c2, 0.5f); // Equivalent to `new Color(0.5f, 0.5f, 0.0f)`
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -299,7 +299,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -316,7 +316,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -333,7 +333,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -350,7 +350,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -369,7 +369,7 @@
 			<argument index="0" name="with_alpha" type="bool" default="true">
 			</argument>
 			<description>
-				Returns the color's HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
+				Returns the color converted to an HTML hexadecimal color string in RGBA format (ex: [code]ff34f822[/code]).
 				Setting [code]with_alpha[/code] to [code]false[/code] excludes alpha from the hexadecimal string (and uses RGB instead of RGBA format).
 				[codeblocks]
 				[gdscript]
@@ -389,7 +389,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in RGBA format (each byte represents a component of the RGBA profile). RGBA is Godot's default format.
+				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)
@@ -406,7 +406,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in RGBA format (each word represents a component of the RGBA profile). RGBA is Godot's default format.
+				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
 				[codeblocks]
 				[gdscript]
 				var color = Color(1, 0.5, 0.2)

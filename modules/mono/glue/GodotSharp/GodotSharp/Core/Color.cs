@@ -337,8 +337,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in ABGR format
-        /// (each byte represents a component of the ABGR profile).
+        /// Returns the color converted to an unsigned 32-bit integer in ABGR
+        /// format (each byte represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A uint representing this color in ABGR32 format.</returns>
@@ -356,8 +356,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in ABGR format
-        /// (each word represents a component of the ABGR profile).
+        /// Returns the color converted to an unsigned 64-bit integer in ABGR
+        /// format (each word represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A ulong representing this color in ABGR64 format.</returns>
@@ -375,8 +375,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in ARGB format
-        /// (each byte represents a component of the ARGB profile).
+        /// Returns the color converted to an unsigned 32-bit integer in ARGB
+        /// format (each byte represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A uint representing this color in ARGB32 format.</returns>
@@ -394,8 +394,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in ARGB format
-        /// (each word represents a component of the ARGB profile).
+        /// Returns the color converted to an unsigned 64-bit integer in ARGB
+        /// format (each word represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A ulong representing this color in ARGB64 format.</returns>
@@ -413,8 +413,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in RGBA format
-        /// (each byte represents a component of the RGBA profile).
+        /// Returns the color converted to an unsigned 32-bit integer in RGBA
+        /// format (each byte represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A uint representing this color in RGBA32 format.</returns>
@@ -432,8 +432,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in RGBA format
-        /// (each word represents a component of the RGBA profile).
+        /// Returns the color converted to an unsigned 64-bit integer in RGBA
+        /// format (each word represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A ulong representing this color in RGBA64 format.</returns>
@@ -472,7 +472,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from RGBA values on the range of 0 to 1.
+        /// Constructs a color from RGBA values, typically on the range of 0 to 1.
         /// </summary>
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
@@ -500,8 +500,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 32-bit integer
-        /// (each byte represents a component of the RGBA profile).
+        /// Constructs a color from an unsigned 32-bit integer in RGBA format
+        /// (each byte represents a color channel).
         /// </summary>
         /// <param name="rgba">The uint representing the color.</param>
         public Color(uint rgba)
@@ -516,8 +516,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 64-bit integer
-        /// (each word represents a component of the RGBA profile).
+        /// Constructs a color from an unsigned 64-bit integer in RGBA format
+        /// (each word represents a color channel).
         /// </summary>
         /// <param name="rgba">The ulong representing the color.</param>
         public Color(ulong rgba)
