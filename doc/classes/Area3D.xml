@@ -163,7 +163,7 @@
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
-			<argument index="0" name="area_id" type="int">
+			<argument index="0" name="area_rid" type="RID">
 			</argument>
 			<argument index="1" name="area" type="Area3D">
 			</argument>
@@ -180,7 +180,7 @@
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
-			<argument index="0" name="area_id" type="int">
+			<argument index="0" name="area_rid" type="RID">
 			</argument>
 			<argument index="1" name="area" type="Area3D">
 			</argument>
@@ -213,7 +213,7 @@
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
-			<argument index="0" name="body_id" type="int">
+			<argument index="0" name="body_rid" type="RID">
 			</argument>
 			<argument index="1" name="body" type="Node3D">
 			</argument>
@@ -230,7 +230,7 @@
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
-			<argument index="0" name="body_id" type="int">
+			<argument index="0" name="body_rid" type="RID">
 			</argument>
 			<argument index="1" name="body" type="Node3D">
 			</argument>

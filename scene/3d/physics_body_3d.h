@@ -152,10 +152,12 @@ protected:
 		}
 	};
 	struct RigidBody3D_RemoveAction {
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
+		RID rid;
 		//int rc;
 		bool in_tree = false;
 		VSet<ShapePair> shapes;
@@ -170,7 +172,7 @@ protected:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	virtual void _direct_state_changed(Object *p_state);
 
 	void _notification(int p_what);

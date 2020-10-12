@@ -226,7 +226,7 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	emit_signal(SceneStringNames::get_singleton()->body_entered, node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SceneStringNames::get_singleton()->body_shape_entered, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
@@ -247,13 +247,13 @@ void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	emit_signal(SceneStringNames::get_singleton()->body_exited, node);
 
 	for (int i = 0; i < E->get().shapes.size(); i++) {
-		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_id, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
+		emit_signal(SceneStringNames::get_singleton()->body_shape_exited, E->get().rid, node, E->get().shapes[i].body_shape, E->get().shapes[i].local_shape);
 	}
 
 	contact_monitor->locked = false;
 }
 
-void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape) {
+void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape) {
 	bool body_in = p_status == 1;
 	ObjectID objid = p_instance;
 
@@ -268,6 +268,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 	if (body_in) {
 		if (!E) {
 			E = contact_monitor->body_map.insert(objid, BodyState());
+			E->get().rid = p_body;
 			//E->get().rc=0;
 			E->get().in_scene = node && node->is_inside_tree();
 			if (node) {
@@ -286,7 +287,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 		}
 
 		if (E->get().in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, objid, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, p_body, node, p_body_shape, p_local_shape);
 		}
 
 	} else {
@@ -310,12 +311,13 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 			contact_monitor->body_map.erase(E);
 		}
 		if (node && in_scene) {
-			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, objid, node, p_body_shape, p_local_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_shape_exited, p_body, node, p_body_shape, p_local_shape);
 		}
 	}
 }
 
 struct _RigidBody2DInOut {
+	RID rid;
 	ObjectID id;
 	int shape = 0;
 	int local_shape = 0;
@@ -371,6 +373,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < state->get_contact_count(); i++) {
+			RID rid = state->get_contact_collider(i);
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
@@ -379,6 +382,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
 			if (!E) {
+				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
 				toadd[toadd_count].id = obj;
 				toadd[toadd_count].shape = shape;
@@ -389,6 +393,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			ShapePair sp(shape, local_shape);
 			int idx = E->get().shapes.find(sp);
 			if (idx == -1) {
+				toadd[toadd_count].rid = rid;
 				toadd[toadd_count].local_shape = local_shape;
 				toadd[toadd_count].id = obj;
 				toadd[toadd_count].shape = shape;
@@ -404,6 +409,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 			for (int i = 0; i < E->get().shapes.size(); i++) {
 				if (!E->get().shapes[i].tagged) {
+					toremove[toremove_count].rid = E->get().rid;
 					toremove[toremove_count].body_id = E->key();
 					toremove[toremove_count].pair = E->get().shapes[i];
 					toremove_count++;
@@ -414,13 +420,13 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		//process remotions
 
 		for (int i = 0; i < toremove_count; i++) {
-			_body_inout(0, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
+			_body_inout(0, toremove[i].rid, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
 		//process aditions
 
 		for (int i = 0; i < toadd_count; i++) {
-			_body_inout(1, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
+			_body_inout(1, toadd[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
 		}
 
 		contact_monitor->locked = false;
@@ -820,8 +826,8 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "applied_force"), "set_applied_force", "get_applied_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "applied_torque"), "set_applied_torque", "get_applied_torque");
 
-	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
-	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("sleeping_state_changed"));
