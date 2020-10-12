@@ -370,7 +370,11 @@ void MeshInstance::_initialize_skinning(bool p_force_reset) {
 
 void MeshInstance::_update_skinning() {
 	ERR_FAIL_COND(!_is_software_skinning_enabled());
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
 	ERR_FAIL_COND(!is_visible_in_tree());
+#else
+	ERR_FAIL_COND(!is_visible());
+#endif
 
 	ERR_FAIL_COND(!software_skinning);
 	Ref<Mesh> software_skinning_mesh = software_skinning->mesh_instance;
