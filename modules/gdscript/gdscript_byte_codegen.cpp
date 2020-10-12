@@ -858,7 +858,214 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 	alloc_call(p_arguments.size());
 }
 
+#define IS_BUILTIN_TYPE(m_arg, m_type) \
+	(m_arg.type.kind == GDScriptDataType::BUILTIN && m_arg.type.builtin_type == m_type)
+
 void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) {
+	bool all_args_have_type = true;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		if (!p_arguments[i].type.has_type) {
+			all_args_have_type = false;
+			break;
+		}
+	}
+
+	alloc_call(p_arguments.size());
+
+#define BUILTIN_CALL(m_op, m_arg_count, m_arg_type)                      \
+	if (p_arguments.size() == m_arg_count) {                             \
+		bool all_args_are_type = true;                                   \
+		for (int i = 0; i < p_arguments.size(); i++) {                   \
+			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::m_arg_type)) { \
+				all_args_are_type = false;                               \
+				break;                                                   \
+			}                                                            \
+		}                                                                \
+		if (all_args_are_type) {                                         \
+			append(GDScriptFunction::OPCODE_CALL_##m_op##_##m_arg_type); \
+			for (int i = 0; i < p_arguments.size(); i++) {               \
+				append(p_arguments[i]);                                  \
+			}                                                            \
+			append(p_target);                                            \
+			return;                                                      \
+		}                                                                \
+	}
+
+#define BUILTIN_CALL_LERP(m_args)                                                                                                                                                             \
+	if (p_arguments.size() == 3 && IS_BUILTIN_TYPE(p_arguments[0], Variant::m_args) && IS_BUILTIN_TYPE(p_arguments[1], Variant::m_args) && IS_BUILTIN_TYPE(p_arguments[2], Variant::FLOAT)) { \
+		append(GDScriptFunction::OPCODE_CALL_LERP_##m_args);                                                                                                                                  \
+		for (int i = 0; i < p_arguments.size(); i++) {                                                                                                                                        \
+			append(p_arguments[i]);                                                                                                                                                           \
+		}                                                                                                                                                                                     \
+		append(p_target);                                                                                                                                                                     \
+		return;                                                                                                                                                                               \
+	}
+
+#define BUILTIN_CALL_INT_FLOAT(m_op, m_arg_count) \
+	BUILTIN_CALL(m_op, m_arg_count, INT)          \
+	BUILTIN_CALL(m_op, m_arg_count, FLOAT)
+
+	if (all_args_have_type) {
+		switch (p_function) {
+			case GDScriptFunctions::MATH_SIN:
+				BUILTIN_CALL_INT_FLOAT(SIN, 1)
+				break;
+			case GDScriptFunctions::MATH_COS:
+				BUILTIN_CALL_INT_FLOAT(COS, 1)
+				break;
+			case GDScriptFunctions::MATH_TAN:
+				BUILTIN_CALL_INT_FLOAT(TAN, 1)
+				break;
+			case GDScriptFunctions::MATH_SINH:
+				BUILTIN_CALL_INT_FLOAT(SINH, 1)
+				break;
+			case GDScriptFunctions::MATH_COSH:
+				BUILTIN_CALL_INT_FLOAT(COSH, 1)
+				break;
+			case GDScriptFunctions::MATH_TANH:
+				BUILTIN_CALL_INT_FLOAT(TANH, 1)
+				break;
+			case GDScriptFunctions::MATH_ASIN:
+				BUILTIN_CALL_INT_FLOAT(ASIN, 1)
+				break;
+			case GDScriptFunctions::MATH_ACOS:
+				BUILTIN_CALL_INT_FLOAT(ACOS, 1)
+				break;
+			case GDScriptFunctions::MATH_ATAN:
+				BUILTIN_CALL_INT_FLOAT(ATAN, 1)
+				break;
+			case GDScriptFunctions::MATH_ATAN2:
+				BUILTIN_CALL_INT_FLOAT(ATAN2, 2)
+				break;
+			case GDScriptFunctions::MATH_SQRT:
+				BUILTIN_CALL_INT_FLOAT(SQRT, 1)
+				break;
+			case GDScriptFunctions::MATH_FMOD:
+				BUILTIN_CALL(FMOD, 2, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_FPOSMOD:
+				BUILTIN_CALL(FPOSMOD, 2, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_POSMOD:
+				BUILTIN_CALL(POSMOD, 2, INT)
+				break;
+			case GDScriptFunctions::MATH_FLOOR:
+				BUILTIN_CALL_INT_FLOAT(FLOOR, 1)
+				break;
+			case GDScriptFunctions::MATH_CEIL:
+				BUILTIN_CALL_INT_FLOAT(CEIL, 1)
+				break;
+			case GDScriptFunctions::MATH_POW:
+				BUILTIN_CALL_INT_FLOAT(POW, 2)
+				break;
+			case GDScriptFunctions::MATH_LOG:
+				BUILTIN_CALL_INT_FLOAT(LOG, 1)
+				break;
+			case GDScriptFunctions::MATH_EXP:
+				BUILTIN_CALL_INT_FLOAT(EXP, 1)
+				break;
+			case GDScriptFunctions::MATH_DEG2RAD:
+				BUILTIN_CALL_INT_FLOAT(DEG2RAD, 1)
+				break;
+			case GDScriptFunctions::MATH_RAD2DEG:
+				BUILTIN_CALL_INT_FLOAT(RAD2DEG, 1)
+				break;
+			case GDScriptFunctions::MATH_LINEAR2DB:
+				BUILTIN_CALL_INT_FLOAT(LINEAR2DB, 1)
+				break;
+			case GDScriptFunctions::MATH_DB2LINEAR:
+				BUILTIN_CALL_INT_FLOAT(DB2LINEAR, 1)
+				break;
+			case GDScriptFunctions::MATH_ROUND:
+				BUILTIN_CALL(ROUND, 1, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_ISINF:
+				BUILTIN_CALL(IS_INF, 1, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_ISNAN:
+				BUILTIN_CALL(IS_NAN, 1, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_ISZEROAPPROX:
+				BUILTIN_CALL(IS_ZERO_APPROX, 1, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_ISEQUALAPPROX:
+				BUILTIN_CALL(IS_EQUAL_APPROX, 2, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_EASE:
+				BUILTIN_CALL_INT_FLOAT(EASE, 1)
+				break;
+			case GDScriptFunctions::MATH_RANDOM:
+				BUILTIN_CALL_INT_FLOAT(RANDOM, 2)
+				break;
+			case GDScriptFunctions::MATH_RAND:
+				BUILTIN_CALL(RAND, 0, INT)
+				break;
+			case GDScriptFunctions::MATH_RANDF:
+				BUILTIN_CALL(RANDF, 0, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_STEP_DECIMALS:
+				BUILTIN_CALL_INT_FLOAT(STEP_DECIMALS, 1)
+				break;
+			case GDScriptFunctions::MATH_STEPIFY:
+				BUILTIN_CALL_INT_FLOAT(STEPIFY, 2)
+				break;
+			case GDScriptFunctions::MATH_LERP_ANGLE:
+				BUILTIN_CALL(LERP_ANGLE, 3, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_INVERSE_LERP:
+				BUILTIN_CALL(INVERSE_LERP, 3, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_SMOOTHSTEP:
+				BUILTIN_CALL_INT_FLOAT(SMOOTHSTEP, 3)
+				break;
+			case GDScriptFunctions::MATH_MOVE_TOWARD:
+				BUILTIN_CALL_INT_FLOAT(MOVE_TOWARD, 3)
+				break;
+			case GDScriptFunctions::MATH_DECTIME:
+				BUILTIN_CALL_INT_FLOAT(DECTIME, 3)
+				break;
+			case GDScriptFunctions::LOGIC_NEAREST_PO2:
+				BUILTIN_CALL_INT_FLOAT(NEAREST_PO2, 1)
+				break;
+			case GDScriptFunctions::MATH_ABS:
+				BUILTIN_CALL_INT_FLOAT(ABS, 1)
+				break;
+			case GDScriptFunctions::MATH_WRAP:
+				BUILTIN_CALL(WRAP, 3, INT)
+				break;
+			case GDScriptFunctions::MATH_WRAPF:
+				BUILTIN_CALL(WRAP, 3, FLOAT)
+				break;
+			case GDScriptFunctions::LOGIC_MAX:
+				BUILTIN_CALL_INT_FLOAT(MAX, 2)
+				break;
+			case GDScriptFunctions::LOGIC_MIN:
+				BUILTIN_CALL_INT_FLOAT(MIN, 2)
+				break;
+			case GDScriptFunctions::LOGIC_CLAMP:
+				BUILTIN_CALL_INT_FLOAT(CLAMP, 3)
+				break;
+			case GDScriptFunctions::MATH_SIGN:
+				BUILTIN_CALL_INT_FLOAT(SIGN, 1)
+				break;
+			case GDScriptFunctions::MATH_CARTESIAN2POLAR:
+				BUILTIN_CALL(CARTESIAN2POLAR, 2, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_POLAR2CARTESIAN:
+				BUILTIN_CALL(POLAR2CARTESIAN, 2, FLOAT)
+				break;
+			case GDScriptFunctions::MATH_LERP:
+				BUILTIN_CALL_LERP(INT)
+				BUILTIN_CALL_LERP(FLOAT)
+				BUILTIN_CALL_LERP(VECTOR2)
+				BUILTIN_CALL_LERP(VECTOR3)
+				BUILTIN_CALL_LERP(COLOR)
+				break;
+			default:
+				break;
+		}
+	}
+
 	append(GDScriptFunction::OPCODE_CALL_BUILT_IN);
 	append(p_function);
 	append(p_arguments.size());
@@ -866,7 +1073,6 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 		append(p_arguments[i]);
 	}
 	append(p_target);
-	alloc_call(p_arguments.size());
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {

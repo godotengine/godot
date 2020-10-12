@@ -413,6 +413,93 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL_METHOD_BIND_RET,                   \
 		&&OPCODE_CALL_PTRCALL_NO_RETURN,                 \
 		&&OPCODE_ALL_TYPES(CALL_PTRCALL),                \
+		&&OPCODE_CALL_SIN_INT,                           \
+		&&OPCODE_CALL_SIN_FLOAT,                         \
+		&&OPCODE_CALL_COS_INT,                           \
+		&&OPCODE_CALL_COS_FLOAT,                         \
+		&&OPCODE_CALL_TAN_INT,                           \
+		&&OPCODE_CALL_TAN_FLOAT,                         \
+		&&OPCODE_CALL_SINH_INT,                          \
+		&&OPCODE_CALL_SINH_FLOAT,                        \
+		&&OPCODE_CALL_COSH_INT,                          \
+		&&OPCODE_CALL_COSH_FLOAT,                        \
+		&&OPCODE_CALL_TANH_INT,                          \
+		&&OPCODE_CALL_TANH_FLOAT,                        \
+		&&OPCODE_CALL_ASIN_INT,                          \
+		&&OPCODE_CALL_ASIN_FLOAT,                        \
+		&&OPCODE_CALL_ACOS_INT,                          \
+		&&OPCODE_CALL_ACOS_FLOAT,                        \
+		&&OPCODE_CALL_ATAN_INT,                          \
+		&&OPCODE_CALL_ATAN_FLOAT,                        \
+		&&OPCODE_CALL_ATAN2_INT,                         \
+		&&OPCODE_CALL_ATAN2_FLOAT,                       \
+		&&OPCODE_CALL_SQRT_INT,                          \
+		&&OPCODE_CALL_SQRT_FLOAT,                        \
+		&&OPCODE_CALL_FMOD_FLOAT,                        \
+		&&OPCODE_CALL_FPOSMOD_FLOAT,                     \
+		&&OPCODE_CALL_POSMOD_INT,                        \
+		&&OPCODE_CALL_FLOOR_INT,                         \
+		&&OPCODE_CALL_FLOOR_FLOAT,                       \
+		&&OPCODE_CALL_CEIL_INT,                          \
+		&&OPCODE_CALL_CEIL_FLOAT,                        \
+		&&OPCODE_CALL_POW_INT,                           \
+		&&OPCODE_CALL_POW_FLOAT,                         \
+		&&OPCODE_CALL_LOG_INT,                           \
+		&&OPCODE_CALL_LOG_FLOAT,                         \
+		&&OPCODE_CALL_EXP_INT,                           \
+		&&OPCODE_CALL_EXP_FLOAT,                         \
+		&&OPCODE_CALL_DEG2RAD_INT,                       \
+		&&OPCODE_CALL_DEG2RAD_FLOAT,                     \
+		&&OPCODE_CALL_RAD2DEG_INT,                       \
+		&&OPCODE_CALL_RAD2DEG_FLOAT,                     \
+		&&OPCODE_CALL_LINEAR2DB_INT,                     \
+		&&OPCODE_CALL_LINEAR2DB_FLOAT,                   \
+		&&OPCODE_CALL_DB2LINEAR_INT,                     \
+		&&OPCODE_CALL_DB2LINEAR_FLOAT,                   \
+		&&OPCODE_CALL_ROUND_FLOAT,                       \
+		&&OPCODE_CALL_IS_INF_FLOAT,                      \
+		&&OPCODE_CALL_IS_NAN_FLOAT,                      \
+		&&OPCODE_CALL_IS_ZERO_APPROX_FLOAT,              \
+		&&OPCODE_CALL_IS_EQUAL_APPROX_FLOAT,             \
+		&&OPCODE_CALL_EASE_INT,                          \
+		&&OPCODE_CALL_EASE_FLOAT,                        \
+		&&OPCODE_CALL_RANDOM_INT,                        \
+		&&OPCODE_CALL_RANDOM_FLOAT,                      \
+		&&OPCODE_CALL_RAND_INT,                          \
+		&&OPCODE_CALL_RANDF_FLOAT,                       \
+		&&OPCODE_CALL_STEP_DECIMALS_INT,                 \
+		&&OPCODE_CALL_STEP_DECIMALS_FLOAT,               \
+		&&OPCODE_CALL_STEPIFY_INT,                       \
+		&&OPCODE_CALL_STEPIFY_FLOAT,                     \
+		&&OPCODE_CALL_LERP_INT,                          \
+		&&OPCODE_CALL_LERP_FLOAT,                        \
+		&&OPCODE_CALL_LERP_VECTOR2,                      \
+		&&OPCODE_CALL_LERP_VECTOR3,                      \
+		&&OPCODE_CALL_LERP_COLOR,                        \
+		&&OPCODE_CALL_LERP_ANGLE_FLOAT,                  \
+		&&OPCODE_CALL_INVERSE_LERP_FLOAT,                \
+		&&OPCODE_CALL_SMOOTHSTEP_INT,                    \
+		&&OPCODE_CALL_SMOOTHSTEP_FLOAT,                  \
+		&&OPCODE_CALL_MOVE_TOWARD_INT,                   \
+		&&OPCODE_CALL_MOVE_TOWARD_FLOAT,                 \
+		&&OPCODE_CALL_DECTIME_INT,                       \
+		&&OPCODE_CALL_DECTIME_FLOAT,                     \
+		&&OPCODE_CALL_NEAREST_PO2_INT,                   \
+		&&OPCODE_CALL_NEAREST_PO2_FLOAT,                 \
+		&&OPCODE_CALL_ABS_INT,                           \
+		&&OPCODE_CALL_ABS_FLOAT,                         \
+		&&OPCODE_CALL_WRAP_INT,                          \
+		&&OPCODE_CALL_WRAP_FLOAT,                        \
+		&&OPCODE_CALL_MAX_INT,                           \
+		&&OPCODE_CALL_MAX_FLOAT,                         \
+		&&OPCODE_CALL_MIN_INT,                           \
+		&&OPCODE_CALL_MIN_FLOAT,                         \
+		&&OPCODE_CALL_CLAMP_INT,                         \
+		&&OPCODE_CALL_CLAMP_FLOAT,                       \
+		&&OPCODE_CALL_SIGN_INT,                          \
+		&&OPCODE_CALL_SIGN_FLOAT,                        \
+		&&OPCODE_CALL_CARTESIAN2POLAR_FLOAT,             \
+		&&OPCODE_CALL_POLAR2CARTESIAN_FLOAT,             \
 		&&OPCODE_AWAIT,                                  \
 		&&OPCODE_AWAIT_RESUME,                           \
 		&&OPCODE_JUMP,                                   \
@@ -3110,6 +3197,225 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 				ip += 4 + argc;
+			}
+			DISPATCH_OPCODE;
+
+#define OPCODE_CALL_MATH_NO_ARG(m_opcode, m_func, m_ret_type, m_ret_var_type, m_ret_get_func) \
+	OPCODE(OPCODE_CALL_##m_opcode) {                                                          \
+		CHECK_SPACE(2);                                                                       \
+		GET_VARIANT_PTR(dst, 1);                                                              \
+		m_ret_type result = m_func();                                                         \
+		VariantInternal::initialize(dst, m_ret_var_type);                                     \
+		*VariantInternal::m_ret_get_func(dst) = result;                                       \
+		ip += 2;                                                                              \
+	}                                                                                         \
+	DISPATCH_OPCODE
+
+#define OPCODE_CALL_MATH_SINGLE_ARG(m_opcode, m_func, m_arg_type, m_arg_get_func, m_ret_type, m_ret_var_type, m_ret_get_func) \
+	OPCODE(OPCODE_CALL_##m_opcode) {                                                                                          \
+		CHECK_SPACE(3);                                                                                                       \
+		GET_VARIANT_PTR(arg, 1);                                                                                              \
+		GET_VARIANT_PTR(dst, 2);                                                                                              \
+		m_arg_type a = *VariantInternal::m_arg_get_func(arg);                                                                 \
+		m_ret_type result = m_func((m_ret_type)a);                                                                            \
+		VariantInternal::initialize(dst, m_ret_var_type);                                                                     \
+		*VariantInternal::m_ret_get_func(dst) = result;                                                                       \
+		ip += 3;                                                                                                              \
+	}                                                                                                                         \
+	DISPATCH_OPCODE
+
+#define OPCODE_CALL_MATH_TWO_ARGS(m_opcode, m_func, m_arg_type, m_arg_get_func, m_ret_type, m_ret_var_type, m_ret_get_func) \
+	OPCODE(OPCODE_CALL_##m_opcode) {                                                                                        \
+		CHECK_SPACE(4);                                                                                                     \
+		GET_VARIANT_PTR(arg1, 1);                                                                                           \
+		GET_VARIANT_PTR(arg2, 2);                                                                                           \
+		GET_VARIANT_PTR(dst, 3);                                                                                            \
+		m_arg_type a = *VariantInternal::m_arg_get_func(arg1);                                                              \
+		m_arg_type b = *VariantInternal::m_arg_get_func(arg2);                                                              \
+		m_ret_type result = m_func((m_ret_type)a, (m_ret_type)b);                                                           \
+		VariantInternal::initialize(dst, m_ret_var_type);                                                                   \
+		*VariantInternal::m_ret_get_func(dst) = result;                                                                     \
+		ip += 4;                                                                                                            \
+	}                                                                                                                       \
+	DISPATCH_OPCODE
+
+#define OPCODE_CALL_MATH_THREE_ARGS(m_opcode, m_func, m_arg_type, m_arg_get_func, m_ret_type, m_ret_var_type, m_ret_get_func) \
+	OPCODE(OPCODE_CALL_##m_opcode) {                                                                                          \
+		CHECK_SPACE(5);                                                                                                       \
+		GET_VARIANT_PTR(arg1, 1);                                                                                             \
+		GET_VARIANT_PTR(arg2, 2);                                                                                             \
+		GET_VARIANT_PTR(arg3, 3);                                                                                             \
+		GET_VARIANT_PTR(dst, 4);                                                                                              \
+		m_arg_type a = *VariantInternal::m_arg_get_func(arg1);                                                                \
+		m_arg_type b = *VariantInternal::m_arg_get_func(arg2);                                                                \
+		m_arg_type c = *VariantInternal::m_arg_get_func(arg3);                                                                \
+		m_ret_type result = m_func((m_ret_type)a, (m_ret_type)b, (m_ret_type)c);                                              \
+		VariantInternal::initialize(dst, m_ret_var_type);                                                                     \
+		*VariantInternal::m_ret_get_func(dst) = result;                                                                       \
+		ip += 5;                                                                                                              \
+	}                                                                                                                         \
+	DISPATCH_OPCODE
+
+#define OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(m_opcode, m_func)                                                     \
+	OPCODE_CALL_MATH_SINGLE_ARG(m_opcode##_INT, Math::m_func, int64_t, get_int, double, Variant::FLOAT, get_float); \
+	OPCODE_CALL_MATH_SINGLE_ARG(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_SINGLE_ARG_FLOAT(m_opcode, m_func) \
+	OPCODE_CALL_MATH_SINGLE_ARG(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(m_opcode, m_func)                                                     \
+	OPCODE_CALL_MATH_TWO_ARGS(m_opcode##_INT, Math::m_func, int64_t, get_int, double, Variant::FLOAT, get_float); \
+	OPCODE_CALL_MATH_TWO_ARGS(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_TWO_ARGS_INT(m_opcode, m_func) \
+	OPCODE_CALL_MATH_TWO_ARGS(m_opcode##_INT, Math::m_func, int64_t, get_int, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_TWO_ARGS_FLOAT(m_opcode, m_func) \
+	OPCODE_CALL_MATH_TWO_ARGS(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_THREE_ARGS_INT_FLOAT(m_opcode, m_func)                                                     \
+	OPCODE_CALL_MATH_THREE_ARGS(m_opcode##_INT, Math::m_func, int64_t, get_int, double, Variant::FLOAT, get_float); \
+	OPCODE_CALL_MATH_THREE_ARGS(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+#define OPCODE_CALL_MATH_THREE_ARGS_FLOAT(m_opcode, m_func) \
+	OPCODE_CALL_MATH_THREE_ARGS(m_opcode##_FLOAT, Math::m_func, double, get_float, double, Variant::FLOAT, get_float)
+
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(SIN, sin);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(COS, cos);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(TAN, tan);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(SINH, sinh);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(COSH, cosh);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(TANH, tanh);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(ASIN, asin);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(ACOS, acos);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(ATAN, atan);
+			OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(ATAN2, atan2);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(SQRT, sqrt);
+			OPCODE_CALL_MATH_TWO_ARGS_FLOAT(FMOD, fmod);
+			OPCODE_CALL_MATH_TWO_ARGS_FLOAT(FPOSMOD, fposmod);
+			OPCODE_CALL_MATH_TWO_ARGS_INT(POSMOD, posmod);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(FLOOR, floor);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(CEIL, ceil);
+			OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(POW, pow);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(LOG, log);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(EXP, exp);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(DEG2RAD, deg2rad);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(RAD2DEG, rad2deg);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(LINEAR2DB, linear2db);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(DB2LINEAR, db2linear);
+			OPCODE_CALL_MATH_SINGLE_ARG_FLOAT(ROUND, ceil);
+			OPCODE_CALL_MATH_SINGLE_ARG_FLOAT(IS_INF, is_inf);
+			OPCODE_CALL_MATH_SINGLE_ARG_FLOAT(IS_NAN, is_nan);
+			OPCODE_CALL_MATH_SINGLE_ARG_FLOAT(IS_ZERO_APPROX, is_zero_approx);
+			OPCODE_CALL_MATH_TWO_ARGS_FLOAT(IS_EQUAL_APPROX, is_equal_approx);
+			OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(EASE, ease);
+			OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(RANDOM, random);
+			OPCODE_CALL_MATH_NO_ARG(RAND_INT, Math::rand, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_NO_ARG(RANDF_FLOAT, Math::randf, double, Variant::FLOAT, get_float);
+			OPCODE_CALL_MATH_SINGLE_ARG_INT_FLOAT(STEP_DECIMALS, step_decimals);
+			OPCODE_CALL_MATH_TWO_ARGS_INT_FLOAT(STEPIFY, stepify);
+			OPCODE_CALL_MATH_THREE_ARGS_FLOAT(LERP, lerp);
+			OPCODE_CALL_MATH_THREE_ARGS_FLOAT(LERP_ANGLE, lerp_angle);
+			OPCODE_CALL_MATH_THREE_ARGS_FLOAT(INVERSE_LERP, inverse_lerp);
+			OPCODE_CALL_MATH_THREE_ARGS_INT_FLOAT(SMOOTHSTEP, smoothstep);
+			OPCODE_CALL_MATH_THREE_ARGS_INT_FLOAT(MOVE_TOWARD, move_toward);
+			OPCODE_CALL_MATH_THREE_ARGS_INT_FLOAT(DECTIME, dectime);
+
+			OPCODE_CALL_MATH_SINGLE_ARG(NEAREST_PO2_INT, next_power_of_2, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_SINGLE_ARG(NEAREST_PO2_FLOAT, next_power_of_2, double, get_float, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_SINGLE_ARG(ABS_INT, ABS, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_SINGLE_ARG(ABS_FLOAT, Math::abs, double, get_float, double, Variant::FLOAT, get_float);
+			OPCODE_CALL_MATH_THREE_ARGS(WRAP_INT, Math::wrapi, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_THREE_ARGS(WRAP_FLOAT, Math::wrapf, double, get_float, double, Variant::FLOAT, get_float);
+			OPCODE_CALL_MATH_TWO_ARGS(MAX_INT, MAX, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_TWO_ARGS(MAX_FLOAT, MAX, double, get_float, double, Variant::FLOAT, get_float);
+			OPCODE_CALL_MATH_TWO_ARGS(MIN_INT, MIN, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_TWO_ARGS(MIN_FLOAT, MIN, double, get_float, double, Variant::FLOAT, get_float);
+			OPCODE_CALL_MATH_THREE_ARGS(CLAMP_INT, CLAMP, int64_t, get_int, int64_t, Variant::INT, get_int);
+			OPCODE_CALL_MATH_THREE_ARGS(CLAMP_FLOAT, CLAMP, double, get_float, double, Variant::FLOAT, get_float);
+
+			OPCODE(OPCODE_CALL_SIGN_INT) {
+				CHECK_SPACE(3);
+				GET_VARIANT_PTR(arg, 1);
+				GET_VARIANT_PTR(dst, 2);
+				int64_t a = *VariantInternal::get_int(arg);
+				int64_t result = a < 0 ? -1 : (a > 0 ? +1 : 0);
+				VariantInternal::initialize(dst, Variant::INT);
+				*VariantInternal::get_int(dst) = result;
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_SIGN_FLOAT) {
+				CHECK_SPACE(3);
+				GET_VARIANT_PTR(arg, 1);
+				GET_VARIANT_PTR(dst, 2);
+				double a = *VariantInternal::get_float(arg);
+				double result = a < 0.0 ? -1.0 : (a > 0.0 ? +1.0 : 0.0);
+				VariantInternal::initialize(dst, Variant::FLOAT);
+				*VariantInternal::get_float(dst) = result;
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_CARTESIAN2POLAR_FLOAT) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(arg1, 1);
+				GET_VARIANT_PTR(arg2, 2);
+				GET_VARIANT_PTR(dst, 3);
+				double a = *VariantInternal::get_float(arg1);
+				double b = *VariantInternal::get_float(arg2);
+				Vector2 result(Math::sqrt(a * a + b * b), Math::atan2(b, a));
+				VariantInternal::initialize(dst, Variant::VECTOR2);
+				*VariantInternal::get_vector2(dst) = result;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+			OPCODE(OPCODE_CALL_POLAR2CARTESIAN_FLOAT) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(arg1, 1);
+				GET_VARIANT_PTR(arg2, 2);
+				GET_VARIANT_PTR(dst, 3);
+				double a = *VariantInternal::get_float(arg1);
+				double b = *VariantInternal::get_float(arg2);
+				Vector2 result(a * Math::cos(b), a * Math::sin(b));
+				VariantInternal::initialize(dst, Variant::VECTOR2);
+				*VariantInternal::get_vector2(dst) = result;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+#define OPCODE_CALL_LERP(m_var_type, m_type, m_get_func)       \
+	OPCODE(OPCODE_CALL_LERP_##m_var_type) {                    \
+		CHECK_SPACE(5);                                        \
+		GET_VARIANT_PTR(arg1, 1);                              \
+		GET_VARIANT_PTR(arg2, 2);                              \
+		GET_VARIANT_PTR(arg3, 3);                              \
+		GET_VARIANT_PTR(dst, 4);                               \
+		m_type *a = VariantInternal::m_get_func(arg1);         \
+		m_type *b = VariantInternal::m_get_func(arg2);         \
+		double c = *VariantInternal::get_float(arg3);          \
+		VariantInternal::initialize(dst, Variant::m_var_type); \
+		*VariantInternal::m_get_func(dst) = a->lerp(*b, c);    \
+		ip += 5;                                               \
+	}                                                          \
+	DISPATCH_OPCODE
+
+			OPCODE_CALL_LERP(VECTOR2, Vector2, get_vector2);
+			OPCODE_CALL_LERP(VECTOR3, Vector3, get_vector3);
+			OPCODE_CALL_LERP(COLOR, Color, get_color);
+			OPCODE(OPCODE_CALL_LERP_INT) {
+				CHECK_SPACE(5);
+				GET_VARIANT_PTR(arg1, 1);
+				GET_VARIANT_PTR(arg2, 2);
+				GET_VARIANT_PTR(arg3, 3);
+				GET_VARIANT_PTR(dst, 4);
+				int64_t a = *VariantInternal::get_int(arg1);
+				int64_t b = *VariantInternal::get_int(arg2);
+				double c = *VariantInternal::get_float(arg3);
+				VariantInternal::initialize(dst, Variant::FLOAT);
+				*VariantInternal::get_float(dst) = Math::lerp(a, b, c);
+				ip += 5;
 			}
 			DISPATCH_OPCODE;
 
