@@ -59,21 +59,21 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on the ceiling. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
+				Returns [code]true[/code] if the body collided with the ceiling on the last call of [method move_and_slide] or [method move_and_slide_with_snap]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on the floor. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
+				Returns [code]true[/code] if the body collided with the floor on the last call of [method move_and_slide] or [method move_and_slide_with_snap]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
+				Returns [code]true[/code] if the body collided with a wall on the last call of [method move_and_slide] or [method move_and_slide_with_snap]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="move_and_collide">
