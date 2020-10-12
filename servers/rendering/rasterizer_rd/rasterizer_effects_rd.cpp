@@ -1758,6 +1758,7 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	resolve.shader.version_free(resolve.shader_version);
 	roughness.shader.version_free(roughness.shader_version);
 	roughness_limiter.shader.version_free(roughness_limiter.shader_version);
+	sort.shader.version_free(sort.shader_version);
 	specular_merge.shader.version_free(specular_merge.shader_version);
 	ssao.blur_shader.version_free(ssao.blur_shader_version);
 	ssao.gather_shader.version_free(ssao.gather_shader_version);
