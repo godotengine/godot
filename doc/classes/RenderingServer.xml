@@ -3579,22 +3579,24 @@
 		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
 			The instance is a particle emitter.
 		</constant>
-		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
+		<constant name="INSTANCE_PARTICLES_COLLISION" value="5" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_LIGHT" value="6" enum="InstanceType">
 			The instance is a light.
 		</constant>
-		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
+		<constant name="INSTANCE_REFLECTION_PROBE" value="7" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
+		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
+		<constant name="INSTANCE_GI_PROBE" value="9" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="11" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">

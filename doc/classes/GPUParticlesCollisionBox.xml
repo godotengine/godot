@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesCollisionBox" inherits="GPUParticlesCollision3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
