@@ -2071,8 +2071,10 @@ void SceneTreeDock::_create() {
 		}
 
 		Node *parent = nullptr;
+		int original_position = 0;
 		if (only_one_top_node) {
 			parent = top_node->get_parent();
+			original_position = top_node->get_index();
 		} else {
 			parent = top_node->get_parent()->get_parent();
 		}
@@ -2087,6 +2089,10 @@ void SceneTreeDock::_create() {
 		// This works because editor_selection was cleared and populated with last created node in _do_create()
 		Node *last_created = editor_selection->get_selected_node_list().front()->get();
 		_do_reparent(last_created, -1, nodes, true);
+
+		if (only_one_top_node) {
+			parent->move_child(last_created, original_position);
+		}
 	}
 
 	scene_tree->get_scene_tree()->call_deferred("grab_focus");
