@@ -2199,6 +2199,7 @@ void VisualScriptPropertyGet::_bind_methods() {
 	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
 	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
 	BIND_ENUM_CONSTANT(CALL_MODE_INSTANCE);
+	BIND_ENUM_CONSTANT(CALL_MODE_BASIC_TYPE);
 }
 
 class VisualScriptNodeInstancePropertyGet : public VisualScriptNodeInstance {
