@@ -150,11 +150,12 @@ private:
 		}
 	};
 	struct RigidBody2D_RemoveAction {
+		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-		//int rc;
+		RID rid;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
@@ -168,7 +169,7 @@ private:
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
 
-	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape, int p_local_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
 	bool _test_motion(const Vector2 &p_motion, bool p_infinite_inertia = true, float p_margin = 0.08, const Ref<Physics2DTestMotionResult> &p_result = Ref<Physics2DTestMotionResult>());
