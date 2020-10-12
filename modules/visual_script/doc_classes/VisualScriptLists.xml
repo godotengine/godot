@@ -19,6 +19,7 @@
 			<argument index="2" name="index" type="int">
 			</argument>
 			<description>
+				Adds an input port to the Visual Script node.
 			</description>
 		</method>
 		<method name="add_output_data_port">
@@ -31,6 +32,7 @@
 			<argument index="2" name="index" type="int">
 			</argument>
 			<description>
+				Adds an output port to the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_input_data_port">
@@ -39,6 +41,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Removes an input port from the Visual Script node.
 			</description>
 		</method>
 		<method name="remove_output_data_port">
@@ -47,6 +50,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
+				Removes an output port from the Visual Script node.
 			</description>
 		</method>
 		<method name="set_input_data_port_name">
@@ -57,6 +61,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Sets the name of an input port.
 			</description>
 		</method>
 		<method name="set_input_data_port_type">
@@ -67,6 +72,7 @@
 			<argument index="1" name="type" type="int" enum="Variant.Type">
 			</argument>
 			<description>
+				Sets the type of an input port.
 			</description>
 		</method>
 		<method name="set_output_data_port_name">
@@ -77,6 +83,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
+				Sets the name of an output port.
 			</description>
 		</method>
 		<method name="set_output_data_port_type">
@@ -87,6 +94,7 @@
 			<argument index="1" name="type" type="int" enum="Variant.Type">
 			</argument>
 			<description>
+				Sets the type of an output port.
 			</description>
 		</method>
 	</methods>
