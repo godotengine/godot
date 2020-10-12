@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesCollisionHeightField" inherits="GPUParticlesCollision3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		</member>
+		<member name="follow_camera_enabled" type="bool" setter="set_follow_camera_mode" getter="is_follow_camera_mode_enabled" default="false">
+		</member>
+		<member name="follow_camera_push_ratio" type="float" setter="set_follow_camera_push_ratio" getter="get_follow_camera_push_ratio" default="0.1">
+		</member>
+		<member name="resolution" type="int" setter="set_resolution" getter="get_resolution" enum="GPUParticlesCollisionHeightField.Resolution" default="2">
+		</member>
+		<member name="update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="GPUParticlesCollisionHeightField.UpdateMode" default="0">
+		</member>
+	</members>
+	<constants>
+		<constant name="RESOLUTION_256" value="0" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_512" value="1" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_1024" value="2" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_2048" value="3" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_4096" value="4" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_8192" value="5" enum="Resolution">
+		</constant>
+		<constant name="RESOLUTION_MAX" value="6" enum="Resolution">
+		</constant>
+		<constant name="UPDATE_MODE_WHEN_MOVED" value="0" enum="UpdateMode">
+		</constant>
+		<constant name="UPDATE_MODE_ALWAYS" value="1" enum="UpdateMode">
+		</constant>
+	</constants>
+</class>

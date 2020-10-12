@@ -47,6 +47,12 @@
 				Creates a new [Callable] for the method called [code]method_name[/code] in the specified [code]object[/code].
 			</description>
 		</method>
+		<method name="bind" qualifiers="vararg">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="call" qualifiers="vararg">
 			<return type="Variant">
 			</return>
@@ -103,6 +109,14 @@
 		<method name="is_standard">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="unbind">
+			<return type="Callable">
+			</return>
+			<argument index="0" name="argcount" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>

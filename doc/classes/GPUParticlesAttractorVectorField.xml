@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesAttractorVectorField" inherits="GPUParticlesAttractor3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		</member>
+		<member name="texture" type="Texture3D" setter="set_texture" getter="get_texture">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
