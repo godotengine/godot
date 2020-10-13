@@ -1242,6 +1242,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
+					if (p_item->get_icon_max_width(i) > 0) {
+						icon_width = p_item->get_icon_max_width(i);
+					}
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
