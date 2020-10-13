@@ -440,6 +440,11 @@ public:
 		return *this;
 	}
 
+	Vector<uint8_t> to_ascii_buffer() const;
+	Vector<uint8_t> to_utf8_buffer() const;
+	Vector<uint8_t> to_utf16_buffer() const;
+	Vector<uint8_t> to_utf32_buffer() const;
+
 	String(const char *p_str);
 	String(const wchar_t *p_str);
 	String(const char32_t *p_str);
