@@ -4732,6 +4732,69 @@ String String::unquote() const {
 	return substr(1, length() - 2);
 }
 
+Vector<uint8_t> String::to_ascii_buffer() const {
+	const String *s = this;
+	if (s->empty()) {
+		return Vector<uint8_t>();
+	}
+	CharString charstr = s->ascii();
+
+	Vector<uint8_t> retval;
+	size_t len = charstr.length();
+	retval.resize(len);
+	uint8_t *w = retval.ptrw();
+	copymem(w, charstr.ptr(), len);
+
+	return retval;
+}
+
+Vector<uint8_t> String::to_utf8_buffer() const {
+	const String *s = this;
+	if (s->empty()) {
+		return Vector<uint8_t>();
+	}
+	CharString charstr = s->utf8();
+
+	Vector<uint8_t> retval;
+	size_t len = charstr.length();
+	retval.resize(len);
+	uint8_t *w = retval.ptrw();
+	copymem(w, charstr.ptr(), len);
+
+	return retval;
+}
+
+Vector<uint8_t> String::to_utf16_buffer() const {
+	const String *s = this;
+	if (s->empty()) {
+		return Vector<uint8_t>();
+	}
+	Char16String charstr = s->utf16();
+
+	Vector<uint8_t> retval;
+	size_t len = charstr.length() * 2;
+	retval.resize(len);
+	uint8_t *w = retval.ptrw();
+	copymem(w, (const void *)charstr.ptr(), len);
+
+	return retval;
+}
+
+Vector<uint8_t> String::to_utf32_buffer() const {
+	const String *s = this;
+	if (s->empty()) {
+		return Vector<uint8_t>();
+	}
+
+	Vector<uint8_t> retval;
+	size_t len = s->length() * 4;
+	retval.resize(len);
+	uint8_t *w = retval.ptrw();
+	copymem(w, (const void *)s->ptr(), len);
+
+	return retval;
+}
+
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {

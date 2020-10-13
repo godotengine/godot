@@ -319,7 +319,7 @@ void LocalizationEditor::_translation_filter_option_changed() {
 		}
 	}
 
-	f_locales = f_locales.sort();
+	f_locales.sort();
 
 	undo_redo->create_action(TTR("Changed Locale Filter"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "locale/locale_filter", f_locales_all);
