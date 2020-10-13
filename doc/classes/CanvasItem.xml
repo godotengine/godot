@@ -640,7 +640,7 @@
 		</signal>
 		<signal name="item_rect_changed">
 			<description>
-				Emitted when the item rect has changed.
+				Emitted when the item's rectangle is changed by any update in its start or end positions, or in its size. Can also be triggered by a texture update on [Sprite2D] nodes.
 			</description>
 		</signal>
 		<signal name="visibility_changed">
