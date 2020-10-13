@@ -154,6 +154,7 @@ public:
 	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) override {}
 	void render_sdfgi(RID p_render_buffers, int p_region, InstanceBase **p_cull_result, int p_cull_count) override {}
 	void render_sdfgi_static_lights(RID p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const RID **p_positional_light_cull_result, const uint32_t *p_positional_light_cull_count) override {}
+	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, InstanceBase **p_cull_result, int p_cull_count) override {}
 
 	void set_scene_pass(uint64_t p_pass) override {}
 	void set_time(double p_time, double p_step) override {}
@@ -802,6 +803,7 @@ public:
 	void particles_set_fractional_delta(RID p_particles, bool p_enable) override {}
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override {}
 	void particles_set_view_axis(RID p_particles, const Vector3 &p_axis) override {}
+	void particles_set_collision_base_size(RID p_particles, float p_size) override {}
 	void particles_restart(RID p_particles) override {}
 
 	void particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) override {}
@@ -818,6 +820,28 @@ public:
 	bool particles_get_emitting(RID p_particles) override { return false; }
 	int particles_get_draw_passes(RID p_particles) const override { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const override { return RID(); }
+
+	void particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) override {}
+	void particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) override {}
+
+	void update_particles() override {}
+
+	/* PARTICLES COLLISION */
+
+	RID particles_collision_create() override { return RID(); }
+	void particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) override {}
+	void particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) override {}
+	void particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) override {}
+	void particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) override {}
+	void particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) override {}
+	void particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) override {}
+	void particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) override {}
+	void particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) override {}
+	void particles_collision_height_field_update(RID p_particles_collision) override {}
+	void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) override {}
+	AABB particles_collision_get_aabb(RID p_particles_collision) const override { return AABB(); }
+	bool particles_collision_is_heightfield(RID p_particles_collision) const override { return false; }
+	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const override { return RID(); }
 
 	/* GLOBAL VARIABLES */
 
