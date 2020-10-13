@@ -42,15 +42,6 @@
 void PhysicsBody2D::_notification(int p_what) {
 }
 
-void PhysicsBody2D::_set_layers(uint32_t p_mask) {
-	set_collision_layer(p_mask);
-	set_collision_mask(p_mask);
-}
-
-uint32_t PhysicsBody2D::_get_layers() const {
-	return get_collision_layer();
-}
-
 void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody2D::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody2D::get_collision_layer);
@@ -63,13 +54,9 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody2D::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody2D::get_collision_layer_bit);
 
-	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody2D::_set_layers);
-	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody2D::_get_layers);
-
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &PhysicsBody2D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", 0), "_set_layers", "_get_layers"); //for backwards compat
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");

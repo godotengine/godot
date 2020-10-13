@@ -43,9 +43,6 @@ class PhysicsBody3D : public CollisionObject3D {
 	uint32_t collision_layer;
 	uint32_t collision_mask;
 
-	void _set_layers(uint32_t p_mask);
-	uint32_t _get_layers() const;
-
 protected:
 	static void _bind_methods();
 	PhysicsBody3D(PhysicsServer3D::BodyMode p_mode);
