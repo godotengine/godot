@@ -83,6 +83,60 @@ void CollisionObject3D::_notification(int p_what) {
 	}
 }
 
+void CollisionObject3D::set_collision_layer(uint32_t p_layer) {
+	collision_layer = p_layer;
+	if (area) {
+		PhysicsServer3D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
+	} else {
+		PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
+	}
+}
+
+uint32_t CollisionObject3D::get_collision_layer() const {
+	return collision_layer;
+}
+
+void CollisionObject3D::set_collision_mask(uint32_t p_mask) {
+	collision_mask = p_mask;
+	if (area) {
+		PhysicsServer3D::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
+	} else {
+		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), p_mask);
+	}
+}
+
+uint32_t CollisionObject3D::get_collision_mask() const {
+	return collision_mask;
+}
+
+void CollisionObject3D::set_collision_layer_bit(int p_bit, bool p_value) {
+	uint32_t collision_layer = get_collision_layer();
+	if (p_value) {
+		collision_layer |= 1 << p_bit;
+	} else {
+		collision_layer &= ~(1 << p_bit);
+	}
+	set_collision_layer(collision_layer);
+}
+
+bool CollisionObject3D::get_collision_layer_bit(int p_bit) const {
+	return get_collision_layer() & (1 << p_bit);
+}
+
+void CollisionObject3D::set_collision_mask_bit(int p_bit, bool p_value) {
+	uint32_t mask = get_collision_mask();
+	if (p_value) {
+		mask |= 1 << p_bit;
+	} else {
+		mask &= ~(1 << p_bit);
+	}
+	set_collision_mask(mask);
+}
+
+bool CollisionObject3D::get_collision_mask_bit(int p_bit) const {
+	return get_collision_mask() & (1 << p_bit);
+}
+
 void CollisionObject3D::_input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
@@ -183,6 +237,14 @@ bool CollisionObject3D::is_ray_pickable() const {
 }
 
 void CollisionObject3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &CollisionObject3D::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"), &CollisionObject3D::get_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &CollisionObject3D::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"), &CollisionObject3D::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &CollisionObject3D::set_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &CollisionObject3D::get_collision_layer_bit);
+	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &CollisionObject3D::set_collision_mask_bit);
+	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject3D::get_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject3D::is_ray_pickable);
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject3D::set_capture_input_on_drag);
@@ -212,6 +274,11 @@ void CollisionObject3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_entered"));
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
+	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Input", "input_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
 }
