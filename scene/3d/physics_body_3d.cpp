@@ -130,15 +130,6 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::_set_layers(uint32_t p_mask) {
-	set_collision_layer(p_mask);
-	set_collision_mask(p_mask);
-}
-
-uint32_t PhysicsBody3D::_get_layers() const {
-	return get_collision_layer();
-}
-
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody3D::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody3D::get_collision_layer);
@@ -151,9 +142,6 @@ void PhysicsBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody3D::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody3D::get_collision_layer_bit);
-
-	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody3D::_set_layers);
-	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody3D::_get_layers);
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
