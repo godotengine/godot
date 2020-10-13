@@ -164,6 +164,7 @@ private:
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
 	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native);
+	static void update_script_class_info(Ref<CSharpScript> p_script);
 	static void initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native);
 
 	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
