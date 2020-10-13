@@ -41,9 +41,6 @@ class KinematicCollision2D;
 class PhysicsBody2D : public CollisionObject2D {
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
 
-	uint32_t collision_layer = 1;
-	uint32_t collision_mask = 1;
-
 protected:
 	void _notification(int p_what);
 	PhysicsBody2D(PhysicsServer2D::BodyMode p_mode);
@@ -51,18 +48,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_collision_layer(uint32_t p_layer);
-	uint32_t get_collision_layer() const;
-
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
-
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
-
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
-
 	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
