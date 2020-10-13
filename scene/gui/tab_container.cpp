@@ -286,7 +286,6 @@ void TabContainer::_notification(int p_what) {
 			Color font_color_bg = get_color("font_color_bg");
 			Color font_color_disabled = get_color("font_color_disabled");
 			int side_margin = get_constant("side_margin");
-			int icon_text_distance = get_constant("hseparation");
 
 			// Find out start and width of the header area.
 			int header_x = side_margin;
@@ -350,58 +349,33 @@ void TabContainer::_notification(int p_what) {
 					break;
 			}
 
-			// Draw the tab area.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
-
-			// Draw all visible tabs.
+			// Draw unselected tabs in back
 			int x = 0;
+			int x_current = 0;
 			for (int i = 0; i < tab_widths.size(); i++) {
 				if (get_tab_hidden(i)) {
 					continue;
 				}
-				Ref<StyleBox> tab_style;
-				Color font_color;
-				if (get_tab_disabled(i + first_tab_cache)) {
-					tab_style = tab_disabled;
-					font_color = font_color_disabled;
-				} else if (i + first_tab_cache == current) {
-					tab_style = tab_fg;
-					font_color = font_color_fg;
-				} else {
-					tab_style = tab_bg;
-					font_color = font_color_bg;
-				}
 
-				// Draw the tab background.
 				int tab_width = tab_widths[i];
-				Rect2 tab_rect(tabs_ofs_cache + x, 0, tab_width, header_height);
-				tab_style->draw(canvas, tab_rect);
-
-				// Draw the tab contents.
-				Control *control = Object::cast_to<Control>(tabs[i + first_tab_cache]);
-				String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
-
-				int x_content = tab_rect.position.x + tab_style->get_margin(MARGIN_LEFT);
-				int top_margin = tab_style->get_margin(MARGIN_TOP);
-				int y_center = top_margin + (tab_rect.size.y - tab_style->get_minimum_size().y) / 2;
-
-				// Draw the tab icon.
-				if (control->has_meta("_tab_icon")) {
-					Ref<Texture> icon = control->get_meta("_tab_icon");
-					if (icon.is_valid()) {
-						int y = y_center - (icon->get_height() / 2);
-						icon->draw(canvas, Point2i(x_content, y));
-						if (text != "")
-							x_content += icon->get_width() + icon_text_distance;
-					}
+				if (get_tab_disabled(i + first_tab_cache)) {
+					_draw_tab(tab_disabled, font_color_disabled, i, tabs_ofs_cache + x);
+				} else if (i + first_tab_cache == current) {
+					x_current = x;
+				} else {
+					_draw_tab(tab_bg, font_color_bg, i, tabs_ofs_cache + x);
 				}
-
-				// Draw the tab text.
-				Point2i text_pos(x_content, y_center - (font->get_height() / 2) + font->get_ascent());
-				font->draw(canvas, text_pos, text, font_color);
 
 				x += tab_width;
 				last_tab_cache = i + first_tab_cache;
+			}
+
+			// Draw the tab area.
+			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+
+			// Draw selected tab in front. Need to check tabs.size() in case of no contents at all.
+			if (tabs.size() > 0) {
+				_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current);
 			}
 
 			// Draw the popup menu.
@@ -438,6 +412,43 @@ void TabContainer::_notification(int p_what) {
 			call_deferred("_on_theme_changed"); // Wait until all changed theme.
 		} break;
 	}
+}
+
+void TabContainer::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x) {
+	Vector<Control *> tabs = _get_tabs();
+	RID canvas = get_canvas_item();
+	Ref<Font> font = get_font("font");
+	int icon_text_distance = get_constant("icon_separation");
+	int tab_width = _get_tab_width(p_index);
+	int header_height = _get_top_margin();
+
+	// Draw the tab background.
+	Rect2 tab_rect(p_x, 0, tab_width, header_height);
+	p_tab_style->draw(canvas, tab_rect);
+
+	// Draw the tab contents.
+	Control *control = Object::cast_to<Control>(tabs[p_index + first_tab_cache]);
+	String text = control->has_meta("_tab_name") ? String(tr(String(control->get_meta("_tab_name")))) : String(tr(control->get_name()));
+
+	int x_content = tab_rect.position.x + p_tab_style->get_margin(MARGIN_LEFT);
+	int top_margin = p_tab_style->get_margin(MARGIN_TOP);
+	int y_center = top_margin + (tab_rect.size.y - p_tab_style->get_minimum_size().y) / 2;
+
+	// Draw the tab icon.
+	if (control->has_meta("_tab_icon")) {
+		Ref<Texture> icon = control->get_meta("_tab_icon");
+		if (icon.is_valid()) {
+			int y = y_center - (icon->get_height() / 2);
+			icon->draw(canvas, Point2i(x_content, y));
+			if (text != "") {
+				x_content += icon->get_width() + icon_text_distance;
+			}
+		}
+	}
+
+	// Draw the tab text.
+	Point2i text_pos(x_content, y_center - (font->get_height() / 2) + font->get_ascent());
+	font->draw(canvas, text_pos, text, p_font_color);
 }
 
 void TabContainer::_on_theme_changed() {
