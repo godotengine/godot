@@ -91,7 +91,8 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="1.0">
-			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="@&quot;Master&quot;">
 			The name of the area's audio bus.
@@ -118,7 +119,8 @@
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
-			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
+			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.
