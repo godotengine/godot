@@ -441,50 +441,6 @@ bool Area::overlaps_body(Node *p_body) const {
 	}
 	return E->get().in_tree;
 }
-void Area::set_collision_mask(uint32_t p_mask) {
-	collision_mask = p_mask;
-	PhysicsServer::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
-}
-
-uint32_t Area::get_collision_mask() const {
-	return collision_mask;
-}
-void Area::set_collision_layer(uint32_t p_layer) {
-	collision_layer = p_layer;
-	PhysicsServer::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
-}
-
-uint32_t Area::get_collision_layer() const {
-	return collision_layer;
-}
-
-void Area::set_collision_mask_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_mask();
-	if (p_value) {
-		mask |= 1 << p_bit;
-	} else {
-		mask &= ~(1 << p_bit);
-	}
-	set_collision_mask(mask);
-}
-
-bool Area::get_collision_mask_bit(int p_bit) const {
-	return get_collision_mask() & (1 << p_bit);
-}
-
-void Area::set_collision_layer_bit(int p_bit, bool p_value) {
-	uint32_t layer = get_collision_layer();
-	if (p_value) {
-		layer |= 1 << p_bit;
-	} else {
-		layer &= ~(1 << p_bit);
-	}
-	set_collision_layer(layer);
-}
-
-bool Area::get_collision_layer_bit(int p_bit) const {
-	return get_collision_layer() & (1 << p_bit);
-}
 
 void Area::set_audio_bus_override(bool p_override) {
 	audio_bus_override = p_override;
@@ -585,18 +541,6 @@ void Area::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &Area::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &Area::get_priority);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &Area::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &Area::get_collision_mask);
-
-	ClassDB::bind_method(D_METHOD("set_collision_layer", "collision_layer"), &Area::set_collision_layer);
-	ClassDB::bind_method(D_METHOD("get_collision_layer"), &Area::get_collision_layer);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &Area::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &Area::get_collision_mask_bit);
-
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &Area::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &Area::get_collision_layer_bit);
-
 	ClassDB::bind_method(D_METHOD("set_monitorable", "enable"), &Area::set_monitorable);
 	ClassDB::bind_method(D_METHOD("is_monitorable"), &Area::is_monitorable);
 
@@ -653,10 +597,6 @@ void Area::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
-	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
-
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus", "get_audio_bus");
@@ -687,8 +627,6 @@ Area::Area() :
 	priority = 0;
 	monitoring = false;
 	monitorable = false;
-	collision_mask = 1;
-	collision_layer = 1;
 	set_monitoring(true);
 	set_monitorable(true);
 

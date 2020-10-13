@@ -56,52 +56,6 @@ float PhysicsBody::get_inverse_mass() const {
 	return 0;
 }
 
-void PhysicsBody::set_collision_layer(uint32_t p_layer) {
-	collision_layer = p_layer;
-	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), p_layer);
-}
-
-uint32_t PhysicsBody::get_collision_layer() const {
-	return collision_layer;
-}
-
-void PhysicsBody::set_collision_mask(uint32_t p_mask) {
-	collision_mask = p_mask;
-	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), p_mask);
-}
-
-uint32_t PhysicsBody::get_collision_mask() const {
-	return collision_mask;
-}
-
-void PhysicsBody::set_collision_mask_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_mask();
-	if (p_value) {
-		mask |= 1 << p_bit;
-	} else {
-		mask &= ~(1 << p_bit);
-	}
-	set_collision_mask(mask);
-}
-
-bool PhysicsBody::get_collision_mask_bit(int p_bit) const {
-	return get_collision_mask() & (1 << p_bit);
-}
-
-void PhysicsBody::set_collision_layer_bit(int p_bit, bool p_value) {
-	uint32_t mask = get_collision_layer();
-	if (p_value) {
-		mask |= 1 << p_bit;
-	} else {
-		mask &= ~(1 << p_bit);
-	}
-	set_collision_layer(mask);
-}
-
-bool PhysicsBody::get_collision_layer_bit(int p_bit) const {
-	return get_collision_layer() & (1 << p_bit);
-}
-
 Array PhysicsBody::get_collision_exceptions() {
 	List<RID> exceptions;
 	PhysicsServer::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
@@ -140,30 +94,12 @@ uint32_t PhysicsBody::_get_layers() const {
 }
 
 void PhysicsBody::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody::set_collision_layer);
-	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody::get_collision_layer);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &PhysicsBody::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &PhysicsBody::get_collision_mask);
-
-	ClassDB::bind_method(D_METHOD("set_collision_mask_bit", "bit", "value"), &PhysicsBody::set_collision_mask_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &PhysicsBody::get_collision_mask_bit);
-
-	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody::set_collision_layer_bit);
-	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody::get_collision_layer_bit);
-
 	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody::_set_layers);
 	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody::_get_layers);
-
-	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 }
 
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 		CollisionObject(PhysicsServer::get_singleton()->body_create(p_mode), false) {
-	collision_layer = 1;
-	collision_mask = 1;
 }
 
 #ifndef DISABLE_DEPRECATED
