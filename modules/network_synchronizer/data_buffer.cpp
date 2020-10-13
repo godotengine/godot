@@ -105,6 +105,10 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector3_size", "compression_level"), &DataBuffer::get_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_precise_vector3_size", "compression_level"), &DataBuffer::get_precise_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &DataBuffer::get_normalized_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
+
+	ClassDB::bind_method(D_METHOD("begin_read"), &DataBuffer::begin_read);
+	ClassDB::bind_method(D_METHOD("begin_write", "meta_size"), &DataBuffer::begin_write);
+	ClassDB::bind_method(D_METHOD("dry"), &DataBuffer::dry);
 }
 
 DataBuffer::DataBuffer() :
@@ -208,11 +212,11 @@ int64_t DataBuffer::add_int(int64_t p_input, CompressionLevel p_compression_leve
 	int64_t value = p_input;
 
 	if (bits == 8) {
-		value = MAX(MIN(value, INT8_MAX), INT8_MIN) & UINT8_MAX;
+		value = value & UINT8_MAX;
 	} else if (bits == 16) {
-		value = MAX(MIN(value, INT16_MAX), INT16_MIN) & UINT16_MAX;
+		value = value & UINT16_MAX;
 	} else if (bits == 32) {
-		value = MAX(MIN(value, INT32_MAX), INT32_MIN) & UINT32_MAX;
+		value = value & UINT32_MAX;
 	} else {
 		// Nothing to do here
 	}
@@ -262,8 +266,10 @@ real_t DataBuffer::add_real(real_t p_input, CompressionLevel p_compression_level
 	const real_t integral = Math::floor(p_input);
 	const real_t fractional = p_input - integral;
 
-	return real_t(add_int(integral, p_compression_level)) +
-		   add_unit_real(fractional, COMPRESSION_LEVEL_1);
+	const real_t added_integral = add_int(integral, p_compression_level);
+	const real_t added_fractional = add_unit_real(fractional, COMPRESSION_LEVEL_1);
+
+	return added_integral + added_fractional;
 }
 
 real_t DataBuffer::read_real(CompressionLevel p_compression_level) {
