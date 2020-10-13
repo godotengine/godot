@@ -45,7 +45,6 @@ class Area2DSW : public CollisionObject2DSW {
 	real_t gravity;
 	Vector2 gravity_vector;
 	bool gravity_is_point;
-	real_t gravity_distance_scale;
 	real_t point_attenuation;
 	real_t linear_damp;
 	real_t angular_damp;
@@ -131,9 +130,6 @@ public:
 
 	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point = p_enable; }
 	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
-
-	_FORCE_INLINE_ void set_gravity_distance_scale(real_t scale) { gravity_distance_scale = scale; }
-	_FORCE_INLINE_ real_t get_gravity_distance_scale() const { return gravity_distance_scale; }
 
 	_FORCE_INLINE_ void set_point_attenuation(real_t p_point_attenuation) { point_attenuation = p_point_attenuation; }
 	_FORCE_INLINE_ real_t get_point_attenuation() const { return point_attenuation; }

@@ -1505,9 +1505,6 @@
 		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="2" enum="AreaParameter">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_DISTANCE_SCALE" value="3" enum="AreaParameter">
-			Constant to set/get the falloff factor for point gravity of an area. The greater this value is, the faster the strength of gravity decreases with the square of distance.
-		</constant>
 		<constant name="AREA_PARAM_GRAVITY_POINT_ATTENUATION" value="4" enum="AreaParameter">
 			This constant was used to set/get the falloff factor for point gravity. It has been superseded by [constant AREA_PARAM_GRAVITY_DISTANCE_SCALE].
 		</constant>

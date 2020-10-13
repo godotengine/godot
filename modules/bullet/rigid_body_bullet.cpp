@@ -929,9 +929,9 @@ void RigidBodyBullet::reload_space_override_modificator() {
 			}
 
 			/// Here is calculated the final gravity
-			if (currentArea->get_spOv_gravityPointDistanceScale() > 0) {
+			if (distanceMag > 0) {
 				// Scaled gravity by distance
-				support_gravity *= currentArea->get_spOv_gravityMag() / Math::pow(distanceMag * currentArea->get_spOv_gravityPointDistanceScale() + 1, 2);
+				support_gravity *= currentArea->get_spOv_gravityMag() / (distanceMag * distanceMag);
 			} else {
 				// Unscaled gravity
 				support_gravity *= currentArea->get_spOv_gravityMag();

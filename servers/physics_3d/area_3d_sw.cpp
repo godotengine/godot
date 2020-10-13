@@ -140,9 +140,6 @@ void Area3DSW::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			gravity_is_point = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			gravity_distance_scale = p_value;
-			break;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			point_attenuation = p_value;
 			break;
@@ -166,8 +163,6 @@ Variant Area3DSW::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return gravity_vector;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return gravity_is_point;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			return gravity_distance_scale;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return point_attenuation;
 		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
@@ -279,7 +274,6 @@ Area3DSW::Area3DSW() :
 	gravity = 9.80665;
 	gravity_vector = Vector3(0, -1, 0);
 	gravity_is_point = false;
-	gravity_distance_scale = 0;
 	point_attenuation = 1;
 	angular_damp = 0.1;
 	linear_damp = 0.1;

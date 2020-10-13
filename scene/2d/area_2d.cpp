@@ -52,15 +52,6 @@ bool Area2D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
 
-void Area2D::set_gravity_distance_scale(real_t p_scale) {
-	gravity_distance_scale = p_scale;
-	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE, p_scale);
-}
-
-real_t Area2D::get_gravity_distance_scale() const {
-	return gravity_distance_scale;
-}
-
 void Area2D::set_gravity_vector(const Vector2 &p_vec) {
 	gravity_vec = p_vec;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, p_vec);
@@ -551,9 +542,6 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area2D::set_gravity_is_point);
 	ClassDB::bind_method(D_METHOD("is_gravity_a_point"), &Area2D::is_gravity_a_point);
 
-	ClassDB::bind_method(D_METHOD("set_gravity_distance_scale", "distance_scale"), &Area2D::set_gravity_distance_scale);
-	ClassDB::bind_method(D_METHOD("get_gravity_distance_scale"), &Area2D::get_gravity_distance_scale);
-
 	ClassDB::bind_method(D_METHOD("set_gravity_vector", "vector"), &Area2D::set_gravity_vector);
 	ClassDB::bind_method(D_METHOD("get_gravity_vector"), &Area2D::get_gravity_vector);
 
@@ -614,7 +602,6 @@ void Area2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine"), "set_space_override_mode", "get_space_override_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point"), "set_gravity_is_point", "is_gravity_a_point");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_distance_scale", PROPERTY_HINT_EXP_RANGE, "0,1024,0.001,or_greater"), "set_gravity_distance_scale", "get_gravity_distance_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_vec"), "set_gravity_vector", "get_gravity_vector");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, "-1024,1024,0.001"), "set_gravity", "get_gravity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
@@ -643,7 +630,6 @@ Area2D::Area2D() :
 	set_gravity(98);
 	set_gravity_vector(Vector2(0, 1));
 	gravity_is_point = false;
-	gravity_distance_scale = 0;
 	linear_damp = 0.1;
 	angular_damp = 1;
 	locked = false;

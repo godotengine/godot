@@ -88,7 +88,6 @@ private:
 
 	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	bool spOv_gravityPoint = false;
-	real_t spOv_gravityPointDistanceScale = 0;
 	real_t spOv_gravityPointAttenuation = 1;
 	Vector3 spOv_gravityVec = Vector3(0, -1, 0);
 	real_t spOv_gravityMag = 10;
@@ -115,9 +114,6 @@ public:
 
 	_FORCE_INLINE_ void set_spOv_gravityPoint(bool p_isGP) { spOv_gravityPoint = p_isGP; }
 	_FORCE_INLINE_ bool is_spOv_gravityPoint() { return spOv_gravityPoint; }
-
-	_FORCE_INLINE_ void set_spOv_gravityPointDistanceScale(real_t p_GPDS) { spOv_gravityPointDistanceScale = p_GPDS; }
-	_FORCE_INLINE_ real_t get_spOv_gravityPointDistanceScale() { return spOv_gravityPointDistanceScale; }
 
 	_FORCE_INLINE_ void set_spOv_gravityPointAttenuation(real_t p_GPA) { spOv_gravityPointAttenuation = p_GPA; }
 	_FORCE_INLINE_ real_t get_spOv_gravityPointAttenuation() { return spOv_gravityPointAttenuation; }

@@ -231,9 +231,6 @@ void AreaBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Variant
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			set_spOv_gravityPoint(p_value);
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			set_spOv_gravityPointDistanceScale(p_value);
-			break;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			set_spOv_gravityPointAttenuation(p_value);
 			break;
@@ -256,8 +253,6 @@ Variant AreaBullet::get_param(PhysicsServer3D::AreaParameter p_param) const {
 			return spOv_priority;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return spOv_gravityPoint;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-			return spOv_gravityPointDistanceScale;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return spOv_gravityPointAttenuation;
 		default:
