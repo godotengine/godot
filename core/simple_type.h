@@ -48,4 +48,9 @@ struct GetSimpleTypeT<T const> {
 	typedef T type_t;
 };
 
+template <class T>
+struct GetSimpleTypeT<T const &> {
+	typedef T type_t;
+};
+
 #endif // SIMPLE_TYPE_H

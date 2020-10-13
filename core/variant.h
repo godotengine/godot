@@ -414,6 +414,34 @@ public:
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
+	class InternalMethod {
+	public:
+		enum Flags {
+			FLAG_IS_CONST = 1,
+			FLAG_RETURNS_VARIANT = 2,
+			FLAG_NO_PTRCALL = 4,
+			FLAG_VARARGS = 8
+		};
+
+		virtual int get_argument_count() const = 0;
+		virtual Type get_argument_type(int p_arg) const = 0;
+		virtual Type get_return_type() const = 0;
+		virtual uint32_t get_flags() const = 0;
+
+#ifdef DEBUG_ENABLED
+		virtual String get_argument_name(int p_arg) const = 0;
+#endif
+		virtual Vector<Variant> get_default_arguments() const = 0;
+		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) = 0;
+		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) = 0;
+#ifdef PTRCALL_ENABLED
+		virtual void ptrcall(void *p_base, const void **p_args, void *r_ret) = 0;
+#endif
+		virtual ~InternalMethod() {}
+	};
+
+	static InternalMethod *get_internal_method(Type p_type, const StringName &p_method_name);
+
 	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
