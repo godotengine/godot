@@ -846,6 +846,7 @@ private:
 	StringName completion_function;
 	StringName completion_struct;
 	int completion_argument;
+	const Map<StringName, FunctionInfo> *stages = nullptr;
 
 	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 	static const BuiltinFuncDef builtin_func_defs[];
