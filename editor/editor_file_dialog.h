@@ -110,7 +110,6 @@ private:
 	LineEdit *file;
 	OptionButton *filter;
 	AcceptDialog *mkdirerr;
-	AcceptDialog *exterr;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 	DependencyRemoveDialog *remove_dialog;
