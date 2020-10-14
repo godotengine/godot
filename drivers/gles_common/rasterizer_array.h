@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_array_gles2.h                                             */
+/*  rasterizer_array.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -29,36 +29,6 @@
 /*************************************************************************/
 
 #pragma once
-
-/*************************************************************************/
-/*  rasterizer_array_gles2.h                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
 
 /**
  * Fast single-threaded growable array for POD types.
@@ -141,14 +111,14 @@ private:
 };
 
 template <class T>
-class RasterizerArrayGLES2 {
+class RasterizerArray {
 public:
-	RasterizerArrayGLES2() {
+	RasterizerArray() {
 		_list = 0;
 		_size = 0;
 		_max_size = 0;
 	}
-	~RasterizerArrayGLES2() { free(); }
+	~RasterizerArray() { free(); }
 
 	T &operator[](unsigned int ui) { return _list[ui]; }
 	const T &operator[](unsigned int ui) const { return _list[ui]; }
@@ -208,7 +178,7 @@ public:
 	int max_size() const { return _max_size; }
 	const T *get_data() const { return _list; }
 
-	bool copy_from(const RasterizerArrayGLES2<T> &o) {
+	bool copy_from(const RasterizerArray<T> &o) {
 		// no resizing done here, it should be done manually
 		if (o.size() > _max_size)
 			return false;
@@ -247,9 +217,9 @@ private:
 };
 
 template <class T>
-class RasterizerArray_non_pod_GLES2 {
+class RasterizerArray_non_pod {
 public:
-	RasterizerArray_non_pod_GLES2() {
+	RasterizerArray_non_pod() {
 		_size = 0;
 	}
 
@@ -286,4 +256,73 @@ private:
 
 	Vector<T> _list;
 	int _size;
+};
+
+// very simple non-growable array, that keeps track of the size of a 'unit'
+// which can be cast to whatever vertex format FVF required, and is initially
+// created with enough memory to hold the biggest FVF.
+// This allows multiple FVFs to use the same array.
+class RasterizerUnitArray {
+public:
+	RasterizerUnitArray() {
+		_list = nullptr;
+		free();
+	}
+	~RasterizerUnitArray() { free(); }
+
+	uint8_t *get_unit(unsigned int ui) { return &_list[ui * _unit_size_bytes]; }
+	const uint8_t *get_unit(unsigned int ui) const { return &_list[ui * _unit_size_bytes]; }
+
+	int size() const { return _size; }
+	int max_size() const { return _max_size; }
+
+	void free() {
+		if (_list) {
+			memdelete_arr(_list);
+			_list = 0;
+		}
+		_size = 0;
+		_max_size = 0;
+		_max_size_bytes = 0;
+		_unit_size_bytes = 0;
+	}
+
+	void create(int p_max_size_units, int p_max_unit_size_bytes) {
+		free();
+
+		_max_unit_size_bytes = p_max_unit_size_bytes;
+		_max_size = p_max_size_units;
+		_max_size_bytes = p_max_size_units * p_max_unit_size_bytes;
+
+		if (_max_size_bytes) {
+			_list = memnew_arr(uint8_t, _max_size_bytes);
+		}
+	}
+
+	void prepare(int p_unit_size_bytes) {
+		_unit_size_bytes = p_unit_size_bytes;
+		_size = 0;
+	}
+
+	// several items at a time
+	uint8_t *request(int p_num_items = 1) {
+		int old_size = _size;
+		_size += p_num_items;
+
+		if (_size <= _max_size) {
+			return get_unit(old_size);
+		}
+
+		// revert
+		_size = old_size;
+		return nullptr;
+	}
+
+private:
+	uint8_t *_list;
+	int _size; // in units
+	int _max_size; // in units
+	int _max_size_bytes;
+	int _unit_size_bytes;
+	int _max_unit_size_bytes;
 };

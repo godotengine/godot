@@ -53,6 +53,8 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
+#include <stdlib.h>
+
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
 #define MIN_ZOOM 1. / 128

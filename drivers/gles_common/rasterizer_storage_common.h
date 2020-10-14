@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_gles3.h                                                   */
+/*  rasterizer_storage_common.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZERGLES3_H
-#define RASTERIZERGLES3_H
+#pragma once
 
-#include "rasterizer_canvas_gles3.h"
-#include "rasterizer_scene_gles3.h"
-#include "rasterizer_storage_gles3.h"
-#include "servers/visual/rasterizer.h"
-
-class RasterizerGLES3 : public Rasterizer {
-
-	static Rasterizer *_create_current();
-
-	RasterizerStorageGLES3 *storage;
-	RasterizerCanvasGLES3 *canvas;
-	RasterizerSceneGLES3 *scene;
-
-	double time_total;
-	float time_scale;
-
+class RasterizerStorageCommon {
 public:
-	virtual RasterizerStorage *get_storage();
-	virtual RasterizerCanvas *get_canvas();
-	virtual RasterizerScene *get_scene();
+	enum FVF {
+		FVF_UNBATCHED,
+		FVF_REGULAR,
+		FVF_COLOR,
+		FVF_LIGHT_ANGLE,
+		FVF_MODULATED,
+		FVF_LARGE,
+	};
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
-	virtual void set_shader_time_scale(float p_scale);
+	// these flags are specifically for batching
+	// some of the logic is thus in rasterizer_storage.cpp
+	// we could alternatively set bitflags for each 'uses' and test on the fly
+	enum BatchFlags {
+		PREVENT_COLOR_BAKING = 1 << 0,
+		PREVENT_VERTEX_BAKING = 1 << 1,
 
-	virtual void initialize();
-	virtual void begin_frame(double frame_step);
-	virtual void set_current_render_target(RID p_render_target);
-	virtual void restore_render_target(bool p_3d_was_drawn);
-	virtual void clear_render_target(const Color &p_color);
-	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0);
-	virtual void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
-	virtual void end_frame(bool p_swap_buffers);
-	virtual void finalize();
+		USE_MODULATE_FVF = 1 << 2,
+		USE_LARGE_FVF = 1 << 3,
+	};
 
-	static Error is_viable();
-	static void make_current();
-	static void register_config();
+	enum BatchType : uint16_t {
+		BT_DEFAULT = 0,
+		BT_RECT = 1,
+		BT_LINE = 2,
+		BT_LINE_AA = 3,
+		BT_POLY = 4,
+		BT_DUMMY = 5, // dummy batch is just used to keep the batch creation loop simple
+	};
 
-	virtual bool is_low_end() const { return false; }
-
-	virtual const char *gl_check_for_error(bool p_print_error = true);
-
-	RasterizerGLES3();
-	~RasterizerGLES3();
+	enum BatchTypeFlags {
+		BTF_DEFAULT = 1 << BT_DEFAULT,
+		BTF_RECT = 1 << BT_RECT,
+		BTF_LINE = 1 << BT_LINE,
+		BTF_LINE_AA = 1 << BT_LINE_AA,
+		BTF_POLY = 1 << BT_POLY,
+	};
 };
-
-#endif // RASTERIZERGLES3_H

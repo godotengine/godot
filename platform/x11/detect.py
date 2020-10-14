@@ -116,6 +116,7 @@ def configure(env):
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
+        env.Prepend(CCFLAGS=["-ggdb"])
         env.Prepend(CCFLAGS=["-g3"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(LINKFLAGS=["-rdynamic"])
