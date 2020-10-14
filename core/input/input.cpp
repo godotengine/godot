@@ -874,7 +874,7 @@ void Input::joy_button(int p_device, int p_button, bool p_pressed) {
 	}
 
 	if (map.type == TYPE_AXIS) {
-		_axis_event(p_device, map.index, p_pressed ? 1.0 : 0.0);
+		_axis_event(p_device, map.index, p_pressed ? map.value : 0.0);
 	}
 	// no event?
 }
@@ -920,55 +920,42 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	}
 
-	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, val);
 
 	if (map.type == TYPE_BUTTON) {
-		if (map.index == JOY_BUTTON_DPAD_UP || map.index == JOY_BUTTON_DPAD_DOWN) {
-			bool pressed = p_value.value != 0.0f;
-			int button = p_value.value < 0 ? JOY_BUTTON_DPAD_UP : JOY_BUTTON_DPAD_DOWN;
+		bool pressed = map.value > 0.5;
+		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
+			// Button already pressed or released; so ignore.
+			return;
+		}
+		_button_event(p_device, map.index, pressed);
 
-			if (!pressed) {
-				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_UP, p_device))) {
-					_button_event(p_device, JOY_BUTTON_DPAD_UP, false);
-				}
+		// Ensure opposite D-Pad button is also released.
+		switch (map.index) {
+			case JOY_BUTTON_DPAD_UP:
 				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_DOWN, p_device))) {
 					_button_event(p_device, JOY_BUTTON_DPAD_DOWN, false);
 				}
-			}
-			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return;
-			}
-			_button_event(p_device, button, true);
-			return;
-		}
-
-		if (map.index == JOY_BUTTON_DPAD_LEFT || map.index == JOY_BUTTON_DPAD_RIGHT) {
-			bool pressed = p_value.value != 0.0f;
-			int button = p_value.value < 0 ? JOY_BUTTON_DPAD_LEFT : JOY_BUTTON_DPAD_RIGHT;
-
-			if (!pressed) {
-				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_LEFT, p_device))) {
-					_button_event(p_device, JOY_BUTTON_DPAD_LEFT, false);
+				break;
+			case JOY_BUTTON_DPAD_DOWN:
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_UP, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_UP, false);
 				}
+				break;
+			case JOY_BUTTON_DPAD_LEFT:
 				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_RIGHT, p_device))) {
 					_button_event(p_device, JOY_BUTTON_DPAD_RIGHT, false);
 				}
-			}
-			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return;
-			}
-			_button_event(p_device, button, true);
-			return;
+				break;
+			case JOY_BUTTON_DPAD_RIGHT:
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_LEFT, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_LEFT, false);
+				}
+				break;
+			default:
+				// Nothing to do.
+				break;
 		}
-
-		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
-		bool pressed = p_value.value > deadzone;
-		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
-			// button already pressed or released, this is an axis bounce value
-			return;
-		}
-
-		_button_event(p_device, map.index, pressed);
 		return;
 	}
 
@@ -1007,18 +994,15 @@ void Input::joy_hat(int p_device, int p_val) {
 
 	int cur_val = joy_names[p_device].hat_current;
 
-	if ((p_val & HAT_MASK_UP) != (cur_val & HAT_MASK_UP)) {
-		_button_event(p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
-	}
-
-	if ((p_val & HAT_MASK_RIGHT) != (cur_val & HAT_MASK_RIGHT)) {
-		_button_event(p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
-	}
-	if ((p_val & HAT_MASK_DOWN) != (cur_val & HAT_MASK_DOWN)) {
-		_button_event(p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
-	}
-	if ((p_val & HAT_MASK_LEFT) != (cur_val & HAT_MASK_LEFT)) {
-		_button_event(p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
+	for (int hat_direction = 0, hat_mask = 1; hat_direction < HAT_MAX; hat_direction++, hat_mask <<= 1) {
+		if ((p_val & hat_mask) != (cur_val & hat_mask)) {
+			if (map[hat_direction].type == TYPE_BUTTON) {
+				_button_event(p_device, map[hat_direction].index, p_val & hat_mask);
+			}
+			if (map[hat_direction].type == TYPE_AXIS) {
+				_axis_event(p_device, map[hat_direction].index, (p_val & hat_mask) ? map[hat_direction].value : 0.0);
+			}
+		}
 	}
 
 	joy_names[p_device].hat_current = p_val;
@@ -1058,6 +1042,19 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 					return event;
 				case TYPE_AXIS:
 					event.index = binding.output.axis.axis;
+					switch (binding.output.axis.range) {
+						case POSITIVE_HALF_AXIS:
+							event.value = 1;
+							break;
+						case NEGATIVE_HALF_AXIS:
+							event.value = -1;
+							break;
+						case FULL_AXIS:
+							// It doesn't make sense for a button to map to a full axis,
+							// but keeping as a default for a trigger with a positive half-axis.
+							event.value = 1;
+							break;
+					}
 					return event;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");
@@ -1067,14 +1064,14 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, float p_value) {
 	JoyEvent event;
 	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
-			float value = p_value.value;
+			float value = p_value;
 			if (binding.input.axis.invert) {
 				value = -value;
 			}
@@ -1082,26 +1079,40 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, i
 					(binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
 					(binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {
 				event.type = binding.outputType;
+				float shifted_positive_value = 0;
+				switch (binding.input.axis.range) {
+					case POSITIVE_HALF_AXIS:
+						shifted_positive_value = value;
+						break;
+					case NEGATIVE_HALF_AXIS:
+						shifted_positive_value = value + 1;
+						break;
+					case FULL_AXIS:
+						shifted_positive_value = (value + 1) / 2;
+						break;
+				}
 				switch (binding.outputType) {
 					case TYPE_BUTTON:
 						event.index = binding.output.button;
+						switch (binding.input.axis.range) {
+							case POSITIVE_HALF_AXIS:
+								event.value = shifted_positive_value;
+								break;
+							case NEGATIVE_HALF_AXIS:
+								event.value = 1 - shifted_positive_value;
+								break;
+							case FULL_AXIS:
+								// It doesn't make sense for a full axis to map to a button,
+								// but keeping as a default for a trigger with a positive half-axis.
+								event.value = (shifted_positive_value * 2) - 1;
+								;
+								break;
+						}
 						return event;
 					case TYPE_AXIS:
 						event.index = binding.output.axis.axis;
 						event.value = value;
 						if (binding.output.axis.range != binding.input.axis.range) {
-							float shifted_positive_value = 0;
-							switch (binding.input.axis.range) {
-								case POSITIVE_HALF_AXIS:
-									shifted_positive_value = value;
-									break;
-								case NEGATIVE_HALF_AXIS:
-									shifted_positive_value = value + 1;
-									break;
-								case FULL_AXIS:
-									shifted_positive_value = (value + 1) / 2;
-									break;
-							}
 							switch (binding.output.axis.range) {
 								case POSITIVE_HALF_AXIS:
 									event.value = shifted_positive_value;
@@ -1128,32 +1139,45 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, J
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
-			int index;
+			int hat_direction;
 			switch (binding.input.hat.hat_mask) {
 				case HAT_MASK_UP:
-					index = 0;
+					hat_direction = HAT_UP;
 					break;
 				case HAT_MASK_RIGHT:
-					index = 1;
+					hat_direction = HAT_RIGHT;
 					break;
 				case HAT_MASK_DOWN:
-					index = 2;
+					hat_direction = HAT_DOWN;
 					break;
 				case HAT_MASK_LEFT:
-					index = 3;
+					hat_direction = HAT_LEFT;
 					break;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");
 					continue;
 			}
 
-			r_events[index].type = binding.outputType;
+			r_events[hat_direction].type = binding.outputType;
 			switch (binding.outputType) {
 				case TYPE_BUTTON:
-					r_events[index].index = binding.output.button;
+					r_events[hat_direction].index = binding.output.button;
 					break;
 				case TYPE_AXIS:
-					r_events[index].index = binding.output.axis.axis;
+					r_events[hat_direction].index = binding.output.axis.axis;
+					switch (binding.output.axis.range) {
+						case POSITIVE_HALF_AXIS:
+							r_events[hat_direction].value = 1;
+							break;
+						case NEGATIVE_HALF_AXIS:
+							r_events[hat_direction].value = -1;
+							break;
+						case FULL_AXIS:
+							// It doesn't make sense for a hat direction to map to a full axis,
+							// but keeping as a default for a trigger with a positive half-axis.
+							r_events[hat_direction].value = 1;
+							break;
+					}
 					break;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");
@@ -1213,12 +1237,12 @@ void Input::parse_mapping(String p_mapping) {
 		JoyAxisRange output_range = FULL_AXIS;
 		if (output[0] == '+' || output[0] == '-') {
 			ERR_CONTINUE_MSG(output.length() < 2, String(entry[idx] + "\nInvalid output: " + entry[idx]));
-			output = output.right(1);
 			if (output[0] == '+') {
 				output_range = POSITIVE_HALF_AXIS;
 			} else if (output[0] == '-') {
 				output_range = NEGATIVE_HALF_AXIS;
 			}
+			output = output.right(1);
 		}
 
 		JoyAxisRange input_range = FULL_AXIS;
@@ -1232,6 +1256,7 @@ void Input::parse_mapping(String p_mapping) {
 		bool invert_axis = false;
 		if (input[input.length() - 1] == '~') {
 			invert_axis = true;
+			input = input.left(input.length() - 1);
 		}
 
 		JoyButtonList output_button = _get_output_button(output);
