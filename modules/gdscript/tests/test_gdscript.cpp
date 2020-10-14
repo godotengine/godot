@@ -30,10 +30,13 @@
 
 #include "test_gdscript.h"
 
+#include "core/io/file_access_pack.h"
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "core/string_builder.h"
+#include "scene/resources/packed_scene.h"
 
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/gdscript/gdscript_compiler.h"
@@ -179,6 +182,60 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 	}
 }
 
+void init_autoloads() {
+	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+
+	// First pass, add the constants so they exist before any script is loaded.
+	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
+		const ProjectSettings::AutoloadInfo &info = E->get();
+
+		if (info.is_singleton) {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
+			}
+		}
+	}
+
+	// Second pass, load into global constants.
+	for (Map<StringName, ProjectSettings::AutoloadInfo>::Element *E = autoloads.front(); E; E = E->next()) {
+		const ProjectSettings::AutoloadInfo &info = E->get();
+
+		if (!info.is_singleton) {
+			// Skip non-singletons since we don't have a scene tree here anyway.
+			continue;
+		}
+
+		RES res = ResourceLoader::load(info.path);
+		ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + info.path);
+		Node *n = nullptr;
+		if (res->is_class("PackedScene")) {
+			Ref<PackedScene> ps = res;
+			n = ps->instance();
+		} else if (res->is_class("Script")) {
+			Ref<Script> script_res = res;
+			StringName ibt = script_res->get_instance_base_type();
+			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+			ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + info.path);
+
+			Object *obj = ClassDB::instance(ibt);
+
+			ERR_CONTINUE_MSG(obj == nullptr,
+					"Cannot instance script for autoload, expected 'Node' inheritance, got: " +
+							String(ibt));
+
+			n = Object::cast_to<Node>(obj);
+			n->set_script(script_res);
+		}
+
+		ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + info.path);
+		n->set_name(info.name);
+
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptServer::get_language(i)->add_global_constant(info.name, n);
+		}
+	}
+}
+
 void test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
@@ -194,6 +251,21 @@ void test(TestType p_type) {
 
 	FileAccessRef fa = FileAccess::open(test, FileAccess::READ);
 	ERR_FAIL_COND_MSG(!fa, "Could not open file: " + test);
+
+	// Init PackedData since it's used by ProjectSettings.
+	PackedData *packed_data = memnew(PackedData);
+
+	// Setup project settings since it's needed by the languages to get the global scripts.
+	// This also sets up the base resource path.
+	Error err = ProjectSettings::get_singleton()->setup(fa->get_path_absolute().get_base_dir(), String(), true);
+	if (err) {
+		print_line("Could not load project settings.");
+		// Keep going since some scripts still work without this.
+	}
+
+	// Initialize the language for the test routine.
+	ScriptServer::init_languages();
+	init_autoloads();
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -226,6 +298,10 @@ void test(TestType p_type) {
 		case TEST_BYTECODE:
 			print_line("Not implemented.");
 	}
+
+	// Destroy stuff we set up earlier.
+	ScriptServer::finish_languages();
+	memdelete(packed_data);
 }
 
 } // namespace TestGDScript
