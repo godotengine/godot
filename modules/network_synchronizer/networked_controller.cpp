@@ -44,8 +44,6 @@
 
 // Don't go below 2 so to take into account internet latency
 #define MIN_SNAPSHOTS_SIZE 2.0
-// Minimum buffer size when the streaming is paused.
-#define MIN_SNAPSHOTS_SIZE_STREAM_PAUSED 6.0
 
 #define MAX_ADDITIONAL_TICK_SPEED 2.0
 
@@ -61,9 +59,6 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tick_speedup_notification_delay", "tick_speedup_notification_delay"), &NetworkedController::set_tick_speedup_notification_delay);
 	ClassDB::bind_method(D_METHOD("get_tick_speedup_notification_delay"), &NetworkedController::get_tick_speedup_notification_delay);
-
-	ClassDB::bind_method(D_METHOD("set_stream_pause_sync_delay", "delay"), &NetworkedController::set_stream_pause_sync_delay);
-	ClassDB::bind_method(D_METHOD("get_stream_pause_sync_delay"), &NetworkedController::get_stream_pause_sync_delay);
 
 	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &NetworkedController::set_network_traced_frames);
 	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &NetworkedController::get_network_traced_frames);
@@ -96,7 +91,6 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
-	ClassDB::bind_method(D_METHOD("_rpc_server_stream_paused_sync"), &NetworkedController::_rpc_server_stream_paused_sync);
 	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &NetworkedController::_rpc_send_tick_additional_speed);
 	ClassDB::bind_method(D_METHOD("_rpc_set_client_enabled"), &NetworkedController::_rpc_set_client_enabled);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_sync_pause"), &NetworkedController::_rpc_doll_notify_sync_pause);
@@ -139,7 +133,6 @@ void NetworkedController::_bind_methods() {
 
 NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_server_stream_paused_sync", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_set_client_enabled", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_sync_pause", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -169,14 +162,6 @@ void NetworkedController::set_tick_speedup_notification_delay(real_t p_delay) {
 
 real_t NetworkedController::get_tick_speedup_notification_delay() const {
 	return tick_speedup_notification_delay;
-}
-
-void NetworkedController::set_stream_pause_sync_delay(real_t p_delay) {
-	stream_pause_sync_delay = p_delay;
-}
-
-real_t NetworkedController::get_stream_pause_sync_delay() const {
-	return stream_pause_sync_delay;
 }
 
 void NetworkedController::set_network_traced_frames(int p_size) {
@@ -379,11 +364,6 @@ bool NetworkedController::has_scene_synchronizer() const {
 void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(is_server_controller() == false);
 	static_cast<ServerController *>(controller)->receive_inputs(p_data);
-}
-
-void NetworkedController::_rpc_server_stream_paused_sync(uint32_t p_input_id) {
-	ERR_FAIL_COND(is_server_controller() == false);
-	static_cast<ServerController *>(controller)->stream_paused_sync(p_input_id);
 }
 
 void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data) {
@@ -617,17 +597,8 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 			inserted_input_count += 1;
 
 			if (unlikely(current_input_buffer_id != UINT32_MAX && current_input_buffer_id >= input_id)) {
-				if (likely(streaming_paused == false || last_stream_paused_known_input_id >= input_id || last_sent_state_input_id >= input_id)) {
-					// If the stream is not paused.
-					// If the last stream_pause the client acknowledged is newer than this input_id.
-					// If the last sent state input is newer than this input_id.
-					continue;
-				} else {
-					// While the streaming was paused, the server overshoot the
-					// client input. Bring the server back where the client is.
-					current_input_buffer_id = input_id - 1;
-					NET_DEBUG_ERR("Stream paused input recoverage executed."); // TODO we need this?
-				}
+				// We already have this input, so we don't need it anymore.
+				continue;
 			}
 
 			FrameSnapshot rfs;
@@ -695,26 +666,24 @@ bool ServerController::fetch_next_input() {
 		// Don't notify about missed packets until at least one packet has arrived.
 		is_packet_missing = false;
 	} else {
-		// Search the next packet, the cycle is used to make sure to not stop
-		// with older packets arrived too late.
-
 		const uint32_t next_input_id = current_input_buffer_id + 1;
 
 		if (unlikely(streaming_paused)) {
 			// Stream is paused.
 			if (snapshots.empty() == false &&
-					snapshots.front().id == next_input_id) {
-				// We have a new input, consider it.
+					snapshots.front().id >= next_input_id) {
+				// A new input is arrived while the streaming is paused.
 				streaming_paused = (snapshots.front().buffer_size_bit - METADATA_SIZE) == 0;
 				node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
+				current_input_buffer_id = snapshots.front().id;
+				is_new_input = true;
 				snapshots.pop_front();
 			} else {
 				// No inputs, or we are not yet arrived to the client input,
 				// so just pretend the next input is void.
 				node->set_inputs_buffer(BitArray(METADATA_SIZE), METADATA_SIZE, 0);
+				is_new_input = false;
 			}
-			is_new_input = true;
-			current_input_buffer_id = next_input_id;
 		} else if (unlikely(snapshots.empty() == true)) {
 			// The input buffer is empty; a packet is missing.
 			is_new_input = false;
@@ -1006,7 +975,6 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
-
 	additional_speed_notif_timer += p_delta;
 	if (additional_speed_notif_timer >= node->get_tick_speedup_notification_delay()) {
 		additional_speed_notif_timer = 0.0;
@@ -1021,46 +989,6 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 				"_rpc_send_tick_additional_speed",
 				packet_data);
 	}
-}
-
-void ServerController::stream_paused_sync(uint32_t p_input_id) {
-
-	// TODO also improve this mechanism as for calculates_player_tick_rate.
-
-	ERR_FAIL_COND_MSG(last_stream_paused_known_input_id >= p_input_id, "The previous received stream paused input_id (" + itos(last_stream_paused_known_input_id) + ") is greater than the current one (" + itos(p_input_id) + ") this must never happen, it's a bug.");
-	last_stream_paused_known_input_id = p_input_id;
-
-	optimal_difference_amount *= 0.9; // Reduce by 10%
-	optimal_difference_amount = CLAMP(optimal_difference_amount, MIN_SNAPSHOTS_SIZE_STREAM_PAUSED, node->get_server_input_storage_size());
-
-	// Make sure there is not too much discrepancy between client and server.
-	const real_t input_delta = real_t(int64_t(get_current_input_id()) - int64_t(p_input_id)) - optimal_difference_amount;
-	const real_t acceleration_level = CLAMP(
-			input_delta / real_t(node->get_missing_snapshots_max_tolerance()),
-			-1.0,
-			1.0);
-
-	// The client speed is determined using an acceleration so to have much
-	// more control over it, and avoid nervous changes.
-	const real_t acc = acceleration_level * node->get_tick_acceleration() * 0.2;
-	const real_t damp = client_tick_additional_speed * -0.9;
-
-	// The damping is fully applyied only if it points in the opposite `acc`
-	// direction.
-	// I want to cut down the oscilations when the target is the same for a while,
-	// but I need to move fast toward new targets when they appear.
-	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
-	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
-
-	const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
-
-	Vector<uint8_t> packet_data;
-	packet_data.push_back(new_speed);
-
-	node->rpc_unreliable_id(
-			node->get_network_master(),
-			"_rpc_send_tick_additional_speed",
-			packet_data);
 }
 
 uint32_t ServerController::find_peer(int p_peer) const {
@@ -1093,7 +1021,6 @@ void PlayerController::process(real_t p_delta) {
 
 	if (accept_new_inputs) {
 		current_input_id = input_buffers_counter;
-		input_buffers_counter += 1;
 
 		node->get_inputs_buffer_mut().begin_write(METADATA_SIZE);
 
@@ -1120,20 +1047,15 @@ void PlayerController::process(real_t p_delta) {
 	// the character motion even if we don't store the player inputs.
 	node->call("controller_process", p_delta, &node->get_inputs_buffer());
 
+	node->player_set_has_new_input(false);
 	if (accept_new_inputs) {
-		store_input_buffer(current_input_id);
 		if (streaming_paused == false) {
+			input_buffers_counter += 1;
+			store_input_buffer(current_input_id);
 			send_frame_input_buffer_to_server();
-			streaming_paused_timer = 0.0;
-		} else {
-			streaming_paused_timer += p_delta;
-			if (streaming_paused_timer >= node->get_stream_pause_sync_delay()) {
-				streaming_paused_timer -= node->get_stream_pause_sync_delay();
-				node->rpc_id(1, "_rpc_server_stream_paused_sync", current_input_id);
-			}
+			node->player_set_has_new_input(true);
 		}
 	}
-	node->player_set_has_new_input(accept_new_inputs);
 }
 
 int PlayerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {

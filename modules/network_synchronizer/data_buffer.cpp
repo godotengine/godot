@@ -215,11 +215,11 @@ int64_t DataBuffer::add_int(int64_t p_input, CompressionLevel p_compression_leve
 	// excessing bits, so that `store_bits` sees that there are not bits left
 	// and no error is raised.
 	if (bits == 8) {
-		value = CLAMP(value, -INT8_MAX, INT8_MAX) & UINT8_MAX;
+		value = CLAMP(value, INT8_MIN, INT8_MAX) & UINT8_MAX;
 	} else if (bits == 16) {
-		value = CLAMP(value, -INT16_MAX, INT16_MAX) & UINT16_MAX;
+		value = CLAMP(value, INT16_MIN, INT16_MAX) & UINT16_MAX;
 	} else if (bits == 32) {
-		value = CLAMP(value, -INT32_MAX, INT32_MAX) & UINT32_MAX;
+		value = CLAMP(value, INT32_MIN, INT32_MAX) & UINT32_MAX;
 	} else {
 		// Nothing to do here
 	}

@@ -104,9 +104,6 @@ private:
 	/// client.
 	real_t tick_speedup_notification_delay = 0.33;
 
-	/// Time in seconds between each stream paused info is sent.
-	real_t stream_pause_sync_delay = 1.0;
-
 	/// Used to set the amount of traced frames to determine the connection healt trend.
 	///
 	/// This parameter depends a lot on the physics iteration per second, and
@@ -173,9 +170,6 @@ public:
 
 	void set_tick_speedup_notification_delay(real_t p_delay);
 	real_t get_tick_speedup_notification_delay() const;
-
-	void set_stream_pause_sync_delay(real_t p_delay);
-	real_t get_stream_pause_sync_delay() const;
 
 	void set_network_traced_frames(int p_size);
 	int get_network_traced_frames() const;
@@ -244,7 +238,6 @@ public:
 
 	/* On server rpc functions. */
 	void _rpc_server_send_inputs(Vector<uint8_t> p_data);
-	void _rpc_server_stream_paused_sync(uint32_t p_input_id);
 
 	/* On client rpc functions. */
 	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
@@ -348,7 +341,6 @@ struct ServerController : public Controller {
 	/// size moderate to the needs.
 	void calculates_player_tick_rate(real_t p_delta);
 	void adjust_player_tick_rate(real_t p_delta);
-	void stream_paused_sync(uint32_t p_input_id);
 
 	uint32_t find_peer(int p_peer) const;
 };
@@ -359,7 +351,6 @@ struct PlayerController : public Controller {
 	real_t time_bank;
 	real_t tick_additional_speed;
 	bool streaming_paused = false;
-	real_t streaming_paused_timer = 0.0;
 
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
