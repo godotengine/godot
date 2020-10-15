@@ -30,7 +30,7 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/resource.h"
 #include "core/rid.h"
 

@@ -32,7 +32,6 @@
 #define RESOURCE_H
 
 #include "core/class_db.h"
-#include "core/object.h"
 #include "core/reference.h"
 #include "core/safe_refcount.h"
 #include "core/self_list.h"

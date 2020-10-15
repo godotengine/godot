@@ -31,7 +31,6 @@
 #ifdef MONO_GLUE_ENABLED
 
 #include "core/class_db.h"
-#include "core/object.h"
 #include "core/reference.h"
 #include "core/string_name.h"
 

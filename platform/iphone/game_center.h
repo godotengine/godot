@@ -33,7 +33,7 @@
 #ifndef GAME_CENTER_H
 #define GAME_CENTER_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 
 class GameCenter : public Object {
 	GDCLASS(GameCenter, Object);

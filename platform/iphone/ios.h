@@ -31,7 +31,7 @@
 #ifndef IOS_H
 #define IOS_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 
 class iOS : public Object {
 	GDCLASS(iOS, Object);

@@ -30,8 +30,6 @@
 
 #include "editor_resource_preview.h"
 
-#include "core/method_bind_ext.gen.inc"
-
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/message_queue.h"

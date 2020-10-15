@@ -221,7 +221,7 @@ public:
 
 	int update_overlays() const;
 
-	void queue_save_layout() const;
+	void queue_save_layout();
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();

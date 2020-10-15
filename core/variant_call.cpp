@@ -30,13 +30,13 @@
 
 #include "variant.h"
 
+#include "core/class_db.h"
 #include "core/color_names.inc"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/oa_hash_map.h"
-#include "core/object.h"
 #include "core/os/os.h"
 
 _FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
@@ -96,44 +96,7 @@ struct _VariantCall {
 		}
 
 		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
-			const Variant **args = p_args;
-#ifdef DEBUG_ENABLED
-			if ((size_t)p_argcount > sizeof...(P)) {
-				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_error.argument = sizeof...(P);
-				return;
-			}
-#endif
-			if ((size_t)p_argcount < sizeof...(P)) {
-				size_t missing = sizeof...(P) - (size_t)p_argcount;
-				if (missing <= (size_t)default_values.size()) {
-					args = (const Variant **)alloca(sizeof...(P) * sizeof(const Variant *));
-					// GCC fails to see that `sizeof...(P)` cannot be 0 here given the previous
-					// conditions, so it raises a warning on the potential use of `i < 0` as the
-					// execution condition.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
-					for (size_t i = 0; i < sizeof...(P); i++) {
-						if (i < (size_t)p_argcount) {
-							args[i] = p_args[i];
-						} else {
-							args[i] = &default_values[i - p_argcount + (default_values.size() - missing)];
-						}
-					}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-				} else {
-#ifdef DEBUG_ENABLED
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-					r_error.argument = sizeof...(P);
-#endif
-					return;
-				}
-			}
-			call_with_variant_args_helper(VariantGetInternalPtr<T>::get_ptr(base), method, args, r_error, BuildIndexSequence<sizeof...(P)>{});
+			call_with_variant_args_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_error, default_values);
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
@@ -187,11 +150,7 @@ struct _VariantCall {
 		}
 
 		virtual Variant::Type get_return_type() const {
-#ifdef DEBUG_METHODS_ENABLED
 			return GetTypeInfo<R>::VARIANT_TYPE;
-#else
-			return Variant::NIL;
-#endif
 		}
 		virtual uint32_t get_flags() const {
 			uint32_t f = 0;
@@ -202,41 +161,7 @@ struct _VariantCall {
 		}
 
 		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
-			const Variant **args = p_args;
-#ifdef DEBUG_ENABLED
-			if ((size_t)p_argcount > sizeof...(P)) {
-				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_error.argument = sizeof...(P);
-				return;
-			}
-#endif
-			if ((size_t)p_argcount < sizeof...(P)) {
-				size_t missing = sizeof...(P) - (size_t)p_argcount;
-				if (missing <= (size_t)default_values.size()) {
-					args = (const Variant **)alloca(sizeof...(P) * sizeof(const Variant *));
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
-					for (size_t i = 0; i < sizeof...(P); i++) {
-						if (i < (size_t)p_argcount) {
-							args[i] = p_args[i];
-						} else {
-							args[i] = &default_values[i - p_argcount + (default_values.size() - missing)];
-						}
-					}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-				} else {
-#ifdef DEBUG_ENABLED
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-					r_error.argument = sizeof...(P);
-#endif
-					return;
-				}
-			}
-			call_with_variant_args_ret_helper(VariantGetInternalPtr<T>::get_ptr(base), method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+			call_with_variant_args_ret_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_ret, r_error, default_values);
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
@@ -288,11 +213,7 @@ struct _VariantCall {
 		}
 
 		virtual Variant::Type get_return_type() const {
-#ifdef DEBUG_METHODS_ENABLED
 			return GetTypeInfo<R>::VARIANT_TYPE;
-#else
-			return Variant::NIL;
-#endif
 		}
 		virtual uint32_t get_flags() const {
 			uint32_t f = FLAG_IS_CONST;
@@ -303,44 +224,7 @@ struct _VariantCall {
 		}
 
 		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
-			const Variant **args = p_args;
-#ifdef DEBUG_ENABLED
-			if ((size_t)p_argcount > sizeof...(P)) {
-				r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				r_error.argument = sizeof...(P);
-				return;
-			}
-#endif
-			if ((size_t)p_argcount < sizeof...(P)) {
-				size_t missing = sizeof...(P) - (size_t)p_argcount;
-				if (missing <= (size_t)default_values.size()) {
-					args = (const Variant **)alloca(sizeof...(P) * sizeof(const Variant *));
-					// GCC fails to see that `sizeof...(P)` cannot be 0 here given the previous
-					// conditions, so it raises a warning on the potential use of `i < 0` as the
-					// execution condition.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
-					for (size_t i = 0; i < sizeof...(P); i++) {
-						if (i < (size_t)p_argcount) {
-							args[i] = p_args[i];
-						} else {
-							args[i] = &default_values[i - p_argcount + (default_values.size() - missing)];
-						}
-					}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-				} else {
-#ifdef DEBUG_ENABLED
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-					r_error.argument = sizeof...(P);
-#endif
-					return;
-				}
-			}
-			call_with_variant_args_retc_helper(VariantGetInternalPtr<T>::get_ptr(base), method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+			call_with_variant_args_retc_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_ret, r_error, default_values);
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
@@ -392,11 +276,7 @@ struct _VariantCall {
 		}
 
 		virtual Variant::Type get_return_type() const {
-#ifdef DEBUG_METHODS_ENABLED
 			return GetTypeInfo<R>::VARIANT_TYPE;
-#else
-			return Variant::NIL;
-#endif
 		}
 		virtual uint32_t get_flags() const {
 			uint32_t f = 0;
@@ -552,12 +432,8 @@ struct _VariantCall {
 		Variant::InternalMethod *m = memnew((InternalMethod<T, P...>)(p_method, p_default_args));
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
 		type_internal_methods[GetTypeInfo<T>::VARIANT_TYPE].insert(p_name, m);
 		type_internal_method_names[GetTypeInfo<T>::VARIANT_TYPE].push_back(p_name);
-#else
-		(void)m;
-#endif
 	}
 
 	template <class T, class R, class... P>
@@ -578,12 +454,8 @@ struct _VariantCall {
 		Variant::InternalMethod *m = memnew((InternalMethodRC<T, R, P...>)(p_method, p_default_args));
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
 		type_internal_methods[GetTypeInfo<T>::VARIANT_TYPE].insert(p_name, m);
 		type_internal_method_names[GetTypeInfo<T>::VARIANT_TYPE].push_back(p_name);
-#else
-		(void)m;
-#endif
 	}
 
 	template <class T, class R, class... P>
@@ -603,12 +475,8 @@ struct _VariantCall {
 #else
 		Variant::InternalMethod *m = memnew((InternalMethodR<T, R, P...>)(p_method, p_default_args));
 #endif
-#ifdef DEBUG_METHODS_ENABLED
 		type_internal_methods[GetTypeInfo<T>::VARIANT_TYPE].insert(p_name, m);
 		type_internal_method_names[GetTypeInfo<T>::VARIANT_TYPE].push_back(p_name);
-#else
-		(void)m;
-#endif
 	}
 
 #ifdef DEBUG_ENABLED
@@ -641,12 +509,8 @@ struct _VariantCall {
 		Variant::InternalMethod *m = memnew((InternalMethodRS<T, R, P...>)(p_method, p_default_args));
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
 		type_internal_methods[GetTypeInfo<T>::VARIANT_TYPE].insert(p_name, m);
 		type_internal_method_names[GetTypeInfo<T>::VARIANT_TYPE].push_back(p_name);
-#else
-		(void)m;
-#endif
 	}
 
 #ifdef DEBUG_ENABLED
@@ -1745,6 +1609,7 @@ void register_variant_methods() {
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
 	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
+	bind_method(Color, blend, sarray("over"), varray());
 
 	//Color is immutable, need to probably find a way to do this via constructor
 	//ADDFUNC4R(COLOR, COLOR, Color, from_hsv, FLOAT, "h", FLOAT, "s", FLOAT, "v", FLOAT, "a", varray(1.0));
@@ -1888,7 +1753,7 @@ void register_variant_methods() {
 	bind_method(Dictionary, hash, sarray(), varray());
 	bind_method(Dictionary, keys, sarray(), varray());
 	bind_method(Dictionary, values, sarray(), varray());
-	bind_method(Dictionary, duplicate, sarray("deep"), varray("true"));
+	bind_method(Dictionary, duplicate, sarray("deep"), varray(false));
 	bind_method(Dictionary, get, sarray("key", "default"), varray(Variant()));
 
 	/* Array */
@@ -1919,7 +1784,7 @@ void register_variant_methods() {
 	bind_method(Array, bsearch, sarray("value", "before"), varray(true));
 	bind_method(Array, bsearch_custom, sarray("value", "obj", "func", "before"), varray(true));
 	bind_method(Array, invert, sarray(), varray());
-	bind_method(Array, duplicate, sarray("deep"), varray(true));
+	bind_method(Array, duplicate, sarray("deep"), varray(false));
 	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(1, false));
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
@@ -1944,9 +1809,9 @@ void register_variant_methods() {
 	bind_function("get_string_from_utf16", _VariantCall::func_PackedByteArray_get_string_from_utf16, sarray(), varray());
 	bind_function("get_string_from_utf32", _VariantCall::func_PackedByteArray_get_string_from_utf32, sarray(), varray());
 	bind_function("hex_encode", _VariantCall::func_PackedByteArray_hex_encode, sarray(), varray());
-	bind_function("compress", _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray());
-	bind_function("decompress", _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray());
-	bind_function("decompress_dynamic", _VariantCall::func_PackedByteArray_decompress_dynamic, sarray("max_output_size", "compression_mode"), varray());
+	bind_function("compress", _VariantCall::func_PackedByteArray_compress, sarray("compression_mode"), varray(0));
+	bind_function("decompress", _VariantCall::func_PackedByteArray_decompress, sarray("buffer_size", "compression_mode"), varray(0));
+	bind_function("decompress_dynamic", _VariantCall::func_PackedByteArray_decompress_dynamic, sarray("max_output_size", "compression_mode"), varray(0));
 
 	/* Int32 Array */
 

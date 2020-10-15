@@ -33,7 +33,7 @@
 #ifndef IN_APP_STORE_H
 #define IN_APP_STORE_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 
 class InAppStore : public Object {
 	GDCLASS(InAppStore, Object);

@@ -30,8 +30,6 @@
 
 #include "graph_node.h"
 
-#include "core/method_bind_ext.gen.inc"
-
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	if (!p_name.operator String().begins_with("slot/")) {
 		return false;
