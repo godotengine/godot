@@ -30,7 +30,6 @@
 
 #include "physics_server_2d.h"
 
-#include "core/method_bind_ext.gen.inc"
 #include "core/print_string.h"
 #include "core/project_settings.h"
 

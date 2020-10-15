@@ -30,9 +30,9 @@
 
 #include "variant.h"
 
+#include "core/class_db.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/object.h"
 
 #define CASE_TYPE_ALL(PREFIX, OP) \
 	CASE_TYPE(PREFIX, OP, INT)    \

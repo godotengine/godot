@@ -31,9 +31,9 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
+#include "core/class_db.h"
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
-#include "core/object.h"
 #include "core/vset.h"
 #include "shape_owner_bullet.h"
 

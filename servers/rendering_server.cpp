@@ -30,7 +30,6 @@
 
 #include "rendering_server.h"
 
-#include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;

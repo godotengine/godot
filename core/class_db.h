@@ -36,7 +36,7 @@
 #include "core/print_string.h"
 
 /** To bind more then 6 parameters include this:
- *  #include "core/method_bind_ext.gen.inc"
+ *
  */
 
 // Makes callable_mp readily available in all classes connecting signals.

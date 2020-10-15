@@ -791,7 +791,7 @@ bool EditorPlugin::build() {
 	return true;
 }
 
-void EditorPlugin::queue_save_layout() const {
+void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_layout();
 }
 

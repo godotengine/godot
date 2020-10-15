@@ -31,7 +31,7 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/resource.h"
 
 class UndoRedo : public Object {

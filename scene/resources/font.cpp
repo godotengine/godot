@@ -31,7 +31,6 @@
 #include "font.h"
 
 #include "core/io/resource_loader.h"
-#include "core/method_bind_ext.gen.inc"
 #include "core/os/file_access.h"
 
 void Font::draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate, const Color &p_outline_modulate) const {

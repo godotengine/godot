@@ -812,7 +812,4 @@ public:
 	static int get_object_count();
 };
 
-//needed by macros
-#include "core/class_db.h"
-
 #endif // OBJECT_H

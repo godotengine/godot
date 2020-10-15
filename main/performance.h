@@ -31,7 +31,7 @@
 #ifndef PERFORMANCE_H
 #define PERFORMANCE_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/ordered_hash_map.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION

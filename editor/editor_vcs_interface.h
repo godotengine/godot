@@ -31,7 +31,7 @@
 #ifndef EDITOR_VCS_INTERFACE_H
 #define EDITOR_VCS_INTERFACE_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/ustring.h"
 #include "scene/gui/panel_container.h"
 

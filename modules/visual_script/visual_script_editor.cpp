@@ -30,8 +30,8 @@
 
 #include "visual_script_editor.h"
 
+#include "core/class_db.h"
 #include "core/input/input.h"
-#include "core/object.h"
 #include "core/os/keyboard.h"
 #include "core/script_language.h"
 #include "core/variant.h"

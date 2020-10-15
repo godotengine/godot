@@ -32,7 +32,6 @@
 
 #include "collision_object_2d.h"
 #include "core/io/marshalls.h"
-#include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "scene/2d/area_2d.h"
 #include "servers/navigation_server_2d.h"

@@ -31,8 +31,8 @@
 #include "array.h"
 
 #include "container_type_validate.h"
+#include "core/class_db.h"
 #include "core/hashfuncs.h"
-#include "core/object.h"
 #include "core/script_language.h"
 #include "core/variant.h"
 #include "core/vector.h"

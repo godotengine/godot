@@ -30,12 +30,11 @@
 
 #include "physics_body_2d.h"
 
+#include "core/class_db.h"
 #include "core/core_string_names.h"
 #include "core/engine.h"
 #include "core/list.h"
 #include "core/math/math_funcs.h"
-#include "core/method_bind_ext.gen.inc"
-#include "core/object.h"
 #include "core/rid.h"
 #include "scene/scene_string_names.h"
 

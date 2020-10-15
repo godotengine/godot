@@ -31,7 +31,7 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"
 

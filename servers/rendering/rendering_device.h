@@ -31,7 +31,7 @@
 #ifndef RENDERING_DEVICE_H
 #define RENDERING_DEVICE_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/typed_array.h"
 #include "servers/display_server.h"
 

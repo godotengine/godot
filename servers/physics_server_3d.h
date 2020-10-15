@@ -31,7 +31,7 @@
 #ifndef PHYSICS_SERVER_H
 #define PHYSICS_SERVER_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/resource.h"
 
 class PhysicsDirectSpaceState3D;

@@ -30,8 +30,8 @@
 
 #include "soft_body_3d.h"
 
+#include "core/class_db.h"
 #include "core/list.h"
-#include "core/object.h"
 #include "core/os/os.h"
 #include "core/rid.h"
 #include "scene/3d/collision_object_3d.h"
