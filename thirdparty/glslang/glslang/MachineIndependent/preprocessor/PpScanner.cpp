@@ -1026,12 +1026,80 @@ int TPpContext::tStringInput::scan(TPpToken* ppToken)
         case '\'':
             return pp->characterLiteral(ppToken);
         case '"':
-            // TODO: If this gets enhanced to handle escape sequences, or
-            // anything that is different than what #include needs, then
-            // #include needs to use scanHeaderName() for this.
+            // #include uses scanHeaderName() to ignore these escape sequences.
             ch = getch();
             while (ch != '"' && ch != '\n' && ch != EndOfInput) {
                 if (len < MaxTokenLength) {
+                    if (ch == '\\' && !pp->disableEscapeSequences) {
+                        int nextCh = getch();
+                        switch (nextCh) {
+                        case '\'': ch = 0x27; break;
+                        case '"':  ch = 0x22; break;
+                        case '?':  ch = 0x3f; break;
+                        case '\\': ch = 0x5c; break;
+                        case 'a':  ch = 0x07; break;
+                        case 'b':  ch = 0x08; break;
+                        case 'f':  ch = 0x0c; break;
+                        case 'n':  ch = 0x0a; break;
+                        case 'r':  ch = 0x0d; break;
+                        case 't':  ch = 0x09; break;
+                        case 'v':  ch = 0x0b; break;
+                        case 'x': 
+                            // Hex value, arbitrary number of characters. Terminated by the first
+                            // non-hex digit
+                            {
+                                int numDigits = 0;
+                                ch = 0;
+                                while (true) {
+                                    nextCh = getch();
+                                    if (nextCh >= '0' && nextCh <= '9')
+                                        nextCh -= '0';
+                                    else if (nextCh >= 'A' && nextCh <= 'F')
+                                        nextCh -= 'A' - 10;
+                                    else if (nextCh >= 'a' && nextCh <= 'f')
+                                        nextCh -= 'a' - 10;
+                                    else {
+                                        ungetch();
+                                        break;
+                                    }
+                                    numDigits++;
+                                    ch = ch * 0x10 + nextCh;
+                                }
+                                if (numDigits == 0) {
+                                    pp->parseContext.ppError(ppToken->loc, "Expected hex value in escape sequence", "string", "");
+                                }
+                                break;
+                            }
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                            // Octal value, up to three octal digits
+                            {
+                                int numDigits = 1;
+                                ch = nextCh - '0';
+                                while (numDigits < 3) {
+                                    nextCh = getch();
+                                    if (nextCh >= '0' && nextCh <= '7')
+                                        nextCh -= '0';
+                                    else {
+                                        ungetch();
+                                        break;
+                                    }
+                                    numDigits++;
+                                    ch = ch * 8 + nextCh;
+                                }
+                                break;
+                            }
+                        default:
+                            pp->parseContext.ppError(ppToken->loc, "Invalid escape sequence", "string", "");
+                            break;
+                        }
+                    }
                     ppToken->name[len] = (char)ch;
                     len++;
                     ch = getch();
@@ -1120,10 +1188,12 @@ int TPpContext::tokenize(TPpToken& ppToken)
                 continue;
             break;
         case PpAtomConstString:
+            // HLSL allows string literals.
+            // GLSL allows string literals with GL_EXT_debug_printf.
             if (ifdepth == 0 && parseContext.intermediate.getSource() != EShSourceHlsl) {
-                // HLSL allows string literals.
-                parseContext.ppError(ppToken.loc, "string literals not supported", "\"\"", "");
-                continue;
+                parseContext.requireExtensions(ppToken.loc, 1, &E_GL_EXT_debug_printf, "string literal");
+                if (!parseContext.extensionTurnedOn(E_GL_EXT_debug_printf))
+                    continue;
             }
             break;
         case '\'':

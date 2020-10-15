@@ -55,6 +55,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <set>
 
 namespace spv {
 
@@ -235,8 +236,7 @@ public:
         assert(instructions.size() > 0);
         instructions.resize(1);
         successors.clear();
-        Instruction* unreachable = new Instruction(OpUnreachable);
-        addInstruction(std::unique_ptr<Instruction>(unreachable));
+        addInstruction(std::unique_ptr<Instruction>(new Instruction(OpUnreachable)));
     }
     // Change this block into a canonical dead continue target branching to the
     // given header ID.  Delete instructions as necessary.  A canonical dead continue
@@ -352,9 +352,27 @@ public:
     const std::vector<Block*>& getBlocks() const { return blocks; }
     void addLocalVariable(std::unique_ptr<Instruction> inst);
     Id getReturnType() const { return functionInstruction.getTypeId(); }
+    void setReturnPrecision(Decoration precision)
+    {
+        if (precision == DecorationRelaxedPrecision)
+            reducedPrecisionReturn = true;
+    }
+    Decoration getReturnPrecision() const
+        { return reducedPrecisionReturn ? DecorationRelaxedPrecision : NoPrecision; }
 
     void setImplicitThis() { implicitThis = true; }
     bool hasImplicitThis() const { return implicitThis; }
+
+    void addParamPrecision(unsigned param, Decoration precision)
+    {
+        if (precision == DecorationRelaxedPrecision)
+            reducedPrecisionParams.insert(param);
+    }
+    Decoration getParamPrecision(unsigned param) const
+    {
+        return reducedPrecisionParams.find(param) != reducedPrecisionParams.end() ?
+            DecorationRelaxedPrecision : NoPrecision;
+    }
 
     void dump(std::vector<unsigned int>& out) const
     {
@@ -380,6 +398,8 @@ protected:
     std::vector<Instruction*> parameterInstructions;
     std::vector<Block*> blocks;
     bool implicitThis;  // true if this is a member function expecting to be passed a 'this' as the first argument
+    bool reducedPrecisionReturn;
+    std::set<int> reducedPrecisionParams;  // list of parameter indexes that need a relaxed precision arg
 };
 
 //
@@ -440,7 +460,8 @@ protected:
 // - the OpFunction instruction
 // - all the OpFunctionParameter instructions
 __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, Module& parent)
-    : parent(parent), functionInstruction(id, resultType, OpFunction), implicitThis(false)
+    : parent(parent), functionInstruction(id, resultType, OpFunction), implicitThis(false),
+      reducedPrecisionReturn(false)
 {
     // OpFunction
     functionInstruction.addImmediateOperand(FunctionControlMaskNone);

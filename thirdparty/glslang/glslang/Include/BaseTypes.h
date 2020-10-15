@@ -2,6 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -61,8 +62,9 @@ enum TBasicType {
     EbtSampler,
     EbtStruct,
     EbtBlock,
-    EbtAccStructNV,
+    EbtAccStruct,
     EbtReference,
+    EbtRayQuery,
 
     // HLSL types that live only temporarily.
     EbtString,
@@ -90,11 +92,11 @@ enum TStorageQualifier {
     EvqBuffer,        // read/write, shared with app
     EvqShared,        // compute shader's read/write 'shared' qualifier
 
-    EvqPayloadNV,
-    EvqPayloadInNV,
-    EvqHitAttrNV,
-    EvqCallableDataNV,
-    EvqCallableDataInNV,
+    EvqPayload,
+    EvqPayloadIn,
+    EvqHitAttr,
+    EvqCallableData,
+    EvqCallableDataIn,
 
     // parameters
     EvqIn,            // also, for 'in' in the grammar before we know if it's a pipeline input or an 'in' parameter
@@ -229,6 +231,9 @@ enum TBuiltInVariable {
     EbvFragSizeEXT,
     EbvFragInvocationCountEXT,
 
+    EbvSecondaryFragDataEXT,
+    EbvSecondaryFragColorEXT,
+
     EbvViewportMaskNV,
     EbvSecondaryPositionNV,
     EbvSecondaryViewportMaskNV,
@@ -238,20 +243,23 @@ enum TBuiltInVariable {
     EbvFragmentSizeNV,
     EbvInvocationsPerPixelNV,
     // ray tracing
-    EbvLaunchIdNV,
-    EbvLaunchSizeNV,
-    EbvInstanceCustomIndexNV,
-    EbvWorldRayOriginNV,
-    EbvWorldRayDirectionNV,
-    EbvObjectRayOriginNV,
-    EbvObjectRayDirectionNV,
-    EbvRayTminNV,
-    EbvRayTmaxNV,
-    EbvHitTNV,
-    EbvHitKindNV,
-    EbvObjectToWorldNV,
-    EbvWorldToObjectNV,
-    EbvIncomingRayFlagsNV,
+    EbvLaunchId,
+    EbvLaunchSize,
+    EbvInstanceCustomIndex,
+    EbvGeometryIndex,
+    EbvWorldRayOrigin,
+    EbvWorldRayDirection,
+    EbvObjectRayOrigin,
+    EbvObjectRayDirection,
+    EbvRayTmin,
+    EbvRayTmax,
+    EbvHitT,
+    EbvHitKind,
+    EbvObjectToWorld,
+    EbvObjectToWorld3x4,
+    EbvWorldToObject,
+    EbvWorldToObject3x4,
+    EbvIncomingRayFlags,
     // barycentrics
     EbvBaryCoordNV,
     EbvBaryCoordNoPerspNV,
@@ -328,11 +336,11 @@ __inline const char* GetStorageQualifierString(TStorageQualifier q)
     case EvqPointCoord:     return "gl_PointCoord";  break;
     case EvqFragColor:      return "fragColor";      break;
     case EvqFragDepth:      return "gl_FragDepth";   break;
-    case EvqPayloadNV:        return "rayPayloadNV";     break;
-    case EvqPayloadInNV:      return "rayPayloadInNV";   break;
-    case EvqHitAttrNV:        return "hitAttributeNV";   break;
-    case EvqCallableDataNV:   return "callableDataNV";   break;
-    case EvqCallableDataInNV: return "callableDataInNV"; break;
+    case EvqPayload:        return "rayPayloadNV";     break;
+    case EvqPayloadIn:      return "rayPayloadInNV";   break;
+    case EvqHitAttr:        return "hitAttributeNV";   break;
+    case EvqCallableData:   return "callableDataNV";   break;
+    case EvqCallableDataIn: return "callableDataInNV"; break;
     default:                return "unknown qualifier";
     }
 }
@@ -428,6 +436,9 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvFragSizeEXT:                return "FragSizeEXT";
     case EbvFragInvocationCountEXT:     return "FragInvocationCountEXT";
 
+    case EbvSecondaryFragDataEXT:       return "SecondaryFragDataEXT";
+    case EbvSecondaryFragColorEXT:      return "SecondaryFragColorEXT";
+
     case EbvViewportMaskNV:             return "ViewportMaskNV";
     case EbvSecondaryPositionNV:        return "SecondaryPositionNV";
     case EbvSecondaryViewportMaskNV:    return "SecondaryViewportMaskNV";
@@ -436,20 +447,21 @@ __inline const char* GetBuiltInVariableString(TBuiltInVariable v)
     case EbvFragFullyCoveredNV:         return "FragFullyCoveredNV";
     case EbvFragmentSizeNV:             return "FragmentSizeNV";
     case EbvInvocationsPerPixelNV:      return "InvocationsPerPixelNV";
-    case EbvLaunchIdNV:                 return "LaunchIdNV";
-    case EbvLaunchSizeNV:               return "LaunchSizeNV";
-    case EbvInstanceCustomIndexNV:      return "InstanceCustomIndexNV";
-    case EbvWorldRayOriginNV:           return "WorldRayOriginNV";
-    case EbvWorldRayDirectionNV:        return "WorldRayDirectionNV";
-    case EbvObjectRayOriginNV:          return "ObjectRayOriginNV";
-    case EbvObjectRayDirectionNV:       return "ObjectRayDirectionNV";
-    case EbvRayTminNV:                  return "ObjectRayTminNV";
-    case EbvRayTmaxNV:                  return "ObjectRayTmaxNV";
-    case EbvHitTNV:                     return "HitTNV";
-    case EbvHitKindNV:                  return "HitKindNV";
-    case EbvIncomingRayFlagsNV:         return "IncomingRayFlagsNV";
-    case EbvObjectToWorldNV:            return "ObjectToWorldNV";
-    case EbvWorldToObjectNV:            return "WorldToObjectNV";
+    case EbvLaunchId:                   return "LaunchIdNV";
+    case EbvLaunchSize:                 return "LaunchSizeNV";
+    case EbvInstanceCustomIndex:        return "InstanceCustomIndexNV";
+    case EbvGeometryIndex:              return "GeometryIndexEXT";
+    case EbvWorldRayOrigin:             return "WorldRayOriginNV";
+    case EbvWorldRayDirection:          return "WorldRayDirectionNV";
+    case EbvObjectRayOrigin:            return "ObjectRayOriginNV";
+    case EbvObjectRayDirection:         return "ObjectRayDirectionNV";
+    case EbvRayTmin:                    return "ObjectRayTminNV";
+    case EbvRayTmax:                    return "ObjectRayTmaxNV";
+    case EbvHitT:                       return "HitTNV";
+    case EbvHitKind:                    return "HitKindNV";
+    case EbvIncomingRayFlags:           return "IncomingRayFlagsNV";
+    case EbvObjectToWorld:              return "ObjectToWorldNV";
+    case EbvWorldToObject:              return "WorldToObjectNV";
 
     case EbvBaryCoordNV:                return "BaryCoordNV";
     case EbvBaryCoordNoPerspNV:         return "BaryCoordNoPerspNV";

@@ -2,7 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2013 LunarG, Inc.
 // Copyright (C) 2017 ARM Limited.
-// Copyright (C) 2018 Google, Inc.
+// Copyright (C) 2018-2020 Google, Inc.
 //
 // All rights reserved.
 //
@@ -1012,6 +1012,7 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
     case EOpMin:
     case EOpMax:
     case EOpMix:
+    case EOpMod:
     case EOpClamp:
     case EOpLessThan:
     case EOpGreaterThan:
@@ -1074,6 +1075,14 @@ TIntermTyped* TIntermediate::fold(TIntermAggregate* aggrNode)
             case EOpPow:
                 newConstArray[comp].setDConst(pow(childConstUnions[0][arg0comp].getDConst(), childConstUnions[1][arg1comp].getDConst()));
                 break;
+            case EOpMod:
+            {
+                double arg0 = childConstUnions[0][arg0comp].getDConst();
+                double arg1 = childConstUnions[1][arg1comp].getDConst();
+                double result = arg0 - arg1 * floor(arg0 / arg1);
+                newConstArray[comp].setDConst(result);
+                break;
+            }
             case EOpMin:
                 switch(children[0]->getAsTyped()->getBasicType()) {
                 case EbtFloat16:

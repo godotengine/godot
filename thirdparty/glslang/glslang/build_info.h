@@ -1,5 +1,5 @@
+// Copyright (C) 2020 The Khronos Group Inc.
 //
-// Copyright (C) 2018 The Khronos Group Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
 //    disclaimer in the documentation and/or other materials provided
 //    with the distribution.
 //
-//    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
+//    Neither the name of The Khronos Group Inc. nor the names of its
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
@@ -30,6 +30,33 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-//
 
-#include "pch.h"
+#ifndef GLSLANG_BUILD_INFO
+#define GLSLANG_BUILD_INFO
+
+#define GLSLANG_VERSION_MAJOR 11
+#define GLSLANG_VERSION_MINOR 0
+#define GLSLANG_VERSION_PATCH 0
+#define GLSLANG_VERSION_FLAVOR ""
+
+#define GLSLANG_VERSION_GREATER_THAN(major, minor, patch) \
+    (((major) > GLSLANG_VERSION_MAJOR) || ((major) == GLSLANG_VERSION_MAJOR && \
+    (((minor) > GLSLANG_VERSION_MINOR) || ((minor) == GLSLANG_VERSION_MINOR && \
+     ((patch) > GLSLANG_VERSION_PATCH)))))
+
+#define GLSLANG_VERSION_GREATER_OR_EQUAL_TO(major, minor, patch) \
+    (((major) > GLSLANG_VERSION_MAJOR) || ((major) == GLSLANG_VERSION_MAJOR && \
+    (((minor) > GLSLANG_VERSION_MINOR) || ((minor) == GLSLANG_VERSION_MINOR && \
+     ((patch) >= GLSLANG_VERSION_PATCH)))))
+
+#define GLSLANG_VERSION_LESS_THAN(major, minor, patch) \
+    (((major) < GLSLANG_VERSION_MAJOR) || ((major) == GLSLANG_VERSION_MAJOR && \
+    (((minor) < GLSLANG_VERSION_MINOR) || ((minor) == GLSLANG_VERSION_MINOR && \
+     ((patch) < GLSLANG_VERSION_PATCH)))))
+
+#define GLSLANG_VERSION_LESS_OR_EQUAL_TO(major, minor, patch) \
+    (((major) < GLSLANG_VERSION_MAJOR) || ((major) == GLSLANG_VERSION_MAJOR && \
+    (((minor) < GLSLANG_VERSION_MINOR) || ((minor) == GLSLANG_VERSION_MINOR && \
+     ((patch) <= GLSLANG_VERSION_PATCH)))))
+
+#endif // GLSLANG_BUILD_INFO

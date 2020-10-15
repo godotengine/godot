@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef GLSLANG_WEB
+#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
 
 #ifndef _IOMAPPER_INCLUDED
 #define _IOMAPPER_INCLUDED
@@ -129,6 +129,7 @@ public:
     uint32_t computeTypeLocationSize(const TType& type, EShLanguage stage);
 
     TSlotSetMap slots;
+    bool hasError = false;
 
 protected:
     TDefaultIoResolverBase(TDefaultIoResolverBase&);
@@ -185,7 +186,7 @@ protected:
     }
 };
 
-// Defaulf I/O resolver for OpenGL
+// Default I/O resolver for OpenGL
 struct TDefaultGlslIoResolver : public TDefaultIoResolverBase {
 public:
     typedef std::map<TString, int> TVarSlotMap;  // <resourceName, location/binding>
@@ -202,6 +203,7 @@ public:
     void endCollect(EShLanguage) override;
     void reserverStorageSlot(TVarEntryInfo& ent, TInfoSink& infoSink) override;
     void reserverResourceSlot(TVarEntryInfo& ent, TInfoSink& infoSink) override;
+    const TString& getAccessName(const TIntermSymbol*);
     // in/out symbol and uniform symbol are stored in the same resourceSlotMap, the storage key is used to identify each type of symbol.
     // We use stage and storage qualifier to construct a storage key. it can help us identify the same storage resource used in different stage.
     // if a resource is a program resource and we don't need know it usage stage, we can use same stage to build storage key.
@@ -237,12 +239,13 @@ typedef std::map<TString, TVarEntryInfo> TVarLiveMap;
 // In the future, if the vc++ compiler can handle such a situation,
 // this part of the code will be removed.
 struct TVarLivePair : std::pair<const TString, TVarEntryInfo> {
-    TVarLivePair(std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
+    TVarLivePair(const std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
     TVarLivePair& operator=(const TVarLivePair& _Right) {
         const_cast<TString&>(first) = _Right.first;
         second = _Right.second;
         return (*this);
     }
+    TVarLivePair(const TVarLivePair& src) : pair(src) { }
 };
 typedef std::vector<TVarLivePair> TVarLiveVector;
 
@@ -260,10 +263,10 @@ public:
 class TGlslIoMapper : public TIoMapper {
 public:
     TGlslIoMapper() {
-        memset(inVarMaps,     0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(outVarMaps,    0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(uniformVarMap, 0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(intermediates, 0, sizeof(TIntermediate*) * (EShLangCount + 1));
+        memset(inVarMaps,     0, sizeof(TVarLiveMap*)   * EShLangCount);
+        memset(outVarMaps,    0, sizeof(TVarLiveMap*)   * EShLangCount);
+        memset(uniformVarMap, 0, sizeof(TVarLiveMap*)   * EShLangCount);
+        memset(intermediates, 0, sizeof(TIntermediate*) * EShLangCount);
     }
     virtual ~TGlslIoMapper() {
         for (size_t stage = 0; stage < EShLangCount; stage++) {
@@ -296,4 +299,4 @@ public:
 
 #endif // _IOMAPPER_INCLUDED
 
-#endif //  GLSLANG_WEB
+#endif // !GLSLANG_WEB && !GLSLANG_ANGLE

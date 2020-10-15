@@ -59,7 +59,6 @@ elif env["builtin_vulkan"]:
 
     if env["platform"] == "windows":
         loader_sources.append("dirent_on_windows.c")
-        loader_sources.append("dxgi_loader.c")
         env_thirdparty.AppendUnique(
             CPPDEFINES=[
                 "VK_USE_PLATFORM_WIN32_KHR",

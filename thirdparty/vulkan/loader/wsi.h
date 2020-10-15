@@ -39,6 +39,9 @@ typedef struct {
 #ifdef VK_USE_PLATFORM_XLIB_KHR
         VkIcdSurfaceXlib xlib_surf;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+        VkIcdSurfaceDirectFB directfb_surf;
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_MACOS_MVK
         VkIcdSurfaceMacOS macos_surf;
 #endif  // VK_USE_PLATFORM_MACOS_MVK
@@ -121,6 +124,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceXlibPresentationSuppo
                                                                                       uint32_t queueFamilyIndex, Display *dpy,
                                                                                       VisualID visualID);
 #endif
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateDirectFBSurfaceEXT(VkInstance instance,
+                                                                   const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
+VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice,
+                                                                                          uint32_t queueFamilyIndex,
+                                                                                          IDirectFB *dfb);
+#endif
 #ifdef VK_USE_PLATFORM_MACOS_MVK
 VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateMacOSSurfaceMVK(VkInstance instance, const VkMacOSSurfaceCreateInfoMVK *pCreateInfo,
                                                                 const VkAllocationCallbacks *pAllocator, VkSurfaceKHR *pSurface);
@@ -180,5 +191,14 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetDisplayModeProperties2KHR(VkPhysica
 VKAPI_ATTR VkResult VKAPI_CALL terminator_GetDisplayPlaneCapabilities2KHR(VkPhysicalDevice physicalDevice,
                                                                           const VkDisplayPlaneInfo2KHR *pDisplayPlaneInfo,
                                                                           VkDisplayPlaneCapabilities2KHR *pCapabilities);
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceCapabilities2KHR(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+    VkSurfaceCapabilities2KHR *pSurfaceCapabilities);
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
+                                                                              const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                                                              uint32_t *pSurfaceFormatCount,
+                                                                              VkSurfaceFormat2KHR *pSurfaceFormats);
 
 #endif // WSI_H

@@ -921,7 +921,7 @@ public:
         else
             unionArray =  new TConstUnionVector(size);
     }
-    TConstUnionArray(const TConstUnionArray& a) : unionArray(a.unionArray) { }
+    TConstUnionArray(const TConstUnionArray& a) = default;
     TConstUnionArray(const TConstUnionArray& a, int start, int size)
     {
         unionArray = new TConstUnionVector(size);

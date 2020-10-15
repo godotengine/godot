@@ -1,5 +1,6 @@
 /*
-** Copyright (c) 2014-2016 The Khronos Group Inc.
+** Copyright (c) 2014-2020 The Khronos Group Inc.
+** Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -44,5 +45,7 @@ static const char* const E_SPV_EXT_physical_storage_buffer      = "SPV_EXT_physi
 static const char* const E_SPV_KHR_physical_storage_buffer      = "SPV_KHR_physical_storage_buffer";
 static const char* const E_SPV_EXT_fragment_shader_interlock    = "SPV_EXT_fragment_shader_interlock";
 static const char* const E_SPV_KHR_shader_clock                 = "SPV_KHR_shader_clock";
-
+static const char* const E_SPV_KHR_non_semantic_info            = "SPV_KHR_non_semantic_info";
+static const char* const E_SPV_KHR_ray_tracing                  = "SPV_KHR_ray_tracing";
+static const char* const E_SPV_KHR_ray_query                    = "SPV_KHR_ray_query";
 #endif  // #ifndef GLSLextKHR_H

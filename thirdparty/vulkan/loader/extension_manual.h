@@ -39,24 +39,6 @@ terminator_GetPhysicalDeviceExternalImageFormatPropertiesNV(
     VkExternalMemoryHandleTypeFlagsNV externalHandleType,
     VkExternalImageFormatPropertiesNV *pExternalImageFormatProperties);
 
-VKAPI_ATTR VkResult VKAPI_CALL GetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice,
-                                                                        const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
-                                                                        VkSurfaceCapabilities2KHR* pSurfaceCapabilities);
-
-VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceCapabilities2KHR(
-    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
-    VkSurfaceCapabilities2KHR* pSurfaceCapabilities);
-
-VKAPI_ATTR VkResult VKAPI_CALL GetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
-                                                                   const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
-                                                                   uint32_t* pSurfaceFormatCount,
-                                                                   VkSurfaceFormat2KHR* pSurfaceFormats);
-
-VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
-                                                                              const VkPhysicalDeviceSurfaceInfo2KHR* pSurfaceInfo,
-                                                                              uint32_t* pSurfaceFormatCount,
-                                                                              VkSurfaceFormat2KHR* pSurfaceFormats);
-
 VKAPI_ATTR VkResult VKAPI_CALL GetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
                                                                         VkSurfaceCapabilities2EXT* pSurfaceCapabilities);
 

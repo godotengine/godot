@@ -127,7 +127,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
     }
     size_t lib_count = 0;
 
-    // Prepend layers onto the chain if they implment this entry point
+    // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
         if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_extension_properties[0] == '\0') {
@@ -221,7 +221,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
     }
     size_t lib_count = 0;
 
-    // Prepend layers onto the chain if they implment this entry point
+    // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
         if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_layer_properties[0] == '\0') {
@@ -315,7 +315,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t
     }
     size_t lib_count = 0;
 
-    // Prepend layers onto the chain if they implment this entry point
+    // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
         if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_version[0] == '\0') {
@@ -538,7 +538,7 @@ out:
 
     if (NULL != ptr_instance) {
         if (res != VK_SUCCESS) {
-            if (NULL != ptr_instance->next) {
+            if (loader.instances == ptr_instance) {
                 loader.instances = ptr_instance->next;
             }
             if (NULL != ptr_instance->disp) {
@@ -656,9 +656,14 @@ LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkDestroyInstance(VkInstance instance, 
                                          ptr_instance->tmp_report_callbacks);
         util_FreeDebugReportCreateInfos(pAllocator, ptr_instance->tmp_report_create_infos, ptr_instance->tmp_report_callbacks);
     }
+
     loader_instance_heap_free(ptr_instance, ptr_instance->disp);
     loader_instance_heap_free(ptr_instance, ptr_instance);
     loader_platform_thread_unlock_mutex(&loader_lock);
+
+    // Unload preloaded layers, so if vkEnumerateInstanceExtensionProperties or vkCreateInstance is called again, the ICD's are up
+    // to date
+    loader_unload_preloaded_icds();
 }
 
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumeratePhysicalDevices(VkInstance instance, uint32_t *pPhysicalDeviceCount,
@@ -859,7 +864,9 @@ LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkGetDeviceQueue(VkDevice device, uint3
     disp = loader_get_dispatch(device);
 
     disp->GetDeviceQueue(device, queueNodeIndex, queueIndex, pQueue);
-    loader_set_dispatch(*pQueue, disp);
+    if (pQueue != NULL) {
+        loader_set_dispatch(*pQueue, disp);
+    }
 }
 
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo *pSubmits,
@@ -2445,8 +2452,7 @@ LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkTrimCommandPool(
 LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkGetDeviceQueue2(VkDevice device, const VkDeviceQueueInfo2 *pQueueInfo, VkQueue *pQueue) {
     const VkLayerDispatchTable *disp = loader_get_dispatch(device);
     disp->GetDeviceQueue2(device, pQueueInfo, pQueue);
-    if (*pQueue != VK_NULL_HANDLE)
-    {
+    if (pQueue != NULL && *pQueue != NULL) {
         loader_set_dispatch(*pQueue, disp);
     }
 }

@@ -625,6 +625,9 @@ namespace spv {
                 break;
             }
 
+            case spv::OperandVariableLiteralStrings:
+                return nextInst;
+
             // Execution mode might have extra literal operands.  Skip them.
             case spv::OperandExecutionMode:
                 return nextInst;

@@ -157,11 +157,11 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
     case EvqBuffer:
         if (node->getQualifier().isReadOnly())
             message = "can't modify a readonly buffer";
-        if (node->getQualifier().isShaderRecordNV())
+        if (node->getQualifier().isShaderRecord())
             message = "can't modify a shaderrecordnv qualified buffer";
         break;
-    case EvqHitAttrNV:
-        if (language != EShLangIntersectNV)
+    case EvqHitAttr:
+        if (language != EShLangIntersect)
             message = "cannot modify hitAttributeNV in this stage";
         break;
 #endif
@@ -181,8 +181,11 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtAtomicUint:
             message = "can't modify an atomic_uint";
             break;
-        case EbtAccStructNV:
+        case EbtAccStruct:
             message = "can't modify accelerationStructureNV";
+            break;
+        case EbtRayQuery:
+            message = "can't modify rayQueryEXT";
             break;
 #endif
         default:

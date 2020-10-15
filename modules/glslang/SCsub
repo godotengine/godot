@@ -9,6 +9,7 @@ env_glslang = env_modules.Clone()
 if env["builtin_glslang"]:
     thirdparty_dir = "#thirdparty/glslang/"
     thirdparty_sources = [
+        "glslang/CInterface/glslang_c_interface.cpp",
         "glslang/MachineIndependent/RemoveTree.cpp",
         "glslang/MachineIndependent/ParseHelper.cpp",
         "glslang/MachineIndependent/iomapper.cpp",
@@ -30,7 +31,6 @@ if env["builtin_glslang"]:
         "glslang/MachineIndependent/intermOut.cpp",
         "glslang/MachineIndependent/SymbolTable.cpp",
         "glslang/MachineIndependent/glslang_tab.cpp",
-        "glslang/MachineIndependent/pch.cpp",
         "glslang/MachineIndependent/Versions.cpp",
         "glslang/MachineIndependent/ShaderLang.cpp",
         "glslang/MachineIndependent/parseConst.cpp",
@@ -40,6 +40,7 @@ if env["builtin_glslang"]:
         "glslang/GenericCodeGen/Link.cpp",
         "glslang/GenericCodeGen/CodeGen.cpp",
         "OGLCompilersDLL/InitializeDll.cpp",
+        "SPIRV/CInterface/spirv_c_interface.cpp",
         "SPIRV/InReadableOrder.cpp",
         "SPIRV/GlslangToSpv.cpp",
         "SPIRV/SpvBuilder.cpp",
@@ -49,6 +50,7 @@ if env["builtin_glslang"]:
         "SPIRV/SPVRemapper.cpp",
         "SPIRV/SpvPostProcess.cpp",
         "SPIRV/Logger.cpp",
+        "StandAlone/ResourceLimits.cpp",
     ]
 
     if env["platform"] == "windows":
@@ -63,6 +65,8 @@ if env["builtin_glslang"]:
         env_glslang.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
     else:
         env_glslang.Prepend(CPPPATH=[thirdparty_dir])
+
+    env_glslang.Append(CPPDEFINES=["ENABLE_OPT=0"])
 
     env_thirdparty = env_glslang.Clone()
     env_thirdparty.disable_warnings()
