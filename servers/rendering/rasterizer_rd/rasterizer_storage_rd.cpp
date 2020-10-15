@@ -7884,7 +7884,12 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
+
 	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
+	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
+
+	RenderingServer::get_singleton()->free(particles_shader.default_material);
+	RenderingServer::get_singleton()->free(particles_shader.default_shader);
 
 	RD::get_singleton()->free(default_rd_storage_buffer);
 

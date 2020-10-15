@@ -437,6 +437,9 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 			inspector->edit(interface);
 		}
 	}
+	if (p_what == NOTIFICATION_PREDELETE) {
+		inspector->edit(nullptr);
+	}
 }
 
 ShaderGlobalsEditor::ShaderGlobalsEditor() {
@@ -474,6 +477,5 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 }
 
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
-	inspector->edit(nullptr);
 	memdelete(interface);
 }

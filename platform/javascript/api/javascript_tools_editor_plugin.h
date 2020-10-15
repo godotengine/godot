@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  array.h                                                              */
+/*  javascript_tools_editor_plugin.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,85 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
+#define JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
 
-#include "core/typedefs.h"
+#if defined(TOOLS_ENABLED) && defined(JAVASCRIPT_ENABLED)
+#include "core/io/zip_io.h"
+#include "editor/editor_plugin.h"
 
-class Variant;
-class ArrayPrivate;
-class Object;
-class StringName;
+class JavaScriptToolsEditorPlugin : public EditorPlugin {
+	GDCLASS(JavaScriptToolsEditorPlugin, EditorPlugin);
 
-class Array {
-	mutable ArrayPrivate *_p;
-	void _ref(const Array &p_from) const;
-	void _unref() const;
-
-	inline int _clamp_slice_index(int p_index) const;
+private:
+	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
+	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
 
 protected:
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	void _assign(const Array &p_array);
+	static void _bind_methods();
+
+	void _download_zip(Variant p_v);
 
 public:
-	Variant &operator[](int p_idx);
-	const Variant &operator[](int p_idx) const;
+	static void initialize();
 
-	void set(int p_idx, const Variant &p_value);
-	const Variant &get(int p_idx) const;
-
-	int size() const;
-	bool empty() const;
-	void clear();
-
-	bool operator==(const Array &p_array) const;
-
-	uint32_t hash() const;
-	void operator=(const Array &p_array);
-
-	void push_back(const Variant &p_value);
-	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
-	Error resize(int p_new_size);
-
-	void insert(int p_pos, const Variant &p_value);
-	void remove(int p_pos);
-
-	Variant front() const;
-	Variant back() const;
-
-	void sort();
-	void sort_custom(Object *p_obj, const StringName &p_function);
-	void shuffle();
-	int bsearch(const Variant &p_value, bool p_before = true);
-	int bsearch_custom(const Variant &p_value, Object *p_obj, const StringName &p_function, bool p_before = true);
-	void invert();
-
-	int find(const Variant &p_value, int p_from = 0) const;
-	int rfind(const Variant &p_value, int p_from = -1) const;
-	int find_last(const Variant &p_value) const;
-	int count(const Variant &p_value) const;
-	bool has(const Variant &p_value) const;
-
-	void erase(const Variant &p_value);
-
-	void push_front(const Variant &p_value);
-	Variant pop_back();
-	Variant pop_front();
-
-	Array duplicate(bool p_deep = false) const;
-
-	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
-
-	Variant min() const;
-	Variant max() const;
-
-	const void *id() const;
-
-	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
-	Array(const Array &p_from);
-	Array();
-	~Array();
+	JavaScriptToolsEditorPlugin(EditorNode *p_editor);
 };
+#else
+class JavaScriptToolsEditorPlugin {
+public:
+	static void initialize() {}
+};
+#endif
 
-#endif // ARRAY_H
+#endif // JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
