@@ -1269,6 +1269,13 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
+void PopupMenu::set_current_index(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, items.size());
+	mouse_over = p_idx;
+	_scroll_to_item(mouse_over);
+	control->update();
+}
+
 int PopupMenu::get_current_index() const {
 	return mouse_over;
 }
