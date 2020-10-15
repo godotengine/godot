@@ -73,6 +73,7 @@ private:
 		VBoxContainer *preview_box;
 		LineEdit *uniform_name;
 		OptionButton *const_op;
+		CodeEdit *expression_edit;
 	};
 
 	Ref<VisualShader> visual_shader;
@@ -91,6 +92,7 @@ public:
 	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void register_constant_option_btn(int p_node_id, OptionButton *p_button);
+	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
@@ -110,6 +112,7 @@ public:
 	void update_uniform_refs();
 	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_constant(VisualShader::Type p_type, int p_node_id);
+	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
 	int get_constant_index(float p_constant) const;
 	void update_node_size(int p_node_id);
 	VisualShader::Type get_shader_type() const;
