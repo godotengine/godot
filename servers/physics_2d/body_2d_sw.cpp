@@ -386,17 +386,15 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 	if (p_area->is_gravity_point()) {
 		Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
 		real_t v_length = v.length();
-		if (v_length > 0) {
+		if (v_length > 0.0) {
 			Vector2 new_gravity = gravity + (v.normalized() * (p_area->get_gravity() / (v_length * v_length)));
 			if (isinf(new_gravity.x) || isinf(new_gravity.y)) {
 				WARN_PRINT_ONCE("Gravity is Infinite");
 			} else {
 				gravity = new_gravity;
 			}
-		} else {
-			gravity += v.normalized() * p_area->get_gravity();
-		}
-	} else {
+		} 	
+        } else {
 		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
 
