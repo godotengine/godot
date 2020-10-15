@@ -439,6 +439,17 @@ String Skeleton3D::get_bone_name(int p_bone) const {
 
 	return bones[p_bone].name;
 }
+void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
+	ERR_FAIL_INDEX(p_bone, bones.size());
+
+	for (int i = 0; i < bones.size(); i++) {
+		if (i != p_bone) {
+			ERR_FAIL_COND(bones[i].name == p_name);
+		}
+	}
+
+	bones.write[p_bone].name = p_name;
+}
 
 bool Skeleton3D::is_bone_parent_of(int p_bone, int p_parent_bone_id) const {
 	int parent_of_bone = get_bone_parent(p_bone);
@@ -869,6 +880,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton3D::add_bone);
 	ClassDB::bind_method(D_METHOD("find_bone", "name"), &Skeleton3D::find_bone);
 	ClassDB::bind_method(D_METHOD("get_bone_name", "bone_idx"), &Skeleton3D::get_bone_name);
+	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_idx", "name"), &Skeleton3D::set_bone_name);
 
 	ClassDB::bind_method(D_METHOD("get_bone_parent", "bone_idx"), &Skeleton3D::get_bone_parent);
 	ClassDB::bind_method(D_METHOD("set_bone_parent", "bone_idx", "parent_idx"), &Skeleton3D::set_bone_parent);
