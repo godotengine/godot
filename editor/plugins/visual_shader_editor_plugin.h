@@ -290,8 +290,9 @@ class VisualShaderEditor : public VBoxContainer {
 	void _scroll_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
 
-	void _delete_request(int);
-	void _delete_nodes();
+	void _delete_nodes(int p_type, const List<int> &p_nodes);
+	void _delete_node_request(int p_type, int p_node);
+	void _delete_nodes_request();
 
 	void _removed_from_graph();
 
