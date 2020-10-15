@@ -31,7 +31,7 @@
 #ifndef PHYSICS_2D_SERVER_H
 #define PHYSICS_2D_SERVER_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/reference.h"
 #include "core/resource.h"
 

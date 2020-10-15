@@ -3,7 +3,6 @@
 Import("env")
 
 import core_builders
-import make_binders
 
 env.core_sources = []
 
@@ -87,11 +86,7 @@ if env["builtin_zlib"]:
 # Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one
 thirdparty_minizip_dir = "#thirdparty/minizip/"
-thirdparty_minizip_sources = [
-    "ioapi.c",
-    "unzip.c",
-    "zip.c",
-]
+thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
 
@@ -152,27 +147,16 @@ env.CommandNoCache(
     env.Run(core_builders.make_certs_header, "Building ca-certificates header."),
 )
 
-# Make binders
-env.CommandNoCache(
-    ["method_bind.gen.inc", "method_bind_ext.gen.inc", "method_bind_free_func.gen.inc"],
-    "make_binders.py",
-    env.Run(make_binders.run, "Generating method binders."),
-)
-
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
 env.CommandNoCache(
-    "#core/authors.gen.h",
-    "../AUTHORS.md",
-    env.Run(core_builders.make_authors_header, "Generating authors header."),
+    "#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header, "Generating authors header.")
 )
 
 # Donors
 env.Depends("#core/donors.gen.h", "../DONORS.md")
 env.CommandNoCache(
-    "#core/donors.gen.h",
-    "../DONORS.md",
-    env.Run(core_builders.make_donors_header, "Generating donors header."),
+    "#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header, "Generating donors header.")
 )
 
 # License

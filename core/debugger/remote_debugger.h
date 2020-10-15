@@ -32,10 +32,10 @@
 #define REMOTE_DEBUGGER_H
 
 #include "core/array.h"
+#include "core/class_db.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/object.h"
 #include "core/string_name.h"
 #include "core/ustring.h"
 

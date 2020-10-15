@@ -35,7 +35,7 @@
 #ifndef NAVIGATION_2D_SERVER_H
 #define NAVIGATION_2D_SERVER_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/rid.h"
 #include "scene/2d/navigation_region_2d.h"
 

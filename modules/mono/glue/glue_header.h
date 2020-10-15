@@ -64,7 +64,6 @@ void godot_register_glue_header_icalls() {
 #include "core/engine.h"
 #include "core/method_bind.h"
 #include "core/node_path.h"
-#include "core/object.h"
 #include "core/reference.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"

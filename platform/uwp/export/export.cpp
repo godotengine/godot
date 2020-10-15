@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "export.h"
+
 #include "core/bind/core_bind.h"
+#include "core/class_db.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
-#include "core/object.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"

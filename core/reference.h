@@ -32,7 +32,6 @@
 #define REFERENCE_H
 
 #include "core/class_db.h"
-#include "core/object.h"
 #include "core/safe_refcount.h"
 
 class Reference : public Object {

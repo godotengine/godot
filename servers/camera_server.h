@@ -31,7 +31,7 @@
 #ifndef CAMERA_SERVER_H
 #define CAMERA_SERVER_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/reference.h"
 #include "core/rid.h"

@@ -31,8 +31,8 @@
 #ifndef AUDIO_SERVER_H
 #define AUDIO_SERVER_H
 
+#include "core/class_db.h"
 #include "core/math/audio_frame.h"
-#include "core/object.h"
 #include "core/os/os.h"
 #include "core/variant.h"
 #include "servers/audio/audio_effect.h"

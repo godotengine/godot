@@ -31,7 +31,6 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
-#include "core/method_bind_ext.gen.inc"
 #include "scene/resources/texture.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
