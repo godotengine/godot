@@ -1032,6 +1032,10 @@ int PopupMenu::get_current_index() const {
 	return mouse_over;
 }
 
+void PopupMenu::set_current_index(int p_idx) {
+	mouse_over = p_idx;
+}
+
 int PopupMenu::get_item_count() const {
 	return items.size();
 }
