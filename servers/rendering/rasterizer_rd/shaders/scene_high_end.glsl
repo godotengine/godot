@@ -2726,14 +2726,15 @@ FRAGMENT_SHADER_CODE
 	specular_buffer = vec4(specular_light, metallic);
 #endif
 
-	if (scene_data.volumetric_fog_enabled) {
-		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
 		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
 
-	if (scene_data.fog_enabled) {
-		vec4 fog = fog_process(vertex);
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
 		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
 	}
@@ -2747,13 +2748,14 @@ FRAGMENT_SHADER_CODE
 	//frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
 
-	if (scene_data.volumetric_fog_enabled) {
-		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 
-	if (scene_data.fog_enabled) {
-		vec4 fog = fog_process(vertex);
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 
