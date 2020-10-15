@@ -50,6 +50,7 @@ jobs:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes tests=yes target=release_debug
+          ls -l bin/
 
       # Execute unit tests for the editor
       - name: Unit Tests
@@ -97,3 +98,4 @@ jobs:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=osx target=release tools=no
+          ls -l bin/
