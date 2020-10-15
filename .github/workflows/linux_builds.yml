@@ -7,7 +7,7 @@ env:
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
-  linux-editor:
+  linux-editor-mono:
     runs-on: "ubuntu-20.04"
     name: Editor w/ Mono (target=release_debug, tools=yes, tests=yes)
 
@@ -68,6 +68,12 @@ jobs:
       - name: Unit Tests
         run: |
           ./bin/godot.linuxbsd.opt.tools.64.mono --test
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
 
   linux-editor-sanitizers:
     runs-on: "ubuntu-20.04"
@@ -131,7 +137,13 @@ jobs:
         run: |
           ./bin/godot.linuxbsd.tools.64s --test
 
-  linux-template:
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
+  linux-template-mono:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
 
@@ -186,3 +198,9 @@ jobs:
         run: |
           scons -j2 verbose=yes warnings=all werror=yes platform=linuxbsd target=release tools=no module_mono_enabled=yes mono_glue=no
           ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
