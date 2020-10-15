@@ -1426,7 +1426,7 @@ void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p
 	group_node->set_size(size);
 
 	GraphNode *gn = nullptr;
-	if (edit_type->get_selected() == p_type) { // check - otherwise the error will be emitted
+	if (type == p_type) {
 		Node *node2 = graph->get_node(itos(p_node));
 		gn = Object::cast_to<GraphNode>(node2);
 		if (!gn) {
@@ -1462,7 +1462,7 @@ void VisualShaderEditor::_node_resized(const Vector2 &p_new_size, int p_type, in
 		return;
 	}
 
-	undo_redo->create_action(TTR("Resize VisualShader node"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Resize VisualShader Node"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(this, "_set_node_size", p_type, p_node, p_new_size);
 	undo_redo->add_undo_method(this, "_set_node_size", p_type, p_node, node->get_size());
 	undo_redo->commit_action();
@@ -2331,7 +2331,7 @@ void VisualShaderEditor::_clear_buffer() {
 }
 
 void VisualShaderEditor::_duplicate_nodes() {
-	int type = edit_type->get_selected();
+	int type = get_current_shader_type();
 
 	List<int> nodes;
 	Set<int> excluded;
@@ -2342,13 +2342,13 @@ void VisualShaderEditor::_duplicate_nodes() {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Duplicate Nodes"));
+	undo_redo->create_action(TTR("Duplicate VisualShader Node(s)"));
 
 	_dup_paste_nodes(type, type, nodes, excluded, Vector2(10, 10) * EDSCALE, true);
 }
 
 void VisualShaderEditor::_copy_nodes() {
-	copy_type = edit_type->get_selected();
+	copy_type = get_current_shader_type();
 
 	_clear_buffer();
 
@@ -2360,9 +2360,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 		return;
 	}
 
-	int type = edit_type->get_selected();
-
-	undo_redo->create_action(TTR("Paste Nodes"));
+	int type = get_current_shader_type();
 
 	float scale = graph->get_zoom();
 
@@ -2372,6 +2370,8 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 	} else {
 		mpos = graph->get_local_mouse_position();
 	}
+
+	undo_redo->create_action(TTR("Paste VisualShader Node(s)"));
 
 	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + mpos / scale - selection_center), false);
 
@@ -2795,7 +2795,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualShaderEditor::_scroll_changed));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
 	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes));
-	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes));
+	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes), varray(false, Point2()));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
