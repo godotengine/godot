@@ -55,6 +55,7 @@ jobs:
         SCONS_CACHE: /.scons_cache/
       run: |
         scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes tests=yes target=release_debug
+        ls -l bin/
 
     # Execute unit tests for the editor
     - name: Unit Tests
@@ -112,6 +113,7 @@ jobs:
         SCONS_CACHE: /.scons_cache/
       run: |
         scons -j2 verbose=yes warnings=all werror=yes platform=windows target=release tools=no
+        ls -l bin/
 
 # Build Product Upload (tested and working)
 # sorry this is disabled until github can give us some more space as we would hit our limit very quickly
