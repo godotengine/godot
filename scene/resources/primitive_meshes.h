@@ -76,6 +76,7 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const;
 	virtual int get_blend_shape_count() const;
 	virtual StringName get_blend_shape_name(int p_index) const;
+	virtual void set_blend_shape_name(int p_index, const StringName &p_name);
 	virtual AABB get_aabb() const;
 	virtual RID get_rid() const;
 
