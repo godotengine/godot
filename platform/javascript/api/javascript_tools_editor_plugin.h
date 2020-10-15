@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  api.cpp                                                              */
+/*  javascript_tools_editor_plugin.h                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "api.h"
-#include "core/engine.h"
-#include "javascript_eval.h"
-#include "javascript_tools_editor_plugin.h"
+#ifndef JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
+#define JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
 
-static JavaScript *javascript_eval;
+#if defined(TOOLS_ENABLED) && defined(JAVASCRIPT_ENABLED)
+#include "core/io/zip_io.h"
+#include "editor/editor_plugin.h"
 
-void register_javascript_api() {
-	JavaScriptToolsEditorPlugin::initialize();
-	ClassDB::register_virtual_class<JavaScript>();
-	javascript_eval = memnew(JavaScript);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaScript", javascript_eval));
-}
+class JavaScriptToolsEditorPlugin : public EditorPlugin {
+	GDCLASS(JavaScriptToolsEditorPlugin, EditorPlugin);
 
-void unregister_javascript_api() {
-	memdelete(javascript_eval);
-}
+private:
+	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
+	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
 
-JavaScript *JavaScript::singleton = NULL;
+protected:
+	static void _bind_methods();
 
-JavaScript *JavaScript::get_singleton() {
-	return singleton;
-}
+	void _download_zip(Variant p_v);
 
-JavaScript::JavaScript() {
-	ERR_FAIL_COND_MSG(singleton != NULL, "JavaScript singleton already exist.");
-	singleton = this;
-}
+public:
+	static void initialize();
 
-JavaScript::~JavaScript() {}
-
-void JavaScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("eval", "code", "use_global_execution_context"), &JavaScript::eval, DEFVAL(false));
-}
-
-#if !defined(JAVASCRIPT_ENABLED) || !defined(JAVASCRIPT_EVAL_ENABLED)
-Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
-	return Variant();
-}
+	JavaScriptToolsEditorPlugin(EditorNode *p_editor);
+};
+#else
+class JavaScriptToolsEditorPlugin {
+public:
+	static void initialize() {}
+};
 #endif
+
+#endif // JAVASCRIPT_TOOLS_EDITOR_PLUGIN_H
