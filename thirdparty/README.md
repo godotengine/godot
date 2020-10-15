@@ -164,7 +164,7 @@ Files extracted from upstream source:
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
+- Version: git (bacaef3237c515e40d1a24722be48c0a0b30f75f, 2020)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -173,10 +173,12 @@ good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blo
 
 Files extracted from upstream source:
 
-- `glslang`, `OGLCompilersDLL`, `SPIRV`
+- `glslang` (except `glslang/HLSL`), `OGLCompilersDLL`, `SPIRV`
+- `StandAlone/{DirStackFileIncluder.h,ResourceLimits.{cpp,h}}`
+- Run `cmake . && make` and copy generated `include/glslang/build_info.h`
+  to `glslang/build_info.h`
 - `LICENSE.txt`
-- Unnecessary files like `CMakeLists.txt`, `revision.template` and
-  `updateGrammar` removed.
+- Unnecessary files like `CMakeLists.txt` and `updateGrammar` removed.
 
 Patches in the `patches` directory should be re-applied after updates.
 
@@ -592,7 +594,7 @@ folder.
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: sdk-1.2.131.2 (2020)
+- Version: sdk-1.2.154.0 (2020)
 - License: Apache 2.0
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -610,11 +612,10 @@ Files extracted from upstream source:
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
-Includes custom change to disable MSVC pragma, might be upstreamed via:
-https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/1666
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 2.3.0 (2019)
+`vk_mem_alloc.cpp` and `android/vk_mem_alloc.cpp` are Godot files and should be preserved on updates.
 
 Patches in the `patches` directory should be re-applied after updates.
 

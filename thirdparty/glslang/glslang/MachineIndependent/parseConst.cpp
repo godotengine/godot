@@ -165,17 +165,27 @@ void TConstTraverser::visitConstantUnion(TIntermConstantUnion* node)
                     }
                 }
             } else {
-                // matrix from vector
+                // matrix from vector or scalar
                 int count = 0;
                 const int startIndex = index;
                 int nodeComps = node->getType().computeNumComponents();
                 for (int i = startIndex; i < endIndex; i++) {
                     if (i >= instanceSize)
                         return;
-                    if (i == startIndex || (i - startIndex) % (matrixRows + 1) == 0 )
+                    if (nodeComps == 1) {
+                        // If there is a single scalar parameter to a matrix
+                        // constructor, it is used to initialize all the
+                        // components on the matrix's diagonal, with the
+                        // remaining components initialized to 0.0.
+                        if (i == startIndex || (i - startIndex) % (matrixRows + 1) == 0 )
+                            leftUnionArray[i] = rightUnionArray[count];
+                        else
+                            leftUnionArray[i].setDConst(0.0);
+                    } else {
+                        // construct the matrix in column-major order, from
+                        // the components provided, in order
                         leftUnionArray[i] = rightUnionArray[count];
-                    else
-                        leftUnionArray[i].setDConst(0.0);
+                    }
 
                     index++;
 

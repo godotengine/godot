@@ -74,14 +74,33 @@ public:
         for (unsigned int f = 0; f < globals.size(); ++f) {
             TIntermAggregate* candidate = globals[f]->getAsAggregate();
             if (candidate && candidate->getOp() == EOpFunction && candidate->getName() == name) {
-                functions.push_back(candidate);
+                destinations.push_back(candidate);
                 break;
             }
         }
     }
 
-    typedef std::list<TIntermAggregate*> TFunctionStack;
-    TFunctionStack functions;
+    void pushGlobalReference(const TString& name)
+    {
+        TIntermSequence& globals = intermediate.getTreeRoot()->getAsAggregate()->getSequence();
+        for (unsigned int f = 0; f < globals.size(); ++f) {
+            TIntermAggregate* candidate = globals[f]->getAsAggregate();
+            if (candidate && candidate->getOp() == EOpSequence &&
+                candidate->getSequence().size() == 1 &&
+                candidate->getSequence()[0]->getAsBinaryNode()) {
+                TIntermBinary* binary = candidate->getSequence()[0]->getAsBinaryNode();
+                TIntermSymbol* symbol = binary->getLeft()->getAsSymbolNode();
+                if (symbol && symbol->getQualifier().storage == EvqGlobal &&
+                    symbol->getName() == name) {
+                    destinations.push_back(candidate);
+                    break;
+                }
+            }
+        }
+    }
+
+    typedef std::list<TIntermAggregate*> TDestinationStack;
+    TDestinationStack destinations;
 
 protected:
     // To catch which function calls are not dead, and hence which functions must be visited.
@@ -117,16 +136,27 @@ protected:
     // and only visit each function once.
     void addFunctionCall(TIntermAggregate* call)
     {
-        // // just use the map to ensure we process each function at most once
+        // just use the map to ensure we process each function at most once
         if (liveFunctions.find(call->getName()) == liveFunctions.end()) {
             liveFunctions.insert(call->getName());
             pushFunction(call->getName());
         }
     }
 
+    void addGlobalReference(const TString& name)
+    {
+        // just use the map to ensure we process each global at most once
+        if (liveGlobals.find(name) == liveGlobals.end()) {
+            liveGlobals.insert(name);
+            pushGlobalReference(name);
+        }
+    }
+
     const TIntermediate& intermediate;
     typedef std::unordered_set<TString> TLiveFunctions;
     TLiveFunctions liveFunctions;
+    typedef std::unordered_set<TString> TLiveGlobals;
+    TLiveGlobals liveGlobals;
     bool traverseAll;
 
 private:
