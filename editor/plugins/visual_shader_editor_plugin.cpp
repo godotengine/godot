@@ -342,7 +342,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 
 	if (p_id >= 2) {
 		node->set_show_close_button(true);
-		node->connect("close_request", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_delete_request), varray(p_id), CONNECT_DEFERRED);
+		node->connect("close_request", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_delete_node_request), varray(p_type, p_id), CONNECT_DEFERRED);
 	}
 
 	node->connect("dragged", callable_mp(VisualShaderEditor::get_singleton(), &VisualShaderEditor::_node_dragged), varray(p_id));
@@ -1903,61 +1903,112 @@ void VisualShaderEditor::_connection_from_empty(const String &p_to, int p_to_slo
 	_show_members_dialog(true);
 }
 
-void VisualShaderEditor::_delete_request(int which) {
-	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNode> node = Ref<VisualShaderNode>(visual_shader->get_node(type, which));
-
-	undo_redo->create_action(TTR("Delete Node"));
-
+void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
+	VisualShader::Type type = VisualShader::Type(p_type);
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
-	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
-		if (E->get().from_node == which || E->get().to_node == which) {
-			undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+
+	for (const List<int>::Element *F = p_nodes.front(); F; F = F->next()) {
+		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().from_node == F->get() || E->get().to_node == F->get()) {
+				undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+			}
 		}
 	}
 
-	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
-	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, which), which);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, which);
+	Set<String> uniform_names;
 
-	undo_redo->add_do_method(this, "_clear_buffer");
-	undo_redo->add_undo_method(this, "_clear_buffer");
+	for (const List<int>::Element *F = p_nodes.front(); F; F = F->next()) {
+		Ref<VisualShaderNode> node = visual_shader->get_node(type, F->get());
 
-	// restore size, inputs and outputs if node is group
-	VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
-	if (group) {
-		undo_redo->add_undo_method(group, "set_size", group->get_size());
-		undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
-		undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
-	}
+		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F->get());
+		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F->get()), F->get());
+		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F->get());
 
-	// restore expression text if node is expression
-	VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
-	if (expression) {
-		undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
-	}
+		undo_redo->add_do_method(this, "_clear_buffer");
+		undo_redo->add_undo_method(this, "_clear_buffer");
 
-	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
-		if (E->get().from_node == which || E->get().to_node == which) {
-			undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-			undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+		// restore size, inputs and outputs if node is group
+		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
+		if (group) {
+			undo_redo->add_undo_method(group, "set_size", group->get_size());
+			undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
+			undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
+		}
+
+		// restore expression text if node is expression
+		VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+		if (expression) {
+			undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
+		}
+
+		VisualShaderNodeUniform *uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
+		if (uniform) {
+			uniform_names.insert(uniform->get_uniform_name());
 		}
 	}
-	// delete a node from the graph
-	undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, which);
 
-	VisualShaderNodeUniform *uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-	if (uniform) {
+	List<VisualShader::Connection> used_conns;
+	for (const List<int>::Element *F = p_nodes.front(); F; F = F->next()) {
+		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().from_node == F->get() || E->get().to_node == F->get()) {
+				bool cancel = false;
+				for (List<VisualShader::Connection>::Element *R = used_conns.front(); R; R = R->next()) {
+					if (R->get().from_node == E->get().from_node && R->get().from_port == E->get().from_port && R->get().to_node == E->get().to_node && R->get().to_port == E->get().to_port) {
+						cancel = true; // to avoid ERR_ALREADY_EXISTS warning
+						break;
+					}
+				}
+				if (!cancel) {
+					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+					undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+					used_conns.push_back(E->get());
+				}
+			}
+		}
+	}
+
+	// delete nodes from the graph
+	for (const List<int>::Element *F = p_nodes.front(); F; F = F->next()) {
+		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F->get());
+	}
+
+	// update uniform refs if any uniform has been deleted
+	if (uniform_names.size() > 0) {
 		undo_redo->add_do_method(this, "_update_uniforms", true);
 		undo_redo->add_undo_method(this, "_update_uniforms", true);
 
-		Set<String> uniform_names;
-		uniform_names.insert(uniform->get_uniform_name());
-
 		_update_uniform_refs(uniform_names);
 	}
+}
 
+void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
+	List<int> to_erase;
+	to_erase.push_back(p_node);
+
+	undo_redo->create_action(TTR("Delete VisualShader Node"));
+	_delete_nodes(p_type, to_erase);
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_delete_nodes_request() {
+	List<int> to_erase;
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			if (gn->is_selected() && gn->is_close_button_visible()) {
+				to_erase.push_back(gn->get_name().operator String().to_int());
+			}
+		}
+	}
+
+	if (to_erase.empty()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Delete VisualShader Node(s)"));
+	_delete_nodes(get_current_shader_type(), to_erase);
 	undo_redo->commit_action();
 }
 
@@ -2327,104 +2378,6 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
 
-void VisualShaderEditor::_delete_nodes() {
-	VisualShader::Type type = get_current_shader_type();
-	List<int> to_erase;
-
-	for (int i = 0; i < graph->get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			if (gn->is_selected() && gn->is_close_button_visible()) {
-				to_erase.push_back(gn->get_name().operator String().to_int());
-			}
-		}
-	}
-
-	if (to_erase.empty()) {
-		return;
-	}
-
-	undo_redo->create_action(TTR("Delete Nodes"));
-
-	List<VisualShader::Connection> conns;
-	visual_shader->get_node_connections(type, &conns);
-
-	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
-		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
-			if (E->get().from_node == F->get() || E->get().to_node == F->get()) {
-				undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-			}
-		}
-	}
-
-	Set<String> uniform_names;
-
-	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
-		Ref<VisualShaderNode> node = visual_shader->get_node(type, F->get());
-
-		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F->get());
-		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F->get()), F->get());
-		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F->get());
-
-		undo_redo->add_do_method(this, "_clear_buffer");
-		undo_redo->add_undo_method(this, "_clear_buffer");
-
-		// restore size, inputs and outputs if node is group
-		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
-		if (group) {
-			undo_redo->add_undo_method(group, "set_size", group->get_size());
-			undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
-			undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
-		}
-
-		// restore expression text if node is expression
-		VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
-		if (expression) {
-			undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
-		}
-
-		VisualShaderNodeUniform *uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-		if (uniform) {
-			uniform_names.insert(uniform->get_uniform_name());
-		}
-	}
-
-	List<VisualShader::Connection> used_conns;
-	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
-		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
-			if (E->get().from_node == F->get() || E->get().to_node == F->get()) {
-				bool cancel = false;
-				for (List<VisualShader::Connection>::Element *R = used_conns.front(); R; R = R->next()) {
-					if (R->get().from_node == E->get().from_node && R->get().from_port == E->get().from_port && R->get().to_node == E->get().to_node && R->get().to_port == E->get().to_port) {
-						cancel = true; // to avoid ERR_ALREADY_EXISTS warning
-						break;
-					}
-				}
-				if (!cancel) {
-					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-					undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
-					used_conns.push_back(E->get());
-				}
-			}
-		}
-	}
-
-	// delete nodes from the graph
-	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
-		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F->get());
-	}
-
-	// update uniform refs if any uniform has been deleted
-	if (uniform_names.size() > 0) {
-		undo_redo->add_do_method(this, "_update_uniforms", true);
-		undo_redo->add_undo_method(this, "_update_uniforms", true);
-
-		_update_uniform_refs(uniform_names);
-	}
-
-	undo_redo->commit_action();
-}
-
 void VisualShaderEditor::_mode_selected(int p_id) {
 	visual_shader->set_shader_type(particles_mode ? VisualShader::Type(p_id + 3) : VisualShader::Type(p_id));
 	_update_options_menu();
@@ -2630,7 +2583,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			_paste_nodes(true, menu_point);
 			break;
 		case NodeMenuOptions::DELETE:
-			_delete_nodes();
+			_delete_nodes_request();
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
@@ -2843,7 +2796,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
 	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes));
 	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes));
-	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes));
+	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect("gui_input", callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
 	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
