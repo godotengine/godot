@@ -76,7 +76,7 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the color of a specific instance.
+				Sets the color of a specific instance by [i]multiplying[/i] the mesh's existing vertex colors.
 				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [MultiMesh] and [member SpatialMaterial.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
