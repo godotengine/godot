@@ -29,8 +29,7 @@
 /*************************************************************************/
 
 Module['initFS'] = function(persistentPaths) {
-	FS.mkdir('/userfs');
-	FS.mount(IDBFS, {}, '/userfs');
+	Module.mount_points = ['/userfs'].concat(persistentPaths);
 
 	function createRecursive(dir) {
 		try {
@@ -43,13 +42,14 @@ Module['initFS'] = function(persistentPaths) {
 		}
 	}
 
-	persistentPaths.forEach(function(path) {
+	Module.mount_points.forEach(function(path) {
 		createRecursive(path);
 		FS.mount(IDBFS, {}, path);
 	});
 	return new Promise(function(resolve, reject) {
 		FS.syncfs(true, function(err) {
 			if (err) {
+				Module.mount_points = [];
 				Module.idbfs = false;
 				console.log("IndexedDB not available: " + err.message);
 			} else {
@@ -58,6 +58,21 @@ Module['initFS'] = function(persistentPaths) {
 			resolve(err);
 		});
 	});
+};
+
+Module['deinitFS'] = function() {
+	Module.mount_points.forEach(function(path) {
+		try {
+			FS.unmount(path);
+		} catch (e) {
+			console.log("Already unmounted", e);
+		}
+		if (Module.idbfs && IDBFS.dbs[path]) {
+			IDBFS.dbs[path].close();
+			delete IDBFS.dbs[path];
+		}
+	});
+	Module.mount_points = [];
 };
 
 Module['copyToFS'] = function(path, buffer) {

@@ -121,6 +121,7 @@ Function('return this')()['Engine'] = (function() {
 			me.rtenv['noExitRuntime'] = true;
 			me.rtenv['onExecute'] = me.onExecute;
 			me.rtenv['onExit'] = function(code) {
+				me.rtenv['deinitFS']();
 				if (me.onExit)
 					me.onExit(code);
 				me.rtenv = null;
@@ -227,6 +228,12 @@ Function('return this')()['Engine'] = (function() {
 		this.persistentPaths = persistentPaths;
 	};
 
+	Engine.prototype.requestQuit = function() {
+		if (this.rtenv) {
+			this.rtenv['request_quit']();
+		}
+	};
+
 	// Closure compiler exported engine methods.
 	/** @export */
 	Engine['isWebGLAvailable'] = Utils.isWebGLAvailable;
@@ -249,5 +256,6 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['setOnExit'] = Engine.prototype.setOnExit;
 	Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 	Engine.prototype['setPersistentPaths'] = Engine.prototype.setPersistentPaths;
+	Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 	return Engine;
 })();
