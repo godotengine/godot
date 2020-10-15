@@ -260,298 +260,302 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 			&&OPCODE_##m_op##_PACKED_COLOR_ARRAY
 
 #if defined(__GNUC__)
-#define OPCODES_TABLE                                    \
-	static const void *switch_table_ops[] = {            \
-		&&OPCODE_OPERATOR,                               \
-		&&OPCODE_OP_NUMBER(ADD),                         \
-		&&OPCODE_OP_VECTOR(ADD),                         \
-		&&OPCODE_OP_ADD_QUAT_QUAT,                       \
-		&&OPCODE_OP_ADD_COLOR_COLOR,                     \
-		&&OPCODE_OP_CONCAT_STRING_STRING,                \
-		&&OPCODE_OP_ARRAYS(CONCAT),                      \
-		&&OPCODE_OP_NUMBER(SUBTRACT),                    \
-		&&OPCODE_OP_VECTOR(SUBTRACT),                    \
-		&&OPCODE_OP_SUBTRACT_QUAT_QUAT,                  \
-		&&OPCODE_OP_SUBTRACT_COLOR_COLOR,                \
-		&&OPCODE_OP_NUMBER(MULTIPLY),                    \
-		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_TRANSFORM2D,    \
-		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_VECTOR2,        \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, QUAT),         \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, QUAT),     \
-		&&OPCODE_OP_MULTIPLY_QUAT_VECTOR3,               \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2),      \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2),  \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2I),     \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2I), \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3),      \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3),  \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3I),     \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3I), \
-		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, COLOR),        \
-		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, COLOR),    \
-		&&OPCODE_OP_NUMBER(DIVIDE),                      \
-		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2),        \
-		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2I),       \
-		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3),        \
-		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3I),       \
-		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, COLOR),          \
-		&&OPCODE_OP_DIVIDE_QUAT_FLOAT,                   \
-		&&OPCODE_OP_MODULO_INT_INT,                      \
-		&&OPCODE_OP_NEGATE_INT,                          \
-		&&OPCODE_OP_NEGATE_FLOAT,                        \
-		&&OPCODE_OP_NEGATE_VECTOR2,                      \
-		&&OPCODE_OP_NEGATE_VECTOR2I,                     \
-		&&OPCODE_OP_NEGATE_VECTOR3,                      \
-		&&OPCODE_OP_NEGATE_VECTOR3I,                     \
-		&&OPCODE_OP_NEGATE_QUAT,                         \
-		&&OPCODE_OP_NEGATE_COLOR,                        \
-		&&OPCODE_OP_BIT_NEGATE_INT,                      \
-		&&OPCODE_OP_BIT_AND_INT_INT,                     \
-		&&OPCODE_OP_BIT_OR_INT_INT,                      \
-		&&OPCODE_OP_BIT_XOR_INT_INT,                     \
-		&&OPCODE_OP_SHIFT_LEFT,                          \
-		&&OPCODE_OP_SHIFT_RIGHT,                         \
-		&&OPCODE_OP_NOT,                                 \
-		&&OPCODE_OP_AND,                                 \
-		&&OPCODE_OP_OR,                                  \
-		&&OPCODE_ALL_TYPES(OP_EQUAL),                    \
-		&&OPCODE_OP_EQUAL_INT_FLOAT,                     \
-		&&OPCODE_OP_EQUAL_FLOAT_INT,                     \
-		&&OPCODE_OP_EQUAL_STRING_STRING_NAME,            \
-		&&OPCODE_OP_EQUAL_STRING_NAME_STRING,            \
-		&&OPCODE_OP_EQUAL_STRING_NODE_PATH,              \
-		&&OPCODE_OP_EQUAL_NODE_PATH_STRING,              \
-		&&OPCODE_ALL_TYPES(OP_NOT_EQUAL),                \
-		&&OPCODE_OP_NOT_EQUAL_INT_FLOAT,                 \
-		&&OPCODE_OP_NOT_EQUAL_FLOAT_INT,                 \
-		&&OPCODE_OP_NOT_EQUAL_STRING_STRING_NAME,        \
-		&&OPCODE_OP_NOT_EQUAL_STRING_NAME_STRING,        \
-		&&OPCODE_OP_NOT_EQUAL_STRING_NODE_PATH,          \
-		&&OPCODE_OP_NOT_EQUAL_NODE_PATH_STRING,          \
-		&&OPCODE_OP_LESS_BOOL_BOOL,                      \
-		&&OPCODE_OP_NUMBER(LESS),                        \
-		&&OPCODE_OP_VECTOR(LESS),                        \
-		&&OPCODE_OP_NUMBER(LESS_EQUAL),                  \
-		&&OPCODE_OP_VECTOR(LESS_EQUAL),                  \
-		&&OPCODE_OP_GREATER_BOOL_BOOL,                   \
-		&&OPCODE_OP_NUMBER(GREATER),                     \
-		&&OPCODE_OP_VECTOR(GREATER),                     \
-		&&OPCODE_OP_NUMBER(GREATER_EQUAL),               \
-		&&OPCODE_OP_VECTOR(GREATER_EQUAL),               \
-		&&OPCODE_EXTENDS_TEST,                           \
-		&&OPCODE_IS_BUILTIN,                             \
-		&&OPCODE_SET,                                    \
-		&&OPCODE_GET,                                    \
-		&&OPCODE_GET_STRING_INT,                         \
-		&&OPCODE_GET_STRING_FLOAT,                       \
-		&&OPCODE_GET_VECTOR2_INT,                        \
-		&&OPCODE_GET_VECTOR2_FLOAT,                      \
-		&&OPCODE_GET_VECTOR2_STRING,                     \
-		&&OPCODE_GET_VECTOR2I_INT,                       \
-		&&OPCODE_GET_VECTOR2I_FLOAT,                     \
-		&&OPCODE_GET_VECTOR2I_STRING,                    \
-		&&OPCODE_GET_VECTOR3_INT,                        \
-		&&OPCODE_GET_VECTOR3_FLOAT,                      \
-		&&OPCODE_GET_VECTOR3_STRING,                     \
-		&&OPCODE_GET_VECTOR3I_INT,                       \
-		&&OPCODE_GET_VECTOR3I_FLOAT,                     \
-		&&OPCODE_GET_VECTOR3I_STRING,                    \
-		&&OPCODE_GET_RECT2_STRING,                       \
-		&&OPCODE_GET_RECT2I_STRING,                      \
-		&&OPCODE_GET_TRANSFORM_INT,                      \
-		&&OPCODE_GET_TRANSFORM_FLOAT,                    \
-		&&OPCODE_GET_TRANSFORM_STRING,                   \
-		&&OPCODE_GET_TRANSFORM2D_INT,                    \
-		&&OPCODE_GET_TRANSFORM2D_FLOAT,                  \
-		&&OPCODE_GET_TRANSFORM2D_STRING,                 \
-		&&OPCODE_GET_PLANE_STRING,                       \
-		&&OPCODE_GET_QUAT_STRING,                        \
-		&&OPCODE_GET_AABB_STRING,                        \
-		&&OPCODE_GET_BASIS_INT,                          \
-		&&OPCODE_GET_BASIS_FLOAT,                        \
-		&&OPCODE_GET_BASIS_STRING,                       \
-		&&OPCODE_GET_COLOR_INT,                          \
-		&&OPCODE_GET_COLOR_FLOAT,                        \
-		&&OPCODE_GET_COLOR_STRING,                       \
-		&&OPCODE_GET_OBJECT_STRING,                      \
-		&&OPCODE_SET_NAMED,                              \
-		&&OPCODE_GET_NAMED,                              \
-		&&OPCODE_GET_NAMED_VECTOR2,                      \
-		&&OPCODE_GET_NAMED_VECTOR2I,                     \
-		&&OPCODE_GET_NAMED_VECTOR3,                      \
-		&&OPCODE_GET_NAMED_VECTOR3I,                     \
-		&&OPCODE_GET_NAMED_RECT2,                        \
-		&&OPCODE_GET_NAMED_RECT2I,                       \
-		&&OPCODE_GET_NAMED_TRANSFORM,                    \
-		&&OPCODE_GET_NAMED_TRANSFORM2D,                  \
-		&&OPCODE_GET_NAMED_PLANE,                        \
-		&&OPCODE_GET_NAMED_QUAT,                         \
-		&&OPCODE_GET_NAMED_BASIS,                        \
-		&&OPCODE_GET_NAMED_AABB,                         \
-		&&OPCODE_GET_NAMED_COLOR,                        \
-		&&OPCODE_GET_NAMED_OBJECT,                       \
-		&&OPCODE_SET_MEMBER,                             \
-		&&OPCODE_GET_MEMBER,                             \
-		&&OPCODE_ASSIGN,                                 \
-		&&OPCODE_ASSIGN_TRUE,                            \
-		&&OPCODE_ASSIGN_FALSE,                           \
-		&&OPCODE_ASSIGN_TYPED_BUILTIN,                   \
-		&&OPCODE_ASSIGN_TYPED_NATIVE,                    \
-		&&OPCODE_ASSIGN_TYPED_SCRIPT,                    \
-		&&OPCODE_CAST_TO_BUILTIN,                        \
-		&&OPCODE_CAST_TO_NATIVE,                         \
-		&&OPCODE_CAST_TO_SCRIPT,                         \
-		&&OPCODE_CONSTRUCT,                              \
-		&&OPCODE_CONSTRUCT_ARRAY,                        \
-		&&OPCODE_CONSTRUCT_DICTIONARY,                   \
-		&&OPCODE_CALL,                                   \
-		&&OPCODE_CALL_RETURN,                            \
-		&&OPCODE_CALL_ASYNC,                             \
-		&&OPCODE_CALL_BUILT_IN,                          \
-		&&OPCODE_CALL_SELF_BASE,                         \
-		&&OPCODE_CALL_METHOD_BIND,                       \
-		&&OPCODE_CALL_METHOD_BIND_RET,                   \
-		&&OPCODE_CALL_PTRCALL_NO_RETURN,                 \
-		&&OPCODE_ALL_TYPES(CALL_PTRCALL),                \
-		&&OPCODE_CALL_SIN_INT,                           \
-		&&OPCODE_CALL_SIN_FLOAT,                         \
-		&&OPCODE_CALL_COS_INT,                           \
-		&&OPCODE_CALL_COS_FLOAT,                         \
-		&&OPCODE_CALL_TAN_INT,                           \
-		&&OPCODE_CALL_TAN_FLOAT,                         \
-		&&OPCODE_CALL_SINH_INT,                          \
-		&&OPCODE_CALL_SINH_FLOAT,                        \
-		&&OPCODE_CALL_COSH_INT,                          \
-		&&OPCODE_CALL_COSH_FLOAT,                        \
-		&&OPCODE_CALL_TANH_INT,                          \
-		&&OPCODE_CALL_TANH_FLOAT,                        \
-		&&OPCODE_CALL_ASIN_INT,                          \
-		&&OPCODE_CALL_ASIN_FLOAT,                        \
-		&&OPCODE_CALL_ACOS_INT,                          \
-		&&OPCODE_CALL_ACOS_FLOAT,                        \
-		&&OPCODE_CALL_ATAN_INT,                          \
-		&&OPCODE_CALL_ATAN_FLOAT,                        \
-		&&OPCODE_CALL_ATAN2_INT,                         \
-		&&OPCODE_CALL_ATAN2_FLOAT,                       \
-		&&OPCODE_CALL_SQRT_INT,                          \
-		&&OPCODE_CALL_SQRT_FLOAT,                        \
-		&&OPCODE_CALL_FMOD_FLOAT,                        \
-		&&OPCODE_CALL_FPOSMOD_FLOAT,                     \
-		&&OPCODE_CALL_POSMOD_INT,                        \
-		&&OPCODE_CALL_FLOOR_INT,                         \
-		&&OPCODE_CALL_FLOOR_FLOAT,                       \
-		&&OPCODE_CALL_CEIL_INT,                          \
-		&&OPCODE_CALL_CEIL_FLOAT,                        \
-		&&OPCODE_CALL_POW_INT,                           \
-		&&OPCODE_CALL_POW_FLOAT,                         \
-		&&OPCODE_CALL_LOG_INT,                           \
-		&&OPCODE_CALL_LOG_FLOAT,                         \
-		&&OPCODE_CALL_EXP_INT,                           \
-		&&OPCODE_CALL_EXP_FLOAT,                         \
-		&&OPCODE_CALL_DEG2RAD_INT,                       \
-		&&OPCODE_CALL_DEG2RAD_FLOAT,                     \
-		&&OPCODE_CALL_RAD2DEG_INT,                       \
-		&&OPCODE_CALL_RAD2DEG_FLOAT,                     \
-		&&OPCODE_CALL_LINEAR2DB_INT,                     \
-		&&OPCODE_CALL_LINEAR2DB_FLOAT,                   \
-		&&OPCODE_CALL_DB2LINEAR_INT,                     \
-		&&OPCODE_CALL_DB2LINEAR_FLOAT,                   \
-		&&OPCODE_CALL_ROUND_FLOAT,                       \
-		&&OPCODE_CALL_IS_INF_FLOAT,                      \
-		&&OPCODE_CALL_IS_NAN_FLOAT,                      \
-		&&OPCODE_CALL_IS_ZERO_APPROX_FLOAT,              \
-		&&OPCODE_CALL_IS_EQUAL_APPROX_FLOAT,             \
-		&&OPCODE_CALL_EASE_INT,                          \
-		&&OPCODE_CALL_EASE_FLOAT,                        \
-		&&OPCODE_CALL_RANDOM_INT,                        \
-		&&OPCODE_CALL_RANDOM_FLOAT,                      \
-		&&OPCODE_CALL_RAND_INT,                          \
-		&&OPCODE_CALL_RANDF_FLOAT,                       \
-		&&OPCODE_CALL_STEP_DECIMALS_INT,                 \
-		&&OPCODE_CALL_STEP_DECIMALS_FLOAT,               \
-		&&OPCODE_CALL_STEPIFY_INT,                       \
-		&&OPCODE_CALL_STEPIFY_FLOAT,                     \
-		&&OPCODE_CALL_LERP_INT,                          \
-		&&OPCODE_CALL_LERP_FLOAT,                        \
-		&&OPCODE_CALL_LERP_VECTOR2,                      \
-		&&OPCODE_CALL_LERP_VECTOR3,                      \
-		&&OPCODE_CALL_LERP_COLOR,                        \
-		&&OPCODE_CALL_LERP_ANGLE_FLOAT,                  \
-		&&OPCODE_CALL_INVERSE_LERP_FLOAT,                \
-		&&OPCODE_CALL_SMOOTHSTEP_INT,                    \
-		&&OPCODE_CALL_SMOOTHSTEP_FLOAT,                  \
-		&&OPCODE_CALL_MOVE_TOWARD_INT,                   \
-		&&OPCODE_CALL_MOVE_TOWARD_FLOAT,                 \
-		&&OPCODE_CALL_DECTIME_INT,                       \
-		&&OPCODE_CALL_DECTIME_FLOAT,                     \
-		&&OPCODE_CALL_NEAREST_PO2_INT,                   \
-		&&OPCODE_CALL_NEAREST_PO2_FLOAT,                 \
-		&&OPCODE_CALL_ABS_INT,                           \
-		&&OPCODE_CALL_ABS_FLOAT,                         \
-		&&OPCODE_CALL_WRAP_INT,                          \
-		&&OPCODE_CALL_WRAP_FLOAT,                        \
-		&&OPCODE_CALL_MAX_INT,                           \
-		&&OPCODE_CALL_MAX_FLOAT,                         \
-		&&OPCODE_CALL_MIN_INT,                           \
-		&&OPCODE_CALL_MIN_FLOAT,                         \
-		&&OPCODE_CALL_CLAMP_INT,                         \
-		&&OPCODE_CALL_CLAMP_FLOAT,                       \
-		&&OPCODE_CALL_SIGN_INT,                          \
-		&&OPCODE_CALL_SIGN_FLOAT,                        \
-		&&OPCODE_CALL_CARTESIAN2POLAR_FLOAT,             \
-		&&OPCODE_CALL_POLAR2CARTESIAN_FLOAT,             \
-		&&OPCODE_AWAIT,                                  \
-		&&OPCODE_AWAIT_RESUME,                           \
-		&&OPCODE_JUMP,                                   \
-		&&OPCODE_JUMP_IF,                                \
-		&&OPCODE_JUMP_IF_NOT,                            \
-		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                   \
-		&&OPCODE_RETURN,                                 \
-		&&OPCODE_ITERATE_BEGIN,                          \
-		&&OPCODE_ITERATE_BEGIN_INT,                      \
-		&&OPCODE_ITERATE_BEGIN_FLOAT,                    \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2,                  \
-		&&OPCODE_ITERATE_BEGIN_VECTOR2I,                 \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3,                  \
-		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                 \
-		&&OPCODE_ITERATE_BEGIN_STRING,                   \
-		&&OPCODE_ITERATE_BEGIN_DICTIONARY,               \
-		&&OPCODE_ITERATE_BEGIN_ARRAY,                    \
-		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,        \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,      \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,     \
-		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,       \
-		&&OPCODE_ITERATE_BEGIN_OBJECT,                   \
-		&&OPCODE_ITERATE,                                \
-		&&OPCODE_ITERATE_INT,                            \
-		&&OPCODE_ITERATE_FLOAT,                          \
-		&&OPCODE_ITERATE_VECTOR2,                        \
-		&&OPCODE_ITERATE_VECTOR2I,                       \
-		&&OPCODE_ITERATE_VECTOR3,                        \
-		&&OPCODE_ITERATE_VECTOR3I,                       \
-		&&OPCODE_ITERATE_STRING,                         \
-		&&OPCODE_ITERATE_DICTIONARY,                     \
-		&&OPCODE_ITERATE_ARRAY,                          \
-		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,              \
-		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,             \
-		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,             \
-		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,            \
-		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,           \
-		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,             \
-		&&OPCODE_ITERATE_OBJECT,                         \
-		&&OPCODE_ASSERT,                                 \
-		&&OPCODE_BREAKPOINT,                             \
-		&&OPCODE_LINE,                                   \
-		&&OPCODE_END                                     \
-	};                                                   \
+#define OPCODES_TABLE                                       \
+	static const void *switch_table_ops[] = {               \
+		&&OPCODE_OPERATOR,                                  \
+		&&OPCODE_OP_NUMBER(ADD),                            \
+		&&OPCODE_OP_VECTOR(ADD),                            \
+		&&OPCODE_OP_ADD_QUAT_QUAT,                          \
+		&&OPCODE_OP_ADD_COLOR_COLOR,                        \
+		&&OPCODE_OP_CONCAT_STRING_STRING,                   \
+		&&OPCODE_OP_ARRAYS(CONCAT),                         \
+		&&OPCODE_OP_NUMBER(SUBTRACT),                       \
+		&&OPCODE_OP_VECTOR(SUBTRACT),                       \
+		&&OPCODE_OP_SUBTRACT_QUAT_QUAT,                     \
+		&&OPCODE_OP_SUBTRACT_COLOR_COLOR,                   \
+		&&OPCODE_OP_NUMBER(MULTIPLY),                       \
+		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_TRANSFORM2D,       \
+		&&OPCODE_OP_MULTIPLY_TRANSFORM2D_VECTOR2,           \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, QUAT),            \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, QUAT),        \
+		&&OPCODE_OP_MULTIPLY_QUAT_VECTOR3,                  \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2),         \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2),     \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR2I),        \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR2I),    \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3),         \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3),     \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, VECTOR3I),        \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, VECTOR3I),    \
+		&&OPCODE_OP_TYPE_NUMBER(MULTIPLY, COLOR),           \
+		&&OPCODE_OP_TYPE_NUMBER_REV(MULTIPLY, COLOR),       \
+		&&OPCODE_OP_NUMBER(DIVIDE),                         \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2),           \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR2I),          \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3),           \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, VECTOR3I),          \
+		&&OPCODE_OP_TYPE_NUMBER(DIVIDE, COLOR),             \
+		&&OPCODE_OP_DIVIDE_QUAT_FLOAT,                      \
+		&&OPCODE_OP_MODULO_INT_INT,                         \
+		&&OPCODE_OP_NEGATE_INT,                             \
+		&&OPCODE_OP_NEGATE_FLOAT,                           \
+		&&OPCODE_OP_NEGATE_VECTOR2,                         \
+		&&OPCODE_OP_NEGATE_VECTOR2I,                        \
+		&&OPCODE_OP_NEGATE_VECTOR3,                         \
+		&&OPCODE_OP_NEGATE_VECTOR3I,                        \
+		&&OPCODE_OP_NEGATE_QUAT,                            \
+		&&OPCODE_OP_NEGATE_COLOR,                           \
+		&&OPCODE_OP_BIT_NEGATE_INT,                         \
+		&&OPCODE_OP_BIT_AND_INT_INT,                        \
+		&&OPCODE_OP_BIT_OR_INT_INT,                         \
+		&&OPCODE_OP_BIT_XOR_INT_INT,                        \
+		&&OPCODE_OP_SHIFT_LEFT,                             \
+		&&OPCODE_OP_SHIFT_RIGHT,                            \
+		&&OPCODE_OP_NOT,                                    \
+		&&OPCODE_OP_AND,                                    \
+		&&OPCODE_OP_OR,                                     \
+		&&OPCODE_ALL_TYPES(OP_EQUAL),                       \
+		&&OPCODE_OP_EQUAL_INT_FLOAT,                        \
+		&&OPCODE_OP_EQUAL_FLOAT_INT,                        \
+		&&OPCODE_OP_EQUAL_STRING_STRING_NAME,               \
+		&&OPCODE_OP_EQUAL_STRING_NAME_STRING,               \
+		&&OPCODE_OP_EQUAL_STRING_NODE_PATH,                 \
+		&&OPCODE_OP_EQUAL_NODE_PATH_STRING,                 \
+		&&OPCODE_ALL_TYPES(OP_NOT_EQUAL),                   \
+		&&OPCODE_OP_NOT_EQUAL_INT_FLOAT,                    \
+		&&OPCODE_OP_NOT_EQUAL_FLOAT_INT,                    \
+		&&OPCODE_OP_NOT_EQUAL_STRING_STRING_NAME,           \
+		&&OPCODE_OP_NOT_EQUAL_STRING_NAME_STRING,           \
+		&&OPCODE_OP_NOT_EQUAL_STRING_NODE_PATH,             \
+		&&OPCODE_OP_NOT_EQUAL_NODE_PATH_STRING,             \
+		&&OPCODE_OP_LESS_BOOL_BOOL,                         \
+		&&OPCODE_OP_NUMBER(LESS),                           \
+		&&OPCODE_OP_VECTOR(LESS),                           \
+		&&OPCODE_OP_NUMBER(LESS_EQUAL),                     \
+		&&OPCODE_OP_VECTOR(LESS_EQUAL),                     \
+		&&OPCODE_OP_GREATER_BOOL_BOOL,                      \
+		&&OPCODE_OP_NUMBER(GREATER),                        \
+		&&OPCODE_OP_VECTOR(GREATER),                        \
+		&&OPCODE_OP_NUMBER(GREATER_EQUAL),                  \
+		&&OPCODE_OP_VECTOR(GREATER_EQUAL),                  \
+		&&OPCODE_EXTENDS_TEST,                              \
+		&&OPCODE_IS_BUILTIN,                                \
+		&&OPCODE_SET,                                       \
+		&&OPCODE_GET,                                       \
+		&&OPCODE_GET_STRING_INT,                            \
+		&&OPCODE_GET_STRING_FLOAT,                          \
+		&&OPCODE_GET_VECTOR2_INT,                           \
+		&&OPCODE_GET_VECTOR2_FLOAT,                         \
+		&&OPCODE_GET_VECTOR2_STRING,                        \
+		&&OPCODE_GET_VECTOR2I_INT,                          \
+		&&OPCODE_GET_VECTOR2I_FLOAT,                        \
+		&&OPCODE_GET_VECTOR2I_STRING,                       \
+		&&OPCODE_GET_VECTOR3_INT,                           \
+		&&OPCODE_GET_VECTOR3_FLOAT,                         \
+		&&OPCODE_GET_VECTOR3_STRING,                        \
+		&&OPCODE_GET_VECTOR3I_INT,                          \
+		&&OPCODE_GET_VECTOR3I_FLOAT,                        \
+		&&OPCODE_GET_VECTOR3I_STRING,                       \
+		&&OPCODE_GET_RECT2_STRING,                          \
+		&&OPCODE_GET_RECT2I_STRING,                         \
+		&&OPCODE_GET_TRANSFORM_INT,                         \
+		&&OPCODE_GET_TRANSFORM_FLOAT,                       \
+		&&OPCODE_GET_TRANSFORM_STRING,                      \
+		&&OPCODE_GET_TRANSFORM2D_INT,                       \
+		&&OPCODE_GET_TRANSFORM2D_FLOAT,                     \
+		&&OPCODE_GET_TRANSFORM2D_STRING,                    \
+		&&OPCODE_GET_PLANE_STRING,                          \
+		&&OPCODE_GET_QUAT_STRING,                           \
+		&&OPCODE_GET_AABB_STRING,                           \
+		&&OPCODE_GET_BASIS_INT,                             \
+		&&OPCODE_GET_BASIS_FLOAT,                           \
+		&&OPCODE_GET_BASIS_STRING,                          \
+		&&OPCODE_GET_COLOR_INT,                             \
+		&&OPCODE_GET_COLOR_FLOAT,                           \
+		&&OPCODE_GET_COLOR_STRING,                          \
+		&&OPCODE_GET_OBJECT_STRING,                         \
+		&&OPCODE_SET_NAMED,                                 \
+		&&OPCODE_GET_NAMED,                                 \
+		&&OPCODE_GET_NAMED_VECTOR2,                         \
+		&&OPCODE_GET_NAMED_VECTOR2I,                        \
+		&&OPCODE_GET_NAMED_VECTOR3,                         \
+		&&OPCODE_GET_NAMED_VECTOR3I,                        \
+		&&OPCODE_GET_NAMED_RECT2,                           \
+		&&OPCODE_GET_NAMED_RECT2I,                          \
+		&&OPCODE_GET_NAMED_TRANSFORM,                       \
+		&&OPCODE_GET_NAMED_TRANSFORM2D,                     \
+		&&OPCODE_GET_NAMED_PLANE,                           \
+		&&OPCODE_GET_NAMED_QUAT,                            \
+		&&OPCODE_GET_NAMED_BASIS,                           \
+		&&OPCODE_GET_NAMED_AABB,                            \
+		&&OPCODE_GET_NAMED_COLOR,                           \
+		&&OPCODE_GET_NAMED_OBJECT,                          \
+		&&OPCODE_SET_MEMBER,                                \
+		&&OPCODE_GET_MEMBER,                                \
+		&&OPCODE_ASSIGN,                                    \
+		&&OPCODE_ASSIGN_TRUE,                               \
+		&&OPCODE_ASSIGN_FALSE,                              \
+		&&OPCODE_ASSIGN_TYPED_BUILTIN,                      \
+		&&OPCODE_ASSIGN_TYPED_NATIVE,                       \
+		&&OPCODE_ASSIGN_TYPED_SCRIPT,                       \
+		&&OPCODE_CAST_TO_BUILTIN,                           \
+		&&OPCODE_CAST_TO_NATIVE,                            \
+		&&OPCODE_CAST_TO_SCRIPT,                            \
+		&&OPCODE_CONSTRUCT,                                 \
+		&&OPCODE_CONSTRUCT_ARRAY,                           \
+		&&OPCODE_CONSTRUCT_DICTIONARY,                      \
+		&&OPCODE_CALL,                                      \
+		&&OPCODE_CALL_RETURN,                               \
+		&&OPCODE_CALL_ASYNC,                                \
+		&&OPCODE_CALL_BUILT_IN,                             \
+		&&OPCODE_CALL_BUILTIN_TYPE_FUNC,                    \
+		&&OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_NO_RET,   \
+		&&OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET,      \
+		&&OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET_NULL, \
+		&&OPCODE_CALL_SELF_BASE,                            \
+		&&OPCODE_CALL_METHOD_BIND,                          \
+		&&OPCODE_CALL_METHOD_BIND_RET,                      \
+		&&OPCODE_CALL_PTRCALL_NO_RETURN,                    \
+		&&OPCODE_ALL_TYPES(CALL_PTRCALL),                   \
+		&&OPCODE_CALL_SIN_INT,                              \
+		&&OPCODE_CALL_SIN_FLOAT,                            \
+		&&OPCODE_CALL_COS_INT,                              \
+		&&OPCODE_CALL_COS_FLOAT,                            \
+		&&OPCODE_CALL_TAN_INT,                              \
+		&&OPCODE_CALL_TAN_FLOAT,                            \
+		&&OPCODE_CALL_SINH_INT,                             \
+		&&OPCODE_CALL_SINH_FLOAT,                           \
+		&&OPCODE_CALL_COSH_INT,                             \
+		&&OPCODE_CALL_COSH_FLOAT,                           \
+		&&OPCODE_CALL_TANH_INT,                             \
+		&&OPCODE_CALL_TANH_FLOAT,                           \
+		&&OPCODE_CALL_ASIN_INT,                             \
+		&&OPCODE_CALL_ASIN_FLOAT,                           \
+		&&OPCODE_CALL_ACOS_INT,                             \
+		&&OPCODE_CALL_ACOS_FLOAT,                           \
+		&&OPCODE_CALL_ATAN_INT,                             \
+		&&OPCODE_CALL_ATAN_FLOAT,                           \
+		&&OPCODE_CALL_ATAN2_INT,                            \
+		&&OPCODE_CALL_ATAN2_FLOAT,                          \
+		&&OPCODE_CALL_SQRT_INT,                             \
+		&&OPCODE_CALL_SQRT_FLOAT,                           \
+		&&OPCODE_CALL_FMOD_FLOAT,                           \
+		&&OPCODE_CALL_FPOSMOD_FLOAT,                        \
+		&&OPCODE_CALL_POSMOD_INT,                           \
+		&&OPCODE_CALL_FLOOR_INT,                            \
+		&&OPCODE_CALL_FLOOR_FLOAT,                          \
+		&&OPCODE_CALL_CEIL_INT,                             \
+		&&OPCODE_CALL_CEIL_FLOAT,                           \
+		&&OPCODE_CALL_POW_INT,                              \
+		&&OPCODE_CALL_POW_FLOAT,                            \
+		&&OPCODE_CALL_LOG_INT,                              \
+		&&OPCODE_CALL_LOG_FLOAT,                            \
+		&&OPCODE_CALL_EXP_INT,                              \
+		&&OPCODE_CALL_EXP_FLOAT,                            \
+		&&OPCODE_CALL_DEG2RAD_INT,                          \
+		&&OPCODE_CALL_DEG2RAD_FLOAT,                        \
+		&&OPCODE_CALL_RAD2DEG_INT,                          \
+		&&OPCODE_CALL_RAD2DEG_FLOAT,                        \
+		&&OPCODE_CALL_LINEAR2DB_INT,                        \
+		&&OPCODE_CALL_LINEAR2DB_FLOAT,                      \
+		&&OPCODE_CALL_DB2LINEAR_INT,                        \
+		&&OPCODE_CALL_DB2LINEAR_FLOAT,                      \
+		&&OPCODE_CALL_ROUND_FLOAT,                          \
+		&&OPCODE_CALL_IS_INF_FLOAT,                         \
+		&&OPCODE_CALL_IS_NAN_FLOAT,                         \
+		&&OPCODE_CALL_IS_ZERO_APPROX_FLOAT,                 \
+		&&OPCODE_CALL_IS_EQUAL_APPROX_FLOAT,                \
+		&&OPCODE_CALL_EASE_INT,                             \
+		&&OPCODE_CALL_EASE_FLOAT,                           \
+		&&OPCODE_CALL_RANDOM_INT,                           \
+		&&OPCODE_CALL_RANDOM_FLOAT,                         \
+		&&OPCODE_CALL_RAND_INT,                             \
+		&&OPCODE_CALL_RANDF_FLOAT,                          \
+		&&OPCODE_CALL_STEP_DECIMALS_INT,                    \
+		&&OPCODE_CALL_STEP_DECIMALS_FLOAT,                  \
+		&&OPCODE_CALL_STEPIFY_INT,                          \
+		&&OPCODE_CALL_STEPIFY_FLOAT,                        \
+		&&OPCODE_CALL_LERP_INT,                             \
+		&&OPCODE_CALL_LERP_FLOAT,                           \
+		&&OPCODE_CALL_LERP_VECTOR2,                         \
+		&&OPCODE_CALL_LERP_VECTOR3,                         \
+		&&OPCODE_CALL_LERP_COLOR,                           \
+		&&OPCODE_CALL_LERP_ANGLE_FLOAT,                     \
+		&&OPCODE_CALL_INVERSE_LERP_FLOAT,                   \
+		&&OPCODE_CALL_SMOOTHSTEP_INT,                       \
+		&&OPCODE_CALL_SMOOTHSTEP_FLOAT,                     \
+		&&OPCODE_CALL_MOVE_TOWARD_INT,                      \
+		&&OPCODE_CALL_MOVE_TOWARD_FLOAT,                    \
+		&&OPCODE_CALL_DECTIME_INT,                          \
+		&&OPCODE_CALL_DECTIME_FLOAT,                        \
+		&&OPCODE_CALL_NEAREST_PO2_INT,                      \
+		&&OPCODE_CALL_NEAREST_PO2_FLOAT,                    \
+		&&OPCODE_CALL_ABS_INT,                              \
+		&&OPCODE_CALL_ABS_FLOAT,                            \
+		&&OPCODE_CALL_WRAP_INT,                             \
+		&&OPCODE_CALL_WRAP_FLOAT,                           \
+		&&OPCODE_CALL_MAX_INT,                              \
+		&&OPCODE_CALL_MAX_FLOAT,                            \
+		&&OPCODE_CALL_MIN_INT,                              \
+		&&OPCODE_CALL_MIN_FLOAT,                            \
+		&&OPCODE_CALL_CLAMP_INT,                            \
+		&&OPCODE_CALL_CLAMP_FLOAT,                          \
+		&&OPCODE_CALL_SIGN_INT,                             \
+		&&OPCODE_CALL_SIGN_FLOAT,                           \
+		&&OPCODE_CALL_CARTESIAN2POLAR_FLOAT,                \
+		&&OPCODE_CALL_POLAR2CARTESIAN_FLOAT,                \
+		&&OPCODE_AWAIT,                                     \
+		&&OPCODE_AWAIT_RESUME,                              \
+		&&OPCODE_JUMP,                                      \
+		&&OPCODE_JUMP_IF,                                   \
+		&&OPCODE_JUMP_IF_NOT,                               \
+		&&OPCODE_JUMP_TO_DEF_ARGUMENT,                      \
+		&&OPCODE_RETURN,                                    \
+		&&OPCODE_ITERATE_BEGIN,                             \
+		&&OPCODE_ITERATE_BEGIN_INT,                         \
+		&&OPCODE_ITERATE_BEGIN_FLOAT,                       \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2,                     \
+		&&OPCODE_ITERATE_BEGIN_VECTOR2I,                    \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3,                     \
+		&&OPCODE_ITERATE_BEGIN_VECTOR3I,                    \
+		&&OPCODE_ITERATE_BEGIN_STRING,                      \
+		&&OPCODE_ITERATE_BEGIN_DICTIONARY,                  \
+		&&OPCODE_ITERATE_BEGIN_ARRAY,                       \
+		&&OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,           \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,          \
+		&&OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,          \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,        \
+		&&OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,        \
+		&&OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,         \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,        \
+		&&OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,        \
+		&&OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,          \
+		&&OPCODE_ITERATE_BEGIN_OBJECT,                      \
+		&&OPCODE_ITERATE,                                   \
+		&&OPCODE_ITERATE_INT,                               \
+		&&OPCODE_ITERATE_FLOAT,                             \
+		&&OPCODE_ITERATE_VECTOR2,                           \
+		&&OPCODE_ITERATE_VECTOR2I,                          \
+		&&OPCODE_ITERATE_VECTOR3,                           \
+		&&OPCODE_ITERATE_VECTOR3I,                          \
+		&&OPCODE_ITERATE_STRING,                            \
+		&&OPCODE_ITERATE_DICTIONARY,                        \
+		&&OPCODE_ITERATE_ARRAY,                             \
+		&&OPCODE_ITERATE_PACKED_BYTE_ARRAY,                 \
+		&&OPCODE_ITERATE_PACKED_INT32_ARRAY,                \
+		&&OPCODE_ITERATE_PACKED_INT64_ARRAY,                \
+		&&OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,              \
+		&&OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,              \
+		&&OPCODE_ITERATE_PACKED_STRING_ARRAY,               \
+		&&OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,              \
+		&&OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,              \
+		&&OPCODE_ITERATE_PACKED_COLOR_ARRAY,                \
+		&&OPCODE_ITERATE_OBJECT,                            \
+		&&OPCODE_ASSERT,                                    \
+		&&OPCODE_BREAKPOINT,                                \
+		&&OPCODE_LINE,                                      \
+		&&OPCODE_END                                        \
+	};                                                      \
 	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
@@ -1175,6 +1179,67 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		method->ptrcall(base_obj, argptrs, ret_opaque);                             \
 		ip += argc + 1;                                                             \
 	}                                                                               \
+	DISPATCH_OPCODE
+#endif
+
+#define OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM_NO_RET() \
+	method->validated_call(base, (const Variant **)argptrs, nullptr);
+
+#define OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM_RET() \
+	GET_VARIANT_PTR(ret, argc);                              \
+	method->validated_call(base, (const Variant **)argptrs, ret)
+
+#define OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM_RET_NULL() \
+	GET_VARIANT_PTR(ret, argc);                                   \
+	VariantInternal::initialize(ret, Variant::NIL);               \
+	method->validated_call(base, (const Variant **)argptrs, nullptr)
+
+#ifdef DEBUG_ENABLED
+#define OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM(m_opcode)                            \
+	OPCODE(OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_##m_opcode) {                            \
+		CHECK_SPACE(4);                                                                     \
+		int argc = _code_ptr[ip + 1];                                                       \
+		GET_VARIANT_PTR(base, 2);                                                           \
+		GD_ERR_BREAK(_code_ptr[ip + 3] < 0 || _code_ptr[ip + 3] >= _variant_methods_count); \
+		Variant::InternalMethod *method = _variant_methods_ptr[_code_ptr[ip + 3]];          \
+		GD_ERR_BREAK(argc < 0);                                                             \
+		ip += 4;                                                                            \
+		CHECK_SPACE(argc + 1);                                                              \
+		Variant **argptrs = call_args;                                                      \
+		for (int i = 0; i < argc; i++) {                                                    \
+			GET_VARIANT_PTR(v, i);                                                          \
+			argptrs[i] = v;                                                                 \
+		}                                                                                   \
+		uint64_t call_time = 0;                                                             \
+		if (GDScriptLanguage::get_singleton()->profiling) {                                 \
+			call_time = OS::get_singleton()->get_ticks_usec();                              \
+		}                                                                                   \
+		OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM_##m_opcode();                        \
+		if (GDScriptLanguage::get_singleton()->profiling) {                                 \
+			function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;        \
+		}                                                                                   \
+		ip += argc + 1;                                                                     \
+	}                                                                                       \
+	DISPATCH_OPCODE
+#else
+#define OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM(m_opcode)                            \
+	OPCODE(OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_##m_opcode) {                            \
+		CHECK_SPACE(4);                                                                     \
+		int argc = _code_ptr[ip + 1];                                                       \
+		GET_VARIANT_PTR(base, 2);                                                           \
+		GD_ERR_BREAK(_code_ptr[ip + 3] < 0 || _code_ptr[ip + 3] >= _variant_methods_count); \
+		Variant::InternalMethod *method = _variant_methods_ptr[_code_ptr[ip + 3]];          \
+		GD_ERR_BREAK(argc < 0);                                                             \
+		ip += 4;                                                                            \
+		CHECK_SPACE(argc + 1);                                                              \
+		Variant **argptrs = call_args;                                                      \
+		for (int i = 0; i < argc; i++) {                                                    \
+			GET_VARIANT_PTR(v, i);                                                          \
+			argptrs[i] = v;                                                                 \
+		}                                                                                   \
+		OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM_##m_opcode();                        \
+		ip += argc + 1;                                                                     \
+	}                                                                                       \
 	DISPATCH_OPCODE
 #endif
 
@@ -2865,6 +2930,77 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				ip += argc + 1;
 			}
 			DISPATCH_OPCODE;
+			OPCODE(OPCODE_CALL_BUILTIN_TYPE_FUNC) {
+				CHECK_SPACE(4);
+
+				int argc = _code_ptr[ip + 1];
+				GET_VARIANT_PTR(base, 2);
+
+				int func_index = _code_ptr[ip + 3];
+
+				GD_ERR_BREAK(func_index < 0 || func_index >= _variant_methods_count);
+				Variant::InternalMethod *method = _variant_methods_ptr[func_index];
+
+				GD_ERR_BREAK(argc < 0);
+				ip += 4;
+				CHECK_SPACE(argc + 1);
+				Variant **argptrs = call_args;
+
+				for (int i = 0; i < argc; i++) {
+					GET_VARIANT_PTR(v, i);
+					argptrs[i] = v;
+				}
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+
+#endif
+				Callable::CallError err;
+				GET_VARIANT_PTR(ret, argc);
+				method->call(base, (const Variant **)argptrs, argc, *ret, err);
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+
+				if (err.error != Callable::CallError::CALL_OK) {
+					String methodstr = method->get_name();
+					String basestr = _get_var_type(base);
+
+					if (methodstr == "call") {
+						if (argc >= 1) {
+							methodstr = String(*argptrs[0]) + " (via call)";
+							if (err.error == Callable::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+								err.argument += 1;
+							}
+						}
+					} else if (methodstr == "free") {
+						if (err.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
+							if (base->is_ref()) {
+								err_text = "Attempted to free a reference.";
+								OPCODE_BREAK;
+							} else if (base->get_type() == Variant::OBJECT) {
+								err_text = "Attempted to free a locked object (calling or emitting).";
+								OPCODE_BREAK;
+							}
+						}
+					}
+					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
+					OPCODE_BREAK;
+				}
+#endif
+
+				ip += argc + 1;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM(NO_RET);
+			OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM(RET);
+			OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_CUSTOM(RET_NULL);
 
 			OPCODE(OPCODE_CALL_METHOD_BIND)
 			OPCODE(OPCODE_CALL_METHOD_BIND_RET) {
@@ -5586,6 +5722,39 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				if (ret) {
 					text += DADDR(4 + argc) + " = ";
 				}
+
+				text += DADDR(2) + ".";
+				text += method->get_name();
+
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(4 + i);
+				}
+				text += ")";
+
+				incr = 5 + argc;
+			} break;
+
+			case OPCODE_CALL_BUILTIN_TYPE_FUNC:
+			case OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_NO_RET:
+			case OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET:
+			case OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET_NULL: {
+				int argc = _code_ptr[ip + 1];
+				Variant::InternalMethod *method = _variant_methods_ptr[_code_ptr[ip + 3]];
+
+				text += "call-builtin-method ";
+				if (_code_ptr[ip] != OPCODE_CALL_BUILTIN_TYPE_FUNC) {
+					text += " (validated) ";
+				}
+
+				text += " (base ";
+				text += Variant::get_type_name(method->get_base_type());
+				text += ") ";
+
+				text += DADDR(4 + argc) + " = ";
 
 				text += DADDR(2) + ".";
 				text += method->get_name();

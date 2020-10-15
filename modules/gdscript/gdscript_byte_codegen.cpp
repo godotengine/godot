@@ -162,6 +162,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_methods_count = 0;
 	}
 
+	if (internal_method_map.size()) {
+		function->variant_methods.resize(internal_method_map.size());
+		function->_variant_methods_ptr = function->variant_methods.ptrw();
+		function->_variant_methods_count = internal_method_map.size();
+		for (const Map<Variant::InternalMethod *, int, InternalMethodComparator>::Element *E = internal_method_map.front(); E; E = E->next()) {
+			function->variant_methods.write[E->get()] = E->key();
+		}
+	} else {
+		function->_variant_methods_ptr = nullptr;
+		function->_variant_methods_count = 0;
+	}
+
 	if (function->default_arguments.size()) {
 		function->_default_arg_count = function->default_arguments.size();
 		function->_default_arg_ptr = &function->default_arguments[0];
@@ -1073,6 +1085,46 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 		append(p_arguments[i]);
 	}
 	append(p_target);
+}
+
+void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::InternalMethod *p_function, const Vector<Address> &p_arguments) {
+	bool is_validated = false;
+	bool has_return = ((p_function->get_flags() & Variant::InternalMethod::FLAG_RETURNS_VARIANT) > 0) || p_function->get_return_type() != Variant::NIL;
+	if (((p_function->get_flags() & (Variant::InternalMethod::FLAG_VARARGS | Variant::InternalMethod::FLAG_NO_PTRCALL)) == 0) && p_function->get_argument_count() == p_arguments.size()) {
+		// Check if all arguments are exact.
+		bool all_types_exact = true;
+		for (int i = 0; i < p_arguments.size(); i++) {
+			if (!IS_BUILTIN_TYPE(p_arguments[i], p_function->get_argument_type(i))) {
+				all_types_exact = false;
+				break;
+			}
+		}
+
+		is_validated = all_types_exact;
+	}
+
+	if (is_validated) {
+		if (has_return) {
+			append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET);
+		} else if (p_target.mode != Address::NIL) {
+			append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET_NULL);
+		} else {
+			append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_NO_RET);
+		}
+	} else {
+		append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_FUNC);
+	}
+
+	append(p_arguments.size());
+	append(p_base);
+	append(p_function);
+
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+
+	append(p_target);
+	alloc_call(p_arguments.size());
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {

@@ -401,6 +401,10 @@ public:
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
+		OPCODE_CALL_BUILTIN_TYPE_FUNC,
+		OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_NO_RET,
+		OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET,
+		OPCODE_CALL_BUILTIN_TYPE_FUNC_VALIDATED_RET_NULL,
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_CALL_METHOD_BIND,
 		OPCODE_CALL_METHOD_BIND_RET,
@@ -595,6 +599,8 @@ private:
 	int _code_size;
 	int _methods_count;
 	MethodBind **_methods_ptr;
+	int _variant_methods_count;
+	Variant::InternalMethod **_variant_methods_ptr;
 	int _argument_count;
 	int _stack_size;
 	int _call_size;
@@ -610,6 +616,7 @@ private:
 	Vector<int> default_arguments;
 	Vector<int> code;
 	Vector<MethodBind *> methods;
+	Vector<Variant::InternalMethod *> variant_methods;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 
