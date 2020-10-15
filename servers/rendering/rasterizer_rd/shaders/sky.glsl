@@ -223,13 +223,14 @@ FRAGMENT_SHADER_CODE
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
-	if (scene_data.volumetric_fog_enabled) {
-		vec4 fog = volumetric_fog_process(uv);
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(cube_normal);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 
-	if (scene_data.fog_enabled) {
-		vec4 fog = fog_process(cube_normal);
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(uv);
 		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 	}
 
