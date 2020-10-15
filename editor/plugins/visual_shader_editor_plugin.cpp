@@ -107,6 +107,7 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("update_node_deferred", &VisualShaderGraphPlugin::update_node_deferred);
 	ClassDB::bind_method("set_input_port_default_value", &VisualShaderGraphPlugin::set_input_port_default_value);
 	ClassDB::bind_method("set_uniform_name", &VisualShaderGraphPlugin::set_uniform_name);
+	ClassDB::bind_method("set_expression", &VisualShaderGraphPlugin::set_expression);
 	ClassDB::bind_method("update_constant", &VisualShaderGraphPlugin::update_constant);
 }
 
@@ -226,6 +227,13 @@ void VisualShaderGraphPlugin::update_constant(VisualShader::Type p_type, int p_n
 	links[p_node_id].graph_node->set_size(Size2(-1, -1));
 }
 
+void VisualShaderGraphPlugin::set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression) {
+	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id) || !links[p_node_id].expression_edit) {
+		return;
+	}
+	links[p_node_id].expression_edit->set_text(p_expression);
+}
+
 void VisualShaderGraphPlugin::update_node_size(int p_node_id) {
 	if (!links.has(p_node_id)) {
 		return;
@@ -239,6 +247,10 @@ void VisualShaderGraphPlugin::register_default_input_button(int p_node_id, int p
 
 void VisualShaderGraphPlugin::register_constant_option_btn(int p_node_id, OptionButton *p_button) {
 	links[p_node_id].const_op = p_button;
+}
+
+void VisualShaderGraphPlugin::register_expression_edit(int p_node_id, CodeEdit *p_expression_edit) {
+	links[p_node_id].expression_edit = p_expression_edit;
 }
 
 void VisualShaderGraphPlugin::update_uniform_refs() {
@@ -284,7 +296,7 @@ void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
 }
 
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
-	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr });
+	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, Map<int, InputPort>(), Map<int, Port>(), nullptr, nullptr, nullptr, nullptr });
 }
 
 void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, TextureButton *p_button) {
@@ -623,6 +635,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		expression_syntax_highlighter.instance();
 		expression_node->set_control(expression_box, 0);
 		node->add_child(expression_box);
+		register_expression_edit(p_id, expression_box);
 
 		Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
 		Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
@@ -1210,7 +1223,7 @@ void VisualShaderEditor::_add_input_port(int p_node, int p_port, int p_port_type
 		return;
 	}
 
-	undo_redo->create_action(TTR("Add input port"));
+	undo_redo->create_action(TTR("Add Input Port"));
 	undo_redo->add_do_method(node.ptr(), "add_input_port", p_port, p_port_type, p_name);
 	undo_redo->add_undo_method(node.ptr(), "remove_input_port", p_port);
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
@@ -1225,7 +1238,7 @@ void VisualShaderEditor::_add_output_port(int p_node, int p_port, int p_port_typ
 		return;
 	}
 
-	undo_redo->create_action(TTR("Add output port"));
+	undo_redo->create_action(TTR("Add Output Port"));
 	undo_redo->add_do_method(node.ptr(), "add_output_port", p_port, p_port_type, p_name);
 	undo_redo->add_undo_method(node.ptr(), "remove_output_port", p_port);
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
@@ -1240,7 +1253,7 @@ void VisualShaderEditor::_change_input_port_type(int p_type, int p_node, int p_p
 		return;
 	}
 
-	undo_redo->create_action(TTR("Change input port type"));
+	undo_redo->create_action(TTR("Change Input Port Type"));
 	undo_redo->add_do_method(node.ptr(), "set_input_port_type", p_port, p_type);
 	undo_redo->add_undo_method(node.ptr(), "set_input_port_type", p_port, node->get_input_port_type(p_port));
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
@@ -1255,7 +1268,7 @@ void VisualShaderEditor::_change_output_port_type(int p_type, int p_node, int p_
 		return;
 	}
 
-	undo_redo->create_action(TTR("Change output port type"));
+	undo_redo->create_action(TTR("Change Output Port Type"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_type", p_port, p_type);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_type", p_port, node->get_output_port_type(p_port));
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node);
@@ -1269,7 +1282,7 @@ void VisualShaderEditor::_change_input_port_name(const String &p_text, Object *l
 	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
-	undo_redo->create_action(TTR("Change input port name"));
+	undo_redo->create_action(TTR("Change Input Port Name"));
 	undo_redo->add_do_method(node.ptr(), "set_input_port_name", p_port_id, p_text);
 	undo_redo->add_undo_method(node.ptr(), "set_input_port_name", p_port_id, node->get_input_port_name(p_port_id));
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
@@ -1283,7 +1296,7 @@ void VisualShaderEditor::_change_output_port_name(const String &p_text, Object *
 	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
-	undo_redo->create_action(TTR("Change output port name"));
+	undo_redo->create_action(TTR("Change Output Port Name"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_name", p_port_id, p_text);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_name", p_port_id, node->get_output_port_name(p_port_id));
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, p_node_id);
@@ -1298,7 +1311,7 @@ void VisualShaderEditor::_remove_input_port(int p_node, int p_port) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Remove input port"));
+	undo_redo->create_action(TTR("Remove Input Port"));
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
@@ -1347,7 +1360,7 @@ void VisualShaderEditor::_remove_output_port(int p_node, int p_port) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Remove output port"));
+	undo_redo->create_action(TTR("Remove Output Port"));
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
@@ -1402,62 +1415,67 @@ void VisualShaderEditor::_expression_focus_out(Object *code_edit, int p_node) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Set expression"));
+	undo_redo->create_action(TTR("Set VisualShader Expression"));
 	undo_redo->add_do_method(node.ptr(), "set_expression", expression_box->get_text());
 	undo_redo->add_undo_method(node.ptr(), "set_expression", node->get_expression());
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_expression", type, p_node, expression_box->get_text());
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_expression", type, p_node, node->get_expression());
 	undo_redo->commit_action();
 }
 
 void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p_size) {
-	VisualShader::Type type = get_current_shader_type();
+	VisualShader::Type type = VisualShader::Type(p_type);
 	Ref<VisualShaderNode> node = visual_shader->get_node(type, p_node);
 	if (node.is_null()) {
 		return;
 	}
 
 	Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
-
 	if (group_node.is_null()) {
 		return;
 	}
 
-	Vector2 size = p_size;
+	group_node->set_size(p_size);
 
-	group_node->set_size(size);
+	if (get_current_shader_type() == type) {
+		Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
+		Control *text_box = nullptr;
+		if (!expression_node.is_null()) {
+			text_box = expression_node->get_control(0);
+			if (text_box) {
+				text_box->set_custom_minimum_size(Size2(0, 0));
+			}
+		}
 
-	GraphNode *gn = nullptr;
-	if (type == p_type) {
+		GraphNode *gn = nullptr;
 		Node *node2 = graph->get_node(itos(p_node));
 		gn = Object::cast_to<GraphNode>(node2);
 		if (!gn) {
 			return;
 		}
 
-		gn->set_custom_minimum_size(size);
+		gn->set_custom_minimum_size(p_size);
 		gn->set_size(Size2(1, 1));
-	}
 
-	Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
-	if (!expression_node.is_null()) {
-		Control *text_box = expression_node->get_control(0);
-		Size2 box_size = size;
-		if (gn != nullptr) {
-			if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
-				box_size.x = gn->get_size().x;
+		if (!expression_node.is_null() && text_box) {
+			Size2 box_size = p_size;
+			if (gn != nullptr) {
+				if (box_size.x < 150 * EDSCALE || box_size.y < 0) {
+					box_size.x = gn->get_size().x;
+				}
 			}
+			box_size.x -= text_box->get_margin(MARGIN_LEFT);
+			box_size.x -= 28 * EDSCALE;
+			box_size.y -= text_box->get_margin(MARGIN_TOP);
+			box_size.y -= 28 * EDSCALE;
+			text_box->set_custom_minimum_size(Size2(box_size.x, box_size.y));
+			text_box->set_size(Size2(1, 1));
 		}
-		box_size.x -= text_box->get_margin(MARGIN_LEFT);
-		box_size.x -= 28 * EDSCALE;
-		box_size.y -= text_box->get_margin(MARGIN_TOP);
-		box_size.y -= 28 * EDSCALE;
-		text_box->set_custom_minimum_size(Size2(box_size.x, box_size.y));
-		text_box->set_size(Size2(1, 1));
 	}
 }
 
 void VisualShaderEditor::_node_resized(const Vector2 &p_new_size, int p_type, int p_node) {
-	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(type, p_node);
+	Ref<VisualShaderNodeGroupBase> node = visual_shader->get_node(VisualShader::Type(p_type), p_node);
 	if (node.is_null()) {
 		return;
 	}
