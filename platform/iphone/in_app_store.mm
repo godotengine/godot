@@ -35,18 +35,19 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-bool auto_finish_transactions = true;
-NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
-static NSArray *latestProducts;
+InAppStore *InAppStore::instance = NULL;
 
 @interface SKProduct (LocalizedPrice)
+
 @property(nonatomic, readonly) NSString *localizedPrice;
+
 @end
 
 //----------------------------------//
 // SKProduct extension
 //----------------------------------//
 @implementation SKProduct (LocalizedPrice)
+
 - (NSString *)localizedPrice {
 	NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
 	[numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
@@ -55,32 +56,94 @@ static NSArray *latestProducts;
 	NSString *formattedString = [numberFormatter stringFromNumber:self.price];
 	return formattedString;
 }
-@end
-
-InAppStore *InAppStore::instance = NULL;
-
-void InAppStore::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("request_product_info"), &InAppStore::request_product_info);
-	ClassDB::bind_method(D_METHOD("restore_purchases"), &InAppStore::restore_purchases);
-	ClassDB::bind_method(D_METHOD("purchase"), &InAppStore::purchase);
-
-	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &InAppStore::get_pending_event_count);
-	ClassDB::bind_method(D_METHOD("pop_pending_event"), &InAppStore::pop_pending_event);
-	ClassDB::bind_method(D_METHOD("finish_transaction"), &InAppStore::finish_transaction);
-	ClassDB::bind_method(D_METHOD("set_auto_finish_transaction"), &InAppStore::set_auto_finish_transaction);
-};
-
-@interface ProductsDelegate : NSObject <SKProductsRequestDelegate> {
-};
 
 @end
 
-@implementation ProductsDelegate
+@interface GodotProductsDelegate : NSObject <SKProductsRequestDelegate>
+
+@property(nonatomic, strong) NSMutableArray *loadedProducts;
+@property(nonatomic, strong) NSMutableArray *pendingRequests;
+
+- (void)performRequestWithProductIDs:(NSSet *)productIDs;
+- (Error)purchaseProductWithProductID:(NSString *)productID;
+- (void)reset;
+
+@end
+
+@implementation GodotProductsDelegate
+
+- (instancetype)init {
+	self = [super init];
+
+	if (self) {
+		[self godot_commonInit];
+	}
+
+	return self;
+}
+
+- (void)godot_commonInit {
+	self.loadedProducts = [NSMutableArray new];
+	self.pendingRequests = [NSMutableArray new];
+}
+
+- (void)performRequestWithProductIDs:(NSSet *)productIDs {
+	SKProductsRequest *request = [[SKProductsRequest alloc] initWithProductIdentifiers:productIDs];
+
+	request.delegate = self;
+	[self.pendingRequests addObject:request];
+	[request start];
+}
+
+- (Error)purchaseProductWithProductID:(NSString *)productID {
+	SKProduct *product = nil;
+
+	NSLog(@"searching for product!");
+
+	if (self.loadedProducts) {
+		for (SKProduct *storedProduct in self.loadedProducts) {
+			if ([storedProduct.productIdentifier isEqualToString:productID]) {
+				product = storedProduct;
+				break;
+			}
+		}
+	}
+
+	if (!product) {
+		return ERR_INVALID_PARAMETER;
+	}
+
+	NSLog(@"product found!");
+
+	SKPayment *payment = [SKPayment paymentWithProduct:product];
+	[[SKPaymentQueue defaultQueue] addPayment:payment];
+
+	NSLog(@"purchase sent!");
+
+	return OK;
+}
+
+- (void)reset {
+	[self.loadedProducts removeAllObjects];
+	[self.pendingRequests removeAllObjects];
+}
+
+- (void)request:(SKRequest *)request didFailWithError:(NSError *)error {
+	[self.pendingRequests removeObject:request];
+
+	Dictionary ret;
+	ret["type"] = "product_info";
+	ret["result"] = "error";
+	ret["error"] = String::utf8([error.localizedDescription UTF8String]);
+
+	InAppStore::get_singleton()->_post_event(ret);
+}
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
+	[self.pendingRequests removeObject:request];
 
 	NSArray *products = response.products;
-	latestProducts = products;
+	[self.loadedProducts addObjectsFromArray:products];
 
 	Dictionary ret;
 	ret["type"] = "product_info";
@@ -93,7 +156,6 @@ void InAppStore::_bind_methods() {
 	PoolStringArray currency_codes;
 
 	for (NSUInteger i = 0; i < [products count]; i++) {
-
 		SKProduct *product = [products objectAtIndex:i];
 
 		const char *str = [product.localizedTitle UTF8String];
@@ -105,7 +167,8 @@ void InAppStore::_bind_methods() {
 		ids.push_back(String::utf8([product.productIdentifier UTF8String]));
 		localized_prices.push_back(String::utf8([product.localizedPrice UTF8String]));
 		currency_codes.push_back(String::utf8([[[product priceLocale] objectForKey:NSLocaleCurrencyCode] UTF8String]));
-	};
+	}
+
 	ret["titles"] = titles;
 	ret["descriptions"] = descriptions;
 	ret["prices"] = prices;
@@ -116,55 +179,55 @@ void InAppStore::_bind_methods() {
 	PoolStringArray invalid_ids;
 
 	for (NSString *ipid in response.invalidProductIdentifiers) {
-
 		invalid_ids.push_back(String::utf8([ipid UTF8String]));
-	};
+	}
+
 	ret["invalid_ids"] = invalid_ids;
 
 	InAppStore::get_singleton()->_post_event(ret);
-};
+}
 
 @end
 
-Error InAppStore::request_product_info(Variant p_params) {
+@interface GodotTransactionsObserver : NSObject <SKPaymentTransactionObserver>
 
-	Dictionary params = p_params;
-	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
+@property(nonatomic, assign) BOOL shouldAutoFinishTransactions;
+@property(nonatomic, strong) NSMutableDictionary *pendingTransactions;
 
-	PoolStringArray pids = params["product_ids"];
-	printf("************ request product info! %i\n", pids.size());
+- (void)finishTransactionWithProductID:(NSString *)productID;
+- (void)reset;
 
-	NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:pids.size()];
-	for (int i = 0; i < pids.size(); i++) {
-		printf("******** adding %ls to product list\n", pids[i].c_str());
-		NSString *pid = [[NSString alloc] initWithUTF8String:pids[i].utf8().get_data()];
-		[array addObject:pid];
-	};
-
-	NSSet *products = [[NSSet alloc] initWithArray:array];
-	SKProductsRequest *request = [[SKProductsRequest alloc] initWithProductIdentifiers:products];
-
-	ProductsDelegate *delegate = [[ProductsDelegate alloc] init];
-
-	request.delegate = delegate;
-	[request start];
-
-	return OK;
-};
-
-Error InAppStore::restore_purchases() {
-
-	printf("restoring purchases!\n");
-	[[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
-
-	return OK;
-};
-
-@interface TransObserver : NSObject <SKPaymentTransactionObserver> {
-};
 @end
 
-@implementation TransObserver
+@implementation GodotTransactionsObserver
+
+- (instancetype)init {
+	self = [super init];
+
+	if (self) {
+		[self godot_commonInit];
+	}
+
+	return self;
+}
+
+- (void)godot_commonInit {
+	self.pendingTransactions = [NSMutableDictionary new];
+}
+
+- (void)finishTransactionWithProductID:(NSString *)productID {
+	SKPaymentTransaction *transaction = self.pendingTransactions[productID];
+
+	if (transaction) {
+		[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+	}
+
+	self.pendingTransactions[productID] = nil;
+}
+
+- (void)reset {
+	[self.pendingTransactions removeAllObjects];
+}
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
 
@@ -205,13 +268,13 @@ Error InAppStore::restore_purchases() {
 
 				InAppStore::get_singleton()->_post_event(ret);
 
-				if (auto_finish_transactions) {
+				if (self.shouldAutoFinishTransactions) {
 					[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				} else {
-					[pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
+					self.pendingTransactions[transaction.payment.productIdentifier] = transaction;
 				}
 
-			}; break;
+			} break;
 			case SKPaymentTransactionStateFailed: {
 				printf("status transaction failed!\n");
 				String pid = String::utf8([transaction.payment.productIdentifier UTF8String]);
@@ -236,18 +299,57 @@ Error InAppStore::restore_purchases() {
 			} break;
 			default: {
 				printf("status default %i!\n", (int)transaction.transactionState);
-			}; break;
-		};
-	};
-};
+			} break;
+		}
+	}
+}
 
 @end
 
-Error InAppStore::purchase(Variant p_params) {
+void InAppStore::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("request_product_info"), &InAppStore::request_product_info);
+	ClassDB::bind_method(D_METHOD("restore_purchases"), &InAppStore::restore_purchases);
+	ClassDB::bind_method(D_METHOD("purchase"), &InAppStore::purchase);
 
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &InAppStore::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"), &InAppStore::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("finish_transaction"), &InAppStore::finish_transaction);
+	ClassDB::bind_method(D_METHOD("set_auto_finish_transaction"), &InAppStore::set_auto_finish_transaction);
+}
+
+Error InAppStore::request_product_info(Variant p_params) {
+	Dictionary params = p_params;
+	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
+
+	PoolStringArray pids = params["product_ids"];
+	printf("************ request product info! %i\n", pids.size());
+
+	NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:pids.size()];
+	for (int i = 0; i < pids.size(); i++) {
+		printf("******** adding %ls to product list\n", pids[i].c_str());
+		NSString *pid = [[NSString alloc] initWithUTF8String:pids[i].utf8().get_data()];
+		[array addObject:pid];
+	}
+
+	NSSet *products = [[NSSet alloc] initWithArray:array];
+
+	[products_request_delegate performRequestWithProductIDs:products];
+
+	return OK;
+}
+
+Error InAppStore::restore_purchases() {
+	printf("restoring purchases!\n");
+	[[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+
+	return OK;
+}
+
+Error InAppStore::purchase(Variant p_params) {
 	ERR_FAIL_COND_V(![SKPaymentQueue canMakePayments], ERR_UNAVAILABLE);
-	if (![SKPaymentQueue canMakePayments])
+	if (![SKPaymentQueue canMakePayments]) {
 		return ERR_UNAVAILABLE;
+	}
 
 	printf("purchasing!\n");
 	Dictionary params = p_params;
@@ -255,82 +357,62 @@ Error InAppStore::purchase(Variant p_params) {
 
 	NSString *pid = [[NSString alloc] initWithUTF8String:String(params["product_id"]).utf8().get_data()];
 
-	SKProduct *product = nil;
-
-	if (latestProducts) {
-		for (SKProduct *storedProduct in latestProducts) {
-			if ([storedProduct.productIdentifier isEqualToString:pid]) {
-				product = storedProduct;
-				break;
-			}
-		}
-	}
-
-	if (!product) {
-		return ERR_INVALID_PARAMETER;
-	}
-
-	SKPayment *payment = [SKPayment paymentWithProduct:product];
-	SKPaymentQueue *defq = [SKPaymentQueue defaultQueue];
-	[defq addPayment:payment];
-	printf("purchase sent!\n");
-
-	return OK;
-};
+	return [products_request_delegate purchaseProductWithProductID:pid];
+}
 
 int InAppStore::get_pending_event_count() {
 	return pending_events.size();
-};
+}
 
 Variant InAppStore::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
 	return front;
-};
+}
 
 void InAppStore::_post_event(Variant p_event) {
-
 	pending_events.push_back(p_event);
-};
+}
 
 void InAppStore::_record_purchase(String product_id) {
-
 	String skey = "purchased/" + product_id;
 	NSString *key = [[NSString alloc] initWithUTF8String:skey.utf8().get_data()];
 	[[NSUserDefaults standardUserDefaults] setBool:YES forKey:key];
 	[[NSUserDefaults standardUserDefaults] synchronize];
-};
+}
 
 InAppStore *InAppStore::get_singleton() {
-
 	return instance;
-};
+}
 
 InAppStore::InAppStore() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
-	auto_finish_transactions = false;
 
-	TransObserver *observer = [[TransObserver alloc] init];
-	[[SKPaymentQueue defaultQueue] addTransactionObserver:observer];
-	//pending_transactions = [NSMutableDictionary dictionary];
-};
+	products_request_delegate = [[GodotProductsDelegate alloc] init];
+	transactions_observer = [[GodotTransactionsObserver alloc] init];
+
+	[[SKPaymentQueue defaultQueue] addTransactionObserver:transactions_observer];
+}
 
 void InAppStore::finish_transaction(String product_id) {
 	NSString *prod_id = [NSString stringWithCString:product_id.utf8().get_data() encoding:NSUTF8StringEncoding];
 
-	if ([pending_transactions objectForKey:prod_id]) {
-		[[SKPaymentQueue defaultQueue] finishTransaction:[pending_transactions objectForKey:prod_id]];
-		[pending_transactions removeObjectForKey:prod_id];
-	}
-};
-
-void InAppStore::set_auto_finish_transaction(bool b) {
-	auto_finish_transactions = b;
+	[transactions_observer finishTransactionWithProductID:prod_id];
 }
 
-InAppStore::~InAppStore(){};
+void InAppStore::set_auto_finish_transaction(bool b) {
+	transactions_observer.shouldAutoFinishTransactions = b;
+}
+
+InAppStore::~InAppStore() {
+	[products_request_delegate reset];
+	[transactions_observer reset];
+
+	products_request_delegate = nil;
+	[[SKPaymentQueue defaultQueue] removeTransactionObserver:transactions_observer];
+	transactions_observer = nil;
+}
 
 #endif
