@@ -394,8 +394,6 @@ void Body2DSW::_compute_area_gravity_and_dampenings(const Area2DSW *p_area) {
 			} else {
 				gravity = new_gravity;
 			}
-		} else {
-			gravity += v.normalized() * p_area->get_gravity();
 		}
 	} else {
 		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
