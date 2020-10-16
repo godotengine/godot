@@ -21,20 +21,22 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      # Install all packages (except scons)
-      - name: Configure dependencies
+      # The system image has a non-working Java version:
+      # /usr/lib/jvm/adoptopenjdk-11-hotspot-amd64/bin/java
+      # openjdk version "11.0.8" 2020-07-14
+      # Install the official version.
+      - name: Install Java
         run: |
-         sudo apt-get install openjdk-8-jdk
-         echo "::set-env name=JAVA_HOME::usr/lib/jvm/java-8-openjdk-amd64"
+          sudo apt-get install openjdk-8-jdk
+          sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
 
       - name: Install Android SDK and NDK
         run: |
-          echo "::set-env name=PATH::/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH}"
           java -version
-          echo "::set-env name=ANDROID_HOME::$(pwd)/godot-dev/build-tools/android-sdk"
-          echo "::set-env name=ANDROID_NDK_ROOT::$(pwd)/godot-dev/build-tools/android-ndk"
           misc/ci/android-tools-linux.sh
-          source ~/.bashrc
+          echo "ANDROID_HOME=$(pwd)/godot-dev/build-tools/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$(pwd)/godot-dev/build-tools/android-ndk" >> $GITHUB_ENV
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
