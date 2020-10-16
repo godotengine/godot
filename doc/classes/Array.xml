@@ -251,6 +251,7 @@
 				print(["inside", 7].has("inside")) # True
 				print(["inside", 7].has("outside")) # False
 				print(["inside", 7].has(7)) # True
+				print(["inside", 7].has(7.0)) # False
 				print(["inside", 7].has("7")) # False
 				[/gdscript]
 				[csharp]
@@ -263,12 +264,17 @@
 				[/csharp]
 				[/codeblocks]
 
-				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
+				[b]Note:[/b] This is almost equivalent to using the [code]in[/code] operator as follows:
 				[codeblocks]
 				[gdscript]
 				# Will evaluate to `true`.
 				if 2 in [2, 4, 6, 8]:
 				    print("Containes!")
+
+				# Will evaluate to `true`.
+				if 2.0 in [2, 4, 6, 8]:
+				    print("Containes!")
+
 				[/gdscript]
 				[csharp]
 				// As there is no "in" keyword in C#, you have to use Contains
