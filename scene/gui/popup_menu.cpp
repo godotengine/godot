@@ -1033,6 +1033,7 @@ int PopupMenu::get_current_index() const {
 }
 
 void PopupMenu::set_current_index(int p_idx) {
+	ERR_FAIL_INDEX(p_idx, items.size());
 	mouse_over = p_idx;
 }
 
