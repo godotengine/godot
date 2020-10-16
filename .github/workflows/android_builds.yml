@@ -26,14 +26,14 @@ jobs:
       - name: Configure dependencies
         run: |
          sudo apt-get install openjdk-8-jdk
-         echo "::set-env name=JAVA_HOME::usr/lib/jvm/java-8-openjdk-amd64"
+         echo 'JAVA_HOME=usr/lib/jvm/java-8-openjdk-amd64' >> $GITHUB_ENV
 
       - name: Install Android SDK and NDK
         run: |
-          echo "::set-env name=PATH::/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH}"
+          echo '/usr/lib/jvm/java-8-openjdk-amd64/jre/bin' >> $GITHUB_PATH
           java -version
-          echo "::set-env name=ANDROID_HOME::$(pwd)/godot-dev/build-tools/android-sdk"
-          echo "::set-env name=ANDROID_NDK_ROOT::$(pwd)/godot-dev/build-tools/android-ndk"
+          echo "ANDROID_HOME=$(pwd)/godot-dev/build-tools/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=$(pwd)/godot-dev/build-tools/android-ndk" >> $GITHUB_ENV
           misc/ci/android-tools-linux.sh
           source ~/.bashrc
 
