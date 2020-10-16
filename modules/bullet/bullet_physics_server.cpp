@@ -698,21 +698,21 @@ void BulletPhysicsServer3D::body_add_central_force(RID p_body, const Vector3 &p_
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_central_force(p_force);
+	body->add_central_force(p_force);
 }
 
 void BulletPhysicsServer3D::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_force(p_force, p_position);
+	body->add_force(p_force, p_position);
 }
 
 void BulletPhysicsServer3D::body_add_torque(RID p_body, const Vector3 &p_torque) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->apply_torque(p_torque);
+	body->add_torque(p_torque);
 }
 
 void BulletPhysicsServer3D::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {

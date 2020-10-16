@@ -111,6 +111,7 @@ class SpaceBullet : public RIDBullet {
 	real_t angular_damp = 0.0;
 
 	Vector<AreaBullet *> areas;
+	Vector<RigidBodyBullet *> rigid_bodies_with_forces;
 
 	Vector<Vector3> contactDebug;
 	int contactDebugCount = 0;
@@ -149,6 +150,10 @@ public:
 	void add_area(AreaBullet *p_area);
 	void remove_area(AreaBullet *p_area);
 	void reload_collision_filters(AreaBullet *p_area);
+
+	void add_rigid_body_with_force(RigidBodyBullet *p_body);
+	void remove_rigid_body_with_force(RigidBodyBullet *p_body);
+	void apply_rigid_body_forces();
 
 	void add_rigid_body(RigidBodyBullet *p_body);
 	void remove_rigid_body_constraints(RigidBodyBullet *p_body);

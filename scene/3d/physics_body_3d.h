@@ -306,6 +306,11 @@ public:
 
 	Array get_colliding_bodies() const;
 
+	void set_applied_force(const Vector3 &p_force);
+	Vector3 get_applied_force() const;
+	void set_applied_torque(const Vector3 &p_torque);
+	Vector3 get_applied_torque() const;
+
 	void add_central_force(const Vector3 &p_force);
 	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
 	void add_torque(const Vector3 &p_torque);

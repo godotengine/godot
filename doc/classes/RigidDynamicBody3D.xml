@@ -101,6 +101,12 @@
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
 			RigidDynamicBody3D's rotational velocity.
 		</member>
+		<member name="applied_force" type="Vector3" setter="set_applied_force" getter="get_applied_force" default="Vector3(0, 0, 0)">
+			The body's total applied force.
+		</member>
+		<member name="applied_torque" type="Vector3" setter="set_applied_torque" getter="get_applied_torque" default="Vector3(0, 0, 0)">
+			The body's total applied torque.
+		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
 		</member>

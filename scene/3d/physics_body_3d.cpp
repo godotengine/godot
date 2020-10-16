@@ -875,6 +875,22 @@ int RigidDynamicBody3D::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+void RigidDynamicBody3D::set_applied_force(const Vector3 &p_force) {
+	PhysicsServer3D::get_singleton()->body_set_applied_force(get_rid(), p_force);
+}
+
+Vector3 RigidDynamicBody3D::get_applied_force() const {
+	return PhysicsServer3D::get_singleton()->body_get_applied_force(get_rid());
+}
+
+void RigidDynamicBody3D::set_applied_torque(const Vector3 &p_torque) {
+	PhysicsServer3D::get_singleton()->body_set_applied_torque(get_rid(), p_torque);
+}
+
+Vector3 RigidDynamicBody3D::get_applied_torque() const {
+	return PhysicsServer3D::get_singleton()->body_get_applied_torque(get_rid());
+}
+
 void RigidDynamicBody3D::add_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->body_add_central_force(get_rid(), p_force);
 }
@@ -1024,6 +1040,12 @@ void RigidDynamicBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidDynamicBody3D::set_axis_velocity);
 
+	ClassDB::bind_method(D_METHOD("set_applied_force", "force"), &RigidDynamicBody3D::set_applied_force);
+	ClassDB::bind_method(D_METHOD("get_applied_force"), &RigidDynamicBody3D::get_applied_force);
+
+	ClassDB::bind_method(D_METHOD("set_applied_torque", "torque"), &RigidDynamicBody3D::set_applied_torque);
+	ClassDB::bind_method(D_METHOD("get_applied_torque"), &RigidDynamicBody3D::get_applied_torque);
+
 	ClassDB::bind_method(D_METHOD("add_central_force", "force"), &RigidDynamicBody3D::add_central_force);
 	ClassDB::bind_method(D_METHOD("add_force", "force", "position"), &RigidDynamicBody3D::add_force, Vector3());
 	ClassDB::bind_method(D_METHOD("add_torque", "torque"), &RigidDynamicBody3D::add_torque);
@@ -1075,6 +1097,9 @@ void RigidDynamicBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "angular_damp_mode", PROPERTY_HINT_ENUM, "Combine,Replace"), "set_angular_damp_mode", "get_angular_damp_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_GROUP("Applied Forces", "applied_");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "applied_force"), "set_applied_force", "get_applied_force");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "applied_torque"), "set_applied_torque", "get_applied_torque");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::RID, "body_rid"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape_index"), PropertyInfo(Variant::INT, "local_shape_index")));

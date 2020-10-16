@@ -657,9 +657,6 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		}
 	}
 
-	applied_force = Vector3();
-	applied_torque = Vector3();
-
 	biased_angular_velocity = Vector3();
 	biased_linear_velocity = Vector3();
 

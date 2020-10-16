@@ -125,15 +125,15 @@ Vector3 BulletPhysicsDirectBodyState3D::get_velocity_at_local_position(const Vec
 }
 
 void BulletPhysicsDirectBodyState3D::add_central_force(const Vector3 &p_force) {
-	body->apply_central_force(p_force);
+	body->add_central_force(p_force);
 }
 
 void BulletPhysicsDirectBodyState3D::add_force(const Vector3 &p_force, const Vector3 &p_position) {
-	body->apply_force(p_force, p_position);
+	body->add_force(p_force, p_position);
 }
 
 void BulletPhysicsDirectBodyState3D::add_torque(const Vector3 &p_torque) {
-	body->apply_torque(p_torque);
+	body->add_torque(p_torque);
 }
 
 void BulletPhysicsDirectBodyState3D::apply_central_impulse(const Vector3 &p_impulse) {
@@ -336,6 +336,7 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 		// Remove any constraints
 		space->remove_rigid_body_constraints(this);
 		// Remove this object form the physics world
+		space->remove_rigid_body_with_force(this);
 		space->remove_rigid_body(this);
 	}
 
@@ -343,6 +344,9 @@ void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 
 	if (space) {
 		space->add_rigid_body(this);
+		if (applied_force != btVector3(0, 0, 0) || applied_torque != btVector3(0, 0, 0)) {
+			space->add_rigid_body_with_force(this);
+		}
 	}
 }
 
@@ -634,73 +638,75 @@ void RigidBodyBullet::apply_torque_impulse(const Vector3 &p_impulse) {
 	btBody->applyTorqueImpulse(btImp);
 }
 
-void RigidBodyBullet::apply_force(const Vector3 &p_force, const Vector3 &p_position) {
-	btVector3 btForce;
-	btVector3 btPosition;
-	G_TO_B(p_force, btForce);
-	G_TO_B(p_position, btPosition);
-	if (Vector3() != p_force) {
-		btBody->activate();
+void RigidBodyBullet::add_force(const Vector3 &p_force, const Vector3 &p_position) {
+	btVector3 force;
+	G_TO_B(p_force, force);
+	btVector3 position;
+	G_TO_B(p_position, position);
+	btVector3 center_of_mass = btBody->getCenterOfMassPosition();
+
+	applied_force += force;
+	applied_torque += (position - center_of_mass).cross(force);
+	if (space) {
+		space->add_rigid_body_with_force(this);
 	}
-	btBody->applyForce(btForce, btPosition);
 }
 
-void RigidBodyBullet::apply_central_force(const Vector3 &p_force) {
-	btVector3 btForce;
-	G_TO_B(p_force, btForce);
-	if (Vector3() != p_force) {
-		btBody->activate();
+void RigidBodyBullet::add_central_force(const Vector3 &p_force) {
+	btVector3 force;
+	G_TO_B(p_force, force);
+	applied_force += force;
+	if (space) {
+		space->add_rigid_body_with_force(this);
 	}
-	btBody->applyCentralForce(btForce);
 }
 
-void RigidBodyBullet::apply_torque(const Vector3 &p_torque) {
-	btVector3 btTorq;
-	G_TO_B(p_torque, btTorq);
-	if (Vector3() != p_torque) {
-		btBody->activate();
+void RigidBodyBullet::add_torque(const Vector3 &p_torque) {
+	btVector3 torque;
+	G_TO_B(p_torque, torque);
+	applied_torque += torque;
+	if (space) {
+		space->add_rigid_body_with_force(this);
 	}
-	btBody->applyTorque(btTorq);
 }
 
 void RigidBodyBullet::set_applied_force(const Vector3 &p_force) {
-	btVector3 btVec = btBody->getTotalTorque();
-
-	if (Vector3() != p_force) {
-		btBody->activate();
+	G_TO_B(p_force, applied_force);
+	if (space) {
+		if (applied_force == btVector3(0, 0, 0) && applied_torque == btVector3(0, 0, 0)) {
+			space->remove_rigid_body_with_force(this);
+		} else {
+			space->add_rigid_body_with_force(this);
+		}
 	}
-
-	btBody->clearForces();
-	btBody->applyTorque(btVec);
-
-	G_TO_B(p_force, btVec);
-	btBody->applyCentralForce(btVec);
 }
 
 Vector3 RigidBodyBullet::get_applied_force() const {
-	Vector3 gTotForc;
-	B_TO_G(btBody->getTotalForce(), gTotForc);
-	return gTotForc;
+	Vector3 force;
+	B_TO_G(applied_force, force);
+	return force;
 }
 
 void RigidBodyBullet::set_applied_torque(const Vector3 &p_torque) {
-	btVector3 btVec = btBody->getTotalForce();
-
-	if (Vector3() != p_torque) {
-		btBody->activate();
+	G_TO_B(p_torque, applied_torque);
+	if (space) {
+		if (applied_force == btVector3(0, 0, 0) && applied_torque == btVector3(0, 0, 0)) {
+			space->remove_rigid_body_with_force(this);
+		} else {
+			space->add_rigid_body_with_force(this);
+		}
 	}
-
-	btBody->clearForces();
-	btBody->applyCentralForce(btVec);
-
-	G_TO_B(p_torque, btVec);
-	btBody->applyTorque(btVec);
 }
 
 Vector3 RigidBodyBullet::get_applied_torque() const {
-	Vector3 gTotTorq;
-	B_TO_G(btBody->getTotalTorque(), gTotTorq);
-	return gTotTorq;
+	Vector3 torque;
+	B_TO_G(applied_torque, torque);
+	return torque;
+}
+
+void RigidBodyBullet::apply_forces() {
+	btBody->applyCentralForce(applied_force);
+	btBody->applyTorque(applied_torque);
 }
 
 void RigidBodyBullet::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {

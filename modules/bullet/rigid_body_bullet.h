@@ -202,6 +202,8 @@ private:
 	bool can_sleep = true;
 	bool omit_forces_integration = false;
 	bool can_integrate_forces = false;
+	btVector3 applied_force = btVector3(0, 0, 0);
+	btVector3 applied_torque = btVector3(0, 0, 0);
 
 	Vector<CollisionData> collisions;
 	Vector<RigidBodyBullet *> collision_traces_1;
@@ -287,14 +289,15 @@ public:
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
-	void apply_central_force(const Vector3 &p_force);
-	void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
-	void apply_torque(const Vector3 &p_torque);
+	void add_central_force(const Vector3 &p_force);
+	void add_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void add_torque(const Vector3 &p_torque);
 
 	void set_applied_force(const Vector3 &p_force);
 	Vector3 get_applied_force() const;
 	void set_applied_torque(const Vector3 &p_torque);
 	Vector3 get_applied_torque() const;
+	void apply_forces();
 
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
 	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
