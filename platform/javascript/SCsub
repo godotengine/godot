@@ -17,21 +17,22 @@ if env["threads_enabled"]:
 
 build = env.add_program(build_targets, javascript_files)
 
-js_libraries = [
-    "native/http_request.js",
-    "native/library_godot_audio.js",
-]
-for lib in js_libraries:
-    env.Append(LINKFLAGS=["--js-library", env.File(lib).path])
-env.Depends(build, js_libraries)
+env.AddJSLibraries(
+    [
+        "native/http_request.js",
+        "native/library_godot_audio.js",
+        "native/library_godot_display.js",
+        "native/library_godot_os.js",
+    ]
+)
 
-js_pre = [
-    "native/id_handler.js",
-    "native/utils.js",
-]
-for js in js_pre:
-    env.Append(LINKFLAGS=["--pre-js", env.File(js).path])
-env.Depends(build, js_pre)
+if env["tools"]:
+    env.AddJSLibraries(["native/library_godot_editor_tools.js"])
+if env["javascript_eval"]:
+    env.AddJSLibraries(["native/library_godot_eval.js"])
+for lib in env["JS_LIBS"]:
+    env.Append(LINKFLAGS=["--js-library", lib])
+env.Depends(build, env["JS_LIBS"])
 
 engine = [
     "engine/preloader.js",

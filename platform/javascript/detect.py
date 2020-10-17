@@ -1,6 +1,6 @@
 import os
 
-from emscripten_helpers import run_closure_compiler, create_engine_file
+from emscripten_helpers import run_closure_compiler, create_engine_file, add_js_libraries
 from SCons.Util import WhereIs
 
 
@@ -96,6 +96,9 @@ def configure(env):
         jscc = env.Builder(generator=run_closure_compiler, suffix=".cc.js", src_suffix=".js")
         env.Append(BUILDERS={"BuildJS": jscc})
 
+    # Add helper method for adding libraries.
+    env.AddMethod(add_js_libraries, "AddJSLibraries")
+
     # Add method that joins/compiles our Engine files.
     env.AddMethod(create_engine_file, "CreateEngineFile")
 
@@ -166,6 +169,6 @@ def configure(env):
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
     # callMain for manual start, FS for preloading, PATH and ERRNO_CODES for BrowserFS.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS']"])
+    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain']"])
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])

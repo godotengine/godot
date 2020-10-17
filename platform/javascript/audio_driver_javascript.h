@@ -45,7 +45,6 @@ private:
 	int mix_rate;
 	int channel_count;
 
-public:
 #ifndef NO_THREADS
 	Mutex *mutex;
 	Thread *thread;
@@ -54,9 +53,12 @@ public:
 
 	static void _audio_thread_func(void *p_data);
 #endif
+	static void _audio_driver_process_start();
+	static void _audio_driver_process_end();
+	static void _audio_driver_process_capture(float p_sample);
+	void _audio_driver_process();
 
-	void _js_driver_process();
-
+public:
 	static bool is_available();
 	void process_capture(float sample);
 
@@ -73,7 +75,6 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
-	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();

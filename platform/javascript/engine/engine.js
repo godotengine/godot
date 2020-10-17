@@ -33,7 +33,7 @@ Function('return this')()['Engine'] = (function() {
 		this.resizeCanvasOnStart = false;
 		this.onExecute = null;
 		this.onExit = null;
-		this.persistentPaths = [];
+		this.persistentPaths = ['/userfs'];
 	};
 
 	Engine.prototype.init = /** @param {string=} basePath */ function(basePath) {
@@ -114,18 +114,30 @@ Function('return this')()['Engine'] = (function() {
 				locale = navigator.languages ? navigator.languages[0] : navigator.language;
 				locale = locale.split('.')[0];
 			}
-			me.rtenv['locale'] = locale;
-			me.rtenv['canvas'] = me.canvas;
+			// Emscripten configuration.
 			me.rtenv['thisProgram'] = me.executableName;
-			me.rtenv['resizeCanvasOnStart'] = me.resizeCanvasOnStart;
 			me.rtenv['noExitRuntime'] = true;
-			me.rtenv['onExecute'] = me.onExecute;
-			me.rtenv['onExit'] = function(code) {
-				me.rtenv['deinitFS']();
-				if (me.onExit)
-					me.onExit(code);
-				me.rtenv = null;
-			}
+			// Godot configuration.
+			me.rtenv['initConfig']({
+				'resizeCanvasOnStart': me.resizeCanvasOnStart,
+				'canvas': me.canvas,
+				'locale': locale,
+				'onExecute': function(p_args) {
+					if (me.onExecute) {
+						me.onExecute(p_args);
+						return 0;
+					}
+					return 1;
+				},
+				'onExit': function(p_code) {
+					me.rtenv['deinitFS']();
+					if (me.onExit) {
+						me.onExit(p_code);
+					}
+					me.rtenv = null;
+				},
+			});
+
 			return new Promise(function(resolve, reject) {
 				preloader.preloadedFiles.forEach(function(file) {
 					me.rtenv['copyToFS'](file.path, file.buffer);
@@ -208,8 +220,6 @@ Function('return this')()['Engine'] = (function() {
 	};
 
 	Engine.prototype.setOnExecute = function(onExecute) {
-		if (this.rtenv)
-			this.rtenv.onExecute = onExecute;
 		this.onExecute = onExecute;
 	}
 

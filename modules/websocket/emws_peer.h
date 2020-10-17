@@ -40,6 +40,18 @@
 #include "packet_buffer.h"
 #include "websocket_peer.h"
 
+extern "C" {
+typedef void (*WSOnOpen)(void *p_ref, char *p_protocol);
+typedef void (*WSOnMessage)(void *p_ref, const uint8_t *p_buf, int p_buf_len, int p_is_string);
+typedef void (*WSOnClose)(void *p_ref, int p_code, const char *p_reason, int p_is_clean);
+typedef void (*WSOnError)(void *p_ref);
+
+extern int godot_js_websocket_create(void *p_ref, const char *p_url, const char *p_proto, WSOnOpen p_on_open, WSOnMessage p_on_message, WSOnError p_on_error, WSOnClose p_on_close);
+extern int godot_js_websocket_send(int p_id, const uint8_t *p_buf, int p_buf_len, int p_raw);
+extern void godot_js_websocket_close(int p_id, int p_code, const char *p_reason);
+extern void godot_js_websocket_destroy(int p_id);
+}
+
 class EMWSPeer : public WebSocketPeer {
 
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
@@ -53,7 +65,7 @@ private:
 	uint8_t _is_string;
 
 public:
-	Error read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string);
+	Error read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string);
 	void set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size);
 	virtual int get_available_packet_count() const;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);

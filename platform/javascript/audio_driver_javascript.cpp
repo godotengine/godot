@@ -56,33 +56,33 @@ void AudioDriverJavaScript::_audio_thread_func(void *p_data) {
 			OS::get_singleton()->delay_usec(1000); // Give the browser some slack.
 			continue;
 		}
-		obj->_js_driver_process();
+		obj->_audio_driver_process();
 		obj->needs_process = false;
 		obj->unlock();
 	}
 }
 #endif
 
-extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_start() {
+void AudioDriverJavaScript::_audio_driver_process_start() {
 #ifndef NO_THREADS
-	AudioDriverJavaScript::singleton->lock();
+	singleton->lock();
 #else
-	AudioDriverJavaScript::singleton->_js_driver_process();
+	singleton->_audio_driver_process();
 #endif
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_end() {
+void AudioDriverJavaScript::_audio_driver_process_end() {
 #ifndef NO_THREADS
-	AudioDriverJavaScript::singleton->needs_process = true;
-	AudioDriverJavaScript::singleton->unlock();
+	singleton->needs_process = true;
+	singleton->unlock();
 #endif
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_capture(float sample) {
-	AudioDriverJavaScript::singleton->process_capture(sample);
+void AudioDriverJavaScript::_audio_driver_process_capture(float p_sample) {
+	singleton->process_capture(p_sample);
 }
 
-void AudioDriverJavaScript::_js_driver_process() {
+void AudioDriverJavaScript::_audio_driver_process() {
 	int sample_count = memarr_len(internal_buffer) / channel_count;
 	int32_t *stream_buffer = reinterpret_cast<int32_t *>(internal_buffer);
 	audio_server_process(sample_count, stream_buffer);
@@ -124,7 +124,7 @@ void AudioDriverJavaScript::start() {
 	mutex = Mutex::create();
 	thread = Thread::create(_audio_thread_func, this);
 #endif
-	godot_audio_start(internal_buffer);
+	godot_audio_start(internal_buffer, &_audio_driver_process_start, &_audio_driver_process_end, &_audio_driver_process_capture);
 }
 
 void AudioDriverJavaScript::resume() {
@@ -159,15 +159,9 @@ void AudioDriverJavaScript::unlock() {
 #endif
 }
 
-void AudioDriverJavaScript::finish_async() {
-#ifndef NO_THREADS
-	quit = true; // Ask thread to quit.
-#endif
-	godot_audio_finish_async();
-}
-
 void AudioDriverJavaScript::finish() {
 #ifndef NO_THREADS
+	quit = true; // Ask thread to quit.
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
 	thread = NULL;

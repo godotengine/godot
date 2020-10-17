@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_audio.h                                                        */
+/*  library_godot_eval.js                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_AUDIO_H
-#define GODOT_AUDIO_H
+const GodotEval = {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	godot_js_eval__deps: ['$GodotOS'],
+	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+		const js_code = UTF8ToString(p_js);
+		let eval_ret = null;
+		try {
+			if (p_use_global_ctx) {
+				// indirect eval call grants global execution context
+				const global_eval = eval;
+				eval_ret = global_eval(js_code);
+			} else {
+				eval_ret = eval(js_code);
+			}
+		} catch (e) {
+			err(e);
+		}
 
-#include "stddef.h"
+		switch (typeof eval_ret) {
 
-extern int godot_audio_is_available();
+			case 'boolean':
+				setValue(p_union_ptr, eval_ret, 'i32');
+				return 1; // BOOL
 
-extern int godot_audio_init(int p_mix_rate, int p_latency);
-extern int godot_audio_create_processor(int p_buffer_length, int p_channel_count);
+			case 'number':
+				setValue(p_union_ptr, eval_ret, 'double');
+				return 3; // REAL
 
-extern void godot_audio_start(float *r_buffer_ptr, void (*p_start)(), void (*p_end)(), void (*p_input)(float p_sample));
-extern void godot_audio_resume();
+			case 'string':
+				let array_ptr = GodotOS.allocString(eval_ret);
+				setValue(p_union_ptr, array_ptr , '*');
+				return 4; // STRING
 
-extern float godot_audio_get_latency();
+			case 'object':
+				if (eval_ret === null) {
+					break;
+				}
 
-extern void godot_audio_capture_start();
-extern void godot_audio_capture_stop();
-
-#ifdef __cplusplus
+				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+					eval_ret = new Uint8Array(eval_ret.buffer);
+				}
+				else if (eval_ret instanceof ArrayBuffer) {
+					eval_ret = new Uint8Array(eval_ret);
+				}
+				if (eval_ret instanceof Uint8Array) {
+					const func = GodotOS.get_func(p_callback);
+					const bytes_ptr = func(p_byte_arr, p_byte_arr_write,  eval_ret.length);
+					HEAPU8.set(eval_ret, bytes_ptr);
+					return 20; // POOL_BYTE_ARRAY
+				}
+				break;
+		}
+		return 0; // NIL
+	},
 }
-#endif
 
-#endif /* GODOT_AUDIO_H */
+mergeInto(LibraryManager.library, GodotEval);

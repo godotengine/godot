@@ -42,13 +42,17 @@ class EMWSClient : public WebSocketClient {
 	GDCIIMPL(EMWSClient, WebSocketClient);
 
 private:
+	int _js_id;
+	bool _is_connecting;
 	int _in_buf_size;
 	int _in_pkt_size;
-	int _js_id;
+
+	static void _esws_on_connect(void *obj, char *proto);
+	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
+	static void _esws_on_error(void *obj);
+	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
 
 public:
-	bool _is_connecting;
-
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
 	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const;

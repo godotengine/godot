@@ -32,29 +32,13 @@
 #include "main/main.h"
 #include "platform/javascript/os_javascript.h"
 
+#include "godot_js.h"
+
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
 
 static OS_JavaScript *os = NULL;
 static uint64_t target_ticks = 0;
-
-// Files drop (implemented in JS for now).
-extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
-	if (!os || !os->get_main_loop()) {
-		ERR_FAIL_MSG("Unable to drop files because the OS or MainLoop are not active");
-	}
-	Vector<String> files;
-	for (int i = 0; i < p_filec; i++) {
-		files.push_back(String::utf8(p_filev[i]));
-	}
-	os->get_main_loop()->drop_files(files);
-}
-
-extern "C" EMSCRIPTEN_KEEPALIVE void _request_quit_callback(char *p_filev[], int p_filec) {
-	if (os && os->get_main_loop()) {
-		os->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
-	}
-}
 
 void exit_callback() {
 	emscripten_cancel_main_loop(); // After this, we can exit!
@@ -63,6 +47,10 @@ void exit_callback() {
 	memdelete(os);
 	os = NULL;
 	emscripten_force_exit(exit_code); // No matter that we call cancel_main_loop, regular "exit" will not work, forcing.
+}
+
+void cleanup_after_sync() {
+	emscripten_set_main_loop(exit_callback, -1, false);
 }
 
 void main_loop_callback() {
@@ -81,84 +69,28 @@ void main_loop_callback() {
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
-		/* clang-format off */
-		EM_ASM({
-			// This will contain the list of operations that need to complete before cleanup.
-			Module.async_finish = [
-				// Always contains at least one async promise, to avoid firing immediately if nothing is added.
-				new Promise(function(accept, reject) {
-					setTimeout(accept, 0);
-				})
-			];
-		});
-		/* clang-format on */
 		os->get_main_loop()->finish();
-		os->finalize_async(); // Will add all the async finish functions.
-		/* clang-format off */
-		EM_ASM({
-			Promise.all(Module.async_finish).then(function() {
-				Module.async_finish = [];
-				return new Promise(function(accept, reject) {
-					if (!Module.idbfs) {
-						accept();
-						return;
-					}
-					FS.syncfs(function(error) {
-						if (error) {
-							err('Failed to save IDB file system: ' + error.message);
-						}
-						accept();
-					});
-				});
-			}).then(function() {
-				ccall("cleanup_after_sync", null, []);
-			});
-		});
-		/* clang-format on */
+		godot_js_os_finish_async(cleanup_after_sync);
 	}
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
-	emscripten_set_main_loop(exit_callback, -1, false);
-}
-
 int main(int argc, char *argv[]) {
-	os = new OS_JavaScript(argc, argv);
-
-	// Set canvas ID
-	char canvas_ptr[256];
-	/* clang-format off */
-	EM_ASM({
-		stringToUTF8("#" + Module['canvas'].id, $0, 255);
-	}, canvas_ptr);
-	/* clang-format on */
-	os->canvas_id.parse_utf8(canvas_ptr, 255);
-
 	// Set locale
 	char locale_ptr[16];
-	/* clang-format off */
-	EM_ASM({
-		stringToUTF8(Module['locale'], $0, 16);
-	}, locale_ptr);
-	/* clang-format on */
+	godot_js_config_locale_get(locale_ptr, sizeof(locale_ptr));
 	setenv("LANG", locale_ptr, true);
 
-	// Set IDBFS status
-	os->set_idb_available((bool)EM_ASM_INT({ return Module.idbfs }));
+	os = new OS_JavaScript();
 
 	Main::setup(argv[0], argc - 1, &argv[1]);
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);
 	Main::start();
 	os->get_main_loop()->init();
-	// Expose method for requesting quit.
-	EM_ASM({
-		Module['request_quit'] = function() {
-			ccall("_request_quit_callback", null, []);
-		};
-	});
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.
 	main_loop_callback();
+
+	return 0;
 }
