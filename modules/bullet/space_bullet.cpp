@@ -828,17 +828,29 @@ void SpaceBullet::check_body_collision() {
 					float appliedImpulse = pt.m_appliedImpulse;
 					B_TO_G(pt.m_normalWorldOnB, normalOnB);
 
+					// The pt.m_index only contains the shape index when more than one collision shape is used
+					// and only if the collision shape is not a concave collision shape.
+					// A value of -1 in pt.m_partId indicates the pt.m_index is a shape index.
+					int shape_index_a = 0;
+					if (bodyA->get_shape_count() > 1 && pt.m_partId0 == -1) {
+						shape_index_a = pt.m_index0;
+					}
+					int shape_index_b = 0;
+					if (bodyB->get_shape_count() > 1 && pt.m_partId1 == -1) {
+						shape_index_b = pt.m_index1;
+					}
+
 					if (bodyA->can_add_collision()) {
 						B_TO_G(pt.getPositionWorldOnB(), collisionWorldPosition);
 						/// pt.m_localPointB Doesn't report the exact point in local space
 						B_TO_G(pt.getPositionWorldOnB() - contactManifold->getBody1()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, pt.m_index1, pt.m_index0);
+						bodyA->add_collision_object(bodyB, collisionWorldPosition, collisionLocalPosition, normalOnB, appliedImpulse, shape_index_b, shape_index_a);
 					}
 					if (bodyB->can_add_collision()) {
 						B_TO_G(pt.getPositionWorldOnA(), collisionWorldPosition);
 						/// pt.m_localPointA Doesn't report the exact point in local space
 						B_TO_G(pt.getPositionWorldOnA() - contactManifold->getBody0()->getWorldTransform().getOrigin(), collisionLocalPosition);
-						bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, pt.m_index0, pt.m_index1);
+						bodyB->add_collision_object(bodyA, collisionWorldPosition, collisionLocalPosition, normalOnB * -1, appliedImpulse * -1, shape_index_a, shape_index_b);
 					}
 
 #ifdef DEBUG_ENABLED

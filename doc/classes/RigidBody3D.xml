@@ -229,6 +229,7 @@
 			<description>
 				Emitted when a body enters into contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 				This signal not only receives the body that collided with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body collided with.
+				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -243,6 +244,7 @@
 			<description>
 				Emitted when a body shape exits contact with this one. Requires [member contact_monitor] to be set to [code]true[/code] and [member contacts_reported] to be set high enough to detect all the collisions.
 				This signal not only receives the body that stopped colliding with this one, but also its [RID] ([code]body_id[/code]), the shape index from the colliding body ([code]body_shape[/code]), and the shape index from this body ([code]local_shape[/code]) the other body stopped colliding with.
+				[b]Note:[/b] Bullet physics cannot identify the shape index when using a [ConcavePolygonShape3D]. Don't use multiple [CollisionShape3D]s when using a [ConcavePolygonShape3D] with Bullet physics if you need shape indices.
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">
