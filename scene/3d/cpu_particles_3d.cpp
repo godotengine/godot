@@ -574,7 +574,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 		}
 	}
 
-	Transform emission_xform;
+	Transform3D emission_xform;
 	Basis velocity_xform;
 	if (!local_coords) {
 		emission_xform = get_global_transform();
@@ -693,7 +693,7 @@ void CPUParticles3D::_particles_process(float p_delta) {
 			p.custom[0] = Math::deg2rad(base_angle); //angle
 			p.custom[1] = 0.0; //phase
 			p.custom[2] = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]); //animation offset (0-1)
-			p.transform = Transform();
+			p.transform = Transform3D();
 			p.time = 0;
 			p.lifetime = lifetime * (1.0 - Math::randf() * lifetime_randomness);
 			p.base_color = Color(1, 1, 1, 1);
@@ -1030,7 +1030,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	for (int i = 0; i < pc; i++) {
 		int idx = order ? order[i] : i;
 
-		Transform t = r[idx].transform;
+		Transform3D t = r[idx].transform;
 
 		if (!local_coords) {
 			t = inv_emission_transform * t;
@@ -1139,7 +1139,7 @@ void CPUParticles3D::_notification(int p_what) {
 			float *ptr = w;
 
 			for (int i = 0; i < pc; i++) {
-				Transform t = inv_emission_transform * r[i].transform;
+				Transform3D t = inv_emission_transform * r[i].transform;
 
 				if (r[i].active) {
 					ptr[0] = t.basis.elements[0][0];

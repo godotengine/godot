@@ -101,25 +101,25 @@ void XRServer::set_world_scale(real_t p_world_scale) {
 	world_scale = p_world_scale;
 };
 
-Transform XRServer::get_world_origin() const {
+Transform3D XRServer::get_world_origin() const {
 	return world_origin;
 };
 
-void XRServer::set_world_origin(const Transform &p_world_origin) {
+void XRServer::set_world_origin(const Transform3D &p_world_origin) {
 	world_origin = p_world_origin;
 };
 
-Transform XRServer::get_reference_frame() const {
+Transform3D XRServer::get_reference_frame() const {
 	return reference_frame;
 };
 
 void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	if (primary_interface != nullptr) {
 		// clear our current reference frame or we'll end up double adjusting it
-		reference_frame = Transform();
+		reference_frame = Transform3D();
 
 		// requesting our EYE_MONO transform should return our current HMD position
-		Transform new_reference_frame = primary_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform());
+		Transform3D new_reference_frame = primary_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform3D());
 
 		// remove our tilt
 		if (p_rotation_mode == 1) {
@@ -145,8 +145,8 @@ void XRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
 	};
 };
 
-Transform XRServer::get_hmd_transform() {
-	Transform hmd_transform;
+Transform3D XRServer::get_hmd_transform() {
+	Transform3D hmd_transform;
 	if (primary_interface != nullptr) {
 		hmd_transform = primary_interface->get_transform_for_eye(XRInterface::EYE_MONO, hmd_transform);
 	};

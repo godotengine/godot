@@ -193,7 +193,7 @@ private:
 	Set<Listener3D *> listeners;
 
 	struct CameraOverrideData {
-		Transform transform;
+		Transform3D transform;
 		enum Projection {
 			PROJECTION_PERSPECTIVE,
 			PROJECTION_ORTHOGONAL
@@ -254,8 +254,8 @@ private:
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
-	Transform physics_last_object_transform;
-	Transform physics_last_camera_transform;
+	Transform3D physics_last_object_transform;
+	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
 	bool physics_has_last_mousepos = false;
 	Vector2 physics_last_mousepos = Vector2(Math_INF, Math_INF);
@@ -493,8 +493,8 @@ public:
 	void enable_camera_override(bool p_enable);
 	bool is_camera_override_enabled() const;
 
-	void set_camera_override_transform(const Transform &p_transform);
-	Transform get_camera_override_transform() const;
+	void set_camera_override_transform(const Transform3D &p_transform);
+	Transform3D get_camera_override_transform() const;
 
 	void set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far);

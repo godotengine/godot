@@ -269,9 +269,9 @@ enum {
 					offsetof(Quat, z) == (sizeof(real_t) * 2) &&
 					offsetof(Quat, w) == (sizeof(real_t) * 3)),
 
-	MATCHES_Transform = (MATCHES_Basis && MATCHES_Vector3 && (sizeof(Transform) == (sizeof(Basis) + sizeof(Vector3))) &&
-						 offsetof(Transform, basis) == 0 &&
-						 offsetof(Transform, origin) == sizeof(Basis)),
+	MATCHES_Transform3D = (MATCHES_Basis && MATCHES_Vector3 && (sizeof(Transform3D) == (sizeof(Basis) + sizeof(Vector3))) &&
+						   offsetof(Transform3D, basis) == 0 &&
+						   offsetof(Transform3D, origin) == sizeof(Basis)),
 
 	MATCHES_AABB = (MATCHES_Vector3 && (sizeof(AABB) == (sizeof(Vector3) * 2)) &&
 					offsetof(AABB, position) == (sizeof(Vector3) * 0) &&
@@ -292,7 +292,7 @@ enum {
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
 static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform3D && MATCHES_AABB && MATCHES_Color &&
 				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
@@ -433,16 +433,16 @@ struct M_Quat {
 	}
 };
 
-struct M_Transform {
+struct M_Transform3D {
 	M_Basis basis;
 	M_Vector3 origin;
 
-	static _FORCE_INLINE_ Transform convert_to(const M_Transform &p_from) {
-		return Transform(M_Basis::convert_to(p_from.basis), M_Vector3::convert_to(p_from.origin));
+	static _FORCE_INLINE_ Transform3D convert_to(const M_Transform3D &p_from) {
+		return Transform3D(M_Basis::convert_to(p_from.basis), M_Vector3::convert_to(p_from.origin));
 	}
 
-	static _FORCE_INLINE_ M_Transform convert_from(const Transform &p_from) {
-		M_Transform ret = { M_Basis::convert_from(p_from.basis), M_Vector3::convert_from(p_from.origin) };
+	static _FORCE_INLINE_ M_Transform3D convert_from(const Transform3D &p_from) {
+		M_Transform3D ret = { M_Basis::convert_from(p_from.basis), M_Vector3::convert_from(p_from.origin) };
 		return ret;
 	}
 };
@@ -534,7 +534,7 @@ DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
 DECL_TYPE_MARSHAL_TEMPLATES(Quat)
-DECL_TYPE_MARSHAL_TEMPLATES(Transform)
+DECL_TYPE_MARSHAL_TEMPLATES(Transform3D)
 DECL_TYPE_MARSHAL_TEMPLATES(AABB)
 DECL_TYPE_MARSHAL_TEMPLATES(Color)
 DECL_TYPE_MARSHAL_TEMPLATES(Plane)

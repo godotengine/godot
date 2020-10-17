@@ -455,7 +455,7 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 
 		int vc = collision_segments.size();
 		const Vector3 *vptr = collision_segments.ptr();
-		Transform t = spatial_node->get_global_transform();
+		Transform3D t = spatial_node->get_global_transform();
 
 		bool any_out = false;
 		for (int j = 0; j < fc; j++) {
@@ -477,12 +477,12 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 	}
 
 	if (collision_mesh.is_valid()) {
-		Transform t = spatial_node->get_global_transform();
+		Transform3D t = spatial_node->get_global_transform();
 
 		Vector3 mesh_scale = t.get_basis().get_scale();
 		t.orthonormalize();
 
-		Transform it = t.affine_inverse();
+		Transform3D it = t.affine_inverse();
 
 		Vector<Plane> transformed_frustum;
 
@@ -508,7 +508,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (r_gizmo_handle && !hidden) {
-		Transform t = spatial_node->get_global_transform();
+		Transform3D t = spatial_node->get_global_transform();
 		if (billboard_handle) {
 			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
 		}
@@ -560,7 +560,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (selectable_icon_size > 0.0f) {
-		Transform t = spatial_node->get_global_transform();
+		Transform3D t = spatial_node->get_global_transform();
 		Vector3 camera_position = p_camera->get_camera_transform().origin;
 		if (camera_position.distance_squared_to(t.origin) > 0.01) {
 			t.set_look_at(t.origin, camera_position);
@@ -576,7 +576,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 		Point2 center = p_camera->unproject_position(t.origin);
 
-		Transform orig_camera_transform = p_camera->get_camera_transform();
+		Transform3D orig_camera_transform = p_camera->get_camera_transform();
 
 		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01 &&
 				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
@@ -609,7 +609,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 
 		int vc = collision_segments.size();
 		const Vector3 *vptr = collision_segments.ptr();
-		Transform t = spatial_node->get_global_transform();
+		Transform3D t = spatial_node->get_global_transform();
 		if (billboard_handle) {
 			t.set_look_at(t.origin, t.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
 		}
@@ -657,13 +657,13 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	}
 
 	if (collision_mesh.is_valid()) {
-		Transform gt = spatial_node->get_global_transform();
+		Transform3D gt = spatial_node->get_global_transform();
 
 		if (billboard_handle) {
 			gt.set_look_at(gt.origin, gt.origin - p_camera->get_transform().basis.get_axis(2), p_camera->get_transform().basis.get_axis(1));
 		}
 
-		Transform ai = gt.affine_inverse();
+		Transform3D ai = gt.affine_inverse();
 		Vector3 ray_from = ai.xform(p_camera->project_ray_origin(p_point));
 		Vector3 ray_dir = ai.basis.xform(p_camera->project_ray_normal(p_point)).normalized();
 		Vector3 rpos, rnorm;
@@ -826,7 +826,7 @@ Variant Light3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_i
 	return Variant();
 }
 
-static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vector3 &p_to, float p_arc_radius, const Transform &p_arc_xform) {
+static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vector3 &p_to, float p_arc_radius, const Transform3D &p_arc_xform) {
 	//bleh, discrete is simpler
 	static const int arc_test_points = 64;
 	float min_d = 1e20;
@@ -855,8 +855,8 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 
 void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
-	Transform gt = light->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = light->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -1084,8 +1084,8 @@ Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gi
 void AudioStreamPlayer3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_spatial_node());
 
-	Transform gt = player->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = player->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -1230,8 +1230,8 @@ Variant Camera3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_
 void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	Camera3D *camera = Object::cast_to<Camera3D>(p_gizmo->get_spatial_node());
 
-	Transform gt = camera->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = camera->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -1239,7 +1239,7 @@ void Camera3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Came
 	Vector3 s[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
 
 	if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
-		Transform gt2 = camera->get_global_transform();
+		Transform3D gt2 = camera->get_global_transform();
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], 1.0, gt2);
 		camera->set("fov", CLAMP(a * 2.0, 1, 179));
 	} else {
@@ -1418,7 +1418,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			lines.push_back(cam_pos);
 		}
 
-		Transform local = camera->get_global_transform().affine_inverse();
+		Transform3D local = camera->get_global_transform().affine_inverse();
 		for (int i = 0; i < lines.size(); i++) {
 			lines.write[i] = local.xform(lines[i]);
 		}
@@ -1617,7 +1617,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
 	surface_tool->set_material(material);
-	Vector<Transform> grests;
+	Vector<Transform3D> grests;
 	grests.resize(skel->get_bone_count());
 
 	Vector<int> bones;
@@ -1749,7 +1749,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			bones.write[0] = i;
 		}
 		/*
-		Transform  t = grests[i];
+		Transform3D  t = grests[i];
 		t.orthonormalize();
 
 		for (int i=0;i<6;i++) {
@@ -2196,9 +2196,9 @@ Variant VisibilityNotifier3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_g
 void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	VisibilityNotifier3D *notifier = Object::cast_to<VisibilityNotifier3D>(p_gizmo->get_spatial_node());
 
-	Transform gt = notifier->get_global_transform();
+	Transform3D gt = notifier->get_global_transform();
 
-	Transform gi = gt.affine_inverse();
+	Transform3D gi = gt.affine_inverse();
 
 	bool move = p_idx >= 3;
 	p_idx = p_idx % 3;
@@ -2388,8 +2388,8 @@ Variant GPUParticles3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, 
 void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_gizmo->get_spatial_node());
 
-	Transform gt = particles->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = particles->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	bool move = p_idx >= 3;
 	p_idx = p_idx % 3;
@@ -2555,8 +2555,8 @@ Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *
 void GPUParticlesCollision3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	Node3D *sn = p_gizmo->get_spatial_node();
 
-	Transform gt = sn->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = sn->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -2814,9 +2814,9 @@ Variant ReflectionProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo,
 
 void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_spatial_node());
-	Transform gt = probe->get_global_transform();
+	Transform3D gt = probe->get_global_transform();
 
-	Transform gi = gt.affine_inverse();
+	Transform3D gi = gt.affine_inverse();
 
 	if (p_idx < 3) {
 		Vector3 extents = probe->get_extents();
@@ -2993,9 +2993,9 @@ Variant DecalGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx
 
 void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
-	Transform gt = decal->get_global_transform();
+	Transform3D gt = decal->get_global_transform();
 
-	Transform gi = gt.affine_inverse();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 extents = decal->get_extents();
 
@@ -3135,8 +3135,8 @@ Variant GIProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_i
 void GIProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	GIProbe *probe = Object::cast_to<GIProbe>(p_gizmo->get_spatial_node());
 
-	Transform gt = probe->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = probe->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 extents = probe->get_extents();
 
@@ -3583,7 +3583,7 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	co->get_shape_owners(&owners);
 	for (List<uint32_t>::Element *E = owners.front(); E; E = E->next()) {
 		uint32_t owner_id = E->get();
-		Transform xform = co->shape_owner_get_transform(owner_id);
+		Transform3D xform = co->shape_owner_get_transform(owner_id);
 		Object *owner = co->shape_owner_get_owner(owner_id);
 		// Exclude CollisionShape3D and CollisionPolygon3D as they have their gizmo.
 		if (!Object::cast_to<CollisionShape3D>(owner) && !Object::cast_to<CollisionPolygon3D>(owner)) {
@@ -3701,8 +3701,8 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		return;
 	}
 
-	Transform gt = cs->get_global_transform();
-	Transform gi = gt.affine_inverse();
+	Transform3D gt = cs->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -4369,7 +4369,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
 
-Basis JointGizmosDrawer::look_body(const Transform &p_joint_transform, const Transform &p_body_transform) {
+Basis JointGizmosDrawer::look_body(const Transform3D &p_joint_transform, const Transform3D &p_body_transform) {
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
@@ -4394,7 +4394,7 @@ Basis JointGizmosDrawer::look_body(const Transform &p_joint_transform, const Tra
 	return base;
 }
 
-Basis JointGizmosDrawer::look_body_toward(Vector3::Axis p_axis, const Transform &joint_transform, const Transform &body_transform) {
+Basis JointGizmosDrawer::look_body_toward(Vector3::Axis p_axis, const Transform3D &joint_transform, const Transform3D &body_transform) {
 	switch (p_axis) {
 		case Vector3::AXIS_X:
 			return look_body_toward_x(joint_transform, body_transform);
@@ -4407,7 +4407,7 @@ Basis JointGizmosDrawer::look_body_toward(Vector3::Axis p_axis, const Transform 
 	}
 }
 
-Basis JointGizmosDrawer::look_body_toward_x(const Transform &p_joint_transform, const Transform &p_body_transform) {
+Basis JointGizmosDrawer::look_body_toward_x(const Transform3D &p_joint_transform, const Transform3D &p_body_transform) {
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
@@ -4438,7 +4438,7 @@ Basis JointGizmosDrawer::look_body_toward_x(const Transform &p_joint_transform, 
 	return base;
 }
 
-Basis JointGizmosDrawer::look_body_toward_y(const Transform &p_joint_transform, const Transform &p_body_transform) {
+Basis JointGizmosDrawer::look_body_toward_y(const Transform3D &p_joint_transform, const Transform3D &p_body_transform) {
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
@@ -4469,7 +4469,7 @@ Basis JointGizmosDrawer::look_body_toward_y(const Transform &p_joint_transform, 
 	return base;
 }
 
-Basis JointGizmosDrawer::look_body_toward_z(const Transform &p_joint_transform, const Transform &p_body_transform) {
+Basis JointGizmosDrawer::look_body_toward_z(const Transform3D &p_joint_transform, const Transform3D &p_body_transform) {
 	const Vector3 &p_eye(p_joint_transform.origin);
 	const Vector3 &p_target(p_body_transform.origin);
 
@@ -4500,7 +4500,7 @@ Basis JointGizmosDrawer::look_body_toward_z(const Transform &p_joint_transform, 
 	return base;
 }
 
-void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse) {
+void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const Transform3D &p_offset, const Basis &p_base, real_t p_limit_lower, real_t p_limit_upper, Vector<Vector3> &r_points, bool p_inverse) {
 	if (p_limit_lower == p_limit_upper) {
 		r_points.push_back(p_offset.translated(Vector3()).origin);
 		r_points.push_back(p_offset.translated(p_base.xform(Vector3(0.5, 0, 0))).origin);
@@ -4562,7 +4562,7 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 	}
 }
 
-void JointGizmosDrawer::draw_cone(const Transform &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points) {
+void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points) {
 	float r = 1.0;
 	float w = r * Math::sin(p_swing);
 	float d = r * Math::cos(p_swing);
@@ -4666,7 +4666,7 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<Vector3> body_b_points;
 
 	if (Object::cast_to<PinJoint3D>(joint)) {
-		CreatePinJointGizmo(Transform(), points);
+		CreatePinJointGizmo(Transform3D(), points);
 		p_gizmo->add_collision_segments(points);
 		p_gizmo->add_lines(points, common_material);
 	}
@@ -4674,10 +4674,10 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	HingeJoint3D *hinge = Object::cast_to<HingeJoint3D>(joint);
 	if (hinge) {
 		CreateHingeJointGizmo(
-				Transform(),
+				Transform3D(),
 				hinge->get_global_transform(),
-				node_body_a ? node_body_a->get_global_transform() : Transform(),
-				node_body_b ? node_body_b->get_global_transform() : Transform(),
+				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
+				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 				hinge->get_param(HingeJoint3D::PARAM_LIMIT_LOWER),
 				hinge->get_param(HingeJoint3D::PARAM_LIMIT_UPPER),
 				hinge->get_flag(HingeJoint3D::FLAG_USE_LIMIT),
@@ -4697,10 +4697,10 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	SliderJoint3D *slider = Object::cast_to<SliderJoint3D>(joint);
 	if (slider) {
 		CreateSliderJointGizmo(
-				Transform(),
+				Transform3D(),
 				slider->get_global_transform(),
-				node_body_a ? node_body_a->get_global_transform() : Transform(),
-				node_body_b ? node_body_b->get_global_transform() : Transform(),
+				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
+				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 				slider->get_param(SliderJoint3D::PARAM_ANGULAR_LIMIT_LOWER),
 				slider->get_param(SliderJoint3D::PARAM_ANGULAR_LIMIT_UPPER),
 				slider->get_param(SliderJoint3D::PARAM_LINEAR_LIMIT_LOWER),
@@ -4721,10 +4721,10 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	ConeTwistJoint3D *cone = Object::cast_to<ConeTwistJoint3D>(joint);
 	if (cone) {
 		CreateConeTwistJointGizmo(
-				Transform(),
+				Transform3D(),
 				cone->get_global_transform(),
-				node_body_a ? node_body_a->get_global_transform() : Transform(),
-				node_body_b ? node_body_b->get_global_transform() : Transform(),
+				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
+				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 				cone->get_param(ConeTwistJoint3D::PARAM_SWING_SPAN),
 				cone->get_param(ConeTwistJoint3D::PARAM_TWIST_SPAN),
 				node_body_a ? &body_a_points : nullptr,
@@ -4740,10 +4740,10 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Generic6DOFJoint3D *gen = Object::cast_to<Generic6DOFJoint3D>(joint);
 	if (gen) {
 		CreateGeneric6DOFJointGizmo(
-				Transform(),
+				Transform3D(),
 				gen->get_global_transform(),
-				node_body_a ? node_body_a->get_global_transform() : Transform(),
-				node_body_b ? node_body_b->get_global_transform() : Transform(),
+				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
+				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 
 				gen->get_param_x(Generic6DOFJoint3D::PARAM_ANGULAR_LOWER_LIMIT),
 				gen->get_param_x(Generic6DOFJoint3D::PARAM_ANGULAR_UPPER_LIMIT),
@@ -4780,7 +4780,7 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
-void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform &p_offset, Vector<Vector3> &r_cursor_points) {
+void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points) {
 	float cs = 0.25;
 
 	r_cursor_points.push_back(p_offset.translated(Vector3(+cs, 0, 0)).origin);
@@ -4791,7 +4791,7 @@ void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform &p_offset, Vector<V
 	r_cursor_points.push_back(p_offset.translated(Vector3(0, 0, -cs)).origin);
 }
 
-void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
 	r_common_points.push_back(p_offset.translated(Vector3(0, 0, 0.5)).origin);
 	r_common_points.push_back(p_offset.translated(Vector3(0, 0, -0.5)).origin);
 
@@ -4821,7 +4821,7 @@ void Joint3DGizmoPlugin::CreateHingeJointGizmo(const Transform &p_offset, const 
 	}
 }
 
-void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_angular_limit_lower, real_t p_angular_limit_upper, real_t p_linear_limit_lower, real_t p_linear_limit_upper, Vector<Vector3> &r_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_angular_limit_lower, real_t p_angular_limit_upper, real_t p_linear_limit_lower, real_t p_linear_limit_upper, Vector<Vector3> &r_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
 	p_linear_limit_lower = -p_linear_limit_lower;
 	p_linear_limit_upper = -p_linear_limit_upper;
 
@@ -4880,7 +4880,7 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform &p_offset, const
 	}
 }
 
-void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_swing, real_t p_twist, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_swing, real_t p_twist, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
 	if (r_body_a_points) {
 		JointGizmosDrawer::draw_cone(
 				p_offset,
@@ -4901,10 +4901,10 @@ void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform &p_offset, co
 }
 
 void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
-		const Transform &p_offset,
-		const Transform &p_trs_joint,
-		const Transform &p_trs_body_a,
-		const Transform &p_trs_body_b,
+		const Transform3D &p_offset,
+		const Transform3D &p_trs_joint,
+		const Transform3D &p_trs_body_a,
+		const Transform3D &p_trs_body_b,
 		real_t p_angular_limit_lower_x,
 		real_t p_angular_limit_upper_x,
 		real_t p_linear_limit_lower_x,

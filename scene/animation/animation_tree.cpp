@@ -718,7 +718,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 	//check all tracks, see if they need modification
 
-	root_motion_transform = Transform();
+	root_motion_transform = Transform3D();
 
 	if (!root.is_valid()) {
 		ERR_PRINT("AnimationTree: root AnimationNode is not set, disabling playback.");
@@ -1191,7 +1191,7 @@ void AnimationTree::_process_graph(float p_delta) {
 				case Animation::TYPE_TRANSFORM: {
 					TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-					Transform xform;
+					Transform3D xform;
 					xform.origin = t->loc;
 
 					xform.basis.set_quat_scale(t->rot, t->scale);
@@ -1311,7 +1311,7 @@ NodePath AnimationTree::get_root_motion_track() const {
 	return root_motion_track;
 }
 
-Transform AnimationTree::get_root_motion_transform() const {
+Transform3D AnimationTree::get_root_motion_transform() const {
 	return root_motion_transform;
 }
 

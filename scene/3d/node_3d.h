@@ -62,8 +62,8 @@ class Node3D : public Node {
 	mutable SelfList<Node> xform_change;
 
 	struct Data {
-		mutable Transform global_transform;
-		mutable Transform local_transform;
+		mutable Transform3D global_transform;
+		mutable Transform3D local_transform;
 		mutable Vector3 rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
 
@@ -132,15 +132,15 @@ public:
 	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
-	void set_transform(const Transform &p_transform);
-	void set_global_transform(const Transform &p_transform);
+	void set_transform(const Transform3D &p_transform);
+	void set_global_transform(const Transform3D &p_transform);
 
-	Transform get_transform() const;
-	Transform get_global_transform() const;
+	Transform3D get_transform() const;
+	Transform3D get_global_transform() const;
 
 #ifdef TOOLS_ENABLED
-	virtual Transform get_global_gizmo_transform() const;
-	virtual Transform get_local_gizmo_transform() const;
+	virtual Transform3D get_global_gizmo_transform() const;
+	virtual Transform3D get_local_gizmo_transform() const;
 #endif
 
 	void set_as_top_level(bool p_enabled);
@@ -156,7 +156,7 @@ public:
 
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
-	Transform get_relative_transform(const Node *p_parent) const;
+	Transform3D get_relative_transform(const Node *p_parent) const;
 
 	void rotate(const Vector3 &p_axis, float p_angle);
 	void rotate_x(float p_angle);

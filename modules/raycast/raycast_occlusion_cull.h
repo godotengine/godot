@@ -52,14 +52,14 @@ public:
 
 		struct CameraRayThreadData {
 			CameraMatrix camera_matrix;
-			Transform camera_transform;
+			Transform3D camera_transform;
 			bool camera_orthogonal;
 			int thread_count;
 			Size2i buffer_size;
 		};
 
 		void _camera_rays_threaded(uint32_t p_thread, CameraRayThreadData *p_data);
-		void _generate_camera_rays(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to);
+		void _generate_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, int p_from, int p_to);
 
 	public:
 		LocalVector<RayPacket> camera_rays;
@@ -69,7 +69,7 @@ public:
 		virtual void clear() override;
 		virtual void resize(const Size2i &p_size) override;
 		void sort_rays();
-		void update_camera_rays(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
+		void update_camera_rays(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_work_pool);
 	};
 
 private:
@@ -99,7 +99,7 @@ private:
 		RID occluder;
 		LocalVector<uint32_t> indices;
 		LocalVector<Vector3> xformed_vertices;
-		Transform xform;
+		Transform3D xform;
 		bool enabled = true;
 		bool removed = false;
 	};
@@ -113,7 +113,7 @@ private:
 		struct TransformThreadData {
 			uint32_t thread_count;
 			uint32_t vertex_count;
-			Transform xform;
+			Transform3D xform;
 			const Vector3 *read;
 			Vector3 *write;
 		};
@@ -134,7 +134,7 @@ private:
 		void _update_dirty_instance_thread(int p_idx, RID *p_instances);
 		void _update_dirty_instance(int p_idx, RID *p_instances, ThreadWorkPool *p_thread_pool);
 		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
-		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform &p_xform, int p_from, int p_to);
+		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
 		bool update(ThreadWorkPool &p_thread_pool);
 
@@ -164,7 +164,7 @@ public:
 
 	virtual void add_scenario(RID p_scenario) override;
 	virtual void remove_scenario(RID p_scenario) override;
-	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform &p_xform, bool p_enabled) override;
+	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) override;
 	virtual void scenario_remove_instance(RID p_scenario, RID p_instance) override;
 
 	virtual void add_buffer(RID p_buffer) override;
@@ -172,7 +172,7 @@ public:
 	virtual HZBuffer *buffer_get_ptr(RID p_buffer) override;
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) override;
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) override;
-	virtual void buffer_update(RID p_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) override;
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) override;
 	virtual RID buffer_get_debug_texture(RID p_buffer) override;
 
 	virtual void set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) override;

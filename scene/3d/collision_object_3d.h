@@ -46,7 +46,7 @@ class CollisionObject3D : public Node3D {
 
 	struct ShapeData {
 		Object *owner = nullptr;
-		Transform xform;
+		Transform3D xform;
 		struct ShapeBase {
 			RID debug_shape;
 			Ref<Shape3D> shape;
@@ -66,7 +66,7 @@ class CollisionObject3D : public Node3D {
 
 	Set<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
-	Transform debug_shape_old_transform;
+	Transform3D debug_shape_old_transform;
 
 	void _update_pickable();
 
@@ -107,8 +107,8 @@ public:
 	void get_shape_owners(List<uint32_t> *r_owners);
 	Array _get_shape_owners();
 
-	void shape_owner_set_transform(uint32_t p_owner, const Transform &p_transform);
-	Transform shape_owner_get_transform(uint32_t p_owner) const;
+	void shape_owner_set_transform(uint32_t p_owner, const Transform3D &p_transform);
+	Transform3D shape_owner_get_transform(uint32_t p_owner) const;
 	Object *shape_owner_get_owner(uint32_t p_owner) const;
 
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);

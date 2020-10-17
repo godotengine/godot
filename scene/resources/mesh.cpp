@@ -582,8 +582,9 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose() const {
 int Mesh::get_builtin_bind_pose_count() const {
 	return 0;
 }
-Transform Mesh::get_builtin_bind_pose(int p_index) const {
-	return Transform();
+
+Transform3D Mesh::get_builtin_bind_pose(int p_index) const {
+	return Transform3D();
 }
 
 Mesh::Mesh() {
@@ -1410,12 +1411,12 @@ struct ArrayMeshLightmapSurface {
 	uint32_t format = 0;
 };
 
-Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
+Error ArrayMesh::lightmap_unwrap(const Transform3D &p_base_transform, float p_texel_size) {
 	Vector<uint8_t> null_cache;
 	return lightmap_unwrap_cached(p_base_transform, p_texel_size, null_cache, null_cache, false);
 }
 
-Error ArrayMesh::lightmap_unwrap_cached(const Transform &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache, bool p_generate_cache) {
+Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache, bool p_generate_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
@@ -1431,7 +1432,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform &p_base_transform, float
 	Basis basis = p_base_transform.get_basis();
 	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
 
-	Transform transform;
+	Transform3D transform;
 	transform.scale(scale);
 
 	Basis normal_basis = transform.basis.inverse().transposed();

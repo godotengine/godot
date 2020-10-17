@@ -100,7 +100,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 		} break;
 		case TRANSFORM: {
-			return "Transform";
+			return "Transform3D";
 
 		} break;
 
@@ -882,7 +882,7 @@ bool Variant::is_zero() const {
 
 		} break;
 		case TRANSFORM: {
-			return *_data._transform == Transform();
+			return *_data._transform == Transform3D();
 
 		} break;
 
@@ -1101,7 +1101,7 @@ void Variant::reference(const Variant &p_variant) {
 
 		} break;
 		case TRANSFORM: {
-			_data._transform = memnew(Transform(*p_variant._data._transform));
+			_data._transform = memnew(Transform3D(*p_variant._data._transform));
 		} break;
 
 		// misc types
@@ -1683,7 +1683,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			return mtx + ")";
 		} break;
 		case TRANSFORM:
-			return operator Transform();
+			return operator Transform3D();
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
@@ -1979,16 +1979,16 @@ Variant::operator Quat() const {
 	}
 }
 
-Variant::operator Transform() const {
+Variant::operator Transform3D() const {
 	if (type == TRANSFORM) {
 		return *_data._transform;
 	} else if (type == BASIS) {
-		return Transform(*_data._basis, Vector3());
+		return Transform3D(*_data._basis, Vector3());
 	} else if (type == QUAT) {
-		return Transform(Basis(*reinterpret_cast<const Quat *>(_data._mem)), Vector3());
+		return Transform3D(Basis(*reinterpret_cast<const Quat *>(_data._mem)), Vector3());
 	} else if (type == TRANSFORM2D) {
 		const Transform2D &t = *_data._transform2d;
-		Transform m;
+		Transform3D m;
 		m.basis.elements[0][0] = t.elements[0][0];
 		m.basis.elements[1][0] = t.elements[0][1];
 		m.basis.elements[0][1] = t.elements[1][0];
@@ -1997,7 +1997,7 @@ Variant::operator Transform() const {
 		m.origin[1] = t.elements[2][1];
 		return m;
 	} else {
-		return Transform();
+		return Transform3D();
 	}
 }
 
@@ -2005,7 +2005,7 @@ Variant::operator Transform2D() const {
 	if (type == TRANSFORM2D) {
 		return *_data._transform2d;
 	} else if (type == TRANSFORM) {
-		const Transform &t = *_data._transform;
+		const Transform3D &t = *_data._transform;
 		Transform2D m;
 		m.elements[0][0] = t.basis.elements[0][0];
 		m.elements[0][1] = t.basis.elements[1][0];
@@ -2500,9 +2500,9 @@ Variant::Variant(const Quat &p_quat) {
 	memnew_placement(_data._mem, Quat(p_quat));
 }
 
-Variant::Variant(const Transform &p_transform) {
+Variant::Variant(const Transform3D &p_transform) {
 	type = TRANSFORM;
-	_data._transform = memnew(Transform(p_transform));
+	_data._transform = memnew(Transform3D(p_transform));
 }
 
 Variant::Variant(const Transform2D &p_transform) {
@@ -3256,8 +3256,8 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 		} break;
 
 		case TRANSFORM: {
-			const Transform *l = _data._transform;
-			const Transform *r = p_variant._data._transform;
+			const Transform3D *l = _data._transform;
+			const Transform3D *r = p_variant._data._transform;
 
 			for (int i = 0; i < 3; i++) {
 				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i]))) {

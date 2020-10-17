@@ -209,7 +209,7 @@ public:
 
 class VisualShaderNodeTransformConstant : public VisualShaderNodeConstant {
 	GDCLASS(VisualShaderNodeTransformConstant, VisualShaderNodeConstant);
-	Transform constant;
+	Transform3D constant;
 
 protected:
 	static void _bind_methods();
@@ -227,8 +227,8 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	void set_constant(Transform p_value);
-	Transform get_constant() const;
+	void set_constant(Transform3D p_value);
+	Transform3D get_constant() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1788,7 +1788,7 @@ class VisualShaderNodeTransformUniform : public VisualShaderNodeUniform {
 
 private:
 	bool default_value_enabled = false;
-	Transform default_value = Transform(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+	Transform3D default_value = Transform3D(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
 protected:
 	static void _bind_methods();
@@ -1813,8 +1813,8 @@ public:
 	void set_default_value_enabled(bool p_enabled);
 	bool is_default_value_enabled() const;
 
-	void set_default_value(const Transform &p_value);
-	Transform get_default_value() const;
+	void set_default_value(const Transform3D &p_value);
+	Transform3D get_default_value() const;
 
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 	bool is_convertible_to_constant() const override;

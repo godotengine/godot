@@ -1926,7 +1926,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			gui[11] = 0;
 		} break;
 		case ShaderLanguage::TYPE_MAT4: {
-			Transform v = value;
+			Transform3D v = value;
 			float *gui = (float *)data;
 
 			gui[0] = v.basis.elements[0][0];
@@ -2776,7 +2776,7 @@ AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					const float *dataptr = baseptr + j * 8;
 
-					Transform mtx;
+					Transform3D mtx;
 
 					mtx.basis.elements[0].x = dataptr[0];
 					mtx.basis.elements[1].x = dataptr[1];
@@ -2803,7 +2803,7 @@ AABB RendererStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 					const float *dataptr = baseptr + j * 12;
 
-					Transform mtx;
+					Transform3D mtx;
 
 					mtx.basis.elements[0][0] = dataptr[0];
 					mtx.basis.elements[0][1] = dataptr[1];
@@ -3478,7 +3478,7 @@ void RendererStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const fl
 	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
 	for (int i = 0; i < p_instances; i++) {
 		const float *data = p_data + multimesh->stride_cache * i;
-		Transform t;
+		Transform3D t;
 
 		if (multimesh->xform_format == RS::MULTIMESH_TRANSFORM_3D) {
 			t.basis.elements[0][0] = data[0];
@@ -3514,7 +3514,7 @@ void RendererStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const fl
 	multimesh->aabb = aabb;
 }
 
-void RendererStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
+void RendererStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 	ERR_FAIL_INDEX(p_index, multimesh->instances);
@@ -3621,15 +3621,15 @@ RID RendererStorageRD::multimesh_get_mesh(RID p_multimesh) const {
 	return multimesh->mesh;
 }
 
-Transform RendererStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+Transform3D RendererStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
-	ERR_FAIL_COND_V(!multimesh, Transform());
-	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform());
-	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D, Transform());
+	ERR_FAIL_COND_V(!multimesh, Transform3D());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform3D());
+	ERR_FAIL_COND_V(multimesh->xform_format != RS::MULTIMESH_TRANSFORM_3D, Transform3D());
 
 	_multimesh_make_local(multimesh);
 
-	Transform t;
+	Transform3D t;
 	{
 		const float *r = multimesh->data_cache.ptr();
 
@@ -4065,7 +4065,7 @@ void RendererStorageRD::particles_set_trails(RID p_particles, bool p_enable, flo
 	particles->dependency.changed_notify(DEPENDENCY_CHANGED_PARTICLES);
 }
 
-void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses) {
+void RendererStorageRD::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	if (particles->trail_bind_pose_buffer.is_valid() && particles->trail_bind_poses.size() != p_bind_poses.size()) {
@@ -4161,7 +4161,7 @@ void RendererStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitt
 	}
 }
 
-void RendererStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+void RendererStorageRD::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_COND(particles->amount == 0);
@@ -4229,7 +4229,7 @@ AABB RendererStorageRD::particles_get_current_aabb(RID p_particles) {
 
 	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
 
-	Transform inv = particles->emission_transform.affine_inverse();
+	Transform3D inv = particles->emission_transform.affine_inverse();
 
 	AABB aabb;
 	if (buffer.size()) {
@@ -4272,7 +4272,7 @@ AABB RendererStorageRD::particles_get_aabb(RID p_particles) const {
 	return particles->custom_aabb;
 }
 
-void RendererStorageRD::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
+void RendererStorageRD::particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
@@ -4396,7 +4396,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 	frame_params.randomness = p_particles->randomness;
 
 	if (p_particles->use_local_coords) {
-		store_transform(Transform(), frame_params.emission_transform);
+		store_transform(Transform3D(), frame_params.emission_transform);
 	} else {
 		store_transform(p_particles->emission_transform, frame_params.emission_transform);
 	}
@@ -4416,7 +4416,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
 		RID collision_heightmap_texture;
 
-		Transform to_particles;
+		Transform3D to_particles;
 		if (p_particles->use_local_coords) {
 			to_particles = p_particles->emission_transform.affine_inverse();
 		}
@@ -4473,7 +4473,7 @@ void RendererStorageRD::_particles_process(Particles *p_particles, float p_delta
 			ParticlesCollision *pc = particles_collision_owner.getornull(pci->collision);
 			ERR_CONTINUE(!pc);
 
-			Transform to_collider = pci->transform;
+			Transform3D to_collider = pci->transform;
 			if (p_particles->use_local_coords) {
 				to_collider = to_particles * to_collider;
 			}
@@ -5522,7 +5522,7 @@ RID RendererStorageRD::particles_collision_instance_create(RID p_collision) {
 	pci.collision = p_collision;
 	return particles_collision_instance_owner.make_rid(pci);
 }
-void RendererStorageRD::particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform) {
+void RendererStorageRD::particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform) {
 	ParticlesCollisionInstance *pci = particles_collision_instance_owner.getornull(p_collision_instance);
 	ERR_FAIL_COND(!pci);
 	pci->transform = p_transform;
@@ -5600,7 +5600,7 @@ int RendererStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
 	return skeleton->size;
 }
 
-void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {
+void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 	ERR_FAIL_COND(!skeleton);
@@ -5625,16 +5625,16 @@ void RendererStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, 
 	_skeleton_make_dirty(skeleton);
 }
 
-Transform RendererStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
+Transform3D RendererStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
-	ERR_FAIL_COND_V(!skeleton, Transform());
-	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform());
-	ERR_FAIL_COND_V(skeleton->use_2d, Transform());
+	ERR_FAIL_COND_V(!skeleton, Transform3D());
+	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform3D());
+	ERR_FAIL_COND_V(skeleton->use_2d, Transform3D());
 
 	const float *dataptr = skeleton->data.ptr() + p_bone * 12;
 
-	Transform t;
+	Transform3D t;
 
 	t.basis.elements[0][0] = dataptr[0];
 	t.basis.elements[0][1] = dataptr[1];
@@ -6331,7 +6331,7 @@ void RendererStorageRD::gi_probe_initialize(RID p_gi_probe) {
 	gi_probe_owner.initialize_rid(p_gi_probe, GIProbe());
 }
 
-void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+void RendererStorageRD::gi_probe_allocate_data(RID p_gi_probe, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -6506,9 +6506,9 @@ Vector<int> RendererStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
 	return gi_probe->level_counts;
 }
 
-Transform RendererStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
+Transform3D RendererStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
-	ERR_FAIL_COND_V(!gi_probe, Transform());
+	ERR_FAIL_COND_V(!gi_probe, Transform3D());
 
 	return gi_probe->to_cell_xform;
 }
@@ -8129,7 +8129,7 @@ void RendererStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::Gl
 		} break;
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
 			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
-			Transform v = p_value;
+			Transform3D v = p_value;
 			bv[0].x = v.basis.elements[0][0];
 			bv[0].y = v.basis.elements[1][0];
 			bv[0].z = v.basis.elements[2][0];
@@ -8663,7 +8663,7 @@ bool RendererStorageRD::free(RID p_rid) {
 		decal->dependency.deleted_notify(p_rid);
 		decal_owner.free(p_rid);
 	} else if (gi_probe_owner.owns(p_rid)) {
-		gi_probe_allocate_data(p_rid, Transform(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
+		gi_probe_allocate_data(p_rid, Transform3D(), AABB(), Vector3i(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<uint8_t>(), Vector<int>()); //deallocate
 		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
 		gi_probe->dependency.deleted_notify(p_rid);
 		gi_probe_owner.free(p_rid);

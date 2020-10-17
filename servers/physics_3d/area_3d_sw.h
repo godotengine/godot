@@ -156,7 +156,7 @@ public:
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
 
-	void set_transform(const Transform &p_transform);
+	void set_transform(const Transform3D &p_transform);
 
 	void set_space(Space3DSW *p_space);
 

@@ -363,7 +363,7 @@ void unregister_gdnative_types() {
 	print_line(String("aabb:\t")     + itos(sizeof(AABB)));
 	print_line(String("rid:\t")       + itos(sizeof(RID)));
 	print_line(String("string:\t")    + itos(sizeof(String)));
-	print_line(String("transform:\t") + itos(sizeof(Transform)));
+	print_line(String("transform:\t") + itos(sizeof(Transform3D)));
 	print_line(String("transfo2D:\t") + itos(sizeof(Transform2D)));
 	print_line(String("variant:\t")   + itos(sizeof(Variant)));
 	print_line(String("vector2:\t")   + itos(sizeof(Vector2)));

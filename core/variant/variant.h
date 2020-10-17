@@ -200,7 +200,7 @@ private:
 		Transform2D *_transform2d;
 		::AABB *_aabb;
 		Basis *_basis;
-		Transform *_transform;
+		Transform3D *_transform;
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
@@ -322,7 +322,7 @@ public:
 	operator ::AABB() const;
 	operator Quat() const;
 	operator Basis() const;
-	operator Transform() const;
+	operator Transform3D() const;
 	operator Transform2D() const;
 
 	operator Color() const;
@@ -395,7 +395,7 @@ public:
 	Variant(const Quat &p_quat);
 	Variant(const Basis &p_matrix);
 	Variant(const Transform2D &p_transform);
-	Variant(const Transform &p_transform);
+	Variant(const Transform3D &p_transform);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);

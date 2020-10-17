@@ -131,7 +131,7 @@ void GPUParticlesCollisionSDF::_find_meshes(const AABB &p_aabb, Node *p_at_node,
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
 
-			Transform xf = get_global_transform().affine_inverse() * mi->get_global_transform();
+			Transform3D xf = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 			if (p_aabb.intersects(xf.xform(aabb))) {
 				PlotMesh pm;
@@ -147,7 +147,7 @@ void GPUParticlesCollisionSDF::_find_meshes(const AABB &p_aabb, Node *p_at_node,
 		if (s->is_visible_in_tree()) {
 			Array meshes = p_at_node->call("get_meshes");
 			for (int i = 0; i < meshes.size(); i += 2) {
-				Transform mxf = meshes[i];
+				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
 				if (!mesh.is_valid()) {
 					continue;
@@ -155,7 +155,7 @@ void GPUParticlesCollisionSDF::_find_meshes(const AABB &p_aabb, Node *p_at_node,
 
 				AABB aabb = mesh->get_aabb();
 
-				Transform xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
+				Transform3D xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
 
 				if (p_aabb.intersects(xf.xform(aabb))) {
 					PlotMesh pm;
@@ -598,14 +598,14 @@ void GPUParticlesCollisionHeightField::_notification(int p_what) {
 		if (follow_camera_mode && get_viewport()) {
 			Camera3D *cam = get_viewport()->get_camera();
 			if (cam) {
-				Transform xform = get_global_transform();
+				Transform3D xform = get_global_transform();
 				Vector3 x_axis = xform.basis.get_axis(Vector3::AXIS_X).normalized();
 				Vector3 z_axis = xform.basis.get_axis(Vector3::AXIS_Z).normalized();
 				float x_len = xform.basis.get_scale().x;
 				float z_len = xform.basis.get_scale().z;
 
 				Vector3 cam_pos = cam->get_global_transform().origin;
-				Transform new_xform = xform;
+				Transform3D new_xform = xform;
 
 				while (x_axis.dot(cam_pos - new_xform.origin) > x_len) {
 					new_xform.origin += x_axis * x_len;

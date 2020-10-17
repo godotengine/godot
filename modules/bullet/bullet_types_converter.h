@@ -49,14 +49,14 @@ extern void B_TO_G(btVector3 const &inVal, Vector3 &outVal);
 extern void INVERT_B_TO_G(btVector3 const &inVal, Vector3 &outVal);
 extern void B_TO_G(btMatrix3x3 const &inVal, Basis &outVal);
 extern void INVERT_B_TO_G(btMatrix3x3 const &inVal, Basis &outVal);
-extern void B_TO_G(btTransform const &inVal, Transform &outVal);
+extern void B_TO_G(btTransform const &inVal, Transform3D &outVal);
 
 // Godot TO Bullet
 extern void G_TO_B(Vector3 const &inVal, btVector3 &outVal);
 extern void INVERT_G_TO_B(Vector3 const &inVal, btVector3 &outVal);
 extern void G_TO_B(Basis const &inVal, btMatrix3x3 &outVal);
 extern void INVERT_G_TO_B(Basis const &inVal, btMatrix3x3 &outVal);
-extern void G_TO_B(Transform const &inVal, btTransform &outVal);
+extern void G_TO_B(Transform3D const &inVal, btTransform &outVal);
 
 extern void UNSCALE_BT_BASIS(btTransform &scaledBasis);
 #endif

@@ -98,7 +98,7 @@ class BodyPair3DSW : public BodyContact3DSW {
 	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
 
 	void validate_contacts();
-	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform &p_xform_B);
+	bool _test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const Transform3D &p_xform_A, Body3DSW *p_B, int p_shape_B, const Transform3D &p_xform_B);
 
 public:
 	virtual bool setup(real_t p_step) override;

@@ -68,7 +68,7 @@ void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &
 	p_verticies.push_back(p_vec3.z);
 }
 
-void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
 	int current_vertex_count;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
@@ -123,7 +123,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	}
 }
 
-void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
+void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_verticies, Vector<int> &p_indices) {
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = p_verticies.size() / 3;
 
@@ -138,7 +138,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 	}
 }
 
-void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+void NavigationMeshGenerator::_parse_geometry(Transform3D p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -169,7 +169,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 				if (Object::cast_to<CollisionShape3D>(child)) {
 					CollisionShape3D *col_shape = Object::cast_to<CollisionShape3D>(child);
 
-					Transform transform = p_accumulated_transform * static_body->get_transform() * col_shape->get_transform();
+					Transform3D transform = p_accumulated_transform * static_body->get_transform() * col_shape->get_transform();
 
 					Ref<Mesh> mesh;
 					Ref<Shape3D> s = col_shape->get_shape();
@@ -251,7 +251,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	if (Object::cast_to<GridMap>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		GridMap *gridmap_instance = Object::cast_to<GridMap>(p_node);
 		Array meshes = gridmap_instance->get_meshes();
-		Transform xform = gridmap_instance->get_transform();
+		Transform3D xform = gridmap_instance->get_transform();
 		for (int i = 0; i < meshes.size(); i += 2) {
 			Ref<Mesh> mesh = meshes[i + 1];
 			if (mesh.is_valid()) {
@@ -513,7 +513,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		p_node->get_tree()->get_nodes_in_group(p_nav_mesh->get_source_group_name(), &parse_nodes);
 	}
 
-	Transform navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
+	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_transform().affine_inverse();
 	for (const List<Node *>::Element *E = parse_nodes.front(); E; E = E->next()) {
 		int geometry_type = p_nav_mesh->get_parsed_geometry_type();
 		uint32_t collision_mask = p_nav_mesh->get_collision_mask();

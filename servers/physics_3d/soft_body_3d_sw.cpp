@@ -289,7 +289,7 @@ void SoftBody3DSW::update_link_constants() {
 	}
 }
 
-void SoftBody3DSW::apply_nodes_transform(const Transform &p_transform) {
+void SoftBody3DSW::apply_nodes_transform(const Transform3D &p_transform) {
 	if (soft_mesh.is_null()) {
 		return;
 	}

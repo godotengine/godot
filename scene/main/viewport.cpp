@@ -197,8 +197,8 @@ void Viewport::update_worlds() {
 }
 
 void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
-	Transform object_transform = p_object->get_global_transform();
-	Transform camera_transform = p_camera->get_global_transform();
+	Transform3D object_transform = p_object->get_global_transform();
+	Transform3D camera_transform = p_camera->get_global_transform();
 	ObjectID id = p_object->get_instance_id();
 
 	//avoid sending the fake event unnecessarily if nothing really changed in the context
@@ -553,7 +553,7 @@ void Viewport::_notification(int p_what) {
 				RS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 
 				for (int i = 0; i < point_count; i++) {
-					Transform point_transform;
+					Transform3D point_transform;
 					point_transform.origin = points[i];
 					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
 				}
@@ -1341,19 +1341,19 @@ bool Viewport::is_camera_override_enabled() const {
 	return camera_override;
 }
 
-void Viewport::set_camera_override_transform(const Transform &p_transform) {
+void Viewport::set_camera_override_transform(const Transform3D &p_transform) {
 	if (camera_override) {
 		camera_override.transform = p_transform;
 		RenderingServer::get_singleton()->camera_set_transform(camera_override.rid, p_transform);
 	}
 }
 
-Transform Viewport::get_camera_override_transform() const {
+Transform3D Viewport::get_camera_override_transform() const {
 	if (camera_override) {
 		return camera_override.transform;
 	}
 
-	return Transform();
+	return Transform3D();
 }
 
 void Viewport::set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {

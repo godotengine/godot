@@ -391,7 +391,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void GPUParticles3D::emit_particle(const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
 	RS::get_singleton()->particles_emit(particles, p_transform, p_velocity, p_color, p_custom, p_emit_flags);
 }
 
@@ -458,7 +458,7 @@ void GPUParticles3D::_notification(int p_what) {
 }
 
 void GPUParticles3D::_skinning_changed() {
-	Vector<Transform> xforms;
+	Vector<Transform3D> xforms;
 	if (skin.is_valid()) {
 		xforms.resize(skin->get_bind_count());
 		for (int i = 0; i < skin->get_bind_count(); i++) {

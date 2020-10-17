@@ -233,7 +233,7 @@ void OccluderInstance3D::_bake_node(Node *p_node, PackedVector3Array &r_vertices
 		}
 
 		if (valid) {
-			Transform global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
+			Transform3D global_to_local = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 			for (int i = 0; i < mesh->get_surface_count(); i++) {
 				if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {

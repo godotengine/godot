@@ -270,7 +270,7 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	}
 }
 
-COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform) {
+COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform) {
 	NavRegion *region = region_owner.getornull(p_region);
 	ERR_FAIL_COND(region == nullptr);
 

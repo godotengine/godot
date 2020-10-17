@@ -264,7 +264,7 @@ TokenPtr GetRequiredToken(const ElementPtr el, unsigned int index);
 
 // ------------------------------------------------------------------------------------------------
 // read a 4x4 matrix from an array of 16 floats
-Transform ReadMatrix(const ElementPtr element);
+Transform3D ReadMatrix(const ElementPtr element);
 } // namespace FBXDocParser
 
 #endif // FBX_PARSER_H

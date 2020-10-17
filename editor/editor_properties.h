@@ -541,7 +541,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	virtual void update_using_transform(Transform p_transform);
+	virtual void update_using_transform(Transform3D p_transform);
 	void setup(double p_min, double p_max, double p_step, bool p_no_slider);
 	EditorPropertyTransform();
 };

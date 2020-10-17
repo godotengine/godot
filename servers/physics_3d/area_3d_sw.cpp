@@ -52,7 +52,7 @@ void Area3DSW::_shapes_changed() {
 	}
 }
 
-void Area3DSW::set_transform(const Transform &p_transform) {
+void Area3DSW::set_transform(const Transform3D &p_transform) {
 	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
 	}

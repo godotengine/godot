@@ -152,12 +152,12 @@ private:
 	Ref<BakedLightmapData> light_data;
 
 	struct LightsFound {
-		Transform xform;
+		Transform3D xform;
 		Light3D *light = nullptr;
 	};
 
 	struct MeshesFound {
-		Transform xform;
+		Transform3D xform;
 		NodePath node_path;
 		int32_t subindex = 0;
 		Ref<Mesh> mesh;

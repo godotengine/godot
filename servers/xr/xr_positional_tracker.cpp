@@ -194,8 +194,8 @@ void XRPositionalTracker::set_tracker_hand(const XRPositionalTracker::TrackerHan
 	};
 };
 
-Transform XRPositionalTracker::get_transform(bool p_adjust_by_reference_frame) const {
-	Transform new_transform;
+Transform3D XRPositionalTracker::get_transform(bool p_adjust_by_reference_frame) const {
+	Transform3D new_transform;
 
 	new_transform.basis = get_orientation();
 	new_transform.origin = get_position();

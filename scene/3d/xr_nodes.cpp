@@ -397,7 +397,7 @@ void XRAnchor3D::_notification(int p_what) {
 				is_active = false;
 			} else {
 				is_active = true;
-				Transform transform;
+				Transform3D transform;
 
 				// we'll need our world_scale
 				real_t world_scale = xr_server->get_world_scale();
@@ -571,7 +571,7 @@ void XROrigin3D::_notification(int p_what) {
 			Ref<XRInterface> xr_interface = xr_server->get_primary_interface();
 			if (xr_interface.is_valid() && tracked_camera != nullptr) {
 				// get our positioning transform for our headset
-				Transform t = xr_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform());
+				Transform3D t = xr_interface->get_transform_for_eye(XRInterface::EYE_MONO, Transform3D());
 
 				// now apply this to our camera
 				tracked_camera->set_transform(t);

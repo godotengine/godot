@@ -314,7 +314,7 @@ public:
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
-	FUNC3(multimesh_instance_set_transform, RID, int, const Transform &)
+	FUNC3(multimesh_instance_set_transform, RID, int, const Transform3D &)
 	FUNC3(multimesh_instance_set_transform_2d, RID, int, const Transform2D &)
 	FUNC3(multimesh_instance_set_color, RID, int, const Color &)
 	FUNC3(multimesh_instance_set_custom_data, RID, int, const Color &)
@@ -322,7 +322,7 @@ public:
 	FUNC1RC(RID, multimesh_get_mesh, RID)
 	FUNC1RC(AABB, multimesh_get_aabb, RID)
 
-	FUNC2RC(Transform, multimesh_instance_get_transform, RID, int)
+	FUNC2RC(Transform3D, multimesh_instance_get_transform, RID, int)
 	FUNC2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
@@ -353,8 +353,8 @@ public:
 	FUNCRIDSPLIT(skeleton)
 	FUNC3(skeleton_allocate_data, RID, int, bool)
 	FUNC1RC(int, skeleton_get_bone_count, RID)
-	FUNC3(skeleton_bone_set_transform, RID, int, const Transform &)
-	FUNC2RC(Transform, skeleton_bone_get_transform, RID, int)
+	FUNC3(skeleton_bone_set_transform, RID, int, const Transform3D &)
+	FUNC2RC(Transform3D, skeleton_bone_get_transform, RID, int)
 	FUNC3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	FUNC2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
@@ -420,7 +420,7 @@ public:
 
 	FUNCRIDSPLIT(gi_probe)
 
-	FUNC8(gi_probe_allocate_data, RID, const Transform &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
+	FUNC8(gi_probe_allocate_data, RID, const Transform3D &, const AABB &, const Vector3i &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<uint8_t> &, const Vector<int> &)
 
 	FUNC1RC(AABB, gi_probe_get_bounds, RID)
 	FUNC1RC(Vector3i, gi_probe_get_octree_size, RID)
@@ -428,7 +428,7 @@ public:
 	FUNC1RC(Vector<uint8_t>, gi_probe_get_data_cells, RID)
 	FUNC1RC(Vector<uint8_t>, gi_probe_get_distance_field, RID)
 	FUNC1RC(Vector<int>, gi_probe_get_level_counts, RID)
-	FUNC1RC(Transform, gi_probe_get_to_cell_xform, RID)
+	FUNC1RC(Transform3D, gi_probe_get_to_cell_xform, RID)
 
 	FUNC2(gi_probe_set_dynamic_range, RID, float)
 	FUNC1RC(float, gi_probe_get_dynamic_range, RID)
@@ -496,11 +496,11 @@ public:
 	FUNC2(particles_set_fractional_delta, RID, bool)
 	FUNC1R(bool, particles_is_inactive, RID)
 	FUNC3(particles_set_trails, RID, bool, float)
-	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform> &)
+	FUNC2(particles_set_trail_bind_poses, RID, const Vector<Transform3D> &)
 
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
-	FUNC6(particles_emit, RID, const Transform &, const Vector3 &, const Color &, const Color &, uint32_t)
+	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)
 
@@ -512,7 +512,7 @@ public:
 	FUNC3(particles_set_draw_pass_mesh, RID, int, RID)
 
 	FUNC1R(AABB, particles_get_current_aabb, RID)
-	FUNC2(particles_set_emission_transform, RID, const Transform &)
+	FUNC2(particles_set_emission_transform, RID, const Transform3D &)
 
 	/* PARTICLES COLLISION */
 
@@ -541,7 +541,7 @@ public:
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
-	FUNC2(camera_set_transform, RID, const Transform &)
+	FUNC2(camera_set_transform, RID, const Transform3D &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
 	FUNC2(camera_set_camera_effects, RID, RID)
@@ -714,7 +714,7 @@ public:
 	FUNC2(instance_set_base, RID, RID)
 	FUNC2(instance_set_scenario, RID, RID)
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
-	FUNC2(instance_set_transform, RID, const Transform &)
+	FUNC2(instance_set_transform, RID, const Transform3D &)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_override_material, RID, int, RID)

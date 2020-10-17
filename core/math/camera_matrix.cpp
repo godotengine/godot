@@ -315,8 +315,8 @@ Vector2 CameraMatrix::get_far_plane_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
-bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {
-	Vector<Plane> planes = get_projection_planes(Transform());
+bool CameraMatrix::get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const {
+	Vector<Plane> planes = get_projection_planes(Transform3D());
 	const Planes intersections[8][3] = {
 		{ PLANE_FAR, PLANE_LEFT, PLANE_TOP },
 		{ PLANE_FAR, PLANE_LEFT, PLANE_BOTTOM },
@@ -338,7 +338,7 @@ bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8point
 	return true;
 }
 
-Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) const {
+Vector<Plane> CameraMatrix::get_projection_planes(const Transform3D &p_transform) const {
 	/** Fast Plane Extraction from combined modelview/projection matrices.
 	 * References:
 	 * https://web.archive.org/web/20011221205252/http://www.markmorley.com/opengl/frustumculling.html
@@ -707,8 +707,8 @@ void CameraMatrix::scale_translate_to_fit(const AABB &p_aabb) {
 	matrix[3][3] = 1;
 }
 
-CameraMatrix::operator Transform() const {
-	Transform tr;
+CameraMatrix::operator Transform3D() const {
+	Transform3D tr;
 	const real_t *m = &matrix[0][0];
 
 	tr.basis.elements[0][0] = m[0];
@@ -730,8 +730,8 @@ CameraMatrix::operator Transform() const {
 	return tr;
 }
 
-CameraMatrix::CameraMatrix(const Transform &p_transform) {
-	const Transform &tr = p_transform;
+CameraMatrix::CameraMatrix(const Transform3D &p_transform) {
+	const Transform3D &tr = p_transform;
 	real_t *m = &matrix[0][0];
 
 	m[0] = tr.basis.elements[0][0];

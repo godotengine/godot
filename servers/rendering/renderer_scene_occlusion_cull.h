@@ -60,7 +60,7 @@ public:
 
 		void update_mips();
 
-		_FORCE_INLINE_ bool is_occluded(const float p_bounds[6], const Vector3 &p_cam_position, const Transform &p_cam_inv_transform, const CameraMatrix &p_cam_projection, float p_near) const {
+		_FORCE_INLINE_ bool is_occluded(const float p_bounds[6], const Vector3 &p_cam_position, const Transform3D &p_cam_inv_transform, const CameraMatrix &p_cam_projection, float p_near) const {
 			if (is_empty()) {
 				return false;
 			}
@@ -171,7 +171,7 @@ public:
 
 	virtual void add_scenario(RID p_scenario) {}
 	virtual void remove_scenario(RID p_scenario) {}
-	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform &p_xform, bool p_enabled) { _print_warining(); }
+	virtual void scenario_set_instance(RID p_scenario, RID p_instance, RID p_occluder, const Transform3D &p_xform, bool p_enabled) { _print_warining(); }
 	virtual void scenario_remove_instance(RID p_scenario, RID p_instance) { _print_warining(); }
 
 	virtual void add_buffer(RID p_buffer) { _print_warining(); }
@@ -181,7 +181,7 @@ public:
 	}
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) { _print_warining(); }
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) { _print_warining(); }
-	virtual void buffer_update(RID p_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {}
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, ThreadWorkPool &p_thread_pool) {}
 	virtual RID buffer_get_debug_texture(RID p_buffer) {
 		_print_warining();
 		return RID();

@@ -100,7 +100,7 @@ void Body3DSW::update_inertias() {
 				real_t mass = area * this->mass / total_area;
 
 				Basis shape_inertia_tensor = shape->get_moment_of_inertia(mass).to_diagonal_matrix();
-				Transform shape_transform = get_shape_transform(i);
+				Transform3D shape_transform = get_shape_transform(i);
 				Basis shape_basis = shape_transform.basis.orthonormalized();
 
 				// NOTE: we don't take the scale of collision shapes into account when computing the inertia tensor!
@@ -286,7 +286,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
 			} else {
-				Transform t = p_variant;
+				Transform3D t = p_variant;
 				t.orthonormalize();
 				new_transform = get_transform(); //used as old to compute motion
 				if (new_transform == t) {
@@ -585,7 +585,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	Vector3 total_angular_velocity = angular_velocity + biased_angular_velocity;
 
 	real_t ang_vel = total_angular_velocity.length();
-	Transform transform = get_transform();
+	Transform3D transform = get_transform();
 
 	if (ang_vel != 0.0) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
@@ -617,8 +617,8 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 }
 
 /*
-void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
-	Transform inv_xform = p_xform.affine_inverse();
+void BodySW::simulate_motion(const Transform3D& p_xform,real_t p_step) {
+	Transform3D inv_xform = p_xform.affine_inverse();
 	if (!get_space()) {
 		_set_transform(p_xform);
 		_set_inv_transform(inv_xform);
@@ -738,7 +738,7 @@ Body3DSW::Body3DSW() :
 
 	mass = 1;
 	kinematic_safe_margin = 0.001;
-	//_inv_inertia=Transform();
+	//_inv_inertia=Transform3D();
 	_inv_mass = 1;
 	bounce = 0;
 	friction = 1;

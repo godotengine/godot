@@ -1607,10 +1607,10 @@ int TubeTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
 }
 
-Transform TubeTrailMesh::get_builtin_bind_pose(int p_index) const {
+Transform3D TubeTrailMesh::get_builtin_bind_pose(int p_index) const {
 	float depth = section_length * sections;
 
-	Transform xform;
+	Transform3D xform;
 	xform.origin.y = depth / 2.0 - section_length * float(p_index);
 	xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y
 
@@ -1931,10 +1931,10 @@ int RibbonTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
 }
 
-Transform RibbonTrailMesh::get_builtin_bind_pose(int p_index) const {
+Transform3D RibbonTrailMesh::get_builtin_bind_pose(int p_index) const {
 	float depth = section_length * sections;
 
-	Transform xform;
+	Transform3D xform;
 	xform.origin.y = depth / 2.0 - section_length * float(p_index);
 	xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y
 

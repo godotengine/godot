@@ -114,7 +114,7 @@ Plane PlaneShape3DSW::get_plane() const {
 	return plane;
 }
 
-void PlaneShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void PlaneShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// gibberish, a plane is infinity
 	r_min = -1e7;
 	r_max = 1e7;
@@ -174,7 +174,7 @@ bool RayShape3DSW::get_slips_on_slope() const {
 	return slips_on_slope;
 }
 
-void RayShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void RayShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// don't think this will be even used
 	r_min = 0;
 	r_max = 1;
@@ -255,7 +255,7 @@ real_t SphereShape3DSW::get_radius() const {
 	return radius;
 }
 
-void SphereShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void SphereShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	real_t d = p_normal.dot(p_transform.origin);
 
 	// figure out scale at point
@@ -317,7 +317,7 @@ SphereShape3DSW::SphereShape3DSW() {
 
 /********** BOX *************/
 
-void BoxShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void BoxShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	// no matter the angle, the box is mirrored anyway
 	Vector3 local_normal = p_transform.basis.xform_inv(p_normal);
 
@@ -507,7 +507,7 @@ BoxShape3DSW::BoxShape3DSW() {
 
 /********** CAPSULE *************/
 
-void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void CapsuleShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 n = p_transform.basis.xform_inv(p_normal).normalized();
 	real_t h = (n.y > 0) ? height : -height;
 
@@ -674,7 +674,7 @@ CapsuleShape3DSW::CapsuleShape3DSW() {
 
 /********** CYLINDER *************/
 
-void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void CylinderShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	Vector3 cylinder_axis = p_transform.basis.get_axis(1).normalized();
 	real_t axis_dot = cylinder_axis.dot(p_normal);
 
@@ -854,7 +854,7 @@ CylinderShape3DSW::CylinderShape3DSW() {
 
 /********** CONVEX POLYGON *************/
 
-void ConvexPolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void ConvexPolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	int vertex_count = mesh.vertices.size();
 	if (vertex_count == 0) {
 		return;
@@ -1120,7 +1120,7 @@ ConvexPolygonShape3DSW::ConvexPolygonShape3DSW() {
 
 /********** FACE POLYGON *************/
 
-void FaceShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void FaceShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	for (int i = 0; i < 3; i++) {
 		Vector3 v = p_transform.xform(vertex[i]);
 		real_t d = p_normal.dot(v);
@@ -1250,7 +1250,7 @@ Vector<Vector3> ConcavePolygonShape3DSW::get_faces() const {
 	return rfaces;
 }
 
-void ConcavePolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void ConcavePolygonShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	int count = vertices.size();
 	if (count == 0) {
 		r_min = 0;
@@ -1647,7 +1647,7 @@ int HeightMapShape3DSW::get_depth() const {
 	return depth;
 }
 
-void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
+void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
 	//not very useful, but not very used either
 	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal, 0), r_min, r_max);
 }

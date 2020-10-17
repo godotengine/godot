@@ -43,7 +43,7 @@
 class FabrikInverseKinematic {
 	struct EndEffector {
 		BoneId tip_bone;
-		Transform goal_transform;
+		Transform3D goal_transform;
 	};
 
 	struct ChainItem {
@@ -55,7 +55,7 @@ class FabrikInverseKinematic {
 
 		real_t length = 0.0;
 		/// Positions relative to root bone
-		Transform initial_transform;
+		Transform3D initial_transform;
 		Vector3 current_pos;
 		// Direction from this bone to child
 		Vector3 current_ori;
@@ -97,7 +97,7 @@ public:
 		BoneId root_bone = -1;
 		Vector<EndEffector> end_effectors;
 
-		Transform goal_global_transform;
+		Transform3D goal_global_transform;
 
 		Task() {}
 	};
@@ -112,11 +112,11 @@ private:
 	static void solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos);
 
 public:
-	static Task *create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform &goal_transform);
+	static Task *create_simple_task(Skeleton3D *p_sk, BoneId root_bone, BoneId tip_bone, const Transform3D &goal_transform);
 	static void free_task(Task *p_task);
 	// The goal of chain should be always in local space
-	static void set_goal(Task *p_task, const Transform &p_goal);
-	static void make_goal(Task *p_task, const Transform &p_inverse_transf, real_t blending_delta);
+	static void set_goal(Task *p_task, const Transform3D &p_goal);
+	static void make_goal(Task *p_task, const Transform3D &p_inverse_transf, real_t blending_delta);
 	static void solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position);
 
 	static void _update_chain(const Skeleton3D *p_skeleton, ChainItem *p_chain_item);
@@ -128,7 +128,7 @@ class SkeletonIK3D : public Node {
 	StringName root_bone;
 	StringName tip_bone;
 	real_t interpolation = 1.0;
-	Transform target;
+	Transform3D target;
 	NodePath target_node_path_override;
 	bool override_tip_basis = true;
 	bool use_magnet = false;
@@ -161,8 +161,8 @@ public:
 	void set_interpolation(real_t p_interpolation);
 	real_t get_interpolation() const;
 
-	void set_target_transform(const Transform &p_target);
-	const Transform &get_target_transform() const;
+	void set_target_transform(const Transform3D &p_target);
+	const Transform3D &get_target_transform() const;
 
 	void set_target_node(const NodePath &p_node);
 	NodePath get_target_node();
@@ -190,7 +190,7 @@ public:
 	void stop();
 
 private:
-	Transform _get_target_transform();
+	Transform3D _get_target_transform();
 	void reload_chain();
 	void reload_goal();
 	void _solve_chain();

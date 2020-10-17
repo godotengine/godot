@@ -62,7 +62,7 @@ void GIProbeData::_set_data(const Dictionary &p_data) {
 		octree_df = img->get_data();
 	}
 	Vector<int> octree_levels = p_data["level_counts"];
-	Transform to_cell_xform = p_data["to_cell_xform"];
+	Transform3D to_cell_xform = p_data["to_cell_xform"];
 
 	allocate(to_cell_xform, bounds, octree_size, octree_cells, octree_data, octree_df, octree_levels);
 }
@@ -90,7 +90,7 @@ Dictionary GIProbeData::_get_data() const {
 	return d;
 }
 
-void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
+void GIProbeData::allocate(const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
 	RS::get_singleton()->gi_probe_allocate_data(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
@@ -121,7 +121,7 @@ Vector<int> GIProbeData::get_level_counts() const {
 	return RS::get_singleton()->gi_probe_get_level_counts(probe);
 }
 
-Transform GIProbeData::get_to_cell_xform() const {
+Transform3D GIProbeData::get_to_cell_xform() const {
 	return to_cell_xform;
 }
 
@@ -336,7 +336,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 		if (mesh.is_valid()) {
 			AABB aabb = mesh->get_aabb();
 
-			Transform xf = get_global_transform().affine_inverse() * mi->get_global_transform();
+			Transform3D xf = get_global_transform().affine_inverse() * mi->get_global_transform();
 
 			if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
 				PlotMesh pm;
@@ -356,7 +356,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 		if (s->is_visible_in_tree()) {
 			Array meshes = p_at_node->call("get_meshes");
 			for (int i = 0; i < meshes.size(); i += 2) {
-				Transform mxf = meshes[i];
+				Transform3D mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
 				if (!mesh.is_valid()) {
 					continue;
@@ -364,7 +364,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 				AABB aabb = mesh->get_aabb();
 
-				Transform xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
+				Transform3D xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
 
 				if (AABB(-extents, extents * 2).intersects(xf.xform(aabb))) {
 					PlotMesh pm;

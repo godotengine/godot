@@ -374,7 +374,7 @@ public:
 	Ref<Curve> get_curve() const;
 
 	virtual int get_builtin_bind_pose_count() const override;
-	virtual Transform get_builtin_bind_pose(int p_index) const override;
+	virtual Transform3D get_builtin_bind_pose(int p_index) const override;
 
 	TubeTrailMesh();
 };
@@ -424,7 +424,7 @@ public:
 	Ref<Curve> get_curve() const;
 
 	virtual int get_builtin_bind_pose_count() const override;
-	virtual Transform get_builtin_bind_pose(int p_index) const override;
+	virtual Transform3D get_builtin_bind_pose(int p_index) const override;
 
 	RibbonTrailMesh();
 };

@@ -145,7 +145,7 @@ void MeshLibrary::set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navm
 	notify_property_list_changed();
 }
 
-void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform &p_transform) {
+void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform3D &p_transform) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].navmesh_transform = p_transform;
 	notify_change_to_owners();
@@ -180,8 +180,8 @@ Ref<NavigationMesh> MeshLibrary::get_item_navmesh(int p_item) const {
 	return item_map[p_item].navmesh;
 }
 
-Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
-	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+Transform3D MeshLibrary::get_item_navmesh_transform(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform3D(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navmesh_transform;
 }
 

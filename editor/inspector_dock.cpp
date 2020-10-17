@@ -313,7 +313,7 @@ void InspectorDock::_property_keyed(const String &p_keyed, const Variant &p_valu
 	AnimationPlayerEditor::singleton->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
 }
 
-void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform &p_key) {
+void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Transform3D &p_key) {
 	Node3D *s = Object::cast_to<Node3D>(sp);
 	if (!s) {
 		return;

@@ -1157,7 +1157,7 @@ void ParseVectorDataArray(std::vector<int64_t> &out, const ElementPtr el) {
 }
 
 // ------------------------------------------------------------------------------------------------
-Transform ReadMatrix(const ElementPtr element) {
+Transform3D ReadMatrix(const ElementPtr element) {
 	std::vector<float> values;
 	ParseVectorDataArray(values, element);
 
@@ -1172,7 +1172,7 @@ Transform ReadMatrix(const ElementPtr element) {
 		}
 	}
 
-	Transform xform;
+	Transform3D xform;
 	Basis basis;
 
 	basis.set(

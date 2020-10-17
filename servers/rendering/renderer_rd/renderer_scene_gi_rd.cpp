@@ -1099,7 +1099,7 @@ void RendererSceneGIRD::SDFGI::update_cascades() {
 	RD::get_singleton()->buffer_update(cascades_ubo, 0, sizeof(SDFGI::Cascade::UBO) * SDFGI::MAX_CASCADES, cascade_data, RD::BARRIER_MASK_COMPUTE);
 }
 
-void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, const Transform &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture) {
+void RendererSceneGIRD::SDFGI::debug_draw(const CameraMatrix &p_projection, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture) {
 	if (!debug_uniform_set.is_valid() || !RD::get_singleton()->uniform_set_is_valid(debug_uniform_set)) {
 		Vector<RD::Uniform> uniforms;
 		{
@@ -1367,7 +1367,7 @@ void RendererSceneGIRD::SDFGI::debug_probes(RD::DrawListID p_draw_list, RID p_fr
 	}
 }
 
-void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render) {
+void RendererSceneGIRD::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data, RendererSceneRenderRD *p_scene_render) {
 	/* Update general SDFGI Buffer */
 
 	SDFGIData sdfgi_data;
@@ -2373,8 +2373,8 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 		light_count = MIN(gi->gi_probe_max_lights, (uint32_t)p_light_instances.size());
 
 		{
-			Transform to_cell = storage->gi_probe_get_to_cell_xform(probe);
-			Transform to_probe_xform = (transform * to_cell.affine_inverse()).affine_inverse();
+			Transform3D to_cell = storage->gi_probe_get_to_cell_xform(probe);
+			Transform3D to_probe_xform = (transform * to_cell.affine_inverse()).affine_inverse();
 			//update lights
 
 			for (uint32_t i = 0; i < light_count; i++) {
@@ -2399,7 +2399,7 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 				l.cos_spot_angle = Math::cos(Math::deg2rad(storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
 				l.inv_spot_attenuation = 1.0f / storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
-				Transform xform = p_scene_render->light_instance_get_base_transform(light_instance);
+				Transform3D xform = p_scene_render->light_instance_get_base_transform(light_instance);
 
 				Vector3 pos = to_probe_xform.xform(xform.origin);
 				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_axis(2)).normalized();
@@ -2516,12 +2516,12 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 		Vector3i octree_size = storage->gi_probe_get_octree_size(probe);
 		int multiplier = dynamic_maps[0].size / MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
 
-		Transform oversample_scale;
+		Transform3D oversample_scale;
 		oversample_scale.basis.scale(Vector3(multiplier, multiplier, multiplier));
 
-		Transform to_cell = oversample_scale * storage->gi_probe_get_to_cell_xform(probe);
-		Transform to_world_xform = transform * to_cell.affine_inverse();
-		Transform to_probe_xform = to_world_xform.affine_inverse();
+		Transform3D to_cell = oversample_scale * storage->gi_probe_get_to_cell_xform(probe);
+		Transform3D to_world_xform = transform * to_cell.affine_inverse();
+		Transform3D to_probe_xform = to_world_xform.affine_inverse();
 
 		AABB probe_aabb(Vector3(), octree_size);
 
@@ -2576,7 +2576,7 @@ void RendererSceneGIRD::GIProbeInstance::update(bool p_update_light_instances, c
 				Vector3 up_dir = render_up[j];
 
 				Vector3 center = aabb.position + aabb.size * 0.5;
-				Transform xform;
+				Transform3D xform;
 				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
 
 				Vector3 x_dir = xform.basis.get_axis(0).abs();
@@ -3020,7 +3020,7 @@ RendererSceneGIRD::SDFGI *RendererSceneGIRD::create_sdfgi(RendererSceneEnvironme
 	return sdfgi;
 }
 
-void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used, RendererSceneRenderRD *p_scene_render) {
+void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_gi_probes, uint32_t &r_gi_probes_used, RendererSceneRenderRD *p_scene_render) {
 	r_gi_probes_used = 0;
 
 	// feels a little dirty to use our container this way but....
@@ -3035,7 +3035,7 @@ void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform &p_
 
 	bool giprobes_changed = false;
 
-	Transform to_camera;
+	Transform3D to_camera;
 	to_camera.origin = p_transform.origin; //only translation, make local
 
 	for (int i = 0; i < MAX_GIPROBES; i++) {
@@ -3049,7 +3049,7 @@ void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform &p_
 
 				RID base_probe = gipi->probe;
 
-				Transform to_cell = storage->gi_probe_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
+				Transform3D to_cell = storage->gi_probe_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
 
 				gipd.xform[0] = to_cell.basis.elements[0][0];
 				gipd.xform[1] = to_cell.basis.elements[1][0];
@@ -3119,7 +3119,7 @@ void RendererSceneGIRD::setup_giprobes(RID p_render_buffers, const Transform &p_
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, const PagedArray<RID> &p_gi_probes, RendererSceneRenderRD *p_scene_render) {
+void RendererSceneGIRD::process_gi(RID p_render_buffers, RID p_normal_roughness_buffer, RID p_gi_probe_buffer, RID p_environment, const CameraMatrix &p_projection, const Transform3D &p_transform, const PagedArray<RID> &p_gi_probes, RendererSceneRenderRD *p_scene_render) {
 	RD::get_singleton()->draw_command_begin_label("GI Render");
 
 	RendererSceneRenderRD::RenderBuffers *rb = p_scene_render->render_buffers_owner.getornull(p_render_buffers);
@@ -3373,7 +3373,7 @@ RID RendererSceneGIRD::gi_probe_instance_create(RID p_base) {
 	return rid;
 }
 
-void RendererSceneGIRD::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {
+void RendererSceneGIRD::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) {
 	GIProbeInstance *gi_probe = get_probe_instance(p_probe);
 	ERR_FAIL_COND(!gi_probe);
 

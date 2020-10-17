@@ -317,7 +317,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
 
-		Transform accum_xform;
+		Transform3D accum_xform;
 		Node3D *base = mesh_node;
 		while (base) {
 			accum_xform = base->get_transform() * accum_xform;
@@ -379,7 +379,7 @@ void SceneImportSettings::_update_camera() {
 
 	camera->set_orthogonal(camera_size * zoom, 0.0001, camera_size * 2);
 
-	Transform xf;
+	Transform3D xf;
 	xf.basis = Basis(Vector3(0, 1, 0), rot_y) * Basis(Vector3(1, 0, 0), rot_x);
 	xf.origin = center;
 	xf.translate(0, 0, camera_size);
@@ -493,7 +493,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 			Ref<Mesh> base_mesh = mi->get_mesh();
 			if (base_mesh.is_valid()) {
 				AABB aabb = base_mesh->get_aabb();
-				Transform aabb_xf;
+				Transform3D aabb_xf;
 				aabb_xf.basis.scale(aabb.size);
 				aabb_xf.origin = aabb.position;
 
@@ -1099,7 +1099,7 @@ SceneImportSettings::SceneImportSettings() {
 	camera->make_current();
 
 	light = memnew(DirectionalLight3D);
-	light->set_transform(Transform().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
+	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
 	base_viewport->add_child(light);
 	light->set_shadow(true);
 

@@ -1413,7 +1413,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
 				code += "\tvec3 " + inputs[i] + " = " + vformat("vec3(%.5f, %.5f, %.5f);\n", val.x, val.y, val.z);
 			} else if (defval.get_type() == Variant::TRANSFORM) {
-				Transform val = defval;
+				Transform3D val = defval;
 				val.basis.transpose();
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
 				Array values;

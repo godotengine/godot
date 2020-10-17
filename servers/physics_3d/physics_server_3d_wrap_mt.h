@@ -142,14 +142,14 @@ public:
 	FUNC2(area_set_space_override_mode, RID, AreaSpaceOverrideMode);
 	FUNC1RC(AreaSpaceOverrideMode, area_get_space_override_mode, RID);
 
-	FUNC4(area_add_shape, RID, RID, const Transform &, bool);
+	FUNC4(area_add_shape, RID, RID, const Transform3D &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
-	FUNC3(area_set_shape_transform, RID, int, const Transform &);
+	FUNC3(area_set_shape_transform, RID, int, const Transform3D &);
 	FUNC3(area_set_shape_disabled, RID, int, bool);
 
 	FUNC1RC(int, area_get_shape_count, RID);
 	FUNC2RC(RID, area_get_shape, RID, int);
-	FUNC2RC(Transform, area_get_shape_transform, RID, int);
+	FUNC2RC(Transform3D, area_get_shape_transform, RID, int);
 	FUNC2(area_remove_shape, RID, int);
 	FUNC1(area_clear_shapes, RID);
 
@@ -157,10 +157,10 @@ public:
 	FUNC1RC(ObjectID, area_get_object_instance_id, RID);
 
 	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
-	FUNC2(area_set_transform, RID, const Transform &);
+	FUNC2(area_set_transform, RID, const Transform3D &);
 
 	FUNC2RC(Variant, area_get_param, RID, AreaParameter);
-	FUNC1RC(Transform, area_get_transform, RID);
+	FUNC1RC(Transform3D, area_get_transform, RID);
 
 	FUNC2(area_set_collision_mask, RID, uint32_t);
 	FUNC2(area_set_collision_layer, RID, uint32_t);
@@ -182,12 +182,12 @@ public:
 	FUNC2(body_set_mode, RID, BodyMode);
 	FUNC1RC(BodyMode, body_get_mode, RID);
 
-	FUNC4(body_add_shape, RID, RID, const Transform &, bool);
+	FUNC4(body_add_shape, RID, RID, const Transform3D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
-	FUNC3(body_set_shape_transform, RID, int, const Transform &);
+	FUNC3(body_set_shape_transform, RID, int, const Transform3D &);
 
 	FUNC1RC(int, body_get_shape_count, RID);
-	FUNC2RC(Transform, body_get_shape_transform, RID, int);
+	FUNC2RC(Transform3D, body_get_shape_transform, RID, int);
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
@@ -253,12 +253,12 @@ public:
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
+	bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_3d_server->body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, r_result, p_exclude_raycast_shapes);
 	}
 
-	int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
+	int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, real_t p_margin = 0.001) override {
 		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
 		return physics_3d_server->body_test_ray_separation(p_body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 	}
@@ -293,7 +293,7 @@ public:
 	FUNC3(soft_body_set_state, RID, BodyState, const Variant &);
 	FUNC2RC(Variant, soft_body_get_state, RID, BodyState);
 
-	FUNC2(soft_body_set_transform, RID, const Transform &);
+	FUNC2(soft_body_set_transform, RID, const Transform3D &);
 
 	FUNC2(soft_body_set_simulation_precision, RID, int);
 	FUNC1RC(int, soft_body_get_simulation_precision, RID);
@@ -341,7 +341,7 @@ public:
 	FUNC2(pin_joint_set_local_b, RID, const Vector3 &)
 	FUNC1RC(Vector3, pin_joint_get_local_b, RID)
 
-	FUNC5(joint_make_hinge, RID, RID, const Transform &, RID, const Transform &)
+	FUNC5(joint_make_hinge, RID, RID, const Transform3D &, RID, const Transform3D &)
 	FUNC7(joint_make_hinge_simple, RID, RID, const Vector3 &, const Vector3 &, RID, const Vector3 &, const Vector3 &)
 
 	FUNC3(hinge_joint_set_param, RID, HingeJointParam, real_t)
@@ -350,17 +350,17 @@ public:
 	FUNC3(hinge_joint_set_flag, RID, HingeJointFlag, bool)
 	FUNC2RC(bool, hinge_joint_get_flag, RID, HingeJointFlag)
 
-	FUNC5(joint_make_slider, RID, RID, const Transform &, RID, const Transform &)
+	FUNC5(joint_make_slider, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC3(slider_joint_set_param, RID, SliderJointParam, real_t)
 	FUNC2RC(real_t, slider_joint_get_param, RID, SliderJointParam)
 
-	FUNC5(joint_make_cone_twist, RID, RID, const Transform &, RID, const Transform &)
+	FUNC5(joint_make_cone_twist, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC3(cone_twist_joint_set_param, RID, ConeTwistJointParam, real_t)
 	FUNC2RC(real_t, cone_twist_joint_get_param, RID, ConeTwistJointParam)
 
-	FUNC5(joint_make_generic_6dof, RID, RID, const Transform &, RID, const Transform &)
+	FUNC5(joint_make_generic_6dof, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC4(generic_6dof_joint_set_param, RID, Vector3::Axis, G6DOFJointAxisParam, real_t)
 	FUNC3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, G6DOFJointAxisParam)

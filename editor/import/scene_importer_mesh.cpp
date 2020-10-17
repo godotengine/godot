@@ -612,7 +612,7 @@ struct EditorSceneImporterMeshLightmapSurface {
 	String name;
 };
 
-Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
+Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
@@ -628,7 +628,7 @@ Error EditorSceneImporterMesh::lightmap_unwrap_cached(const Transform &p_base_tr
 	Basis basis = p_base_transform.get_basis();
 	Vector3 scale = Vector3(basis.get_axis(0).length(), basis.get_axis(1).length(), basis.get_axis(2).length());
 
-	Transform transform;
+	Transform3D transform;
 	transform.scale(scale);
 
 	Basis normal_basis = transform.basis.inverse().transposed();

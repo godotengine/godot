@@ -79,18 +79,18 @@ private:
 		int sort_index = 0; //used for re-sorting process order
 
 		bool disable_rest = false;
-		Transform rest;
+		Transform3D rest;
 
-		Transform pose;
-		Transform pose_global;
-		Transform pose_global_no_override;
+		Transform3D pose;
+		Transform3D pose_global;
+		Transform3D pose_global_no_override;
 
 		bool custom_pose_enable = false;
-		Transform custom_pose;
+		Transform3D custom_pose;
 
 		float global_pose_override_amount = 0.0;
 		bool global_pose_override_reset = false;
-		Transform global_pose_override;
+		Transform3D global_pose_override;
 
 #ifndef _3D_DISABLED
 		PhysicalBone3D *physical_bone = nullptr;
@@ -146,13 +146,13 @@ public:
 
 	int get_bone_count() const;
 
-	void set_bone_rest(int p_bone, const Transform &p_rest);
-	Transform get_bone_rest(int p_bone) const;
-	Transform get_bone_global_pose(int p_bone) const;
-	Transform get_bone_global_pose_no_override(int p_bone) const;
+	void set_bone_rest(int p_bone, const Transform3D &p_rest);
+	Transform3D get_bone_rest(int p_bone) const;
+	Transform3D get_bone_global_pose(int p_bone) const;
+	Transform3D get_bone_global_pose_no_override(int p_bone) const;
 
 	void clear_bones_global_pose_override();
-	void set_bone_global_pose_override(int p_bone, const Transform &p_pose, float p_amount, bool p_persistent = false);
+	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, float p_amount, bool p_persistent = false);
 
 	void set_bone_enabled(int p_bone, bool p_enabled);
 	bool is_bone_enabled(int p_bone) const;
@@ -165,11 +165,11 @@ public:
 
 	// posing api
 
-	void set_bone_pose(int p_bone, const Transform &p_pose);
-	Transform get_bone_pose(int p_bone) const;
+	void set_bone_pose(int p_bone, const Transform3D &p_pose);
+	Transform3D get_bone_pose(int p_bone) const;
 
-	void set_bone_custom_pose(int p_bone, const Transform &p_custom_pose);
-	Transform get_bone_custom_pose(int p_bone) const;
+	void set_bone_custom_pose(int p_bone, const Transform3D &p_custom_pose);
+	Transform3D get_bone_custom_pose(int p_bone) const;
 
 	void localize_rests(); // used for loaders and tools
 	int get_process_order(int p_idx);
@@ -178,8 +178,8 @@ public:
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
 	// Helper functions
-	Transform bone_transform_to_world_transform(Transform p_transform);
-	Transform world_transform_to_bone_transform(Transform p_transform);
+	Transform3D bone_transform_to_world_transform(Transform3D p_transform);
+	Transform3D world_transform_to_bone_transform(Transform3D p_transform);
 
 #ifndef _3D_DISABLED
 	// Physical bone API

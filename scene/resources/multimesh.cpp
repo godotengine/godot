@@ -50,7 +50,7 @@ void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
 	const Vector3 *r = xforms.ptr();
 
 	for (int i = 0; i < len / 4; i++) {
-		Transform t;
+		Transform3D t;
 		t.basis[0] = r[i * 4 + 0];
 		t.basis[1] = r[i * 4 + 1];
 		t.basis[2] = r[i * 4 + 2];
@@ -75,7 +75,7 @@ Vector<Vector3> MultiMesh::_get_transform_array() const {
 	Vector3 *w = xforms.ptrw();
 
 	for (int i = 0; i < instance_count; i++) {
-		Transform t = get_instance_transform(i);
+		Transform3D t = get_instance_transform(i);
 		w[i * 4 + 0] = t.basis[0];
 		w[i * 4 + 1] = t.basis[1];
 		w[i * 4 + 2] = t.basis[2];
@@ -236,7 +236,7 @@ int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
 }
 
-void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
+void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_transform) {
 	RenderingServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
 }
 
@@ -244,7 +244,7 @@ void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_t
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
 }
 
-Transform MultiMesh::get_instance_transform(int p_instance) const {
+Transform3D MultiMesh::get_instance_transform(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
 }
 

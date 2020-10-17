@@ -171,7 +171,7 @@ void BoneTransformEditor::_value_changed(const double p_value) {
 		return;
 	}
 
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
 
@@ -179,30 +179,30 @@ void BoneTransformEditor::_value_changed_vector3(const String p_property_name, c
 	if (updating) {
 		return;
 	}
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	_change_transform(tform);
 }
 
-Transform BoneTransformEditor::compute_transform_from_vector3s() const {
+Transform3D BoneTransformEditor::compute_transform_from_vector3s() const {
 	// Convert rotation from degrees to radians.
 	Vector3 prop_rotation = rotation_property->get_vector();
 	prop_rotation.x = Math::deg2rad(prop_rotation.x);
 	prop_rotation.y = Math::deg2rad(prop_rotation.y);
 	prop_rotation.z = Math::deg2rad(prop_rotation.z);
 
-	return Transform(
+	return Transform3D(
 			Basis(prop_rotation, scale_property->get_vector()),
 			translation_property->get_vector());
 }
 
-void BoneTransformEditor::_value_changed_transform(const String p_property_name, const Transform p_transform, const StringName p_edited_property_name, const bool p_boolean) {
+void BoneTransformEditor::_value_changed_transform(const String p_property_name, const Transform3D p_transform, const StringName p_edited_property_name, const bool p_boolean) {
 	if (updating) {
 		return;
 	}
 	_change_transform(p_transform);
 }
 
-void BoneTransformEditor::_change_transform(Transform p_new_transform) {
+void BoneTransformEditor::_change_transform(Transform3D p_new_transform) {
 	if (property.get_slicec('/', 0) == "bones" && property.get_slicec('/', 2) == "custom_pose") {
 		undo_redo->create_action(TTR("Set Custom Bone Pose Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
@@ -235,7 +235,7 @@ void BoneTransformEditor::_update_properties() {
 
 	updating = true;
 
-	Transform tform = skeleton->get(property);
+	Transform3D tform = skeleton->get(property);
 	_update_transform_properties(tform);
 }
 
@@ -250,11 +250,11 @@ void BoneTransformEditor::_update_custom_pose_properties() {
 
 	updating = true;
 
-	Transform tform = skeleton->get_bone_custom_pose(property.to_int());
+	Transform3D tform = skeleton->get_bone_custom_pose(property.to_int());
 	_update_transform_properties(tform);
 }
 
-void BoneTransformEditor::_update_transform_properties(Transform tform) {
+void BoneTransformEditor::_update_transform_properties(Transform3D tform) {
 	Basis rotation_basis = tform.get_basis();
 	Vector3 rotation_radians = rotation_basis.get_rotation_euler();
 	Vector3 rotation_degrees = Vector3(Math::rad2deg(rotation_radians.x), Math::rad2deg(rotation_radians.y), Math::rad2deg(rotation_radians.z));
@@ -306,7 +306,7 @@ void BoneTransformEditor::_key_button_pressed() {
 	}
 
 	// Need to normalize the basis before you key it
-	Transform tform = compute_transform_from_vector3s();
+	Transform3D tform = compute_transform_from_vector3s();
 	tform.orthonormalize();
 	AnimationPlayerEditor::singleton->get_track_editor()->insert_transform_key(skeleton, name, tform);
 }
@@ -380,7 +380,7 @@ void Skeleton3DEditor::create_physical_skeleton() {
 }
 
 PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
-	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
+	const Transform3D child_rest = skeleton->get_bone_rest(bone_child_id);
 
 	const real_t half_height(child_rest.origin.length() * 0.5);
 	const real_t radius(half_height * 0.2);
@@ -392,15 +392,15 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	CollisionShape3D *bone_shape = memnew(CollisionShape3D);
 	bone_shape->set_shape(bone_shape_capsule);
 
-	Transform capsule_transform;
+	Transform3D capsule_transform;
 	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
 	bone_shape->set_transform(capsule_transform);
 
-	Transform body_transform;
+	Transform3D body_transform;
 	body_transform.set_look_at(Vector3(0, 0, 0), child_rest.origin);
 	body_transform.origin = body_transform.basis.xform(Vector3(0, 0, -half_height));
 
-	Transform joint_transform;
+	Transform3D joint_transform;
 	joint_transform.origin = Vector3(0, 0, half_height);
 
 	PhysicalBone3D *physical_bone = memnew(PhysicalBone3D);

@@ -378,7 +378,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -647,11 +647,11 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 		po2_bounds.size[i] = po2_bounds.size[longest_axis];
 	}
 
-	Transform to_bounds;
+	Transform3D to_bounds;
 	to_bounds.basis.scale(Vector3(po2_bounds.size[longest_axis], po2_bounds.size[longest_axis], po2_bounds.size[longest_axis]));
 	to_bounds.origin = po2_bounds.position;
 
-	Transform to_grid;
+	Transform3D to_grid;
 	to_grid.basis.scale(Vector3(axis_cell_size[longest_axis], axis_cell_size[longest_axis], axis_cell_size[longest_axis]));
 
 	to_cell_space = to_grid * to_bounds.affine_inverse();
@@ -891,7 +891,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx) {
 	if (p_level == cell_subdiv - 1) {
 		Vector3 center = p_aabb.position + p_aabb.size * 0.5;
-		Transform xform;
+		Transform3D xform;
 		xform.origin = center;
 		xform.basis.scale(p_aabb.size * 0.5);
 		p_multimesh->set_instance_transform(idx, xform);
@@ -1002,7 +1002,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 	return mm;
 }
 
-Transform Voxelizer::get_to_cell_space_xform() const {
+Transform3D Voxelizer::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
 

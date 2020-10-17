@@ -46,7 +46,7 @@ class NavRegion;
 
 class NavRegion : public NavRid {
 	NavMap *map = nullptr;
-	Transform transform;
+	Transform3D transform;
 	Ref<NavigationMesh> mesh;
 	uint32_t layers = 1;
 	Vector<gd::Edge::Connection> connections;
@@ -71,8 +71,8 @@ public:
 	void set_layers(uint32_t p_layers);
 	uint32_t get_layers() const;
 
-	void set_transform(Transform transform);
-	const Transform &get_transform() const {
+	void set_transform(Transform3D transform);
+	const Transform3D &get_transform() const {
 		return transform;
 	}
 

@@ -806,7 +806,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			field_names.push_back("zo");
 			config_value_editors(12, 4, 16, field_names);
 
-			Transform tr = v;
+			Transform3D tr = v;
 			for (int i = 0; i < 9; i++) {
 				value_editor[(i / 3) * 4 + i % 3]->set_text(String::num(tr.basis.elements[i / 3][i % 3]));
 			}
@@ -1569,7 +1569,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			origin.y = _parse_real_expression(value_editor[7]->get_text());
 			origin.z = _parse_real_expression(value_editor[11]->get_text());
 
-			v = Transform(basis, origin);
+			v = Transform3D(basis, origin);
 			_emit_changed_whole_or_field();
 
 		} break;

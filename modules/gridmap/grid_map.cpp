@@ -446,7 +446,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	 * and set said multimesh bounding box to one containing all cells which have this item
 	 */
 
-	Map<int, List<Pair<Transform, IndexKey>>> multimesh_items;
+	Map<int, List<Pair<Transform3D, IndexKey>>> multimesh_items;
 
 	for (Set<IndexKey>::Element *E = g.cells.front(); E; E = E->next()) {
 		ERR_CONTINUE(!cell_map.has(E->get()));
@@ -459,7 +459,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		Vector3 cellpos = Vector3(E->get().x, E->get().y, E->get().z);
 		Vector3 ofs = _get_offset();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(c.rot);
 		xform.set_origin(cellpos * cell_size + ofs);
@@ -467,10 +467,10 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		if (baked_meshes.size() == 0) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!multimesh_items.has(c.item)) {
-					multimesh_items[c.item] = List<Pair<Transform, IndexKey>>();
+					multimesh_items[c.item] = List<Pair<Transform3D, IndexKey>>();
 				}
 
-				Pair<Transform, IndexKey> p;
+				Pair<Transform3D, IndexKey> p;
 				p.first = xform;
 				p.second = E->get();
 				multimesh_items[c.item].push_back(p);
@@ -511,7 +511,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 	//update multimeshes, only if not baked
 	if (baked_meshes.size() == 0) {
-		for (Map<int, List<Pair<Transform, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
+		for (Map<int, List<Pair<Transform3D, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
 			Octant::MultimeshInstance mmi;
 
 			RID mm = RS::get_singleton()->multimesh_create();
@@ -519,7 +519,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->multimesh_set_mesh(mm, mesh_library->get_item_mesh(E->key())->get_rid());
 
 			int idx = 0;
-			for (List<Pair<Transform, IndexKey>>::Element *F = E->get().front(); F; F = F->next()) {
+			for (List<Pair<Transform3D, IndexKey>>::Element *F = E->get().front(); F; F = F->next()) {
 				RS::get_singleton()->multimesh_instance_set_transform(mm, idx, F->get().first);
 #ifdef TOOLS_ENABLED
 
@@ -672,7 +672,7 @@ void GridMap::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			Transform new_xform = get_global_transform();
+			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
 				break;
 			}
@@ -686,7 +686,6 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
-
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
@@ -934,7 +933,7 @@ Array GridMap::get_meshes() {
 
 		Vector3 cellpos = Vector3(ik.x, ik.y, ik.z);
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(E->get().rot);
 
@@ -988,7 +987,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		Vector3 cellpos = Vector3(key.x, key.y, key.z);
 		Vector3 ofs = _get_offset();
 
-		Transform xform;
+		Transform3D xform;
 
 		xform.basis.set_orthogonal_index(E->get().rot);
 		xform.set_origin(cellpos * cell_size + ofs);
@@ -1057,7 +1056,7 @@ Array GridMap::get_bake_meshes() {
 	Array arr;
 	for (int i = 0; i < baked_meshes.size(); i++) {
 		arr.push_back(baked_meshes[i].mesh);
-		arr.push_back(Transform());
+		arr.push_back(Transform3D());
 	}
 
 	return arr;

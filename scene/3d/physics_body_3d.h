@@ -289,7 +289,7 @@ public:
 	virtual Vector3 get_angular_velocity() const override;
 
 	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
-	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
+	bool test_move(const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
 
 	bool separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision);
 
@@ -467,12 +467,12 @@ private:
 #endif
 
 	JointData *joint_data = nullptr;
-	Transform joint_offset;
+	Transform3D joint_offset;
 	RID joint;
 
 	Skeleton3D *parent_skeleton = nullptr;
-	Transform body_offset;
-	Transform body_offset_inverse;
+	Transform3D body_offset;
+	Transform3D body_offset_inverse;
 	bool simulate_physics = false;
 	bool _internal_simulate_physics = false;
 	int bone_id = -1;
@@ -508,8 +508,8 @@ public:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Transform get_global_gizmo_transform() const override;
-	virtual Transform get_local_gizmo_transform() const override;
+	virtual Transform3D get_global_gizmo_transform() const override;
+	virtual Transform3D get_local_gizmo_transform() const override;
 #endif
 
 	const JointData *get_joint_data() const;
@@ -520,8 +520,8 @@ public:
 	void set_joint_type(JointType p_joint_type);
 	JointType get_joint_type() const;
 
-	void set_joint_offset(const Transform &p_offset);
-	const Transform &get_joint_offset() const;
+	void set_joint_offset(const Transform3D &p_offset);
+	const Transform3D &get_joint_offset() const;
 
 	void set_joint_rotation(const Vector3 &p_euler_rad);
 	Vector3 get_joint_rotation() const;
@@ -529,8 +529,8 @@ public:
 	void set_joint_rotation_degrees(const Vector3 &p_euler_deg);
 	Vector3 get_joint_rotation_degrees() const;
 
-	void set_body_offset(const Transform &p_offset);
-	const Transform &get_body_offset() const;
+	void set_body_offset(const Transform3D &p_offset);
+	const Transform3D &get_body_offset() const;
 
 	void set_simulate_physics(bool p_simulate);
 	bool get_simulate_physics();

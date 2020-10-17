@@ -93,7 +93,7 @@ public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
-	Transform get_transform(bool p_adjust_by_reference_frame) const;
+	Transform3D get_transform(bool p_adjust_by_reference_frame) const;
 
 	XRPositionalTracker();
 	~XRPositionalTracker() {}

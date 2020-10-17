@@ -326,7 +326,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Transform2D();
 		}
 		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
-			return Transform();
+			return Transform3D();
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			Vector<real_t> xform;

@@ -44,18 +44,18 @@ class SliderJointBullet : public JointBullet {
 
 public:
 	/// Reference frame is A
-	SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
+	SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB);
 
 	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_SLIDER; }
 
 	const RigidBodyBullet *getRigidBodyA() const;
 	const RigidBodyBullet *getRigidBodyB() const;
-	const Transform getCalculatedTransformA() const;
-	const Transform getCalculatedTransformB() const;
-	const Transform getFrameOffsetA() const;
-	const Transform getFrameOffsetB() const;
-	Transform getFrameOffsetA();
-	Transform getFrameOffsetB();
+	const Transform3D getCalculatedTransformA() const;
+	const Transform3D getCalculatedTransformB() const;
+	const Transform3D getFrameOffsetA() const;
+	const Transform3D getFrameOffsetB() const;
+	Transform3D getFrameOffsetA();
+	Transform3D getFrameOffsetB();
 	real_t getLowerLinLimit() const;
 	void setLowerLinLimit(real_t lowerLimit);
 	real_t getUpperLinLimit() const;
