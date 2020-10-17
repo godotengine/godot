@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SPATIAL_EDITOR_PLUGIN_H
-#define SPATIAL_EDITOR_PLUGIN_H
+#ifndef NODE_3D_EDITOR_PLUGIN_H
+#define NODE_3D_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
@@ -890,4 +890,4 @@ public:
 	virtual ~EditorNode3DGizmoPlugin();
 };
 
-#endif
+#endif // NODE_3D_EDITOR_PLUGIN_H
