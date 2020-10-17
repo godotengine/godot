@@ -108,7 +108,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 				return Variant::QUAT;
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
+			if (vtclass == CACHED_CLASS(Transform3D)) {
 				return Variant::TRANSFORM;
 			}
 
@@ -1040,8 +1040,8 @@ Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type
 				return MARSHALLED_IN(Quat, unbox_addr<GDMonoMarshal::M_Quat>(p_obj));
 			}
 
-			if (vtclass == CACHED_CLASS(Transform)) {
-				return MARSHALLED_IN(Transform, unbox_addr<GDMonoMarshal::M_Transform>(p_obj));
+			if (vtclass == CACHED_CLASS(Transform3D)) {
+				return MARSHALLED_IN(Transform3D, unbox_addr<GDMonoMarshal::M_Transform3D>(p_obj));
 			}
 
 			if (vtclass == CACHED_CLASS(AABB)) {

@@ -82,7 +82,7 @@ void RootMotionView::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS || p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
-		Transform transform;
+		Transform3D transform;
 
 		if (has_node(path)) {
 			Node *node = get_node(path);
@@ -103,7 +103,7 @@ void RootMotionView::_notification(int p_what) {
 			}
 		}
 
-		if (!first && transform == Transform()) {
+		if (!first && transform == Transform3D()) {
 			return;
 		}
 

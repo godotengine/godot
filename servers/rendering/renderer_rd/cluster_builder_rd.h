@@ -167,7 +167,7 @@ private:
 	uint32_t render_element_count = 0;
 	uint32_t render_element_max = 0;
 
-	Transform view_xform;
+	Transform3D view_xform;
 	CameraMatrix adjusted_projection;
 	CameraMatrix projection;
 	float z_far = 0;
@@ -220,9 +220,9 @@ private:
 public:
 	void setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer);
 
-	void begin(const Transform &p_view_transform, const CameraMatrix &p_cam_projection, bool p_flip_y);
+	void begin(const Transform3D &p_view_transform, const CameraMatrix &p_cam_projection, bool p_flip_y);
 
-	_FORCE_INLINE_ void add_light(LightType p_type, const Transform &p_transform, float p_radius, float p_spot_aperture) {
+	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {
 		if (p_type == LIGHT_TYPE_OMNI && cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT] == max_elements_by_type) {
 			return; //max number elements reached
 		}
@@ -232,7 +232,7 @@ public:
 
 		RenderElementData &e = render_elements[render_element_count];
 
-		Transform xform = view_xform * p_transform;
+		Transform3D xform = view_xform * p_transform;
 
 		float radius = xform.basis.get_uniform_scale();
 		if (radius > 0.98 || radius < 1.02) {
@@ -317,7 +317,7 @@ public:
 		render_element_count++;
 	}
 
-	_FORCE_INLINE_ void add_box(BoxType p_box_type, const Transform &p_transform, const Vector3 &p_half_extents) {
+	_FORCE_INLINE_ void add_box(BoxType p_box_type, const Transform3D &p_transform, const Vector3 &p_half_extents) {
 		if (p_box_type == BOX_TYPE_DECAL && cluster_count_by_type[ELEMENT_TYPE_DECAL] == max_elements_by_type) {
 			return; //max number elements reached
 		}
@@ -326,7 +326,7 @@ public:
 		}
 
 		RenderElementData &e = render_elements[render_element_count];
-		Transform xform = view_xform * p_transform;
+		Transform3D xform = view_xform * p_transform;
 
 		//extract scale and scale the matrix by it, makes things simpler
 		Vector3 scale = p_half_extents;

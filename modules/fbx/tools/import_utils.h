@@ -64,7 +64,7 @@ public:
 	/// Converts quaternion into rotation order vector (in rad).
 	static Vector3 QuaternionToEuler(FBXDocParser::Model::RotOrder mode, const Quat &p_rotation);
 
-	static void debug_xform(String name, const Transform &t) {
+	static void debug_xform(String name, const Transform3D &t) {
 		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)));
 	}
 
@@ -391,7 +391,7 @@ public:
 };
 
 // Apply the transforms so the basis will have scale 1.
-Transform get_unscaled_transform(const Transform &p_initial, real_t p_scale);
+Transform3D get_unscaled_transform(const Transform3D &p_initial, real_t p_scale);
 
 /// Uses the Newell's method to compute any polygon normal.
 /// The polygon must be at least size of 3 or bigger.

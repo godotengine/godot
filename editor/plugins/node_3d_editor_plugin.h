@@ -322,7 +322,7 @@ private:
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 _get_ray(const Vector2 &p_pos) const;
 	Point2 _point_to_screen(const Vector3 &p_point);
-	Transform _get_camera_transform() const;
+	Transform3D _get_camera_transform() const;
 	int get_selected_count() const;
 
 	Vector3 _get_camera_position() const;
@@ -380,7 +380,7 @@ private:
 	struct EditData {
 		TransformMode mode;
 		TransformPlane plane;
-		Transform original;
+		Transform3D original;
 		Vector3 click_ray;
 		Vector3 click_ray_pos;
 		Vector3 center;
@@ -432,7 +432,7 @@ private:
 
 	//
 	void _update_camera(float p_interp_delta);
-	Transform to_camera_transform(const Cursor &p_cursor) const;
+	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
 	void _surface_mouse_enter();
@@ -505,9 +505,9 @@ class Node3DEditorSelectedItem : public Object {
 
 public:
 	AABB aabb;
-	Transform original; // original location when moving
-	Transform original_local;
-	Transform last_xform; // last transform
+	Transform3D original; // original location when moving
+	Transform3D original_local;
+	Transform3D last_xform; // last transform
 	bool last_xform_dirty;
 	Node3D *sp;
 	RID sbox_instance;
@@ -641,7 +641,7 @@ private:
 	struct Gizmo {
 		bool visible = false;
 		float scale = 0;
-		Transform transform;
+		Transform3D transform;
 	} gizmo;
 
 	enum MenuOption {
@@ -824,7 +824,7 @@ public:
 	float get_zfar() const { return settings_zfar->get_value(); }
 	float get_fov() const { return settings_fov->get_value(); }
 
-	Transform get_gizmo_transform() const { return gizmo.transform; }
+	Transform3D get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }
 
 	ToolMode get_tool_mode() const { return tool_mode; }

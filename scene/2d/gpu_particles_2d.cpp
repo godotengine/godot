@@ -115,7 +115,7 @@ void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 
 void GPUParticles2D::_update_particle_emission_transform() {
 	Transform2D xf2d = get_global_transform();
-	Transform xf;
+	Transform3D xf;
 	xf.basis.set_axis(0, Vector3(xf2d.get_axis(0).x, xf2d.get_axis(0).y, 0));
 	xf.basis.set_axis(1, Vector3(xf2d.get_axis(1).x, xf2d.get_axis(1).y, 0));
 	xf.set_origin(Vector3(xf2d.get_origin().x, xf2d.get_origin().y, 0));
@@ -406,9 +406,9 @@ void GPUParticles2D::_notification(int p_what) {
 
 			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
 
-			Vector<Transform> xforms;
+			Vector<Transform3D> xforms;
 			for (int i = 0; i <= trail_sections; i++) {
-				Transform xform;
+				Transform3D xform;
 				/*
 				xform.origin.y = depth / 2.0 - size.height * float(i);
 				xform.origin.y = -xform.origin.y; //bind is an inverse transform, so negate y */
@@ -446,7 +446,7 @@ void GPUParticles2D::_notification(int p_what) {
 			arr[RS::ARRAY_INDEX] = indices;
 
 			RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
-			RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform>());
+			RS::get_singleton()->particles_set_trail_bind_poses(particles, Vector<Transform3D>());
 		}
 		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 

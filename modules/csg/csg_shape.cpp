@@ -578,7 +578,7 @@ Array CSGShape3D::get_meshes() const {
 	if (root_mesh.is_valid()) {
 		Array arr;
 		arr.resize(2);
-		arr[0] = Transform();
+		arr[0] = Transform3D();
 		arr[1] = root_mesh;
 		return arr;
 	}
@@ -1978,13 +1978,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				float u1 = 0.0;
 				float u2 = path_continuous_u ? 0.0 : 1.0;
 
-				Transform path_to_this;
+				Transform3D path_to_this;
 				if (!path_local) {
 					// center on paths origin
 					path_to_this = get_global_transform().affine_inverse() * path->get_global_transform();
 				}
 
-				Transform prev_xf;
+				Transform3D prev_xf;
 
 				Vector3 lookat_dir;
 
@@ -2006,7 +2006,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						ofs = 0.0;
 					}
 
-					Transform xf;
+					Transform3D xf;
 					xf.origin = curve->interpolate_baked(ofs);
 
 					Vector3 local_dir;

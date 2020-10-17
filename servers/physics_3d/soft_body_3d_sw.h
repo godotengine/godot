@@ -201,7 +201,7 @@ private:
 	void reset_link_rest_lengths();
 	void update_link_constants();
 
-	void apply_nodes_transform(const Transform &p_transform);
+	void apply_nodes_transform(const Transform3D &p_transform);
 
 	void add_velocity(const Vector3 &p_velocity);
 
@@ -231,7 +231,7 @@ public:
 	SoftBody3DSW *get_soft_body() const { return soft_body; }
 
 	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_SOFT_BODY; }
-	virtual void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const { r_min = r_max = 0.0; }
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const { r_min = r_max = 0.0; }
 	virtual Vector3 get_support(const Vector3 &p_normal) const { return Vector3(); }
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const { r_amount = 0; }
 

@@ -433,7 +433,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
-	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
+	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform3D &p_transform, float *p_mat4);
 
 	void _update_shadow_atlas();
 

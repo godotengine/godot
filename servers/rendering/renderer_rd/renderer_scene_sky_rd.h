@@ -268,9 +268,9 @@ public:
 
 	void init(RendererStorageRD *p_storage);
 
-	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
-	void update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform &p_transform, double p_time);
-	void draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, const CameraMatrix &p_projection, const Transform &p_transform, double p_time);
+	void setup(RendererSceneEnvironmentRD *p_env, RID p_render_buffers, const CameraMatrix &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void update(RendererSceneEnvironmentRD *p_env, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time);
+	void draw(RendererSceneEnvironmentRD *p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, const CameraMatrix &p_projection, const Transform3D &p_transform, double p_time);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();

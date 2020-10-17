@@ -40,16 +40,16 @@
 	@author AndreaCatania
 */
 
-SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
+SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform3D &frameInA, const Transform3D &frameInB) :
 		JointBullet() {
-	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
+	Transform3D scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
 	btTransform btFrameA;
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
+		Transform3D scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 
 		btTransform btFrameB;
@@ -70,44 +70,44 @@ const RigidBodyBullet *SliderJointBullet::getRigidBodyB() const {
 	return static_cast<RigidBodyBullet *>(sliderConstraint->getRigidBodyB().getUserPointer());
 }
 
-const Transform SliderJointBullet::getCalculatedTransformA() const {
+const Transform3D SliderJointBullet::getCalculatedTransformA() const {
 	btTransform btTransform = sliderConstraint->getCalculatedTransformA();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }
 
-const Transform SliderJointBullet::getCalculatedTransformB() const {
+const Transform3D SliderJointBullet::getCalculatedTransformB() const {
 	btTransform btTransform = sliderConstraint->getCalculatedTransformB();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }
 
-const Transform SliderJointBullet::getFrameOffsetA() const {
+const Transform3D SliderJointBullet::getFrameOffsetA() const {
 	btTransform btTransform = sliderConstraint->getFrameOffsetA();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }
 
-const Transform SliderJointBullet::getFrameOffsetB() const {
+const Transform3D SliderJointBullet::getFrameOffsetB() const {
 	btTransform btTransform = sliderConstraint->getFrameOffsetB();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }
 
-Transform SliderJointBullet::getFrameOffsetA() {
+Transform3D SliderJointBullet::getFrameOffsetA() {
 	btTransform btTransform = sliderConstraint->getFrameOffsetA();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }
 
-Transform SliderJointBullet::getFrameOffsetB() {
+Transform3D SliderJointBullet::getFrameOffsetB() {
 	btTransform btTransform = sliderConstraint->getFrameOffsetB();
-	Transform gTrans;
+	Transform3D gTrans;
 	B_TO_G(btTransform, gTrans);
 	return gTrans;
 }

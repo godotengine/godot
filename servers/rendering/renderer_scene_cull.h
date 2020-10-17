@@ -82,7 +82,7 @@ public:
 		RID env;
 		RID effects;
 
-		Transform transform;
+		Transform3D transform;
 
 		Camera() {
 			visible_layers = 0xFFFFFFFF;
@@ -104,7 +104,7 @@ public:
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far);
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far);
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
-	virtual void camera_set_transform(RID p_camera, const Transform &p_transform);
+	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform);
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_camera_effects(RID p_camera, RID p_fx);
@@ -353,7 +353,7 @@ public:
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
-		Transform transform;
+		Transform3D transform;
 
 		float lod_bias;
 
@@ -609,7 +609,7 @@ public:
 
 		struct LightCache {
 			RS::LightType type;
-			Transform transform;
+			Transform3D transform;
 			Color color;
 			float energy;
 			float bake_energy;
@@ -853,7 +853,7 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base);
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario);
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
-	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
@@ -893,9 +893,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_lod_threshold);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_lod_threshold);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 
@@ -906,7 +906,7 @@ public:
 				Frustum frustum;
 
 				CameraMatrix projection;
-				Transform transform;
+				Transform3D transform;
 				real_t zfar;
 				real_t split;
 				real_t shadow_texel_size;
@@ -941,7 +941,7 @@ public:
 		Cull *cull;
 		Scenario *scenario;
 		RID shadow_atlas;
-		Transform cam_transform;
+		Transform3D cam_transform;
 		uint32_t visible_layers;
 		Instance *render_reflection_probe;
 		const RendererSceneOcclusionCull::HZBuffer *occlusion_buffer;
@@ -952,7 +952,7 @@ public:
 	void _frustum_cull(CullData &cull_data, FrustumCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
+	void _render_scene(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows = true);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, float p_screen_lod_threshold, RID p_shadow_atlas);

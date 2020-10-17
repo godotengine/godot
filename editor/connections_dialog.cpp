@@ -213,7 +213,7 @@ void ConnectDialog::_add_bind() {
 			value = Basis();
 			break;
 		case Variant::TRANSFORM:
-			value = Transform();
+			value = Transform3D();
 			break;
 		case Variant::COLOR:
 			value = Color();

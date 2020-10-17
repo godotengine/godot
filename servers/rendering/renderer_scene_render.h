@@ -51,7 +51,7 @@ public:
 	virtual void geometry_instance_set_material_override(GeometryInstance *p_geometry_instance, RID p_override) = 0;
 	virtual void geometry_instance_set_surface_materials(GeometryInstance *p_geometry_instance, const Vector<RID> &p_material) = 0;
 	virtual void geometry_instance_set_mesh_instance(GeometryInstance *p_geometry_instance, RID p_mesh_instance) = 0;
-	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) = 0;
+	virtual void geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabbb) = 0;
 	virtual void geometry_instance_set_layer_mask(GeometryInstance *p_geometry_instance, uint32_t p_layer_mask) = 0;
 	virtual void geometry_instance_set_lod_bias(GeometryInstance *p_geometry_instance, float p_lod_bias) = 0;
 	virtual void geometry_instance_set_use_baked_light(GeometryInstance *p_geometry_instance, bool p_enable) = 0;
@@ -161,9 +161,9 @@ public:
 	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) = 0;
 
 	virtual RID light_instance_create(RID p_light) = 0;
-	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
+	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) = 0;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) = 0;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
 		return true;
@@ -174,7 +174,7 @@ public:
 	virtual int reflection_atlas_get_size(RID p_ref_atlas) const = 0;
 
 	virtual RID reflection_probe_instance_create(RID p_probe) = 0;
-	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) = 0;
 	virtual void reflection_probe_release_atlas_index(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;
@@ -182,13 +182,13 @@ public:
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
 
 	virtual RID decal_instance_create(RID p_decal) = 0;
-	virtual void decal_instance_set_transform(RID p_decal, const Transform &p_transform) = 0;
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) = 0;
 
 	virtual RID lightmap_instance_create(RID p_lightmap) = 0;
-	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform) = 0;
+	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) = 0;
 
 	virtual RID gi_probe_instance_create(RID p_gi_probe) = 0;
-	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
+	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) = 0;
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<GeometryInstance *> &p_dynamic_objects) = 0;
 
@@ -216,10 +216,10 @@ public:
 		uint32_t positional_light_count;
 	};
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr) = 0;
 
-	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances) = 0;
+	virtual void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time, double p_step) = 0;

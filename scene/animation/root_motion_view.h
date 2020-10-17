@@ -46,7 +46,7 @@ public:
 	bool first = true;
 	bool zero_y = true;
 
-	Transform accumulated;
+	Transform3D accumulated;
 
 private:
 	void _notification(int p_what);

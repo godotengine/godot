@@ -74,8 +74,8 @@ public:
 
 	ClockDirection get_clock_dir() const; ///< todo, test if this is returning the proper clockwisity
 
-	void get_support(const Vector3 &p_normal, const Transform &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const;
-	void project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const;
+	void get_support(const Vector3 &p_normal, const Transform3D &p_transform, Vector3 *p_vertices, int *p_count, int p_max) const;
+	void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const;
 
 	AABB get_aabb() const {
 		AABB aabb(vertex[0], Vector3());

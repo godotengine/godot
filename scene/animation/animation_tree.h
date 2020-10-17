@@ -257,7 +257,7 @@ private:
 	bool started = true;
 
 	NodePath root_motion_track;
-	Transform root_motion_transform;
+	Transform3D root_motion_transform;
 
 	friend class AnimationNode;
 	bool properties_dirty = true;
@@ -308,7 +308,7 @@ public:
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
 
-	Transform get_root_motion_transform() const;
+	Transform3D get_root_motion_transform() const;
 
 	float get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(float p_time);
