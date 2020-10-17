@@ -6745,7 +6745,7 @@ void TextEdit::set_tooltip_request_func(Object *p_obj, const StringName &p_funct
 }
 
 void TextEdit::set_line(int line, String new_text) {
-	if (line < 0 || line > text.size())
+	if (line < 0 || line >= text.size())
 		return;
 	_remove_text(line, 0, line, text[line].length());
 	_insert_text(line, 0, new_text);
