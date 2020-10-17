@@ -3218,6 +3218,18 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		} else {
 			ERR_FAIL_V_MSG(VK_NULL_HANDLE, "Texture index " + itos(i) + " is neither color, depth stencil or resolve so it can't be used as attachment.");
 		}
+
+		// NOTE: Big Mallet Approach -- any layout transition causes a full barrier
+		if (reference.layout != description.initialLayout) {
+			// NOTE: this should be smarter based on the textures knowledge of it's previous role
+			dependency_from_external.srcStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+			dependency_from_external.srcAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+		}
+		if (reference.layout != description.finalLayout) {
+			// NOTE: this should be smarter based on the textures knowledge of it's subsequent role
+			dependency_from_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+			dependency_from_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+		}
 	}
 
 	ERR_FAIL_COND_V_MSG(depth_stencil_references.size() > 1, VK_NULL_HANDLE,
