@@ -361,8 +361,8 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 	}
 }
 
-Transform Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) const {
-	Transform camera_transform;
+Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) const {
+	Transform3D camera_transform;
 	camera_transform.translate(p_cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
@@ -410,7 +410,7 @@ float Node3DEditorViewport::get_fov() const {
 	return CLAMP(spatial_editor->get_fov(), MIN_FOV, MAX_FOV);
 }
 
-Transform Node3DEditorViewport::_get_camera_transform() const {
+Transform3D Node3DEditorViewport::_get_camera_transform() const {
 	return camera->get_global_transform();
 }
 
@@ -631,7 +631,7 @@ Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	}
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
-	Transform camera_transform;
+	Transform3D camera_transform;
 	camera_transform.translate(cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
@@ -829,7 +829,7 @@ bool Node3DEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_high
 	Vector3 ray_pos = _get_ray_pos(Vector2(p_screenpos.x, p_screenpos.y));
 	Vector3 ray = _get_ray(Vector2(p_screenpos.x, p_screenpos.y));
 
-	Transform gt = spatial_editor->get_gizmo_transform();
+	Transform3D gt = spatial_editor->get_gizmo_transform();
 	float gs = gizmo_scale;
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
@@ -1579,10 +1579,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform original = se->original;
-							Transform original_local = se->original_local;
-							Transform base = Transform(Basis(), _edit.center);
-							Transform t;
+							Transform3D original = se->original;
+							Transform3D original_local = se->original_local;
+							Transform3D base = Transform3D(Basis(), _edit.center);
+							Transform3D t;
 							Vector3 local_scale;
 
 							if (local_coords) {
@@ -1608,7 +1608,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 									motion.snap(Vector3(snap, snap, snap));
 								}
 
-								Transform r;
+								Transform3D r;
 								r.basis.scale(motion + Vector3(1, 1, 1));
 								t = base * (r * (base.inverse() * original));
 
@@ -1701,8 +1701,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform original = se->original;
-							Transform t;
+							Transform3D original = se->original;
+							Transform3D t;
 
 							if (local_coords) {
 								if (_edit.snap || spatial_editor->is_snap_enabled()) {
@@ -1797,10 +1797,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							Transform t;
+							Transform3D t;
 
 							if (local_coords) {
-								Transform original_local = se->original_local;
+								Transform3D original_local = se->original_local;
 								Basis rot = Basis(axis, angle);
 
 								t.basis = original_local.get_basis().orthonormalized() * rot;
@@ -1811,9 +1811,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								sp->set_scale(original_local.basis.get_scale()); // re-apply original scale
 
 							} else {
-								Transform original = se->original;
-								Transform r;
-								Transform base = Transform(Basis(), _edit.center);
+								Transform3D original = se->original;
+								Transform3D r;
+								Transform3D base = Transform3D(Basis(), _edit.center);
 
 								r.basis.rotate(plane.normal, angle);
 								t = base * r * base.inverse() * original;
@@ -2057,7 +2057,7 @@ void Node3DEditorViewport::_nav_pan(Ref<InputEventWithModifiers> p_event, const 
 		pan_speed *= pan_speed_modifier;
 	}
 
-	Transform camera_transform;
+	Transform3D camera_transform;
 
 	camera_transform.translate(cursor.pos);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
@@ -2145,7 +2145,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 
 	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-	const Transform prev_camera_transform = to_camera_transform(cursor);
+	const Transform3D prev_camera_transform = to_camera_transform(cursor);
 
 	if (invert_y_axis) {
 		cursor.x_rot -= p_relative.y * radians_per_pixel;
@@ -2158,7 +2158,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 	cursor.y_rot += p_relative.x * radians_per_pixel;
 
 	// Look is like the opposite of Orbit: the focus point rotates around the camera
-	Transform camera_transform = to_camera_transform(cursor);
+	Transform3D camera_transform = to_camera_transform(cursor);
 	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 diff = prev_pos - pos;
@@ -2444,7 +2444,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				continue;
 			}
 
-			Transform t = sp->get_global_gizmo_transform();
+			Transform3D t = sp->get_global_gizmo_transform();
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sp);
 			AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
 
@@ -2878,7 +2878,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				break;
 			}
 
-			Transform camera_transform = camera->get_global_transform();
+			Transform3D camera_transform = camera->get_global_transform();
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -2895,7 +2895,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					continue;
 				}
 
-				Transform xform;
+				Transform3D xform;
 				if (orthogonal) {
 					xform = sp->get_global_transform();
 					xform.basis.set_euler(camera_transform.basis.get_euler());
@@ -2915,7 +2915,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				break;
 			}
 
-			Transform camera_transform = camera->get_global_transform();
+			Transform3D camera_transform = camera->get_global_transform();
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -3315,9 +3315,9 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	Transform xform = spatial_editor->get_gizmo_transform();
+	Transform3D xform = spatial_editor->get_gizmo_transform();
 
-	Transform camera_xform = camera->get_transform();
+	Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.distance_squared_to(camera_xform.origin) < 0.01) {
 		for (int i = 0; i < 3; i++) {
@@ -3800,7 +3800,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instanced_scene);
 	if (node3d) {
-		Transform global_transform;
+		Transform3D global_transform;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
 		if (parent_node3d) {
 			global_transform = parent_node3d->get_global_gizmo_transform();
@@ -3900,7 +3900,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (can_instance) {
-		Transform global_transform = Transform(Basis(), _get_instance_position(p_point));
+		Transform3D global_transform = Transform3D(Basis(), _get_instance_position(p_point));
 		preview_node->set_global_transform(global_transform);
 	}
 
@@ -4574,7 +4574,7 @@ void Node3DEditor::update_transform_gizmo() {
 			continue;
 		}
 
-		Transform xf = se->sp->get_global_gizmo_transform();
+		Transform3D xf = se->sp->get_global_gizmo_transform();
 
 		if (first) {
 			center.position = xf.origin;
@@ -4955,7 +4955,7 @@ void Node3DEditor::_snap_update() {
 }
 
 void Node3DEditor::_xform_dialog_action() {
-	Transform t;
+	Transform3D t;
 	//translation
 	Vector3 scale;
 	Vector3 rotate;
@@ -4988,7 +4988,7 @@ void Node3DEditor::_xform_dialog_action() {
 
 		bool post = xform_type->get_selected() > 0;
 
-		Transform tr = sp->get_global_gizmo_transform();
+		Transform3D tr = sp->get_global_gizmo_transform();
 		if (post) {
 			tr = tr * t;
 		} else {
@@ -6180,7 +6180,7 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 
 				if (ss->intersect_ray(from, to, result, excluded)) {
 					Vector3 position_offset = d["position_offset"];
-					Transform new_transform = sp->get_global_transform();
+					Transform3D new_transform = sp->get_global_transform();
 
 					new_transform.origin.y = result.position.y;
 					new_transform.origin = new_transform.origin - position_offset;
@@ -6556,7 +6556,7 @@ void Node3DEditor::_preview_settings_changed() {
 	}
 
 	{ // preview sun
-		Transform t;
+		Transform3D t;
 		t.basis = sun_rotation;
 		preview_sun->set_transform(t);
 		sun_direction->update();

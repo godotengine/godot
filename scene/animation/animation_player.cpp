@@ -838,7 +838,7 @@ void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 
 void AnimationPlayer::_animation_update_transforms() {
 	{
-		Transform t;
+		Transform3D t;
 		for (int i = 0; i < cache_update_size; i++) {
 			TrackNodeCache *nc = cache_update[i];
 

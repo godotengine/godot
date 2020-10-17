@@ -273,7 +273,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	if (!mi && s) {
 		Array bmeshes = p_at_node->call("get_bake_bmeshes");
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
-			Transform xf = get_global_transform().affine_inverse() * s->get_global_transform();
+			Transform3D xf = get_global_transform().affine_inverse() * s->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
 				if (!mesh.is_valid()) {
@@ -282,7 +282,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 
 				MeshesFound mf;
 
-				Transform mesh_xf = bmeshes[i + 1];
+				Transform3D mesh_xf = bmeshes[i + 1];
 				mf.xform = xf * mesh_xf;
 				mf.node_path = get_path_to(s);
 				mf.subindex = i / 2;
@@ -306,7 +306,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	LightmapProbe *probe = Object::cast_to<LightmapProbe>(p_at_node);
 
 	if (probe) {
-		Transform xf = get_global_transform().affine_inverse() * probe->get_global_transform();
+		Transform3D xf = get_global_transform().affine_inverse() * probe->get_global_transform();
 		probes.push_back(xf.origin);
 	}
 
@@ -887,7 +887,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		}
 		for (int i = 0; i < lights_found.size(); i++) {
 			Light3D *light = lights_found[i].light;
-			Transform xf = lights_found[i].xform;
+			Transform3D xf = lights_found[i].xform;
 
 			if (Object::cast_to<DirectionalLight3D>(light)) {
 				DirectionalLight3D *l = Object::cast_to<DirectionalLight3D>(light);

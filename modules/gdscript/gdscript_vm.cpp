@@ -169,7 +169,7 @@ void (*type_init_function_table[])(Variant *) = {
 	&VariantInitializer<Quat>::init, // QUAT.
 	&VariantInitializer<AABB>::init, // AABB.
 	&VariantInitializer<Basis>::init, // BASIS.
-	&VariantInitializer<Transform>::init, // TRANSFORM.
+	&VariantInitializer<Transform3D>::init, // TRANSFORM3D.
 	&VariantInitializer<Color>::init, // COLOR.
 	&VariantInitializer<StringName>::init, // STRING_NAME.
 	&VariantInitializer<NodePath>::init, // NODE_PATH.
@@ -3153,7 +3153,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(QUAT, Quat);
 			OPCODE_TYPE_ADJUST(AABB, AABB);
 			OPCODE_TYPE_ADJUST(BASIS, Basis);
-			OPCODE_TYPE_ADJUST(TRANSFORM, Transform);
+			OPCODE_TYPE_ADJUST(TRANSFORM, Transform3D);
 			OPCODE_TYPE_ADJUST(COLOR, Color);
 			OPCODE_TYPE_ADJUST(STRING_NAME, StringName);
 			OPCODE_TYPE_ADJUST(NODE_PATH, NodePath);

@@ -106,11 +106,11 @@ Vector3 BulletPhysicsDirectBodyState3D::get_angular_velocity() const {
 	return body->get_angular_velocity();
 }
 
-void BulletPhysicsDirectBodyState3D::set_transform(const Transform &p_transform) {
+void BulletPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transform) {
 	body->set_transform(p_transform);
 }
 
-Transform BulletPhysicsDirectBodyState3D::get_transform() const {
+Transform3D BulletPhysicsDirectBodyState3D::get_transform() const {
 	return body->get_transform();
 }
 

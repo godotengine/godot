@@ -177,7 +177,7 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	Transform geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
+	Transform3D geom_xform = base_node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
 	Face3 *w = geometry.ptrw();

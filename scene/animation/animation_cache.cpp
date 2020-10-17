@@ -167,7 +167,7 @@ void AnimationCache::_update_cache() {
 	cache_valid = true;
 }
 
-void AnimationCache::set_track_transform(int p_idx, const Transform &p_transform) {
+void AnimationCache::set_track_transform(int p_idx, const Transform3D &p_transform) {
 	if (cache_dirty) {
 		_update_cache();
 	}
@@ -235,7 +235,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				Vector3 loc, scale;
 				Quat rot;
 				animation->transform_track_interpolate(i, p_time, &loc, &rot, &scale);
-				Transform tr(Basis(rot), loc);
+				Transform3D tr(Basis(rot), loc);
 				tr.basis.scale(scale);
 
 				set_track_transform(i, tr);

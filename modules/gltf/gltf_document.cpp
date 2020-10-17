@@ -357,10 +357,10 @@ static Quat _arr_to_quat(const Array &p_array) {
 	return Quat(p_array[0], p_array[1], p_array[2], p_array[3]);
 }
 
-static Transform _arr_to_xform(const Array &p_array) {
-	ERR_FAIL_COND_V(p_array.size() != 16, Transform());
+static Transform3D _arr_to_xform(const Array &p_array) {
+	ERR_FAIL_COND_V(p_array.size() != 16, Transform3D());
 
-	Transform xform;
+	Transform3D xform;
 	xform.basis.set_axis(Vector3::AXIS_X, Vector3(p_array[0], p_array[1], p_array[2]));
 	xform.basis.set_axis(Vector3::AXIS_Y, Vector3(p_array[4], p_array[5], p_array[6]));
 	xform.basis.set_axis(Vector3::AXIS_Z, Vector3(p_array[8], p_array[9], p_array[10]));
@@ -369,7 +369,7 @@ static Transform _arr_to_xform(const Array &p_array) {
 	return xform;
 }
 
-static Vector<real_t> _xform_to_array(const Transform p_transform) {
+static Vector<real_t> _xform_to_array(const Transform3D p_transform) {
 	Vector<real_t> array;
 	array.resize(16);
 	Vector3 axis_x = p_transform.get_basis().get_axis(Vector3::AXIS_X);
@@ -421,7 +421,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 		}
 		if (n->skeleton != -1 && n->skin < 0) {
 		}
-		if (n->xform != Transform()) {
+		if (n->xform != Transform3D()) {
 			node["matrix"] = _xform_to_array(n->xform);
 		}
 
@@ -1939,7 +1939,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> state, c
 	return state->accessors.size() - 1;
 }
 
-GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, const Vector<Transform> p_attribs, const bool p_for_vertex) {
+GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, const Vector<Transform3D> p_attribs, const bool p_for_vertex) {
 	if (p_attribs.size() == 0) {
 		return -1;
 	}
@@ -1953,7 +1953,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> state, 
 	Vector<double> type_min;
 	type_min.resize(element_count);
 	for (int i = 0; i < p_attribs.size(); i++) {
-		Transform attrib = p_attribs[i];
+		Transform3D attrib = p_attribs[i];
 		Basis basis = attrib.get_basis();
 		Vector3 axis_0 = basis.get_axis(Vector3::AXIS_X);
 
@@ -2107,9 +2107,9 @@ Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> state, cons
 	return ret;
 }
 
-Vector<Transform> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
+Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
-	Vector<Transform> ret;
+	Vector<Transform3D> ret;
 
 	if (attribs.size() == 0) {
 		return ret;
@@ -4279,7 +4279,7 @@ Error GLTFDocument::_create_skins(Ref<GLTFState> state) {
 			GLTFNodeIndex node = gltf_skin->joints_original[joint_i];
 			String bone_name = state->nodes[node]->get_name();
 
-			Transform xform;
+			Transform3D xform;
 			if (has_ibms) {
 				xform = gltf_skin->inverse_binds[joint_i];
 			}
@@ -4323,8 +4323,8 @@ bool GLTFDocument::_skins_are_same(const Ref<Skin> skin_a, const Ref<Skin> skin_
 			return false;
 		}
 
-		Transform a_xform = skin_a->get_bind_pose(i);
-		Transform b_xform = skin_b->get_bind_pose(i);
+		Transform3D a_xform = skin_a->get_bind_pose(i);
+		Transform3D b_xform = skin_b->get_bind_pose(i);
 
 		if (a_xform != b_xform) {
 			return false;
@@ -5075,7 +5075,7 @@ GLTFSkeletonIndex GLTFDocument::_convert_skeleton(Ref<GLTFState> state, Skeleton
 }
 
 void GLTFDocument::_convert_spatial(Ref<GLTFState> state, Node3D *p_spatial, Ref<GLTFNode> p_node) {
-	Transform xform = p_spatial->get_transform();
+	Transform3D xform = p_spatial->get_transform();
 	p_node->scale = xform.basis.get_scale();
 	p_node->rotation = xform.basis.get_rotation_quat();
 	p_node->translation = xform.origin;
@@ -5240,7 +5240,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(Node *p_scene_parent, const GLTFNod
 				Vector3(cell_location.x, cell_location.y, cell_location.z));
 		EditorSceneImporterMeshNode3D *import_mesh_node = memnew(EditorSceneImporterMeshNode3D);
 		import_mesh_node->set_mesh(grid_map->get_mesh_library()->get_item_mesh(cell));
-		Transform cell_xform;
+		Transform3D cell_xform;
 		cell_xform.basis.set_orthogonal_index(
 				grid_map->get_cell_item_orientation(
 						Vector3(cell_location.x, cell_location.y, cell_location.z)));
@@ -5268,7 +5268,7 @@ void GLTFDocument::_convert_mult_mesh_instance_to_gltf(Node *p_scene_parent, con
 		for (int32_t instance_i = 0; instance_i < multi_mesh->get_instance_count();
 				instance_i++) {
 			GLTFNode *new_gltf_node = memnew(GLTFNode);
-			Transform transform;
+			Transform3D transform;
 			if (multi_mesh->get_transform_format() == MultiMesh::TRANSFORM_2D) {
 				Transform2D xform_2d = multi_mesh->get_instance_transform_2d(instance_i);
 				transform.origin =
@@ -5715,7 +5715,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 				}
 
 				if (gltf_node->skeleton >= 0) {
-					Transform xform;
+					Transform3D xform;
 					xform.basis.set_quat_scale(rot, scale);
 					xform.origin = pos;
 
@@ -5808,7 +5808,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 		}
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(mi_element->get());
 		ERR_CONTINUE(!mi);
-		Transform mi_xform = mi->get_transform();
+		Transform3D mi_xform = mi->get_transform();
 		node->scale = mi_xform.basis.get_scale();
 		node->rotation = mi_xform.basis.get_rotation_quat();
 		node->translation = mi_xform.origin;
@@ -5872,7 +5872,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {
 			String gltf_bone_name = _gen_unique_bone_name(state, skeleton_gltf_i, godot_bone_name);
 			joint_node->set_name(gltf_bone_name);
 
-			Transform bone_rest_xform = skeleton->get_bone_rest(bone_index);
+			Transform3D bone_rest_xform = skeleton->get_bone_rest(bone_index);
 			joint_node->scale = bone_rest_xform.basis.get_scale();
 			joint_node->rotation = bone_rest_xform.basis.get_rotation_quat();
 			joint_node->translation = bone_rest_xform.origin;
@@ -5995,12 +5995,12 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> state, Node *scene_roo
 
 			mi->set_skin(state->skins.write[skin_i]->godot_skin);
 			mi->set_skeleton_path(mi->get_path_to(skeleton));
-			mi->set_transform(Transform());
+			mi->set_transform(Transform3D());
 		}
 	}
 }
 
-GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state, GLTFAnimation::Track p_track, Ref<Animation> p_animation, Transform p_bone_rest, int32_t p_track_i, GLTFNodeIndex p_node_i) {
+GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state, GLTFAnimation::Track p_track, Ref<Animation> p_animation, Transform3D p_bone_rest, int32_t p_track_i, GLTFNodeIndex p_node_i) {
 	Animation::InterpolationType interpolation = p_animation->track_get_interpolation_type(p_track_i);
 
 	GLTFAnimation::Interpolation gltf_interpolation = GLTFAnimation::INTERP_LINEAR;
@@ -6040,7 +6040,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 			Vector3 scale;
 			Error err = p_animation->transform_track_get_key(p_track_i, key_i, &translation, &rotation, &scale);
 			ERR_CONTINUE(err != OK);
-			Transform xform;
+			Transform3D xform;
 			xform.basis.set_quat_scale(rotation, scale);
 			xform.origin = translation;
 			xform = p_bone_rest * xform;
@@ -6063,7 +6063,7 @@ GLTFAnimation::Track GLTFDocument::_convert_animation_track(Ref<GLTFState> state
 		p_track.rotation_track.values.resize(key_count);
 		p_track.rotation_track.interpolation = gltf_interpolation;
 		for (int32_t key_i = 0; key_i < key_count; key_i++) {
-			Transform xform = p_animation->track_get_key_value(p_track_i, key_i);
+			Transform3D xform = p_animation->track_get_key_value(p_track_i, key_i);
 			p_track.translation_track.values.write[key_i] = xform.get_origin();
 			p_track.rotation_track.values.write[key_i] = xform.basis.get_rotation_quat();
 			p_track.scale_track.values.write[key_i] = xform.basis.get_scale();
@@ -6210,7 +6210,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					if (translation_track_i) {
 						track = translation_track_i->get();
 					}
-					track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
@@ -6226,7 +6226,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					if (rotation_degree_track_i) {
 						track = rotation_degree_track_i->get();
 					}
-					track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
@@ -6242,7 +6242,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					if (scale_track_i) {
 						track = scale_track_i->get();
 					}
-					track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
 					gltf_animation->get_tracks().insert(node_index, track);
 				}
 			}
@@ -6253,7 +6253,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 			for (Map<GLTFNodeIndex, Node *>::Element *transform_track_i = state->scene_nodes.front(); transform_track_i; transform_track_i = transform_track_i->next()) {
 				if (transform_track_i->get() == node) {
 					GLTFAnimation::Track track;
-					track = _convert_animation_track(state, track, animation, Transform(), track_i, transform_track_i->key());
+					track = _convert_animation_track(state, track, animation, Transform3D(), track_i, transform_track_i->key());
 					gltf_animation->get_tracks().insert(transform_track_i->key(), track);
 				}
 			}
@@ -6341,7 +6341,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 					Ref<GLTFSkeleton> skeleton_gltf = state->skeletons[skeleton_gltf_i];
 					int32_t bone = skeleton->find_bone(suffix);
 					ERR_CONTINUE(bone == -1);
-					Transform xform = skeleton->get_bone_rest(bone);
+					Transform3D xform = skeleton->get_bone_rest(bone);
 					if (!skeleton_gltf->godot_bone_node.has(bone)) {
 						continue;
 					}
@@ -6368,7 +6368,7 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> state, AnimationPlayer *ap,
 						if (node_track_i) {
 							track = node_track_i->get();
 						}
-						track = _convert_animation_track(state, track, animation, Transform(), track_i, node_index);
+						track = _convert_animation_track(state, track, animation, Transform3D(), track_i, node_index);
 						gltf_animation->get_tracks().insert(node_index, track);
 						break;
 					}

@@ -74,7 +74,7 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
-void RendererSceneCull::camera_set_transform(RID p_camera, const Transform &p_transform) {
+void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.getornull(p_camera);
 	ERR_FAIL_COND(!camera);
 	camera->transform = p_transform.orthonormalized();
@@ -746,7 +746,7 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 	}
 }
 
-void RendererSceneCull::instance_set_transform(RID p_instance, const Transform &p_transform) {
+void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D &p_transform) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
@@ -1605,7 +1605,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 			continue; //we are inside, ignore exteriors
 		}
 
-		Transform to_bounds = lightmap->transform.affine_inverse();
+		Transform3D to_bounds = lightmap->transform.affine_inverse();
 		Vector3 center = p_instance->transform.xform(p_instance->aabb.position + p_instance->aabb.size * 0.5); //use aabb center
 
 		Vector3 lm_pos = to_bounds.xform(center);
@@ -1666,10 +1666,10 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	scene_render->geometry_instance_set_lightmap_capture(geom->geometry_instance, p_instance->lightmap_sh.ptr());
 }
 
-void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
+void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	Transform light_transform = p_instance->transform;
+	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
 
 	real_t max_distance = p_cam_projection.get_z_far();
@@ -1745,7 +1745,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 		// obtain the light frustum ranges (given endpoints)
 
-		Transform transform = light_transform; //discard scale and stabilize light
+		Transform3D transform = light_transform; //discard scale and stabilize light
 
 		Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
 		Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
@@ -1944,7 +1944,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 			Vector2 uv_scale(1.0 / (x_max_cam - x_min_cam), 1.0 / (y_max_cam - y_min_cam));
 
-			Transform ortho_transform;
+			Transform3D ortho_transform;
 			ortho_transform.basis = transform.basis;
 			ortho_transform.origin = x_vec * (x_min_cam + half_x) + y_vec * (y_min_cam + half_y) + z_vec * z_max;
 
@@ -1961,10 +1961,10 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	}
 }
 
-bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_lod_threshold) {
+bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_lod_threshold) {
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
-	Transform light_transform = p_instance->transform;
+	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
 
 	bool animated_material_found = false;
@@ -2071,7 +2071,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 						Vector3(0, -1, 0)
 					};
 
-					Transform xform = light_transform * Transform().looking_at(view_normals[i], view_up[i]);
+					Transform3D xform = light_transform * Transform3D().looking_at(view_normals[i], view_up[i]);
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
@@ -2250,16 +2250,16 @@ void RendererSceneCull::render_camera(RID p_render_buffers, Ref<XRInterface> &p_
 
 	// We also ignore our camera position, it will have been positioned with a slightly old tracking position.
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
-	Transform world_origin = XRServer::get_singleton()->get_world_origin();
-	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
+	Transform3D world_origin = XRServer::get_singleton()->get_world_origin();
+	Transform3D cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
 	RID environment = _render_get_environment(p_camera, p_scenario);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
 	if (p_eye == XRInterface::EYE_LEFT) {
 		// Center our transform, we assume basis is equal.
-		Transform mono_transform = cam_transform;
-		Transform right_transform = p_interface->get_transform_for_eye(XRInterface::EYE_RIGHT, world_origin);
+		Transform3D mono_transform = cam_transform;
+		Transform3D right_transform = p_interface->get_transform_for_eye(XRInterface::EYE_RIGHT, world_origin);
 		mono_transform.origin += right_transform.origin;
 		mono_transform.origin *= 0.5;
 
@@ -2307,7 +2307,7 @@ void RendererSceneCull::render_camera(RID p_render_buffers, Ref<XRInterface> &p_
 		combined_matrix.set_frustum(left_near, -left_near, bottom_near, top_near, z_near + z_shift, z_far + z_shift);
 
 		// and finally move our camera back
-		Transform apply_z_shift;
+		Transform3D apply_z_shift;
 		apply_z_shift.origin = Vector3(0.0, 0.0, z_shift); // z negative is forward so this moves it backwards
 		mono_transform *= apply_z_shift;
 
@@ -2341,7 +2341,7 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
-	Transform inv_cam_transform = cull_data.cam_transform.inverse();
+	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
 	float z_near = cull_data.camera_matrix->get_z_near();
 
 	for (uint64_t i = p_from; i < p_to; i++) {
@@ -2544,7 +2544,7 @@ void RendererSceneCull::_frustum_cull(CullData &cull_data, FrustumCullResult &cu
 	}
 }
 
-void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows) {
+void RendererSceneCull::_render_scene(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_render_buffers, RID p_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, bool p_using_shadows) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -2726,7 +2726,7 @@ void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const Ca
 
 			{ //compute coverage
 
-				Transform cam_xf = p_cam_transform;
+				Transform3D cam_xf = p_cam_transform;
 				float zn = p_cam_projection.get_z_near();
 				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); //camera near plane
 
@@ -2875,7 +2875,7 @@ void RendererSceneCull::_render_scene(const Transform &p_cam_transform, const Ca
 		render_sdfgi_data[i].instances.clear();
 	}
 
-	//	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
+	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
 }
 
 RID RendererSceneCull::_render_get_environment(RID p_camera, RID p_scenario) {
@@ -2911,7 +2911,7 @@ void RendererSceneCull::render_empty_scene(RID p_render_buffers, RID p_scenario,
 		environment = scenario->fallback_environment;
 	}
 	RENDER_TIMESTAMP("Render Empty Scene ");
-	scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, PagedArray<RendererSceneRender::GeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, Transform3D(), CameraMatrix(), true, PagedArray<RendererSceneRender::GeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), RID(), RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
 }
 
@@ -2961,10 +2961,10 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		CameraMatrix cm;
 		cm.set_perspective(90, 1, 0.01, max_distance);
 
-		Transform local_view;
+		Transform3D local_view;
 		local_view.set_look_at(origin_offset, origin_offset + view_normals[p_step], view_up[p_step]);
 
-		Transform xform = p_instance->transform * local_view;
+		Transform3D xform = p_instance->transform * local_view;
 
 		RID shadow_atlas;
 

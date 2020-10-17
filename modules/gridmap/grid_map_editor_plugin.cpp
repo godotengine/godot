@@ -255,7 +255,7 @@ void GridMapEditor::_menu_option(int p_option) {
 }
 
 void GridMapEditor::_update_cursor_transform() {
-	cursor_transform = Transform();
+	cursor_transform = Transform3D();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
 	cursor_transform.basis *= node->get_cell_scale();
@@ -268,7 +268,7 @@ void GridMapEditor::_update_cursor_transform() {
 }
 
 void GridMapEditor::_update_selection_transform() {
-	Transform xf_zero;
+	Transform3D xf_zero;
 	xf_zero.basis.set_zero();
 
 	if (!selection.active) {
@@ -279,7 +279,7 @@ void GridMapEditor::_update_selection_transform() {
 		return;
 	}
 
-	Transform xf;
+	Transform3D xf;
 	xf.scale((Vector3(1, 1, 1) + (selection.end - selection.begin)) * node->get_cell_size());
 	xf.origin = selection.begin * node->get_cell_size();
 
@@ -297,7 +297,7 @@ void GridMapEditor::_update_selection_transform() {
 			scale *= node->get_cell_size();
 			position *= node->get_cell_size();
 
-			Transform xf2;
+			Transform3D xf2;
 			xf2.basis.scale(scale);
 			xf2.origin = position;
 
@@ -362,7 +362,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	Camera3D *camera = p_camera;
 	Vector3 from = camera->project_ray_origin(p_point);
 	Vector3 normal = camera->project_ray_normal(p_point);
-	Transform local_xform = node->get_global_transform().affine_inverse();
+	Transform3D local_xform = node->get_global_transform().affine_inverse();
 	Vector<Plane> planes = camera->get_frustum();
 	from = local_xform.xform(from);
 	normal = local_xform.basis.xform(normal).normalized();
@@ -540,7 +540,7 @@ void GridMapEditor::_set_clipboard_data() {
 
 void GridMapEditor::_update_paste_indicator() {
 	if (input_action != INPUT_PASTE) {
-		Transform xf;
+		Transform3D xf;
 		xf.basis.set_zero();
 		RenderingServer::get_singleton()->instance_set_transform(paste_instance, xf);
 		return;
@@ -548,7 +548,7 @@ void GridMapEditor::_update_paste_indicator() {
 
 	Vector3 center = 0.5 * Vector3(real_t(node->get_center_x()), real_t(node->get_center_y()), real_t(node->get_center_z()));
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
-	Transform xf;
+	Transform3D xf;
 	xf.scale(scale);
 	xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 	Basis rot;
@@ -561,7 +561,7 @@ void GridMapEditor::_update_paste_indicator() {
 	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
 		ClipboardItem &item = E->get();
 
-		xf = Transform();
+		xf = Transform3D();
 		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
 		xf.translate(item.grid_offset * node->get_cell_size());
@@ -1068,7 +1068,7 @@ void GridMapEditor::_notification(int p_what) {
 				return;
 			}
 
-			Transform xf = node->get_global_transform();
+			Transform3D xf = node->get_global_transform();
 
 			if (xf != grid_xform) {
 				for (int i = 0; i < 3; i++) {

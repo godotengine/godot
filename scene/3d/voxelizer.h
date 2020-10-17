@@ -93,7 +93,7 @@ private:
 	AABB po2_bounds;
 	int axis_cell_size[3] = {};
 
-	Transform to_cell_space;
+	Transform3D to_cell_space;
 
 	int color_scan_cell_width = 4;
 	int bake_texture_size = 128;
@@ -114,7 +114,7 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds);
-	void plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void end_bake();
 
 	int get_gi_probe_octree_depth() const;
@@ -127,7 +127,7 @@ public:
 
 	Ref<MultiMesh> create_debug_multimesh();
 
-	Transform get_to_cell_space_xform() const;
+	Transform3D get_to_cell_space_xform() const;
 	Voxelizer();
 };
 

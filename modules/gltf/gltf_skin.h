@@ -43,7 +43,7 @@ private:
 	GLTFNodeIndex skin_root = -1;
 
 	Vector<GLTFNodeIndex> joints_original;
-	Vector<Transform> inverse_binds;
+	Vector<Transform3D> inverse_binds;
 
 	// Note: joints + non_joints should form a complete subtree, or subtrees
 	// with a common parent

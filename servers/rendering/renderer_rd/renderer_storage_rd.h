@@ -46,7 +46,7 @@
 #include "servers/rendering/rendering_device.h"
 class RendererStorageRD : public RendererStorage {
 public:
-	static _FORCE_INLINE_ void store_transform(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[1][0];
 		p_array[2] = p_mtx.basis.elements[2][0];
@@ -95,7 +95,7 @@ public:
 		p_array[11] = 0;
 	}
 
-	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform &p_mtx, float *p_array) {
+	static _FORCE_INLINE_ void store_transform_transposed_3x4(const Transform3D &p_mtx, float *p_array) {
 		p_array[0] = p_mtx.basis.elements[0][0];
 		p_array[1] = p_mtx.basis.elements[0][1];
 		p_array[2] = p_mtx.basis.elements[0][2];
@@ -726,7 +726,7 @@ private:
 		RS::ParticlesDrawOrder draw_order = RS::PARTICLES_DRAW_ORDER_INDEX;
 
 		Vector<RID> draw_passes;
-		Vector<Transform> trail_bind_poses;
+		Vector<Transform3D> trail_bind_poses;
 		bool trail_bind_poses_dirty = false;
 		RID trail_bind_pose_buffer;
 		RID trail_bind_pose_uniform_set;
@@ -771,7 +771,7 @@ private:
 
 		bool force_sub_emit = false;
 
-		Transform emission_transform;
+		Transform3D emission_transform;
 
 		Vector<uint8_t> emission_buffer_data;
 
@@ -941,7 +941,7 @@ private:
 
 	struct ParticlesCollisionInstance {
 		RID collision;
-		Transform transform;
+		Transform3D transform;
 		bool active = false;
 	};
 
@@ -1059,7 +1059,7 @@ private:
 
 		int cell_count = 0;
 
-		Transform to_cell_xform;
+		Transform3D to_cell_xform;
 		AABB bounds;
 		Vector3i octree_size;
 
@@ -1661,14 +1661,14 @@ public:
 	int multimesh_get_instance_count(RID p_multimesh) const;
 
 	void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform);
 	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
 	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
 
 	RID multimesh_get_mesh(RID p_multimesh) const;
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
 	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
@@ -1759,10 +1759,10 @@ public:
 
 	void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
 	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform3D &p_world_transform);
 	int skeleton_get_bone_count(RID p_skeleton) const;
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform);
-	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
+	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform);
+	Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
 	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
@@ -2024,7 +2024,7 @@ public:
 	RID gi_probe_allocate();
 	void gi_probe_initialize(RID p_gi_probe);
 
-	void gi_probe_allocate_data(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
+	void gi_probe_allocate_data(RID p_gi_probe, const Transform3D &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts);
 
 	AABB gi_probe_get_bounds(RID p_gi_probe) const;
 	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
@@ -2033,7 +2033,7 @@ public:
 	Vector<uint8_t> gi_probe_get_distance_field(RID p_gi_probe) const;
 
 	Vector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
-	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
+	Transform3D gi_probe_get_to_cell_xform(RID p_gi_probe) const;
 
 	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
 	float gi_probe_get_dynamic_range(RID p_gi_probe) const;
@@ -2147,10 +2147,10 @@ public:
 	void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align);
 
 	void particles_set_trails(RID p_particles, bool p_enable, float p_length);
-	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform> &p_bind_poses);
+	void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses);
 
 	void particles_restart(RID p_particles);
-	void particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
+	void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	void particles_set_subemitter(RID p_particles, RID p_subemitter_particles);
 
@@ -2163,7 +2163,7 @@ public:
 	AABB particles_get_current_aabb(RID p_particles);
 	AABB particles_get_aabb(RID p_particles) const;
 
-	void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
+	void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform);
 
 	bool particles_get_emitting(RID p_particles);
 	int particles_get_draw_passes(RID p_particles) const;
@@ -2254,7 +2254,7 @@ public:
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision);
-	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform &p_transform);
+	virtual void particles_collision_instance_set_transform(RID p_collision_instance, const Transform3D &p_transform);
 	virtual void particles_collision_instance_set_active(RID p_collision_instance, bool p_active);
 
 	/* GLOBAL VARIABLES API */

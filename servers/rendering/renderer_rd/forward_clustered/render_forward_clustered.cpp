@@ -817,7 +817,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, u
 		if (inst->store_transform_cache) {
 			RendererStorageRD::store_transform(inst->transform, instance_data.transform);
 		} else {
-			RendererStorageRD::store_transform(Transform(), instance_data.transform);
+			RendererStorageRD::store_transform(Transform3D(), instance_data.transform);
 		}
 
 		instance_data.flags = inst->flags_cache;
@@ -1068,7 +1068,7 @@ void RenderForwardClustered::_setup_giprobes(const PagedArray<RID> &p_giprobes) 
 	}
 }
 
-void RenderForwardClustered::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform &p_cam_transform) {
+void RenderForwardClustered::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
 	scene_state.lightmaps_used = 0;
 	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
 		if (i >= (int)scene_state.max_lightmaps) {
@@ -1498,7 +1498,8 @@ void RenderForwardClustered::_render_shadow_begin() {
 	render_list[RENDER_LIST_SECONDARY].clear();
 	scene_state.instance_data[RENDER_LIST_SECONDARY].clear();
 }
-void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end) {
+
+void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_lod_threshold, const Rect2i &p_rect, bool p_flip_y, bool p_clear_region, bool p_begin, bool p_end) {
 	uint32_t shadow_pass_index = scene_state.shadow_passes.size();
 
 	SceneState::ShadowPass shadow_pass;
@@ -1585,7 +1586,7 @@ void RenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
+void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) {
 	RENDER_TIMESTAMP("Setup Render Collider Heightfield");
 
 	RD::get_singleton()->draw_command_begin_label("Render Collider Heightfield");
@@ -1622,7 +1623,7 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardClustered::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
 	RENDER_TIMESTAMP("Setup Rendering Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render Material");
@@ -1796,7 +1797,7 @@ void RenderForwardClustered::_render_sdfgi(RID p_render_buffers, const Vector3i 
 		render_data.cam_projection.set_orthogonal(-h_size, h_size, -v_size, v_size, 0, d_size);
 		//print_line("pass: " + itos(i) + " cam hsize: " + rtos(h_size) + " vsize: " + rtos(v_size) + " dsize " + rtos(d_size));
 
-		Transform to_bounds;
+		Transform3D to_bounds;
 		to_bounds.origin = p_bounds.position;
 		to_bounds.basis.scale(p_bounds.size);
 
@@ -2719,7 +2720,7 @@ void RenderForwardClustered::geometry_instance_set_mesh_instance(GeometryInstanc
 	ginstance->mesh_instance = p_mesh_instance;
 	_geometry_instance_mark_dirty(ginstance);
 }
-void RenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
+void RenderForwardClustered::geometry_instance_set_transform(GeometryInstance *p_geometry_instance, const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_geometry_instance);
 	ERR_FAIL_COND(!ginstance);
 	ginstance->transform = p_transform;
@@ -2824,11 +2825,12 @@ void RenderForwardClustered::geometry_instance_pair_reflection_probe_instances(G
 void RenderForwardClustered::geometry_instance_pair_decal_instances(GeometryInstance *p_geometry_instance, const RID *p_decal_instances, uint32_t p_decal_instance_count) {
 }
 
-Transform RenderForwardClustered::geometry_instance_get_transform(GeometryInstance *p_instance) {
+Transform3D RenderForwardClustered::geometry_instance_get_transform(GeometryInstance *p_instance) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_instance);
-	ERR_FAIL_COND_V(!ginstance, Transform());
+	ERR_FAIL_COND_V(!ginstance, Transform3D());
 	return ginstance->transform;
 }
+
 AABB RenderForwardClustered::geometry_instance_get_aabb(GeometryInstance *p_instance) {
 	GeometryInstanceForwardClustered *ginstance = static_cast<GeometryInstanceForwardClustered *>(p_instance);
 	ERR_FAIL_COND_V(!ginstance, AABB());

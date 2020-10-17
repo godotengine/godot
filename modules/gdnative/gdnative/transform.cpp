@@ -32,18 +32,18 @@
 
 #include "core/math/transform.h"
 
-static_assert(sizeof(godot_transform) == sizeof(Transform), "Transform size mismatch");
+static_assert(sizeof(godot_transform) == sizeof(Transform3D), "Transform3D size mismatch");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void GDAPI godot_transform_new(godot_transform *p_self) {
-	memnew_placement(p_self, Transform);
+	memnew_placement(p_self, Transform3D);
 }
 
 void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src) {
-	memnew_placement(r_dest, Transform(*(Transform *)p_src));
+	memnew_placement(r_dest, Transform3D(*(Transform3D *)p_src));
 }
 
 #ifdef __cplusplus

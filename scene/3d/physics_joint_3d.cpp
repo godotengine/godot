@@ -372,15 +372,15 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 }
 
 void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	Transform ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D gt = get_global_transform();
+	Transform3D ainv = body_a->get_global_transform().affine_inverse();
 
-	Transform local_a = ainv * gt;
+	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
-	Transform local_b = gt;
+	Transform3D local_b = gt;
 
 	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
+		Transform3D binv = body_b->get_global_transform().affine_inverse();
 		local_b = binv * gt;
 	}
 
@@ -506,15 +506,15 @@ real_t SliderJoint3D::get_param(Param p_param) const {
 }
 
 void SliderJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
-	Transform ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D gt = get_global_transform();
+	Transform3D ainv = body_a->get_global_transform().affine_inverse();
 
-	Transform local_a = ainv * gt;
+	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
-	Transform local_b = gt;
+	Transform3D local_b = gt;
 
 	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
+		Transform3D binv = body_b->get_global_transform().affine_inverse();
 		local_b = binv * gt;
 	}
 
@@ -611,18 +611,18 @@ real_t ConeTwistJoint3D::get_param(Param p_param) const {
 }
 
 void ConeTwistJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
+	Transform3D gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
-	Transform ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D ainv = body_a->get_global_transform().affine_inverse();
 
-	Transform local_a = ainv * gt;
+	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
-	Transform local_b = gt;
+	Transform3D local_b = gt;
 
 	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
+		Transform3D binv = body_b->get_global_transform().affine_inverse();
 		local_b = binv * gt;
 	}
 
@@ -936,18 +936,18 @@ bool Generic6DOFJoint3D::get_flag_z(Flag p_flag) const {
 }
 
 void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform gt = get_global_transform();
+	Transform3D gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
-	Transform ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D ainv = body_a->get_global_transform().affine_inverse();
 
-	Transform local_a = ainv * gt;
+	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
-	Transform local_b = gt;
+	Transform3D local_b = gt;
 
 	if (body_b) {
-		Transform binv = body_b->get_global_transform().affine_inverse();
+		Transform3D binv = body_b->get_global_transform().affine_inverse();
 		local_b = binv * gt;
 	}
 

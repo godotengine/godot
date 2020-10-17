@@ -152,8 +152,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
-			if (tclass == CACHED_CLASS(Transform)) {
-				GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_value.operator ::Transform());
+			if (tclass == CACHED_CLASS(Transform3D)) {
+				GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform3D, p_value.operator ::Transform3D());
 				mono_field_set_value(p_object, mono_field, &from);
 				break;
 			}
@@ -349,7 +349,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
 				case Variant::TRANSFORM: {
-					GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_value.operator ::Transform());
+					GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform3D, p_value.operator ::Transform3D());
 					mono_field_set_value(p_object, mono_field, &from);
 				} break;
 				case Variant::COLOR: {

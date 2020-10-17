@@ -600,7 +600,7 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 	const Vector3 *vertexptr = vertices.ptr();
 	const BVH *bvhptr = bvh.ptr();
 
-	Transform scale(Basis().scaled(p_scale));
+	Transform3D scale(Basis().scaled(p_scale));
 
 	int pos = bvh.size() - 1;
 

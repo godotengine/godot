@@ -433,7 +433,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, Map<Ref<E
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
 			p_node = rigid_body;
-			mi->set_transform(Transform());
+			mi->set_transform(Transform3D());
 			rigid_body->add_child(mi);
 			mi->set_owner(rigid_body->get_owner());
 
@@ -632,7 +632,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 								p_node->replace_by(rigid_body);
 								rigid_body->set_transform(mi->get_transform());
 								p_node = rigid_body;
-								mi->set_transform(Transform());
+								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi);
 								mi->set_owner(rigid_body->get_owner());
 								base = rigid_body;
@@ -1209,7 +1209,7 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				}
 
 				if (bake_lightmaps) {
-					Transform xf;
+					Transform3D xf;
 					Node3D *n = src_mesh_node;
 					while (n) {
 						xf = n->get_transform() * xf;

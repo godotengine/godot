@@ -93,7 +93,7 @@ TEST_SUITE("Validate tests") {
 		Basis basis(quat);
 		INFO(basis);
 
-		Transform trans(basis);
+		Transform3D trans(basis);
 		INFO(trans);
 
 		Color color(1, 0.5, 0.2, 0.3);

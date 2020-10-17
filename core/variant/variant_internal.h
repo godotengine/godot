@@ -144,8 +144,8 @@ public:
 	_FORCE_INLINE_ static const ::AABB *get_aabb(const Variant *v) { return v->_data._aabb; }
 	_FORCE_INLINE_ static Basis *get_basis(Variant *v) { return v->_data._basis; }
 	_FORCE_INLINE_ static const Basis *get_basis(const Variant *v) { return v->_data._basis; }
-	_FORCE_INLINE_ static Transform *get_transform(Variant *v) { return v->_data._transform; }
-	_FORCE_INLINE_ static const Transform *get_transform(const Variant *v) { return v->_data._transform; }
+	_FORCE_INLINE_ static Transform3D *get_transform(Variant *v) { return v->_data._transform; }
+	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *v) { return v->_data._transform; }
 
 	// Misc types.
 	_FORCE_INLINE_ static Color *get_color(Variant *v) { return reinterpret_cast<Color *>(v->_data._mem); }
@@ -217,7 +217,7 @@ public:
 		v->type = Variant::BASIS;
 	}
 	_FORCE_INLINE_ static void init_transform(Variant *v) {
-		v->_data._transform = memnew(Transform);
+		v->_data._transform = memnew(Transform3D);
 		v->type = Variant::TRANSFORM;
 	}
 	_FORCE_INLINE_ static void init_string_name(Variant *v) {
@@ -590,9 +590,9 @@ struct VariantGetInternalPtr<Transform2D> {
 };
 
 template <>
-struct VariantGetInternalPtr<Transform> {
-	static Transform *get_ptr(Variant *v) { return VariantInternal::get_transform(v); }
-	static const Transform *get_ptr(const Variant *v) { return VariantInternal::get_transform(v); }
+struct VariantGetInternalPtr<Transform3D> {
+	static Transform3D *get_ptr(Variant *v) { return VariantInternal::get_transform(v); }
+	static const Transform3D *get_ptr(const Variant *v) { return VariantInternal::get_transform(v); }
 };
 
 template <>
@@ -819,9 +819,9 @@ struct VariantInternalAccessor<Transform2D> {
 };
 
 template <>
-struct VariantInternalAccessor<Transform> {
-	static _FORCE_INLINE_ const Transform &get(const Variant *v) { return *VariantInternal::get_transform(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const Transform &p_value) { *VariantInternal::get_transform(v) = p_value; }
+struct VariantInternalAccessor<Transform3D> {
+	static _FORCE_INLINE_ const Transform3D &get(const Variant *v) { return *VariantInternal::get_transform(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const Transform3D &p_value) { *VariantInternal::get_transform(v) = p_value; }
 };
 
 template <>
@@ -1082,7 +1082,7 @@ struct VariantInitializer<Basis> {
 };
 
 template <>
-struct VariantInitializer<Transform> {
+struct VariantInitializer<Transform3D> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_transform(v); }
 };
 
@@ -1256,8 +1256,8 @@ struct VariantZeroAssigner<Basis> {
 };
 
 template <>
-struct VariantZeroAssigner<Transform> {
-	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform(); }
+struct VariantZeroAssigner<Transform3D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform3D(); }
 };
 
 template <>

@@ -3124,8 +3124,8 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::TRANSFORM: {
-			Transform transform = p_val.operator Transform();
-			if (transform == Transform()) {
+			Transform3D transform = p_val.operator Transform3D();
+			if (transform == Transform3D()) {
 				r_iarg.default_argument = "Transform.Identity";
 			} else {
 				Basis basis = transform.basis;
@@ -3197,7 +3197,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Vector3i)
 	INSERT_STRUCT_TYPE(Basis)
 	INSERT_STRUCT_TYPE(Quat)
-	INSERT_STRUCT_TYPE(Transform)
+	INSERT_STRUCT_TYPE(Transform3D)
 	INSERT_STRUCT_TYPE(AABB)
 	INSERT_STRUCT_TYPE(Color)
 	INSERT_STRUCT_TYPE(Plane)

@@ -107,16 +107,16 @@ typedef unsigned char	U1;
 struct	MinkowskiDiff {
 	const Shape3DSW* m_shapes[2];
 
-	Transform transform_A;
-	Transform transform_B;
+	Transform3D transform_A;
+	Transform3D transform_B;
 
 	real_t margin_A = 0.0;
 	real_t margin_B = 0.0;
 
 	Vector3 (*get_support)(const Shape3DSW*, const Vector3&, real_t);
 
-	void Initialize(const Shape3DSW* shape0, const Transform& wtrs0, const real_t margin0,
-		const Shape3DSW* shape1, const Transform& wtrs1, const real_t margin1) {
+	void Initialize(const Shape3DSW* shape0, const Transform3D& wtrs0, const real_t margin0,
+		const Shape3DSW* shape1, const Transform3D& wtrs1, const real_t margin1) {
 		m_shapes[0]		=	shape0;
 		m_shapes[1]		=	shape1;
 		transform_A		=	wtrs0;
@@ -862,8 +862,8 @@ struct	GJK
 	};
 
 	//
-	static void	Initialize(	const Shape3DSW* shape0, const Transform& wtrs0, real_t margin0,
-		const Shape3DSW* shape1, const Transform& wtrs1, real_t margin1,
+	static void	Initialize(	const Shape3DSW* shape0, const Transform3D& wtrs0, real_t margin0,
+		const Shape3DSW* shape1, const Transform3D& wtrs1, real_t margin1,
 		sResults& results,
 		tShape& shape)
 	{
@@ -885,10 +885,10 @@ struct	GJK
 
 //
 bool Distance(	const Shape3DSW*	shape0,
-									  const Transform&		wtrs0,
+									  const Transform3D&		wtrs0,
 									  real_t				margin0,
 									  const Shape3DSW*		shape1,
-									  const Transform&		wtrs1,
+									  const Transform3D&		wtrs1,
 									  real_t				margin1,
 									  const Vector3&		guess,
 									  sResults&				results)
@@ -926,10 +926,10 @@ bool Distance(	const Shape3DSW*	shape0,
 
 //
 bool Penetration(	const Shape3DSW*	shape0,
-									 const Transform&		wtrs0,
+									 const Transform3D&		wtrs0,
 									 real_t					margin0,
 									 const Shape3DSW*		shape1,
-									 const Transform&		wtrs1,
+									 const Transform3D&		wtrs1,
 									 real_t					margin1,
 									 const Vector3&			guess,
 									 sResults&				results
@@ -993,7 +993,7 @@ bool Penetration(	const Shape3DSW*	shape0,
 
 /* clang-format on */
 
-bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
+bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Distance(p_shape_A, p_transform_A, 0.0, p_shape_B, p_transform_B, 0.0, p_transform_B.origin - p_transform_A.origin, res)) {
@@ -1005,7 +1005,7 @@ bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_t
 	return false;
 }
 
-bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
+bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform3D &p_transform_A, const Shape3DSW *p_shape_B, const Transform3D &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {

@@ -108,7 +108,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 	}
 
 	Vector3 pos = c->interpolate_baked(offset, cubic);
-	Transform t = get_transform();
+	Transform3D t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 

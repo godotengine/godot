@@ -186,7 +186,7 @@ public:
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
 	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
-	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
+	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform);
 	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = 0);
 
 	SurfaceTool();

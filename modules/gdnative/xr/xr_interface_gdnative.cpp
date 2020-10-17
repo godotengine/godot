@@ -173,14 +173,14 @@ Size2 XRInterfaceGDNative::get_render_targetsize() {
 	return *vec;
 }
 
-Transform XRInterfaceGDNative::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) {
-	Transform *ret;
+Transform3D XRInterfaceGDNative::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform3D &p_cam_transform) {
+	Transform3D *ret;
 
-	ERR_FAIL_COND_V(interface == nullptr, Transform());
+	ERR_FAIL_COND_V(interface == nullptr, Transform3D());
 
 	godot_transform t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform *)&p_cam_transform);
 
-	ret = (Transform *)&t;
+	ret = (Transform3D *)&t;
 
 	return *ret;
 }
@@ -243,13 +243,13 @@ godot_float GDAPI godot_xr_get_worldscale() {
 
 godot_transform GDAPI godot_xr_get_reference_frame() {
 	godot_transform reference_frame;
-	Transform *reference_frame_ptr = (Transform *)&reference_frame;
+	Transform3D *reference_frame_ptr = (Transform3D *)&reference_frame;
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
 		*reference_frame_ptr = xr_server->get_reference_frame();
 	} else {
-		memnew_placement(&reference_frame, Transform);
+		memnew_placement(&reference_frame, Transform3D);
 	}
 
 	return reference_frame;
@@ -362,7 +362,7 @@ void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_tr
 
 	Ref<XRPositionalTracker> tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
 	if (tracker.is_valid()) {
-		Transform *transform = (Transform *)p_transform;
+		Transform3D *transform = (Transform3D *)p_transform;
 		if (p_tracks_orientation) {
 			tracker->set_orientation(transform->basis);
 		}

@@ -52,7 +52,7 @@ uint32_t NavRegion::get_layers() const {
 	return layers;
 }
 
-void NavRegion::set_transform(Transform p_transform) {
+void NavRegion::set_transform(Transform3D p_transform) {
 	transform = p_transform;
 	polygons_dirty = true;
 }

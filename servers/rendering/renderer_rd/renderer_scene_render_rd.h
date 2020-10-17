@@ -46,7 +46,7 @@
 struct RenderDataRD {
 	RID render_buffers = RID();
 
-	Transform cam_transform = Transform();
+	Transform3D cam_transform = Transform3D();
 	CameraMatrix cam_projection = CameraMatrix();
 	bool cam_ortogonal = false;
 
@@ -92,21 +92,21 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	void _setup_lights(const PagedArray<RID> &p_lights, const Transform &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count);
-	void _setup_decals(const PagedArray<RID> &p_decals, const Transform &p_camera_inverse_xform);
-	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform &p_camera_inverse_transform, RID p_environment);
+	void _setup_lights(const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count);
+	void _setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
+	void _setup_reflections(const PagedArray<RID> &p_reflections, const Transform3D &p_camera_inverse_transform, RID p_environment);
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_color) = 0;
 
 	virtual void _render_shadow_begin() = 0;
-	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true) = 0;
+	virtual void _render_shadow_append(RID p_framebuffer, const PagedArray<GeometryInstance *> &p_instances, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true) = 0;
 	virtual void _render_shadow_process() = 0;
 	virtual void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL) = 0;
 
-	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
+	virtual void _render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_uv2(const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<GeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) = 0;
-	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, const PagedArray<GeometryInstance *> &p_instances) = 0;
 
 	void _debug_sdfgi_probes(RID p_render_buffers, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform);
 
@@ -184,7 +184,7 @@ private:
 		uint32_t render_index = 0;
 		uint32_t cull_mask = 0;
 
-		Transform transform;
+		Transform3D transform;
 	};
 
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
@@ -193,7 +193,7 @@ private:
 
 	struct DecalInstance {
 		RID decal;
-		Transform transform;
+		Transform3D transform;
 		uint32_t render_index;
 		uint32_t cull_mask;
 	};
@@ -204,7 +204,7 @@ private:
 
 	struct LightmapInstance {
 		RID lightmap;
-		Transform transform;
+		Transform3D transform;
 	};
 
 	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
@@ -312,7 +312,7 @@ private:
 	struct LightInstance {
 		struct ShadowTransform {
 			CameraMatrix camera;
-			Transform transform;
+			Transform3D transform;
 			float farplane;
 			float split;
 			float bias_scale;
@@ -329,7 +329,7 @@ private:
 		AABB aabb;
 		RID self;
 		RID light;
-		Transform transform;
+		Transform3D transform;
 
 		Vector3 light_vector;
 		Vector3 spot_vector;
@@ -663,7 +663,7 @@ private:
 
 		int last_shadow_filter = -1;
 
-		Transform prev_cam_transform;
+		Transform3D prev_cam_transform;
 	};
 
 	enum {
@@ -721,7 +721,7 @@ private:
 	bool volumetric_fog_filter_active = true;
 
 	void _volumetric_fog_erase(RenderBuffers *rb);
-	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count);
+	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const CameraMatrix &p_cam_projection, const Transform3D &p_cam_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_gi_probe_count);
 
 	RID shadow_sampler;
 
@@ -740,7 +740,7 @@ private:
 	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<GeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true);
 
 public:
-	virtual Transform geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
+	virtual Transform3D geometry_instance_get_transform(GeometryInstance *p_instance) = 0;
 	virtual AABB geometry_instance_get_aabb(GeometryInstance *p_instance) = 0;
 
 	/* SHADOW ATLAS API */
@@ -878,9 +878,9 @@ public:
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure);
 
 	RID light_instance_create(RID p_light);
-	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
+	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform);
 	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb);
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2());
+	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2());
 	void light_instance_mark_visible(RID p_light_instance);
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
@@ -888,7 +888,7 @@ public:
 		return li->light;
 	}
 
-	_FORCE_INLINE_ Transform light_instance_get_base_transform(RID p_light_instance) {
+	_FORCE_INLINE_ Transform3D light_instance_get_base_transform(RID p_light_instance) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->transform;
 	}
@@ -945,7 +945,7 @@ public:
 		return float(1.0) / shadow_size;
 	}
 
-	_FORCE_INLINE_ Transform
+	_FORCE_INLINE_ Transform3D
 	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].transform;
@@ -1019,7 +1019,7 @@ public:
 	}
 
 	virtual RID reflection_probe_instance_create(RID p_probe);
-	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void reflection_probe_release_atlas_index(RID p_instance);
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance);
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance);
@@ -1063,9 +1063,9 @@ public:
 		return rpi->last_pass;
 	}
 
-	_FORCE_INLINE_ Transform reflection_probe_instance_get_transform(RID p_instance) {
+	_FORCE_INLINE_ Transform3D reflection_probe_instance_get_transform(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND_V(!rpi, Transform());
+		ERR_FAIL_COND_V(!rpi, Transform3D());
 
 		return rpi->transform;
 	}
@@ -1078,20 +1078,20 @@ public:
 	}
 
 	virtual RID decal_instance_create(RID p_decal);
-	virtual void decal_instance_set_transform(RID p_decal, const Transform &p_transform);
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform);
 
 	_FORCE_INLINE_ RID decal_instance_get_base(RID p_decal) const {
 		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
 		return decal->decal;
 	}
 
-	_FORCE_INLINE_ Transform decal_instance_get_transform(RID p_decal) const {
+	_FORCE_INLINE_ Transform3D decal_instance_get_transform(RID p_decal) const {
 		DecalInstance *decal = decal_instance_owner.getornull(p_decal);
 		return decal->transform;
 	}
 
 	virtual RID lightmap_instance_create(RID p_lightmap);
-	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform &p_transform);
+	virtual void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform);
 	_FORCE_INLINE_ bool lightmap_instance_is_valid(RID p_lightmap_instance) {
 		return lightmap_instance_owner.getornull(p_lightmap_instance) != nullptr;
 	}
@@ -1100,7 +1100,7 @@ public:
 		LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap_instance);
 		return li->lightmap;
 	}
-	_FORCE_INLINE_ Transform lightmap_instance_get_transform(RID p_lightmap_instance) {
+	_FORCE_INLINE_ Transform3D lightmap_instance_get_transform(RID p_lightmap_instance) {
 		LightmapInstance *li = lightmap_instance_owner.getornull(p_lightmap_instance);
 		return li->transform;
 	}
@@ -1110,7 +1110,7 @@ public:
 	/* gi light probes */
 
 	RID gi_probe_instance_create(RID p_base);
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
+	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);
 	bool gi_probe_needs_update(RID p_probe) const;
 	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RendererSceneRender::GeometryInstance *> &p_dynamic_objects);
 	void gi_probe_set_quality(RS::GIProbeQuality p_quality) { gi.gi_probe_quality = p_quality; }
@@ -1147,11 +1147,11 @@ public:
 	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
 	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr);
+	void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_gi_probes, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr);
 
-	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
+	void render_material(const Transform3D &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, const PagedArray<GeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region);
 
-	void render_particle_collider_heightfield(RID p_collider, const Transform &p_transform, const PagedArray<GeometryInstance *> &p_instances);
+	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<GeometryInstance *> &p_instances);
 
 	virtual void set_scene_pass(uint64_t p_pass) {
 		scene_pass = p_pass;
