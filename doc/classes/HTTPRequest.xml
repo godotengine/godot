@@ -65,11 +65,9 @@
 		    texture_rect.texture = texture
 		[/codeblock]
 
-		[b]Gzipped response bodies[/b]
-		HttpRequest will automatically handle decompression of response bodies.
-		A "Accept-Encoding" header will be automatically added to each of your requests, unless one is already specified.
-		Any response with a "Content-Encoding: gzip" header will automatically be decompressed and delivered to you as a uncompressed bytes.
+		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
+		[b]Note:[/b] SSL/TLS support is currently limited to TLS 1.0, TLS 1.1, and TLS 1.2. Attempting to connect to a TLS 1.3-only server will return an error.
 	</description>
 	<tutorials>
 		<link title="Making HTTP requests">https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
