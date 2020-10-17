@@ -4997,12 +4997,12 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	ERR_FAIL_COND_V_MSG(p_offset + p_size > buffer->size, ERR_INVALID_PARAMETER,
 			"Attempted to write buffer (" + itos((p_offset + p_size) - buffer->size) + " bytes) past the end.");
 
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, dst_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_access, VK_ACCESS_TRANSFER_WRITE_BIT, p_sync_with_draw);
 	Error err = _buffer_update(buffer, p_offset, (uint8_t *)p_data, p_size, p_sync_with_draw);
 	if (err) {
 		return err;
 	}
 
-	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
 #ifdef FORCE_FULL_BARRIER
 	_full_barrier(p_sync_with_draw);
 #else
