@@ -4612,8 +4612,8 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
-		ERR_FAIL_COND_V_MSG(uniform.type != set_uniform.type, RID(),
-				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + shader_uniform_names[set_uniform.type] + "', supplied: '" + shader_uniform_names[uniform.type] + "'.");
+		ERR_FAIL_COND_V_MSG(uniform.uniform_type != set_uniform.type, RID(),
+				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + shader_uniform_names[set_uniform.type] + "', supplied: '" + shader_uniform_names[uniform.uniform_type] + "'.");
 
 		VkWriteDescriptorSet write; //common header
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -4628,7 +4628,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 		write.pTexelBufferView = nullptr;
 		uint32_t type_size = 1;
 
-		switch (uniform.type) {
+		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {
 				if (uniform.ids.size() != set_uniform.length) {
 					if (set_uniform.length > 1) {

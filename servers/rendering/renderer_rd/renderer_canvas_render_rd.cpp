@@ -1022,7 +1022,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.binding = 1;
 		u.ids.push_back(state.canvas_state_buffer);
 		uniforms.push_back(u);
@@ -1030,7 +1030,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 		u.binding = 2;
 		u.ids.push_back(state.lights_uniform_buffer);
 		uniforms.push_back(u);
@@ -1038,7 +1038,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 3;
 		u.ids.push_back(storage->decal_atlas_get_texture());
 		uniforms.push_back(u);
@@ -1046,7 +1046,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 4;
 		u.ids.push_back(state.shadow_texture);
 		uniforms.push_back(u);
@@ -1054,7 +1054,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 5;
 		u.ids.push_back(state.shadow_sampler);
 		uniforms.push_back(u);
@@ -1062,7 +1062,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 6;
 		RID screen;
 		if (p_backbuffer) {
@@ -1079,7 +1079,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 7;
 		RID sdf = storage->render_target_get_sdf_texture(p_to_render_target);
 		u.ids.push_back(sdf);
@@ -1089,7 +1089,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	{
 		//needs samplers for the material (uses custom textures) create them
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 8;
 		u.ids.resize(12);
 		RID *ids_ptr = u.ids.ptrw();
@@ -1110,7 +1110,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.binding = 9;
 		u.ids.push_back(storage->global_variables_get_storage_buffer());
 		uniforms.push_back(u);
@@ -2320,7 +2320,7 @@ void RendererCanvasRenderRD::MaterialData::update_parameters(const Map<StringNam
 	{
 		if (shader_data->ubo_size) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(uniform_buffer);
 			uniforms.push_back(u);
@@ -2329,7 +2329,7 @@ void RendererCanvasRenderRD::MaterialData::update_parameters(const Map<StringNam
 		const RID *textures = texture_cache.ptrw();
 		for (uint32_t i = 0; i < tex_uniform_count; i++) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1 + i;
 			u.ids.push_back(textures[i]);
 			uniforms.push_back(u);
@@ -2681,7 +2681,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD(RendererStorageRD *p_storage) {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(storage->get_default_rd_storage_buffer());
 			uniforms.push_back(u);
