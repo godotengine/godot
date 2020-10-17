@@ -67,7 +67,7 @@ RID EffectsRD::_get_uniform_set_from_image(RID p_image) {
 	}
 	Vector<RD::Uniform> uniforms;
 	RD::Uniform u;
-	u.type = RD::UNIFORM_TYPE_IMAGE;
+	u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 	u.binding = 0;
 	u.ids.push_back(p_image);
 	uniforms.push_back(u);
@@ -89,7 +89,7 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps) 
 
 	Vector<RD::Uniform> uniforms;
 	RD::Uniform u;
-	u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
 	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
@@ -112,7 +112,7 @@ RID EffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bool p_use_m
 
 	Vector<RD::Uniform> uniforms;
 	RD::Uniform u;
-	u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+	u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 	u.binding = 0;
 	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
@@ -140,7 +140,7 @@ RID EffectsRD::_get_compute_uniform_set_from_texture_pair(RID p_texture1, RID p_
 	Vector<RD::Uniform> uniforms;
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
 		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 		u.ids.push_back(p_texture1);
@@ -148,7 +148,7 @@ RID EffectsRD::_get_compute_uniform_set_from_texture_pair(RID p_texture1, RID p_
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 1;
 		u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 		u.ids.push_back(p_texture2);
@@ -177,14 +177,14 @@ RID EffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1, RID p_te
 	Vector<RD::Uniform> uniforms;
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = 0;
 		u.ids.push_back(p_texture1);
 		uniforms.push_back(u);
 	}
 	{
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = 1;
 		u.ids.push_back(p_texture2);
 		uniforms.push_back(u);
@@ -1171,7 +1171,7 @@ void EffectsRD::cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap,
 	Vector<RD::Uniform> uniforms;
 	for (int i = 0; i < p_dest_cubemap.size(); i++) {
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_IMAGE;
+		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 		u.binding = i;
 		u.ids.push_back(p_dest_cubemap[i]);
 		uniforms.push_back(u);
@@ -1591,7 +1591,7 @@ EffectsRD::EffectsRD() {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(filter.coefficient_buffer);
 			uniforms.push_back(u);

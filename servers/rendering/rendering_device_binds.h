@@ -392,7 +392,7 @@ class RDUniform : public Reference {
 	RD::Uniform base;
 
 public:
-	RD_SETGET(RD::UniformType, type)
+	RD_SETGET(RD::UniformType, uniform_type)
 	RD_SETGET(int32_t, binding)
 
 	void add_id(const RID &p_id) { base.ids.push_back(p_id); }
@@ -415,7 +415,7 @@ protected:
 		}
 	}
 	static void _bind_methods() {
-		RD_BIND(Variant::INT, RDUniform, type);
+		RD_BIND(Variant::INT, RDUniform, uniform_type);
 		RD_BIND(Variant::INT, RDUniform, binding);
 		ClassDB::bind_method(D_METHOD("add_id", "id"), &RDUniform::add_id);
 		ClassDB::bind_method(D_METHOD("clear_ids"), &RDUniform::clear_ids);

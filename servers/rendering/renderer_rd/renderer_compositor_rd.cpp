@@ -47,7 +47,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u.binding = 0;
 			u.ids.push_back(copy_viewports_sampler);
 			u.ids.push_back(rd_texture);

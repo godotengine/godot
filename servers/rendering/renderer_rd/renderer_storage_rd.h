@@ -1463,7 +1463,7 @@ public:
 		if (!multimesh->uniform_set_3d.is_valid()) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(multimesh->buffer);
 			uniforms.push_back(u);
@@ -1511,7 +1511,7 @@ public:
 		if (!skeleton->uniform_set_3d.is_valid()) {
 			Vector<RD::Uniform> uniforms;
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(skeleton->buffer);
 			uniforms.push_back(u);
@@ -1900,7 +1900,7 @@ public:
 
 			{
 				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
 				u.ids.push_back(particles->particle_instance_buffer);
 				uniforms.push_back(u);

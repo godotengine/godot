@@ -479,7 +479,7 @@ void RendererSceneRenderForward::MaterialData::update_parameters(const Map<Strin
 	{
 		if (shader_data->ubo_size) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 0;
 			u.ids.push_back(uniform_buffer);
 			uniforms.push_back(u);
@@ -488,7 +488,7 @@ void RendererSceneRenderForward::MaterialData::update_parameters(const Map<Strin
 		const RID *textures = texture_cache.ptrw();
 		for (uint32_t i = 0; i < tex_uniform_count; i++) {
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1 + i;
 			u.ids.push_back(textures[i]);
 			uniforms.push_back(u);
@@ -2202,28 +2202,28 @@ void RendererSceneRenderForward::_render_sdfgi(RID p_render_buffers, const Vecto
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 0;
 			u.ids.push_back(p_albedo_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 1;
 			u.ids.push_back(p_emission_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 2;
 			u.ids.push_back(p_emission_aniso_texture);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 3;
 			u.ids.push_back(p_geom_facing_texture);
 			uniforms.push_back(u);
@@ -2311,7 +2311,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.binding = 1;
 			u.ids.resize(12);
 			RID *ids_ptr = u.ids.ptrw();
@@ -2333,7 +2333,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.ids.push_back(shadow_sampler);
 			uniforms.push_back(u);
 		}
@@ -2341,14 +2341,14 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(scene_state.uniform_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 4;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(scene_state.instance_buffer);
 			uniforms.push_back(u);
 		}
@@ -2356,7 +2356,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 5;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(get_positional_light_buffer());
 			uniforms.push_back(u);
 		}
@@ -2364,42 +2364,42 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 6;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(get_reflection_probe_buffer());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 7;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(get_directional_light_buffer());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 10;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(scene_state.lightmap_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 11;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids = storage->lightmap_array_get_textures();
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 12;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(scene_state.lightmap_capture_buffer);
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 13;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = storage->decal_atlas_get_texture();
 			u.ids.push_back(decal_atlas);
 			uniforms.push_back(u);
@@ -2407,7 +2407,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 14;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = storage->decal_atlas_get_texture_srgb();
 			u.ids.push_back(decal_atlas);
 			uniforms.push_back(u);
@@ -2415,7 +2415,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 15;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(get_decal_buffer());
 			uniforms.push_back(u);
 		}
@@ -2423,14 +2423,14 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 16;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(get_cluster_builder_texture());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 17;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(get_cluster_builder_indices_buffer());
 			uniforms.push_back(u);
 		}
@@ -2438,7 +2438,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 18;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			if (directional_shadow_get_texture().is_valid()) {
 				u.ids.push_back(directional_shadow_get_texture());
 			} else {
@@ -2449,7 +2449,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 19;
 			u.ids.push_back(storage->global_variables_get_storage_buffer());
 			uniforms.push_back(u);
@@ -2457,7 +2457,7 @@ void RendererSceneRenderForward::_update_render_base_uniform_set() {
 
 		{
 			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.binding = 20;
 			u.ids.push_back(sdfgi_get_ubo());
 			uniforms.push_back(u);
@@ -2480,7 +2480,7 @@ void RendererSceneRenderForward::_setup_view_dependant_uniform_set(RID p_shadow_
 		RID ref_texture = p_reflection_atlas.is_valid() ? reflection_atlas_get_texture(p_reflection_atlas) : RID();
 		RD::Uniform u;
 		u.binding = 0;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		if (ref_texture.is_valid()) {
 			u.ids.push_back(ref_texture);
 		} else {
@@ -2492,7 +2492,7 @@ void RendererSceneRenderForward::_setup_view_dependant_uniform_set(RID p_shadow_
 	{
 		RD::Uniform u;
 		u.binding = 1;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID texture;
 		if (p_shadow_atlas.is_valid()) {
 			texture = shadow_atlas_get_texture(p_shadow_atlas);
@@ -2507,7 +2507,7 @@ void RendererSceneRenderForward::_setup_view_dependant_uniform_set(RID p_shadow_
 	{
 		RD::Uniform u;
 		u.binding = 2;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID default_tex = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
 		for (int i = 0; i < MAX_GI_PROBES; i++) {
 			if (i < p_gi_probe_cull_count) {
@@ -2565,7 +2565,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 0;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = false && rb->depth.is_valid() ? rb->depth : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2573,7 +2573,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 1;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID bbt = render_buffers_get_back_buffer_texture(p_render_buffers);
 			RID texture = bbt.is_valid() ? bbt : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 			u.ids.push_back(texture);
@@ -2582,7 +2582,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = rb->normal_roughness_buffer.is_valid() ? rb->normal_roughness_buffer : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_NORMAL);
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2591,7 +2591,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 4;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID aot = render_buffers_get_ao_texture(p_render_buffers);
 			RID texture = aot.is_valid() ? aot : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 			u.ids.push_back(texture);
@@ -2601,7 +2601,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 5;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = rb->ambient_buffer.is_valid() ? rb->ambient_buffer : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2610,7 +2610,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 6;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = rb->reflection_buffer.is_valid() ? rb->reflection_buffer : storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2618,7 +2618,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 7;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID t;
 			if (render_buffers_is_sdfgi_enabled(p_render_buffers)) {
 				t = render_buffers_get_sdfgi_irradiance_probes(p_render_buffers);
@@ -2631,7 +2631,7 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 8;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			if (render_buffers_is_sdfgi_enabled(p_render_buffers)) {
 				u.ids.push_back(render_buffers_get_sdfgi_occlusion_texture(p_render_buffers));
 			} else {
@@ -2642,14 +2642,14 @@ void RendererSceneRenderForward::_update_render_buffers_uniform_set(RID p_render
 		{
 			RD::Uniform u;
 			u.binding = 9;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(render_buffers_get_gi_probe_buffer(p_render_buffers));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 10;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID vfog = RID();
 			if (p_render_buffers.is_valid() && render_buffers_has_volumetric_fog(p_render_buffers)) {
 				vfog = render_buffers_get_volumetric_fog_texture(p_render_buffers);
@@ -2943,7 +2943,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
-		u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		u.ids.push_back(default_vec4_xform_buffer);
 		u.binding = 0;
 		uniforms.push_back(u);
@@ -2964,7 +2964,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 
 		RD::Uniform u;
 		u.binding = 0;
-		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		RID texture = storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
 		u.ids.push_back(texture);
 		uniforms.push_back(u);
@@ -2977,7 +2977,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		for (int i = 0; i < 7; i++) {
 			RD::Uniform u;
 			u.binding = i;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = storage->texture_rd_get_default(i == 0 ? RendererStorageRD::DEFAULT_RD_TEXTURE_WHITE : (i == 2 ? RendererStorageRD::DEFAULT_RD_TEXTURE_NORMAL : RendererStorageRD::DEFAULT_RD_TEXTURE_BLACK));
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2985,7 +2985,7 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		{
 			RD::Uniform u;
 			u.binding = 7;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			RID texture = storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 			u.ids.push_back(texture);
 			uniforms.push_back(u);
@@ -2993,21 +2993,21 @@ RendererSceneRenderForward::RendererSceneRenderForward(RendererStorageRD *p_stor
 		{
 			RD::Uniform u;
 			u.binding = 8;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 9;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.uniform_type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
 			u.ids.push_back(render_buffers_get_default_gi_probe_buffer());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.binding = 10;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(storage->texture_rd_get_default(RendererStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
 			uniforms.push_back(u);
 		}
