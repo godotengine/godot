@@ -400,8 +400,8 @@ void Body3DSW::_compute_area_gravity_and_dampenings(const Area3DSW *p_area) {
 	if (p_area->is_gravity_point()) {
 		const real_t gravity_distance_scale = p_area->get_gravity_distance_scale();
 		Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
-		real_t v_length = v.length();
 		if (gravity_distance_scale > 0) {
+			real_t v_length = v.length();
 			if (v_length > 0) {
 				Vector3 new_gravity = gravity + (v.normalized() * (p_area->get_gravity() / Math::pow(v_length * gravity_distance_scale, 2)));
 				if (isinf(new_gravity.x) || isinf(new_gravity.y)) {
