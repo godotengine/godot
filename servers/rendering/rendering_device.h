@@ -433,7 +433,6 @@ public:
 		TEXTURE_SLICE_2D,
 		TEXTURE_SLICE_CUBEMAP,
 		TEXTURE_SLICE_3D,
-		TEXTURE_SLICE_2D_ARRAY,
 	};
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
