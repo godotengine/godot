@@ -80,6 +80,12 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			Ref<Shortcut> sc;
 			sc.instance();
 			sc->set_shortcut(shortcut);
+
+			// Custom shortcuts need original set to guarantee
+			// that they will be saved when optimize_save is true
+			Ref<InputEvent> original_ie;
+			sc->set_meta("original", original_ie);
+
 			add_shortcut(name, sc);
 		}
 
