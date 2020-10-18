@@ -3788,14 +3788,17 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);
 
+	uint32_t buffer_size = p_size * sizeof(float);
+
 	if (p_size > resources.skeleton_transform_buffer_size) {
 		// new requested buffer is bigger, so resizing the GPU buffer
 
 		resources.skeleton_transform_buffer_size = p_size;
 
-		glBufferData(GL_ARRAY_BUFFER, p_size * sizeof(float), p_data.read().ptr(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
 	} else {
-		glBufferSubData(GL_ARRAY_BUFFER, 0, p_size * sizeof(float), p_data.read().ptr());
+		// this may not be best, it could be better to use glBufferData in both cases.
+		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size, 0, buffer_size, p_data.read().ptr());
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -5085,7 +5085,8 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 		if (multimesh->size && multimesh->dirty_data) {
 
 			glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-			glBufferSubData(GL_ARRAY_BUFFER, 0, multimesh->data.size() * sizeof(float), multimesh->data.ptr());
+			uint32_t buffer_size = multimesh->data.size() * sizeof(float);
+			glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
