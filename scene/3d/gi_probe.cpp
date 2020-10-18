@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 
-#include "core/method_bind_ext.gen.inc"
 #include "mesh_instance_3d.h"
 #include "voxelizer.h"
 

@@ -139,7 +139,8 @@ def configure(env):
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if env["CXX"] == "clang++":
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
+        # This should now work with clang++, re-enable if there are issues
+        # env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         env["CC"] = "clang"
         env["LINK"] = "clang++"
 

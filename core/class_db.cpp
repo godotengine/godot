@@ -1343,7 +1343,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 	defvals.resize(p_defcount);
 	for (int i = 0; i < p_defcount; i++) {
-		defvals.write[i] = *p_defs[p_defcount - i - 1];
+		defvals.write[i] = *p_defs[i];
 	}
 
 	p_bind->set_default_arguments(defvals);

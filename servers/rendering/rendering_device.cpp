@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "rendering_device.h"
-#include "core/method_bind_ext.gen.inc"
+
 #include "rendering_device_binds.h"
 
 RenderingDevice *RenderingDevice::singleton = nullptr;

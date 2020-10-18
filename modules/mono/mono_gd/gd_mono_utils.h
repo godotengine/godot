@@ -37,7 +37,7 @@
 #include "../utils/macros.h"
 #include "gd_mono_header.h"
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/reference.h"
 
 #define UNHANDLED_EXCEPTION(m_exc)                     \

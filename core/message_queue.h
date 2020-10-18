@@ -31,7 +31,7 @@
 #ifndef MESSAGE_QUEUE_H
 #define MESSAGE_QUEUE_H
 
-#include "core/object.h"
+#include "core/class_db.h"
 #include "core/os/thread_safe.h"
 
 class MessageQueue {

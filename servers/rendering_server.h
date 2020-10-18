@@ -31,10 +31,10 @@
 #ifndef RENDERING_SERVER_H
 #define RENDERING_SERVER_H
 
+#include "core/class_db.h"
 #include "core/image.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
-#include "core/object.h"
 #include "core/rid.h"
 #include "core/typed_array.h"
 #include "core/variant.h"
