@@ -1335,6 +1335,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, RID p_rende
 		if (scene_state.ubo.fog_height_density >= 0.0001) {
 			scene_state.ubo.fog_height_density = 1.0 / scene_state.ubo.fog_height_density;
 		}
+		scene_state.ubo.fog_aerial_perspective = environment_get_fog_aerial_perspective(p_environment);
 
 		Color fog_color = environment_get_fog_light_color(p_environment).to_linear();
 		float fog_energy = environment_get_fog_light_energy(p_environment);

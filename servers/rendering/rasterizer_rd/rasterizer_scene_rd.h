@@ -67,7 +67,8 @@ protected:
 			uint32_t volumetric_fog_enabled;
 			float volumetric_fog_inv_length;
 			float volumetric_fog_detail_spread;
-			uint32_t volumetric_fog_pad;
+
+			float fog_aerial_perspective;
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
@@ -706,6 +707,7 @@ private:
 		float fog_density = 0.001;
 		float fog_height = 0.0;
 		float fog_height_density = 0.0; //can be negative to invert effect
+		float fog_aerial_perspective = 0.0;
 
 		/// Volumetric Fog
 		///
@@ -1534,7 +1536,7 @@ public:
 	void environment_glow_set_use_bicubic_upscale(bool p_enable);
 	void environment_glow_set_use_high_quality(bool p_enable);
 
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density);
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective);
 	bool environment_is_fog_enabled(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
@@ -1542,6 +1544,7 @@ public:
 	float environment_get_fog_density(RID p_env) const;
 	float environment_get_fog_height(RID p_env) const;
 	float environment_get_fog_height_density(RID p_env) const;
+	float environment_get_fog_aerial_perspective(RID p_env) const;
 
 	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_light, float p_light_energy, float p_length, float p_detail_spread, float p_gi_inject, RS::EnvVolumetricFogShadowFilter p_shadow_filter);
 
