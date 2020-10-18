@@ -484,9 +484,9 @@ public:
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
 
-	FUNC7(environment_set_ssao, RID, bool, float, float, int, float, float)
+	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
 
-	FUNC5(environment_set_ssao_settings, EnvironmentSSAOQuality, bool, float, float, float)
+	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
 	FUNC11(environment_set_sdfgi, RID, bool, EnvironmentSDFGICascades, float, EnvironmentSDFGIYScale, bool, bool, bool, float, float, float)
 	FUNC1(environment_set_sdfgi_ray_count, EnvironmentSDFGIRayCount)
