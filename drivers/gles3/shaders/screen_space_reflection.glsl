@@ -159,8 +159,8 @@ void main() {
 
 		if (depth > z_to) {
 			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + depth_tolerance) {
-				// check the depth tolerance
+			if ((depth <= max(z_to, z_from) + depth_tolerance) && (-depth < camera_z_far)) {
+				// check the depth tolerance and far clip
 				found = true;
 			}
 			break;
