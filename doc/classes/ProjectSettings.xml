@@ -1147,6 +1147,12 @@
 		<member name="rendering/quality/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
+		</member>
+		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="1">
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance.
+		</member>
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
 			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
 		</member>
@@ -1165,21 +1171,6 @@
 		<member name="rendering/sdfgi/frames_to_converge" type="int" setter="" getter="" default="1">
 		</member>
 		<member name="rendering/sdfgi/probe_ray_count" type="int" setter="" getter="" default="2">
-		</member>
-		<member name="rendering/ssao/blur_tolerance" type="float" setter="" getter="" default="0.43">
-			The strength of the blur effect when calculating SSAO. A higher value blurs more but may remove high-frequency details.
-		</member>
-		<member name="rendering/ssao/full_samples" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], SSAO will sample the entire sphere during rendering instead of just a checkerboard pattern. This results in much smoother SSAO at the cost of performance. The exact performance cost increases as [member rendering/ssao/quality] increases.
-		</member>
-		<member name="rendering/ssao/noise_tolerance" type="float" setter="" getter="" default="0.625">
-			The amount of noise reduction to use. A high value smooths out noise, but may reduce fine detail.
-		</member>
-		<member name="rendering/ssao/quality" type="int" setter="" getter="" default="1">
-			Sets the quality of the screen-space ambient occlusion effect. Each quality level above [constant RenderingServer.ENV_SSAO_QUALITY_VERY_LOW] adds an extra level of higher resolution SSAO. With [constant RenderingServer.ENV_SSAO_QUALITY_ULTRA] and [member Environment.ssao_levels] at 4, there will be a total of 8 levels of SSAO blended together. This substantially improves the detail of the SSAO.
-		</member>
-		<member name="rendering/ssao/upsample_tolerance" type="float" setter="" getter="" default="0.45">
-			Increases the depth range over which samples can be blurred. This can result in objects in the foreground casting SSAO on objects that are far behind them, but can also help smooth out the lower resolution levels.
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
