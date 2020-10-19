@@ -31,7 +31,7 @@ doc_classes/*        @godotengine/documentation
 /modules/csg/        @BastiaanOlij
 /modules/enet/       @godotengine/network
 /modules/gdnative/*arvr/ @BastiaanOlij
-/modules/gdscript/   @vnen @bojidar-bg
+/modules/gdscript/   @vnen
 /modules/mbedtls/    @godotengine/network
 /modules/mobile_vr/  @BastiaanOlij
 /modules/mono/       @neikeq
