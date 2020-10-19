@@ -1666,6 +1666,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, reverse, sarray(), varray());
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
 	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(1, false));
+	bind_method(Array, filter, sarray("method"), varray());
+	bind_method(Array, map, sarray("method"), varray());
+	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
 
