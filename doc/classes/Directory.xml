@@ -24,7 +24,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link>https://docs.godotengine.org/en/3.2/getting_started/step_by_step/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">

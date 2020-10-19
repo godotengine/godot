@@ -7,7 +7,7 @@
 		This provides a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/spatial_material.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/3d/spatial_material.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_feature" qualifiers="const">

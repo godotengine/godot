@@ -8,7 +8,7 @@
 		See also [Particles2D], which provides the same functionality with hardware acceleration, but may not run on older devices.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
 	<methods>
 		<method name="convert_from_particles">
