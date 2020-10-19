@@ -181,7 +181,7 @@
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
 			The connection to use for this client.
 		</member>
-		<member name="read_chunk_size" type="int" setter="set_read_chunk_size" getter="get_read_chunk_size" default="4096">
+		<member name="read_chunk_size" type="int" setter="set_read_chunk_size" getter="get_read_chunk_size" default="65536">
 			The size of the buffer used and maximum bytes to read per iteration. See [method read_response_body_chunk].
 		</member>
 	</members>
