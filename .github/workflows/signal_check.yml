@@ -1,0 +1,33 @@
+name: 🧙🏼‍♂️ Signal Check
+on: [push, pull_request]
+
+jobs:
+  signal-checker:
+    runs-on: "ubuntu-latest"
+    name: Unused signal checker
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
+      # Install wget
+      - name: Configure dependencies
+        run: |
+          sudo apt-get install wget
+
+      # Download app
+      - name: Download unused signal checker
+        run: |
+          wget https://github.com/qarmin/godot_signal_checker/releases/download/0.1.1/godot_unusable_signals
+
+      # Check Godot
+      - name: Check Godot
+        run: |
+          chmod +x godot_unusable_signals
+          ./godot_unusable_signals .
