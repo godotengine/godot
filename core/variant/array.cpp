@@ -361,6 +361,79 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 	return new_arr;
 }
 
+Array Array::filter(const Callable &p_callable) const {
+	Array new_arr;
+	new_arr.resize(size());
+	int accepted_count = 0;
+
+	for (int i = 0; i < size(); i++) {
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *));
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'filter': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			new_arr[accepted_count] = get(i);
+			accepted_count++;
+		}
+	}
+
+	new_arr.resize(accepted_count);
+
+	return new_arr;
+}
+
+Array Array::map(const Callable &p_callable) const {
+	Array new_arr;
+	new_arr.resize(size());
+
+	for (int i = 0; i < size(); i++) {
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *));
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Array(), "Error calling method from 'map': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		new_arr[i] = result;
+	}
+
+	return new_arr;
+}
+
+Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const {
+	int start = 0;
+	Variant ret = p_accum;
+	if (ret == Variant() && size() > 0) {
+		ret = front();
+		start = 1;
+	}
+
+	for (int i = start; i < size(); i++) {
+		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * 2);
+		argptrs[0] = &ret;
+		argptrs[1] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.call(argptrs, 2, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling method from 'reduce': " + Variant::get_callable_error_text(p_callable, argptrs, 2, ce));
+		}
+		ret = result;
+	}
+
+	return ret;
+}
+
 struct _ArrayVariantSort {
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 		bool valid = false;
