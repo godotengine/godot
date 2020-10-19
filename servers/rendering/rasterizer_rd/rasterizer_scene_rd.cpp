@@ -1173,6 +1173,94 @@ void RasterizerSceneRD::sdfgi_update_probes(RID p_render_buffers, RID p_environm
 	/* Update dynamic lights */
 
 	{
+		int32_t cascade_light_count[SDFGI::MAX_CASCADES];
+
+		for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
+			SDFGI::Cascade &cascade = rb->sdfgi->cascades[i];
+
+			SDGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
+			uint32_t idx = 0;
+			for (uint32_t j = 0; j < p_directional_light_count; j++) {
+				if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+					break;
+				}
+
+				LightInstance *li = light_instance_owner.getornull(p_directional_light_instances[j]);
+				ERR_CONTINUE(!li);
+				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+				dir.y *= rb->sdfgi->y_mult;
+				dir.normalize();
+				lights[idx].direction[0] = dir.x;
+				lights[idx].direction[1] = dir.y;
+				lights[idx].direction[2] = dir.z;
+				Color color = storage->light_get_color(li->light);
+				color = color.to_linear();
+				lights[idx].color[0] = color.r;
+				lights[idx].color[1] = color.g;
+				lights[idx].color[2] = color.b;
+				lights[idx].type = RS::LIGHT_DIRECTIONAL;
+				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+				lights[idx].has_shadow = storage->light_has_shadow(li->light);
+
+				idx++;
+			}
+
+			AABB cascade_aabb;
+			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + cascade.position)) * cascade.cell_size;
+			cascade_aabb.size = Vector3(1, 1, 1) * rb->sdfgi->cascade_size * cascade.cell_size;
+
+			for (uint32_t j = 0; j < p_positional_light_count; j++) {
+				if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
+					break;
+				}
+
+				LightInstance *li = light_instance_owner.getornull(p_positional_light_instances[j]);
+				ERR_CONTINUE(!li);
+
+				uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
+				if (i > max_sdfgi_cascade) {
+					continue;
+				}
+
+				if (!cascade_aabb.intersects(li->aabb)) {
+					continue;
+				}
+
+				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
+				//faster to not do this here
+				//dir.y *= rb->sdfgi->y_mult;
+				//dir.normalize();
+				lights[idx].direction[0] = dir.x;
+				lights[idx].direction[1] = dir.y;
+				lights[idx].direction[2] = dir.z;
+				Vector3 pos = li->transform.origin;
+				pos.y *= rb->sdfgi->y_mult;
+				lights[idx].position[0] = pos.x;
+				lights[idx].position[1] = pos.y;
+				lights[idx].position[2] = pos.z;
+				Color color = storage->light_get_color(li->light);
+				color = color.to_linear();
+				lights[idx].color[0] = color.r;
+				lights[idx].color[1] = color.g;
+				lights[idx].color[2] = color.b;
+				lights[idx].type = storage->light_get_type(li->light);
+				lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
+				lights[idx].has_shadow = storage->light_has_shadow(li->light);
+				lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
+				lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
+				lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
+				lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+
+				idx++;
+			}
+
+			if (idx > 0) {
+				RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
+			}
+
+			cascade_light_count[i] = idx;
+		}
+
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.direct_light_pipeline[SDGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
 
@@ -1191,91 +1279,7 @@ void RasterizerSceneRD::sdfgi_update_probes(RID p_render_buffers, RID p_environm
 
 		for (uint32_t i = 0; i < rb->sdfgi->cascades.size(); i++) {
 			SDFGI::Cascade &cascade = rb->sdfgi->cascades[i];
-
-			{ //fill light buffer
-
-				SDGIShader::Light lights[SDFGI::MAX_DYNAMIC_LIGHTS];
-				uint32_t idx = 0;
-				for (uint32_t j = 0; j < p_directional_light_count; j++) {
-					if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
-						break;
-					}
-
-					LightInstance *li = light_instance_owner.getornull(p_directional_light_instances[j]);
-					ERR_CONTINUE(!li);
-					Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
-					dir.y *= rb->sdfgi->y_mult;
-					dir.normalize();
-					lights[idx].direction[0] = dir.x;
-					lights[idx].direction[1] = dir.y;
-					lights[idx].direction[2] = dir.z;
-					Color color = storage->light_get_color(li->light);
-					color = color.to_linear();
-					lights[idx].color[0] = color.r;
-					lights[idx].color[1] = color.g;
-					lights[idx].color[2] = color.b;
-					lights[idx].type = RS::LIGHT_DIRECTIONAL;
-					lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
-					lights[idx].has_shadow = storage->light_has_shadow(li->light);
-
-					idx++;
-				}
-
-				AABB cascade_aabb;
-				cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -int32_t(rb->sdfgi->cascade_size >> 1) + cascade.position)) * cascade.cell_size;
-				cascade_aabb.size = Vector3(1, 1, 1) * rb->sdfgi->cascade_size * cascade.cell_size;
-
-				for (uint32_t j = 0; j < p_positional_light_count; j++) {
-					if (idx == SDFGI::MAX_DYNAMIC_LIGHTS) {
-						break;
-					}
-
-					LightInstance *li = light_instance_owner.getornull(p_positional_light_instances[j]);
-					ERR_CONTINUE(!li);
-
-					uint32_t max_sdfgi_cascade = storage->light_get_max_sdfgi_cascade(li->light);
-					if (i > max_sdfgi_cascade) {
-						continue;
-					}
-
-					if (!cascade_aabb.intersects(li->aabb)) {
-						continue;
-					}
-
-					Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
-					//faster to not do this here
-					//dir.y *= rb->sdfgi->y_mult;
-					//dir.normalize();
-					lights[idx].direction[0] = dir.x;
-					lights[idx].direction[1] = dir.y;
-					lights[idx].direction[2] = dir.z;
-					Vector3 pos = li->transform.origin;
-					pos.y *= rb->sdfgi->y_mult;
-					lights[idx].position[0] = pos.x;
-					lights[idx].position[1] = pos.y;
-					lights[idx].position[2] = pos.z;
-					Color color = storage->light_get_color(li->light);
-					color = color.to_linear();
-					lights[idx].color[0] = color.r;
-					lights[idx].color[1] = color.g;
-					lights[idx].color[2] = color.b;
-					lights[idx].type = storage->light_get_type(li->light);
-					lights[idx].energy = storage->light_get_param(li->light, RS::LIGHT_PARAM_ENERGY);
-					lights[idx].has_shadow = storage->light_has_shadow(li->light);
-					lights[idx].attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
-					lights[idx].radius = storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-					lights[idx].spot_angle = Math::deg2rad(storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE));
-					lights[idx].spot_attenuation = storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
-
-					idx++;
-				}
-
-				if (idx > 0) {
-					RD::get_singleton()->buffer_update(cascade.lights_buffer, 0, idx * sizeof(SDGIShader::Light), lights, true);
-				}
-				push_constant.light_count = idx;
-			}
-
+			push_constant.light_count = cascade_light_count[i];
 			push_constant.cascade = i;
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascade.sdf_direct_light_uniform_set, 0);
@@ -7236,8 +7240,9 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 		push_constant.grid_size = rb->sdfgi->cascade_size;
 		push_constant.cascade = cascade;
 
-		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 		if (rb->sdfgi->cascades[cascade].dirty_regions != SDFGI::Cascade::DIRTY_ALL) {
+			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
 			//must pre scroll existing data because not all is dirty
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sdfgi_shader.preprocess_pipeline[SDGIShader::PRE_PROCESS_SCROLL]);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rb->sdfgi->cascades[cascade].scroll_uniform_set, 0);
@@ -7311,12 +7316,14 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 			}
 
 			//ok finally barrier
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
+			RD::get_singleton()->compute_list_end();
 		}
 
 		//clear dispatch indirect data
 		uint32_t dispatch_indirct_data[4] = { 0, 0, 0, 0 };
 		RD::get_singleton()->buffer_update(rb->sdfgi->cascades[cascade].solid_cell_dispatch_buffer, 0, sizeof(uint32_t) * 4, dispatch_indirct_data, true);
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 		bool half_size = true; //much faster, very little difference
 		static const int optimized_jf_group_size = 8;
