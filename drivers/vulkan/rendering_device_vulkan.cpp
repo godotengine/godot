@@ -1542,10 +1542,6 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 }
 
 Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer, uint32_t p_required_align) {
-	// Buffer update not valid during draw or compute lists
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr, ERR_BUG, "Buffer update not valid when draw list is active.");
-	ERR_FAIL_COND_V_MSG(compute_list != nullptr, ERR_BUG, "Buffer update not valid when compute list is active.");
-
 	//submitting may get chunked for various reasons, so convert this to a task
 	size_t to_submit = p_data_size;
 	size_t submit_from = 0;
