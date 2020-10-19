@@ -3859,7 +3859,7 @@ RID RasterizerStorageGLES2::light_create(VS::LightType p_type) {
 	light->directional_blend_splits = false;
 	light->directional_range_mode = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
 	light->reverse_cull = false;
-	light->use_gi = true;
+	light->bake_mode = VS::LIGHT_BAKE_INDIRECT;
 	light->version = 0;
 
 	return light_owner.make_rid(light);
@@ -3948,10 +3948,15 @@ void RasterizerStorageGLES2::light_set_reverse_cull_face_mode(RID p_light, bool 
 }
 
 void RasterizerStorageGLES2::light_set_use_gi(RID p_light, bool p_enabled) {
+	WARN_DEPRECATED_MSG("'VisualServer.light_set_use_gi' is deprecated and will be removed in a future version. Use 'VisualServer.light_set_bake_mode' instead.");
+	light_set_bake_mode(p_light, p_enabled ? VS::LightBakeMode::LIGHT_BAKE_INDIRECT : VS::LightBakeMode::LIGHT_BAKE_DISABLED);
+}
+
+void RasterizerStorageGLES2::light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
-	light->use_gi = p_enabled;
+	light->bake_mode = p_bake_mode;
 
 	light->version++;
 	light->instance_change_notify(true, false);
@@ -4053,10 +4058,14 @@ Color RasterizerStorageGLES2::light_get_color(RID p_light) {
 }
 
 bool RasterizerStorageGLES2::light_get_use_gi(RID p_light) {
-	Light *light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light, false);
+	return light_get_bake_mode(p_light) != VS::LightBakeMode::LIGHT_BAKE_DISABLED;
+}
 
-	return light->use_gi;
+VS::LightBakeMode RasterizerStorageGLES2::light_get_bake_mode(RID p_light) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, VS::LightBakeMode::LIGHT_BAKE_DISABLED);
+
+	return light->bake_mode;
 }
 
 bool RasterizerStorageGLES2::light_has_shadow(RID p_light) const {

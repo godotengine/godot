@@ -250,6 +250,7 @@ public:
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
 	FUNC2(light_set_use_gi, RID, bool)
+	FUNC2(light_set_bake_mode, RID, LightBakeMode)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)

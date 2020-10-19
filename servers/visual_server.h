@@ -442,6 +442,15 @@ public:
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
 
+	// bake mode
+	enum LightBakeMode {
+		LIGHT_BAKE_DISABLED,
+		LIGHT_BAKE_INDIRECT,
+		LIGHT_BAKE_ALL
+	};
+
+	virtual void light_set_bake_mode(RID p_light, LightBakeMode p_bake_mode) = 0;
+
 	// omni light
 	enum LightOmniShadowMode {
 		LIGHT_OMNI_SHADOW_DUAL_PARABOLOID,
@@ -1098,6 +1107,7 @@ VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
+VARIANT_ENUM_CAST(VisualServer::LightBakeMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);

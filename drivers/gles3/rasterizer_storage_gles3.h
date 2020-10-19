@@ -953,7 +953,7 @@ public:
 		bool shadow;
 		bool negative;
 		bool reverse_cull;
-		bool use_gi;
+		VS::LightBakeMode bake_mode;
 		uint32_t cull_mask;
 		VS::LightOmniShadowMode omni_shadow_mode;
 		VS::LightOmniShadowDetail omni_shadow_detail;
@@ -976,6 +976,7 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask);
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
 	virtual void light_set_use_gi(RID p_light, bool p_enabled);
+	virtual void light_set_bake_mode(RID p_light, VS::LightBakeMode p_bake_mode);
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail);
@@ -996,6 +997,7 @@ public:
 	virtual float light_get_param(RID p_light, VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
 	virtual bool light_get_use_gi(RID p_light);
+	virtual VS::LightBakeMode light_get_bake_mode(RID p_light);
 
 	virtual AABB light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;

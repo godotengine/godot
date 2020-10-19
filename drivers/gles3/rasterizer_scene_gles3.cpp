@@ -1849,8 +1849,13 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 		for (int i = 0; i < lc; i++) {
 			LightInstance *li = light_instance_owner.getornull(lights[i]);
-			if (!li || li->last_pass != render_pass) //not visible
-				continue;
+			if (!li || li->last_pass != render_pass) {
+				continue; // Not visible
+			}
+
+			if (e->instance->baked_light && li->light_ptr->bake_mode == VS::LightBakeMode::LIGHT_BAKE_ALL) {
+				continue; // This light is already included in the lightmap
+			}
 
 			if (li && li->light_ptr->type == VS::LIGHT_OMNI) {
 				if (omni_count < maxobj && e->instance->layer_mask & li->light_ptr->cull_mask) {
