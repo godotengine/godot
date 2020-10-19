@@ -21,14 +21,13 @@
 #define PSAUX_H_
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_HASH_H
-#include FT_INTERNAL_TRUETYPE_TYPES_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_CFF_TYPES_H
-#include FT_INTERNAL_CFF_OBJECTS_TYPES_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/t1types.h>
+#include <freetype/internal/fthash.h>
+#include <freetype/internal/tttypes.h>
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/cfftypes.h>
+#include <freetype/internal/cffotypes.h>
 
 
 

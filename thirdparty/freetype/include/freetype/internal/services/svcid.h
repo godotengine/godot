@@ -19,7 +19,7 @@
 #ifndef SVCID_H_
 #define SVCID_H_
 
-#include FT_INTERNAL_SERVICE_H
+#include <freetype/internal/ftserv.h>
 
 
 FT_BEGIN_HEADER
