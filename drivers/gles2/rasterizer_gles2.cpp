@@ -483,6 +483,42 @@ void RasterizerGLES2::make_current() {
 void RasterizerGLES2::register_config() {
 }
 
+// returns NULL if no error, or an error string
+const char *RasterizerGLES2::gl_check_for_error(bool p_print_error) {
+	GLenum err = glGetError();
+
+	const char *err_string = nullptr;
+
+	switch (err) {
+		default: {
+			// not recognised
+		} break;
+		case GL_NO_ERROR: {
+		} break;
+		case GL_INVALID_ENUM: {
+			err_string = "GL_INVALID_ENUM";
+		} break;
+		case GL_INVALID_VALUE: {
+			err_string = "GL_INVALID_VALUE";
+		} break;
+		case GL_INVALID_OPERATION: {
+			err_string = "GL_INVALID_OPERATION";
+		} break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: {
+			err_string = "GL_INVALID_FRAMEBUFFER_OPERATION";
+		} break;
+		case GL_OUT_OF_MEMORY: {
+			err_string = "GL_OUT_OF_MEMORY";
+		} break;
+	}
+
+	if (p_print_error && err_string) {
+		print_line(err_string);
+	}
+
+	return err_string;
+}
+
 RasterizerGLES2::RasterizerGLES2() {
 
 	storage = memnew(RasterizerStorageGLES2);
