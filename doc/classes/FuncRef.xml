@@ -26,6 +26,13 @@
 				Calls the referenced function previously set in [member function] or [method @GDScript.funcref]. Contrarily to [method call_func], this method does not support a variable number of arguments but expects all parameters to be passed via a single [Array].
 			</description>
 		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the object still exists and has the function assigned.
+			</description>
+		</method>
 		<method name="set_instance">
 			<return type="void">
 			</return>
@@ -35,16 +42,9 @@
 				The object containing the referenced function. This object must be of a type actually inheriting from [Object], not a built-in type such as [int], [Vector2] or [Dictionary].
 			</description>
 		</method>
-		<method name="is_valid" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns whether the object still exists and has the function assigned.
-			</description>
-		</method>
 	</methods>
 	<members>
-		<member name="function" type="String" setter="set_function" getter="get_function">
+		<member name="function" type="String" setter="set_function" getter="get_function" default="&quot;&quot;">
 			The name of the referenced function.
 		</member>
 	</members>
