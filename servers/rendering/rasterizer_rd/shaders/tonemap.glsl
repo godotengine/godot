@@ -157,6 +157,10 @@ vec3 tonemap_aces(vec3 color, float white) {
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = max(vec3(0.0), color);
+
 	return (white * color + color) / (color * white + white);
 }
 
