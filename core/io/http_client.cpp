@@ -749,7 +749,8 @@ HTTPClient::HTTPClient() {
 	ssl = false;
 	blocking = false;
 	handshaking = false;
-	read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	read_chunk_size = 65536;
 }
 
 HTTPClient::~HTTPClient() {
