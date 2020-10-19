@@ -311,7 +311,7 @@ struct Controller {
 
 struct ServerController : public Controller {
 	struct Peer {
-		Peer() {}
+		Peer() = default;
 		Peer(int p_peer) :
 				peer(p_peer) {}
 
