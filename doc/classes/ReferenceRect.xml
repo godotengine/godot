@@ -4,7 +4,7 @@
 		Reference frame for GUI.
 	</brief_description>
 	<description>
-		A rectangle box that displays only a [member border_color] border color around its rectangle. [ReferenceRect] has no fill [Color].
+		A rectangle box that displays only a [member border_color] border color around its rectangle. [ReferenceRect] has no fill [Color]. If you need to display a rectangle filled with a solid color, consider using [ColorRect] instead.
 	</description>
 	<tutorials>
 	</tutorials>
