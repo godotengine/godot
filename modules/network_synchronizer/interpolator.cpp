@@ -85,7 +85,7 @@ int Interpolator::register_variable(const Variant &p_default, Fallback p_fallbac
 
 void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name) {
 	ERR_FAIL_COND_MSG(init_phase == false, "You cannot add another variable at this point.");
-	ERR_FAIL_INDEX_MSG(uint32_t(p_var_id), variables.size(), "The variable_id passed is unknown.");
+	ERR_FAIL_COND_MSG(uint32_t(p_var_id) >= variables.size(), "The variable_id passed is unknown.");
 	variables[p_var_id].fallback = FALLBACK_CUSTOM_INTERPOLATOR;
 	variables[p_var_id].custom_interpolator_object = p_object->get_instance_id();
 	variables[p_var_id].custom_interpolator_function = p_function_name;
@@ -149,7 +149,7 @@ void Interpolator::begin_write(uint32_t p_epoch) {
 void Interpolator::epoch_insert(int p_var_id, Variant p_value) {
 	ERR_FAIL_COND_MSG(write_position == UINT32_MAX, "Please call `begin_write` before.");
 	const uint32_t var_id(p_var_id);
-	ERR_FAIL_INDEX_MSG(var_id, variables.size(), "The variable_id passed is unknown.");
+	ERR_FAIL_COND_MSG(var_id >= variables.size(), "The variable_id passed is unknown.");
 	ERR_FAIL_COND_MSG(variables[var_id].default_value.get_type() != p_value.get_type(), "The variable: " + itos(p_var_id) + " expects the variable type: " + Variant::get_type_name(variables[var_id].default_value.get_type()) + ", and not: " + Variant::get_type_name(p_value.get_type()));
 	buffer[write_position].write[var_id] = p_value;
 }

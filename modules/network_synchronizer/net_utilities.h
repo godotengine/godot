@@ -32,11 +32,12 @@
 	@author AndreaCatania
 */
 
-#include "core/local_vector.h"
-#include "core/math/math_defs.h"
-
 #ifndef NET_UTILITIES_H
 #define NET_UTILITIES_H
+
+#include "core/local_vector.h"
+#include "core/math/math_defs.h"
+#include "core/typedefs.h"
 
 #ifdef DEBUG_ENABLED
 #define NET_DEBUG_PRINT(msg) \
@@ -51,35 +52,17 @@
 #define NET_DEBUG_ERR(msg)
 #endif
 
-/// Traces the arrived vs missing packets and estimates the connection loss.
-class NetworkTracer {
-	int id;
-	LocalVector<bool> flags;
-
-public:
-	NetworkTracer(int p_packets_to_track);
-
-	void reset(int p_packets_to_track = -1);
-
-	void notify_packet_arrived();
-	void notify_missing_packet();
-
-	/// Returns the amount of missing packets.
-	/// The value can go from 0 to `p_packets_to_track`.
-	int get_missing_packets() const;
-};
-
 template <class T>
-class Averager {
+class RingAverager {
 	LocalVector<T> data;
-	/// The time passed before this value was added, in seconds.
-	LocalVector<real_t> time;
 	uint32_t index = 0;
-	uint32_t previous_insert_time = 0;
+
+	T avg_sum = 0;
 
 public:
-	Averager(uint32_t p_size, T p_default);
-	void reset(uint32_t p_size, T p_default);
+	RingAverager(uint32_t p_size, T p_default);
+	void resize(uint32_t p_size, T p_default);
+	void reset(T p_default);
 
 	void push(T p_value);
 
@@ -92,8 +75,108 @@ public:
 	/// Median value.
 	T average() const;
 
-	/// Calculates the average derivative and retuns it.
-	real_t average_derivative() const;
+private:
+	// Used to avoid accumulate precision loss.
+	void force_recompute_avg_sum();
 };
+
+template <class T>
+RingAverager<T>::RingAverager(uint32_t p_size, T p_default) {
+	resize(p_size, p_default);
+}
+
+template <class T>
+void RingAverager<T>::resize(uint32_t p_size, T p_default) {
+	data.resize(p_size);
+
+	reset(p_default);
+}
+
+template <class T>
+void RingAverager<T>::reset(T p_default) {
+	for (uint32_t i = 0; i < data.size(); i += 1) {
+		data[i] = p_default;
+	}
+
+	index = 0;
+	force_recompute_avg_sum();
+}
+
+template <class T>
+void RingAverager<T>::push(T p_value) {
+	avg_sum -= data[index];
+	avg_sum += p_value;
+	data[index] = p_value;
+
+	index = (index + 1) % data.size();
+	if (index == 0) {
+		// Each cycle recompute the sum.
+		force_recompute_avg_sum();
+	}
+}
+
+template <class T>
+T RingAverager<T>::max() const {
+	CRASH_COND(data.size() == 0);
+
+	T a = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		a = MAX(a, data[i]);
+	}
+	return a;
+}
+
+template <class T>
+T RingAverager<T>::min(uint32_t p_consider_last) const {
+	CRASH_COND(data.size() == 0);
+	p_consider_last = MIN(p_consider_last, data.size());
+
+	const uint32_t youngest = (index == 0 ? data.size() : index) - 1;
+	const uint32_t oldest = (index + (data.size() - p_consider_last)) % data.size();
+
+	T a = data[oldest];
+
+	uint32_t i = oldest;
+	do {
+		i = (i + 1) % data.size();
+		a = MIN(a, data[i]);
+	} while (i != youngest);
+
+	return a;
+}
+
+template <class T>
+T RingAverager<T>::average() const {
+	CRASH_COND(data.size() == 0);
+
+#ifdef DEBUG_ENABLED
+	T a = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		a += data[i];
+	}
+	a = a / T(data.size());
+	T b = avg_sum / T(data.size());
+	ERR_FAIL_COND_V_MSG(ABS(a - b) > (CMP_EPSILON * 4.0), b, "The `Averager` accumulated a lot of precision loss: " + rtos(ABS(a - b)));
+	return b;
+#else
+	// Divide it by the buffer size is wrong when the buffer is not yet fully
+	// initialized. However, this is wrong just for the first run.
+	// I'm leaving it as is because solve it mean do more operations. All this
+	// just to get the right value for the first few frames.
+	return avg_sum / T(data.size());
+#endif
+}
+
+template <class T>
+void RingAverager<T>::force_recompute_avg_sum() {
+#ifdef DEBUG_ENABLED
+	// This class is not supposed to be used with 0 size.
+	CRASH_COND(data.size() <= 0);
+#endif
+	avg_sum = data[0];
+	for (uint32_t i = 1; i < data.size(); i += 1) {
+		avg_sum += data[i];
+	}
+}
 
 #endif

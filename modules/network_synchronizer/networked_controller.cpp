@@ -42,9 +42,6 @@
 
 #define METADATA_SIZE 1
 
-// Don't go below 2 so to take into account internet latency
-#define MIN_SNAPSHOTS_SIZE 2.0
-
 #define MAX_ADDITIONAL_TICK_SPEED 2.0
 
 // 2%
@@ -63,17 +60,23 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &NetworkedController::set_network_traced_frames);
 	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &NetworkedController::get_network_traced_frames);
 
-	ClassDB::bind_method(D_METHOD("set_missing_snapshots_max_tolerance", "tolerance"), &NetworkedController::set_missing_snapshots_max_tolerance);
-	ClassDB::bind_method(D_METHOD("get_missing_snapshots_max_tolerance"), &NetworkedController::get_missing_snapshots_max_tolerance);
+	ClassDB::bind_method(D_METHOD("set_optimal_input_count_min", "val"), &NetworkedController::set_optimal_input_count_min);
+	ClassDB::bind_method(D_METHOD("get_optimal_input_count_min"), &NetworkedController::get_optimal_input_count_min);
+
+	ClassDB::bind_method(D_METHOD("set_optimal_input_count_max", "val"), &NetworkedController::set_optimal_input_count_max);
+	ClassDB::bind_method(D_METHOD("get_optimal_input_count_max"), &NetworkedController::get_optimal_input_count_max);
+
+	ClassDB::bind_method(D_METHOD("set_missing_input_factor", "val"), &NetworkedController::set_missing_input_factor);
+	ClassDB::bind_method(D_METHOD("get_missing_input_factor"), &NetworkedController::get_missing_input_factor);
+
+	ClassDB::bind_method(D_METHOD("set_optimal_input_count_decreasing_delayer", "val"), &NetworkedController::set_optimal_input_count_decreasing_delayer);
+	ClassDB::bind_method(D_METHOD("get_optimal_input_count_decreasing_delayer"), &NetworkedController::get_optimal_input_count_decreasing_delayer);
+
+	ClassDB::bind_method(D_METHOD("set_optimal_input_count_decreasing_amount", "val"), &NetworkedController::set_optimal_input_count_decreasing_amount);
+	ClassDB::bind_method(D_METHOD("get_optimal_input_count_decreasing_amount"), &NetworkedController::get_optimal_input_count_decreasing_amount);
 
 	ClassDB::bind_method(D_METHOD("set_tick_acceleration", "acceleration"), &NetworkedController::set_tick_acceleration);
 	ClassDB::bind_method(D_METHOD("get_tick_acceleration"), &NetworkedController::get_tick_acceleration);
-
-	ClassDB::bind_method(D_METHOD("set_optimal_size_acceleration", "acceleration"), &NetworkedController::set_optimal_size_acceleration);
-	ClassDB::bind_method(D_METHOD("get_optimal_size_acceleration"), &NetworkedController::get_optimal_size_acceleration);
-
-	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &NetworkedController::set_server_input_storage_size);
-	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &NetworkedController::get_server_input_storage_size);
 
 	ClassDB::bind_method(D_METHOD("set_doll_epoch_collect_rate", "rate"), &NetworkedController::set_doll_epoch_collect_rate);
 	ClassDB::bind_method(D_METHOD("get_doll_epoch_collect_rate"), &NetworkedController::get_doll_epoch_collect_rate);
@@ -117,11 +120,13 @@ void NetworkedController::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_speedup_notification_delay", PROPERTY_HINT_RANGE, "0.001,2.0,0.001"), "set_tick_speedup_notification_delay", "get_tick_speedup_notification_delay");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "network_traced_frames", PROPERTY_HINT_RANGE, "100,10000,1"), "set_network_traced_frames", "get_network_traced_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "missing_snapshots_max_tolerance", PROPERTY_HINT_RANGE, "3,50,1"), "set_missing_snapshots_max_tolerance", "get_missing_snapshots_max_tolerance");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "network_traced_frames", PROPERTY_HINT_RANGE, "1,1000,1"), "set_network_traced_frames", "get_network_traced_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_min", PROPERTY_HINT_RANGE, "0,100,1"), "set_optimal_input_count_min", "get_optimal_input_count_min");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_max", PROPERTY_HINT_RANGE, "0,100,1"), "set_optimal_input_count_max", "get_optimal_input_count_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "missing_input_factor", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_missing_input_factor", "get_missing_input_factor");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_decreasing_delayer", PROPERTY_HINT_RANGE, "0.1,2,0.001"), "set_optimal_input_count_decreasing_delayer", "get_optimal_input_count_decreasing_delayer");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_input_count_decreasing_amount", PROPERTY_HINT_RANGE, "0.1,1.0,0.1"), "set_optimal_input_count_decreasing_amount", "get_optimal_input_count_decreasing_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_collect_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_collect_rate", "get_doll_epoch_collect_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doll_epoch_sync_rate", PROPERTY_HINT_RANGE, "0.001,5.0,0.001"), "set_doll_epoch_sync_rate", "get_doll_epoch_sync_rate");
 
@@ -172,12 +177,44 @@ int NetworkedController::get_network_traced_frames() const {
 	return network_traced_frames;
 }
 
-void NetworkedController::set_missing_snapshots_max_tolerance(int p_tolerance) {
-	missing_input_max_tolerance = p_tolerance;
+void NetworkedController::set_optimal_input_count_min(real_t p_val) {
+	optimal_input_count_min = p_val;
 }
 
-int NetworkedController::get_missing_snapshots_max_tolerance() const {
-	return missing_input_max_tolerance;
+real_t NetworkedController::get_optimal_input_count_min() const {
+	return optimal_input_count_min;
+}
+
+void NetworkedController::set_optimal_input_count_max(real_t p_val) {
+	optimal_input_count_max = p_val;
+}
+
+real_t NetworkedController::get_optimal_input_count_max() const {
+	return optimal_input_count_max;
+}
+
+void NetworkedController::set_missing_input_factor(real_t p_val) {
+	missing_input_factor = p_val;
+}
+
+real_t NetworkedController::get_missing_input_factor() const {
+	return missing_input_factor;
+}
+
+void NetworkedController::set_optimal_input_count_decreasing_delayer(real_t p_val) {
+	optimal_input_count_decreasing_delayer = p_val;
+}
+
+real_t NetworkedController::get_optimal_input_count_decreasing_delayer() const {
+	return optimal_input_count_decreasing_delayer;
+}
+
+void NetworkedController::set_optimal_input_count_decreasing_amount(real_t p_val) {
+	optimal_input_count_decreasing_amount = p_val;
+}
+
+real_t NetworkedController::get_optimal_input_count_decreasing_amount() const {
+	return optimal_input_count_decreasing_amount;
 }
 
 void NetworkedController::set_tick_acceleration(real_t p_acceleration) {
@@ -186,22 +223,6 @@ void NetworkedController::set_tick_acceleration(real_t p_acceleration) {
 
 real_t NetworkedController::get_tick_acceleration() const {
 	return tick_acceleration;
-}
-
-void NetworkedController::set_optimal_size_acceleration(real_t p_acceleration) {
-	optimal_size_acceleration = p_acceleration;
-}
-
-real_t NetworkedController::get_optimal_size_acceleration() const {
-	return optimal_size_acceleration;
-}
-
-void NetworkedController::set_server_input_storage_size(int p_size) {
-	server_input_storage_size = p_size;
-}
-
-int NetworkedController::get_server_input_storage_size() const {
-	return server_input_storage_size;
 }
 
 void NetworkedController::set_doll_epoch_collect_rate(real_t p_rate) {
@@ -486,7 +507,7 @@ ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
 		Controller(p_node),
-		network_tracer(p_traced_frames) {
+		missing_inputs_averager(p_traced_frames, 0.0) {
 }
 
 void ServerController::update_peers() {
@@ -498,7 +519,7 @@ void ServerController::update_peers() {
 		if (peer_id != node->get_network_master()) {
 			if (find_peer(peer_id) == UINT32_MAX) {
 				// Unknown
-				peers.push_back({ peer_id });
+				peers.push_back(peer_id);
 			}
 		}
 	}
@@ -658,8 +679,8 @@ bool ServerController::fetch_next_input() {
 			node->set_inputs_buffer(snapshots.front().inputs_buffer, METADATA_SIZE, snapshots.front().buffer_size_bit - METADATA_SIZE);
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
-			// Start traking the packets from this moment on.
-			network_tracer.reset();
+			// Start tracing the packets from this moment on.
+			missing_inputs_averager.reset(0.0);
 		} else {
 			is_new_input = false;
 		}
@@ -791,9 +812,9 @@ bool ServerController::fetch_next_input() {
 	}
 
 	if (is_packet_missing) {
-		network_tracer.notify_missing_packet();
+		missed_inputs += 1;
 	} else {
-		network_tracer.notify_packet_arrived();
+		missed_inputs = 0;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -934,44 +955,70 @@ void ServerController::doll_sync(real_t p_delta) {
 }
 
 void ServerController::calculates_player_tick_rate(real_t p_delta) {
-	// TODO Improve the algorithm that has the following problems:
-	// - Tweaking is really difficult (requires too much tests).
-	// - It's too slow to recover packets.
-	// - It start doing something only when a packets is marked as missing,
-	//     instead it should start healing the connection even before the input is used (and so marked as used).
+	const real_t optimal_input_count_min = node->get_optimal_input_count_min();
+	const real_t optimal_input_count_max = node->get_optimal_input_count_max();
+	const real_t missing_input_factor = node->get_missing_input_factor();
+	const real_t optimal_input_count_decreasing_delayer = node->get_optimal_input_count_decreasing_delayer();
+	const real_t optimal_input_count_decreasing_amount = node->get_optimal_input_count_decreasing_amount();
 
-	const int miss_packets = network_tracer.get_missing_packets();
-	const int inputs_count = get_inputs_count();
-
-	{
-		// The first step to establish the client speed up amount is to define the
-		// optimal `frames_inputs` size.
-		// This size is increased and decreased using an acceleration, so any speed
-		// change is spread across a long period rather a little one.
-		const real_t acceleration_level = CLAMP(
-				(static_cast<real_t>(miss_packets) -
-						static_cast<real_t>(inputs_count)) /
-						static_cast<real_t>(node->get_missing_snapshots_max_tolerance()),
-				-2.0,
-				2.0);
-		optimal_snapshots_size += acceleration_level * node->get_optimal_size_acceleration() * p_delta;
-		optimal_snapshots_size = CLAMP(optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, node->get_server_input_storage_size());
+	// -- Phase one: count the consecutive inputs and the missing. --
+	real_t consecutive_inputs = 0;
+	real_t missing_inputs = 0;
+	for (uint32_t i = 0; i < snapshots.size(); i += 1) {
+		if (snapshots[i].id == (current_input_buffer_id + consecutive_inputs + 1)) {
+			consecutive_inputs += 1;
+		} else {
+			missing_inputs += 1;
+		}
 	}
 
-	{
-		// The client speed is determined using an acceleration so to have much
-		// more control over it, and avoid nervous changes.
-		const real_t acceleration_level = CLAMP((optimal_snapshots_size - static_cast<real_t>(inputs_count)) / node->get_server_input_storage_size(), -1.0, 1.0);
-		const real_t acc = acceleration_level * node->get_tick_acceleration() * p_delta;
-		const real_t damp = client_tick_additional_speed * -0.9;
+	const real_t missing_consecutive_inputs =
+			MAX(0.0, optimal_input_count - consecutive_inputs);
 
-		// The damping is fully applyied only if it points in the opposite `acc`
-		// direction.
-		// I want to cut down the oscilations when the target is the same for a while,
-		// but I need to move fast toward new targets when they appear.
-		client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
-		client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+	missing_inputs_averager.push(
+			(missing_inputs + missed_inputs + missing_consecutive_inputs) *
+			missing_input_factor);
+
+	const real_t missing_inputs_avg = missing_inputs_averager.average();
+
+	// -- Phase two: calculates the optimal_input_count --
+	// The input count can be increased at any time, however it is lowered in
+	// time by a fixed quantity. This mechanism allows to find a good median
+	// value that allows to keep it the right size.
+
+	const real_t new_optimal_input_count =
+			missing_inputs_avg + optimal_input_count_min;
+
+	if (new_optimal_input_count < optimal_input_count) {
+		optimal_input_count_decreasing_timer += p_delta;
+		if (optimal_input_count_decreasing_timer >= optimal_input_count_decreasing_delayer) {
+			// Just decrease a little the optimal_input_count.
+			optimal_input_count_decreasing_timer = 0.0;
+			optimal_input_count -= optimal_input_count_decreasing_amount;
+		}
+	} else {
+		// Immediately increase the optimal_input_count when needed.
+		optimal_input_count = new_optimal_input_count;
 	}
+
+	optimal_input_count = CLAMP(
+			optimal_input_count,
+			optimal_input_count_min,
+			optimal_input_count_max);
+
+	const real_t distance_to_optimal_count = -(consecutive_inputs - optimal_input_count);
+
+	// -- Phase three: calculates the client tick speed --
+	// Calculate the client tick speed acceleration so that the `input_count`,
+	// here on server, can reach the `optimal_input_count`.
+
+	const real_t acc = distance_to_optimal_count * node->get_tick_acceleration() * p_delta;
+	// Used to avoid oscillations.
+	const real_t damp = -(client_tick_additional_speed * 0.95);
+	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
+	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+
+	NET_DEBUG_PRINT("Missing: " + itos(missing_inputs_avg) + " Consecutive inputs: " + rtos(consecutive_inputs) + " Optimal input count " + rtos(optimal_input_count));
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
@@ -1488,7 +1535,7 @@ void DollController::pause(uint32_t p_epoch) {
 	current_epoch = UINT32_MAX;
 	advancing_epoch = 0.0;
 	missing_epochs = 0;
-	averager.reset(watch_list_size, 0);
+	averager.resize(watch_list_size, 0);
 
 	node->emit_signal("doll_sync_paused");
 }

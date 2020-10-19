@@ -45,8 +45,12 @@
 #ifndef NETWORKED_CONTROLLER_H
 #define NETWORKED_CONTROLLER_H
 
-struct Controller;
 class SceneSynchronizer;
+struct Controller;
+struct ServerController;
+struct PlayerController;
+struct DollController;
+struct NoNetController;
 
 /// The `NetworkedController` is responsible to sync the `Player` inputs between
 /// the peers. This allows to control a character, or an object with high precision
@@ -104,33 +108,49 @@ private:
 	/// client.
 	real_t tick_speedup_notification_delay = 0.33;
 
-	/// Used to set the amount of traced frames to determine the connection healt trend.
+	/// Used to set the amount of traced frames to determine the connection
+	/// healt trend.
 	///
 	/// This parameter depends a lot on the physics iteration per second, and
-	/// an optimal parameter, with 60 physics iteration per second, is 1200;
-	/// that is equivalent of the latest 20 seconds frames.
+	/// an optimal parameter, with 60 physics iteration per second, is 120;
+	/// that is equivalent of the latest 2 seconds frames.
 	///
 	/// A smaller value will make the recovery mechanism too noisy and so useless,
 	/// on the other hand a too big value will make the recovery mechanism too
 	/// slow.
-	int network_traced_frames = 1200;
+	int network_traced_frames = 120;
 
-	/// Max tolerance for missing snapshots in the `network_traced_frames`.
-	int missing_input_max_tolerance = 4;
+	/// Minimal input count on server. This allows to keep the server a bit more
+	/// behind the client even when the internet connection is good. This allows
+	/// to amortize any oscillation and give the server a bit of room to recover
+	/// in case of failure.
+	real_t optimal_input_count_min = 2;
+
+	/// Max input count the server can add to amortize for bad internet
+	/// connection. This introduces virtual latency, that is added on top of the
+	/// connection latency, so a too big value can be bad.
+	real_t optimal_input_count_max = 60;
+
+	/// Factor used to change the severity of a missing input. This allows to
+	/// make the controller more or less susceptible to input missing.
+	real_t missing_input_factor = 2.0;
+
+	/// On the server the controller increases and decreases the amount of input
+	/// stored (and not yet processed) so to amortize the connection problems.
+	/// With bad connections, the virtual latency increases so to give much more
+	/// chances that a missing input is received before it's processed.
+	///
+	/// The virtual lag can increase at any moment, but it decreases with a
+	/// constant time and a constant ratio. This parameter controls the time for
+	/// which each slice of virtual lag is decreased (in seconds).
+	real_t optimal_input_count_decreasing_delayer = 0.5;
+
+	/// This parameter controls the amount of virtual lag removed.
+	real_t optimal_input_count_decreasing_amount = 0.34;
 
 	/// Used to control the `player` tick acceleration, so to produce more
 	/// inputs.
 	real_t tick_acceleration = 2.0;
-
-	/// The "optimal input size" is dynamically updated and its size
-	/// change at a rate that can be controlled by this parameter.
-	real_t optimal_size_acceleration = 2.5;
-
-	/// The server is several frames behind the client, the maxim amount
-	/// of these frames is defined by the value of this parameter.
-	///
-	/// To prevent introducing virtual lag.
-	int server_input_storage_size = 30;
 
 	/// Collect rate (in seconds) used by the server to estabish when to collect
 	/// the controller state for a particular peer.
@@ -177,14 +197,23 @@ public:
 	void set_missing_snapshots_max_tolerance(int p_tolerance);
 	int get_missing_snapshots_max_tolerance() const;
 
+	void set_optimal_input_count_min(real_t p_val);
+	real_t get_optimal_input_count_min() const;
+
+	void set_optimal_input_count_max(real_t p_val);
+	real_t get_optimal_input_count_max() const;
+
+	void set_missing_input_factor(real_t p_val);
+	real_t get_missing_input_factor() const;
+
+	void set_optimal_input_count_decreasing_delayer(real_t p_val);
+	real_t get_optimal_input_count_decreasing_delayer() const;
+
+	void set_optimal_input_count_decreasing_amount(real_t p_val);
+	real_t get_optimal_input_count_decreasing_amount() const;
+
 	void set_tick_acceleration(real_t p_acceleration);
 	real_t get_tick_acceleration() const;
-
-	void set_optimal_size_acceleration(real_t p_acceleration);
-	real_t get_optimal_size_acceleration() const;
-
-	void set_server_input_storage_size(int p_size);
-	int get_server_input_storage_size() const;
 
 	void set_doll_epoch_collect_rate(real_t p_rate);
 	real_t get_doll_epoch_collect_rate() const;
@@ -212,13 +241,13 @@ public:
 	bool process_instant(int p_i, real_t p_delta);
 
 	/// Returns the server controller or nullptr if this is not a server.
-	class ServerController *get_server_controller() const;
+	ServerController *get_server_controller() const;
 	/// Returns the player controller or nullptr if this is not a player.
-	class PlayerController *get_player_controller() const;
+	PlayerController *get_player_controller() const;
 	/// Returns the doll controller or nullptr if this is not a doll.
-	class DollController *get_doll_controller() const;
+	DollController *get_doll_controller() const;
 	/// Returns the no net controller or nullptr if this is not a no net.
-	class NoNetController *get_nonet_controller() const;
+	NoNetController *get_nonet_controller() const;
 
 	bool is_server_controller() const;
 	bool is_player_controller() const;
@@ -282,6 +311,10 @@ struct Controller {
 
 struct ServerController : public Controller {
 	struct Peer {
+		Peer() {}
+		Peer(int p_peer) :
+				peer(p_peer) {}
+
 		int peer = 0;
 		bool active = true;
 		real_t update_rate_factor = 1.0;
@@ -299,7 +332,10 @@ struct ServerController : public Controller {
 	real_t client_tick_additional_speed = 0.0;
 	real_t additional_speed_notif_timer = 0.0;
 	real_t optimal_difference_amount = 2;
-	NetworkTracer network_tracer;
+	uint32_t missed_inputs = 0;
+	real_t optimal_input_count = 0.0;
+	real_t optimal_input_count_decreasing_timer = 0.0;
+	RingAverager<real_t> missing_inputs_averager;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
 
@@ -399,7 +435,7 @@ struct DollController : public Controller {
 	/// This is the averager size.
 	uint32_t watch_list_size = 60;
 	/// Used to track the balance at each received epoch.
-	Averager<int> averager = Averager<int>(watch_list_size, 0);
+	RingAverager<int> averager = RingAverager<int>(watch_list_size, 0);
 
 	DollController(NetworkedController *p_node);
 	~DollController();
