@@ -978,11 +978,9 @@ int PhysicsServerSW::body_test_ray_separation(RID p_body, const Transform &p_tra
 PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 
 	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
-
-	direct_state->body = body;
-	return direct_state;
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
+	ERR_FAIL_COND_V_MSG((body->get_space() && body->get_space()->is_locked()), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	return body->get_direct_state();
 }
 
 /* JOINT API */
@@ -1408,10 +1406,8 @@ void PhysicsServerSW::set_active(bool p_active) {
 
 void PhysicsServerSW::init() {
 
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(StepSW);
-	direct_state = memnew(PhysicsDirectBodyStateSW);
 };
 
 void PhysicsServerSW::step(real_t p_step) {
@@ -1422,9 +1418,6 @@ void PhysicsServerSW::step(real_t p_step) {
 		return;
 
 	_update_shapes();
-
-	last_step = p_step;
-	PhysicsDirectBodyStateSW::singleton->step = p_step;
 
 	island_count = 0;
 	active_objects = 0;
@@ -1497,7 +1490,6 @@ void PhysicsServerSW::flush_queries() {
 void PhysicsServerSW::finish() {
 
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 int PhysicsServerSW::get_process_info(ProcessInfo p_info) {

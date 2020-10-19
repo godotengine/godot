@@ -701,10 +701,7 @@ void BodySW::call_queries() {
 
 	if (fi_callback) {
 
-		PhysicsDirectBodyStateSW *dbs = PhysicsDirectBodyStateSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
+		Variant v = direct_access;
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
@@ -798,17 +795,24 @@ BodySW::BodySW() :
 	continuous_cd = false;
 	can_sleep = true;
 	fi_callback = NULL;
+
+	direct_access = memnew(PhysicsDirectBodyStateSW);
+	direct_access->body = this;
 }
 
 BodySW::~BodySW() {
 
+	memdelete(direct_access);
 	if (fi_callback)
 		memdelete(fi_callback);
 }
 
-PhysicsDirectBodyStateSW *PhysicsDirectBodyStateSW::singleton = NULL;
-
 PhysicsDirectSpaceState *PhysicsDirectBodyStateSW::get_space_state() {
 
 	return body->get_space()->get_direct_state();
+}
+
+real_t PhysicsDirectBodyStateSW::get_step() const {
+
+	return body->get_space()->get_step();
 }

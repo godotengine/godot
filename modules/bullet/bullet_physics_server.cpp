@@ -861,8 +861,8 @@ bool BulletPhysicsServer::body_is_ray_pickable(RID p_body) const {
 
 PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, NULL);
-	return BulletPhysicsDirectBodyState::get_singleton(body);
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
+	return body->get_direct_state();
 }
 
 bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
@@ -1553,14 +1553,11 @@ void BulletPhysicsServer::free(RID p_rid) {
 }
 
 void BulletPhysicsServer::init() {
-	BulletPhysicsDirectBodyState::initSingleton();
 }
 
 void BulletPhysicsServer::step(float p_deltaTime) {
 	if (!active)
 		return;
-
-	BulletPhysicsDirectBodyState::singleton_setDeltaTime(p_deltaTime);
 
 	for (int i = 0; i < active_spaces_count; ++i) {
 
@@ -1572,7 +1569,6 @@ void BulletPhysicsServer::flush_queries() {
 }
 
 void BulletPhysicsServer::finish() {
-	BulletPhysicsDirectBodyState::destroySingleton();
 }
 
 int BulletPhysicsServer::get_process_info(ProcessInfo p_info) {

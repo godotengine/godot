@@ -36,6 +36,7 @@
 #include "core/vset.h"
 
 class ConstraintSW;
+class PhysicsDirectBodyStateSW;
 
 class BodySW : public CollisionObjectSW {
 
@@ -146,6 +147,7 @@ class BodySW : public CollisionObjectSW {
 
 	_FORCE_INLINE_ void _update_transform_dependant();
 
+	PhysicsDirectBodyStateSW *direct_access = nullptr;
 	friend class PhysicsDirectBodyStateSW; // i give up, too many functions to expose
 
 public:
@@ -335,6 +337,8 @@ public:
 
 	bool sleep_test(real_t p_step);
 
+	PhysicsDirectBodyStateSW *get_direct_state() const { return direct_access; }
+
 	BodySW();
 	~BodySW();
 };
@@ -390,9 +394,7 @@ class PhysicsDirectBodyStateSW : public PhysicsDirectBodyState {
 	GDCLASS(PhysicsDirectBodyStateSW, PhysicsDirectBodyState);
 
 public:
-	static PhysicsDirectBodyStateSW *singleton;
-	BodySW *body;
-	real_t step;
+	BodySW *body = nullptr;
 
 	virtual Vector3 get_total_gravity() const { return body->gravity; } // get gravity vector working on this body space/area
 	virtual real_t get_total_angular_damp() const { return body->area_angular_damp; } // get density of this body space/area
@@ -465,11 +467,9 @@ public:
 
 	virtual PhysicsDirectSpaceState *get_space_state();
 
-	virtual real_t get_step() const { return step; }
-	PhysicsDirectBodyStateSW() {
-		singleton = this;
-		body = NULL;
-	}
+	virtual real_t get_step() const;
+
+	PhysicsDirectBodyStateSW() {}
 };
 
 #endif // BODY__SW_H
