@@ -48,7 +48,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 
 	vec2 pixel_size;
 	bool use_fxaa;
-	uint pad;
+	bool use_debanding;
 }
 params;
 
@@ -301,6 +301,19 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	}
 }
 
+#define QUARTER_COLOR 1.0 / 1024.0
+
+// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+vec3 screen_space_dither(vec2 frag_coord) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	return dither.rgb / 255.0;
+}
+
 void main() {
 	vec3 color = textureLod(source_color, uv_interp, 0.0f).rgb;
 
@@ -323,6 +336,10 @@ void main() {
 
 	if (params.use_fxaa) {
 		color = do_fxaa(color, exposure, uv_interp);
+	}
+	if (params.use_debanding) {
+		// Debanding should be done before tonemapping.
+		color += screen_space_dither(gl_FragCoord.xy);
 	}
 	color = apply_tonemapping(color, params.white);
 

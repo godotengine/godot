@@ -188,7 +188,7 @@ class RasterizerEffectsRD {
 
 		float pixel_size[2];
 		uint32_t use_fxaa;
-		uint32_t pad;
+		uint32_t use_debanding;
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -651,6 +651,7 @@ public:
 		RID color_correction_texture;
 
 		bool use_fxaa = false;
+		bool use_debanding = false;
 		Vector2i texture_size;
 	};
 

@@ -727,6 +727,8 @@ public:
 
 	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
 
+	virtual void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding) = 0;
+
 	enum ViewportRenderInfo {
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,

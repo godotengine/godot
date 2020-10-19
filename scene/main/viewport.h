@@ -279,6 +279,7 @@ private:
 
 	MSAA msaa;
 	ScreenSpaceAA screen_space_aa;
+	bool use_debanding;
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -520,6 +521,9 @@ public:
 
 	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
 	ScreenSpaceAA get_screen_space_aa() const;
+
+	void set_use_debanding(bool p_use_debanding);
+	bool is_using_debanding() const;
 
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
