@@ -1018,7 +1018,8 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
 	client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 
-	NET_DEBUG_PRINT("Missing: " + itos(missing_inputs_avg) + " Consecutive inputs: " + rtos(consecutive_inputs) + " Optimal input count " + rtos(optimal_input_count));
+	// TODO consider make this verbose or add a paramter so to show it.
+	//NET_DEBUG_PRINT("Missing: " + itos(missing_inputs_avg) + " Consecutive inputs: " + rtos(consecutive_inputs) + " Optimal input count " + rtos(optimal_input_count));
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
