@@ -124,6 +124,11 @@ GPUParticlesCollisionBox::~GPUParticlesCollisionBox() {
 ///////////////////////////////
 ///////////////////////////
 
+static _FORCE_INLINE_ float thickness_mult_by_angle(const Vector3 &p_normal) {
+	Vector3 absn = p_normal.abs();
+	return MAX(absn.x, MAX(absn.y, absn.z));
+}
+
 void GPUParticlesCollisionSDF::_find_meshes(const AABB &p_aabb, Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->is_visible_in_tree()) {
@@ -189,9 +194,10 @@ uint32_t GPUParticlesCollisionSDF::_create_bvh(LocalVector<BVH> &bvh_tree, FaceP
 			aabb.expand_to(f.vertex[2]);
 			if (p_thickness > 0.0) {
 				Vector3 normal = p_triangles[p_faces[i].index].get_plane().normal;
-				aabb.expand_to(f.vertex[0] - normal * p_thickness);
-				aabb.expand_to(f.vertex[1] - normal * p_thickness);
-				aabb.expand_to(f.vertex[2] - normal * p_thickness);
+				Vector3 nofs = normal * p_thickness * thickness_mult_by_angle(normal);
+				aabb.expand_to(f.vertex[0] - nofs);
+				aabb.expand_to(f.vertex[1] - nofs);
+				aabb.expand_to(f.vertex[2] - nofs);
 			}
 			if (i == 0) {
 				bvh.bounds = aabb;
@@ -229,7 +235,8 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 		Plane p = triangles[p_bvh_cell].get_plane();
 		float d = p.distance_to(point);
 		float inside_d = 1e20;
-		if (d < 0 && d > -thickness) {
+		float th = thickness * thickness_mult_by_angle(p.normal);
+		if (d < 0 && d > -th) {
 			//inside planes, do this in 2D
 
 			Vector3 x_axis = (triangles[p_bvh_cell].vertex[0] - triangles[p_bvh_cell].vertex[1]).normalized();
@@ -266,13 +273,13 @@ void GPUParticlesCollisionSDF::_find_closest_distance(const Vector3 &p_pos, cons
 			//make sure distance to planes is not shorter if inside
 			if (inside_d < 0) {
 				inside_d = MAX(inside_d, d);
-				inside_d = MAX(inside_d, -(thickness + d));
+				inside_d = MAX(inside_d, -(th + d));
 			}
 
 			closest_distance = MIN(closest_distance, inside_d);
 		} else {
 			if (d < 0) {
-				point -= p.normal * thickness; //flatten
+				point -= p.normal * th; //flatten
 			}
 
 			// https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
@@ -465,7 +472,8 @@ Ref<Image> GPUParticlesCollisionSDF::bake() {
 		face_pos[i].index = i;
 		face_pos[i].center = (faces[i].vertex[0] + faces[i].vertex[1] + faces[i].vertex[2]) / 2;
 		if (th > 0.0) {
-			face_pos[i].center -= faces[i].get_plane().normal * th * 0.5;
+			Vector3 n = faces[i].get_plane().normal;
+			face_pos[i].center -= n * th * 0.5 * thickness_mult_by_angle(n);
 		}
 	}
 
