@@ -15,6 +15,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="Random number generation">https://docs.godotengine.org/en/3.2/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="randf">

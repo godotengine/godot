@@ -20,11 +20,12 @@
 		    file.close()
 		    return content
 		[/codeblock]
-		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] documentation.
+		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/3.2/tutorials/io/data_paths.html]Data paths[/url] documentation.
 		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [File] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">https://docs.godotengine.org/en/3.2/getting_started/step_by_step/filesystem.html</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
 		<method name="close">

@@ -49,7 +49,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_import_options" qualifiers="virtual">

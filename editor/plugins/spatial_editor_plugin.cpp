@@ -2420,17 +2420,17 @@ void SpatialEditorViewport::_notification(int p_what) {
 				continue;
 
 			Transform t = sp->get_global_gizmo_transform();
+			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
+			AABB new_aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
 
 			exist = true;
-			if (se->last_xform == t && !se->last_xform_dirty)
+			if (se->last_xform == t && se->aabb == new_aabb && !se->last_xform_dirty)
 				continue;
 			changed = true;
 			se->last_xform_dirty = false;
 			se->last_xform = t;
 
-			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
-
-			se->aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp);
+			se->aabb = new_aabb;
 
 			t.translate(se->aabb.position);
 

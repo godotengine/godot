@@ -8,7 +8,7 @@
 		[b]Note:[/b] This node has many known bugs and will be [url=https://godotengine.org/article/godot-40-will-get-new-modernized-lightmapper]rewritten for Godot 4.0[/url]. See [url=https://github.com/godotengine/godot/issues/30929]GitHub issue #30929[/url].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/baked_lightmaps.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/3d/baked_lightmaps.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake">

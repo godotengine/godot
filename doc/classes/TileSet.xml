@@ -8,6 +8,13 @@
 		Tiles are referenced by a unique integer ID.
 	</description>
 	<tutorials>
+		<link title="Using Tilemaps">https://docs.godotengine.org/en/3.2/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">

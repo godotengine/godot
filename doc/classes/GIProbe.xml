@@ -8,7 +8,8 @@
 		Having [GIProbe]s in a scene can be expensive, the quality of the probe can be turned down in exchange for better performance in the [ProjectSettings] using [member ProjectSettings.rendering/quality/voxel_cone_tracing/high_quality].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
+		<link title="GI probes">https://docs.godotengine.org/en/3.2/tutorials/3d/gi_probes.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="bake">

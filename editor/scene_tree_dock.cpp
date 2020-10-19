@@ -1329,35 +1329,50 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 
 			List<PropertyInfo> properties;
 			si->get_property_list(&properties);
+			NodePath root_path = p_base->get_path();
 
 			for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 
 				String propertyname = E->get().name;
 				Variant p = p_base->get(propertyname);
 				if (p.get_type() == Variant::NODE_PATH) {
+					NodePath root_path_new = root_path;
+					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
+						if (root_path == F->get().first) {
+							root_path_new = F->get().second;
+							break;
+						}
+					}
 
 					// Goes through all paths to check if its matching
 					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
-
-						NodePath root_path = p_base->get_path();
-
 						NodePath rel_path_old = root_path.rel_path_to(F->get().first);
-
-						NodePath rel_path_new = F->get().second;
-
-						// if not empty, get new relative path
-						if (F->get().second != NodePath()) {
-							rel_path_new = root_path.rel_path_to(F->get().second);
-						}
 
 						// if old path detected, then it needs to be replaced with the new one
 						if (p == rel_path_old) {
+							NodePath rel_path_new = F->get().second;
+
+							// if not empty, get new relative path
+							if (!rel_path_new.is_empty()) {
+								rel_path_new = root_path_new.rel_path_to(F->get().second);
+							}
 
 							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
 							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, rel_path_old);
 
 							p_base->set(propertyname, rel_path_new);
 							break;
+						}
+
+						// update if the node itself moved up/down the tree hirarchy
+						if (root_path == F->get().first) {
+							NodePath abs_path = NodePath(String(root_path).plus_file(p)).simplified();
+							NodePath rel_path_new = F->get().second.rel_path_to(abs_path);
+
+							editor_data->get_undo_redo().add_do_property(p_base, propertyname, rel_path_new);
+							editor_data->get_undo_redo().add_undo_property(p_base, propertyname, p);
+
+							p_base->set(propertyname, rel_path_new);
 						}
 					}
 				}
@@ -2113,8 +2128,12 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 				continue;
 
 			if (E->get().name == "__meta__") {
-				if (Object::cast_to<CanvasItem>(newnode)) {
-					Dictionary metadata = n->get(E->get().name);
+				Dictionary metadata = n->get(E->get().name);
+				if (metadata.has("_editor_description_")) {
+					newnode->set_meta("_editor_description_", metadata["_editor_description_"]);
+				}
+
+				if (Object::cast_to<CanvasItem>(newnode) || Object::cast_to<Spatial>(newnode)) {
 					if (metadata.has("_edit_group_") && metadata["_edit_group_"]) {
 						newnode->set_meta("_edit_group_", true);
 					}

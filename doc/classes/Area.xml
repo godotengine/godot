@@ -7,6 +7,8 @@
 		3D area that detects [CollisionObject] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping).
 	</description>
 	<tutorials>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
 	</tutorials>
 	<methods>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -87,7 +89,8 @@
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.1">
-			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
+			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="audio_bus_name" type="String" setter="set_audio_bus" getter="get_audio_bus" default="&quot;Master&quot;">
 			The name of the area's audio bus.
@@ -96,10 +99,10 @@
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
-			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask]. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask]. See [url=https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers this area scans to determine collision detection. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+			The physics layers this area scans to determine collision detection. See [url=https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="9.8">
 			The area's gravity intensity (ranges from -1024 to 1024). This value multiplies the gravity vector. This is useful to alter the force of gravity without altering its direction.
@@ -114,7 +117,8 @@
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
-			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
+			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
+			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
 			If [code]true[/code], other monitoring areas can detect this area.

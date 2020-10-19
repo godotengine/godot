@@ -9,7 +9,7 @@
 		Note: By default Godot will only render 16 reflection probes. If you need more, increase the number of atlas subdivisions. This setting can be found in [member ProjectSettings.rendering/quality/reflections/atlas_subdiv].
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/reflection_probes.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/3d/reflection_probes.html</link>
 	</tutorials>
 	<methods>
 	</methods>

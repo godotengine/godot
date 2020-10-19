@@ -7,6 +7,7 @@
 		[Control] node displaying a color picker widget. It's useful for selecting a color from an RGB/RGBA colorspace.
 	</description>
 	<tutorials>
+		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
 	</tutorials>
 	<methods>
 		<method name="add_preset">

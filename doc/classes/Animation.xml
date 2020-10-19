@@ -17,7 +17,7 @@
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/animation/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_track">
@@ -670,6 +670,17 @@
 				Returns the update mode of a value track.
 			</description>
 		</method>
+		<method name="value_track_interpolate" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="track_idx" type="int">
+			</argument>
+			<argument index="1" name="time_sec" type="float">
+			</argument>
+			<description>
+				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
+			</description>
+		</method>
 		<method name="value_track_set_update_mode">
 			<return type="void">
 			</return>
@@ -679,17 +690,6 @@
 			</argument>
 			<description>
 				Sets the update mode (see [enum UpdateMode]) of a value track.
-			</description>
-		</method>
-		<method name="value_track_interpolate" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="track_idx" type="int">
-			</argument>
-			<argument index="1" name="time_sec" type="float">
-			</argument>
-			<description>
-				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
 			</description>
 		</method>
 	</methods>

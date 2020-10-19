@@ -22,6 +22,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<methods>
 		<method name="NodePath">

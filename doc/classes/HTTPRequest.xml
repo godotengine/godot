@@ -67,8 +67,8 @@
 		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_request_class.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/networking/http_request_class.html</link>
+		<link>https://docs.godotengine.org/en/3.2/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<methods>
 		<method name="cancel_request">

@@ -17,7 +17,8 @@
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]), it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call, Godot will use its [NodePath] (make sure node names are the same on all peers). Also, take a look at the high-level networking tutorial and corresponding demos.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="Scenes and nodes">https://docs.godotengine.org/en/3.2/getting_started/step_by_step/scenes_and_nodes.html</link>
+		<link title="All Demos">https://github.com/godotengine/godot-demo-projects/</link>
 	</tutorials>
 	<methods>
 		<method name="_enter_tree" qualifiers="virtual">
@@ -134,7 +135,7 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
-				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
+				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/3.2/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
 		<method name="add_child_below_node">
@@ -839,6 +840,7 @@
 		</member>
 		<member name="name" type="String" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
+			[b]Note:[/b] Auto-generated names might include the [code]@[/code] character, which is reserved for unique names when using [method add_child]. When setting the name manually, any [code]@[/code] will be removed.
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any other node as owner (as long as it is a valid parent, grandparent, etc. ascending in the tree). When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex [SceneTree]s, with instancing and subinstancing.

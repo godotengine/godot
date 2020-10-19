@@ -7,6 +7,9 @@
 		Panel is a [Control] that displays an opaque background. It's commonly used as a parent and container for other types of [Control] nodes.
 	</description>
 	<tutorials>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Finite State Machine Demo">https://godotengine.org/asset-library/asset/516</link>
+		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>
 	</tutorials>
 	<methods>
 	</methods>

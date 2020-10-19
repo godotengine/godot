@@ -362,7 +362,7 @@ if selected_platform in platform_list:
         env.Prepend(CCFLAGS=["/std:c++14"])
 
     # Configure compiler warnings
-    if env.msvc:
+    if env.msvc:  # MSVC
         # Truncations, narrowing conversions, signed/unsigned comparisons...
         disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
         if env["warnings"] == "extra":
@@ -375,25 +375,23 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/w"])
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=["/EHsc"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
-        # Force to use Unicode encoding
-        env.Append(MSVC_FLAGS=["/utf8"])
-    else:  # Rest of the world
+    else:  # GCC, Clang
         version = methods.get_compiler_version(env) or [-1, -1]
 
-        shadow_local_warning = []
-        all_plus_warnings = ["-Wwrite-strings"]
+        gcc_common_warnings = []
 
         if methods.using_gcc(env):
-            env.Append(CCFLAGS=["-Wno-misleading-indentation"])
+            gcc_common_warnings += ["-Wno-misleading-indentation"]
             if version[0] >= 7:
-                shadow_local_warning = ["-Wshadow-local"]
+                gcc_common_warnings += ["-Wshadow-local"]
 
         if env["warnings"] == "extra":
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wno-unused-parameter"] + all_plus_warnings + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + gcc_common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -409,11 +407,12 @@ if selected_platform in platform_list:
                 if version[0] >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall"] + gcc_common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + gcc_common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
         else:  # always enable those errors

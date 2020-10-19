@@ -73,7 +73,9 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/3.2/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="clear">

@@ -535,33 +535,52 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 		}
 
 		while (*this_str) {
-
-			if (!*that_str)
+			if (!*that_str) {
 				return 1;
-			else if (IS_DIGIT(*this_str)) {
-
-				int64_t this_int, that_int;
-
-				if (!IS_DIGIT(*that_str))
+			} else if (IS_DIGIT(*this_str)) {
+				if (!IS_DIGIT(*that_str)) {
 					return -1;
+				}
 
-				/* Compare the numbers */
-				this_int = to_int(this_str);
-				that_int = to_int(that_str);
+				// Keep ptrs to start of numerical sequences
+				const CharType *this_substr = this_str;
+				const CharType *that_substr = that_str;
 
-				if (this_int < that_int)
-					return -1;
-				else if (this_int > that_int)
-					return 1;
-
-				/* Skip */
-				while (IS_DIGIT(*this_str))
+				// Compare lengths of both numerical sequences, ignoring leading zeros
+				while (IS_DIGIT(*this_str)) {
 					this_str++;
-				while (IS_DIGIT(*that_str))
+				}
+				while (IS_DIGIT(*that_str)) {
 					that_str++;
-			} else if (IS_DIGIT(*that_str))
+				}
+				while (*this_substr == '0') {
+					this_substr++;
+				}
+				while (*that_substr == '0') {
+					that_substr++;
+				}
+				int this_len = this_str - this_substr;
+				int that_len = that_str - that_substr;
+
+				if (this_len < that_len) {
+					return -1;
+				} else if (this_len > that_len) {
+					return 1;
+				}
+
+				// If lengths equal, compare lexicographically
+				while (this_substr != this_str && that_substr != that_str) {
+					if (*this_substr < *that_substr) {
+						return -1;
+					} else if (*this_substr > *that_substr) {
+						return 1;
+					}
+					this_substr++;
+					that_substr++;
+				}
+			} else if (IS_DIGIT(*that_str)) {
 				return 1;
-			else {
+			} else {
 				if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
 					return -1;
 				else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than

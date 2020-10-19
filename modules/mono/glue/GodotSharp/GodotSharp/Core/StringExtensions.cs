@@ -401,6 +401,35 @@ namespace Godot
             return instance.Substring(sep + 1);
         }
 
+        /// <summary>
+        /// Converts the given byte array of ASCII encoded text to a string.
+        /// Faster alternative to <see cref="GetStringFromUTF8"/> if the
+        /// content is ASCII-only. Unlike the UTF-8 function this function
+        /// maps every byte to a character in the array. Multibyte sequences
+        /// will not be interpreted correctly. For parsing user input always
+        /// use <see cref="GetStringFromUTF8"/>.
+        /// </summary>
+        /// <param name="bytes">A byte array of ASCII characters (on the range of 0-127).</param>
+        /// <returns>A string created from the bytes.</returns>
+        public static string GetStringFromASCII(this byte[] bytes)
+        {
+            return Encoding.ASCII.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Converts the given byte array of UTF-8 encoded text to a string.
+        /// Slower than <see cref="GetStringFromASCII"/> but supports UTF-8
+        /// encoded data. Use this function if you are unsure about the
+        /// source of the data. For user input this function
+        /// should always be preferred.
+        /// </summary>
+        /// <param name="bytes">A byte array of UTF-8 characters (a character may take up multiple bytes).</param>
+        /// <returns>A string created from the bytes.</returns>
+        public static string GetStringFromUTF8(this byte[] bytes)
+        {
+            return Encoding.UTF8.GetString(bytes);
+        }
+
         // <summary>
         // Hash the string and return a 32 bits integer.
         // </summary>

@@ -9,6 +9,9 @@
 		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary.
 	</description>
 	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="add_property_info">
@@ -213,7 +216,7 @@
 		</member>
 		<member name="application/config/name" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
-			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
+			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=https://docs.godotengine.org/en/3.2/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
@@ -478,7 +481,7 @@
 			[b]Note:[/b] This option is experimental and meant to alleviate stutter experienced by some users. However, some users have experienced a Vsync framerate halving (e.g. from 60 FPS to 30 FPS) when using it.
 		</member>
 		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
-			Search path for project-specific script templates. Script templates will be search both in the editor-specific path and in this project-specific path.
+			Search path for project-specific script templates. Godot will search for script templates both in the editor-specific path and in this project-specific path.
 		</member>
 		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
@@ -567,7 +570,7 @@
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
-		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.150">
+		<member name="input_devices/pointing/ios/touch_delay" type="float" setter="" getter="" default="0.15">
 			Default delay for touch events. This only affects iOS devices.
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
@@ -902,6 +905,7 @@
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default angular damp in 2D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
 			The default gravity strength in 2D.
@@ -921,6 +925,7 @@
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/2d/large_object_surface_threshold_in_cells" type="int" setter="" getter="" default="512">
 			Threshold defining the surface size that constitutes a large object with regard to cells in the broad-phase 2D hash grid algorithm.
@@ -947,6 +952,7 @@
 		</member>
 		<member name="physics/3d/default_angular_damp" type="float" setter="" getter="" default="0.1">
 			The default angular damp in 3D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D.
@@ -966,6 +972,7 @@
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
+			[b]Note:[/b] Good values are in the range [code]0[/code] to [code]1[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Values greater than [code]1[/code] will aim to reduce the velocity to [code]0[/code] in less than a second e.g. a value of [code]2[/code] will aim to reduce the velocity to [code]0[/code] in half a second. A value equal to or greater than the physics frame rate ([member ProjectSettings.physics/common/physics_fps], [code]60[/code] by default) will bring the object to a stop in one iteration.
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
 			Sets which physics engine to use for 3D physics.
@@ -1185,15 +1192,15 @@
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/skinning/force_software_skinning" type="bool" setter="" getter="" default="false">
+			Forces [MeshInstance] to always perform skinning on the CPU (applies to both GLES2 and GLES3).
+			See also [member rendering/quality/skinning/software_skinning_fallback].
+		</member>
 		<member name="rendering/quality/skinning/software_skinning_fallback" type="bool" setter="" getter="" default="true">
 			Allows [MeshInstance] to perform skinning on the CPU when the hardware doesn't support the default GPU skinning process with GLES2.
 			If [code]false[/code], an alternative skinning process on the GPU is used in this case (slower in most cases).
 			See also [member rendering/quality/skinning/force_software_skinning].
 			[b]Note:[/b] When the software skinning fallback is triggered, custom vertex shaders will behave in a different way, because the bone transform will be already applied to the modelview matrix.
-		</member>
-		<member name="rendering/quality/skinning/force_software_skinning" type="bool" setter="" getter="" default="false">
-			Forces [MeshInstance] to always perform skinning on the CPU (applies to both GLES2 and GLES3).
-			See also [member rendering/quality/skinning/software_skinning_fallback].
 		</member>
 		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.17">
 			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.

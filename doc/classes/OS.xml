@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="alert">
@@ -635,7 +636,7 @@
 			<argument index="0" name="tag_name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/latest/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
+				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on platform, build etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=https://docs.godotengine.org/en/3.2/getting_started/workflow/export/feature_tags.html]Feature Tags[/url] documentation for more details.
 				[b]Note:[/b] Tag names are case-sensitive.
 			</description>
 		</method>

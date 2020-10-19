@@ -11,7 +11,9 @@
 		With Bullet physics (the default), the center of mass is the RigidBody3D center. With GodotPhysics, the center of mass is the average of the [CollisionShape] centers.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+		<link title="Physics introduction">https://docs.godotengine.org/en/3.2/tutorials/physics/physics_introduction.html</link>
+		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
@@ -132,6 +134,7 @@
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps RigidBody's rotational forces.
+			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3( 0, 0, 0 )">
 			RigidBody's rotational velocity.
@@ -185,6 +188,7 @@
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
 			The body's linear damp. Cannot be less than -1.0. If this value is different from -1.0, any linear damp derived from the world or areas will be overridden.
+			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
 			The body's linear velocity. Can be used sporadically, but [b]don't set this every frame[/b], because physics may run in another thread and runs at a different granularity. Use [method _integrate_forces] as your process loop for precise control of the body state.

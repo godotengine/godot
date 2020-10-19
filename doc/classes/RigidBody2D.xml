@@ -12,6 +12,8 @@
 		The center of mass is always located at the node's origin without taking into account the [CollisionShape2D] centroid offsets.
 	</description>
 	<tutorials>
+		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/119</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
@@ -117,6 +119,7 @@
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
+			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity.
@@ -161,6 +164,7 @@
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
 			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
+			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
 			The body's linear velocity.
