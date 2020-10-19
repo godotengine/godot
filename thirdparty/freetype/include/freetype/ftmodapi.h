@@ -20,8 +20,7 @@
 #define FTMODAPI_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -65,7 +64,7 @@ FT_BEGIN_HEADER
    *     psnames
    *     raster1
    *     sfnt
-   *     smooth, smooth-lcd, smooth-lcdv
+   *     smooth
    *     truetype
    *     type1
    *     type42
@@ -486,7 +485,7 @@ FT_BEGIN_HEADER
    *
    *   ```
    *     FREETYPE_PROPERTIES=truetype:interpreter-version=35 \
-   *                         cff:no-stem-darkening=1 \
+   *                         cff:no-stem-darkening=0 \
    *                         autofitter:warping=1
    *   ```
    *

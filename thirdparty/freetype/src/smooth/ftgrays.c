@@ -278,12 +278,11 @@ typedef ptrdiff_t  FT_PtrDist;
 #else /* !STANDALONE_ */
 
 
-#include <ft2build.h>
 #include "ftgrays.h"
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
-#include FT_OUTLINE_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
+#include <freetype/ftoutln.h>
 
 #include "ftsmerrs.h"
 
@@ -1649,7 +1648,7 @@ typedef ptrdiff_t  FT_PtrDist;
       if ( !ras.invalid )
         gray_record_cell( RAS_VAR );
 
-      FT_TRACE7(( "band [%d..%d]: %d cell%s\n",
+      FT_TRACE7(( "band [%d..%d]: %ld cell%s\n",
                   ras.min_ey,
                   ras.max_ey,
                   ras.num_cells,

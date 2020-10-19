@@ -21,8 +21,7 @@
 #define OTVMOD_H_
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
+#include <freetype/ftmodapi.h>
 
 
 FT_BEGIN_HEADER

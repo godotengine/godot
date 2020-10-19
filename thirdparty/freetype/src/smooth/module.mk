@@ -18,10 +18,6 @@ FTMODULE_H_COMMANDS += SMOOTH_RENDERER
 define SMOOTH_RENDERER
 $(OPEN_DRIVER) FT_Renderer_Class, ft_smooth_renderer_class $(CLOSE_DRIVER)
 $(ECHO_DRIVER)smooth    $(ECHO_DRIVER_DESC)anti-aliased bitmap renderer$(ECHO_DRIVER_DONE)
-$(OPEN_DRIVER) FT_Renderer_Class, ft_smooth_lcd_renderer_class $(CLOSE_DRIVER)
-$(ECHO_DRIVER)smooth    $(ECHO_DRIVER_DESC)anti-aliased bitmap renderer for LCDs$(ECHO_DRIVER_DONE)
-$(OPEN_DRIVER) FT_Renderer_Class, ft_smooth_lcdv_renderer_class $(CLOSE_DRIVER)
-$(ECHO_DRIVER)smooth    $(ECHO_DRIVER_DESC)anti-aliased bitmap renderer for vertical LCDs$(ECHO_DRIVER_DONE)
 endef
 
 # EOF

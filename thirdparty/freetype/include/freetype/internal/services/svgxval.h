@@ -28,8 +28,8 @@
 #ifndef SVGXVAL_H_
 #define SVGXVAL_H_
 
-#include FT_GX_VALIDATE_H
-#include FT_INTERNAL_VALIDATE_H
+#include <freetype/ftgxval.h>
+#include <freetype/internal/ftvalid.h>
 
 FT_BEGIN_HEADER
 

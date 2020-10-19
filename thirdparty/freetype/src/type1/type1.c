@@ -17,7 +17,6 @@
 
 
 #define FT_MAKE_OPTION_SINGLE_OBJECT
-#include <ft2build.h>
 
 #include "t1afm.c"
 #include "t1driver.c"

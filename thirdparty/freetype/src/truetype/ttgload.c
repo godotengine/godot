@@ -17,15 +17,15 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftdebug.h>
 #include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_OUTLINE_H
-#include FT_DRIVER_H
-#include FT_LIST_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/tttags.h>
+#include <freetype/ftoutln.h>
+#include <freetype/ftdriver.h>
+#include <freetype/ftlist.h>
 
 #include "ttgload.h"
 #include "ttpload.h"
@@ -60,7 +60,7 @@
 #define SAME_X          0x10
 #define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
 #define SAME_Y          0x20
-#define OVERLAP_SIMPLE  0x40  /* we ignore this value                     */
+#define OVERLAP_SIMPLE  0x40  /* retained as FT_OUTLINE_OVERLAP           */
 
 
   /**************************************************************************
@@ -77,7 +77,7 @@
 #define WE_HAVE_A_2X2              0x0080
 #define WE_HAVE_INSTR              0x0100
 #define USE_MY_METRICS             0x0200
-#define OVERLAP_COMPOUND           0x0400  /* we ignore this value */
+#define OVERLAP_COMPOUND           0x0400  /* retained as FT_OUTLINE_OVERLAP */
 #define SCALED_COMPONENT_OFFSET    0x0800
 #define UNSCALED_COMPONENT_OFFSET  0x1000
 
@@ -136,6 +136,11 @@
       *ah  = (FT_UShort)FT_ABS( face->horizontal.Ascender -
                                 face->horizontal.Descender );
     }
+
+#ifdef FT_DEBUG_LEVEL_TRACE
+    if ( !face->vertical_info )
+      FT_TRACE5(( "  [vertical metrics missing, computing values]\n" ));
+#endif
 
     FT_TRACE5(( "  advance height (font units): %d\n", *ah ));
     FT_TRACE5(( "  top side bearing (font units): %d\n", *tsb ));
@@ -333,9 +338,9 @@
     loader->bbox.yMax = FT_NEXT_SHORT( p );
 
     FT_TRACE5(( "  # of contours: %d\n", loader->n_contours ));
-    FT_TRACE5(( "  xMin: %4d  xMax: %4d\n", loader->bbox.xMin,
+    FT_TRACE5(( "  xMin: %4ld  xMax: %4ld\n", loader->bbox.xMin,
                                             loader->bbox.xMax ));
-    FT_TRACE5(( "  yMin: %4d  yMax: %4d\n", loader->bbox.yMin,
+    FT_TRACE5(( "  yMin: %4ld  yMax: %4ld\n", loader->bbox.yMin,
                                             loader->bbox.yMax ));
     loader->cursor = p;
 
@@ -488,6 +493,10 @@
           *flag++ = c;
       }
     }
+
+    /* retain the overlap flag */
+    if ( n_points && outline->tags[0] & OVERLAP_SIMPLE )
+      gloader->base.outline.flags |= FT_OUTLINE_OVERLAP;
 
     /* reading the X coordinates */
 
@@ -2183,6 +2192,11 @@
             goto Exit;
         }
       }
+
+      /* retain the overlap flag */
+      if ( gloader->base.num_subglyphs                         &&
+           gloader->base.subglyphs[0].flags & OVERLAP_COMPOUND )
+        gloader->base.outline.flags |= FT_OUTLINE_OVERLAP;
     }
 
     /***********************************************************************/
@@ -2981,8 +2995,6 @@
       error = compute_glyph_metrics( &loader, glyph_index );
     }
 
-    tt_loader_done( &loader );
-
     /* Set the `high precision' bit flag.                           */
     /* This is _critical_ to get correct output for monochrome      */
     /* TrueType glyphs at all sizes using the bytecode interpreter. */
@@ -2990,6 +3002,15 @@
     if ( !( load_flags & FT_LOAD_NO_SCALE ) &&
          size->metrics->y_ppem < 24         )
       glyph->outline.flags |= FT_OUTLINE_HIGH_PRECISION;
+
+    FT_TRACE1(( "  subglyphs = %u, contours = %hd, points = %hd,"
+                " flags = 0x%.3x\n",
+                loader.gloader->base.num_subglyphs,
+                glyph->outline.n_contours,
+                glyph->outline.n_points,
+                glyph->outline.flags ));
+
+    tt_loader_done( &loader );
 
   Exit:
 #ifdef FT_DEBUG_LEVEL_TRACE

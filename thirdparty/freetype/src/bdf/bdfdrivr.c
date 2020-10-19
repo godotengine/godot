@@ -24,16 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_BDF_H
-#include FT_TRUETYPE_IDS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/ftbdf.h>
+#include <freetype/ttnameid.h>
 
-#include FT_SERVICE_BDF_H
-#include FT_SERVICE_FONT_FORMAT_H
+#include <freetype/internal/services/svbdf.h>
+#include <freetype/internal/services/svfntfmt.h>
 
 #include "bdf.h"
 #include "bdfdrivr.h"
@@ -184,7 +183,8 @@ THE SOFTWARE.
   Exit:
     if ( charcode > 0xFFFFFFFFUL )
     {
-      FT_TRACE1(( "bdf_cmap_char_next: charcode 0x%x > 32bit API" ));
+      FT_TRACE1(( "bdf_cmap_char_next: charcode 0x%lx > 32bit API",
+                  charcode ));
       *acharcode = 0;
       /* XXX: result should be changed to indicate an overflow error */
     }
@@ -402,10 +402,10 @@ THE SOFTWARE.
       bdf_property_t*  prop = NULL;
 
 
-      FT_TRACE4(( "  number of glyphs: allocated %d (used %d)\n",
+      FT_TRACE4(( "  number of glyphs: allocated %ld (used %ld)\n",
                   font->glyphs_size,
                   font->glyphs_used ));
-      FT_TRACE4(( "  number of unencoded glyphs: allocated %d (used %d)\n",
+      FT_TRACE4(( "  number of unencoded glyphs: allocated %ld (used %ld)\n",
                   font->unencoded_size,
                   font->unencoded_used ));
 
@@ -457,13 +457,13 @@ THE SOFTWARE.
         if ( font->font_ascent > 0x7FFF || font->font_ascent < -0x7FFF )
         {
           font->font_ascent = font->font_ascent < 0 ? -0x7FFF : 0x7FFF;
-          FT_TRACE0(( "BDF_Face_Init: clamping font ascent to value %d\n",
+          FT_TRACE0(( "BDF_Face_Init: clamping font ascent to value %ld\n",
                       font->font_ascent ));
         }
         if ( font->font_descent > 0x7FFF || font->font_descent < -0x7FFF )
         {
           font->font_descent = font->font_descent < 0 ? -0x7FFF : 0x7FFF;
-          FT_TRACE0(( "BDF_Face_Init: clamping font descent to value %d\n",
+          FT_TRACE0(( "BDF_Face_Init: clamping font descent to value %ld\n",
                       font->font_descent ));
         }
 
@@ -504,7 +504,7 @@ THE SOFTWARE.
                prop->value.l < -0x504C2L )
           {
             bsize->size = 0x7FFF;
-            FT_TRACE0(( "BDF_Face_Init: clamping point size to value %d\n",
+            FT_TRACE0(( "BDF_Face_Init: clamping point size to value %ld\n",
                         bsize->size ));
           }
           else
@@ -517,7 +517,7 @@ THE SOFTWARE.
           if ( font->point_size > 0x7FFF )
           {
             bsize->size = 0x7FFF;
-            FT_TRACE0(( "BDF_Face_Init: clamping point size to value %d\n",
+            FT_TRACE0(( "BDF_Face_Init: clamping point size to value %ld\n",
                         bsize->size ));
           }
           else
@@ -539,7 +539,7 @@ THE SOFTWARE.
           if ( prop->value.l > 0x7FFF || prop->value.l < -0x7FFF )
           {
             bsize->y_ppem = 0x7FFF << 6;
-            FT_TRACE0(( "BDF_Face_Init: clamping pixel size to value %d\n",
+            FT_TRACE0(( "BDF_Face_Init: clamping pixel size to value %ld\n",
                         bsize->y_ppem ));
           }
           else
@@ -615,7 +615,7 @@ THE SOFTWARE.
         for ( n = 0; n < font->glyphs_size; n++ )
         {
           (face->en_table[n]).enc = cur[n].encoding;
-          FT_TRACE4(( "  idx %d, val 0x%lX\n", n, cur[n].encoding ));
+          FT_TRACE4(( "  idx %ld, val 0x%lX\n", n, cur[n].encoding ));
           (face->en_table[n]).glyph = (FT_UShort)n;
 
           if ( cur[n].encoding == font->default_char )
@@ -624,7 +624,7 @@ THE SOFTWARE.
               face->default_glyph = (FT_UInt)n;
             else
               FT_TRACE1(( "BDF_Face_Init:"
-                          " idx %d is too large for this system\n", n ));
+                          " idx %ld is too large for this system\n", n ));
           }
         }
       }
@@ -825,7 +825,7 @@ THE SOFTWARE.
     bitmap->rows  = glyph.bbx.height;
     bitmap->width = glyph.bbx.width;
     if ( glyph.bpr > FT_INT_MAX )
-      FT_TRACE1(( "BDF_Glyph_Load: too large pitch %d is truncated\n",
+      FT_TRACE1(( "BDF_Glyph_Load: too large pitch %ld is truncated\n",
                    glyph.bpr ));
     bitmap->pitch = (int)glyph.bpr; /* same as FT_Bitmap.pitch */
 
@@ -902,7 +902,8 @@ THE SOFTWARE.
         if ( prop->value.l > 0x7FFFFFFFL || prop->value.l < ( -1 - 0x7FFFFFFFL ) )
         {
           FT_TRACE1(( "bdf_get_bdf_property:"
-                      " too large integer 0x%x is truncated\n" ));
+                      " too large integer 0x%lx is truncated\n",
+                      prop->value.l ));
         }
         aproperty->type      = BDF_PROPERTY_TYPE_INTEGER;
         aproperty->u.integer = (FT_Int32)prop->value.l;
@@ -912,7 +913,8 @@ THE SOFTWARE.
         if ( prop->value.ul > 0xFFFFFFFFUL )
         {
           FT_TRACE1(( "bdf_get_bdf_property:"
-                      " too large cardinal 0x%x is truncated\n" ));
+                      " too large cardinal 0x%lx is truncated\n",
+                      prop->value.ul ));
         }
         aproperty->type       = BDF_PROPERTY_TYPE_CARDINAL;
         aproperty->u.cardinal = (FT_UInt32)prop->value.ul;

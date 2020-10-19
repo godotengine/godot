@@ -664,6 +664,18 @@
   };
 
 
+  const AF_Script_UniRangeRec  af_medf_uniranges[] =
+  {
+    AF_UNIRANGE_REC( 0x16E40, 0x16E9F ),  /* Medefaidrin */
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+  const AF_Script_UniRangeRec  af_medf_nonbase_uniranges[] =
+  {
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+
   const AF_Script_UniRangeRec  af_mong_uniranges[] =
   {
     AF_UNIRANGE_REC(  0x1800,  0x18AF ),  /* Mongolian            */

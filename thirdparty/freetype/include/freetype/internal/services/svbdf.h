@@ -19,8 +19,8 @@
 #ifndef SVBDF_H_
 #define SVBDF_H_
 
-#include FT_BDF_H
-#include FT_INTERNAL_SERVICE_H
+#include <freetype/ftbdf.h>
+#include <freetype/internal/ftserv.h>
 
 
 FT_BEGIN_HEADER

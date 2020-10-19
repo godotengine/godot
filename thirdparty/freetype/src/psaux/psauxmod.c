@@ -16,7 +16,6 @@
  */
 
 
-#include <ft2build.h>
 #include "psauxmod.h"
 #include "psobjs.h"
 #include "t1decode.h"
@@ -171,9 +170,9 @@
   };
 
 
-  FT_CALLBACK_TABLE_DEF
-  const FT_Module_Class  psaux_module_class =
-  {
+  FT_DEFINE_MODULE(
+    psaux_module_class,
+
     0,
     sizeof ( FT_ModuleRec ),
     "psaux",
@@ -185,7 +184,7 @@
     (FT_Module_Constructor)NULL,  /* module_init   */
     (FT_Module_Destructor) NULL,  /* module_done   */
     (FT_Module_Requester)  NULL   /* get_interface */
-  };
+  )
 
 
 /* END */

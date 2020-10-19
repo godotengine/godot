@@ -16,17 +16,16 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
 
 #include "cidgload.h"
 #include "cidload.h"
 
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svpscmap.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/pshints.h>
+#include <freetype/ftdriver.h>
 
 #include "ciderrs.h"
 
@@ -50,7 +49,8 @@
   FT_LOCAL_DEF( void )
   cid_slot_done( FT_GlyphSlot  slot )
   {
-    slot->internal->glyph_hints = NULL;
+    if ( slot->internal )
+      slot->internal->glyph_hints = NULL;
   }
 
 

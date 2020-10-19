@@ -19,7 +19,7 @@
 #ifndef FTCCACHE_H_
 #define FTCCACHE_H_
 
-
+#include <freetype/internal/compiler-macros.h>
 #include "ftcmru.h"
 
 FT_BEGIN_HEADER

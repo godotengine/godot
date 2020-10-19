@@ -20,15 +20,14 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_GZIP_H
+#include <freetype/internal/ftmemory.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftgzip.h>
 #include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#include FT_MODULE_ERRORS_H
+#include <freetype/ftmoderr.h>
 
 #undef FTERRORS_H_
 
@@ -36,7 +35,7 @@
 #define FT_ERR_PREFIX  Gzip_Err_
 #define FT_ERR_BASE    FT_Mod_Err_Gzip
 
-#include FT_ERRORS_H
+#include <freetype/fterrors.h>
 
 
 #ifdef FT_CONFIG_OPTION_USE_ZLIB

@@ -322,6 +322,13 @@
          AF_BLUE_STRINGSET_MLYM,
          AF_COVERAGE_DEFAULT )
 
+  STYLE( medf_dflt, MEDF_DFLT,
+         "Medefaidrin default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_MEDF,
+         AF_BLUE_STRINGSET_MEDF,
+         AF_COVERAGE_DEFAULT )
+
   STYLE( mong_dflt, MONG_DFLT,
          "Mongolian default style",
          AF_WRITING_SYSTEM_LATIN,

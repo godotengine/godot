@@ -4,7 +4,7 @@
  *
  *   WOFFF2 Font table tags (specification).
  *
- * Copyright (C) 1996-2020 by
+ * Copyright (C) 2019-2020 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -20,8 +20,8 @@
 #define WOFF2TAGS_H
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/compiler-macros.h>
 
 
 FT_BEGIN_HEADER

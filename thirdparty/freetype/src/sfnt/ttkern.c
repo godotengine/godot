@@ -17,10 +17,9 @@
  */
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/tttags.h>
 #include "ttkern.h"
 
 #include "sferrors.h"
