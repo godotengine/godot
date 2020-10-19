@@ -182,7 +182,8 @@ private:
 
 	int response_num = 0;
 	Vector<String> response_headers;
-	int read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	int read_chunk_size = 65536;
 
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
