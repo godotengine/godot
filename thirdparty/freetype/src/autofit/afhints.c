@@ -18,8 +18,8 @@
 
 #include "afhints.h"
 #include "aferrors.h"
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
+#include <freetype/internal/ftcalc.h>
+#include <freetype/internal/ftdebug.h>
 
 
   /**************************************************************************

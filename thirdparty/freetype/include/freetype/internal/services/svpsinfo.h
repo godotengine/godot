@@ -19,8 +19,8 @@
 #ifndef SVPSINFO_H_
 #define SVPSINFO_H_
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+#include <freetype/internal/ftserv.h>
+#include <freetype/internal/t1types.h>
 
 
 FT_BEGIN_HEADER

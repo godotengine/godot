@@ -16,18 +16,17 @@
  */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_INTERNAL_POSTSCRIPT_PROPS_H
-#include FT_SERVICE_CID_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_TT_CMAP_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/sfnt.h>
+#include <freetype/internal/psaux.h>
+#include <freetype/internal/ftpsprop.h>
+#include <freetype/internal/services/svcid.h>
+#include <freetype/internal/services/svpsinfo.h>
+#include <freetype/internal/services/svpostnm.h>
+#include <freetype/internal/services/svttcmap.h>
+#include <freetype/internal/services/svcfftl.h>
 
 #include "cffdrivr.h"
 #include "cffgload.h"
@@ -37,16 +36,16 @@
 #include "cffobjs.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_METRICS_VARIATIONS_H
+#include <freetype/internal/services/svmm.h>
+#include <freetype/internal/services/svmetric.h>
 #endif
 
 #include "cfferrs.h"
 
-#include FT_SERVICE_FONT_FORMAT_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_PROPERTIES_H
-#include FT_DRIVER_H
+#include <freetype/internal/services/svfntfmt.h>
+#include <freetype/internal/services/svgldict.h>
+#include <freetype/internal/services/svprop.h>
+#include <freetype/ftdriver.h>
 
 
   /**************************************************************************
@@ -738,7 +737,7 @@
       {
         if ( dict->cid_supplement < FT_INT_MIN ||
              dict->cid_supplement > FT_INT_MAX )
-          FT_TRACE1(( "cff_get_ros: too large supplement %d is truncated\n",
+          FT_TRACE1(( "cff_get_ros: too large supplement %ld is truncated\n",
                       dict->cid_supplement ));
         *supplement = (FT_Int)dict->cid_supplement;
       }
