@@ -311,7 +311,8 @@ vec3 screen_space_dither(vec2 frag_coord) {
 	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
 	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
 
-	return dither.rgb / 255.0;
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	return (dither.rgb - 0.5) / 255.0;
 }
 
 void main() {
@@ -338,7 +339,8 @@ void main() {
 		color = do_fxaa(color, exposure, uv_interp);
 	}
 	if (params.use_debanding) {
-		// Debanding should be done before tonemapping.
+		// For best results, debanding should be done before tonemapping.
+		// Otherwise, we're adding noise to an already-quantized image.
 		color += screen_space_dither(gl_FragCoord.xy);
 	}
 	color = apply_tonemapping(color, params.white);
