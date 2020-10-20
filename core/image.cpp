@@ -2711,6 +2711,7 @@ ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
@@ -3141,6 +3142,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_jpg_from_buffer", "buffer"), &Image::load_jpg_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
@@ -3473,8 +3475,19 @@ Error Image::load_webp_from_buffer(const Vector<uint8_t> &p_array) {
 }
 
 Error Image::load_tga_from_buffer(const Vector<uint8_t> &p_array) {
-	ERR_FAIL_NULL_V_MSG(_tga_mem_loader_func, ERR_UNAVAILABLE, "TGA module was not installed.");
+	ERR_FAIL_NULL_V_MSG(
+			_tga_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The TGA module isn't enabled. Recompile the Godot editor or export template binary with the `module_tga_enabled=yes` SCons option.");
 	return _load_from_buffer(p_array, _tga_mem_loader_func);
+}
+
+Error Image::load_bmp_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_bmp_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The BMP module isn't enabled. Recompile the Godot editor or export template binary with the `module_bmp_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _bmp_mem_loader_func);
 }
 
 void Image::convert_rg_to_ra_rgba8() {
