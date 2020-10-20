@@ -776,7 +776,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	if (mm.is_valid() && dragging) {
 		if (!moving_selection) {
-			emit_signal("_begin_node_move");
+			emit_signal("begin_node_move");
 			moving_selection = true;
 		}
 
@@ -895,7 +895,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			if (moving_selection) {
-				emit_signal("_end_node_move");
+				emit_signal("end_node_move");
 				moving_selection = false;
 			}
 
@@ -1287,8 +1287,8 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
-	ADD_SIGNAL(MethodInfo("_begin_node_move"));
-	ADD_SIGNAL(MethodInfo("_end_node_move"));
+	ADD_SIGNAL(MethodInfo("begin_node_move"));
+	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
 }
 

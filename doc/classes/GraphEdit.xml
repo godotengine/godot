@@ -193,14 +193,9 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="_begin_node_move">
+		<signal name="begin_node_move">
 			<description>
 				Emitted at the beginning of a GraphNode movement.
-			</description>
-		</signal>
-		<signal name="_end_node_move">
-			<description>
-				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
@@ -264,6 +259,11 @@
 		<signal name="duplicate_nodes_request">
 			<description>
 				Emitted when a GraphNode is attempted to be duplicated in the GraphEdit.
+			</description>
+		</signal>
+		<signal name="end_node_move">
+			<description>
+				Emitted at the end of a GraphNode movement.
 			</description>
 		</signal>
 		<signal name="node_selected">
