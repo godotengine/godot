@@ -138,12 +138,6 @@ jobs:
         run: |
           ./bin/godot.linuxbsd.tools.64s --test
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ github.job }}
-          path: bin/*
-          retention-days: 14
-
   linux-template-mono:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
