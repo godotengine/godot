@@ -63,6 +63,8 @@
 
 #define DS_OSX ((DisplayServerOSX *)(DisplayServerOSX::get_singleton()))
 
+static bool ignore_momentum_scroll = false;
+
 static void _get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) {
 	r_state->set_shift((p_osx_state & NSEventModifierFlagShift));
 	r_state->set_control((p_osx_state & NSEventModifierFlagControl));
@@ -1304,6 +1306,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 	ERR_FAIL_COND(!DS_OSX->windows.has(window_id));
 	DisplayServerOSX::WindowData &wd = DS_OSX->windows[window_id];
 
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		NSString *characters = [event characters];
@@ -1348,6 +1352,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 }
 
 - (void)flagsChanged:(NSEvent *)event {
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		DisplayServerOSX::KeyEvent ke;
@@ -1505,6 +1511,14 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 	if ([event hasPreciseScrollingDeltas]) {
 		deltaX *= 0.03;
 		deltaY *= 0.03;
+	}
+
+	if ([event momentumPhase] != NSEventPhaseNone) {
+		if (ignore_momentum_scroll) {
+			return;
+		}
+	} else {
+		ignore_momentum_scroll = false;
 	}
 
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
