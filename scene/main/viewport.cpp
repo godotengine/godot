@@ -3029,6 +3029,17 @@ bool Viewport::get_use_fxaa() const {
 	return use_fxaa;
 }
 
+void Viewport::set_use_debanding(bool p_debanding) {
+
+	use_debanding = p_debanding;
+	VS::get_singleton()->viewport_set_use_debanding(viewport, use_debanding);
+}
+
+bool Viewport::get_use_debanding() const {
+
+	return use_debanding;
+}
+
 void Viewport::set_hdr(bool p_hdr) {
 
 	if (hdr == p_hdr)
@@ -3167,6 +3178,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_fxaa", "enable"), &Viewport::set_use_fxaa);
 	ClassDB::bind_method(D_METHOD("get_use_fxaa"), &Viewport::get_use_fxaa);
 
+	ClassDB::bind_method(D_METHOD("set_use_debanding", "enable"), &Viewport::set_use_debanding);
+	ClassDB::bind_method(D_METHOD("get_use_debanding"), &Viewport::get_use_debanding);
+
 	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
 	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
 
@@ -3256,6 +3270,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fxaa"), "set_use_fxaa", "get_use_fxaa");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debanding"), "set_use_debanding", "get_use_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
@@ -3417,6 +3432,7 @@ Viewport::Viewport() {
 
 	msaa = MSAA_DISABLED;
 	use_fxaa = false;
+	use_debanding = false;
 	hdr = true;
 
 	usage = USAGE_3D;

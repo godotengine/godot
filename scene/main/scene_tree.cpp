@@ -2082,6 +2082,9 @@ SceneTree::SceneTree() {
 	const bool use_fxaa = GLOBAL_DEF("rendering/quality/filters/use_fxaa", false);
 	root->set_use_fxaa(use_fxaa);
 
+	const bool use_debanding = GLOBAL_DEF("rendering/quality/filters/use_debanding", false);
+	root->set_use_debanding(use_debanding);
+
 	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
 

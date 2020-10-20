@@ -7761,6 +7761,14 @@ void RasterizerStorageGLES3::render_target_set_use_fxaa(RID p_render_target, boo
 	rt->use_fxaa = p_fxaa;
 }
 
+void RasterizerStorageGLES3::render_target_set_use_debanding(RID p_render_target, bool p_debanding) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->use_debanding = p_debanding;
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES3::canvas_light_shadow_buffer_create(int p_width) {

@@ -4231,6 +4231,18 @@
 				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
+		<method name="viewport_set_use_debanding">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="debanding" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
+				[b]Note:[/b] Only available on the GLES3 backend. [member Viewport.hdr] must also be [code]true[/code] for debanding to be effective.
+			</description>
+		</method>
 		<method name="viewport_set_use_fxaa">
 			<return type="void">
 			</return>

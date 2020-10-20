@@ -1219,6 +1219,7 @@ public:
 		VS::ViewportMSAA msaa;
 
 		bool use_fxaa;
+		bool use_debanding;
 
 		RID texture;
 
@@ -1240,6 +1241,7 @@ public:
 				used_in_frame(false),
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
 				use_fxaa(false),
+				use_debanding(false),
 				used_dof_blur_near(false),
 				mip_maps_allocated(false) {
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
@@ -1265,6 +1267,7 @@ public:
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
 	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_debanding);
 
 	/* CANVAS SHADOW */
 

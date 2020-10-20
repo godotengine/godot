@@ -709,6 +709,7 @@ public:
 	void render_target_clear_used(RID p_render_target) {}
 	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
 	void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa) {}
+	void render_target_set_use_debanding(RID p_render_target, bool p_debanding) {}
 
 	/* CANVAS SHADOW */
 

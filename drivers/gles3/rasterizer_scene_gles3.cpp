@@ -3627,7 +3627,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa) { //no post process on small render targets
+	if ((!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) && !storage->frame.current_rt->use_fxaa && !storage->frame.current_rt->use_debanding) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
 		if (storage->frame.current_rt->external.fbo != 0) {
 			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->external.fbo);
@@ -3994,6 +3994,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::KEEP_3D_LINEAR, storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR]);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, storage->frame.current_rt->use_fxaa);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, storage->frame.current_rt->use_debanding);
 
 	if (env && max_glow_level >= 0) {
 
@@ -4083,6 +4084,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 	//turn off everything used
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FXAA, false);
+	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_DEBANDING, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_AUTO_EXPOSURE, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_FILMIC_TONEMAPPER, false);
 	state.tonemap_shader.set_conditional(TonemapShaderGLES3::USE_ACES_TONEMAPPER, false);
