@@ -4783,8 +4783,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
-	graph->connect("_begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
-	graph->connect("_end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));
+	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
+	graph->connect("end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_delete));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_duplicate));
 	graph->connect("gui_input", callable_mp(this, &VisualScriptEditor::_graph_gui_input));
