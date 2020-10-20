@@ -53,13 +53,27 @@ class ViewportTexture : public Texture {
 
 	GDCLASS(ViewportTexture, Texture);
 
+public:
+	enum BufferMode {
+		BUFFER_COLOR,
+		BUFFER_DEPTH,
+		BUFFER_DIFFUSE,
+		BUFFER_SPECULAR,
+		BUFFER_NORMAL,
+		BUFFER_SUBSURFACE
+	};
+
+private:
 	NodePath path;
 
 	friend class Viewport;
 	Viewport *vp;
 	uint32_t flags;
 
+	BufferMode buffer_mode;
+
 	RID proxy;
+	RID buffer_rid;
 
 protected:
 	static void _bind_methods();
@@ -81,6 +95,9 @@ public:
 	virtual uint32_t get_flags() const;
 
 	virtual Ref<Image> get_data() const;
+
+	virtual void set_buffer_mode(BufferMode p_buffer_mode);
+	virtual BufferMode get_buffer_mode() const;
 
 	ViewportTexture();
 	~ViewportTexture();
@@ -107,7 +124,6 @@ public:
 		SHADOW_ATLAS_QUADRANT_SUBDIV_256,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_1024,
 		SHADOW_ATLAS_QUADRANT_SUBDIV_MAX,
-
 	};
 
 	enum MSAA {
@@ -271,7 +287,14 @@ private:
 	bool disable_3d;
 	bool keep_3d_linear;
 	UpdateMode update_mode;
-	RID texture_rid;
+
+	RID color_texture_rid;
+	RID depth_texture_rid;
+	RID diffuse_texture_rid;
+	RID specular_texture_rid;
+	RID normal_rough_texture_rid;
+	RID subsurface_texture_rid;
+
 	uint32_t texture_flags;
 
 	DebugDraw debug_draw;
@@ -282,6 +305,7 @@ private:
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
+	bool expose_gbuffer;
 	bool hdr;
 
 	Ref<ViewportTexture> default_texture;
@@ -495,6 +519,9 @@ public:
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
+	void set_expose_gbuffer(bool p_force_mrt);
+	bool is_expose_gbuffer() const;
+
 	void set_hdr(bool p_hdr);
 	bool get_hdr() const;
 
@@ -562,6 +589,8 @@ public:
 	Viewport();
 	~Viewport();
 };
+
+VARIANT_ENUM_CAST(ViewportTexture::BufferMode);
 
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
