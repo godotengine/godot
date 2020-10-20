@@ -680,6 +680,7 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_use_fxaa(RID p_viewport, bool p_fxaa) = 0;
 
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,

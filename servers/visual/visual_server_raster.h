@@ -485,6 +485,7 @@ public:
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
+	BIND2(viewport_set_use_fxaa, RID, bool)
 	BIND2(viewport_set_hdr, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 

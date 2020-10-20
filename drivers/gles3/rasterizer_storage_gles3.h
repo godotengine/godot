@@ -1390,6 +1390,7 @@ public:
 
 		bool used_in_frame;
 		VS::ViewportMSAA msaa;
+		bool use_fxaa;
 
 		RID texture;
 
@@ -1400,7 +1401,8 @@ public:
 				width(0),
 				height(0),
 				used_in_frame(false),
-				msaa(VS::VIEWPORT_MSAA_DISABLED) {
+				msaa(VS::VIEWPORT_MSAA_DISABLED),
+				use_fxaa(false) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1428,6 +1430,7 @@ public:
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_use_fxaa(RID p_render_target, bool p_fxaa);
 
 	/* CANVAS SHADOW */
 

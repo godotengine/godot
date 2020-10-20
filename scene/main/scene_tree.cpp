@@ -2079,6 +2079,9 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
+	const bool use_fxaa = GLOBAL_DEF("rendering/quality/filters/use_fxaa", false);
+	root->set_use_fxaa(use_fxaa);
+
 	GLOBAL_DEF_RST("rendering/quality/depth/hdr", true);
 	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
 

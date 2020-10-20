@@ -2483,6 +2483,9 @@ void SpatialEditorViewport::_notification(int p_what) {
 		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
+		bool use_fxaa = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_fxaa");
+		viewport->set_use_fxaa(use_fxaa);
+
 		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
 		viewport->set_hdr(hdr);
 
