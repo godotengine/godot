@@ -1172,7 +1172,7 @@ void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector2_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
 	BoxContainer *bc;
 
@@ -1258,7 +1258,7 @@ void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
-	bool horizontal = !p_force_wide && bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 
@@ -1353,7 +1353,7 @@ void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, boo
 }
 
 EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 
@@ -1435,7 +1435,7 @@ void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider) {
 }
 
 EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector2_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector2_editing"));
 
 	BoxContainer *bc;
 
@@ -1521,7 +1521,7 @@ void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_no_slider) {
 }
 
 EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 
@@ -1605,7 +1605,7 @@ void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider) {
 }
 
 EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 	if (p_force_wide) {
@@ -1690,7 +1690,7 @@ void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool 
 }
 
 EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
-	bool horizontal = EDITOR_GET("interface/inspector/horizontal_vector_types_editing");
+	bool horizontal = p_force_wide || bool(EDITOR_GET("interface/inspector/horizontal_vector_types_editing"));
 
 	BoxContainer *bc;
 

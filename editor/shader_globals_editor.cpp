@@ -284,7 +284,13 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return Vector3i();
 		}
 		case RS::GLOBAL_VAR_TYPE_UVEC4: {
-			return Rect2i();
+			Vector<int> v4;
+			v4.resize(4);
+			v4.write[0] = 0;
+			v4.write[1] = 0;
+			v4.write[2] = 0;
+			v4.write[3] = 0;
+			return v4;
 		}
 		case RS::GLOBAL_VAR_TYPE_FLOAT: {
 			return 0.0;
@@ -324,7 +330,7 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 		}
 		case RS::GLOBAL_VAR_TYPE_MAT4: {
 			Vector<real_t> xform;
-			xform.resize(4);
+			xform.resize(16);
 			xform.write[0] = 1;
 			xform.write[1] = 0;
 			xform.write[2] = 0;

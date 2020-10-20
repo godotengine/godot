@@ -423,13 +423,13 @@ static String _get_global_variable_from_type_and_index(const String &p_buffer, c
 			return "(" + p_buffer + "[" + p_index + "].x != 0.0)";
 		}
 		case ShaderLanguage::TYPE_BVEC2: {
-			return "(" + p_buffer + "[" + p_index + "].xy != vec2(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xy, vec2(0.0)))";
 		}
 		case ShaderLanguage::TYPE_BVEC3: {
-			return "(" + p_buffer + "[" + p_index + "].xyz != vec3(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xyz, vec3(0.0)))";
 		}
 		case ShaderLanguage::TYPE_BVEC4: {
-			return "(" + p_buffer + "[" + p_index + "].xyzw != vec4(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xyzw, vec4(0.0)))";
 		}
 		case ShaderLanguage::TYPE_INT: {
 			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].x)";
@@ -444,16 +444,16 @@ static String _get_global_variable_from_type_and_index(const String &p_buffer, c
 			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyzw)";
 		}
 		case ShaderLanguage::TYPE_UINT: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].x)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].x)";
 		}
 		case ShaderLanguage::TYPE_UVEC2: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xy)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xy)";
 		}
 		case ShaderLanguage::TYPE_UVEC3: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyz)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyz)";
 		}
 		case ShaderLanguage::TYPE_UVEC4: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyzw)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyzw)";
 		}
 		case ShaderLanguage::TYPE_FLOAT: {
 			return "(" + p_buffer + "[" + p_index + "].x)";
