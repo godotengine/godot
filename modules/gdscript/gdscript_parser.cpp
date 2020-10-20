@@ -4630,6 +4630,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						if (subexpr->type != Node::TYPE_CONSTANT) {
 							current_export = PropertyInfo();
 							_set_error("Expected a constant expression.");
+							return;
 						}
 
 						Variant constant = static_cast<ConstantNode *>(subexpr)->value;
