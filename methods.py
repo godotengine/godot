@@ -702,6 +702,24 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
+def get_darwin_sdk_version(platform):
+    sdk_name = ""
+    if platform == "osx":
+        sdk_name = "macosx"
+    elif platform == "iphone":
+        sdk_name = "iphoneos"
+    elif platform == "iphonesimulator":
+        sdk_name = "iphonesimulator"
+    else:
+        raise Exception("Invalid platform argument passed to get_darwin_sdk_version")
+
+    try:
+        return float(decode_utf8(subprocess.check_output(["xcrun", "--sdk", sdk_name, "--show-sdk-version"]).strip()))
+    except (subprocess.CalledProcessError, OSError):
+        print("Failed to find SDK version while running xcrun --sdk {} --show-sdk-version.".format(sdk_name))
+        raise
+
+
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
     if platform == "osx":
