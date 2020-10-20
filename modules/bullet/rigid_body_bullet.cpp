@@ -48,8 +48,6 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectBodyState3D *BulletPhysicsDirectBodyState3D::singleton = nullptr;
-
 Vector3 BulletPhysicsDirectBodyState3D::get_total_gravity() const {
 	Vector3 gVec;
 	B_TO_G(body->btBody->getGravity(), gVec);
@@ -194,6 +192,10 @@ Vector3 BulletPhysicsDirectBodyState3D::get_contact_collider_velocity_at_positio
 	return velocityAtPoint;
 }
 
+real_t BulletPhysicsDirectBodyState3D::get_step() const {
+	return body->get_space()->get_delta_time();
+}
+
 PhysicsDirectSpaceState3D *BulletPhysicsDirectBodyState3D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
@@ -279,11 +281,14 @@ RigidBodyBullet::RigidBodyBullet() :
 
 	prev_collision_traces = &collision_traces_1;
 	curr_collision_traces = &collision_traces_2;
+
+	direct_access = memnew(BulletPhysicsDirectBodyState3D);
+	direct_access->body = this;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
 	bulletdelete(godotMotionState);
-
+	memdelete(direct_access);
 	if (force_integration_callback) {
 		memdelete(force_integration_callback);
 	}
@@ -342,9 +347,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 			btBody->clearForces();
 		}
 
-		BulletPhysicsDirectBodyState3D *bodyDirect = BulletPhysicsDirectBodyState3D::get_singleton(this);
-
-		Variant variantBodyDirect = bodyDirect;
+		Variant variantBodyDirect = direct_access;
 
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {

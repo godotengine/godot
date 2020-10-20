@@ -886,11 +886,9 @@ PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	Body3DSW *body = body_owner.getornull(p_body);
-	ERR_FAIL_COND_V(!body, nullptr);
-	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
-
-	direct_state->body = body;
-	return direct_state;
+	ERR_FAIL_COND_V_MSG(!body, nullptr, "Body with RID " + itos(p_body.get_id()) + " not owned by this server.");
+	ERR_FAIL_COND_V_MSG((body->get_space() && body->get_space()->is_locked()), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	return body->get_direct_state();
 }
 
 /* JOINT API */
@@ -1328,10 +1326,8 @@ void PhysicsServer3DSW::set_active(bool p_active) {
 };
 
 void PhysicsServer3DSW::init() {
-	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(Step3DSW);
-	direct_state = memnew(PhysicsDirectBodyState3DSW);
 };
 
 void PhysicsServer3DSW::step(real_t p_step) {
@@ -1342,9 +1338,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	}
 
 	_update_shapes();
-
-	last_step = p_step;
-	PhysicsDirectBodyState3DSW::singleton->step = p_step;
 
 	island_count = 0;
 	active_objects = 0;
@@ -1421,7 +1414,6 @@ void PhysicsServer3DSW::end_sync() {
 
 void PhysicsServer3DSW::finish() {
 	memdelete(stepper);
-	memdelete(direct_state);
 };
 
 int PhysicsServer3DSW::get_process_info(ProcessInfo p_info) {

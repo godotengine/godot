@@ -141,7 +141,7 @@ void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
 
 void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	p_space->lock(); // can't access space during this
-
+	p_space->set_step(p_delta);
 	p_space->setup(); //update inertias, etc
 
 	const SelfList<Body3DSW>::List *body_list = &p_space->get_active_body_list();

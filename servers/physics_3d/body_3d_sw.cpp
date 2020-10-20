@@ -682,10 +682,7 @@ void Body3DSW::wakeup_neighbours() {
 
 void Body3DSW::call_queries() {
 	if (fi_callback) {
-		PhysicsDirectBodyState3DSW *dbs = PhysicsDirectBodyState3DSW::singleton;
-		dbs->body = this;
-
-		Variant v = dbs;
+		Variant v = direct_access;
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
@@ -772,16 +769,22 @@ Body3DSW::Body3DSW() :
 	continuous_cd = false;
 	can_sleep = true;
 	fi_callback = nullptr;
+
+	direct_access = memnew(PhysicsDirectBodyState3DSW);
+	direct_access->body = this;
 }
 
 Body3DSW::~Body3DSW() {
+	memdelete(direct_access);
 	if (fi_callback) {
 		memdelete(fi_callback);
 	}
 }
 
-PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = nullptr;
-
 PhysicsDirectSpaceState3D *PhysicsDirectBodyState3DSW::get_space_state() {
 	return body->get_space()->get_direct_state();
+}
+
+real_t PhysicsDirectBodyState3DSW::get_step() const {
+	return body->get_space()->get_step();
 }

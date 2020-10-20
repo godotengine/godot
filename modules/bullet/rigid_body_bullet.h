@@ -45,49 +45,15 @@ class AreaBullet;
 class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
-class BulletPhysicsDirectBodyState3D;
 
-/// This class could be used in multi thread with few changes but currently
-/// is set to be only in one single thread.
-///
-/// In the system there is only one object at a time that manage all bodies and is
-/// created by BulletPhysicsServer3D and is held by the "singleton" variable of this class
-/// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState3D : public PhysicsDirectBodyState3D {
 	GDCLASS(BulletPhysicsDirectBodyState3D, PhysicsDirectBodyState3D);
 
-	static BulletPhysicsDirectBodyState3D *singleton;
-
-public:
-	/// This class avoid the creation of more object of this class
-	static void initSingleton() {
-		if (!singleton) {
-			singleton = memnew(BulletPhysicsDirectBodyState3D);
-		}
-	}
-
-	static void destroySingleton() {
-		memdelete(singleton);
-		singleton = nullptr;
-	}
-
-	static void singleton_setDeltaTime(real_t p_deltaTime) {
-		singleton->deltaTime = p_deltaTime;
-	}
-
-	static BulletPhysicsDirectBodyState3D *get_singleton(RigidBodyBullet *p_body) {
-		singleton->body = p_body;
-		return singleton;
-	}
-
 public:
 	RigidBodyBullet *body = nullptr;
-	real_t deltaTime = 0.0;
 
-private:
 	BulletPhysicsDirectBodyState3D() {}
 
-public:
 	virtual Vector3 get_total_gravity() const override;
 	virtual real_t get_total_angular_damp() const override;
 	virtual real_t get_total_linear_damp() const override;
@@ -133,7 +99,7 @@ public:
 	virtual int get_contact_collider_shape(int p_contact_idx) const override;
 	virtual Vector3 get_contact_collider_velocity_at_position(int p_contact_idx) const override;
 
-	virtual real_t get_step() const override { return deltaTime; }
+	virtual real_t get_step() const override;
 	virtual void integrate_forces() override {
 		// Skip the execution of this function
 	}
@@ -185,6 +151,7 @@ public:
 	};
 
 private:
+	BulletPhysicsDirectBodyState3D *direct_access = nullptr;
 	friend class BulletPhysicsDirectBodyState3D;
 
 	// This is required only for Kinematic movement
@@ -228,6 +195,8 @@ private:
 public:
 	RigidBodyBullet();
 	~RigidBodyBullet();
+
+	BulletPhysicsDirectBodyState3D *get_direct_state() const { return direct_access; }
 
 	void init_kinematic_utilities();
 	void destroy_kinematic_utilities();
