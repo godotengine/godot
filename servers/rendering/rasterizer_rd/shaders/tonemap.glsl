@@ -305,8 +305,6 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	}
 }
 
-#define QUARTER_COLOR 1.0 / 1024.0
-
 // From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 // and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
