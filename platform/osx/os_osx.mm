@@ -105,6 +105,7 @@ static int mouse_x = 0;
 static int mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
+static bool ignore_momentum_scroll = false;
 
 static Vector2 get_mouse_pos(NSPoint locationInWindow) {
 
@@ -1179,6 +1180,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 
 - (void)keyDown:(NSEvent *)event {
 
+	ignore_momentum_scroll = true;
+
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
 		NSString *characters = [event characters];
@@ -1218,6 +1221,8 @@ static int remapKey(unsigned int key, unsigned int state) {
 }
 
 - (void)flagsChanged:(NSEvent *)event {
+
+	ignore_momentum_scroll = true;
 
 	// Ignore all input if IME input is in progress
 	if (!imeInputEventInProgress) {
@@ -1359,6 +1364,13 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 		deltaY *= 0.03;
 	}
 
+	if ([event momentumPhase] != NSEventPhaseNone) {
+		if (ignore_momentum_scroll) {
+			return;
+		}
+	} else {
+		ignore_momentum_scroll = false;
+	}
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		sendPanEvent(deltaX, deltaY, [event modifierFlags]);
 	} else {
