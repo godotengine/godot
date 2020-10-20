@@ -55,6 +55,13 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-3.0
 
+Files: ./modules/fbx/fbx_parser/
+Comment: Open Asset Import Library (assimp)
+Copyright: 2006-2016, assimp team
+ 2007-2020, Juan Linietsky, Ariel Manzur.
+ 2014-2020, Godot Engine contributors.
+License: BSD-3-clause and Expat
+
 Files: ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
  ./platform/android/java/res/layout/status_bar_ongoing_event_progress_bar.xml
  ./platform/android/java/src/com/google/android/vending/expansion/downloader/*
@@ -109,11 +116,6 @@ Copyright: 2007, Starbreeze Studios
  2007-2020, Juan Linietsky, Ariel Manzur.
  2014-2020, Godot Engine contributors.
 License: Expat and Zlib
-
-Files: ./thirdparty/assimp/
-Comment: Open Asset Import Library (assimp)
-Copyright: 2006-2016, assimp team
-License: BSD-3-clause
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
