@@ -292,6 +292,16 @@
 				Returns the name of the host OS. Possible values are: [code]"Android"[/code], [code]"iOS"[/code], [code]"HTML5"[/code], [code]"OSX"[/code], [code]"Server"[/code], [code]"Windows"[/code], [code]"UWP"[/code], [code]"X11"[/code].
 			</description>
 		</method>
+		<method name="get_native_handle">
+			<return type="int">
+			</return>
+			<argument index="0" name="handle_type" type="int" enum="OS.HandleType">
+			</argument>
+			<description>
+				Returns internal structure pointers for use in GDNative plugins.
+				[b]Note:[/b] This method is implemented on Linux and Windows (other OSs will soon be supported).
+			</description>
+		</method>
 		<method name="get_power_percent_left">
 			<return type="int">
 			</return>
@@ -1162,6 +1172,34 @@
 		</constant>
 		<constant name="MONTH_DECEMBER" value="12" enum="Month">
 			December.
+		</constant>
+		<constant name="APPLICATION_HANDLE" value="0" enum="HandleType">
+			Application handle:
+			- Windows: [code]HINSTANCE[/code] of the application
+			- MacOS: [code]NSApplication*[/code] of the application (not yet implemented)
+			- Android: [code]JNIEnv*[/code] of the application (not yet implemented)
+		</constant>
+		<constant name="DISPLAY_HANDLE" value="1" enum="HandleType">
+			Display handle:
+			- Linux: [code]X11::Display*[/code] for the display
+		</constant>
+		<constant name="WINDOW_HANDLE" value="2" enum="HandleType">
+			Window handle:
+			- Windows: [code]HWND[/code] of the main window
+			- Linux: [code]X11::Window*[/code] of the main window
+			- MacOS: [code]NSWindow*[/code] of the main window (not yet implemented)
+			- Android: [code]jObject[/code] the main android activity (not yet implemented)
+		</constant>
+		<constant name="WINDOW_VIEW" value="3" enum="HandleType">
+			Window view:
+			- Windows: [code]HDC[/code] of the main window drawing context
+			- MacOS: [code]NSView*[/code] of the main windows view (not yet implemented)
+		</constant>
+		<constant name="OPENGL_CONTEXT" value="4" enum="HandleType">
+			OpenGL Context:
+			- Windows: [code]HGLRC[/code]
+			- Linux: [code]X11::GLXContext[/code]
+			- MacOS: [code]NSOpenGLContext*[/code] (not yet implemented)
 		</constant>
 		<constant name="SCREEN_ORIENTATION_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Landscape screen orientation.

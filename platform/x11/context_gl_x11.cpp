@@ -224,6 +224,14 @@ int ContextGL_X11::get_window_height() {
 	return xwa.height;
 }
 
+void *ContextGL_X11::get_glx_context() {
+	if (p != NULL) {
+		return p->glx_context;
+	} else {
+		return NULL;
+	}
+}
+
 void ContextGL_X11::set_use_vsync(bool p_use) {
 	static bool setup = false;
 	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = NULL;

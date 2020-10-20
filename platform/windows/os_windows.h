@@ -466,6 +466,7 @@ public:
 	virtual void set_console_visible(bool p_enabled);
 	virtual bool is_console_visible() const;
 	virtual void request_attention();
+	virtual void *get_native_handle(int p_handle_type);
 
 	virtual void set_borderless_window(bool p_borderless);
 	virtual bool get_borderless_window();
