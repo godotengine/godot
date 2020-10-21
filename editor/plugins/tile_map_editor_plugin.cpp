@@ -661,9 +661,15 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 		return PoolVector<Vector2>();
 	}
 
+	// Check if the tile variation is the same
+	Vector2 prev_position = node->get_cell_autotile_coord(p_start.x, p_start.y);
 	if (ids.size() == 1 && ids[0] == prev_id) {
-		// Same ID, nothing to change
-		return PoolVector<Vector2>();
+		int current = manual_palette->get_current();
+		Vector2 position = manual_palette->get_item_metadata(current);
+		if (prev_position == position) {
+			// Same ID and variation, nothing to change
+			return PoolVector<Vector2>();
+		}
 	}
 
 	Rect2i r = node->get_used_rect();
