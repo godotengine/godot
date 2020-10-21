@@ -3353,7 +3353,6 @@ Error GDScriptAnalyzer::resolve_program() {
 		}
 		depended_parsers[E->get()]->raise_status(GDScriptParserRef::FULLY_SOLVED);
 	}
-	depended_parsers.clear();
 	return parser->errors.empty() ? OK : ERR_PARSE_ERROR;
 }
 
