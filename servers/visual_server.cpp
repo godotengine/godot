@@ -2442,7 +2442,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/skinning/force_software_skinning", false);
 
 	const char *sz_balance_render_tree = "rendering/quality/spatial_partitioning/render_tree_balance";
-	GLOBAL_DEF(sz_balance_render_tree, 0.17f);
+	GLOBAL_DEF(sz_balance_render_tree, 0.0f);
 	ProjectSettings::get_singleton()->set_custom_property_info(sz_balance_render_tree, PropertyInfo(Variant::REAL, sz_balance_render_tree, PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
 
 	GLOBAL_DEF("rendering/quality/2d/use_software_skinning", true);

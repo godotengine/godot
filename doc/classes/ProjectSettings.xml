@@ -1205,7 +1205,7 @@
 			See also [member rendering/quality/skinning/force_software_skinning].
 			[b]Note:[/b] When the software skinning fallback is triggered, custom vertex shaders will behave in a different way, because the bone transform will be already applied to the modelview matrix.
 		</member>
-		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.17">
+		<member name="rendering/quality/spatial_partitioning/render_tree_balance" type="float" setter="" getter="" default="0.0">
 			The rendering octree balance can be changed to favor smaller ([code]0[/code]), or larger ([code]1[/code]) branches.
 			Larger branches can increase performance significantly in some projects.
 		</member>
