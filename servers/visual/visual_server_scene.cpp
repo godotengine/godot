@@ -103,9 +103,104 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 	camera->vaspect = p_enable;
 }
 
+/* SPATIAL PARTITIONING */
+VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_BVH::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	return _bvh.create(p_userdata, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask) + 1;
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::erase(SpatialPartitionID p_handle) {
+	_bvh.erase(p_handle - 1);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::move(SpatialPartitionID p_handle, const AABB &p_aabb) {
+	_bvh.move(p_handle - 1, p_aabb);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::update() {
+	_bvh.update();
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	_bvh.set_pairable(p_handle - 1, p_pairable, p_pairable_type, p_pairable_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_BVH::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
+	return _bvh.cull_convex(p_convex, p_result_array, p_result_max, p_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_BVH::cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+	return _bvh.cull_aabb(p_aabb, p_result_array, p_result_max, p_subindex_array, p_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_BVH::cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+	return _bvh.cull_segment(p_from, p_to, p_result_array, p_result_max, p_subindex_array, p_mask);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::set_pair_callback(PairCallback p_callback, void *p_userdata) {
+	_bvh.set_pair_callback(p_callback, p_userdata);
+}
+
+void VisualServerScene::SpatialPartitioningScene_BVH::set_unpair_callback(UnpairCallback p_callback, void *p_userdata) {
+	_bvh.set_unpair_callback(p_callback, p_userdata);
+}
+
+///////////////////////
+
+VisualServerScene::SpatialPartitionID VisualServerScene::SpatialPartitioningScene_Octree::create(Instance *p_userdata, const AABB &p_aabb, int p_subindex, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	return _octree.create(p_userdata, p_aabb, p_subindex, p_pairable, p_pairable_type, p_pairable_mask);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::erase(SpatialPartitionID p_handle) {
+	_octree.erase(p_handle);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::move(SpatialPartitionID p_handle, const AABB &p_aabb) {
+	_octree.move(p_handle, p_aabb);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::set_pairable(SpatialPartitionID p_handle, bool p_pairable, uint32_t p_pairable_type, uint32_t p_pairable_mask) {
+	_octree.set_pairable(p_handle, p_pairable, p_pairable_type, p_pairable_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_Octree::cull_convex(const Vector<Plane> &p_convex, Instance **p_result_array, int p_result_max, uint32_t p_mask) {
+	return _octree.cull_convex(p_convex, p_result_array, p_result_max, p_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_Octree::cull_aabb(const AABB &p_aabb, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+	return _octree.cull_aabb(p_aabb, p_result_array, p_result_max, p_subindex_array, p_mask);
+}
+
+int VisualServerScene::SpatialPartitioningScene_Octree::cull_segment(const Vector3 &p_from, const Vector3 &p_to, Instance **p_result_array, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
+	return _octree.cull_segment(p_from, p_to, p_result_array, p_result_max, p_subindex_array, p_mask);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::set_pair_callback(PairCallback p_callback, void *p_userdata) {
+	_octree.set_pair_callback(p_callback, p_userdata);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::set_unpair_callback(UnpairCallback p_callback, void *p_userdata) {
+	_octree.set_unpair_callback(p_callback, p_userdata);
+}
+
+void VisualServerScene::SpatialPartitioningScene_Octree::set_balance(float p_balance) {
+	_octree.set_balance(p_balance);
+}
+
 /* SCENARIO API */
 
-void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int) {
+VisualServerScene::Scenario::Scenario() {
+	debug = VS::SCENARIO_DEBUG_DISABLED;
+
+	bool use_bvh_or_octree = GLOBAL_DEF("rendering/quality/spatial_partitioning/use_bvh", true);
+
+	if (use_bvh_or_octree) {
+		sps = memnew(SpatialPartitioningScene_BVH);
+	} else {
+		sps = memnew(SpatialPartitioningScene_Octree);
+	}
+}
+
+void *VisualServerScene::_instance_pair(void *p_self, SpatialPartitionID, Instance *p_A, int, SpatialPartitionID, Instance *p_B, int) {
 
 	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
@@ -184,7 +279,8 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 
 	return NULL;
 }
-void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
+
+void VisualServerScene::_instance_unpair(void *p_self, SpatialPartitionID, Instance *p_A, int, SpatialPartitionID, Instance *p_B, int, void *udata) {
 
 	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
@@ -260,9 +356,10 @@ RID VisualServerScene::scenario_create() {
 	RID scenario_rid = scenario_owner.make_rid(scenario);
 	scenario->self = scenario_rid;
 
-	scenario->octree.set_balance(GLOBAL_GET("rendering/quality/spatial_partitioning/render_tree_balance"));
-	scenario->octree.set_pair_callback(_instance_pair, this);
-	scenario->octree.set_unpair_callback(_instance_unpair, this);
+	scenario->sps->set_balance(GLOBAL_GET("rendering/quality/spatial_partitioning/render_tree_balance"));
+	scenario->sps->set_pair_callback(_instance_pair, this);
+	scenario->sps->set_unpair_callback(_instance_unpair, this);
+
 	scenario->reflection_probe_shadow_atlas = VSG::scene_render->shadow_atlas_create();
 	VSG::scene_render->shadow_atlas_set_size(scenario->reflection_probe_shadow_atlas, 1024); //make enough shadows for close distance, don't bother with rest
 	VSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 0, 4);
@@ -358,9 +455,9 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			}
 		}
 
-		if (scenario && instance->octree_id) {
-			scenario->octree.erase(instance->octree_id); //make dependencies generated by the octree go away
-			instance->octree_id = 0;
+		if (scenario && instance->spatial_partition_id) {
+			scenario->sps->erase(instance->spatial_partition_id);
+			instance->spatial_partition_id = 0;
 		}
 
 		switch (instance->base_type) {
@@ -511,9 +608,9 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 		instance->scenario->instances.remove(&instance->scenario_item);
 
-		if (instance->octree_id) {
-			instance->scenario->octree.erase(instance->octree_id); //make dependencies generated by the octree go away
-			instance->octree_id = 0;
+		if (instance->spatial_partition_id) {
+			instance->scenario->sps->erase(instance->spatial_partition_id);
+			instance->spatial_partition_id = 0;
 		}
 
 		switch (instance->base_type) {
@@ -677,26 +774,26 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 
 	switch (instance->base_type) {
 		case VS::INSTANCE_LIGHT: {
-			if (VSG::storage->light_get_type(instance->base) != VS::LIGHT_DIRECTIONAL && instance->octree_id && instance->scenario) {
-				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+			if (VSG::storage->light_get_type(instance->base) != VS::LIGHT_DIRECTIONAL && instance->spatial_partition_id && instance->scenario) {
+				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHT, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_REFLECTION_PROBE: {
-			if (instance->octree_id && instance->scenario) {
-				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+			if (instance->spatial_partition_id && instance->scenario) {
+				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_REFLECTION_PROBE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_LIGHTMAP_CAPTURE: {
-			if (instance->octree_id && instance->scenario) {
-				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
+			if (instance->spatial_partition_id && instance->scenario) {
+				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_LIGHTMAP_CAPTURE, p_visible ? VS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
 		case VS::INSTANCE_GI_PROBE: {
-			if (instance->octree_id && instance->scenario) {
-				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
+			if (instance->spatial_partition_id && instance->scenario) {
+				instance->scenario->sps->set_pairable(instance->spatial_partition_id, p_visible, 1 << VS::INSTANCE_GI_PROBE, p_visible ? (VS::INSTANCE_GEOMETRY_MASK | (1 << VS::INSTANCE_LIGHT)) : 0);
 			}
 
 		} break;
@@ -800,7 +897,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID 
 
 	int culled = 0;
 	Instance *cull[1024];
-	culled = scenario->octree.cull_aabb(p_aabb, cull, 1024);
+	culled = scenario->sps->cull_aabb(p_aabb, cull, 1024);
 
 	for (int i = 0; i < culled; i++) {
 
@@ -823,7 +920,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_ray(const Vector3 &p_from, co
 
 	int culled = 0;
 	Instance *cull[1024];
-	culled = scenario->octree.cull_segment(p_from, p_from + p_to * 10000, cull, 1024);
+	culled = scenario->sps->cull_segment(p_from, p_from + p_to * 10000, cull, 1024);
 
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
@@ -846,7 +943,7 @@ Vector<ObjectID> VisualServerScene::instances_cull_convex(const Vector<Plane> &p
 	int culled = 0;
 	Instance *cull[1024];
 
-	culled = scenario->octree.cull_convex(p_convex, cull, 1024);
+	culled = scenario->sps->cull_convex(p_convex, cull, 1024);
 
 	for (int i = 0; i < culled; i++) {
 
@@ -975,7 +1072,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		return;
 	}
 
-	if (p_instance->octree_id == 0) {
+	if (p_instance->spatial_partition_id == 0) {
 
 		uint32_t base_type = 1 << p_instance->base_type;
 		uint32_t pairable_mask = 0;
@@ -994,7 +1091,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 		}
 
 		// not inside octree
-		p_instance->octree_id = p_instance->scenario->octree.create(p_instance, new_aabb, 0, pairable, base_type, pairable_mask);
+		p_instance->spatial_partition_id = p_instance->scenario->sps->create(p_instance, new_aabb, 0, pairable, base_type, pairable_mask);
 
 	} else {
 
@@ -1003,7 +1100,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 			return;
 		*/
 
-		p_instance->scenario->octree.move(p_instance->octree_id, new_aabb);
+		p_instance->scenario->sps->move(p_instance->spatial_partition_id, new_aabb);
 	}
 }
 
@@ -1346,7 +1443,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			if (depth_range_mode == VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
 				//optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
-				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
 				//check distance max and min
 
@@ -1544,7 +1641,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
 				light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
-				int cull_count = p_scenario->octree.cull_convex(light_frustum_planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+				int cull_count = p_scenario->sps->cull_convex(light_frustum_planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
@@ -1609,7 +1706,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 					planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
 
-					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
 
 					for (int j = 0; j < cull_count; j++) {
@@ -1663,7 +1760,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 					Vector<Plane> planes = cm.get_projection_planes(xform);
 
-					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+					int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
 					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
 					for (int j = 0; j < cull_count; j++) {
@@ -1700,7 +1797,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
 
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
-			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
+			int cull_count = p_scenario->sps->cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, VS::INSTANCE_GEOMETRY_MASK);
 
 			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 			for (int j = 0; j < cull_count; j++) {
@@ -1883,7 +1980,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
-	instance_cull_count = scenario->octree.cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
+	instance_cull_count = scenario->sps->cull_convex(planes, instance_cull_result, MAX_INSTANCE_CULL);
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
@@ -3477,9 +3574,19 @@ void VisualServerScene::update_dirty_instances() {
 
 	VSG::storage->update_dirty_resources();
 
+	// this is just to get access to scenario so we can update the spatial partitioning scheme
+	Scenario *scenario = nullptr;
+	if (_instance_update_list.first()) {
+		scenario = _instance_update_list.first()->self()->scenario;
+	}
+
 	while (_instance_update_list.first()) {
 
 		_update_dirty_instance(_instance_update_list.first()->self());
+	}
+
+	if (scenario) {
+		scenario->sps->update();
 	}
 }
 
@@ -3541,6 +3648,7 @@ VisualServerScene::VisualServerScene() {
 
 	render_pass = 1;
 	singleton = this;
+	_use_bvh = false;
 }
 
 VisualServerScene::~VisualServerScene() {
