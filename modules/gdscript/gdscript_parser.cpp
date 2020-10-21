@@ -5628,6 +5628,23 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 			_determine_inheritance(p_class->subclasses[i], p_recursive);
 		}
 	}
+#ifdef DEBUG_METHODS_ENABLED
+	// Check whether script functions override any private callbacks in ClassDB.
+	List<MethodInfo> virtuals;
+	ClassDB::get_virtual_methods(p_class->base_type.native_type, &virtuals);
+	for (int i = 0; i < p_class->functions.size(); i++) {
+		for (const List<MethodInfo>::Element *E = virtuals.front(); E; E = E->next()) {
+			String func_name = p_class->functions[i]->name;
+			if (func_name == E->get().name) {
+				continue; // Overridding virtual methods is the way to go, skip.
+			}
+			if (func_name.begins_with("_") && ClassDB::has_method(p_class->base_type.native_type, func_name)) {
+				_add_warning(GDScriptWarning::FUNCTION_OVERRIDES_INTERNAL_CALLBACK, -1, func_name);
+				break;
+			}
+		}
+	}
+#endif // DEBUG_METHODS_ENABLED
 }
 
 String GDScriptParser::DataType::to_string() const {

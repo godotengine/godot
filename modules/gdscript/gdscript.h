@@ -292,6 +292,7 @@ struct GDScriptWarning {
 		VARIABLE_CONFLICTS_FUNCTION, // Variable has the same name of a function
 		FUNCTION_CONFLICTS_VARIABLE, // Function has the same name of a variable
 		FUNCTION_CONFLICTS_CONSTANT, // Function has the same name of a constant
+		FUNCTION_OVERRIDES_INTERNAL_CALLBACK, // Function has the same name of an internal callback prefixed with "_".
 		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible
 		UNUSED_SIGNAL, // Signal is defined but never emitted
 		RETURN_VALUE_DISCARDED, // Function call returns something but the value isn't used

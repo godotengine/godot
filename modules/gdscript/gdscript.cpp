@@ -2079,6 +2079,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return "Function declaration of '" + symbols[0] + "()' conflicts with a constant of the same name.";
 		} break;
+		case FUNCTION_OVERRIDES_INTERNAL_CALLBACK: {
+			CHECK_SYMBOLS(1);
+			return "Function declaration '" + symbols[0] + "()' overrides internal callback.";
+		} break;
 		case INCOMPATIBLE_TERNARY: {
 			return "Values of the ternary conditional are not mutually compatible.";
 		} break;
@@ -2158,6 +2162,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"VARIABLE_CONFLICTS_FUNCTION",
 		"FUNCTION_CONFLICTS_VARIABLE",
 		"FUNCTION_CONFLICTS_CONSTANT",
+		"FUNCTION_OVERRIDES_INTERNAL_CALLBACK",
 		"INCOMPATIBLE_TERNARY",
 		"UNUSED_SIGNAL",
 		"RETURN_VALUE_DISCARDED",
