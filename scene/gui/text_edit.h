@@ -483,6 +483,7 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_gui_input);
 	void _notification(int p_what);
 
+	String _get_running_quotes(int line_no, int col_no);
 	void _consume_pair_symbol(char32_t ch);
 	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
 
