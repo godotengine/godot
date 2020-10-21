@@ -53,17 +53,9 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void MenuButton::pressed() {
-	{
-		Window *w = Object::cast_to<Window>(get_viewport());
-		if (w && !w->is_embedding_subwindows()) {
-			print_line("windowpos: " + w->get_position());
-		}
-	}
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();
-
-	print_line("screenpos: " + gp);
 	gp.y += get_size().y;
 
 	popup->set_position(gp);
