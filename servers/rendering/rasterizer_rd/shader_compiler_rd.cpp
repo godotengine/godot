@@ -1295,6 +1295,8 @@ void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("textureLod");
 	texture_functions.insert("textureProjLod");
 	texture_functions.insert("textureGrad");
+	texture_functions.insert("textureSize");
+	texture_functions.insert("texelFetch");
 }
 
 ShaderCompilerRD::ShaderCompilerRD() {
