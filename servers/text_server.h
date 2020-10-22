@@ -94,7 +94,8 @@ public:
 		FEATURE_KASHIDA_JUSTIFICATION = 1 << 3,
 		FEATURE_BREAK_ITERATORS = 1 << 4,
 		FEATURE_FONT_SYSTEM = 1 << 5,
-		FEATURE_USE_SUPPORT_DATA = 1 << 6
+		FEATURE_FONT_VARIABLE = 1 << 6,
+		FEATURE_USE_SUPPORT_DATA = 1 << 7
 	};
 
 	struct Glyph {
@@ -246,6 +247,10 @@ public:
 	virtual bool font_get_antialiased(RID p_font) const = 0;
 
 	virtual Dictionary font_get_feature_list(RID p_font) const { return Dictionary(); };
+	virtual Dictionary font_get_variation_list(RID p_font) const { return Dictionary(); };
+
+	virtual void font_set_variation(RID p_font, const String &p_name, double p_value){};
+	virtual double font_get_variation(RID p_font, const String &p_name) const { return 0; };
 
 	virtual void font_set_distance_field_hint(RID p_font, bool p_distance_field) = 0;
 	virtual bool font_get_distance_field_hint(RID p_font) const = 0;

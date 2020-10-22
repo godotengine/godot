@@ -179,6 +179,23 @@
 				Returns underline thickness in pixels.
 			</description>
 		</method>
+		<method name="get_variation" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<description>
+				Returns variation coordinate [code]tag[/code].
+			</description>
+		</method>
+		<method name="get_variation_list" qualifiers="const">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Returns list of supported [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]variation coordinates[/url], each coordinate is returned as [code]tag: Vector3i(min_value,max_value,default_value)[/code].
+				Font variations allow for continuous change of glyph characteristics along some given design axis, such as weight, width or slant.
+			</description>
+		</method>
 		<method name="has_char" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -277,6 +294,17 @@
 			</argument>
 			<description>
 				Adds override for [method is_script_supported].
+			</description>
+		</method>
+		<method name="set_variation">
+			<return type="void">
+			</return>
+			<argument index="0" name="tag" type="String">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+				Sets variation coordinate [code]tag[/code].
 			</description>
 		</method>
 	</methods>

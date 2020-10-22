@@ -68,6 +68,10 @@ public:
 	float get_descent(int p_size) const;
 
 	Dictionary get_feature_list() const;
+	Dictionary get_variation_list() const;
+
+	void set_variation(const String &p_name, double p_value);
+	double get_variation(const String &p_name) const;
 
 	float get_underline_position(int p_size) const;
 	float get_underline_thickness(int p_size) const;
