@@ -191,7 +191,7 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons target=release tools=no module_mono_enabled=yes mono_glue=no
+          scons target=release tools=no module_mono_enabled=yes mono_glue=no debug_symbols=no
           ls -l bin/
 
       - uses: actions/upload-artifact@v2
