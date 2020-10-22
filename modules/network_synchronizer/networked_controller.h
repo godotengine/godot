@@ -152,19 +152,34 @@ private:
 	/// inputs.
 	real_t tick_acceleration = 2.0;
 
-	/// Collect rate (in seconds) used by the server to estabish when to collect
+	/// Collect rate (frames) used by the server to estabish when to collect
 	/// the controller state for a particular peer.
 	/// It's possible to scale down this rate, for a particular peer,
 	/// using the function: set_doll_collect_rate_factor(peer, factor);
-	/// Current default is 20Hz with a physics frame of 60Hz
+	/// Current default is 10Hz.
+	///
+	/// If you set a rate higher than the actual physics frame, you will be
+	/// warned.
 	///
 	/// The collected state is not immediatelly sent to the clients, rather it's
-	/// delayed so to be sent in batch each X seconds. The states marked as
-	/// important are sent immediatelly.
-	real_t doll_epoch_collect_rate = 0.05;
+	/// delayed so to be sent in batch. The states marked as important are
+	/// always collected.
+	int doll_epoch_collect_rate = 10;
 
-	/// Sync rate used to delay state sent, in seconds. Default 200ms.
-	real_t doll_epoch_sync_rate = 0.2;
+	/// The batch size.
+	real_t doll_epoch_batch_sync_rate = 0.5;
+
+	/// To understand how the connection is performing, the doll looks how much
+	/// time a packet need to arrive. Then it averages this result with the time
+	/// of the previous arrived batches.
+	int doll_network_traced_batches = 5;
+
+	/// Used to control the sensitivity a doll react to the network quality
+	/// changes.
+	real_t doll_net_poorness_sentitivity = 2.0;
+
+	/// Max speedup / slodown the doll can apply to recover its epoch buffer size.
+	real_t doll_interpolation_max_speedup = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
@@ -215,11 +230,20 @@ public:
 	void set_tick_acceleration(real_t p_acceleration);
 	real_t get_tick_acceleration() const;
 
-	void set_doll_epoch_collect_rate(real_t p_rate);
-	real_t get_doll_epoch_collect_rate() const;
+	void set_doll_epoch_collect_rate(int p_rate);
+	int get_doll_epoch_collect_rate() const;
 
-	void set_doll_epoch_sync_rate(real_t p_rate);
-	real_t get_doll_epoch_sync_rate() const;
+	void set_doll_epoch_batch_sync_rate(real_t p_rate);
+	real_t get_doll_epoch_batch_sync_rate() const;
+
+	void set_doll_network_traced_batches(int p_traced);
+	int get_doll_network_traced_batches() const;
+
+	void set_doll_net_poorness_sentitivity(real_t p_sensitivity);
+	real_t get_doll_net_poorness_sentitivity() const;
+
+	void set_doll_interpolation_max_speedup(real_t p_speedup);
+	real_t get_doll_interpolation_max_speedup() const;
 
 	uint32_t get_current_input_id() const;
 
@@ -274,7 +298,6 @@ public:
 
 	/* On puppet rpc functions. */
 	void _rpc_doll_notify_sync_pause(uint32_t p_epoch);
-	void _rpc_doll_send_epoch(Vector<uint8_t> p_data);
 	void _rpc_doll_send_epoch_batch(Vector<uint8_t> p_data);
 
 	void process(real_t p_delta);
@@ -318,8 +341,8 @@ struct ServerController : public Controller {
 		int peer = 0;
 		bool active = true;
 		real_t update_rate_factor = 1.0;
-		real_t collect_timer = 0.0;
-		real_t sync_timer = 0.0;
+		int collect_timer = 0; // In frames
+		int collect_threshold = 0; // In frames
 		LocalVector<Vector<uint8_t>> epoch_batch;
 		uint32_t batch_size = 0;
 	};
@@ -341,9 +364,10 @@ struct ServerController : public Controller {
 
 	/// Used to sync the dolls.
 	LocalVector<Peer> peers;
-	DataBuffer epoch_state_data;
+	DataBuffer epoch_state_data_cache;
 	uint32_t epoch = 0;
 	bool is_epoch_important = false;
+	real_t batch_sync_timer = 0.0;
 
 	ServerController(
 			NetworkedController *p_node,
@@ -428,14 +452,13 @@ struct DollController : public Controller {
 	uint32_t current_epoch = UINT32_MAX;
 	real_t advancing_epoch = 0.0;
 	uint32_t missing_epochs = 0;
-
+	real_t next_batch_expected_in = 0.0;
+	// Used to track the time taken for the next batch to arrive.
+	real_t batch_receiver_timer = 0.0;
 	// Any received epoch prior to this one is discarded.
 	uint32_t paused_epoch = 0;
-
-	/// This is the averager size.
-	uint32_t watch_list_size = 60;
-	/// Used to track the balance at each received epoch.
-	RingAverager<int> averager = RingAverager<int>(watch_list_size, 0);
+	/// Used to track how network is performing.
+	RingAverager<real_t> network_watcher = RingAverager<real_t>(1, 0);
 
 	DollController(NetworkedController *p_node);
 	~DollController();

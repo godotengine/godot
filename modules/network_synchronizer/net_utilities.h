@@ -37,6 +37,7 @@
 
 #include "core/local_vector.h"
 #include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
 #include "core/typedefs.h"
 
 #ifdef DEBUG_ENABLED
@@ -74,6 +75,8 @@ public:
 
 	/// Median value.
 	T average() const;
+
+	T get_deviation(T p_mean) const;
 
 private:
 	// Used to avoid accumulate precision loss.
@@ -165,6 +168,20 @@ T RingAverager<T>::average() const {
 	// just to get the right value for the first few frames.
 	return avg_sum / T(data.size());
 #endif
+}
+
+template <class T>
+T RingAverager<T>::get_deviation(T p_mean) const {
+	if (data.size() <= 0) {
+		return T();
+	}
+
+	double r = 0;
+	for (uint32_t i = 0; i < data.size(); i += 1) {
+		r += Math::pow(double(data[i]) - double(p_mean), 2.0);
+	}
+
+	return Math::sqrt(r / double(data.size()));
 }
 
 template <class T>
