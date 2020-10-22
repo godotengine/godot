@@ -415,6 +415,11 @@ public:
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
 	class InternalMethod {
+#ifdef DEBUG_ENABLED
+	protected:
+		StringName method_name;
+		Variant::Type base_type;
+#endif
 	public:
 		enum Flags {
 			FLAG_IS_CONST = 1,
@@ -430,6 +435,12 @@ public:
 
 #ifdef DEBUG_ENABLED
 		virtual String get_argument_name(int p_arg) const = 0;
+		StringName get_name() const {
+			return method_name;
+		}
+		Variant::Type get_base_type() const {
+			return base_type;
+		}
 #endif
 		virtual Vector<Variant> get_default_arguments() const = 0;
 		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) = 0;
