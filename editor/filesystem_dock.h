@@ -71,7 +71,11 @@ public:
 
 	enum FileSortOption {
 		FILE_SORT_NAME = 0,
+		FILE_SORT_NAME_REVERSE,
 		FILE_SORT_TYPE,
+		FILE_SORT_TYPE_REVERSE,
+		FILE_SORT_MODIFIED_TIME,
+		FILE_SORT_MODIFIED_TIME_REVERSE,
 		FILE_SORT_MAX,
 	};
 
@@ -267,16 +271,17 @@ private:
 		StringName type;
 		Vector<String> sources;
 		bool import_broken;
+		uint64_t modified_time;
 
 		bool operator<(const FileInfo &fi) const {
 			return NaturalNoCaseComparator()(name, fi.name);
 		}
 	};
-	struct FileInfoExtensionComparator {
-		bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
-			return NaturalNoCaseComparator()(p_a.name.get_extension() + p_a.name.get_basename(), p_b.name.get_extension() + p_b.name.get_basename());
-		}
-	};
+
+	struct FileInfoTypeComparator;
+	struct FileInfoModifiedTimeComparator;
+
+	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
