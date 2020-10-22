@@ -255,6 +255,7 @@ struct ScriptCodeCompletionOption {
 	String insert_text;
 	Color font_color;
 	RES icon;
+	Variant default_value;
 
 	ScriptCodeCompletionOption() {}
 

@@ -792,6 +792,9 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 							continue;
 						}
 						option = ScriptCodeCompletionOption(member.constant->identifier->name, ScriptCodeCompletionOption::KIND_CONSTANT);
+						if (member.constant->initializer) {
+							option.default_value = member.constant->initializer->reduced_value;
+						}
 						break;
 					case GDScriptParser::ClassNode::Member::CLASS:
 						if (p_only_functions) {
@@ -2404,6 +2407,11 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 			Variant::get_constants_for_type(completion_context.builtin_type, &constants);
 			for (const List<StringName>::Element *E = constants.front(); E != nullptr; E = E->next()) {
 				ScriptCodeCompletionOption option(E->get(), ScriptCodeCompletionOption::KIND_CONSTANT);
+				bool valid = false;
+				Variant default_value = Variant::get_constant_value(completion_context.builtin_type, E->get(), &valid);
+				if (valid) {
+					option.default_value = default_value;
+				}
 				options.insert(option.display, option);
 			}
 		} break;

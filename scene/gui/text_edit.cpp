@@ -1367,6 +1367,10 @@ void TextEdit::_notification(int p_what) {
 				int scrollw = get_theme_constant("completion_scroll_width");
 				Color scrollc = get_theme_color("completion_scroll_color");
 
+#ifdef TOOLS_ENABLED
+				scrollw *= EDSCALE;
+#endif
+
 				const int completion_options_size = completion_options.size();
 				int lines = MIN(completion_options_size, maxlines);
 				int w = 0;
@@ -1388,6 +1392,17 @@ void TextEdit::_notification(int p_what) {
 				const int icon_hsep = get_theme_constant("hseparation", "ItemList");
 				Size2 icon_area_size(get_row_height(), get_row_height());
 				w += icon_area_size.width + icon_hsep;
+
+				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options_size - lines);
+
+				for (int i = 0; i < lines; i++) {
+					int l = line_from + i;
+					ERR_CONTINUE(l < 0 || l >= completion_options_size);
+					if (completion_options[l].default_value.get_type() == Variant::COLOR) {
+						w += icon_area_size.width;
+						break;
+					}
+				}
 
 				int th = h + csb->get_minimum_size().y;
 
@@ -1415,7 +1430,6 @@ void TextEdit::_notification(int p_what) {
 				if (cache.completion_background_color.a > 0.01) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
-				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options_size - lines);
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
 				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
@@ -1437,6 +1451,11 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
+
+					if (completion_options[l].default_value.get_type() == Variant::COLOR) {
+						draw_rect(Rect2(Point2(completion_rect.position.x + completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)completion_options[l].default_value);
+					}
+
 					draw_string(cache.font, title_pos, completion_options[l].display, completion_options[l].font_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
 				}
 
