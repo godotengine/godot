@@ -446,17 +446,7 @@ Variant CreateDialog::instance_selected() {
 	} else {
 		obj = ClassDB::instantiate(selected->get_text(0));
 	}
-
-	// Check if any Object-type property should be instantiated.
-	List<PropertyInfo> pinfo;
-	((Object *)obj)->get_property_list(&pinfo);
-
-	for (const PropertyInfo &pi : pinfo) {
-		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
-			((Object *)obj)->set(pi.name, prop);
-		}
-	}
+	EditorNode::get_editor_data().instantiate_object_properties(obj);
 
 	return obj;
 }

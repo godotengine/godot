@@ -375,6 +375,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 
+			EditorNode::get_editor_data().instantiate_object_properties(obj);
+
 			edited_resource = RES(resp);
 			emit_signal(SNAME("resource_changed"), edited_resource);
 			_update_resource();

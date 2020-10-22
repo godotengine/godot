@@ -269,7 +269,9 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						res->call("set_instance_base_type", owner->get_class());
 					}
 
+					EditorNode::get_editor_data().instantiate_object_properties(obj);
 					v = obj;
+
 					emit_signal(SNAME("variant_changed"));
 
 				} break;
@@ -1080,7 +1082,9 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		ERR_FAIL_COND(!obj);
 		ERR_FAIL_COND(!Object::cast_to<Resource>(obj));
 
+		EditorNode::get_editor_data().instantiate_object_properties(obj);
 		v = obj;
+
 		emit_signal(SNAME("variant_changed"));
 		hide();
 	}
@@ -1270,7 +1274,9 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					ERR_BREAK(!obj);
 					ERR_BREAK(!Object::cast_to<Resource>(obj));
 
+					EditorNode::get_editor_data().instantiate_object_properties(obj);
 					v = obj;
+
 					emit_signal(SNAME("variant_changed"));
 					hide();
 				}
