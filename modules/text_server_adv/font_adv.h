@@ -50,6 +50,10 @@ struct FontDataAdvanced {
 	virtual float get_descent(int p_size) const = 0;
 
 	virtual Dictionary get_feature_list() const { return Dictionary(); };
+	virtual Dictionary get_variation_list() const { return Dictionary(); };
+
+	virtual void set_variation(const String &p_name, double p_value){};
+	virtual double get_variation(const String &p_name) const { return 0; };
 
 	virtual float get_underline_position(int p_size) const = 0;
 	virtual float get_underline_thickness(int p_size) const = 0;

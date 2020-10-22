@@ -161,6 +161,14 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		CustomFontSource->load_resource(custom_font_path_source, default_font_size);
 		CustomFontSource->set_antialiased(font_antialiased);
 		CustomFontSource->set_hinting(font_hinting);
+
+		Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_variations")).split(",");
+		for (int i = 0; i < subtag.size(); i++) {
+			Vector<String> subtag_a = subtag[i].split("=");
+			if (subtag_a.size() == 2) {
+				CustomFontSource->set_variation(subtag_a[0], subtag_a[1].to_float());
+			}
+		}
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
 	}
@@ -281,6 +289,15 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	dfmono->load_memory(_font_Hack_Regular, _font_Hack_Regular_size, "ttf", default_font_size);
 	dfmono->set_antialiased(font_antialiased);
 	dfmono->set_hinting(font_hinting);
+
+	Vector<String> subtag = String(EditorSettings::get_singleton()->get("interface/editor/code_font_custom_variations")).split(",");
+	Dictionary ftrs;
+	for (int i = 0; i < subtag.size(); i++) {
+		Vector<String> subtag_a = subtag[i].split("=");
+		if (subtag_a.size() == 2) {
+			dfmono->set_variation(subtag_a[0], subtag_a[1].to_float());
+		}
+	}
 
 	// Default font
 	MAKE_DEFAULT_FONT(df);

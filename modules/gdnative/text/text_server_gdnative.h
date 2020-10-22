@@ -76,6 +76,10 @@ public:
 	virtual bool font_get_antialiased(RID p_font) const override;
 
 	virtual Dictionary font_get_feature_list(RID p_font) const override;
+	virtual Dictionary font_get_variation_list(RID p_font) const override;
+
+	virtual void font_set_variation(RID p_font, const String &p_name, double p_value) override;
+	virtual double font_get_variation(RID p_font, const String &p_name) const override;
 
 	virtual void font_set_hinting(RID p_font, Hinting p_hinting) override;
 	virtual Hinting font_get_hinting(RID p_font) const override;

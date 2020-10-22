@@ -132,7 +132,7 @@ _FORCE_INLINE_ bool is_linebreak(char32_t p_char) {
 /*************************************************************************/
 
 String TextServerAdvanced::interface_name = "ICU / HarfBuzz / Graphite";
-uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA;
+uint32_t TextServerAdvanced::interface_features = FEATURE_BIDI_LAYOUT | FEATURE_VERTICAL_LAYOUT | FEATURE_SHAPING | FEATURE_KASHIDA_JUSTIFICATION | FEATURE_BREAK_ITERATORS | FEATURE_USE_SUPPORT_DATA | FEATURE_FONT_VARIABLE;
 
 bool TextServerAdvanced::has_feature(Feature p_feature) {
 	return (interface_features & p_feature) == p_feature;
@@ -620,6 +620,27 @@ bool TextServerAdvanced::font_get_antialiased(RID p_font) const {
 	const FontDataAdvanced *fd = font_owner.getornull(p_font);
 	ERR_FAIL_COND_V(!fd, false);
 	return fd->get_antialiased();
+}
+
+Dictionary TextServerAdvanced::font_get_variation_list(RID p_font) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+	return fd->get_variation_list();
+}
+
+void TextServerAdvanced::font_set_variation(RID p_font, const String &p_name, double p_value) {
+	_THREAD_SAFE_METHOD_
+	FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND(!fd);
+	fd->set_variation(p_name, p_value);
+}
+
+double TextServerAdvanced::font_get_variation(RID p_font, const String &p_name) const {
+	_THREAD_SAFE_METHOD_
+	const FontDataAdvanced *fd = font_owner.getornull(p_font);
+	ERR_FAIL_COND_V(!fd, 0);
+	return fd->get_variation(p_name);
 }
 
 void TextServerAdvanced::font_set_distance_field_hint(RID p_font, bool p_distance_field) {
