@@ -198,6 +198,7 @@
 			</return>
 			<description>
 				Deletes the object from memory. Any pre-existing reference to the freed object will become invalid, e.g. [code]is_instance_valid(object)[/code] will return [code]false[/code].
+				[b]Note:[/b] While references to a freed object will be set to [code]null[/code] in debug builds, this does [b]not[/b] happen in release builds. Relying on this behaviour may cause memory corruption or segmentation faults.
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
