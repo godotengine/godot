@@ -65,7 +65,7 @@ void TileMapEditor::_notification(int p_what) {
 
 			paint_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			line_button->set_icon(get_theme_icon("CurveLinear", "EditorIcons"));
-			rectangle_button->set_icon(get_theme_icon("RectangleShape2D", "EditorIcons"));
+			rectangle_button->set_icon(get_theme_icon("Rectangle", "EditorIcons"));
 			bucket_fill_button->set_icon(get_theme_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
 			select_button->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
