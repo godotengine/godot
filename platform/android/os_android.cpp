@@ -846,6 +846,11 @@ void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
 	godot_io_java->set_screen_orientation(p_orientation);
 }
 
+OS::ScreenOrientation OS_Android::get_screen_orientation() const {
+	const int orientation = godot_io_java->get_screen_orientation();
+	return OS::ScreenOrientation(orientation);
+}
+
 String OS_Android::get_unique_id() const {
 
 	String unique_id = godot_io_java->get_unique_id();

@@ -57,6 +57,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
+		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(I)Ljava/lang/String;");
 		_play_video = p_env->GetMethodID(cls, "playVideo", "(Ljava/lang/String;)V");
 		_is_video_playing = p_env->GetMethodID(cls, "isVideoPlaying", "()Z");
@@ -168,6 +169,15 @@ void GodotIOJavaWrapper::set_screen_orientation(int p_orient) {
 	if (_set_screen_orientation) {
 		JNIEnv *env = ThreadAndroid::get_env();
 		env->CallVoidMethod(godot_io_instance, _set_screen_orientation, p_orient);
+	}
+}
+
+int GodotIOJavaWrapper::get_screen_orientation() const {
+	if (_get_screen_orientation) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallIntMethod(godot_io_instance, _get_screen_orientation);
+	} else {
+		return 0;
 	}
 }
 

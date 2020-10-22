@@ -561,6 +561,10 @@ public class GodotIO {
 		}
 	};
 
+	public int getScreenOrientation() {
+		return activity.getRequestedOrientation();
+	}
+
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
 	}
