@@ -394,6 +394,15 @@ bool DirectionalLight3D::is_blend_splits_enabled() const {
 	return blend_splits;
 }
 
+void DirectionalLight3D::set_sky_only(bool p_sky_only) {
+	sky_only = p_sky_only;
+	RS::get_singleton()->light_directional_set_sky_only(light, p_sky_only);
+}
+
+bool DirectionalLight3D::is_sky_only() const {
+	return sky_only;
+}
+
 void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &DirectionalLight3D::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &DirectionalLight3D::get_shadow_mode);
@@ -403,6 +412,9 @@ void DirectionalLight3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_blend_splits", "enabled"), &DirectionalLight3D::set_blend_splits);
 	ClassDB::bind_method(D_METHOD("is_blend_splits_enabled"), &DirectionalLight3D::is_blend_splits_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_sky_only", "priority"), &DirectionalLight3D::set_sky_only);
+	ClassDB::bind_method(D_METHOD("is_sky_only"), &DirectionalLight3D::is_sky_only);
 
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
@@ -414,6 +426,8 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_EXP_RANGE, "0,8192,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_EXP_RANGE, "0,1024,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_in_sky_only"), "set_sky_only", "is_sky_only");
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);

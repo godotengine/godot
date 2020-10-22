@@ -350,6 +350,7 @@ public:
 			float spot_angle;
 			float spot_attenuation;
 			bool has_shadow;
+			bool sky_only;
 		};
 
 		Vector<LightCache> light_cache;

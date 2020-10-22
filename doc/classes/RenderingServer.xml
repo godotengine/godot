@@ -1423,6 +1423,17 @@
 				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
 			</description>
 		</method>
+		<method name="light_directional_set_sky_only">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], this light will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
+			</description>
+		</method>
 		<method name="light_omni_set_shadow_mode">
 			<return type="void">
 			</return>

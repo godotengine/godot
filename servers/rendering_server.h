@@ -436,6 +436,7 @@ public:
 
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
+	virtual void light_directional_set_sky_only(RID p_light, bool p_sky_only) = 0;
 
 	enum LightDirectionalShadowDepthRangeMode {
 		LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE,
