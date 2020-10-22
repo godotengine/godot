@@ -1,9 +1,10 @@
 name: 🤖 Android Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=android verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -18,25 +19,21 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
-      # The system image has a non-working Java version:
-      # /usr/lib/jvm/adoptopenjdk-11-hotspot-amd64/bin/java
-      # openjdk version "11.0.8" 2020-07-14
-      # Install the official version.
-      - name: Install Java
+      # Install dependencies
+      - name: Install Java, Android SDK and NDK
         run: |
           sudo apt-get install openjdk-8-jdk
           sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
           echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
-
-      - name: Install Android SDK and NDK
-        run: |
           java -version
           misc/ci/android-tools-linux.sh
           echo "ANDROID_HOME=$(pwd)/godot-dev/build-tools/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_NDK_ROOT=$(pwd)/godot-dev/build-tools/android-ndk" >> $GITHUB_ENV
+          source ~/.bashrc
 
       # Upload cache on completion and check it out now
       - name: Load .scons_cache directory
@@ -71,4 +68,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=android target=release tools=no
+          scons target=release tools=no
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

@@ -9,9 +9,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      - name: Make apt sources.list use the default Ubuntu repositories
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*
+          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
+          sudo apt-get update
+
       - name: Install dependencies
         run: |
-          sudo apt-get update -qq
           sudo apt-get install -qq dos2unix recode clang-format
           sudo pip3 install black==20.8b1 pygments
 
