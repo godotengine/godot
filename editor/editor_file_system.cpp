@@ -119,6 +119,11 @@ bool EditorFileSystemDirectory::get_file_import_is_valid(int p_idx) const {
 	return files[p_idx]->import_valid;
 }
 
+uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), 0);
+	return files[p_idx]->modified_time;
+}
+
 String EditorFileSystemDirectory::get_file_script_class_name(int p_idx) const {
 	return files[p_idx]->script_class_name;
 }

@@ -87,7 +87,10 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	// Create items for all subdirectories.
-	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+	bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
+	for (int i = reversed ? p_dir->get_subdir_count() - 1 : 0;
+			reversed ? i >= 0 : i < p_dir->get_subdir_count();
+			reversed ? i-- : i++) {
 		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites, p_unfold_path) || parent_should_expand);
 	}
 
@@ -119,14 +122,13 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			fi.name = p_dir->get_file(i);
 			fi.type = p_dir->get_file_type(i);
 			fi.import_broken = !p_dir->get_file_import_is_valid(i);
+			fi.modified_time = p_dir->get_file_modified_time(i);
 
 			file_list.push_back(fi);
 		}
 
 		// Sort the file list if needed.
-		if (file_sort == FILE_SORT_TYPE) {
-			file_list.sort_custom<FileInfoExtensionComparator>();
-		}
+		_sort_file_info_list(file_list);
 
 		// Build the tree.
 		for (List<FileInfo>::Element *E = file_list.front(); E; E = E->next()) {
@@ -615,6 +617,7 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 			fi.type = p_path->get_file_type(i);
 			fi.path = p_path->get_file_path(i);
 			fi.import_broken = !p_path->get_file_import_is_valid(i);
+			fi.modified_time = p_path->get_file_modified_time(i);
 
 			if (_is_file_type_disabled_by_feature_profile(fi.type)) {
 				// This type is disabled, will not appear here.
@@ -626,6 +629,54 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 				return;
 			}
 		}
+	}
+}
+
+struct FileSystemDock::FileInfoTypeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		// Uses the extension, then the icon name to distinguish file types.
+		String icon_path_a = "";
+		String icon_path_b = "";
+		Ref<Texture2D> icon_a = EditorNode::get_singleton()->get_class_icon(p_a.type);
+		if (icon_a.is_valid()) {
+			icon_path_a = icon_a->get_name();
+		}
+		Ref<Texture2D> icon_b = EditorNode::get_singleton()->get_class_icon(p_b.type);
+		if (icon_b.is_valid()) {
+			icon_path_b = icon_b->get_name();
+		}
+		return NaturalNoCaseComparator()(p_a.name.get_extension() + icon_path_a + p_a.name.get_basename(), p_b.name.get_extension() + icon_path_b + p_b.name.get_basename());
+	}
+};
+
+struct FileSystemDock::FileInfoModifiedTimeComparator {
+	bool operator()(const FileInfo &p_a, const FileInfo &p_b) const {
+		return p_a.modified_time > p_b.modified_time;
+	}
+};
+
+void FileSystemDock::_sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list) {
+	// Sort the file list if needed.
+	switch (file_sort) {
+		case FILE_SORT_TYPE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			break;
+		case FILE_SORT_TYPE_REVERSE:
+			r_file_list.sort_custom<FileInfoTypeComparator>();
+			r_file_list.invert();
+			break;
+		case FILE_SORT_MODIFIED_TIME:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			break;
+		case FILE_SORT_MODIFIED_TIME_REVERSE:
+			r_file_list.sort_custom<FileInfoModifiedTimeComparator>();
+			r_file_list.invert();
+			break;
+		case FILE_SORT_NAME_REVERSE:
+			r_file_list.invert();
+			break;
+		default: // FILE_SORT_NAME
+			break;
 	}
 }
 
@@ -718,9 +769,11 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				if (efd) {
 					fi.type = efd->get_file_type(index);
 					fi.import_broken = !efd->get_file_import_is_valid(index);
+					fi.modified_time = efd->get_file_modified_time(index);
 				} else {
 					fi.type = "";
 					fi.import_broken = true;
+					fi.modified_time = 0;
 				}
 
 				if (searched_string.length() == 0 || fi.name.to_lower().find(searched_string) >= 0) {
@@ -762,7 +815,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
 				}
 
-				for (int i = 0; i < efd->get_subdir_count(); i++) {
+				bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
+				for (int i = reversed ? efd->get_subdir_count() - 1 : 0;
+						reversed ? i >= 0 : i < efd->get_subdir_count();
+						reversed ? i-- : i++) {
 					String dname = efd->get_subdir(i)->get_name();
 
 					files->add_item(dname, folder_icon, true);
@@ -782,6 +838,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				fi.path = directory.plus_file(fi.name);
 				fi.type = efd->get_file_type(i);
 				fi.import_broken = !efd->get_file_import_is_valid(i);
+				fi.modified_time = efd->get_file_modified_time(i);
 
 				file_list.push_back(fi);
 			}
@@ -790,9 +847,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	// Sort the file list if needed.
-	if (file_sort == FILE_SORT_TYPE) {
-		file_list.sort_custom<FileInfoExtensionComparator>();
-	}
+	_sort_file_info_list(file_list);
 
 	// Fills the ItemList control node from the FileInfos.
 	String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
@@ -2570,8 +2625,12 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 
 	PopupMenu *p = button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
-	p->add_radio_check_item("Sort by Name", FILE_SORT_NAME);
-	p->add_radio_check_item("Sort by Type", FILE_SORT_TYPE);
+	p->add_radio_check_item("Sort by Name (Ascending)", FILE_SORT_NAME);
+	p->add_radio_check_item("Sort by Name (Descending)", FILE_SORT_NAME_REVERSE);
+	p->add_radio_check_item("Sort by Type (Ascending)", FILE_SORT_TYPE);
+	p->add_radio_check_item("Sort by Type (Descending)", FILE_SORT_TYPE_REVERSE);
+	p->add_radio_check_item("Sort by Last Modified", FILE_SORT_MODIFIED_TIME);
+	p->add_radio_check_item("Sort by First Modified", FILE_SORT_MODIFIED_TIME_REVERSE);
 	p->set_item_checked(file_sort, true);
 	return button;
 }
