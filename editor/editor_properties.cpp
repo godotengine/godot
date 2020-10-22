@@ -2566,7 +2566,17 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				//make visual script the right type
 				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
+			// Check if any Object-type property should be instantiated.
+			List<PropertyInfo> pinfo;
+			obj->get_property_list(&pinfo);
 
+			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+				PropertyInfo pi = E->get();
+				if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
+					Object *prop = ClassDB::instance(pi.class_name);
+					obj->set(pi.name, prop);
+				}
+			}
 			res = Ref<Resource>(resp);
 			emit_changed(get_edited_property(), res);
 			update_property();
