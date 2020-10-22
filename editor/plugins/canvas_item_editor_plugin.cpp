@@ -1235,9 +1235,10 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y += int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
+				const float zoom_factor = b->get_factor() * (int(EditorSettings::get_singleton()->get("editors/2d/zoom_speed")) * .01f);
 				float new_zoom = _get_next_zoom_value(-1);
-				if (b->get_factor() != 1.f) {
-					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
+				if (zoom_factor != 1.f) {
+					new_zoom = zoom * ((new_zoom / zoom - 1.f) * zoom_factor + 1.f);
 				}
 				_zoom_on_position(new_zoom, b->get_position());
 			}
@@ -1250,9 +1251,10 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 				view_offset.y -= int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom * b->get_factor();
 				update_viewport();
 			} else {
+				const float zoom_factor = b->get_factor() * (int(EditorSettings::get_singleton()->get("editors/2d/zoom_speed")) * .01f);
 				float new_zoom = _get_next_zoom_value(1);
-				if (b->get_factor() != 1.f) {
-					new_zoom = zoom * ((new_zoom / zoom - 1.f) * b->get_factor() + 1.f);
+				if (zoom_factor != 1.f) {
+					new_zoom = zoom * ((new_zoom / zoom - 1.f) * zoom_factor + 1.f);
 				}
 				_zoom_on_position(new_zoom, b->get_position());
 			}
