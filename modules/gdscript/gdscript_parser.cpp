@@ -2862,7 +2862,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					return;
 				}
 				StringName n = tokenizer->get_token_literal();
-				tokenizer->advance();
 				if (current_function) {
 					for (int i = 0; i < current_function->arguments.size(); i++) {
 						if (n == current_function->arguments[i]) {
@@ -2879,6 +2878,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					}
 					check_block = check_block->parent_block;
 				}
+				tokenizer->advance();
 
 				//must know when the local variable is declared
 				LocalVarNode *lv = alloc_node<LocalVarNode>();
