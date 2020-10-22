@@ -311,15 +311,15 @@ class CommandQueueMT {
 	/***** BASE *******/
 
 	enum {
-		COMMAND_MEM_SIZE_KB = 256,
-		COMMAND_MEM_SIZE = COMMAND_MEM_SIZE_KB * 1024,
+		DEFAULT_COMMAND_MEM_SIZE_KB = 256,
 		SYNC_SEMAPHORES = 8
 	};
 
 	uint8_t *command_mem;
-	uint32_t read_ptr;
-	uint32_t write_ptr;
+	uint32_t read_ptr_and_epoch;
+	uint32_t write_ptr_and_epoch;
 	uint32_t dealloc_ptr;
+	uint32_t command_mem_size;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex *mutex;
 	Semaphore *sync;
@@ -330,7 +330,11 @@ class CommandQueueMT {
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
+		// Assert that the buffer is big enough to hold at least two messages.
+		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, NULL);
+
 	tryagain:
+		uint32_t write_ptr = write_ptr_and_epoch >> 1;
 
 		if (write_ptr < dealloc_ptr) {
 			// behind dealloc_ptr, check that there is room
@@ -345,7 +349,7 @@ class CommandQueueMT {
 		} else {
 			// ahead of dealloc_ptr, check that there is room
 
-			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {
+			if ((command_mem_size - write_ptr) < alloc_size + sizeof(uint32_t)) {
 				// no room at the end, wrap down;
 
 				if (dealloc_ptr == 0) { // don't want write_ptr to become dealloc_ptr
@@ -358,12 +362,17 @@ class CommandQueueMT {
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((command_mem_size - write_ptr) < 8, NULL);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
-				*p = 0;
-				write_ptr = 0;
+				*p = 1;
+				write_ptr_and_epoch = 0 | (1 & ~write_ptr_and_epoch); // Invert epoch.
+				// See if we can get the thread to run and clear up some more space while we wait.
+				// This is required if alloc_size * 2 + 4 > COMMAND_MEM_SIZE
+				if (sync) {
+					sync->post();
+				}
 				goto tryagain;
 			}
 		}
@@ -377,6 +386,7 @@ class CommandQueueMT {
 		// allocate the command
 		T *cmd = memnew_placement(&command_mem[write_ptr], T);
 		write_ptr += size;
+		write_ptr_and_epoch = (write_ptr << 1) | (write_ptr_and_epoch & 1);
 		return cmd;
 	}
 
@@ -402,17 +412,19 @@ class CommandQueueMT {
 	tryagain:
 
 		// tried to read an empty queue
-		if (read_ptr == write_ptr) {
+		if (read_ptr_and_epoch == write_ptr_and_epoch) {
 			if (p_lock) unlock();
 			return false;
 		}
 
+		uint32_t read_ptr = read_ptr_and_epoch >> 1;
 		uint32_t size_ptr = read_ptr;
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
 
 		if (size == 0) {
+			*(uint32_t *)&command_mem[read_ptr] = 0; // clear in-use bit.
 			//end of ringbuffer, wrap
-			read_ptr = 0;
+			read_ptr_and_epoch = 0 | (1 & ~read_ptr_and_epoch); // Invert epoch.
 			goto tryagain;
 		}
 
@@ -421,6 +433,8 @@ class CommandQueueMT {
 		CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
 
 		read_ptr += size;
+
+		read_ptr_and_epoch = (read_ptr << 1) | (read_ptr_and_epoch & 1);
 
 		if (p_lock) unlock();
 		cmd->call();
