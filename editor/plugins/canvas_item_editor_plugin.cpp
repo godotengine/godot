@@ -52,6 +52,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+#include "scene/resources/dynamic_font.h"
 #include "scene/resources/packed_scene.h"
 
 // Min and Max are power of two in order to play nicely with successive increment.
@@ -5642,6 +5643,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
 	zoom_hb->add_child(zoom_reset);
+	Ref<DynamicFont> font = zoom_reset->get_theme_font("font")->duplicate(false);
+	font->set_outline_size(1);
+	font->set_outline_color(Color(0, 0, 0));
+	zoom_reset->add_theme_font_override("font", font);
+	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_zoom_reset));
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
