@@ -2169,7 +2169,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 			//check shadow..
 
 			if (light) {
-				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(E->get()->base)) {
+				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(E->get()->base) && !(RSG::storage->light_get_type(E->get()->base) == RS::LIGHT_DIRECTIONAL && RSG::storage->light_directional_is_sky_only(E->get()->base))) {
 					lights_with_shadow[directional_shadow_count++] = E->get();
 				}
 				//add to list
@@ -2595,7 +2595,8 @@ void RenderingServerScene::render_probes() {
 							cache->radius != RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_RANGE) ||
 							cache->attenuation != RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_ATTENUATION) ||
 							cache->spot_angle != RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE) ||
-							cache->spot_attenuation != RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION)) {
+							cache->spot_attenuation != RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION) ||
+							cache->sky_only != RSG::storage->light_directional_is_sky_only(instance->base)) {
 						cache_dirty = true;
 					}
 				}
@@ -2664,6 +2665,7 @@ void RenderingServerScene::render_probes() {
 					cache->attenuation = RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_ATTENUATION);
 					cache->spot_angle = RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 					cache->spot_attenuation = RSG::storage->light_get_param(instance->base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
+					cache->sky_only = RSG::storage->light_directional_is_sky_only(instance->base);
 
 					idx++;
 				}

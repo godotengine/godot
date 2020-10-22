@@ -158,6 +158,7 @@ private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
 	ShadowDepthRange shadow_depth_range;
+	bool sky_only = false;
 
 protected:
 	static void _bind_methods();
@@ -171,6 +172,9 @@ public:
 
 	void set_blend_splits(bool p_enable);
 	bool is_blend_splits_enabled() const;
+
+	void set_sky_only(bool p_sky_only);
+	bool is_sky_only() const;
 
 	DirectionalLight3D();
 };

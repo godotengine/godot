@@ -41,6 +41,9 @@
 		</member>
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" override="true" default="0.05" />
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" override="true" default="1.0" />
+		<member name="use_in_sky_only" type="bool" setter="set_sky_only" getter="is_sky_only" default="false">
+			If [code]true[/code], this [DirectionalLight3D] will not be used for anything except sky shaders. Use this for lights that impact your sky shader that you may want to hide from affecting the rest of the scene. For example, you may want to enable this when the sun in your sky shader falls below the horizon.
+		</member>
 	</members>
 	<constants>
 		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">

@@ -4950,6 +4950,20 @@ bool RasterizerStorageRD::light_directional_get_blend_splits(RID p_light) const 
 	return light->directional_blend_splits;
 }
 
+void RasterizerStorageRD::light_directional_set_sky_only(RID p_light, bool p_sky_only) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_sky_only = p_sky_only;
+}
+
+bool RasterizerStorageRD::light_directional_is_sky_only(RID p_light) const {
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, false);
+
+	return light->directional_sky_only;
+}
+
 RS::LightDirectionalShadowMode RasterizerStorageRD::light_directional_get_shadow_mode(RID p_light) {
 	const Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);

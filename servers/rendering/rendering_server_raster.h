@@ -337,6 +337,7 @@ public:
 
 	BIND2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	BIND2(light_directional_set_blend_splits, RID, bool)
+	BIND2(light_directional_set_sky_only, RID, bool)
 	BIND2(light_directional_set_shadow_depth_range_mode, RID, LightDirectionalShadowDepthRangeMode)
 
 	/* PROBE API */

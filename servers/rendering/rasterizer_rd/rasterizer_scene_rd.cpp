@@ -1187,6 +1187,11 @@ void RasterizerSceneRD::sdfgi_update_probes(RID p_render_buffers, RID p_environm
 
 				LightInstance *li = light_instance_owner.getornull(p_directional_light_instances[j]);
 				ERR_CONTINUE(!li);
+
+				if (storage->light_directional_is_sky_only(li->light)) {
+					continue;
+				}
+
 				Vector3 dir = -li->transform.basis.get_axis(Vector3::AXIS_Z);
 				dir.y *= rb->sdfgi->y_mult;
 				dir.normalize();
@@ -4391,6 +4396,11 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 				RID light = light_instance_get_base_light(light_instance);
 
 				l.type = storage->light_get_type(light);
+				if (l.type == RS::LIGHT_DIRECTIONAL && storage->light_directional_is_sky_only(light)) {
+					light_count--;
+					continue;
+				}
+
 				l.attenuation = storage->light_get_param(light, RS::LIGHT_PARAM_ATTENUATION);
 				l.energy = storage->light_get_param(light, RS::LIGHT_PARAM_ENERGY) * storage->light_get_param(light, RS::LIGHT_PARAM_INDIRECT_ENERGY);
 				l.radius = to_cell.basis.xform(Vector3(storage->light_get_param(light, RS::LIGHT_PARAM_RANGE), 0, 0)).length();
@@ -5930,7 +5940,40 @@ void RasterizerSceneRD::_setup_lights(RID *p_light_cull_result, int p_light_cull
 		RS::LightType type = storage->light_get_type(base);
 		switch (type) {
 			case RS::LIGHT_DIRECTIONAL: {
-				if (r_directional_light_count >= cluster.max_directional_lights) {
+				//	Copy to SkyDirectionalLightData
+				if (r_directional_light_count < sky_scene_state.max_directional_lights) {
+					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[r_directional_light_count];
+					Transform light_transform = light_instance_get_base_transform(li);
+					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+					sky_light_data.direction[0] = world_direction.x;
+					sky_light_data.direction[1] = world_direction.y;
+					sky_light_data.direction[2] = -world_direction.z;
+
+					float sign = storage->light_is_negative(base) ? -1 : 1;
+					sky_light_data.energy = sign * storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+
+					Color linear_col = storage->light_get_color(base).to_linear();
+					sky_light_data.color[0] = linear_col.r;
+					sky_light_data.color[1] = linear_col.g;
+					sky_light_data.color[2] = linear_col.b;
+
+					sky_light_data.enabled = true;
+
+					float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+					if (angular_diameter > 0.0) {
+						// I know tan(0) is 0, but let's not risk it with numerical precision.
+						// technically this will keep expanding until reaching the sun, but all we care
+						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
+						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+					} else {
+						angular_diameter = 0.0;
+					}
+					sky_light_data.size = angular_diameter;
+					sky_scene_state.ubo.directional_light_count++;
+				}
+
+				if (r_directional_light_count >= cluster.max_directional_lights || storage->light_directional_is_sky_only(base)) {
 					continue;
 				}
 
@@ -6071,27 +6114,6 @@ void RasterizerSceneRD::_setup_lights(RID *p_light_cull_result, int p_light_cull
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= directional_shadow_quality_radius_get(); // Only use quality radius for PCF
 					}
-				}
-
-				//	Copy to SkyDirectionalLightData
-				if (r_directional_light_count < sky_scene_state.max_directional_lights) {
-					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[r_directional_light_count];
-
-					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
-
-					sky_light_data.direction[0] = world_direction.x;
-					sky_light_data.direction[1] = world_direction.y;
-					sky_light_data.direction[2] = -world_direction.z;
-
-					sky_light_data.energy = light_data.energy / Math_PI;
-
-					sky_light_data.color[0] = light_data.color[0];
-					sky_light_data.color[1] = light_data.color[1];
-					sky_light_data.color[2] = light_data.color[2];
-
-					sky_light_data.enabled = true;
-					sky_light_data.size = angular_diameter;
-					sky_scene_state.ubo.directional_light_count++;
 				}
 
 				r_directional_light_count++;
