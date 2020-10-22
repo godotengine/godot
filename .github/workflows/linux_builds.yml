@@ -1,13 +1,14 @@
 name: 🐧 Linux Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=linuxbsd verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
-  linux-editor:
+  linux-editor-mono:
     runs-on: "ubuntu-20.04"
     name: Editor w/ Mono (target=release_debug, tools=yes)
 
@@ -17,6 +18,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -60,9 +62,16 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          scons tools=yes target=release_debug module_mono_enabled=yes mono_glue=no
+          ls -l bin/
 
-  linux-template:
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
+  linux-template-mono:
     runs-on: "ubuntu-20.04"
     name: Template w/ Mono (target=release, tools=no)
 
@@ -72,6 +81,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -114,9 +124,16 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 target=release tools=no module_mono_enabled=yes mono_glue=no
+          scons target=release tools=no module_mono_enabled=yes mono_glue=no debug_symbols=no
+          ls -l bin/
 
-  linux-sanitizer:
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
+
+  linux-editor-sanitizers:
     runs-on: "ubuntu-20.04"
     name: Editor and exported project with sanitizers (target=debug/release, tools=yes/no, debug_symbols=yes/full, use_ubsan=yes, use_asan=yes)
 
@@ -126,6 +143,7 @@ jobs:
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
+          sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
 
@@ -170,8 +188,9 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=yes target=debug use_ubsan=yes use_asan=yes
-          scons -j2 verbose=yes warnings=all werror=yes platform=x11 tools=no target=release debug_symbols=full use_ubsan=yes use_asan=yes
+          scons tools=yes target=debug use_asan=yes use_ubsan=yes
+          scons tools=no target=release debug_symbols=full use_ubsan=yes use_asan=yes
+          ls -l bin/
 
       # Download and test project to check leaks and invalid memory usage
       - name: Importing and running project project

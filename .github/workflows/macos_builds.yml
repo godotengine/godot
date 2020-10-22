@@ -1,9 +1,10 @@
 name: 🍎 macOS Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=osx verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_LIMIT: 4096
 
 jobs:
@@ -49,7 +50,14 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx tools=yes target=release_debug
+          scons tools=yes target=release_debug
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14
 
   macos-template:
     runs-on: "macos-latest"
@@ -91,4 +99,11 @@ jobs:
         env:
           SCONS_CACHE: ${{github.workspace}}/.scons_cache/
         run: |
-          scons -j2 verbose=yes warnings=all werror=yes platform=osx target=release tools=no
+          scons target=release tools=no debug_symbols=no
+          ls -l bin/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}
+          path: bin/*
+          retention-days: 14

@@ -1,10 +1,11 @@
 name: 🏁 Windows Builds
 on: [push, pull_request]
 
-# Global Cache Settings
+# Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
   GODOT_BASE_BRANCH: 3.2
+  SCONSFLAGS: platform=windows verbose=yes warnings=all werror=yes --jobs=2
   SCONS_CACHE_MSVC_CONFIG: true
   SCONS_CACHE_LIMIT: 4096
 
@@ -54,16 +55,14 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows tools=yes target=release_debug
+        scons tools=yes target=release_debug
+        ls -l bin/
 
-# Build Product Upload (tested and working)
-# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
-# tested this code and it works fine so just enable it to get them back
-#    - name: publishing godot windows-editor
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: windows-editor (x64)
-#        path: bin/godot.windows.opt.tools.64.exe
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.job }}
+        path: bin/*
+        retention-days: 14
 
   windows-template:
     runs-on: "windows-latest"
@@ -106,13 +105,11 @@ jobs:
       env:
         SCONS_CACHE: /.scons_cache/
       run: |
-        scons -j2 verbose=yes warnings=all werror=yes platform=windows target=release tools=no
+        scons target=release tools=no debug_symbols=no
+        ls -l bin/
 
-# Build Product Upload (tested and working)
-# sorry this is disabled until github can give us some more space as we would hit our limit very quickly
-# tested this code and it works fine so just enable it to get them back
-#    - name: publishing godot windows-template
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: windows-template (x64)
-#        path: bin/godot.windows.opt.64.exe
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.job }}
+        path: bin/*
+        retention-days: 14
