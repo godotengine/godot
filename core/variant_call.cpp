@@ -111,13 +111,15 @@ struct _VariantCall {
 		InternalMethod(void (T::*p_method)(P...), const Vector<Variant> &p_default_args
 #ifdef DEBUG_ENABLED
 				,
-				const Vector<String> &p_arg_names
+				const Vector<String> &p_arg_names, const StringName &p_method_name, Variant::Type p_base_type
 #endif
 		) {
 			method = p_method;
 			default_values = p_default_args;
 #ifdef DEBUG_ENABLED
 			argument_names = p_arg_names;
+			method_name = p_method_name;
+			base_type = p_base_type;
 #endif
 		}
 	};
@@ -175,13 +177,15 @@ struct _VariantCall {
 		InternalMethodR(R (T::*p_method)(P...), const Vector<Variant> &p_default_args
 #ifdef DEBUG_ENABLED
 				,
-				const Vector<String> &p_arg_names
+				const Vector<String> &p_arg_names, const StringName &p_method_name, Variant::Type p_base_type
 #endif
 		) {
 			method = p_method;
 			default_values = p_default_args;
 #ifdef DEBUG_ENABLED
 			argument_names = p_arg_names;
+			method_name = p_method_name;
+			base_type = p_base_type;
 #endif
 		}
 	};
@@ -238,13 +242,15 @@ struct _VariantCall {
 		InternalMethodRC(R (T::*p_method)(P...) const, const Vector<Variant> &p_default_args
 #ifdef DEBUG_ENABLED
 				,
-				const Vector<String> &p_arg_names
+				const Vector<String> &p_arg_names, const StringName &p_method_name, Variant::Type p_base_type
 #endif
 		) {
 			method = p_method;
 			default_values = p_default_args;
 #ifdef DEBUG_ENABLED
 			argument_names = p_arg_names;
+			method_name = p_method_name;
+			base_type = p_base_type;
 #endif
 		}
 	};
@@ -338,13 +344,15 @@ struct _VariantCall {
 		InternalMethodRS(R (*p_method)(T *, P...), const Vector<Variant> &p_default_args
 #ifdef DEBUG_ENABLED
 				,
-				const Vector<String> &p_arg_names
+				const Vector<String> &p_arg_names, const StringName &p_method_name, Variant::Type p_base_type
 #endif
 		) {
 			method = p_method;
 			default_values = p_default_args;
 #ifdef DEBUG_ENABLED
 			argument_names = p_arg_names;
+			method_name = p_method_name;
+			base_type = p_base_type;
 #endif
 		}
 	};
@@ -397,7 +405,7 @@ struct _VariantCall {
 		InternalMethodVC(MethodVC p_method, uint32_t p_flags, const Vector<Variant::Type> &p_argument_types, const Variant::Type &p_return_type
 #ifdef DEBUG_ENABLED
 				,
-				const Vector<String> &p_arg_names
+				const Vector<String> &p_arg_names, const StringName &p_method_name, Variant::Type p_base_type
 #endif
 		) {
 			methodvc = p_method;
@@ -406,6 +414,8 @@ struct _VariantCall {
 			base_flags = p_flags;
 #ifdef DEBUG_ENABLED
 			argument_names = p_arg_names;
+			method_name = p_method_name;
+			base_type = p_base_type;
 #endif
 		}
 	};
@@ -427,7 +437,7 @@ struct _VariantCall {
 		ERR_FAIL_COND(type_internal_methods[GetTypeInfo<T>::VARIANT_TYPE].has(p_name));
 #endif
 #ifdef DEBUG_ENABLED
-		Variant::InternalMethod *m = memnew((InternalMethod<T, P...>)(p_method, p_default_args, p_argument_names));
+		Variant::InternalMethod *m = memnew((InternalMethod<T, P...>)(p_method, p_default_args, p_argument_names, p_name, GetTypeInfo<T>::VARIANT_TYPE));
 #else
 		Variant::InternalMethod *m = memnew((InternalMethod<T, P...>)(p_method, p_default_args));
 #endif
@@ -449,7 +459,7 @@ struct _VariantCall {
 
 #endif
 #ifdef DEBUG_ENABLED
-		Variant::InternalMethod *m = memnew((InternalMethodRC<T, R, P...>)(p_method, p_default_args, p_argument_names));
+		Variant::InternalMethod *m = memnew((InternalMethodRC<T, R, P...>)(p_method, p_default_args, p_argument_names, p_name, GetTypeInfo<T>::VARIANT_TYPE));
 #else
 		Variant::InternalMethod *m = memnew((InternalMethodRC<T, R, P...>)(p_method, p_default_args));
 #endif
@@ -471,7 +481,7 @@ struct _VariantCall {
 #endif
 
 #ifdef DEBUG_ENABLED
-		Variant::InternalMethod *m = memnew((InternalMethodR<T, R, P...>)(p_method, p_default_args, p_argument_names));
+		Variant::InternalMethod *m = memnew((InternalMethodR<T, R, P...>)(p_method, p_default_args, p_argument_names, p_name, GetTypeInfo<T>::VARIANT_TYPE));
 #else
 		Variant::InternalMethod *m = memnew((InternalMethodR<T, R, P...>)(p_method, p_default_args));
 #endif
@@ -504,7 +514,7 @@ struct _VariantCall {
 #endif
 
 #ifdef DEBUG_ENABLED
-		Variant::InternalMethod *m = memnew((InternalMethodRS<T, R, P...>)(p_method, p_default_args, p_argument_names));
+		Variant::InternalMethod *m = memnew((InternalMethodRS<T, R, P...>)(p_method, p_default_args, p_argument_names, p_name, GetTypeInfo<T>::VARIANT_TYPE));
 #else
 		Variant::InternalMethod *m = memnew((InternalMethodRS<T, R, P...>)(p_method, p_default_args));
 #endif
@@ -527,7 +537,7 @@ struct _VariantCall {
 	) {
 
 #ifdef DEBUG_ENABLED
-		Variant::InternalMethod *m = memnew(InternalMethodVC(p_method, p_flags, p_argument_types, p_return_type, p_argument_names));
+		Variant::InternalMethod *m = memnew(InternalMethodVC(p_method, p_flags, p_argument_types, p_return_type, p_argument_names, p_name, p_type));
 #else
 		Variant::InternalMethod *m = memnew(InternalMethodVC(p_method, p_flags, p_argument_types, p_return_type));
 #endif
