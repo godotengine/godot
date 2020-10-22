@@ -19,9 +19,9 @@
 #include "t42objs.h"
 #include "t42parse.h"
 #include "t42error.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_LIST_H
-#include FT_TRUETYPE_IDS_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/ftlist.h>
+#include <freetype/ttnameid.h>
 
 
 #undef  FT_COMPONENT
