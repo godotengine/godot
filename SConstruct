@@ -123,6 +123,7 @@ opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
+opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
 
 # Advanced options
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
@@ -199,8 +200,14 @@ if env_base["custom_modules"]:
             Exit(255)
 
 for path in module_search_paths:
+    if path == "modules":
+        # Built-in modules don't have nested modules,
+        # so save the time it takes to parse directories.
+        modules = methods.detect_modules(path, recursive=False)
+    else:  # External.
+        modules = methods.detect_modules(path, env_base["custom_modules_recursive"])
     # Note: custom modules can override built-in ones.
-    modules_detected.update(methods.detect_modules(path))
+    modules_detected.update(modules)
     include_path = os.path.dirname(path)
     if include_path:
         env_base.Prepend(CPPPATH=[include_path])
