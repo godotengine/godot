@@ -37,18 +37,22 @@
 #include <emscripten/html5.h>
 
 class DisplayServerJavaScript : public DisplayServer {
-	//int video_driver_index;
-
-	Vector2 windowed_size;
-
+private:
+	WindowMode window_mode = WINDOW_MODE_WINDOWED;
 	ObjectID window_attached_instance_id = {};
 
+	Callable window_event_callback;
+	Callable input_event_callback;
+	Callable input_text_callback;
+	Callable drop_files_callback;
+
+	String clipboard;
 	Ref<InputEventKey> deferred_key_event;
-	CursorShape cursor_shape = CURSOR_ARROW;
-	String cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant>> cursors_cache;
 	Point2 touches[32];
 
+	char canvas_id[256] = { 0 };
+	bool cursor_inside_canvas = true;
+	CursorShape cursor_shape = CURSOR_ARROW;
 	Point2i last_click_pos = Point2(-100, -100); // TODO check this again.
 	double last_click_ms = 0;
 	int last_click_button_index = -1;
@@ -66,8 +70,6 @@ class DisplayServerJavaScript : public DisplayServer {
 	static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event);
 	static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event);
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
-	static void set_css_cursor(const char *p_cursor);
-	bool is_css_cursor_hidden() const;
 
 	// events
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
@@ -92,22 +94,17 @@ class DisplayServerJavaScript : public DisplayServer {
 
 	static void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	static void request_quit_callback();
+	static void update_clipboard_callback(const char *p_text);
+	static void send_window_event_callback(int p_notification);
+	static void drop_files_js_callback(char **p_filev, int p_filec);
+
 protected:
 	int get_current_video_driver() const;
 
 public:
 	// Override return type to make writing static callbacks less tedious.
 	static DisplayServerJavaScript *get_singleton();
-	static char canvas_id[256];
-
-	WindowMode window_mode = WINDOW_MODE_WINDOWED;
-
-	String clipboard;
-
-	Callable window_event_callback;
-	Callable input_event_callback;
-	Callable input_text_callback;
-	Callable drop_files_callback;
 
 	// utilities
 	bool check_size_force_redraw();

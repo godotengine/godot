@@ -37,6 +37,7 @@
 #include <png.h>
 
 #include "dom_keys.inc"
+#include "godot_js.h"
 
 #define DOM_BUTTON_LEFT 0
 #define DOM_BUTTON_MIDDLE 1
@@ -44,28 +45,17 @@
 #define DOM_BUTTON_XBUTTON1 3
 #define DOM_BUTTON_XBUTTON2 4
 
-char DisplayServerJavaScript::canvas_id[256] = { 0 };
-static bool cursor_inside_canvas = true;
-
 DisplayServerJavaScript *DisplayServerJavaScript::get_singleton() {
 	return static_cast<DisplayServerJavaScript *>(DisplayServer::get_singleton());
 }
 
 // Window (canvas)
 void DisplayServerJavaScript::focus_canvas() {
-	/* clang-format off */
-	EM_ASM(
-		Module['canvas'].focus();
-	);
-	/* clang-format on */
+	godot_js_display_canvas_focus();
 }
 
 bool DisplayServerJavaScript::is_canvas_focused() {
-	/* clang-format off */
-	return EM_ASM_INT_V(
-		return document.activeElement == Module['canvas'];
-	);
-	/* clang-format on */
+	return godot_js_display_canvas_is_focused() != 0;
 }
 
 bool DisplayServerJavaScript::check_size_force_redraw() {
@@ -83,19 +73,17 @@ bool DisplayServerJavaScript::check_size_force_redraw() {
 }
 
 Point2 DisplayServerJavaScript::compute_position_in_canvas(int p_x, int p_y) {
-	int canvas_x = EM_ASM_INT({
-		return Module['canvas'].getBoundingClientRect().x;
-	});
-	int canvas_y = EM_ASM_INT({
-		return Module['canvas'].getBoundingClientRect().y;
-	});
+	DisplayServerJavaScript *display = get_singleton();
+	int canvas_x;
+	int canvas_y;
+	godot_js_display_canvas_bounding_rect_position_get(&canvas_x, &canvas_y);
 	int canvas_width;
 	int canvas_height;
-	emscripten_get_canvas_element_size(canvas_id, &canvas_width, &canvas_height);
+	emscripten_get_canvas_element_size(display->canvas_id, &canvas_width, &canvas_height);
 
 	double element_width;
 	double element_height;
-	emscripten_get_element_css_size(canvas_id, &element_width, &element_height);
+	emscripten_get_element_css_size(display->canvas_id, &element_width, &element_height);
 
 	return Point2((int)(canvas_width / element_width * (p_x - canvas_x)),
 			(int)(canvas_height / element_height * (p_y - canvas_y)));
@@ -105,8 +93,7 @@ EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, co
 	DisplayServerJavaScript *display = get_singleton();
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
-	String canvas_str_id = String::utf8(canvas_id);
-	if (target_id.empty() || target_id == canvas_str_id) {
+	if (target_id.empty() || target_id == String::utf8(display->canvas_id)) {
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		if (p_event->isFullscreen) {
@@ -118,14 +105,15 @@ EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, co
 	return false;
 }
 
-// Drag and drop callback (see native/utils.js).
-extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
-	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+// Drag and drop callback.
+void DisplayServerJavaScript::drop_files_js_callback(char **p_filev, int p_filec) {
+	DisplayServerJavaScript *ds = get_singleton();
 	if (!ds) {
 		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
 	}
-	if (ds->drop_files_callback.is_null())
+	if (ds->drop_files_callback.is_null()) {
 		return;
+	}
 	Vector<String> files;
 	for (int i = 0; i < p_filec; i++) {
 		files.push_back(String::utf8(p_filev[i]));
@@ -135,6 +123,18 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p
 	Variant ret;
 	Callable::CallError ce;
 	ds->drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+}
+
+// JavaScript quit request callback.
+void DisplayServerJavaScript::request_quit_callback() {
+	DisplayServerJavaScript *ds = get_singleton();
+	if (ds && !ds->window_event_callback.is_null()) {
+		Variant event = int(DisplayServer::WINDOW_EVENT_CLOSE_REQUEST);
+		Variant *eventp = &event;
+		Variant ret;
+		Callable::CallError ce;
+		ds->window_event_callback.call((const Variant **)&eventp, 1, ret, ce);
+	}
 }
 
 // Keys
@@ -272,12 +272,13 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 }
 
 EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
+	DisplayServerJavaScript *ds = get_singleton();
 	Input *input = Input::get_singleton();
 	int input_mask = input->get_mouse_button_mask();
 	Point2 pos = compute_position_in_canvas(p_event->clientX, p_event->clientY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
-	if (!cursor_inside_canvas && !input_mask)
+	if (!ds->cursor_inside_canvas && !input_mask)
 		return false;
 
 	Ref<InputEventMouseMotion> ev;
@@ -339,35 +340,13 @@ const char *DisplayServerJavaScript::godot2dom_cursor(DisplayServer::CursorShape
 	}
 }
 
-void DisplayServerJavaScript::set_css_cursor(const char *p_cursor) {
-	/* clang-format off */
-	EM_ASM_({
-		Module['canvas'].style.cursor = UTF8ToString($0);
-	}, p_cursor);
-	/* clang-format on */
-}
-
-bool DisplayServerJavaScript::is_css_cursor_hidden() const {
-	/* clang-format off */
-	return EM_ASM_INT({
-		return Module['canvas'].style.cursor === 'none';
-	});
-	/* clang-format on */
-}
-
 void DisplayServerJavaScript::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
-
-	if (mouse_get_mode() == MOUSE_MODE_VISIBLE) {
-		if (cursors[p_shape] != "") {
-			Vector<String> url = cursors[p_shape].split("?");
-			set_css_cursor(("url(\"" + url[0] + "\") " + url[1] + ", auto").utf8());
-		} else {
-			set_css_cursor(godot2dom_cursor(p_shape));
-		}
+	if (cursor_shape == p_shape) {
+		return;
 	}
-
 	cursor_shape = p_shape;
+	godot_js_display_cursor_set_shape(godot2dom_cursor(cursor_shape));
 }
 
 DisplayServer::CursorShape DisplayServerJavaScript::cursor_get_shape() const {
@@ -376,17 +355,6 @@ DisplayServer::CursorShape DisplayServerJavaScript::cursor_get_shape() const {
 
 void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
-		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
-
-		if (cursor_c) {
-			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
-				cursor_set_shape(p_shape);
-				return;
-			}
-
-			cursors_cache.erase(p_shape);
-		}
-
 		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
@@ -449,53 +417,10 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 		png.resize(len);
 		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
 
-		char *object_url;
-		/* clang-format off */
-		EM_ASM({
-			var PNG_PTR = $0;
-			var PNG_LEN = $1;
-			var PTR = $2;
+		godot_js_display_cursor_set_custom_shape(godot2dom_cursor(p_shape), png.ptr(), len, p_hotspot.x, p_hotspot.y);
 
-			var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: 'image/png' });
-			var url = URL.createObjectURL(png);
-			var length_bytes = lengthBytesUTF8(url) + 1;
-			var string_on_wasm_heap = _malloc(length_bytes);
-			setValue(PTR, string_on_wasm_heap, '*');
-			stringToUTF8(url, string_on_wasm_heap, length_bytes);
-		}, png.ptr(), len, &object_url);
-		/* clang-format on */
-
-		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
-
-		/* clang-format off */
-		EM_ASM({ _free($0); }, object_url);
-		/* clang-format on */
-
-		if (cursors[p_shape] != "") {
-			/* clang-format off */
-			EM_ASM({
-				URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
-			}, cursors[p_shape].utf8().get_data());
-			/* clang-format on */
-			cursors[p_shape] = "";
-		}
-
-		cursors[p_shape] = url;
-
-		Vector<Variant> params;
-		params.push_back(p_cursor);
-		params.push_back(p_hotspot);
-		cursors_cache.insert(p_shape, params);
-
-	} else if (cursors[p_shape] != "") {
-		/* clang-format off */
-		EM_ASM({
-			URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
-		}, cursors[p_shape].utf8().get_data());
-		/* clang-format on */
-		cursors[p_shape] = "";
-
-		cursors_cache.erase(p_shape);
+	} else {
+		godot_js_display_cursor_set_custom_shape(godot2dom_cursor(p_shape), NULL, 0, 0, 0);
 	}
 
 	cursor_set_shape(cursor_shape);
@@ -508,40 +433,37 @@ void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
 		return;
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
-		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
-		set_css_cursor(godot2dom_cursor(cursor_shape));
-		cursor_set_shape(cursor_shape);
+		godot_js_display_cursor_set_visible(1);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		set_css_cursor("none");
+		godot_js_display_cursor_set_visible(0);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_CAPTURED) {
-		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock("canvas", false);
+		godot_js_display_cursor_set_visible(1);
+		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(canvas_id, false);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
-		// set_css_cursor must be called before cursor_set_shape to make the cursor visible
-		set_css_cursor(godot2dom_cursor(cursor_shape));
-		cursor_set_shape(cursor_shape);
 	}
 }
 
 DisplayServer::MouseMode DisplayServerJavaScript::mouse_get_mode() const {
-	if (is_css_cursor_hidden())
+	if (godot_js_display_cursor_is_hidden()) {
 		return MOUSE_MODE_HIDDEN;
+	}
 
 	EmscriptenPointerlockChangeEvent ev;
 	emscripten_get_pointerlock_status(&ev);
-	return (ev.isActive && String::utf8(ev.id) == "canvas") ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
+	return (ev.isActive && String::utf8(ev.id) == String::utf8(canvas_id)) ? MOUSE_MODE_CAPTURED : MOUSE_MODE_VISIBLE;
 }
 
 // Wheel
-
 EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data) {
 	ERR_FAIL_COND_V(p_event_type != EMSCRIPTEN_EVENT_WHEEL, false);
+	DisplayServerJavaScript *ds = get_singleton();
 	if (!is_canvas_focused()) {
-		if (cursor_inside_canvas) {
+		if (ds->cursor_inside_canvas) {
 			focus_canvas();
 		} else {
 			return false;
@@ -632,7 +554,7 @@ EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const Emsc
 }
 
 bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
-	return EM_ASM_INT({ return 'ontouchstart' in window; });
+	return godot_js_display_touchscreen_is_available();
 }
 
 // Gamepad
@@ -696,53 +618,30 @@ Vector<String> DisplayServerJavaScript::get_rendering_drivers_func() {
 }
 
 // Clipboard
-extern "C" EMSCRIPTEN_KEEPALIVE void update_clipboard(const char *p_text) {
-	// Only call set_clipboard from OS (sets local clipboard)
-	DisplayServerJavaScript::get_singleton()->clipboard = p_text;
+void DisplayServerJavaScript::update_clipboard_callback(const char *p_text) {
+	get_singleton()->clipboard = p_text;
 }
 
 void DisplayServerJavaScript::clipboard_set(const String &p_text) {
-	/* clang-format off */
-	int err = EM_ASM_INT({
-		var text = UTF8ToString($0);
-		if (!navigator.clipboard || !navigator.clipboard.writeText)
-			return 1;
-		navigator.clipboard.writeText(text).catch(function(e) {
-			// Setting OS clipboard is only possible from an input callback.
-			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
-		});
-		return 0;
-	}, p_text.utf8().get_data());
-	/* clang-format on */
+	clipboard = p_text;
+	int err = godot_js_display_clipboard_set(p_text.utf8().get_data());
 	ERR_FAIL_COND_MSG(err, "Clipboard API is not supported.");
 }
 
 String DisplayServerJavaScript::clipboard_get() const {
-	/* clang-format off */
-	EM_ASM({
-		try {
-			navigator.clipboard.readText().then(function (result) {
-				ccall('update_clipboard', 'void', ['string'], [result]);
-			}).catch(function (e) {
-				// Fail graciously.
-			});
-		} catch (e) {
-			// Fail graciously.
-		}
-	});
-	/* clang-format on */
+	godot_js_display_clipboard_get(update_clipboard_callback);
 	return clipboard;
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void send_window_event(int p_notification) {
-	if (p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER || p_notification == DisplayServer::WINDOW_EVENT_MOUSE_EXIT) {
-		cursor_inside_canvas = p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
+void DisplayServerJavaScript::send_window_event_callback(int p_notification) {
+	DisplayServerJavaScript *ds = get_singleton();
+	if (!ds) {
+		return;
 	}
-	OS_JavaScript *os = OS_JavaScript::get_singleton();
-	if (os->is_finalizing())
-		return; // We don't want events anymore.
-	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
-	if (ds && !ds->window_event_callback.is_null()) {
+	if (p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER || p_notification == DisplayServer::WINDOW_EVENT_MOUSE_EXIT) {
+		ds->cursor_inside_canvas = p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
+	}
+	if (!ds->window_event_callback.is_null()) {
 		Variant event = int(p_notification);
 		Variant *eventp = &event;
 		Variant ret;
@@ -752,11 +651,7 @@ extern "C" EMSCRIPTEN_KEEPALIVE void send_window_event(int p_notification) {
 }
 
 void DisplayServerJavaScript::alert(const String &p_alert, const String &p_title) {
-	/* clang-format off */
-	EM_ASM_({
-		window.alert(UTF8ToString($0));
-	}, p_alert.utf8().get_data());
-	/* clang-format on */
+	godot_js_display_alert(p_alert.utf8().get_data());
 }
 
 void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
@@ -787,29 +682,11 @@ void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
 	png.resize(len);
 	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
 
-	/* clang-format off */
-	EM_ASM({
-		var PNG_PTR = $0;
-		var PNG_LEN = $1;
-
-		var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: "image/png" });
-		var url = URL.createObjectURL(png);
-		var link = document.getElementById('-gd-engine-icon');
-		if (link === null) {
-			link = document.createElement('link');
-			link.rel = 'icon';
-			link.id = '-gd-engine-icon';
-			document.head.appendChild(link);
-		}
-		link.href = url;
-	}, png.ptr(), len);
-	/* clang-format on */
+	godot_js_display_window_icon_set(png.ptr(), len);
 }
 
 void DisplayServerJavaScript::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	OS_JavaScript *os = OS_JavaScript::get_singleton();
-	if (os->is_finalizing())
-		return; // We don't want events anymore.
 
 	// Resume audio context after input in case autoplay was denied.
 	os->resume_audio();
@@ -831,16 +708,14 @@ DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_dr
 DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
-	/* clang-format off */
-	swap_cancel_ok = EM_ASM_INT({
-		const win = (['Windows', 'Win64', 'Win32', 'WinCE']);
-		const plat = navigator.platform || "";
-		if (win.indexOf(plat) !== -1) {
-			return 1;
-		}
-		return 0;
-	}) == 1;
-	/* clang-format on */
+	// Ensure the canvas ID.
+	godot_js_config_canvas_id_get(canvas_id, 256);
+
+	// Check if it's windows.
+	swap_cancel_ok = godot_js_display_is_swap_ok_cancel() == 1;
+
+	// Expose method for requesting quit.
+	godot_js_os_request_quit_cb(request_quit_callback);
 
 	RasterizerDummy::make_current(); // TODO GLES2 in Godot 4.0... or webgpu?
 #if 0
@@ -878,10 +753,8 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	video_driver_index = p_video_driver;
 #endif
 
-	/* clang-format off */
 	window_set_mode(p_mode);
-	if (EM_ASM_INT_V({ return Module['resizeCanvasOnStart'] })) {
-		/* clang-format on */
+	if (godot_js_config_is_resize_on_start()) {
 		window_set_size(p_resolution);
 	}
 
@@ -899,8 +772,7 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	result = emscripten_set_##ev##_callback(nullptr, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
-	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
-	// is used below.
+	// JavaScript APIs.
 	SET_EM_CALLBACK(canvas_id, mousedown, mouse_button_callback)
 	SET_EM_WINDOW_CALLBACK(mousemove, mousemove_callback)
 	SET_EM_WINDOW_CALLBACK(mouseup, mouse_button_callback)
@@ -919,42 +791,20 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 #undef SET_EM_CALLBACK
 #undef EM_CHECK
 
-	/* clang-format off */
-	EM_ASM_ARGS({
-		// Bind native event listeners.
-		// Module.listeners, and Module.drop_handler are defined in native/utils.js
-		const canvas = Module['canvas'];
-		const send_window_event = cwrap('send_window_event', null, ['number']);
-		const notifications = arguments;
-		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
-			Module.listeners.add(canvas, event, send_window_event.bind(null, notifications[index]), true);
-		});
-		// Clipboard
-		const update_clipboard = cwrap('update_clipboard', null, ['string']);
-		Module.listeners.add(window, 'paste', function(evt) {
-			update_clipboard(evt.clipboardData.getData('text'));
-		}, false);
-		// Drag an drop
-		Module.listeners.add(canvas, 'dragover', function(ev) {
-			// Prevent default behavior (which would try to open the file(s))
-			ev.preventDefault();
-		}, false);
-		Module.listeners.add(canvas, 'drop', Module.drop_handler, false);
-	},
-		WINDOW_EVENT_MOUSE_ENTER,
-		WINDOW_EVENT_MOUSE_EXIT,
-		WINDOW_EVENT_FOCUS_IN,
-		WINDOW_EVENT_FOCUS_OUT
-	);
-	/* clang-format on */
+	// For APIs that are not (sufficiently) exposed, a
+	// library is used below (implemented in library_godot_display.js).
+	godot_js_display_notification_cb(&send_window_event_callback,
+			WINDOW_EVENT_MOUSE_ENTER,
+			WINDOW_EVENT_MOUSE_EXIT,
+			WINDOW_EVENT_FOCUS_IN,
+			WINDOW_EVENT_FOCUS_OUT);
+	godot_js_display_paste_cb(update_clipboard_callback);
+	godot_js_display_drop_files_cb(drop_files_js_callback);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_event);
 }
 
 DisplayServerJavaScript::~DisplayServerJavaScript() {
-	EM_ASM({
-		Module.listeners.clear();
-	});
 	//emscripten_webgl_commit_frame();
 	//emscripten_webgl_destroy_context(webgl_ctx);
 }
@@ -1057,11 +907,7 @@ void DisplayServerJavaScript::window_set_drop_files_callback(const Callable &p_c
 }
 
 void DisplayServerJavaScript::window_set_title(const String &p_title, WindowID p_window) {
-	/* clang-format off */
-	EM_ASM_({
-		document.title = UTF8ToString($0);
-	}, p_title.utf8().get_data());
-	/* clang-format on */
+	godot_js_display_window_title_set(p_title.utf8().get_data());
 }
 
 int DisplayServerJavaScript::window_get_current_screen(WindowID p_window) const {
@@ -1103,9 +949,7 @@ Size2i DisplayServerJavaScript::window_get_min_size(WindowID p_window) const {
 void DisplayServerJavaScript::window_set_size(const Size2i p_size, WindowID p_window) {
 	last_width = p_size.x;
 	last_height = p_size.y;
-	double scale = EM_ASM_DOUBLE({
-		return window.devicePixelRatio || 1;
-	});
+	double scale = godot_js_display_pixel_ratio_get();
 	emscripten_set_canvas_element_size(canvas_id, p_size.x * scale, p_size.y * scale);
 	emscripten_set_element_css_size(canvas_id, p_size.x, p_size.y);
 }
@@ -1130,7 +974,7 @@ void DisplayServerJavaScript::window_set_mode(WindowMode p_mode, WindowID p_wind
 				emscripten_exit_fullscreen();
 			}
 			window_mode = WINDOW_MODE_WINDOWED;
-			window_set_size(windowed_size);
+			window_set_size(Size2i(last_width, last_height));
 		} break;
 		case WINDOW_MODE_FULLSCREEN: {
 			EmscriptenFullscreenStrategy strategy;

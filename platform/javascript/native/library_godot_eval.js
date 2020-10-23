@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  emws_client.h                                                        */
+/*  library_godot_eval.js                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,43 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWSCLIENT_H
-#define EMWSCLIENT_H
+const GodotEval = {
 
-#ifdef JAVASCRIPT_ENABLED
+	godot_js_eval__deps: ['$GodotOS'],
+	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+		const js_code = UTF8ToString(p_js);
+		let eval_ret = null;
+		try {
+			if (p_use_global_ctx) {
+				// indirect eval call grants global execution context
+				const global_eval = eval;
+				eval_ret = global_eval(js_code);
+			} else {
+				eval_ret = eval(js_code);
+			}
+		} catch (e) {
+			err(e);
+		}
 
-#include "core/error/error_list.h"
-#include "emws_peer.h"
-#include "websocket_client.h"
+		switch (typeof eval_ret) {
 
-class EMWSClient : public WebSocketClient {
-	GDCIIMPL(EMWSClient, WebSocketClient);
+			case 'boolean':
+				setValue(p_union_ptr, eval_ret, 'i32');
+				return 1; // BOOL
 
-private:
-	int _js_id;
-	bool _is_connecting;
-	int _in_buf_size;
-	int _in_pkt_size;
+			case 'number':
+				setValue(p_union_ptr, eval_ret, 'double');
+				return 3; // REAL
 
-	static void _esws_on_connect(void *obj, char *proto);
-	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
-	static void _esws_on_error(void *obj);
-	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
+			case 'string':
+				let array_ptr = GodotOS.allocString(eval_ret);
+				setValue(p_union_ptr, array_ptr , '*');
+				return 4; // STRING
 
-public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
-	virtual ConnectionStatus get_connection_status() const;
-	int get_max_packet_size() const;
-	virtual void poll();
-	EMWSClient();
-	~EMWSClient();
-};
+			case 'object':
+				if (eval_ret === null) {
+					break;
+				}
 
-#endif // JAVASCRIPT_ENABLED
+				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+					eval_ret = new Uint8Array(eval_ret.buffer);
+				}
+				else if (eval_ret instanceof ArrayBuffer) {
+					eval_ret = new Uint8Array(eval_ret);
+				}
+				if (eval_ret instanceof Uint8Array) {
+					const func = GodotOS.get_func(p_callback);
+					const bytes_ptr = func(p_byte_arr, p_byte_arr_write,  eval_ret.length);
+					HEAPU8.set(eval_ret, bytes_ptr);
+					return 20; // POOL_BYTE_ARRAY
+				}
+				break;
+		}
+		return 0; // NIL
+	},
+}
 
-#endif // EMWSCLIENT_H
+mergeInto(LibraryManager.library, GodotEval);

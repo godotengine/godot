@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_audio.h                                                        */
+/*  godot_js.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_AUDIO_H
-#define GODOT_AUDIO_H
+#ifndef GODOT_JS_H
+#define GODOT_JS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,21 +37,51 @@ extern "C" {
 
 #include "stddef.h"
 
-extern int godot_audio_is_available();
+// Config
+extern void godot_js_config_locale_get(char *p_ptr, int p_ptr_max);
+extern void godot_js_config_canvas_id_get(char *p_ptr, int p_ptr_max);
+extern int godot_js_config_is_resize_on_start();
 
-extern int godot_audio_init(int p_mix_rate, int p_latency);
-extern int godot_audio_create_processor(int p_buffer_length, int p_channel_count);
+// OS
+extern void godot_js_os_finish_async(void (*p_callback)());
+extern void godot_js_os_request_quit_cb(void (*p_callback)());
+extern int godot_js_os_fs_is_persistent();
+extern void godot_js_os_fs_sync(void (*p_callback)());
+extern int godot_js_os_execute(const char *p_json);
+extern void godot_js_os_shell_open(const char *p_uri);
 
-extern void godot_audio_start(float *r_buffer_ptr, void (*p_start)(), void (*p_end)(), void (*p_input)(float p_sample));
-extern void godot_audio_resume();
+// Display
+extern double godot_js_display_pixel_ratio_get();
+extern void godot_js_display_alert(const char *p_text);
+extern int godot_js_display_touchscreen_is_available();
+extern int godot_js_display_is_swap_ok_cancel();
 
-extern float godot_audio_get_latency();
+// Display canvas
+extern void godot_js_display_canvas_focus();
+extern int godot_js_display_canvas_is_focused();
+extern void godot_js_display_canvas_bounding_rect_position_get(int32_t *p_x, int32_t *p_y);
 
-extern void godot_audio_capture_start();
-extern void godot_audio_capture_stop();
+// Display window
+extern void godot_js_display_window_request_fullscreen();
+extern void godot_js_display_window_title_set(const char *p_text);
+extern void godot_js_display_window_icon_set(const uint8_t *p_ptr, int p_len);
 
+// Display clipboard
+extern int godot_js_display_clipboard_set(const char *p_text);
+extern int godot_js_display_clipboard_get(void (*p_callback)(const char *p_text));
+
+// Display cursor
+extern void godot_js_display_cursor_set_shape(const char *p_cursor);
+extern int godot_js_display_cursor_is_hidden();
+extern void godot_js_display_cursor_set_custom_shape(const char *p_shape, const uint8_t *p_ptr, int p_len, int p_hotspot_x, int p_hotspot_y);
+extern void godot_js_display_cursor_set_visible(int p_visible);
+
+// Display listeners
+extern void godot_js_display_notification_cb(void (*p_callback)(int p_notification), int p_enter, int p_exit, int p_in, int p_out);
+extern void godot_js_display_paste_cb(void (*p_callback)(const char *p_text));
+extern void godot_js_display_drop_files_cb(void (*p_callback)(char **p_filev, int p_filec));
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* GODOT_AUDIO_H */
+#endif /* GODOT_JS_H */
