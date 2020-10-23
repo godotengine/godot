@@ -1,0 +1,36 @@
+<Project>
+  <!-- Generate C# file with the version of all the nupkgs bundled with Godot -->
+
+  <Target Name="SetPropertiesForGenerateGodotNupkgsVersions">
+    <PropertyGroup>
+      <GodotNETSdkPackageVersionFile>$(SolutionDir)..\Godot.NET.Sdk\Godot.NET.Sdk\Godot.NET.Sdk_PackageVersion.txt</GodotNETSdkPackageVersionFile>
+      <GeneratedGodotNupkgsVersionsFile>$(IntermediateOutputPath)GodotNupkgsVersions.g.cs</GeneratedGodotNupkgsVersionsFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GenerateGodotNupkgsVersionsFile"
+          DependsOnTargets="PrepareForBuild;_GenerateGodotNupkgsVersionsFile"
+          BeforeTargets="BeforeCompile;CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(GeneratedGodotNupkgsVersionsFile)" />
+      <FileWrites Include="$(GeneratedGodotNupkgsVersionsFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateGodotNupkgsVersionsFile"
+          DependsOnTargets="SetPropertiesForGenerateGodotNupkgsVersions"
+          Inputs="$(MSBuildProjectFile);@(GodotNETSdkPackageVersionFile)"
+          Outputs="$(GeneratedGodotNupkgsVersionsFile)">
+    <PropertyGroup>
+      <GenerateGodotNupkgsVersionsCode><![CDATA[
+namespace $(RootNamespace) {
+    public class GeneratedGodotNupkgsVersions {
+        public const string GodotNETSdk = "$([System.IO.File]::ReadAllText('$(GodotNETSdkPackageVersionFile)').Trim())"%3b
+    }
+}
+]]></GenerateGodotNupkgsVersionsCode>
+    </PropertyGroup>
+    <WriteLinesToFile Lines="$(GenerateGodotNupkgsVersionsCode)"
+                      File="$(GeneratedGodotNupkgsVersionsFile)"
+                      Overwrite="True" WriteOnlyWhenDifferent="True" />
+  </Target>
+</Project>
