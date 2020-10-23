@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
-using Path = System.IO.Path;
 
 namespace GodotTools.Build
 {
@@ -208,6 +207,16 @@ namespace GodotTools.Build
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
+
+            try
+            {
+                // Make sure our packages are added to the fallback folder
+                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
+            }
+            catch (Exception e)
+            {
+                Godot.GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
+            }
 
             GenerateEditorScriptMetadata();
 

@@ -147,6 +147,21 @@ namespace GodotTools
                 case MenuOptions.AboutCSharp:
                     _ShowAboutDialog();
                     break;
+                case MenuOptions.SetupGodotNugetFallbackFolder:
+                {
+                    try
+                    {
+                        string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
+                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, fallbackFolder);
+                        NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
+                    }
+                    catch (Exception e)
+                    {
+                        ShowErrorDialog("Failed to setup Godot NuGet Offline Packages: " + e.Message);
+                    }
+
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid menu option");
             }
@@ -183,6 +198,7 @@ namespace GodotTools
         {
             CreateSln,
             AboutCSharp,
+            SetupGodotNugetFallbackFolder,
         }
 
         public void ShowErrorDialog(string message, string title = "Error")
@@ -426,6 +442,7 @@ namespace GodotTools
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
                 menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
+                menuPopup.AddItem("Setup Godot NuGet Offline Packages".TTR(), (int)MenuOptions.SetupGodotNugetFallbackFolder);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.Title = "Important: C# support is not feature-complete";
@@ -534,6 +551,16 @@ namespace GodotTools
             AddExportPlugin(exportPlugin);
             exportPlugin.RegisterExportSettings();
             exportPluginWeak = WeakRef(exportPlugin);
+
+            try
+            {
+                // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
+                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, NuGetUtils.GodotFallbackFolderPath);
+            }
+            catch (Exception e)
+            {
+                GD.PushError("Failed to add Godot NuGet Offline Packages to NuGet.Config: " + e.Message);
+            }
 
             BuildManager.Initialize();
             RiderPathManager.Initialize();
