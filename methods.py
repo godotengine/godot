@@ -145,34 +145,88 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-def detect_modules(at_path):
-    module_list = OrderedDict()  # name : path
+def detect_modules(search_path, recursive=False):
+    """Detects and collects a list of C++ modules at specified path
 
-    modules_glob = os.path.join(at_path, "*")
-    files = glob.glob(modules_glob)
-    files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
+    `search_path` - a directory path containing modules. The path may point to
+    a single module, which may have other nested modules. A module must have
+    "register_types.h", "SCsub", "config.py" files created to be detected.
 
-    for x in files:
-        if not is_module(x):
-            continue
-        name = os.path.basename(x)
-        path = x.replace("\\", "/")  # win32
-        module_list[name] = path
+    `recursive` - if `True`, then all subdirectories are searched for modules as
+    specified by the `search_path`, otherwise collects all modules under the
+    `search_path` directory. If the `search_path` is a module, it is collected
+    in all cases.
 
-    return module_list
+    Returns an `OrderedDict` with module names as keys, and directory paths as
+    values. If a path is relative, then it is a built-in module. If a path is
+    absolute, then it is a custom module collected outside of the engine source.
+    """
+    modules = OrderedDict()
+
+    def add_module(path):
+        module_name = os.path.basename(path)
+        module_path = path.replace("\\", "/")  # win32
+        modules[module_name] = module_path
+
+    def is_engine(path):
+        # Prevent recursively detecting modules in self and other
+        # Godot sources when using `custom_modules` build option.
+        version_path = os.path.join(path, "version.py")
+        if os.path.exists(version_path):
+            with open(version_path) as f:
+                version = {}
+                exec(f.read(), version)
+                if version.get("short_name") == "godot":
+                    return True
+        return False
+
+    def get_files(path):
+        files = glob.glob(os.path.join(path, "*"))
+        # Sort so that `register_module_types` does not change that often,
+        # and plugins are registered in alphabetic order as well.
+        files.sort()
+        return files
+
+    if not recursive:
+        if is_module(search_path):
+            add_module(search_path)
+        for path in get_files(search_path):
+            if is_engine(path):
+                continue
+            if is_module(path):
+                add_module(path)
+    else:
+        to_search = [search_path]
+        while to_search:
+            path = to_search.pop()
+            if is_module(path):
+                add_module(path)
+            for child in get_files(path):
+                if not os.path.isdir(child):
+                    continue
+                if is_engine(child):
+                    continue
+                to_search.insert(0, child)
+    return modules
 
 
 def is_module(path):
-    return os.path.isdir(path) and os.path.exists(os.path.join(path, "SCsub"))
+    if not os.path.isdir(path):
+        return False
+    must_exist = ["register_types.h", "SCsub", "config.py"]
+    for f in must_exist:
+        if not os.path.exists(os.path.join(path, f)):
+            return False
+    return True
 
 
-def write_modules(module_list):
+def write_modules(modules):
     includes_cpp = ""
     preregister_cpp = ""
     register_cpp = ""
     unregister_cpp = ""
 
-    for name, path in module_list.items():
+    for name, path in modules.items():
         try:
             with open(os.path.join(path, "register_types.h")):
                 includes_cpp += '#include "' + path + '/register_types.h"\n'
@@ -230,8 +284,6 @@ def convert_custom_modules_path(path):
         raise ValueError(err_msg % "point to an existing directory.")
     if path == os.path.realpath("modules"):
         raise ValueError(err_msg % "be a directory other than built-in `modules` directory.")
-    if is_module(path):
-        raise ValueError(err_msg % "point to a directory with modules, not a single module.")
     return path
 
 
