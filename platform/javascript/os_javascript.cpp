@@ -46,6 +46,8 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
+#include "godot_js.h"
+
 // Lifecycle
 void OS_JavaScript::initialize() {
 	OS_Unix::initialize_core();
@@ -72,24 +74,15 @@ MainLoop *OS_JavaScript::get_main_loop() const {
 	return main_loop;
 }
 
-extern "C" EMSCRIPTEN_KEEPALIVE void _idb_synced() {
-	OS_JavaScript::get_singleton()->idb_is_syncing = false;
+void OS_JavaScript::fs_sync_callback() {
+	get_singleton()->idb_is_syncing = false;
 }
 
 bool OS_JavaScript::main_loop_iterate() {
 	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
 		idb_is_syncing = true;
 		idb_needs_sync = false;
-		/* clang-format off */
-		EM_ASM({
-			FS.syncfs(function(error) {
-				if (error) {
-					err('Failed to save IDB file system: ' + error.message);
-				}
-				ccall("_idb_synced", 'void', [], []);
-			});
-		});
-		/* clang-format on */
+		godot_js_os_fs_sync(&fs_sync_callback);
 	}
 
 	DisplayServer::get_singleton()->process_events();
@@ -102,13 +95,6 @@ void OS_JavaScript::delete_main_loop() {
 		memdelete(main_loop);
 	}
 	main_loop = nullptr;
-}
-
-void OS_JavaScript::finalize_async() {
-	finalizing = true;
-	if (audio_driver_javascript) {
-		audio_driver_javascript->finish_async();
-	}
 }
 
 void OS_JavaScript::finalize() {
@@ -127,17 +113,7 @@ Error OS_JavaScript::execute(const String &p_path, const List<String> &p_argumen
 		args.push_back(E->get());
 	}
 	String json_args = JSON::print(args);
-	/* clang-format off */
-	int failed = EM_ASM_INT({
-		const json_args = UTF8ToString($0);
-		const args = JSON.parse(json_args);
-		if (Module["onExecute"]) {
-			Module["onExecute"](args);
-			return 0;
-		}
-		return 1;
-	}, json_args.utf8().get_data());
-	/* clang-format on */
+	int failed = godot_js_os_execute(json_args.utf8().get_data());
 	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() must be implemented in JavaScript via 'engine.setOnExecute' if required.");
 	return OK;
 }
@@ -168,11 +144,7 @@ String OS_JavaScript::get_executable_path() const {
 
 Error OS_JavaScript::shell_open(String p_uri) {
 	// Open URI in a new tab, browser will deal with it by protocol.
-	/* clang-format off */
-	EM_ASM_({
-		window.open(UTF8ToString($0), '_blank');
-	}, p_uri.utf8().get_data());
-	/* clang-format on */
+	godot_js_os_shell_open(p_uri.utf8().get_data());
 	return OK;
 }
 
@@ -211,10 +183,6 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 	}
 }
 
-void OS_JavaScript::set_idb_available(bool p_idb_available) {
-	idb_available = p_idb_available;
-}
-
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -227,10 +195,16 @@ void OS_JavaScript::initialize_joypads() {
 }
 
 OS_JavaScript::OS_JavaScript() {
+	char locale_ptr[16];
+	godot_js_config_locale_get(locale_ptr, 16);
+	setenv("LANG", locale_ptr, true);
+
 	if (AudioDriverJavaScript::is_available()) {
 		audio_driver_javascript = memnew(AudioDriverJavaScript);
 		AudioDriverManager::add_driver(audio_driver_javascript);
 	}
+
+	idb_available = godot_js_os_fs_is_persistent();
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
