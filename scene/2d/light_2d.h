@@ -67,7 +67,6 @@ private:
 	int layer_max;
 	int item_mask;
 	int item_shadow_mask;
-	int shadow_buffer_size;
 	float shadow_smooth;
 	Mode mode;
 	Ref<Texture2D> texture;
@@ -141,9 +140,6 @@ public:
 
 	void set_shadow_enabled(bool p_enabled);
 	bool is_shadow_enabled() const;
-
-	void set_shadow_buffer_size(int p_size);
-	int get_shadow_buffer_size() const;
 
 	void set_shadow_filter(ShadowFilter p_filter);
 	ShadowFilter get_shadow_filter() const;

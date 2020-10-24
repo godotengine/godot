@@ -60,7 +60,6 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 
 		Sprite2D *mi = Object::cast_to<Sprite2D>(child);
 		Ref<Texture2D> texture = mi->get_texture();
-		Ref<Texture2D> normal_map = mi->get_normal_map();
 		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null()) {
@@ -75,7 +74,6 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 		}
 
 		p_library->tile_set_texture(id, texture);
-		p_library->tile_set_normal_map(id, normal_map);
 		p_library->tile_set_material(id, material);
 
 		p_library->tile_set_modulate(id, mi->get_modulate());
@@ -2368,7 +2366,6 @@ void TileSetEditor::_select_edited_shape_coord() {
 void TileSetEditor::_undo_tile_removal(int p_id) {
 	undo_redo->add_undo_method(tileset.ptr(), "create_tile", p_id);
 	undo_redo->add_undo_method(tileset.ptr(), "tile_set_name", p_id, tileset->tile_get_name(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_normal_map", p_id, tileset->tile_get_normal_map(p_id));
 	undo_redo->add_undo_method(tileset.ptr(), "tile_set_texture_offset", p_id, tileset->tile_get_texture_offset(p_id));
 	undo_redo->add_undo_method(tileset.ptr(), "tile_set_material", p_id, tileset->tile_get_material(p_id));
 	undo_redo->add_undo_method(tileset.ptr(), "tile_set_modulate", p_id, tileset->tile_get_modulate(p_id));
@@ -3541,7 +3538,6 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 		int id = tileset_editor->get_current_tile();
 		p_list->push_back(PropertyInfo(Variant::NIL, "Selected Tile", PROPERTY_HINT_NONE, "tile_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::STRING, "tile_name"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "tile_tex_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "tile_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial"));
 		p_list->push_back(PropertyInfo(Variant::COLOR, "tile_modulate"));

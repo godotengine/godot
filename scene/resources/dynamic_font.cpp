@@ -347,7 +347,7 @@ float DynamicFontAtSize::draw_char(RID p_canvas_item, const Point2 &p_pos, char3
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 			RID texture = font->textures[ch->texture_idx].texture->get_rid();
-			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), texture, ch->rect_uv, modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
+			RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, ch->rect.size), texture, ch->rect_uv, modulate, false, false);
 		}
 
 		advance = ch->advance;

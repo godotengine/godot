@@ -1,3 +1,6 @@
+
+#define MAX_LIGHTS_PER_ITEM 16
+
 #define M_PI 3.14159265359
 
 #define FLAGS_INSTANCING_STRIDE_MASK 0xF
@@ -22,13 +25,7 @@
 #define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
 
-// In vulkan, sets should always be ordered using the following logic:
-// Lower Sets: Sets that change format and layout less often
-// Higher sets: Sets that change format and layout very often
-// This is because changing a set for another with a different layout or format,
-// invalidates all the upper ones.
-
-/* SET0: Draw Primitive */
+// Push Constant
 
 layout(push_constant, binding = 0, std430) uniform DrawData {
 	vec2 world_x;
@@ -53,26 +50,17 @@ layout(push_constant, binding = 0, std430) uniform DrawData {
 }
 draw_data;
 
+// In vulkan, sets should always be ordered using the following logic:
+// Lower Sets: Sets that change format and layout less often
+// Higher sets: Sets that change format and layout very often
+// This is because changing a set for another with a different layout or format,
+// invalidates all the upper ones (as likely internal base offset changes)
+
+/* SET0: Globals */
+
 // The values passed per draw primitives are cached within it
 
-layout(set = 0, binding = 1) uniform texture2D color_texture;
-layout(set = 0, binding = 2) uniform texture2D normal_texture;
-layout(set = 0, binding = 3) uniform texture2D specular_texture;
-layout(set = 0, binding = 4) uniform sampler texture_sampler;
-
-layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
-
-/* SET1: Is reserved for the material */
-
-#ifdef USE_MATERIAL_SAMPLERS
-
-layout(set = 1, binding = 0) uniform sampler material_samplers[12];
-
-#endif
-
-/* SET2: Canvas Item State (including lighting) */
-
-layout(set = 2, binding = 0, std140) uniform CanvasData {
+layout(set = 0, binding = 1, std140) uniform CanvasData {
 	mat4 canvas_transform;
 	mat4 screen_transform;
 	mat4 canvas_normal_transform;
@@ -83,16 +71,6 @@ layout(set = 2, binding = 0, std140) uniform CanvasData {
 	//uint light_count;
 }
 canvas_data;
-
-layout(set = 2, binding = 1) uniform textureBuffer skeleton_buffer;
-
-layout(set = 2, binding = 2, std140) uniform SkeletonData {
-	mat4 skeleton_transform; //in world coordinates
-	mat4 skeleton_transform_inverse;
-}
-skeleton_data;
-
-#ifdef USE_LIGHTING
 
 #define LIGHT_FLAGS_BLEND_MASK (3 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD (0 << 16)
@@ -110,37 +88,52 @@ struct Light {
 	mat2x4 texture_matrix; //light to texture coordinate matrix (transposed)
 	mat2x4 shadow_matrix; //light to shadow coordinate matrix (transposed)
 	vec4 color;
-	vec4 shadow_color;
-	vec2 position;
+
+	uint shadow_color; // packed
 	uint flags; //index to light texture
-	float height;
 	float shadow_pixel_size;
-	float pad0;
-	float pad1;
-	float pad2;
+	float height;
+
+	vec2 position;
+	float shadow_zfar_inv;
+	float shadow_y_ofs;
+
+	vec4 atlas_rect;
 };
 
-layout(set = 2, binding = 3, std140) uniform LightData {
+layout(set = 0, binding = 2, std140) uniform LightData {
 	Light data[MAX_LIGHTS];
 }
 light_array;
 
-layout(set = 2, binding = 4) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
-layout(set = 2, binding = 5) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
+layout(set = 0, binding = 3) uniform texture2D atlas_texture;
+layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 
-layout(set = 2, binding = 6) uniform sampler shadow_sampler;
+layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
-#endif
+layout(set = 0, binding = 6) uniform texture2D screen_texture;
 
-layout(set = 2, binding = 7, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 7) uniform sampler material_samplers[12];
+
+layout(set = 0, binding = 8, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;
 
-/* SET3: Render Target Data */
+/* SET1: Is reserved for the material */
 
-#ifdef SCREEN_TEXTURE_USED
+//
 
-layout(set = 3, binding = 0) uniform texture2D screen_texture;
+/* SET2: Instancing and Skeleton */
 
-#endif
+layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
+	vec4 data[];
+}
+transforms;
+
+/* SET3: Texture */
+
+layout(set = 3, binding = 0) uniform texture2D color_texture;
+layout(set = 3, binding = 1) uniform texture2D normal_texture;
+layout(set = 3, binding = 2) uniform texture2D specular_texture;
+layout(set = 3, binding = 3) uniform sampler texture_sampler;
