@@ -300,9 +300,8 @@ vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 						  dir * rcpDirMin)) *
 		  pixel_size;
 
-	vec3 rgbA = 0.5 * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz * exposure + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz) * exposure;
-	vec3 rgbB = rgbA * 0.5 + 0.25 * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz * exposure +
-											textureLod(source, uv_interp + dir * 0.5, 0.0).xyz * exposure);
+	vec3 rgbA = 0.5 * exposure * (textureLod(source, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
+	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source, uv_interp + dir * 0.5, 0.0).xyz);
 
 	float lumaB = dot(rgbB, luma);
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
