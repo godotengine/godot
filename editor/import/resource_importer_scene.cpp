@@ -394,7 +394,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
 
 				if (shapes.size()) {
-					StaticBody3D *col = memnew(StaticBody3D);
+					RigidBody3D *col = memnew(RigidBody3D);
+					col->set_mode(RigidBody3D::MODE_STATIC);
 					col->set_transform(mi->get_transform());
 					col->set_name(fixed_name);
 					p_node->replace_by(col);
@@ -416,7 +417,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			StaticBody3D *sb = memnew(StaticBody3D);
+			RigidBody3D *sb = memnew(RigidBody3D);
+			sb->set_mode(RigidBody3D::MODE_STATIC);
 			sb->set_name(_fixstr(name, "colonly"));
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
@@ -517,7 +519,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+				RigidBody3D *col = memnew(RigidBody3D);
+				col->set_mode(RigidBody3D::MODE_STATIC);
 				col->set_name("static_collision");
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
@@ -616,7 +619,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 
 			if (shapes.size()) {
-				StaticBody3D *col = memnew(StaticBody3D);
+				RigidBody3D *col = memnew(RigidBody3D);
+				col->set_mode(RigidBody3D::MODE_STATIC);
 				col->set_name("static_collision");
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());

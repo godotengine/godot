@@ -222,7 +222,8 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 		return nullptr;
 	}
 
-	StaticBody3D *static_body = memnew(StaticBody3D);
+	RigidBody3D *static_body = memnew(RigidBody3D);
+	static_body->set_mode(RigidBody3D::MODE_STATIC);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
 	static_body->add_child(cshape);
@@ -230,7 +231,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 }
 
 void MeshInstance3D::create_trimesh_collision() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_trimesh_collision_node());
+	RigidBody3D *static_body = Object::cast_to<RigidBody3D>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
@@ -252,7 +253,8 @@ Node *MeshInstance3D::create_convex_collision_node() {
 		return nullptr;
 	}
 
-	StaticBody3D *static_body = memnew(StaticBody3D);
+	RigidBody3D *static_body = memnew(RigidBody3D);
+	static_body->set_mode(RigidBody3D::MODE_STATIC);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
 	cshape->set_shape(shape);
 	static_body->add_child(cshape);
@@ -260,7 +262,7 @@ Node *MeshInstance3D::create_convex_collision_node() {
 }
 
 void MeshInstance3D::create_convex_collision() {
-	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node());
+	RigidBody3D *static_body = Object::cast_to<RigidBody3D>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
 

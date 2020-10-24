@@ -160,8 +160,8 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 	}
 #endif
 
-	if (Object::cast_to<StaticBody3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
-		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
+	if (Object::cast_to<RigidBody3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES) {
+		RigidBody3D *static_body = Object::cast_to<RigidBody3D>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
 			for (int i = 0; i < p_node->get_child_count(); ++i) {

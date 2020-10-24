@@ -170,7 +170,7 @@ public:
 
 	struct KinematicUtilities {
 		RigidBodyBullet *owner;
-		btScalar safe_margin;
+		btScalar safe_margin = 0.001;
 		Vector<KinematicShape> shapes;
 
 		KinematicUtilities(RigidBodyBullet *p_owner);

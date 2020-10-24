@@ -33,7 +33,7 @@
 
 #include "node_2d.h"
 
-class PhysicsBody2D;
+class RigidBody2D;
 
 class Joint2D : public Node2D {
 	GDCLASS(Joint2D, Node2D);
@@ -51,7 +51,7 @@ protected:
 	void _update_joint(bool p_only_free = false);
 
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) = 0;
+	virtual RID _configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) = 0;
 
 	static void _bind_methods();
 
@@ -79,7 +79,7 @@ class PinJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual RID _configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -97,7 +97,7 @@ class GrooveJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual RID _configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -120,7 +120,7 @@ class DampedSpringJoint2D : public Joint2D {
 
 protected:
 	void _notification(int p_what);
-	virtual RID _configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) override;
+	virtual RID _configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) override;
 	static void _bind_methods();
 
 public:

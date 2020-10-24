@@ -5774,12 +5774,12 @@ Set<T *> _get_child_nodes(Node *parent_node) {
 
 Set<RID> _get_physics_bodies_rid(Node *node) {
 	Set<RID> rids = Set<RID>();
-	PhysicsBody3D *pb = Node::cast_to<PhysicsBody3D>(node);
+	RigidBody3D *pb = Node::cast_to<RigidBody3D>(node);
 	if (pb) {
 		rids.insert(pb->get_rid());
 	}
-	Set<PhysicsBody3D *> child_nodes = _get_child_nodes<PhysicsBody3D>(node);
-	for (Set<PhysicsBody3D *>::Element *I = child_nodes.front(); I; I = I->next()) {
+	Set<RigidBody3D *> child_nodes = _get_child_nodes<RigidBody3D>(node);
+	for (Set<RigidBody3D *>::Element *I = child_nodes.front(); I; I = I->next()) {
 		rids.insert(I->get()->get_rid());
 	}
 

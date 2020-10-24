@@ -49,8 +49,8 @@ void Joint3D::_update_joint(bool p_only_free) {
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)nullptr;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)nullptr;
 
-	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
-	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
+	RigidBody3D *body_a = Object::cast_to<RigidBody3D>(node_a);
+	RigidBody3D *body_b = Object::cast_to<RigidBody3D>(node_b);
 
 	if (!body_a && body_b) {
 		SWAP(body_a, body_b);
@@ -191,7 +191,7 @@ float PinJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID PinJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+RID PinJoint3D::_configure_joint(RigidBody3D *body_a, RigidBody3D *body_b) {
 	Vector3 pinpos = get_global_transform().origin;
 	Vector3 local_a = body_a->get_global_transform().affine_inverse().xform(pinpos);
 	Vector3 local_b;
@@ -306,7 +306,7 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 	return flags[p_flag];
 }
 
-RID HingeJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+RID HingeJoint3D::_configure_joint(RigidBody3D *body_a, RigidBody3D *body_b) {
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -441,7 +441,7 @@ float SliderJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID SliderJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+RID SliderJoint3D::_configure_joint(RigidBody3D *body_a, RigidBody3D *body_b) {
 	Transform gt = get_global_transform();
 	Transform ainv = body_a->get_global_transform().affine_inverse();
 
@@ -548,7 +548,7 @@ float ConeTwistJoint3D::get_param(Param p_param) const {
 	return params[p_param];
 }
 
-RID ConeTwistJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+RID ConeTwistJoint3D::_configure_joint(RigidBody3D *body_a, RigidBody3D *body_b) {
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
@@ -888,7 +888,7 @@ void Generic6DOFJoint3D::set_precision(int p_precision) {
 			precision);
 }
 
-RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
+RID Generic6DOFJoint3D::_configure_joint(RigidBody3D *body_a, RigidBody3D *body_b) {
 	Transform gt = get_global_transform();
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);

@@ -469,11 +469,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ClassDB::register_virtual_class<CollisionObject3D>();
-	ClassDB::register_virtual_class<PhysicsBody3D>();
-	ClassDB::register_class<StaticBody3D>();
 	ClassDB::register_class<RigidBody3D>();
 	ClassDB::register_class<KinematicCollision3D>();
-	ClassDB::register_class<KinematicBody3D>();
 	ClassDB::register_class<SpringArm3D>();
 
 	ClassDB::register_class<PhysicalBone3D>();
@@ -612,10 +609,7 @@ void register_scene_types() {
 	ClassDB::register_class<MeshInstance2D>();
 	ClassDB::register_class<MultiMeshInstance2D>();
 	ClassDB::register_virtual_class<CollisionObject2D>();
-	ClassDB::register_virtual_class<PhysicsBody2D>();
-	ClassDB::register_class<StaticBody2D>();
 	ClassDB::register_class<RigidBody2D>();
-	ClassDB::register_class<KinematicBody2D>();
 	ClassDB::register_class<KinematicCollision2D>();
 	ClassDB::register_class<Area2D>();
 	ClassDB::register_class<CollisionShape2D>();
@@ -844,7 +838,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
 	ClassDB::add_compatibility_class("ImmediateGeometry", "ImmediateGeometry3D");
 	ClassDB::add_compatibility_class("Joint", "Joint3D");
-	ClassDB::add_compatibility_class("KinematicBody", "KinematicBody3D");
+	ClassDB::add_compatibility_class("KinematicBody", "RigidBody3D");
+	ClassDB::add_compatibility_class("KinematicBody2D", "RigidBody2D");
 	ClassDB::add_compatibility_class("KinematicCollision", "KinematicCollision3D");
 	ClassDB::add_compatibility_class("Light", "Light3D");
 	ClassDB::add_compatibility_class("Listener", "Listener3D");
@@ -901,7 +896,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SpotLight", "SpotLight3D");
 	ClassDB::add_compatibility_class("SpringArm", "SpringArm3D");
 	ClassDB::add_compatibility_class("Sprite", "Sprite2D");
-	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
+	ClassDB::add_compatibility_class("StaticBody", "RigidBody3D");
+	ClassDB::add_compatibility_class("StaticBody2D", "RigidBody2D");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
 	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");

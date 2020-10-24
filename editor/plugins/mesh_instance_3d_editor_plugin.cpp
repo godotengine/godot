@@ -73,7 +73,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody3D *body = memnew(StaticBody3D);
+				RigidBody3D *body = memnew(RigidBody3D);
+				body->set_mode(RigidBody3D::MODE_STATIC);
 				body->add_child(cshape);
 
 				Node *owner = node == get_tree()->get_edited_scene_root() ? node : node->get_owner();
@@ -108,7 +109,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(shape);
-				StaticBody3D *body = memnew(StaticBody3D);
+				RigidBody3D *body = memnew(RigidBody3D);
+				body->set_mode(RigidBody3D::MODE_STATIC);
 				body->add_child(cshape);
 
 				Node *owner = instance == get_tree()->get_edited_scene_root() ? instance : instance->get_owner();
@@ -435,7 +437,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("MeshInstance3D", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a StaticBody3D and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a RigidBody3D in Static Mode and assigns a polygon-based collision shape to it automatically.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));

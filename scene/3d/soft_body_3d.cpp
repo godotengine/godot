@@ -569,7 +569,7 @@ Array SoftBody3D::get_collision_exceptions() {
 		RID body = E->get();
 		ObjectID instance_id = PhysicsServer3D::get_singleton()->body_get_object_instance_id(body);
 		Object *obj = ObjectDB::get_instance(instance_id);
-		PhysicsBody3D *physics_body = Object::cast_to<PhysicsBody3D>(obj);
+		RigidBody3D *physics_body = Object::cast_to<RigidBody3D>(obj);
 		ret.append(physics_body);
 	}
 	return ret;

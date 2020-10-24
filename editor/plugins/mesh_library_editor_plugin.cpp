@@ -114,11 +114,11 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 		for (int j = 0; j < mi->get_child_count(); j++) {
 			Node *child2 = mi->get_child(j);
-			if (!Object::cast_to<StaticBody3D>(child2)) {
+			if (!Object::cast_to<RigidBody3D>(child2)) {
 				continue;
 			}
 
-			StaticBody3D *sb = Object::cast_to<StaticBody3D>(child2);
+			RigidBody3D *sb = Object::cast_to<RigidBody3D>(child2);
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
 

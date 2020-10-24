@@ -73,7 +73,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, spatial->get_global_transform().origin);
 			}
 
-			PhysicsBody3D *rigid = Object::cast_to<PhysicsBody3D>(get_parent());
+			RigidBody3D *rigid = Object::cast_to<RigidBody3D>(get_parent());
 			if (rigid) {
 				Vector3 v = rigid->get_linear_velocity();
 				NavigationServer3D::get_singleton()->agent_set_velocity(agent, v);

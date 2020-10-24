@@ -57,8 +57,8 @@ void Joint2D::_update_joint(bool p_only_free) {
 		return;
 	}
 
-	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
-	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
+	RigidBody2D *body_a = Object::cast_to<RigidBody2D>(node_a);
+	RigidBody2D *body_b = Object::cast_to<RigidBody2D>(node_b);
 
 	if (!body_a || !body_b) {
 		return;
@@ -186,7 +186,7 @@ void PinJoint2D::_notification(int p_what) {
 	}
 }
 
-RID PinJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
+RID PinJoint2D::_configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) {
 	RID pj = PhysicsServer2D::get_singleton()->pin_joint_create(get_global_transform().get_origin(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
 	PhysicsServer2D::get_singleton()->pin_joint_set_param(pj, PhysicsServer2D::PIN_JOINT_SOFTNESS, softness);
 	return pj;
@@ -238,7 +238,7 @@ void GrooveJoint2D::_notification(int p_what) {
 	}
 }
 
-RID GrooveJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
+RID GrooveJoint2D::_configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) {
 	Transform2D gt = get_global_transform();
 	Vector2 groove_A1 = gt.get_origin();
 	Vector2 groove_A2 = gt.xform(Vector2(0, length));
@@ -302,7 +302,7 @@ void DampedSpringJoint2D::_notification(int p_what) {
 	}
 }
 
-RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
+RID DampedSpringJoint2D::_configure_joint(RigidBody2D *body_a, RigidBody2D *body_b) {
 	Transform2D gt = get_global_transform();
 	Vector2 anchor_A = gt.get_origin();
 	Vector2 anchor_B = gt.xform(Vector2(0, length));

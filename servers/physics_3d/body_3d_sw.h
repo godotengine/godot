@@ -55,7 +55,7 @@ class Body3DSW : public CollisionObject3DSW {
 
 	uint16_t locked_axis = 0;
 
-	real_t kinematic_safe_margin;
+	real_t kinematic_safe_margin = 0.001;
 	real_t _inv_mass;
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 

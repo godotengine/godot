@@ -111,13 +111,13 @@ void TileSetEditor::_import_node(Node *p_node, Ref<TileSet> p_library) {
 				occluder = Object::cast_to<LightOccluder2D>(child2)->get_occluder_polygon();
 			}
 
-			if (!Object::cast_to<StaticBody2D>(child2)) {
+			if (!Object::cast_to<RigidBody2D>(child2)) {
 				continue;
 			}
 
 			found_collisions = true;
 
-			StaticBody2D *sb = Object::cast_to<StaticBody2D>(child2);
+			RigidBody2D *sb = Object::cast_to<RigidBody2D>(child2);
 
 			List<uint32_t> shapes;
 			sb->get_shape_owners(&shapes);
