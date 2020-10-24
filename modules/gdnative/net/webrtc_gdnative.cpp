@@ -54,7 +54,7 @@ godot_error GDAPI godot_net_set_webrtc_library(const godot_net_webrtc_library *p
 #ifdef WEBRTC_GDNATIVE_ENABLED
 	return (godot_error)WebRTCPeerConnectionGDNative::set_default_library(p_lib);
 #else
-	return ERR_UNAVAILABLE;
+	return (godot_error)ERR_UNAVAILABLE;
 #endif
 }
 }
