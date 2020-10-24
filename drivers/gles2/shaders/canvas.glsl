@@ -203,12 +203,15 @@ VERTEX_SHADER_CODE
 	temp += translate_attrib;
 	outvec.xy = temp;
 
-#endif
+#else
 
+	// transform is in uniforms
 #if !defined(SKIP_TRANSFORM_USED)
 	outvec = extra_matrix_instance * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
+
+#endif // not large integer
 
 	color_interp = color;
 
