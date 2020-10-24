@@ -8,6 +8,8 @@ const Utils = { // eslint-disable-line no-unused-vars
 				return `${execName}.audio.worklet.js`;
 			} else if (path.endsWith('.js')) {
 				return `${execName}.js`;
+			} else if (path.endsWith('.side.wasm')) {
+				return `${execName}.side.wasm`;
 			} else if (path.endsWith('.wasm')) {
 				return `${execName}.wasm`;
 			}

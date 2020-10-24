@@ -58,6 +58,9 @@ const Engine = (function () {
 		initPromise = new Promise(function (resolve, reject) {
 			config['locateFile'] = Utils.createLocateRewrite(loadPath);
 			config['instantiateWasm'] = Utils.createInstantiatePromise(loadPromise);
+			// Emscripten configuration.
+			config['thisProgram'] = me.executableName;
+			config['noExitRuntime'] = true;
 			Godot(config).then(function (module) {
 				module['initFS'](me.persistentPaths).then(function (fs_err) {
 					me.rtenv = module;
@@ -119,9 +122,6 @@ const Engine = (function () {
 				locale = navigator.languages ? navigator.languages[0] : navigator.language;
 				locale = locale.split('.')[0];
 			}
-			// Emscripten configuration.
-			me.rtenv['thisProgram'] = me.executableName;
-			me.rtenv['noExitRuntime'] = true;
 			// Godot configuration.
 			me.rtenv['initConfig']({
 				'resizeCanvasOnStart': me.resizeCanvasOnStart,
