@@ -14,7 +14,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.group]).
+				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.button_group]).
 			</description>
 		</method>
 		<method name="get_pressed_button">
