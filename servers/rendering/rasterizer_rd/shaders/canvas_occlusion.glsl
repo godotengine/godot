@@ -8,7 +8,8 @@ layout(push_constant, binding = 0, std430) uniform Constants {
 	mat4 projection;
 	mat2x4 modelview;
 	vec2 direction;
-	vec2 pad;
+	float z_far;
+	float pad;
 }
 constants;
 
@@ -25,9 +26,18 @@ void main() {
 
 #version 450
 
+layout(push_constant, binding = 0, std430) uniform Constants {
+	mat4 projection;
+	mat2x4 modelview;
+	vec2 direction;
+	float z_far;
+	float pad;
+}
+constants;
+
 layout(location = 0) in highp float depth;
 layout(location = 0) out highp float distance_buf;
 
 void main() {
-	distance_buf = depth;
+	distance_buf = depth / constants.z_far;
 }

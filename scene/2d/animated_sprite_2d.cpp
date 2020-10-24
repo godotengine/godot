@@ -33,9 +33,6 @@
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
-#define NORMAL_SUFFIX "_normal"
-#define SPECULAR_SUFFIX "_specular"
-
 #ifdef TOOLS_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
@@ -152,8 +149,6 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 	ERR_FAIL_COND_MSG(animations.has(p_anim), "SpriteFrames already has animation '" + p_anim + "'.");
 
 	animations[p_anim] = Anim();
-	animations[p_anim].normal_name = String(p_anim) + NORMAL_SUFFIX;
-	animations[p_anim].specular_name = String(p_anim) + SPECULAR_SUFFIX;
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
@@ -171,8 +166,6 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	Anim anim = animations[p_prev];
 	animations.erase(p_prev);
 	animations[p_next] = anim;
-	animations[p_next].normal_name = String(p_next) + NORMAL_SUFFIX;
-	animations[p_next].specular_name = String(p_next) + SPECULAR_SUFFIX;
 }
 
 Vector<String> SpriteFrames::_get_animation_list() const {
@@ -441,9 +434,6 @@ void AnimatedSprite2D::_notification(int p_what) {
 				return;
 			}
 
-			Ref<Texture2D> normal = frames->get_normal_frame(animation, frame);
-			Ref<Texture2D> specular = frames->get_specular_frame(animation, frame);
-
 			RID ci = get_canvas_item();
 
 			Size2i s;
@@ -465,7 +455,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 				dst_rect.size.y = -dst_rect.size.y;
 			}
 
-			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess));
+			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false);
 
 		} break;
 	}
@@ -672,24 +662,6 @@ String AnimatedSprite2D::get_configuration_warning() const {
 	return warning;
 }
 
-void AnimatedSprite2D::set_specular_color(const Color &p_color) {
-	specular_color = p_color;
-	update();
-}
-
-Color AnimatedSprite2D::get_specular_color() const {
-	return specular_color;
-}
-
-void AnimatedSprite2D::set_shininess(float p_shininess) {
-	shininess = CLAMP(p_shininess, 0.0, 1.0);
-	update();
-}
-
-float AnimatedSprite2D::get_shininess() const {
-	return shininess;
-}
-
 void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite2D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite2D::get_sprite_frames);
@@ -722,12 +694,6 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite2D::get_speed_scale);
 
-	ClassDB::bind_method(D_METHOD("set_specular_color", "color"), &AnimatedSprite2D::set_specular_color);
-	ClassDB::bind_method(D_METHOD("get_specular_color"), &AnimatedSprite2D::get_specular_color);
-
-	ClassDB::bind_method(D_METHOD("set_shininess", "shininess"), &AnimatedSprite2D::set_shininess);
-	ClassDB::bind_method(D_METHOD("get_shininess"), &AnimatedSprite2D::get_shininess);
-
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
@@ -737,9 +703,6 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
-	ADD_GROUP("Lighting", "");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shininess", "get_shininess");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -759,6 +722,4 @@ AnimatedSprite2D::AnimatedSprite2D() {
 	animation = "default";
 	timeout = 0;
 	is_over = false;
-	specular_color = Color(1, 1, 1, 1);
-	shininess = 1.0;
 }

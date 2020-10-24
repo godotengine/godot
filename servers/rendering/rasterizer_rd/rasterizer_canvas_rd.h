@@ -42,6 +42,13 @@
 class RasterizerCanvasRD : public RasterizerCanvas {
 	RasterizerStorageRD *storage;
 
+	enum {
+		BASE_UNIFORM_SET = 0,
+		MATERIAL_UNIFORM_SET = 1,
+		TRANSFORMS_UNIFORM_SET = 2,
+		CANVAS_TEXTURE_UNIFORM_SET = 3,
+	};
+
 	enum ShaderVariant {
 		SHADER_VARIANT_QUAD,
 		SHADER_VARIANT_NINEPATCH,
@@ -100,7 +107,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	enum {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
-		DEFAULT_MAX_LIGHTS_PER_ITEM = 16,
+		MAX_LIGHTS_PER_ITEM = 16,
 		DEFAULT_MAX_LIGHTS_PER_RENDER = 256
 	};
 
@@ -135,7 +142,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		CanvasShaderRD canvas_shader;
 		RID default_version;
 		RID default_version_rd_shader;
-		RID default_version_rd_shader_light;
 		RID quad_index_buffer;
 		RID quad_index_array;
 		PipelineVariants pipeline_variants;
@@ -178,7 +184,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		Map<StringName, RID> default_texture_params;
 
 		bool uses_screen_texture;
-		bool uses_material_samplers;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -218,59 +223,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	}
 
 	/**************************/
-	/**** TEXTURE BINDINGS ****/
+	/**** CANVAS TEXTURES *****/
 	/**************************/
-
-	// bindings used to render commands,
-	// cached for performance.
-
-	struct TextureBindingKey {
-		RID texture;
-		RID normalmap;
-		RID specular;
-		RID multimesh;
-		RS::CanvasItemTextureFilter texture_filter;
-		RS::CanvasItemTextureRepeat texture_repeat;
-		bool operator==(const TextureBindingKey &p_key) const {
-			return texture == p_key.texture && normalmap == p_key.normalmap && specular == p_key.specular && multimesh == p_key.specular && texture_filter == p_key.texture_filter && texture_repeat == p_key.texture_repeat;
-		}
-	};
-
-	struct TextureBindingKeyHasher {
-		static _FORCE_INLINE_ uint32_t hash(const TextureBindingKey &p_key) {
-			uint32_t hash = hash_djb2_one_64(p_key.texture.get_id());
-			hash = hash_djb2_one_64(p_key.normalmap.get_id(), hash);
-			hash = hash_djb2_one_64(p_key.specular.get_id(), hash);
-			hash = hash_djb2_one_64(p_key.multimesh.get_id(), hash);
-			hash = hash_djb2_one_32(uint32_t(p_key.texture_filter) << 16 | uint32_t(p_key.texture_repeat), hash);
-			return hash;
-		}
-	};
-
-	struct TextureBinding {
-		TextureBindingID id;
-		TextureBindingKey key;
-		SelfList<TextureBinding> to_dispose;
-		uint32_t reference_count;
-		RID uniform_set;
-		TextureBinding() :
-				to_dispose(this) {
-			reference_count = 0;
-		}
-	};
-
-	struct {
-		SelfList<TextureBinding>::List to_dispose_list;
-
-		TextureBindingID id_generator;
-		HashMap<TextureBindingKey, TextureBindingID, TextureBindingKeyHasher> texture_key_bindings;
-		HashMap<TextureBindingID, TextureBinding *> texture_bindings;
-
-		TextureBindingID default_empty;
-	} bindings;
-
-	RID _create_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, RenderingServer::CanvasItemTextureFilter p_filter, RenderingServer::CanvasItemTextureRepeat p_repeat, RID p_multimesh);
-	void _dispose_bindings();
 
 	struct {
 		RS::CanvasItemTextureFilter default_filter;
@@ -313,10 +267,9 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	struct CanvasLight {
 		RID texture;
 		struct {
-			int size;
-			RID texture;
-			RID depth;
-			RID fb;
+			bool enabled = false;
+			float z_far;
+			float y_offset;
 		} shadow;
 	};
 
@@ -326,7 +279,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		float projection[16];
 		float modelview[8];
 		float direction[2];
-		float pad[2];
+		float z_far;
+		float pad;
 	};
 
 	struct OccluderPolygon {
@@ -342,12 +296,17 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		float matrix[8]; //light to texture coordinate matrix
 		float shadow_matrix[8]; //light to shadow coordinate matrix
 		float color[4];
-		float shadow_color[4];
-		float position[2];
+
+		uint8_t shadow_color[4];
 		uint32_t flags; //index to light texture
-		float height;
 		float shadow_pixel_size;
-		float pad[3];
+		float height;
+
+		float position[2];
+		float shadow_z_far_inv;
+		float shadow_y_ofs;
+
+		float atlas_rect[4];
 	};
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
@@ -365,34 +324,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	/***************/
 
 	//state that does not vary across rendering all items
-
-	struct ItemStateData : public Item::CustomData {
-		struct LightCache {
-			uint64_t light_version;
-			Light *light;
-		};
-
-		LightCache light_cache[DEFAULT_MAX_LIGHTS_PER_ITEM];
-		uint32_t light_cache_count;
-		RID state_uniform_set_with_light;
-		RID state_uniform_set;
-		ItemStateData() {
-			for (int i = 0; i < DEFAULT_MAX_LIGHTS_PER_ITEM; i++) {
-				light_cache[i].light_version = 0;
-				light_cache[i].light = nullptr;
-			}
-			light_cache_count = 0xFFFFFFFF;
-		}
-
-		~ItemStateData() {
-			if (state_uniform_set_with_light.is_valid() && RD::get_singleton()->uniform_set_is_valid(state_uniform_set_with_light)) {
-				RD::get_singleton()->free(state_uniform_set_with_light);
-			}
-			if (state_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(state_uniform_set)) {
-				RD::get_singleton()->free(state_uniform_set);
-			}
-		}
-	};
 
 	struct State {
 		//state buffer
@@ -414,6 +345,12 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
 		RID shadow_sampler;
+		RID shadow_texture;
+		RID shadow_depth_texture;
+		RID shadow_fb;
+		int shadow_texture_size = 2048;
+
+		RID default_transforms_uniform_set;
 
 		uint32_t max_lights_per_render;
 		uint32_t max_lights_per_item;
@@ -452,9 +389,16 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	Item *items[MAX_RENDER_ITEMS];
 
-	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list, uint32_t &flags);
+	RID default_canvas_texture;
+
+	RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+
+	RID _create_base_uniform_set(RID p_to_render_target, bool p_backbuffer);
+
+	inline void _bind_canvas_texture(RD::DrawListID p_draw_list, RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID &r_last_texture, PushConstant &push_constant, Size2 &r_texpixel_size); //recursive, so regular inline used instead.
 	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, RID p_screen_uniform_set);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
@@ -462,29 +406,26 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
 
-	_FORCE_INLINE_ void _update_specular_shininess(const Color &p_transform, uint32_t *r_ss);
-
 public:
-	TextureBindingID request_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat, RID p_multimesh);
-	void free_texture_binding(TextureBindingID p_binding);
-
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>());
 	void free_polygon(PolygonID p_polygon);
 
 	RID light_create();
 	void light_set_texture(RID p_rid, RID p_texture);
-	void light_set_use_shadow(RID p_rid, bool p_enable, int p_resolution);
-	void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
+	void light_set_use_shadow(RID p_rid, bool p_enable);
+	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
 
 	RID occluder_polygon_create();
 	void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines);
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
+
+	virtual void set_shadow_texture_size(int p_size);
 
 	void set_time(double p_time);
 	void update();

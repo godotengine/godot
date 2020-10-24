@@ -174,6 +174,29 @@ public:
 	};
 
 private:
+	/* CANVAS TEXTURE API (2D) */
+
+	struct CanvasTexture {
+		RID diffuse;
+		RID normalmap;
+		RID specular;
+		Color specular_color = Color(1, 1, 1, 1);
+		float shininess = 1.0;
+
+		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+		RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+
+		Size2i size_cache = Size2i(1, 1);
+		bool use_normal_cache = false;
+		bool use_specular_cache = false;
+		bool cleared_cache = true;
+		void clear_sets();
+		~CanvasTexture();
+	};
+
+	RID_PtrOwner<CanvasTexture> canvas_texture_owner;
+
 	/* TEXTURE API */
 	struct Texture {
 		enum Type {
@@ -231,6 +254,8 @@ private:
 
 		RS::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
 		void *detect_roughness_callback_ud = nullptr;
+
+		CanvasTexture *canvas_texture = nullptr;
 	};
 
 	struct TextureToRDFormat {
@@ -972,6 +997,8 @@ private:
 		};
 
 		Vector<BackbufferMipmap> backbuffer_mipmaps;
+
+		RID framebuffer_uniform_set;
 		RID backbuffer_uniform_set;
 
 		//texture generated for this owner (nor RD).
@@ -1146,6 +1173,18 @@ public:
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
 		return default_rd_samplers[p_filter][p_repeat];
 	}
+
+	/* CANVAS TEXTURE API */
+
+	virtual RID canvas_texture_create();
+
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture);
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess);
+
+	virtual void canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter);
+	virtual void canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat);
+
+	bool canvas_texture_get_unifom_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular);
 
 	/* SHADER API */
 
@@ -1878,6 +1917,7 @@ public:
 	bool render_target_was_used(RID p_render_target);
 	void render_target_set_as_unused(RID p_render_target);
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region);
+
 	RID render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader);
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color);
@@ -1889,6 +1929,13 @@ public:
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
+	RID render_target_get_rd_backbuffer(RID p_render_target);
+
+	RID render_target_get_framebuffer_uniform_set(RID p_render_target);
+	RID render_target_get_backbuffer_uniform_set(RID p_render_target);
+
+	void render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set);
+	void render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set);
 
 	RS::InstanceType get_base_type(RID p_rid) const;
 
@@ -1915,6 +1962,8 @@ public:
 	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const;
+
+	RID get_default_rd_storage_buffer() { return default_rd_storage_buffer; }
 
 	static RasterizerStorageRD *base_singleton;
 

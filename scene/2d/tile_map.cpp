@@ -528,15 +528,14 @@ void TileMap::update_dirty_quadrants() {
 				rect.position += tile_ofs;
 			}
 
-			Ref<Texture2D> normal_map = tile_set->tile_get_normal_map(c.id);
 			Color modulate = tile_set->tile_get_modulate(c.id);
 			Color self_modulate = get_self_modulate();
 			modulate = Color(modulate.r * self_modulate.r, modulate.g * self_modulate.g,
 					modulate.b * self_modulate.b, modulate.a * self_modulate.a);
 			if (r == Rect2()) {
-				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose, normal_map);
+				tex->draw_rect(canvas_item, rect, false, modulate, c.transpose);
 			} else {
-				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, normal_map, Ref<Texture2D>(), Color(1, 1, 1, 1), RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, clip_uv);
+				tex->draw_rect_region(canvas_item, rect, r, modulate, c.transpose, clip_uv);
 			}
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);

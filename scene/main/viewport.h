@@ -357,9 +357,6 @@ private:
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter;
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat;
 
-	void _propagate_update_default_filter(Node *p_node);
-	void _propagate_update_default_repeat(Node *p_node);
-
 	bool disable_input;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);

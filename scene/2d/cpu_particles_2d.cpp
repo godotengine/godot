@@ -228,15 +228,6 @@ Ref<Texture2D> CPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void CPUParticles2D::set_normalmap(const Ref<Texture2D> &p_normalmap) {
-	normalmap = p_normalmap;
-	update();
-}
-
-Ref<Texture2D> CPUParticles2D::get_normalmap() const {
-	return normalmap;
-}
-
 void CPUParticles2D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;
 }
@@ -1060,12 +1051,7 @@ void CPUParticles2D::_notification(int p_what) {
 			texrid = texture->get_rid();
 		}
 
-		RID normrid;
-		if (normalmap.is_valid()) {
-			normrid = normalmap->get_rid();
-		}
-
-		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid, normrid);
+		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1214,9 +1200,6 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &CPUParticles2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &CPUParticles2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normalmap", "normalmap"), &CPUParticles2D::set_normalmap);
-	ClassDB::bind_method(D_METHOD("get_normalmap"), &CPUParticles2D::get_normalmap);
-
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
@@ -1236,7 +1219,6 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normalmap", "get_normalmap");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

@@ -46,13 +46,7 @@ class SpriteFrames : public Resource {
 			loop = true;
 			speed = 5;
 		}
-
-		StringName normal_name;
-		StringName specular_name;
 	};
-
-	Color specular_color;
-	float shininess;
 
 	Map<StringName, Anim> animations;
 
@@ -93,34 +87,6 @@ public:
 		}
 
 		return E->get().frames[p_idx];
-	}
-
-	_FORCE_INLINE_ Ref<Texture2D> get_normal_frame(const StringName &p_anim, int p_idx) const {
-		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V_MSG(!E, Ref<Texture2D>(), "Animation '" + String(p_anim) + "' doesn't exist.");
-		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture2D>());
-
-		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
-
-		if (!EN || p_idx >= EN->get().frames.size()) {
-			return Ref<Texture2D>();
-		}
-
-		return EN->get().frames[p_idx];
-	}
-
-	_FORCE_INLINE_ Ref<Texture2D> get_specular_frame(const StringName &p_anim, int p_idx) const {
-		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V(!E, Ref<Texture2D>());
-		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture2D>());
-
-		const Map<StringName, Anim>::Element *EN = animations.find(E->get().specular_name);
-
-		if (!EN || p_idx >= EN->get().frames.size()) {
-			return Ref<Texture2D>();
-		}
-
-		return EN->get().frames[p_idx];
 	}
 
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture2D> &p_frame) {
@@ -165,9 +131,6 @@ class AnimatedSprite2D : public Node2D {
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
 	Rect2 _get_rect() const;
-
-	Color specular_color;
-	float shininess;
 
 protected:
 	static void _bind_methods();
@@ -215,12 +178,6 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
-
-	void set_specular_color(const Color &p_color);
-	Color get_specular_color() const;
-
-	void set_shininess(float p_shininess);
-	float get_shininess() const;
 
 	virtual String get_configuration_warning() const override;
 	AnimatedSprite2D();

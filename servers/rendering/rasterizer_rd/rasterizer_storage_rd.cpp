@@ -1118,12 +1118,21 @@ void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 	}
 	RD::get_singleton()->free(tex->rd_texture);
 
+	if (tex->canvas_texture) {
+		memdelete(tex->canvas_texture);
+		tex->canvas_texture = nullptr;
+	}
+
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
 	*tex = *by_tex;
 
 	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
+
+	if (tex->canvas_texture) {
+		tex->canvas_texture->diffuse = p_texture; //update
+	}
 
 	for (int i = 0; i < proxies_to_update.size(); i++) {
 		texture_proxy_update(proxies_to_update[i], p_texture);
@@ -1191,6 +1200,167 @@ void RasterizerStorageRD::texture_set_force_redraw_if_visible(RID p_texture, boo
 
 Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
+}
+
+/* CANVAS TEXTURE */
+
+void RasterizerStorageRD::CanvasTexture::clear_sets() {
+	if (cleared_cache) {
+		return;
+	}
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j])) {
+				RD::get_singleton()->free(uniform_sets[i][j]);
+				uniform_sets[i][j] = RID();
+			}
+		}
+	}
+	cleared_cache = true;
+}
+
+RasterizerStorageRD::CanvasTexture::~CanvasTexture() {
+	clear_sets();
+}
+
+RID RasterizerStorageRD::canvas_texture_create() {
+	return canvas_texture_owner.make_rid(memnew(CanvasTexture));
+}
+
+void RasterizerStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	switch (p_channel) {
+		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
+			ct->diffuse = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
+			ct->normalmap = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
+			ct->specular = p_texture;
+		} break;
+	}
+
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->specular_color.r = p_specular_color.r;
+	ct->specular_color.g = p_specular_color.g;
+	ct->specular_color.b = p_specular_color.b;
+	ct->specular_color.a = p_shininess;
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->texture_filter = p_filter;
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->texture_repeat = p_repeat;
+	ct->clear_sets();
+}
+
+bool RasterizerStorageRD::canvas_texture_get_unifom_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
+	CanvasTexture *ct = nullptr;
+
+	Texture *t = texture_owner.getornull(p_texture);
+
+	if (t) {
+		//regular texture
+		if (!t->canvas_texture) {
+			t->canvas_texture = memnew(CanvasTexture);
+			t->canvas_texture->diffuse = p_texture;
+		}
+
+		ct = t->canvas_texture;
+	} else {
+		ct = canvas_texture_owner.getornull(p_texture);
+	}
+
+	if (!ct) {
+		return false; //invalid texture RID
+	}
+
+	RS::CanvasItemTextureFilter filter = ct->texture_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? ct->texture_filter : p_base_filter;
+	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, false);
+
+	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
+	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
+
+	RID uniform_set = ct->uniform_sets[filter][repeat];
+	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//create and update
+		Vector<RD::Uniform> uniforms;
+		{ //diffuse
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 0;
+
+			t = texture_owner.getornull(ct->diffuse);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->size_cache = Size2i(1, 1);
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+			}
+			uniforms.push_back(u);
+		}
+		{ //normal
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1;
+
+			t = texture_owner.getornull(ct->normalmap);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
+				ct->use_normal_cache = false;
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->use_normal_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //specular
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 2;
+
+			t = texture_owner.getornull(ct->specular);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->use_specular_cache = false;
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->use_specular_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //sampler
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 3;
+			u.ids.push_back(sampler_rd_get_default(filter, repeat));
+			uniforms.push_back(u);
+		}
+
+		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
+		ct->uniform_sets[filter][repeat] = uniform_set;
+		ct->cleared_cache = false;
+	}
+
+	r_uniform_set = uniform_set;
+	r_size = ct->size_cache;
+	r_specular_shininess = ct->specular_color;
+	r_use_normal = ct->use_normal_cache;
+	r_use_specular = ct->use_specular_cache;
+
+	return true;
 }
 
 /* SHADER API */
@@ -5842,6 +6012,7 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 	//free in reverse dependency order
 	if (rt->framebuffer.is_valid()) {
 		RD::get_singleton()->free(rt->framebuffer);
+		rt->framebuffer_uniform_set = RID(); //chain deleted
 	}
 
 	if (rt->color.is_valid()) {
@@ -5856,10 +6027,7 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 			RD::get_singleton()->free(rt->backbuffer_mipmaps[i].mipmap_copy);
 		}
 		rt->backbuffer_mipmaps.clear();
-		if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
-			RD::get_singleton()->free(rt->backbuffer_uniform_set);
-		}
-		rt->backbuffer_uniform_set = RID();
+		rt->backbuffer_uniform_set = RID(); //chain deleted
 	}
 
 	rt->framebuffer = RID();
@@ -5969,6 +6137,11 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	rt->backbuffer_mipmap0 = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
 
+	if (rt->framebuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->framebuffer_uniform_set)) {
+		//the new one will require the backbuffer.
+		RD::get_singleton()->free(rt->framebuffer_uniform_set);
+		rt->framebuffer_uniform_set = RID();
+	}
 	//create mipmaps
 	for (uint32_t i = 1; i < mipmaps_required; i++) {
 		RenderTarget::BackbufferMipmap mm;
@@ -6066,6 +6239,12 @@ RID RasterizerStorageRD::render_target_get_rd_texture(RID p_render_target) {
 	return rt->color;
 }
 
+RID RasterizerStorageRD::render_target_get_rd_backbuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->backbuffer;
+}
+
 void RasterizerStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -6135,30 +6314,26 @@ void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target,
 	}
 }
 
-RID RasterizerStorageRD::render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader) {
+RID RasterizerStorageRD::render_target_get_framebuffer_uniform_set(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
-
-	if (!rt->backbuffer.is_valid()) {
-		_create_render_target_backbuffer(rt);
-	}
-
-	if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
-		return rt->backbuffer_uniform_set; //if still valid, return/reuse it.
-	}
-
-	//create otherwise
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform u;
-	u.type = RD::UNIFORM_TYPE_TEXTURE;
-	u.binding = 0;
-	u.ids.push_back(rt->backbuffer);
-	uniforms.push_back(u);
-
-	rt->backbuffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, 3);
-	ERR_FAIL_COND_V(!rt->backbuffer_uniform_set.is_valid(), RID());
-
+	return rt->framebuffer_uniform_set;
+}
+RID RasterizerStorageRD::render_target_get_backbuffer_uniform_set(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
 	return rt->backbuffer_uniform_set;
+}
+
+void RasterizerStorageRD::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->framebuffer_uniform_set = p_uniform_set;
+}
+void RasterizerStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->backbuffer_uniform_set = p_uniform_set;
 }
 
 void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
@@ -7192,8 +7367,16 @@ bool RasterizerStorageRD::free(RID p_rid) {
 			p->rd_texture = RID();
 			p->rd_texture_srgb = RID();
 		}
+
+		if (t->canvas_texture) {
+			memdelete(t->canvas_texture);
+		}
 		texture_owner.free(p_rid);
 
+	} else if (canvas_texture_owner.owns(p_rid)) {
+		CanvasTexture *ct = canvas_texture_owner.getornull(p_rid);
+		memdelete(ct);
+		canvas_texture_owner.free(p_rid);
 	} else if (shader_owner.owns(p_rid)) {
 		Shader *shader = shader_owner.getornull(p_rid);
 		//make material unreference this

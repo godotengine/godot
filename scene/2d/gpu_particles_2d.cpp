@@ -267,15 +267,6 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void GPUParticles2D::set_normal_map(const Ref<Texture2D> &p_normal_map) {
-	normal_map = p_normal_map;
-	update();
-}
-
-Ref<Texture2D> GPUParticles2D::get_normal_map() const {
-	return normal_map;
-}
-
 void GPUParticles2D::_validate_property(PropertyInfo &property) const {
 }
 
@@ -290,12 +281,8 @@ void GPUParticles2D::_notification(int p_what) {
 		if (texture.is_valid()) {
 			texture_rid = texture->get_rid();
 		}
-		RID normal_rid;
-		if (normal_map.is_valid()) {
-			normal_rid = normal_map->get_rid();
-		}
 
-		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid);
+		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid);
 
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
@@ -359,9 +346,6 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GPUParticles2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &GPUParticles2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normal_map", "texture"), &GPUParticles2D::set_normal_map);
-	ClassDB::bind_method(D_METHOD("get_normal_map"), &GPUParticles2D::get_normal_map);
-
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
 
 	ClassDB::bind_method(D_METHOD("restart"), &GPUParticles2D::restart);
@@ -385,7 +369,6 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Textures", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

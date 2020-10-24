@@ -51,8 +51,6 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_name(id, p_value);
 	} else if (what == "texture") {
 		tile_set_texture(id, p_value);
-	} else if (what == "normal_map") {
-		tile_set_normal_map(id, p_value);
 	} else if (what == "tex_offset") {
 		tile_set_texture_offset(id, p_value);
 	} else if (what == "material") {
@@ -226,8 +224,6 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_name(id);
 	} else if (what == "texture") {
 		r_ret = tile_get_texture(id);
-	} else if (what == "normal_map") {
-		r_ret = tile_get_normal_map(id);
 	} else if (what == "tex_offset") {
 		r_ret = tile_get_texture_offset(id);
 	} else if (what == "material") {
@@ -331,7 +327,6 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		String pre = itos(id) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING, pre + "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "tex_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::COLOR, pre + "modulate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
@@ -400,17 +395,6 @@ void TileSet::tile_set_texture(int p_id, const Ref<Texture2D> &p_texture) {
 Ref<Texture2D> TileSet::tile_get_texture(int p_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
 	return tile_map[p_id].texture;
-}
-
-void TileSet::tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map) {
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].normal_map = p_normal_map;
-	emit_changed();
-}
-
-Ref<Texture2D> TileSet::tile_get_normal_map(int p_id) const {
-	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Texture2D>());
-	return tile_map[p_id].normal_map;
 }
 
 void TileSet::tile_set_material(int p_id, const Ref<ShaderMaterial> &p_material) {
@@ -1128,8 +1112,6 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
 	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture"), &TileSet::tile_set_texture);
 	ClassDB::bind_method(D_METHOD("tile_get_texture", "id"), &TileSet::tile_get_texture);
-	ClassDB::bind_method(D_METHOD("tile_set_normal_map", "id", "normal_map"), &TileSet::tile_set_normal_map);
-	ClassDB::bind_method(D_METHOD("tile_get_normal_map", "id"), &TileSet::tile_get_normal_map);
 	ClassDB::bind_method(D_METHOD("tile_set_material", "id", "material"), &TileSet::tile_set_material);
 	ClassDB::bind_method(D_METHOD("tile_get_material", "id"), &TileSet::tile_get_material);
 	ClassDB::bind_method(D_METHOD("tile_set_modulate", "id", "color"), &TileSet::tile_set_modulate);

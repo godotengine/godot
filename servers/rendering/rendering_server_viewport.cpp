@@ -136,6 +136,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 		Rect2 shadow_rect;
 
 		int light_count = 0;
+		int shadow_count = 0;
 
 		RENDER_TIMESTAMP("Cull Canvas Lights");
 		for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
@@ -221,7 +222,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 			while (light) {
 				RENDER_TIMESTAMP("Render Shadow");
 
-				RSG::canvas_render->light_update_shadow(light->light_internal, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
+				RSG::canvas_render->light_update_shadow(light->light_internal, shadow_count++, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
 				light = light->shadows_next_ptr;
 			}
 
@@ -254,7 +255,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 				ptr = ptr->filter_next_ptr;
 			}
 
-			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, lights_with_mask, clip_rect);
+			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, lights_with_mask, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat);
 			i++;
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
@@ -771,6 +772,21 @@ float RenderingServerViewport::viewport_get_measured_render_time_gpu(RID p_viewp
 	ERR_FAIL_COND_V(!viewport, 0);
 
 	return double((viewport->time_gpu_end - viewport->time_gpu_begin) / 1000) / 1000.0;
+}
+
+void RenderingServerViewport::viewport_set_default_canvas_item_texture_filter(RID p_viewport, RS::CanvasItemTextureFilter p_filter) {
+	ERR_FAIL_COND_MSG(p_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, "Viewport does not accept DEFAULT as texture filter (it's the topmost choice already).)");
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->texture_filter = p_filter;
+}
+void RenderingServerViewport::viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RS::CanvasItemTextureRepeat p_repeat) {
+	ERR_FAIL_COND_MSG(p_repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, "Viewport does not accept DEFAULT as texture repeat (it's the topmost choice already).)");
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->texture_repeat = p_repeat;
 }
 
 bool RenderingServerViewport::free(RID p_rid) {
