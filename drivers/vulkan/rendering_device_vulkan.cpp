@@ -3258,7 +3258,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	render_pass_create_info.pAttachments = attachments.ptr();
 	render_pass_create_info.subpassCount = 1;
 	render_pass_create_info.pSubpasses = &subpass;
-	render_pass_create_info.dependencyCount = 2;
+	render_pass_create_info.dependencyCount = 0; //2 - throws validation layer error
 	render_pass_create_info.pDependencies = dependencies;
 
 	VkRenderPass render_pass;
@@ -4610,12 +4610,12 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 			}
 		}
 		ERR_FAIL_COND_V_MSG(uniform_idx == -1, RID(),
-				"All the shader bindings for the given set must be covered by the uniforms provided. Binding (" + itos(set_uniform.binding) + ") was not provided.");
+				"All the shader bindings for the given set must be covered by the uniforms provided. Binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + ") was not provided.");
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
 		ERR_FAIL_COND_V_MSG(uniform.type != set_uniform.type, RID(),
-				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "). Expected '" + shader_uniform_names[set_uniform.type] + "', supplied: '" + shader_uniform_names[uniform.type] + "'.");
+				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + shader_uniform_names[set_uniform.type] + "', supplied: '" + shader_uniform_names[uniform.type] + "'.");
 
 		VkWriteDescriptorSet write; //common header
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

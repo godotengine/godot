@@ -351,10 +351,6 @@ public:
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
-// FIXME: Disabled during Vulkan refactoring, should be ported.
-#if 0
-	virtual void texture_bind(RID p_texture, uint32_t p_texture_no) = 0;
-#endif
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
 	virtual String texture_get_path(RID p_texture) const = 0;
@@ -371,6 +367,15 @@ public:
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
+
+	/* CANVAS TEXTURE API */
+
+	virtual RID canvas_texture_create() = 0;
+	virtual void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) = 0;
+	virtual void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess) = 0;
+
+	virtual void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter) = 0;
+	virtual void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat) = 0;
 
 	/* SHADER API */
 
@@ -882,38 +887,9 @@ public:
 		}
 	};
 
-	typedef uint64_t TextureBindingID;
-
-	virtual TextureBindingID request_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) = 0;
-	virtual void free_texture_binding(TextureBindingID p_binding) = 0;
-
 	//easier wrap to avoid mistakes
 
 	struct Item;
-
-	struct TextureBinding {
-		TextureBindingID binding_id;
-
-		_FORCE_INLINE_ void create(RS::CanvasItemTextureFilter p_item_filter, RS::CanvasItemTextureRepeat p_item_repeat, RID p_texture, RID p_normalmap, RID p_specular, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
-			if (p_filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
-				p_filter = p_item_filter;
-			}
-			if (p_repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) {
-				p_repeat = p_item_repeat;
-			}
-			if (p_texture != RID() || p_normalmap != RID() || p_specular != RID() || p_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT || p_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT || p_multimesh.is_valid()) {
-				ERR_FAIL_COND(binding_id != 0);
-				binding_id = singleton->request_texture_binding(p_texture, p_normalmap, p_specular, p_filter, p_repeat, p_multimesh);
-			}
-		}
-
-		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
-		_FORCE_INLINE_ ~TextureBinding() {
-			if (binding_id) {
-				singleton->free_texture_binding(binding_id);
-			}
-		}
-	};
 
 	typedef uint64_t PolygonID;
 	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) = 0;
@@ -984,9 +960,8 @@ public:
 			Color modulate;
 			Rect2 source;
 			uint8_t flags;
-			Color specular_shininess;
 
-			TextureBinding texture_binding;
+			RID texture;
 
 			CommandRect() {
 				flags = 0;
@@ -1002,8 +977,9 @@ public:
 			Color color;
 			RS::NinePatchAxisMode axis_x;
 			RS::NinePatchAxisMode axis_y;
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandNinePatch() {
 				draw_center = true;
 				type = TYPE_NINEPATCH;
@@ -1013,8 +989,9 @@ public:
 		struct CommandPolygon : public Command {
 			RS::PrimitiveType primitive;
 			Polygon polygon;
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandPolygon() {
 				type = TYPE_POLYGON;
 			}
@@ -1025,8 +1002,9 @@ public:
 			Vector2 points[4];
 			Vector2 uvs[4];
 			Color colors[4];
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandPrimitive() {
 				type = TYPE_PRIMITIVE;
 			}
@@ -1036,22 +1014,25 @@ public:
 			RID mesh;
 			Transform2D transform;
 			Color modulate;
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandMesh() { type = TYPE_MESH; }
 		};
 
 		struct CommandMultiMesh : public Command {
 			RID multimesh;
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandMultiMesh() { type = TYPE_MULTIMESH; }
 		};
 
 		struct CommandParticles : public Command {
 			RID particles;
-			Color specular_shininess;
-			TextureBinding texture_binding;
+
+			RID texture;
+
 			CommandParticles() { type = TYPE_PARTICLES; }
 		};
 
@@ -1260,12 +1241,6 @@ public:
 			return command;
 		}
 
-		struct CustomData {
-			virtual ~CustomData() {}
-		};
-
-		mutable CustomData *custom_data; //implementation dependent
-
 		void clear() {
 			Command *c = commands;
 			while (c) {
@@ -1295,6 +1270,10 @@ public:
 			material_owner = nullptr;
 			light_masked = false;
 		}
+
+		RS::CanvasItemTextureFilter texture_filter;
+		RS::CanvasItemTextureRepeat texture_repeat;
+
 		Item() {
 			commands = nullptr;
 			last_command = nullptr;
@@ -1315,7 +1294,8 @@ public:
 			light_masked = false;
 			update_when_visible = false;
 			z_final = 0;
-			custom_data = nullptr;
+			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		}
 		virtual ~Item() {
 			clear();
@@ -1325,13 +1305,10 @@ public:
 			if (copy_back_buffer) {
 				memdelete(copy_back_buffer);
 			}
-			if (custom_data) {
-				memdelete(custom_data);
-			}
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
@@ -1357,12 +1334,13 @@ public:
 
 	virtual RID light_create() = 0;
 	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
-	virtual void light_set_use_shadow(RID p_rid, bool p_enable, int p_resolution) = 0;
-	virtual void light_update_shadow(RID p_rid, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
+	virtual void light_set_use_shadow(RID p_rid, bool p_enable) = 0;
+	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
 
 	virtual RID occluder_polygon_create() = 0;
 	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) = 0;
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
+	virtual void set_shadow_texture_size(int p_size) = 0;
 
 	virtual void draw_window_margins(int *p_margins, RID *p_margin_textures) = 0;
 

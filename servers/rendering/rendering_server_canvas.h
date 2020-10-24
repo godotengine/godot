@@ -52,8 +52,6 @@ public:
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 		int ysort_index;
-		RS::CanvasItemTextureFilter texture_filter;
-		RS::CanvasItemTextureRepeat texture_repeat;
 
 		Vector<Item *> child_items;
 
@@ -71,8 +69,6 @@ public:
 			ysort_xform = Transform2D();
 			ysort_pos = Vector2();
 			ysort_index = 0;
-			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 		}
 	};
 
@@ -158,7 +154,7 @@ public:
 	bool disable_scale;
 
 private:
-	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
+	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat);
 	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
 	void _light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights);
 
@@ -166,7 +162,7 @@ private:
 	RasterizerCanvas::Item **z_last_list;
 
 public:
-	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect);
+	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat);
 
 	RID canvas_create();
 	void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring);
@@ -191,23 +187,20 @@ public:
 
 	void canvas_item_set_update_when_visible(RID p_item, bool p_update);
 
-	void canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
-	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
-
 	void canvas_item_add_line(RID p_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, float p_width = 1.0);
 	void canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void canvas_item_add_rect(RID p_item, const Rect2 &p_rect, const Color &p_color);
 	void canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
-	void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), bool p_clip_uv = false, RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RS::NinePatchAxisMode p_x_axis_mode = RS::NINE_PATCH_STRETCH, RS::NinePatchAxisMode p_y_axis_mode = RS::NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID(), RID p_normal_map = RID(), RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
-	void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal_map, RID p_specular_map = RID(), const Color &p_specular_color_shininess = Color(), RS::CanvasItemTextureFilter p_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, RS::CanvasItemTextureRepeat p_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
+	void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
+	void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
+	void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RS::NinePatchAxisMode p_x_axis_mode = RS::NINE_PATCH_STRETCH, RS::NinePatchAxisMode p_y_axis_mode = RS::NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1));
+	void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0);
+	void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID());
+	void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1);
+	void canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID());
+	void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID());
+	void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture);
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
@@ -241,7 +234,6 @@ public:
 	void canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode);
 
 	void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
-	void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
 	void canvas_light_set_shadow_filter(RID p_light, RS::CanvasLightShadowFilter p_filter);
 	void canvas_light_set_shadow_color(RID p_light, const Color &p_color);
 	void canvas_light_set_shadow_smooth(RID p_light, float p_smooth);
@@ -258,6 +250,18 @@ public:
 	void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon, const Vector<Vector2> &p_shape);
 
 	void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, RS::CanvasOccluderPolygonCullMode p_mode);
+
+	void canvas_set_shadow_texture_size(int p_size);
+
+	RID canvas_texture_create();
+	void canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture);
+	void canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_base_color, float p_shininess);
+
+	void canvas_texture_set_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
+	void canvas_texture_set_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
+
+	void canvas_item_set_default_texture_filter(RID p_item, RS::CanvasItemTextureFilter p_filter);
+	void canvas_item_set_default_texture_repeat(RID p_item, RS::CanvasItemTextureRepeat p_repeat);
 
 	bool free(RID p_rid);
 	RenderingServerCanvas();

@@ -3224,11 +3224,28 @@ void Viewport::_validate_property(PropertyInfo &property) const {
 }
 
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
+	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
+
 	if (default_canvas_item_texture_filter == p_filter) {
 		return;
 	}
 	default_canvas_item_texture_filter = p_filter;
-	_propagate_update_default_filter(this);
+	switch (default_canvas_item_texture_filter) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+			break;
+		default: {
+		}
+	}
 }
 
 Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
@@ -3236,37 +3253,31 @@ Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_textu
 }
 
 void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
+	ERR_FAIL_INDEX(p_repeat, DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
+
 	if (default_canvas_item_texture_repeat == p_repeat) {
 		return;
 	}
+
 	default_canvas_item_texture_repeat = p_repeat;
-	_propagate_update_default_repeat(this);
+
+	switch (default_canvas_item_texture_repeat) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
+			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+			break;
+		default: {
+		}
+	}
 }
 
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
 	return default_canvas_item_texture_repeat;
-}
-
-void Viewport::_propagate_update_default_filter(Node *p_node) {
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci) {
-		ci->_update_texture_filter_changed(false);
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_propagate_update_default_filter(p_node->get_child(i));
-	}
-}
-
-void Viewport::_propagate_update_default_repeat(Node *p_node) {
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	if (ci) {
-		ci->_update_texture_repeat_changed(false);
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_propagate_update_default_repeat(p_node->get_child(i));
-	}
 }
 
 DisplayServer::WindowID Viewport::get_window_id() const {

@@ -334,16 +334,16 @@ public:
 	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, float p_width = 1.0);
 	void draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color);
-	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), bool p_clip_uv = false, TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1));
+	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
+	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
 	void draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect);
-	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), float p_width = 1, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), float p_width = 1);
+	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
+	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
 
-	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
-	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1));
+	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture);
 
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));
@@ -422,5 +422,59 @@ public:
 
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
+
+class CanvasTexture : public Texture2D {
+	GDCLASS(CanvasTexture, Texture2D);
+	OBJ_SAVE_TYPE(Texture2D); // Saves derived classes with common type so they can be interchanged.
+
+	Ref<Texture2D> diffuse_texture;
+	Ref<Texture2D> normal_texture;
+	Ref<Texture2D> specular_texture;
+	Color specular = Color(1, 1, 1, 1);
+	float shininess = 1.0;
+
+	RID canvas_texture;
+
+	CanvasItem::TextureFilter texture_filter = CanvasItem::TEXTURE_FILTER_PARENT_NODE;
+	CanvasItem::TextureRepeat texture_repeat = CanvasItem::TEXTURE_REPEAT_PARENT_NODE;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_diffuse_texture(const Ref<Texture2D> &p_diffuse);
+	Ref<Texture2D> get_diffuse_texture() const;
+
+	void set_normal_texture(const Ref<Texture2D> &p_normal);
+	Ref<Texture2D> get_normal_texture() const;
+
+	void set_specular_texture(const Ref<Texture2D> &p_specular);
+	Ref<Texture2D> get_specular_texture() const;
+
+	void set_specular_color(const Color &p_color);
+	Color get_specular_color() const;
+
+	void set_specular_shininess(float p_shininess);
+	float get_specular_shininess() const;
+
+	void set_texture_filter(CanvasItem::TextureFilter p_filter);
+	CanvasItem::TextureFilter get_texture_filter() const;
+
+	void set_texture_repeat(CanvasItem::TextureRepeat p_repeat);
+	CanvasItem::TextureRepeat get_texture_repeat() const;
+
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+
+	virtual bool is_pixel_opaque(int p_x, int p_y) const override;
+	virtual bool has_alpha() const override;
+
+	virtual Ref<Image> get_data() const override;
+
+	virtual RID get_rid() const override;
+
+	CanvasTexture();
+	~CanvasTexture();
+};
 
 #endif // CANVAS_ITEM_H
