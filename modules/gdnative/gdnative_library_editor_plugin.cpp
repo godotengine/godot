@@ -333,11 +333,11 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 		platform_android.library_extension = "*.so";
 		platforms["Android"] = platform_android;
 
-		//		TODO: Javascript platform is not supported yet
-		//		NativePlatformConfig platform_html5;
-		//		platform_html5.name = "HTML5";
-		//		platform_html5.library_extension = "*.wasm";
-		//		platforms["Javascript"] = platform_html5;
+		NativePlatformConfig platform_html5;
+		platform_html5.name = "HTML5";
+		platform_html5.entries.push_back("web");
+		platform_html5.library_extension = "*.wasm";
+		platforms["HTML5"] = platform_html5;
 
 		NativePlatformConfig platform_ios;
 		platform_ios.name = "iOS";

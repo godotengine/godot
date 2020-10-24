@@ -11,13 +11,8 @@ javascript_files = [
     "api/javascript_tools_editor_plugin.cpp",
 ]
 
-build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
-if env["threads_enabled"]:
-    build_targets.append("#bin/godot${PROGSUFFIX}.worker.js")
-
-build = env.add_program(build_targets, javascript_files)
-
-env.AddJSLibraries(
+sys_env = env.Clone()
+sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
         "js/libs/library_godot_display.js",
@@ -28,12 +23,47 @@ env.AddJSLibraries(
 )
 
 if env["tools"]:
-    env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
+    sys_env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
 if env["javascript_eval"]:
-    env.AddJSLibraries(["js/libs/library_godot_eval.js"])
-for lib in env["JS_LIBS"]:
-    env.Append(LINKFLAGS=["--js-library", lib])
-env.Depends(build, env["JS_LIBS"])
+    sys_env.AddJSLibraries(["js/libs/library_godot_eval.js"])
+for lib in sys_env["JS_LIBS"]:
+    sys_env.Append(LINKFLAGS=["--js-library", lib])
+
+build = []
+if env["gdnative_enabled"]:
+    build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+    # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
+    sys_env["LIBS"] = []
+    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
+    sys_env.Append(LIBS=["idbfs.js"])
+    # JS prepended to the module code loading the side library.
+    sys_env.Append(LINKFLAGS=["--pre-js", sys_env.File("js/dynlink.pre.js")])
+    # Configure it as a main module (dynamic linking support).
+    sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
+    sys_env.Append(CCFLAGS=["-s", "EXPORT_ALL=1"])
+    sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
+    # Force exporting the standard library (printf, malloc, etc.)
+    sys_env["ENV"]["EMCC_FORCE_STDLIBS"] = "libc,libc++,libc++abi"
+    # The main emscripten runtime, with exported standard libraries.
+    sys = sys_env.Program(build_targets, ["javascript_runtime.cpp"])
+    sys_env.Depends(sys, "js/dynlink.pre.js")
+
+    # The side library, containing all Godot code.
+    wasm_env = env.Clone()
+    wasm_env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
+    wasm_env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
+    wasm = wasm_env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", javascript_files)
+    build = [sys[0], sys[1], wasm[0]]
+else:
+    build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
+    if env["threads_enabled"]:
+        build_targets.append("#bin/godot${PROGSUFFIX}.worker.js")
+    # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
+    sys_env.Append(LIBS=["idbfs.js"])
+    build = sys_env.Program(build_targets, javascript_files + ["javascript_runtime.cpp"])
+
+sys_env.Depends(build[0], sys_env["JS_LIBS"])
 
 engine = [
     "js/engine/preloader.js",
@@ -60,8 +90,11 @@ out_files = [
 ]
 html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
 in_files = [js_wrapped, build[1], html_file, "#platform/javascript/js/libs/audio.worklet.js"]
-if env["threads_enabled"]:
-    in_files.append(build[2])
+if env["gdnative_enabled"]:
+    in_files.append(build[2])  # Runtime
+    out_files.append(zip_dir.File(binary_name + ".side.wasm"))
+elif env["threads_enabled"]:
+    in_files.append(build[2])  # Worker
     out_files.append(zip_dir.File(binary_name + ".worker.js"))
 
 zip_files = env.InstallAs(out_files, in_files)
