@@ -85,7 +85,8 @@ def configure(env):
     if env["use_lto"]:
         env.Append(CCFLAGS=["-s", "WASM_OBJECT_FILES=0"])
         env.Append(LINKFLAGS=["-s", "WASM_OBJECT_FILES=0"])
-        env.Append(LINKFLAGS=["--llvm-lto", "1"])
+        env.Append(CCFLAGS=["-flto"])
+        env.Append(LINKFLAGS=["-flto"])
 
     # Closure compiler
     if env["use_closure_compiler"]:
