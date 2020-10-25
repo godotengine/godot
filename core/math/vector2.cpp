@@ -75,7 +75,7 @@ real_t Vector2::angle_to(const Vector2 &p_vector2) const {
 }
 
 real_t Vector2::angle_to_point(const Vector2 &p_vector2) const {
-	return Math::atan2(y - p_vector2.y, x - p_vector2.x);
+	return Math::atan2(p_vector2.y - y, p_vector2.x - x);
 }
 
 real_t Vector2::dot(const Vector2 &p_other) const {
