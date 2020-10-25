@@ -1141,7 +1141,7 @@ GDScriptParser::FunctionNode *GDScriptParser::parse_function() {
 				}
 			}
 			if (function->parameters_indices.has(parameter->identifier->name)) {
-				push_error(vformat(R"(Parameter with name "%s" was already declared for this function.)", parameter->identifier->name));
+				push_error(vformat(R"(Parameter with name "%s" was already declared for this function.)", parameter->identifier->name), parameter);
 			} else {
 				function->parameters_indices[parameter->identifier->name] = function->parameters.size();
 				function->parameters.push_back(parameter);
@@ -1281,7 +1281,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 				VariableNode *variable = static_cast<VariableNode *>(statement);
 				const SuiteNode::Local &local = current_suite->get_local(variable->identifier->name);
 				if (local.type != SuiteNode::Local::UNDEFINED) {
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name));
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name), statement);
 				}
 				current_suite->add_local(variable);
 				break;
@@ -1296,7 +1296,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 					} else {
 						name = "variable";
 					}
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", name, constant->identifier->name));
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", name, constant->identifier->name), statement);
 				}
 				current_suite->add_local(constant);
 				break;
