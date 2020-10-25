@@ -4312,8 +4312,10 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 		}
 
 		pipeline_layout_create_info.pSetLayouts = layouts.ptr();
+		// Needs to be declared in this outer scope, otherwise it may not outlive its assignment
+		// to pipeline_layout_create_info.
+		VkPushConstantRange push_constant_range;
 		if (push_constant.push_constant_size) {
-			VkPushConstantRange push_constant_range;
 			push_constant_range.stageFlags = push_constant.push_constants_vk_stage;
 			push_constant_range.offset = 0;
 			push_constant_range.size = push_constant.push_constant_size;
