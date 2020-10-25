@@ -1738,12 +1738,6 @@ CurveTexture::~CurveTexture() {
 
 //////////////////
 
-//setter and getter names for property serialization
-#define COLOR_RAMP_GET_OFFSETS "get_offsets"
-#define COLOR_RAMP_GET_COLORS "get_colors"
-#define COLOR_RAMP_SET_OFFSETS "set_offsets"
-#define COLOR_RAMP_SET_COLORS "set_colors"
-
 GradientTexture::GradientTexture() {
 	update_pending = false;
 	width = 2048;
