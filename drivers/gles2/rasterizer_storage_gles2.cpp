@@ -3798,7 +3798,7 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 		glBufferData(GL_ARRAY_BUFFER, buffer_size, p_data.read().ptr(), GL_DYNAMIC_DRAW);
 	} else {
 		// this may not be best, it could be better to use glBufferData in both cases.
-		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size, 0, buffer_size, p_data.read().ptr());
+		buffer_orphan_and_upload(resources.skeleton_transform_buffer_size, 0, buffer_size, p_data.read().ptr(), GL_ARRAY_BUFFER, true);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -6289,6 +6289,7 @@ void RasterizerStorageGLES2::initialize() {
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
 	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
+	config.should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
 }
 
 void RasterizerStorageGLES2::finalize() {
@@ -6308,4 +6309,5 @@ void RasterizerStorageGLES2::update_dirty_resources() {
 
 RasterizerStorageGLES2::RasterizerStorageGLES2() {
 	RasterizerStorageGLES2::system_fbo = 0;
+	config.should_orphan = true;
 }

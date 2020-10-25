@@ -106,6 +106,10 @@ public:
 
 		bool use_depth_prepass;
 		bool force_vertex_shading;
+
+		// in some cases the legacy render didn't orphan. We will mark these
+		// so the user can switch orphaning off for them.
+		bool should_orphan;
 	} config;
 
 	mutable struct Shaders {
@@ -1499,17 +1503,19 @@ public:
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 
-	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER);
+	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false);
 
 	RasterizerStorageGLES3();
 };
 
 // standardize the orphan / upload in one place so it can be changed per platform as necessary, and avoid future
 // bugs causing pipeline stalls
-inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target) {
+inline void RasterizerStorageGLES3::buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target, GLenum p_usage, bool p_optional_orphan) {
 	// Orphan the buffer to avoid CPU/GPU sync points caused by glBufferSubData
 	// Was previously #ifndef GLES_OVER_GL however this causes stalls on desktop mac also (and possibly other)
-	glBufferData(p_target, p_buffer_size, NULL, GL_DYNAMIC_DRAW);
+	if (!p_optional_orphan || (config.should_orphan)) {
+		glBufferData(p_target, p_buffer_size, NULL, p_usage);
+	}
 	glBufferSubData(p_target, p_offset, p_data_size, p_data);
 }
 

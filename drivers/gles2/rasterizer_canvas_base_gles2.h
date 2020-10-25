@@ -107,6 +107,9 @@ public:
 
 	RasterizerStorageGLES2 *storage;
 
+	// allow user to choose api usage
+	GLenum _buffer_upload_usage_flag;
+
 	void _set_uniforms();
 
 	virtual RID light_internal_create();

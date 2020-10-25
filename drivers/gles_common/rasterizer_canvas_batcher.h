@@ -279,6 +279,9 @@ public:
 			settings_uv_contract = false;
 			settings_uv_contract_amount = 0.0f;
 
+			buffer_mode_batch_upload_send_null = true;
+			buffer_mode_batch_upload_flag_stream = false;
+
 			stats_items_sorted = 0;
 			stats_light_items_joined = 0;
 		}
@@ -398,6 +401,10 @@ public:
 		bool settings_use_software_skinning;
 		int settings_light_max_join_items;
 		int settings_ninepatch_mode;
+
+		// buffer orphaning modes
+		bool buffer_mode_batch_upload_send_null;
+		bool buffer_mode_batch_upload_flag_stream;
 
 		// uv contraction
 		bool settings_uv_contract;
@@ -1027,6 +1034,10 @@ PREAMBLE(void)::batch_initialize() {
 	bdata.settings_scissor_threshold = CLAMP(bdata.settings_scissor_threshold, 0.0f, 1.0f);
 	bdata.settings_light_max_join_items = CLAMP(bdata.settings_light_max_join_items, 0, 65535);
 	bdata.settings_item_reordering_lookahead = CLAMP(bdata.settings_item_reordering_lookahead, 0, 65535);
+
+	// allow user to override the api usage techniques using project settings
+	bdata.buffer_mode_batch_upload_send_null = GLOBAL_GET("rendering/options/api_usage_batching/send_null");
+	bdata.buffer_mode_batch_upload_flag_stream = GLOBAL_GET("rendering/options/api_usage_batching/flag_stream");
 
 	// for debug purposes, output a string with the batching options
 	String batching_options_string = "OpenGL ES Batching: ";
