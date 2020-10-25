@@ -257,6 +257,11 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 	// If we're only changing file name case we need to do a little juggling
 	if (p_path.to_lower() == p_new_path.to_lower()) {
+		if (dir_exists(p_path)) {
+			// The path is a dir; just rename
+			return ::_wrename(p_path.c_str(), p_new_path.c_str()) == 0 ? OK : FAILED;
+		}
+		// The path is a file; juggle
 		WCHAR tmpfile[MAX_PATH];
 
 		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), NULL, 0, tmpfile)) {
