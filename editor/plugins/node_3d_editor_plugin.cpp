@@ -6727,7 +6727,6 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));
-	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_on_top_of_alpha();
@@ -6735,6 +6734,7 @@ void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool 
 		handle_material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
 		handle_material->set_on_top_of_alpha();
 	}
+	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	materials[p_name] = Vector<Ref<StandardMaterial3D>>();
 	materials[p_name].push_back(handle_material);
