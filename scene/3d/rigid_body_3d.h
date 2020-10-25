@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_body_3d.h                                                    */
+/*  rigid_body_3d.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_BODY_3D_H
-#define PHYSICS_BODY_3D_H
+#ifndef RIGID_BODY_3D_H
+#define RIGID_BODY_3D_H
 
 #include "core/vset.h"
 #include "scene/3d/collision_object_3d.h"
@@ -515,4 +515,4 @@ private:
 VARIANT_ENUM_CAST(RigidBody3D::Mode);
 VARIANT_ENUM_CAST(PhysicalBone3D::JointType);
 
-#endif // PHYSICS_BODY__H
+#endif // RIGID_BODY__H

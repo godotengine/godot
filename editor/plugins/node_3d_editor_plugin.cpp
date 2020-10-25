@@ -46,7 +46,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/packed_scene.h"

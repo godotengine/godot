@@ -32,7 +32,7 @@
 
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"
-#include "physics_body_3d.h"
+#include "rigid_body_3d.h"
 #include "scene/resources/material.h"
 #include "skeleton_3d.h"
 

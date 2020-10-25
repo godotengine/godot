@@ -36,7 +36,7 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 

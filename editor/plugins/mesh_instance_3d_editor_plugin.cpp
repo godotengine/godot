@@ -34,7 +34,7 @@
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/gui/box_container.h"
 
 void MeshInstance3DEditor::_node_removed(Node *p_node) {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_body_2d.cpp                                                  */
+/*  rigid_body_2d.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "physics_body_2d.h"
+#include "rigid_body_2d.h"
 
 #include "core/class_db.h"
 #include "core/core_string_names.h"

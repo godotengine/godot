@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/rid.h"
 #include "scene/3d/collision_object_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "servers/physics_server_3d.h"
 

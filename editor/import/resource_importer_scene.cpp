@@ -35,7 +35,7 @@
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"

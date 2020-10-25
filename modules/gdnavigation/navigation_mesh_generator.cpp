@@ -36,7 +36,7 @@
 #include "core/os/thread.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/rigid_body_3d.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"

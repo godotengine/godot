@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  physics_body_2d.h                                                    */
+/*  rigid_body_2d.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PHYSICS_BODY_2D_H
-#define PHYSICS_BODY_2D_H
+#ifndef RIGID_BODY_2D_H
+#define RIGID_BODY_2D_H
 
 #include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
@@ -296,4 +296,4 @@ public:
 VARIANT_ENUM_CAST(RigidBody2D::Mode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
-#endif // PHYSICS_BODY_2D_H
+#endif // RIGID_BODY_2D_H

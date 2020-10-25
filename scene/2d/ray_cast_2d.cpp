@@ -32,7 +32,7 @@
 
 #include "collision_object_2d.h"
 #include "core/engine.h"
-#include "physics_body_2d.h"
+#include "rigid_body_2d.h"
 #include "servers/physics_server_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {

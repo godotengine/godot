@@ -34,7 +34,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "scene/2d/physics_body_2d.h"
+#include "scene/2d/rigid_body_2d.h"
 #include "scene/2d/sprite_2d.h"
 
 void TileSetEditor::edit(const Ref<TileSet> &p_tileset) {
