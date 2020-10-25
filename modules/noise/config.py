@@ -8,6 +8,8 @@ def configure(env):
 
 def get_doc_classes():
     return [
+        "FastNoise",
+        "Noise",
         "NoiseTexture",
         "OpenSimplexNoise",
     ]

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenSimplexNoise" inherits="Resource" version="4.0">
+<class name="OpenSimplexNoise" inherits="Noise" version="4.0">
 	<brief_description>
-		Noise generator based on Open Simplex.
+		A [Noise] generator based on Open Simplex.
 	</brief_description>
 	<description>
-		This resource allows you to configure and sample a fractal noise space. Here is a brief usage example that configures an OpenSimplexNoise and gets samples at various positions and dimensions:
+		This class allows you to configure and sample a fractal noise space. Here is a brief usage example that configures an OpenSimplexNoise and gets samples at various positions and dimensions:
 		[codeblock]
 		var noise = OpenSimplexNoise.new()
 
@@ -31,6 +31,9 @@
 			</argument>
 			<argument index="1" name="height" type="int">
 			</argument>
+			<argument index="2" name="invert" type="bool" default="false">
+				Invert the colors. White becomes black. Black becomes white.
+			</argument>
 			<description>
 				Generate a noise image with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
 			</description>
@@ -42,7 +45,7 @@
 			</argument>
 			<description>
 				Returns the 1D noise value [code][-1,1][/code] at the given x-coordinate.
-				[b]Note:[/b] This method actually returns the 2D noise value [code][-1,1][/code] with fixed y-coordinate value 0.0.
+				[b]Note:[/b] This method actually returns the 2D noise value [code][-1,1][/code] with a fixed y-coordinate value of [code]0.0[/code].
 			</description>
 		</method>
 		<method name="get_noise_2d">
@@ -105,10 +108,16 @@
 		<method name="get_seamless_image">
 			<return type="Image">
 			</return>
-			<argument index="0" name="size" type="int">
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int" default="-1">
+			</argument>
+			<argument index="2" name="invert" type="bool" default="false">
+                Invert the colors. White becomes black. Black becomes white.
 			</argument>
 			<description>
-				Generate a tileable noise image, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] × [code]size[/code]).
+				Generate a tileable noise image, based on the current noise parameters.
+				When [code]width[/code] and [code]height[/code] are equal, this provides a seamless texture by generating 4D noise, then mapping that from a Clifford torus to a square tile with seamless edges. This method does not produce seamless results when the output is not square. So in that case, when [code]width[/code] and [code]height[/code] differ, this function returns the results of the parent [Noise] seamless function, which uses an alternate method.
 			</description>
 		</method>
 	</methods>

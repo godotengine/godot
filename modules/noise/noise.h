@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  noise_texture.h                                                      */
+/*  noise.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,76 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NOISE_TEXTURE_H
-#define NOISE_TEXTURE_H
-
-#include "open_simplex_noise.h"
+#ifndef NOISE_H
+#define NOISE_H
 
 #include "core/image.h"
-#include "core/reference.h"
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "editor/property_editor.h"
 
-class NoiseTexture : public Texture2D {
-	GDCLASS(NoiseTexture, Texture2D);
-
-private:
-	Ref<Image> data;
-
-	Thread *noise_thread;
-
-	bool first_time;
-	bool update_queued;
-	bool regen_queued;
-
-	mutable RID texture;
-	uint32_t flags;
-
-	Ref<OpenSimplexNoise> noise;
-	Vector2i size;
-	bool seamless;
-	bool as_normalmap;
-	float bump_strength;
-
-	void _thread_done(const Ref<Image> &p_image);
-	static void _thread_function(void *p_ud);
-
-	void _queue_update();
-	Ref<Image> _generate_texture();
-	void _update_texture();
-	void _set_texture_data(const Ref<Image> &p_image);
-
-protected:
-	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+class Noise : public Resource {
+	GDCLASS(Noise, Resource);
 
 public:
-	void set_noise(Ref<OpenSimplexNoise> p_noise);
-	Ref<OpenSimplexNoise> get_noise();
+	// Virtual destructor so we can delete any Noise derived object when referenced as a Noise*.
+	virtual ~Noise() {}
 
-	void set_width(int p_width);
-	void set_height(int p_height);
+	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false) = 0;
+	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false);
 
-	void set_seamless(bool p_seamless);
-	bool get_seamless();
+private:
+	// Helper struct for get_seamless_image(). See comments in .cpp for usage.
+	struct img_buff {
+		uint32_t *img;
+		int width; // Array dimensions & default modulo for image
+		int height;
+		int offset_x; // Offset index location on image (wrapped by specified modulo)
+		int offset_y;
+		int alt_width; // Alternate module for image
+		int alt_height;
 
-	void set_as_normalmap(bool p_as_normalmap);
-	bool is_normalmap();
+		enum ALT_MODULO {
+			DEFAULT = 0,
+			ALT_X,
+			ALT_Y,
+			ALT_XY
+		};
 
-	void set_bump_strength(float p_bump_strength);
-	float get_bump_strength();
+		// Multi-dimensional array indexer (e.g. img[x][y]) that supports multiple modulos
+		uint32_t &operator()(int x, int y, ALT_MODULO mode = DEFAULT) {
+			switch (mode) {
+				case ALT_XY:
+					return img[(x + offset_x) % alt_width + ((y + offset_y) % alt_height) * width];
+				case ALT_X:
+					return img[(x + offset_x) % alt_width + ((y + offset_y) % height) * width];
+				case ALT_Y:
+					return img[(x + offset_x) % width + ((y + offset_y) % alt_height) * width];
+				default:
+					return img[(x + offset_x) % width + ((y + offset_y) % height) * width];
+			}
+		}
+	};
 
-	int get_width() const override;
-	int get_height() const override;
+	union l2c {
+		uint32_t l;
+		uint8_t c[4];
+		struct {
+			uint8_t r;
+			uint8_t g;
+			uint8_t b;
+			uint8_t a;
+		};
+	};
 
-	virtual RID get_rid() const override;
-	virtual bool has_alpha() const override { return false; }
-
-	virtual Ref<Image> get_data() const override;
-
-	NoiseTexture();
-	virtual ~NoiseTexture();
+	uint32_t alpha_blend(uint32_t p_bg, uint32_t p_fg, int p_alpha = -1);
 };
 
-#endif // NOISE_TEXTURE_H
+#endif // NOISE_H
