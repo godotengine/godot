@@ -1841,9 +1841,13 @@ void postinitialize_handler(Object *p_object) {
 
 void ObjectDB::debug_objects(DebugFunc p_func) {
 	spin_lock.lock();
-	for (uint32_t i = 0; i < slot_count; i++) {
-		uint32_t slot = object_slots[i].next_free;
-		p_func(object_slots[slot].object);
+
+	for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
+		if (object_slots[i].validator) {
+			p_func(object_slots[i].object);
+
+			count--;
+		}
 	}
 	spin_lock.unlock();
 }
@@ -1955,20 +1959,23 @@ void ObjectDB::cleanup() {
 			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
-			for (uint32_t i = 0; i < slot_count; i++) {
-				uint32_t slot = object_slots[i].next_free;
-				Object *obj = object_slots[slot].object;
+			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
+				if (object_slots[i].validator) {
+					Object *obj = object_slots[i].object;
 
-				String extra_info;
-				if (obj->is_class("Node")) {
-					extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
-				}
-				if (obj->is_class("Resource")) {
-					extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
-				}
+					String extra_info;
+					if (obj->is_class("Node")) {
+						extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
+					}
+					if (obj->is_class("Resource")) {
+						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
+					}
 
-				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
-				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
+					uint64_t id = uint64_t(i) | (uint64_t(object_slots[i].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[i].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
+					print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + extra_info);
+
+					count--;
+				}
 			}
 			print_line("Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).");
 		}
