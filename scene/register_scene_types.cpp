@@ -206,6 +206,7 @@
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/path_3d.h"
+#include "scene/3d/physical_bone_3d.h"
 #include "scene/3d/physics_joint_3d.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/proximity_group_3d.h"

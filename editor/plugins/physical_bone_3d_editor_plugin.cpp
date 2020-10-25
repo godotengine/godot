@@ -31,7 +31,7 @@
 #include "physical_bone_3d_editor_plugin.h"
 
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/rigid_body_3d.h"
+#include "scene/3d/physical_bone_3d.h"
 
 void PhysicalBone3DEditor::_bind_methods() {
 }

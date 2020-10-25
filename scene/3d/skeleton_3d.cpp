@@ -34,7 +34,7 @@
 #include "core/message_queue.h"
 #include "core/project_settings.h"
 #include "core/type_info.h"
-#include "scene/3d/rigid_body_3d.h"
+#include "scene/3d/physical_bone_3d.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/scene_string_names.h"
 
