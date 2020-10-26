@@ -279,7 +279,7 @@ private:
 
 	MSAA msaa;
 	ScreenSpaceAA screen_space_aa;
-	bool use_debanding;
+	bool use_debanding = false;
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
