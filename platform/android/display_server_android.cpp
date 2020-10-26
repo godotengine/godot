@@ -137,8 +137,11 @@ Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
-	Size2i display_size = OS_Android::get_singleton()->get_display_size();
-	return Rect2i(0, 0, display_size.width, display_size.height);
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_COND_V(!godot_io_java, Rect2i());
+	int xywh[4];
+	godot_io_java->screen_get_usable_rect(xywh);
+	return Rect2i(xywh[0], xywh[1], xywh[2], xywh[3]);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
