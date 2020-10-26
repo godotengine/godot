@@ -940,8 +940,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				// Use a placeholder for now to avoid losing the state when saving a scene
 
-				obj->set_script(scr);
-
 				PlaceHolderScriptInstance *placeholder = scr->placeholder_instance_create(obj);
 				obj->set_script_instance(placeholder);
 
@@ -968,12 +966,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	for (List<Ref<CSharpScript>>::Element *E = to_reload.front(); E; E = E->next()) {
 		Ref<CSharpScript> script = E->get();
 
-		if (!script->get_path().empty()) {
 #ifdef TOOLS_ENABLED
-			script->exports_invalidated = true;
+		script->exports_invalidated = true;
 #endif
-			script->signals_invalidated = true;
+		script->signals_invalidated = true;
 
+		if (!script->get_path().empty()) {
 			script->reload(p_soft_reload);
 
 			if (!script->valid) {
@@ -1949,6 +1947,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 }
 
 void CSharpInstance::mono_object_disposed(MonoObject *p_obj) {
+	// Must make sure event signals are not left dangling
 	disconnect_event_signals();
 
 #ifdef DEBUG_ENABLED
@@ -1963,6 +1962,9 @@ void CSharpInstance::mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_f
 	CRASH_COND(!base_ref);
 	CRASH_COND(gchandle.is_released());
 #endif
+
+	// Must make sure event signals are not left dangling
+	disconnect_event_signals();
 
 	r_remove_script_instance = false;
 
@@ -2222,6 +2224,9 @@ CSharpInstance::~CSharpInstance() {
 	GD_MONO_SCOPE_THREAD_ATTACH;
 
 	destructing_script_instance = true;
+
+	// Must make sure event signals are not left dangling
+	disconnect_event_signals();
 
 	if (!gchandle.is_released()) {
 		if (!predelete_notified && !ref_dying) {

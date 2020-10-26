@@ -15,14 +15,13 @@ namespace Godot
         public Object() : this(false)
         {
             if (ptr == IntPtr.Zero)
-            {
                 ptr = godot_icall_Object_Ctor(this);
-            }
-            else
-            {
-                // This is called inside godot_icall_Object_Ctor, so we must call it as well in this case.
-                godot_icall_Object_ConnectEventSignals(ptr);
-            }
+            _InitializeGodotScriptInstanceInternals();
+        }
+
+        internal void _InitializeGodotScriptInstanceInternals()
+        {
+            godot_icall_Object_ConnectEventSignals(ptr);
         }
 
         internal Object(bool memoryOwn)

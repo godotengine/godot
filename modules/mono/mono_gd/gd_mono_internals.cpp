@@ -109,8 +109,6 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
 	unmanaged->set_script_and_instance(script, csharp_instance);
-
-	csharp_instance->connect_event_signals();
 }
 
 void unhandled_exception(MonoException *p_exc) {
