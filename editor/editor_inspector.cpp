@@ -358,16 +358,16 @@ bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
 	Node *node = p_node;
 
 	while (node) {
-		if (node->get_scene_instance_state().is_valid()) {
-			might_be = true;
-			break;
-		}
 		if (node == edited_scene) {
 			if (node->get_scene_inherited_state().is_valid()) {
 				might_be = true;
 				break;
 			}
 			might_be = false;
+			break;
+		}
+		if (node->get_scene_instance_state().is_valid()) {
+			might_be = true;
 			break;
 		}
 		node = node->get_owner();
