@@ -7849,7 +7849,7 @@ out:
     return result;
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) && defined(LOADER_DYNAMIC_LIB)
 BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
     switch (reason) {
         case DLL_PROCESS_ATTACH:
