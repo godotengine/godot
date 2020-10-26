@@ -1963,6 +1963,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			}
 
 			p_script->member_indices = base->member_indices;
+			native = base->native;
+			p_script->native = native;
 		} break;
 		default: {
 			_set_error("Parser bug: invalid inheritance.", p_class);
