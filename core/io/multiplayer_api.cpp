@@ -331,7 +331,7 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uin
 		node = root_node->get_node(np);
 
 		if (!node) {
-			ERR_PRINT("Failed to get path from RPC: " + String(np) + ".");
+			ERR_PRINT("Failed to get path from remote call: " + String(np) + ".");
 		}
 	} else {
 		// Use cached path.
@@ -348,7 +348,7 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uin
 
 		node = root_node->get_node(ni->path);
 		if (!node) {
-			ERR_PRINT("Failed to get cached path from RPC: " + String(ni->path) + ".");
+			ERR_PRINT("Failed to get cached path from remote call: " + String(ni->path) + ".");
 		}
 	}
 	return node;
@@ -367,7 +367,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 	ERR_FAIL_COND(name == StringName());
 
 	bool can_call = _can_call_mode(p_node, rpc_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "Remote call '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
 
 	int argc = 0;
 	bool byte_only = false;
@@ -411,7 +411,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 
 			int vlen;
 			Error err = _decode_and_decompress_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
-			ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RPC argument.");
+			ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode remote call argument.");
 
 			argp.write[i] = &args[i];
 			p_offset += vlen;
@@ -423,7 +423,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const uint16_t p_rpc_method_id, 
 	p_node->call(name, (const Variant **)argp.ptr(), argc, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		String error = Variant::get_call_error_text(p_node, name, (const Variant **)argp.ptr(), argc, ce);
-		error = "RPC - " + error;
+		error = "Remote call - " + error;
 		ERR_PRINT(error);
 	}
 }
@@ -441,7 +441,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const uint16_t p_rpc_property_i
 	ERR_FAIL_COND(name == StringName());
 
 	bool can_call = _can_call_mode(p_node, rset_mode, p_from);
-	ERR_FAIL_COND_MSG(!can_call, "RSET '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND_MSG(!can_call, "Remote set '" + String(name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
 
 #ifdef DEBUG_ENABLED
 	_profile_node_data("in_rset", p_node->get_instance_id());
@@ -450,7 +450,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const uint16_t p_rpc_property_i
 	Variant value;
 	Error err = _decode_and_decompress_variant(value, &p_packet[p_offset], p_packet_len - p_offset, nullptr);
 
-	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RSET value.");
+	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode remote set value.");
 
 	bool valid;
 
@@ -764,7 +764,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 	}
 
 	NodePath from_path = (root_node->get_path()).rel_path_to(p_from->get_path());
-	ERR_FAIL_COND_MSG(from_path.is_empty(), "Unable to send RPC. Relative path is empty. THIS IS LIKELY A BUG IN THE ENGINE!");
+	ERR_FAIL_COND_MSG(from_path.is_empty(), "Unable to send remote call. Relative path is empty. This is likely a bug in the engine, please report.");
 
 	// See if the path is cached.
 	PathSentCache *psc = path_send_cache.getptr(from_path);
@@ -839,7 +839,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		if (property_id == UINT16_MAX && p_from->get_script_instance()) {
 			property_id = p_from->get_script_instance()->get_rset_property_id(p_name);
 		}
-		ERR_FAIL_COND_MSG(property_id == UINT16_MAX, "Unable to take the `property_id` for the property:" + p_name + ". this can happen only if this property is not marked as `remote`.");
+		ERR_FAIL_COND_MSG(property_id == UINT16_MAX, "Unable to take the `property_id` for the property:" + p_name + ". This can happen only if this property is not marked as `remote`.");
 
 		if (property_id <= UINT8_MAX) {
 			// The ID fits in 1 byte
@@ -858,7 +858,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		// Set argument.
 		int len(0);
 		Error err = _encode_and_compress_variant(*p_arg[0], nullptr, len);
-		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
+		ERR_FAIL_COND_MSG(err != OK, "Unable to encode remote set value. This is likely a bug in the engine, please report.");
 		MAKE_ROOM(ofs + len);
 		_encode_and_compress_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
 		ofs += len;
@@ -903,7 +903,7 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 			for (int i = 0; i < p_argcount; i++) {
 				int len(0);
 				Error err = _encode_and_compress_variant(*p_arg[i], nullptr, len);
-				ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
+				ERR_FAIL_COND_MSG(err != OK, "Unable to encode remote call argument. This is likely a bug in the engine, please report.");
 				MAKE_ROOM(ofs + len);
 				_encode_and_compress_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
 				ofs += len;
@@ -1002,9 +1002,9 @@ void MultiplayerAPI::_server_disconnected() {
 }
 
 void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to call an RPC while no network peer is active.");
-	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
+	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to remote call a method while no network peer is active.");
+	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to remote call a method on a node which is not inside SceneTree.");
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to remote call via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
 	bool skip_rpc = node_id == p_peer_id;
@@ -1043,7 +1043,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		rpc_sender_id = temp_id;
 		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in local call:  - " + error + ".";
+			error = "Remote call aborted in local call:  - " + error + ".";
 			ERR_PRINT(error);
 			return;
 		}
@@ -1058,19 +1058,19 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		rpc_sender_id = temp_id;
 		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in script local call:  - " + error + ".";
+			error = "Remote call aborted in script local call:  - " + error + ".";
 			ERR_PRINT(error);
 			return;
 		}
 	}
 
-	ERR_FAIL_COND_MSG(skip_rpc && !(call_local_native || call_local_script), "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	ERR_FAIL_COND_MSG(skip_rpc && !(call_local_native || call_local_script), "Remote call '" + p_method + "' on yourself is not allowed by selected mode.");
 }
 
 void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
-	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to RSET while no network peer is active.");
-	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to RSET on a node which is not inside SceneTree.");
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to send an RSET via a network peer which is not connected.");
+	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to remote set a property while no network peer is active.");
+	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to remote set a property on a node which is not inside SceneTree.");
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to remote set a property via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
 	bool is_master = p_node->is_network_master();
@@ -1091,7 +1091,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 			rpc_sender_id = temp_id;
 
 			if (!valid) {
-				String error = "rset() aborted in local set, property not found:  - " + String(p_property) + ".";
+				String error = "Remote set aborted in local set, property not found:  - " + String(p_property) + ".";
 				ERR_PRINT(error);
 				return;
 			}
@@ -1109,7 +1109,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 				rpc_sender_id = temp_id;
 
 				if (!valid) {
-					String error = "rset() aborted in local script set, property not found:  - " + String(p_property) + ".";
+					String error = "Remote set aborted in local script set, property not found:  - " + String(p_property) + ".";
 					ERR_PRINT(error);
 					return;
 				}
@@ -1118,7 +1118,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 	}
 
 	if (skip_rset) {
-		ERR_FAIL_COND_MSG(!set_local, "RSET for '" + p_property + "' on yourself is not allowed by selected mode.");
+		ERR_FAIL_COND_MSG(!set_local, "Remote set for '" + p_property + "' on yourself is not allowed by selected mode.");
 		return;
 	}
 

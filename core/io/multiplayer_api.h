@@ -103,13 +103,13 @@ public:
 
 	enum RPCMode {
 
-		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
-		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
-		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
-		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
+		RPC_MODE_DISABLED, // No RPC for this method, calls to this will be blocked (default)
+		RPC_MODE_REMOTE, // Using `call_remote()` on it will call method / set property in all remote peers
+		RPC_MODE_MASTER, // Using `call_remote()` on it will call method on wherever the master is, be it local or remote
+		RPC_MODE_PUPPET, // Using `call_remote()` on it will call method for all puppets
+		RPC_MODE_REMOTESYNC, // Using `call_remote()` on it will call method / set property in all remote peers and locally
+		RPC_MODE_MASTERSYNC, // Using `call_remote()` on it will call method / set property in the master peer and locally
+		RPC_MODE_PUPPETSYNC, // Using `call_remote()` on it will call method / set property in all puppets peers and locally
 	};
 
 	void poll();

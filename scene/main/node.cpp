@@ -492,7 +492,7 @@ uint16_t Node::rset_config(const StringName &p_property, MultiplayerAPI::RPCMode
 
 /***** RPC FUNCTIONS ********/
 
-void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
+void Node::call_remote(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -506,7 +506,7 @@ void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	rpcp(0, false, p_method, argptr, argc);
 }
 
-void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void Node::call_remote_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -520,7 +520,7 @@ void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE
 	rpcp(p_peer_id, false, p_method, argptr, argc);
 }
 
-void Node::rpc_unreliable(const StringName &p_method, VARIANT_ARG_DECLARE) {
+void Node::call_remote_unreliable(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -534,7 +534,7 @@ void Node::rpc_unreliable(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	rpcp(0, true, p_method, argptr, argc);
 }
 
-void Node::rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+void Node::call_remote_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -663,19 +663,19 @@ void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property,
 }
 
 /******** RSET *********/
-void Node::rset(const StringName &p_property, const Variant &p_value) {
+void Node::set_remote(const StringName &p_property, const Variant &p_value) {
 	rsetp(0, false, p_property, p_value);
 }
 
-void Node::rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
+void Node::set_remote_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
 	rsetp(p_peer_id, false, p_property, p_value);
 }
 
-void Node::rset_unreliable(const StringName &p_property, const Variant &p_value) {
+void Node::set_remote_unreliable(const StringName &p_property, const Variant &p_value) {
 	rsetp(0, true, p_property, p_value);
 }
 
-void Node::rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
+void Node::set_remote_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value) {
 	rsetp(p_peer_id, true, p_property, p_value);
 }
 
@@ -2819,23 +2819,23 @@ void Node::_bind_methods() {
 
 		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
-		mi.name = "rpc";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
-		mi.name = "rpc_unreliable";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_unreliable", &Node::_rpc_unreliable_bind, mi);
+		mi.name = "call_remote";
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_remote", &Node::_rpc_bind, mi);
+		mi.name = "call_remote_unreliable";
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_remote_unreliable", &Node::_rpc_unreliable_bind, mi);
 
 		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
 
-		mi.name = "rpc_id";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
-		mi.name = "rpc_unreliable_id";
-		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_unreliable_id", &Node::_rpc_unreliable_id_bind, mi);
+		mi.name = "call_remote_id";
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_remote_id", &Node::_rpc_id_bind, mi);
+		mi.name = "call_remote_unreliable_id";
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "call_remote_unreliable_id", &Node::_rpc_unreliable_id_bind, mi);
 	}
 
-	ClassDB::bind_method(D_METHOD("rset", "property", "value"), &Node::rset);
-	ClassDB::bind_method(D_METHOD("rset_id", "peer_id", "property", "value"), &Node::rset_id);
-	ClassDB::bind_method(D_METHOD("rset_unreliable", "property", "value"), &Node::rset_unreliable);
-	ClassDB::bind_method(D_METHOD("rset_unreliable_id", "peer_id", "property", "value"), &Node::rset_unreliable_id);
+	ClassDB::bind_method(D_METHOD("set_remote", "property", "value"), &Node::set_remote);
+	ClassDB::bind_method(D_METHOD("set_remote_id", "peer_id", "property", "value"), &Node::set_remote_id);
+	ClassDB::bind_method(D_METHOD("set_remote_unreliable", "property", "value"), &Node::set_remote_unreliable);
+	ClassDB::bind_method(D_METHOD("set_remote_unreliable_id", "peer_id", "property", "value"), &Node::set_remote_unreliable_id);
 
 	ClassDB::bind_method(D_METHOD("update_configuration_warning"), &Node::update_configuration_warning);
 
