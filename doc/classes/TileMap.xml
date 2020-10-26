@@ -280,7 +280,7 @@
 			Position for tile origin. See [enum TileOrigin] for possible values.
 		</member>
 		<member name="cell_y_sort" type="bool" setter="set_y_sort_mode" getter="is_y_sort_mode_enabled" default="false">
-			If [code]true[/code], the TileMap's children will be drawn in order of their Y coordinate.
+			If [code]true[/code], the TileMap's direct children will be drawn in order of their Y coordinate.
 		</member>
 		<member name="centered_textures" type="bool" setter="set_centered_textures" getter="is_centered_textures_enabled" default="false">
 			If [code]true[/code], the textures will be centered in the middle of each tile. This is useful for certain isometric or top-down modes when textures are made larger or smaller than the tiles (e.g. to avoid flickering on tile edges). The offset is still applied, but from the center of the tile. If used, [member compatibility_mode] is ignored.
