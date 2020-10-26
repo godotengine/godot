@@ -428,6 +428,9 @@ static inline void loader_init_dispatch(void *obj, const void *data) {
 // Global variables used across files
 extern struct loader_struct loader;
 extern THREAD_LOCAL_DECL struct loader_instance *tls_instance;
+#if defined(_WIN32) && !defined(LOADER_DYNAMIC_LIB)
+extern LOADER_PLATFORM_THREAD_ONCE_DEFINITION(once_init);
+#endif
 extern loader_platform_thread_mutex loader_lock;
 extern loader_platform_thread_mutex loader_json_lock;
 extern loader_platform_thread_mutex loader_preload_icd_lock;
