@@ -37,9 +37,9 @@
 class RandomNumberGenerator : public Reference {
 	GDCLASS(RandomNumberGenerator, Reference);
 
+protected:
 	RandomPCG randbase;
 
-protected:
 	static void _bind_methods();
 
 public:
