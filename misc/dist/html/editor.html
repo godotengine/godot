@@ -197,7 +197,8 @@
 			}
 			Promise.all([
 				deleteDB("/home/web_user/projects"),
-				deleteDB("/home/web_user/.config")
+				deleteDB("/home/web_user/.config"),
+				deleteDB("/home/web_user/.cache"),
 			]).then(function(results) {
 				alert("Done.");
 			}).catch(function (err) {
@@ -260,7 +261,7 @@
 		function startEditor(zip) {
 
 			const INDETERMINATE_STATUS_STEP_MS = 100;
-			const persistentPaths = ['/home/web_user/.config', '/home/web_user/projects'];
+			const persistentPaths = ['/home/web_user/.config', '/home/web_user/.cache', '/home/web_user/projects'];
 
 			var editorCanvas = document.getElementById('editor-canvas');
 			var gameCanvas = document.getElementById('game-canvas');
