@@ -614,7 +614,7 @@ public:
 
 		const Ref<InputEventMouseButton> mb = p_ev;
 
-		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed() && hovered_index > 0) {
+		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed() && hovered_index >= 0) {
 			// Toggle the flag.
 			// We base our choice on the hovered flag, so that it always matches the hovered flag.
 			if (value & (1 << hovered_index)) {
