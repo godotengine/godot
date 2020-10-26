@@ -1,5 +1,6 @@
 //
 // Copyright (C) 2014-2015 LunarG, Inc.
+// Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
 //
@@ -99,12 +100,12 @@ const char* ExecutionModelString(int model)
 
     default: return "Bad";
 
-    case ExecutionModelRayGenerationNV: return "RayGenerationNV";
-    case ExecutionModelIntersectionNV:  return "IntersectionNV";
-    case ExecutionModelAnyHitNV:        return "AnyHitNV";
-    case ExecutionModelClosestHitNV:    return "ClosestHitNV";
-    case ExecutionModelMissNV:          return "MissNV";
-    case ExecutionModelCallableNV:      return "CallableNV";
+    case ExecutionModelRayGenerationKHR: return "RayGenerationKHR";
+    case ExecutionModelIntersectionKHR:  return "IntersectionKHR";
+    case ExecutionModelAnyHitKHR:        return "AnyHitKHR";
+    case ExecutionModelClosestHitKHR:    return "ClosestHitKHR";
+    case ExecutionModelMissKHR:          return "MissKHR";
+    case ExecutionModelCallableKHR:      return "CallableKHR";
     }
 }
 
@@ -133,7 +134,7 @@ const char* MemoryString(int mem)
     }
 }
 
-const int ExecutionModeCeiling = 33;
+const int ExecutionModeCeiling = 40;
 
 const char* ExecutionModeString(int mode)
 {
@@ -172,7 +173,21 @@ const char* ExecutionModeString(int mode)
     case 31: return "ContractionOff";
     case 32: return "Bad";
 
-    case 4446:  return "PostDepthCoverage";
+    case ExecutionModeInitializer:              return "Initializer";
+    case ExecutionModeFinalizer:                return "Finalizer";
+    case ExecutionModeSubgroupSize:             return "SubgroupSize";
+    case ExecutionModeSubgroupsPerWorkgroup:    return "SubgroupsPerWorkgroup";
+    case ExecutionModeSubgroupsPerWorkgroupId:  return "SubgroupsPerWorkgroupId";
+    case ExecutionModeLocalSizeId:              return "LocalSizeId";
+    case ExecutionModeLocalSizeHintId:          return "LocalSizeHintId";
+
+    case ExecutionModePostDepthCoverage:        return "PostDepthCoverage";
+    case ExecutionModeDenormPreserve:           return "DenormPreserve";
+    case ExecutionModeDenormFlushToZero:        return "DenormFlushToZero";
+    case ExecutionModeSignedZeroInfNanPreserve: return "SignedZeroInfNanPreserve";
+    case ExecutionModeRoundingModeRTE:          return "RoundingModeRTE";
+    case ExecutionModeRoundingModeRTZ:          return "RoundingModeRTZ";
+    case ExecutionModeStencilRefReplacingEXT:   return "StencilRefReplacingEXT";
 
     case ExecutionModeOutputLinesNV:            return "OutputLinesNV";
     case ExecutionModeOutputPrimitivesNV:       return "OutputPrimitivesNV";
@@ -186,6 +201,11 @@ const char* ExecutionModeString(int mode)
     case ExecutionModeSampleInterlockUnorderedEXT:      return "SampleInterlockUnorderedEXT";
     case ExecutionModeShadingRateInterlockOrderedEXT:   return "ShadingRateInterlockOrderedEXT";
     case ExecutionModeShadingRateInterlockUnorderedEXT: return "ShadingRateInterlockUnorderedEXT";
+
+    case ExecutionModeMaxWorkgroupSizeINTEL:    return "MaxWorkgroupSizeINTEL";
+    case ExecutionModeMaxWorkDimINTEL:          return "MaxWorkDimINTEL";
+    case ExecutionModeNoGlobalOffsetINTEL:      return "NoGlobalOffsetINTEL";
+    case ExecutionModeNumSIMDWorkitemsINTEL:    return "NumSIMDWorkitemsINTEL";
 
     case ExecutionModeCeiling:
     default: return "Bad";
@@ -209,12 +229,12 @@ const char* StorageClassString(int StorageClass)
     case 11: return "Image";
     case 12: return "StorageBuffer";
 
-    case StorageClassRayPayloadNV:            return "RayPayloadNV";
-    case StorageClassHitAttributeNV:          return "HitAttributeNV";
-    case StorageClassIncomingRayPayloadNV:    return "IncomingRayPayloadNV";
-    case StorageClassShaderRecordBufferNV:    return "ShaderRecordBufferNV";
-    case StorageClassCallableDataNV:          return "CallableDataNV";
-    case StorageClassIncomingCallableDataNV:  return "IncomingCallableDataNV";
+    case StorageClassRayPayloadKHR:            return "RayPayloadKHR";
+    case StorageClassHitAttributeKHR:          return "HitAttributeKHR";
+    case StorageClassIncomingRayPayloadKHR:    return "IncomingRayPayloadKHR";
+    case StorageClassShaderRecordBufferKHR:    return "ShaderRecordBufferKHR";
+    case StorageClassCallableDataKHR:          return "CallableDataKHR";
+    case StorageClassIncomingCallableDataKHR:  return "IncomingCallableDataKHR";
 
     case StorageClassPhysicalStorageBufferEXT: return "PhysicalStorageBufferEXT";
 
@@ -361,32 +381,33 @@ const char* BuiltInString(int builtIn)
     case 4996: return "BaryCoordSmoothCentroidAMD";
     case 4997: return "BaryCoordSmoothSampleAMD";
     case 4998: return "BaryCoordPullModelAMD";
-    case BuiltInLaunchIdNV:                 return "LaunchIdNV";
-    case BuiltInLaunchSizeNV:               return "LaunchSizeNV";
-    case BuiltInWorldRayOriginNV:           return "WorldRayOriginNV";
-    case BuiltInWorldRayDirectionNV:        return "WorldRayDirectionNV";
-    case BuiltInObjectRayOriginNV:          return "ObjectRayOriginNV";
-    case BuiltInObjectRayDirectionNV:       return "ObjectRayDirectionNV";
-    case BuiltInRayTminNV:                  return "RayTminNV";
-    case BuiltInRayTmaxNV:                  return "RayTmaxNV";
-    case BuiltInInstanceCustomIndexNV:      return "InstanceCustomIndexNV";
-    case BuiltInObjectToWorldNV:            return "ObjectToWorldNV";
-    case BuiltInWorldToObjectNV:            return "WorldToObjectNV";
-    case BuiltInHitTNV:                     return "HitTNV";
-    case BuiltInHitKindNV:                  return "HitKindNV";
-    case BuiltInIncomingRayFlagsNV:         return "IncomingRayFlagsNV";
-    case BuiltInViewportMaskNV:             return "ViewportMaskNV";
-    case BuiltInSecondaryPositionNV:        return "SecondaryPositionNV";
-    case BuiltInSecondaryViewportMaskNV:    return "SecondaryViewportMaskNV";
-    case BuiltInPositionPerViewNV:          return "PositionPerViewNV";
-    case BuiltInViewportMaskPerViewNV:      return "ViewportMaskPerViewNV";
+    case BuiltInLaunchIdKHR:                 return "LaunchIdKHR";
+    case BuiltInLaunchSizeKHR:               return "LaunchSizeKHR";
+    case BuiltInWorldRayOriginKHR:           return "WorldRayOriginKHR";
+    case BuiltInWorldRayDirectionKHR:        return "WorldRayDirectionKHR";
+    case BuiltInObjectRayOriginKHR:          return "ObjectRayOriginKHR";
+    case BuiltInObjectRayDirectionKHR:       return "ObjectRayDirectionKHR";
+    case BuiltInRayTminKHR:                  return "RayTminKHR";
+    case BuiltInRayTmaxKHR:                  return "RayTmaxKHR";
+    case BuiltInInstanceCustomIndexKHR:      return "InstanceCustomIndexKHR";
+    case BuiltInRayGeometryIndexKHR:         return "RayGeometryIndexKHR";
+    case BuiltInObjectToWorldKHR:            return "ObjectToWorldKHR";
+    case BuiltInWorldToObjectKHR:            return "WorldToObjectKHR";
+    case BuiltInHitTKHR:                     return "HitTKHR";
+    case BuiltInHitKindKHR:                  return "HitKindKHR";
+    case BuiltInIncomingRayFlagsKHR:         return "IncomingRayFlagsKHR";
+    case BuiltInViewportMaskNV:              return "ViewportMaskNV";
+    case BuiltInSecondaryPositionNV:         return "SecondaryPositionNV";
+    case BuiltInSecondaryViewportMaskNV:     return "SecondaryViewportMaskNV";
+    case BuiltInPositionPerViewNV:           return "PositionPerViewNV";
+    case BuiltInViewportMaskPerViewNV:       return "ViewportMaskPerViewNV";
 //    case BuiltInFragmentSizeNV:             return "FragmentSizeNV";        // superseded by BuiltInFragSizeEXT
 //    case BuiltInInvocationsPerPixelNV:      return "InvocationsPerPixelNV"; // superseded by BuiltInFragInvocationCountEXT
-    case BuiltInBaryCoordNV:                return "BaryCoordNV";
-    case BuiltInBaryCoordNoPerspNV:         return "BaryCoordNoPerspNV";
+    case BuiltInBaryCoordNV:                 return "BaryCoordNV";
+    case BuiltInBaryCoordNoPerspNV:          return "BaryCoordNoPerspNV";
 
-    case BuiltInFragSizeEXT:                return "FragSizeEXT";
-    case BuiltInFragInvocationCountEXT:     return "FragInvocationCountEXT";
+    case BuiltInFragSizeEXT:                 return "FragSizeEXT";
+    case BuiltInFragInvocationCountEXT:      return "FragInvocationCountEXT";
 
     case 5264: return "FullyCoveredEXT";
 
@@ -890,6 +911,9 @@ const char* CapabilityString(int info)
     case CapabilityPerViewAttributesNV:             return "PerViewAttributesNV";
     case CapabilityGroupNonUniformPartitionedNV:    return "GroupNonUniformPartitionedNV";
     case CapabilityRayTracingNV:                    return "RayTracingNV";
+    case CapabilityRayTracingProvisionalKHR:        return "RayTracingProvisionalKHR";
+    case CapabilityRayQueryProvisionalKHR:          return "RayQueryProvisionalKHR";
+    case CapabilityRayTraversalPrimitiveCullingProvisionalKHR: return "RayTraversalPrimitiveCullingProvisionalKHR";
     case CapabilityComputeDerivativeGroupQuadsNV:   return "ComputeDerivativeGroupQuadsNV";
     case CapabilityComputeDerivativeGroupLinearNV:  return "ComputeDerivativeGroupLinearNV";
     case CapabilityFragmentBarycentricNV:           return "FragmentBarycentricNV";
@@ -932,6 +956,9 @@ const char* CapabilityString(int info)
     case CapabilityShaderClockKHR:                          return "ShaderClockKHR";
 
     case CapabilityIntegerFunctions2INTEL:              return "CapabilityIntegerFunctions2INTEL";
+
+    case CapabilityAtomicFloat32AddEXT:                     return "AtomicFloat32AddEXT";
+    case CapabilityAtomicFloat64AddEXT:                     return "AtomicFloat64AddEXT";
 
     default: return "Bad";
     }
@@ -1264,6 +1291,7 @@ const char* OpcodeString(int op)
     case 320: return "OpImageSparseRead";
 
     case OpModuleProcessed: return "OpModuleProcessed";
+    case OpExecutionModeId: return "OpExecutionModeId";
     case OpDecorateId:      return "OpDecorateId";
 
     case 333: return "OpGroupNonUniformElect";
@@ -1308,6 +1336,8 @@ const char* OpcodeString(int op)
     case 4430: return "OpSubgroupAllEqualKHR";
     case 4432: return "OpSubgroupReadInvocationKHR";
 
+    case OpAtomicFAddEXT: return "OpAtomicFAddEXT";
+
     case 5000: return "OpGroupIAddNonUniformAMD";
     case 5001: return "OpGroupFAddNonUniformAMD";
     case 5002: return "OpGroupFMinNonUniformAMD";
@@ -1326,14 +1356,39 @@ const char* OpcodeString(int op)
     case OpMemberDecorateStringGOOGLE: return "OpMemberDecorateStringGOOGLE";
 
     case OpGroupNonUniformPartitionNV:       return "OpGroupNonUniformPartitionNV";
-    case OpReportIntersectionNV:             return "OpReportIntersectionNV";
-    case OpIgnoreIntersectionNV:             return "OpIgnoreIntersectionNV";
-    case OpTerminateRayNV:                   return "OpTerminateRayNV";
-    case OpTraceNV:                          return "OpTraceNV";
-    case OpTypeAccelerationStructureNV:      return "OpTypeAccelerationStructureNV";
-    case OpExecuteCallableNV:                return "OpExecuteCallableNV";
+    case OpReportIntersectionKHR:            return "OpReportIntersectionKHR";
+    case OpIgnoreIntersectionKHR:            return "OpIgnoreIntersectionKHR";
+    case OpTerminateRayKHR:                  return "OpTerminateRayKHR";
+    case OpTraceRayKHR:                      return "OpTraceRayKHR";
+    case OpTypeAccelerationStructureKHR:     return "OpTypeAccelerationStructureKHR";
+    case OpExecuteCallableKHR:               return "OpExecuteCallableKHR";
     case OpImageSampleFootprintNV:           return "OpImageSampleFootprintNV";
     case OpWritePackedPrimitiveIndices4x8NV: return "OpWritePackedPrimitiveIndices4x8NV";
+
+    case OpTypeRayQueryProvisionalKHR:                                        return "OpTypeRayQueryProvisionalKHR";
+    case OpRayQueryInitializeKHR:                                             return "OpRayQueryInitializeKHR";
+    case OpRayQueryTerminateKHR:                                              return "OpRayQueryTerminateKHR";
+    case OpRayQueryGenerateIntersectionKHR:                                   return "OpRayQueryGenerateIntersectionKHR";
+    case OpRayQueryConfirmIntersectionKHR:                                    return "OpRayQueryConfirmIntersectionKHR";
+    case OpRayQueryProceedKHR:                                                return "OpRayQueryProceedKHR";
+    case OpRayQueryGetIntersectionTypeKHR:                                    return "OpRayQueryGetIntersectionTypeKHR";
+    case OpRayQueryGetRayTMinKHR:                                             return "OpRayQueryGetRayTMinKHR";
+    case OpRayQueryGetRayFlagsKHR:                                            return "OpRayQueryGetRayFlagsKHR";
+    case OpRayQueryGetIntersectionTKHR:                                       return "OpRayQueryGetIntersectionTKHR";
+    case OpRayQueryGetIntersectionInstanceCustomIndexKHR:                     return "OpRayQueryGetIntersectionInstanceCustomIndexKHR";
+    case OpRayQueryGetIntersectionInstanceIdKHR:                              return "OpRayQueryGetIntersectionInstanceIdKHR";
+    case OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR:  return "OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR";
+    case OpRayQueryGetIntersectionGeometryIndexKHR:                           return "OpRayQueryGetIntersectionGeometryIndexKHR";
+    case OpRayQueryGetIntersectionPrimitiveIndexKHR:                          return "OpRayQueryGetIntersectionPrimitiveIndexKHR";
+    case OpRayQueryGetIntersectionBarycentricsKHR:                            return "OpRayQueryGetIntersectionBarycentricsKHR";
+    case OpRayQueryGetIntersectionFrontFaceKHR:                               return "OpRayQueryGetIntersectionFrontFaceKHR";
+    case OpRayQueryGetIntersectionCandidateAABBOpaqueKHR:                     return "OpRayQueryGetIntersectionCandidateAABBOpaqueKHR";
+    case OpRayQueryGetIntersectionObjectRayDirectionKHR:                      return "OpRayQueryGetIntersectionObjectRayDirectionKHR";
+    case OpRayQueryGetIntersectionObjectRayOriginKHR:                         return "OpRayQueryGetIntersectionObjectRayOriginKHR";
+    case OpRayQueryGetWorldRayDirectionKHR:                                   return "OpRayQueryGetWorldRayDirectionKHR";
+    case OpRayQueryGetWorldRayOriginKHR:                                      return "OpRayQueryGetWorldRayOriginKHR";
+    case OpRayQueryGetIntersectionObjectToWorldKHR:                           return "OpRayQueryGetIntersectionObjectToWorldKHR";
+    case OpRayQueryGetIntersectionWorldToObjectKHR:                           return "OpRayQueryGetIntersectionWorldToObjectKHR";
 
     case OpTypeCooperativeMatrixNV:         return "OpTypeCooperativeMatrixNV";
     case OpCooperativeMatrixLoadNV:         return "OpCooperativeMatrixLoadNV";
@@ -1388,6 +1443,7 @@ void Parameterize()
     InstructionDesc[OpMemoryModel].setResultAndType(false, false);
     InstructionDesc[OpEntryPoint].setResultAndType(false, false);
     InstructionDesc[OpExecutionMode].setResultAndType(false, false);
+    InstructionDesc[OpExecutionModeId].setResultAndType(false, false);
     InstructionDesc[OpTypeVoid].setResultAndType(true, false);
     InstructionDesc[OpTypeBool].setResultAndType(true, false);
     InstructionDesc[OpTypeInt].setResultAndType(true, false);
@@ -1574,6 +1630,10 @@ void Parameterize()
     InstructionDesc[OpExecutionMode].operands.push(OperandExecutionMode, "'Mode'");
     InstructionDesc[OpExecutionMode].operands.push(OperandOptionalLiteral, "See <<Execution_Mode,Execution Mode>>");
 
+    InstructionDesc[OpExecutionModeId].operands.push(OperandId, "'Entry Point'");
+    InstructionDesc[OpExecutionModeId].operands.push(OperandExecutionMode, "'Mode'");
+    InstructionDesc[OpExecutionModeId].operands.push(OperandVariableIds, "See <<Execution_Mode,Execution Mode>>");
+
     InstructionDesc[OpTypeInt].operands.push(OperandLiteralNumber, "'Width'");
     InstructionDesc[OpTypeInt].operands.push(OperandLiteralNumber, "'Signedness'");
 
@@ -1667,7 +1727,7 @@ void Parameterize()
 
     InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandId, "'Target'");
     InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandDecoration, "");
-    InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandLiteralString, "'Literal String'");
+    InstructionDesc[OpDecorateStringGOOGLE].operands.push(OperandVariableLiteralStrings, "'Literal Strings'");
 
     InstructionDesc[OpMemberDecorate].operands.push(OperandId, "'Structure Type'");
     InstructionDesc[OpMemberDecorate].operands.push(OperandLiteralNumber, "'Member'");
@@ -1677,7 +1737,7 @@ void Parameterize()
     InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandId, "'Structure Type'");
     InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandLiteralNumber, "'Member'");
     InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandDecoration, "");
-    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandLiteralString, "'Literal String'");
+    InstructionDesc[OpMemberDecorateStringGOOGLE].operands.push(OperandVariableLiteralStrings, "'Literal Strings'");
 
     InstructionDesc[OpGroupDecorate].operands.push(OperandId, "'Decoration Group'");
     InstructionDesc[OpGroupDecorate].operands.push(OperandVariableIds, "'Targets'");
@@ -2230,6 +2290,11 @@ void Parameterize()
     InstructionDesc[OpAtomicIAdd].operands.push(OperandMemorySemantics, "'Semantics'");
     InstructionDesc[OpAtomicIAdd].operands.push(OperandId, "'Value'");
 
+    InstructionDesc[OpAtomicFAddEXT].operands.push(OperandId, "'Pointer'");
+    InstructionDesc[OpAtomicFAddEXT].operands.push(OperandScope, "'Scope'");
+    InstructionDesc[OpAtomicFAddEXT].operands.push(OperandMemorySemantics, "'Semantics'");
+    InstructionDesc[OpAtomicFAddEXT].operands.push(OperandId, "'Value'");
+
     InstructionDesc[OpAtomicISub].operands.push(OperandId, "'Pointer'");
     InstructionDesc[OpAtomicISub].operands.push(OperandScope, "'Scope'");
     InstructionDesc[OpAtomicISub].operands.push(OperandMemorySemantics, "'Semantics'");
@@ -2694,31 +2759,125 @@ void Parameterize()
 
     InstructionDesc[OpGroupNonUniformPartitionNV].operands.push(OperandId, "X");
 
-    InstructionDesc[OpTypeAccelerationStructureNV].setResultAndType(true, false);
+    InstructionDesc[OpTypeAccelerationStructureKHR].setResultAndType(true, false);
 
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'NV Acceleration Structure'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Ray Flags'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Cull Mask'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'SBT Record Offset'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'SBT Record Stride'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Miss Index'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Ray Origin'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'TMin'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Ray Direction'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'TMax'");
-    InstructionDesc[OpTraceNV].operands.push(OperandId, "'Payload'");
-    InstructionDesc[OpTraceNV].setResultAndType(false, false);
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'NV Acceleration Structure'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Ray Flags'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Cull Mask'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'SBT Record Offset'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'SBT Record Stride'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Miss Index'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Ray Origin'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'TMin'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Ray Direction'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'TMax'");
+    InstructionDesc[OpTraceRayKHR].operands.push(OperandId, "'Payload'");
+    InstructionDesc[OpTraceRayKHR].setResultAndType(false, false);
 
-    InstructionDesc[OpReportIntersectionNV].operands.push(OperandId, "'Hit Parameter'");
-    InstructionDesc[OpReportIntersectionNV].operands.push(OperandId, "'Hit Kind'");
+    InstructionDesc[OpReportIntersectionKHR].operands.push(OperandId, "'Hit Parameter'");
+    InstructionDesc[OpReportIntersectionKHR].operands.push(OperandId, "'Hit Kind'");
 
-    InstructionDesc[OpIgnoreIntersectionNV].setResultAndType(false, false);
+    InstructionDesc[OpIgnoreIntersectionKHR].setResultAndType(false, false);
 
-    InstructionDesc[OpTerminateRayNV].setResultAndType(false, false);
+    InstructionDesc[OpTerminateRayKHR].setResultAndType(false, false);
     
-    InstructionDesc[OpExecuteCallableNV].operands.push(OperandId, "SBT Record Index");
-    InstructionDesc[OpExecuteCallableNV].operands.push(OperandId, "CallableData ID");
-    InstructionDesc[OpExecuteCallableNV].setResultAndType(false, false);
+    InstructionDesc[OpExecuteCallableKHR].operands.push(OperandId, "SBT Record Index");
+    InstructionDesc[OpExecuteCallableKHR].operands.push(OperandId, "CallableData ID");
+    InstructionDesc[OpExecuteCallableKHR].setResultAndType(false, false);
+
+    // Ray Query
+    InstructionDesc[OpTypeAccelerationStructureKHR].setResultAndType(true, false);
+    InstructionDesc[OpTypeRayQueryProvisionalKHR].setResultAndType(true, false);
+
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'AccelerationS'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'RayFlags'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'CullMask'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'Origin'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'Tmin'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'Direction'");
+    InstructionDesc[OpRayQueryInitializeKHR].operands.push(OperandId, "'Tmax'");
+    InstructionDesc[OpRayQueryInitializeKHR].setResultAndType(false, false);
+
+    InstructionDesc[OpRayQueryTerminateKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryTerminateKHR].setResultAndType(false, false);
+
+    InstructionDesc[OpRayQueryGenerateIntersectionKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGenerateIntersectionKHR].operands.push(OperandId, "'THit'");
+    InstructionDesc[OpRayQueryGenerateIntersectionKHR].setResultAndType(false, false);
+
+    InstructionDesc[OpRayQueryConfirmIntersectionKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryConfirmIntersectionKHR].setResultAndType(false, false);
+
+    InstructionDesc[OpRayQueryProceedKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryProceedKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionTypeKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionTypeKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionTypeKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetRayTMinKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetRayTMinKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetRayFlagsKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetRayFlagsKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionTKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionTKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionTKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionInstanceCustomIndexKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceCustomIndexKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceCustomIndexKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionInstanceIdKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceIdKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceIdKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionGeometryIndexKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionGeometryIndexKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionGeometryIndexKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionPrimitiveIndexKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionPrimitiveIndexKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionPrimitiveIndexKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionBarycentricsKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionBarycentricsKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionBarycentricsKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionFrontFaceKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionFrontFaceKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionFrontFaceKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionCandidateAABBOpaqueKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionCandidateAABBOpaqueKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayDirectionKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayDirectionKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayDirectionKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayOriginKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayOriginKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectRayOriginKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetWorldRayDirectionKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetWorldRayDirectionKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetWorldRayOriginKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetWorldRayOriginKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionObjectToWorldKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectToWorldKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionObjectToWorldKHR].setResultAndType(true, true);
+
+    InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].operands.push(OperandId, "'RayQuery'");
+    InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].operands.push(OperandId, "'Committed'");
+    InstructionDesc[OpRayQueryGetIntersectionWorldToObjectKHR].setResultAndType(true, true);
 
     InstructionDesc[OpImageSampleFootprintNV].operands.push(OperandId, "'Sampled Image'");
     InstructionDesc[OpImageSampleFootprintNV].operands.push(OperandId, "'Coordinate'");
