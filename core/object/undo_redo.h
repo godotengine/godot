@@ -31,8 +31,8 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "core/io/resource.h"
 #include "core/object/class_db.h"
+#include "core/object/reference.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -61,7 +61,7 @@ private:
 		};
 
 		Type type;
-		Ref<Resource> resref;
+		Ref<Reference> ref;
 		ObjectID object;
 		StringName name;
 		Variant args[VARIANT_ARG_MAX];
