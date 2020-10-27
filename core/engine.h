@@ -64,6 +64,7 @@ private:
 	uint64_t _physics_frames = 0;
 	float _physics_interpolation_fraction = 0.0f;
 	bool abort_on_gpu_errors = false;
+	bool use_validation_layers = false;
 
 	uint64_t _idle_frames = 0;
 	bool _in_physics = false;
@@ -127,6 +128,7 @@ public:
 	String get_license_text() const;
 
 	bool is_abort_on_gpu_errors_enabled() const;
+	bool is_validation_layers_enabled() const;
 
 	Engine();
 	virtual ~Engine() {}

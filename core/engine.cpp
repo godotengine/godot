@@ -181,6 +181,14 @@ String Engine::get_license_text() const {
 	return String(GODOT_LICENSE_TEXT);
 }
 
+bool Engine::is_abort_on_gpu_errors_enabled() const {
+	return abort_on_gpu_errors;
+}
+
+bool Engine::is_validation_layers_enabled() const {
+	return use_validation_layers;
+}
+
 void Engine::add_singleton(const Singleton &p_singleton) {
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
@@ -206,10 +214,6 @@ Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
 	return singleton;
-}
-
-bool Engine::is_abort_on_gpu_errors_enabled() const {
-	return abort_on_gpu_errors;
 }
 
 Engine::Engine() {
