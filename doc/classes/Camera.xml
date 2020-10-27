@@ -163,6 +163,13 @@
 			</argument>
 			<description>
 				Returns the 2D coordinate in the [Viewport] rectangle that maps to the given 3D point in worldspace.
+				[b]Note:[/b] When using this to position GUI elements over a 3D viewport, use [method is_position_behind] to prevent them from appearing if the 3D point is behind the camera:
+				[codeblock]
+				# This code block is part of a script that inherits from Spatial.
+				# `control` is a reference to a node inheriting from Control.
+				control.visible = not get_viewport().get_camera().is_position_behind(global_transform.origin)
+				control.rect_position = get_viewport().get_camera().unproject_position(global_transform.origin)
+				[/codeblock]
 			</description>
 		</method>
 	</methods>
