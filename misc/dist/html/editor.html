@@ -9,11 +9,12 @@
 
 		body {
 			touch-action: none;
+			font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 			margin: 0;
 			border: 0 none;
 			padding: 0;
 			text-align: center;
-			background-color: black;
+			background-color: #333b4f;
 			overflow: hidden;
 		}
 
@@ -28,12 +29,49 @@
 		}
 
 		.godot {
-			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
 			color: #e0e0e0;
 			background-color: #3b3943;
 			background-image: linear-gradient(to bottom, #403e48, #35333c);
 			border: 1px solid #45434e;
 			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+		.btn {
+			appearance: none;
+			color: #e0e0e0;
+			background-color: #262c3b;
+			border: 1px solid #202531;
+			padding: 0.5rem 1rem;
+			margin: 0 0.5rem;
+		}
+
+		.btn:focus {
+			outline: 1px solid #699ce8;
+		}
+
+		.btn:not(:disabled):hover {
+			color: #e0e1e5;
+			border-color: #666c7b;
+		}
+
+		.btn:active {
+			border-color: #699ce8;
+			color: #699ce8;
+		}
+
+		.btn:disabled {
+			color: #aaa;
+			border-color: #242937;
+		}
+
+		.btn.tab-btn {
+			padding: 0.3rem 1rem;
+		}
+
+		.btn.close-btn {
+			padding: 0.3rem 1rem;
+			margin-left: -0.75rem;
+			font-weight: 700;
 		}
 
 
@@ -116,27 +154,26 @@
 </head>
 <body>
 	<div id="tabs-buttons">
-		<button id="btn-tab-loader" class="tab-btn" onclick="showTab('loader')">Loader</button>
-		<button id="btn-tab-editor" class="tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
-		<button id="btn-close-editor" class="close-btn" disabled="disabled" onclick="closeEditor()">X</button>
-		<button id="btn-tab-game" class="tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
-		<button id="btn-close-game" class="close-btn"  disabled="disabled" onclick="closeGame()">X</button>
+		<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
+		<button id="btn-tab-editor" class="btn tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
+		<button id="btn-close-editor" class="btn close-btn" disabled="disabled" onclick="closeEditor()">×</button>
+		<button id="btn-tab-game" class="btn tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
+		<button id="btn-close-game" class="btn close-btn"  disabled="disabled" onclick="closeGame()">×</button>
 	</div>
 	<div id='tabs'>
 		<div id='tab-loader'>
-			<div style="color: white;" id="persistence">
+			<div style="color: #e0e0e0;" id="persistence">
 				<label for="videoMode" style="display: none;">Select video driver:</label><br />
 				<select id="videoMode" style="display: none;">
 					<option value="GLES2" selected="selected">WebGL</option>
 					<option value="GLES3">WebGL 2</option>
 				</select>
 				<br />
-				<label for="zip-file">Preload project zip: </label><input id="zip-file" type="file" id="files" name="files"/>
+				<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label> <input id="zip-file" type="file" id="files" name="files" style="margin-bottom: 1rem"/>
 				<br />
-				<button id="startButton">Start Godot Editor</button>
+				<button id="startButton" class="btn" style="margin-bottom: 4rem">Start Godot editor</button>
 				<br />
-				<br />
-				<button onclick="clearPersistence()">Clear persistent data</button>
+				<button class="btn" onclick="clearPersistence()">Clear persistent data</button>
 			</div>
 		</div>
 		<div id='tab-editor' style="display: none;">
