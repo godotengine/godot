@@ -1150,7 +1150,7 @@ void SceneTree::_update_root_rect() {
 	float video_mode_aspect = video_mode.aspect();
 
 	if (use_font_oversampling && stretch_aspect == STRETCH_ASPECT_IGNORE) {
-		WARN_PRINT("Font oversampling only works with the resize modes 'Keep Width', 'Keep Height', and 'Expand'.");
+		WARN_PRINT("Font oversampling only works with the stretch modes \"Keep Width\", \"Keep Height\" and \"Expand\", not \"Ignore\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
 	}
 
 	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
@@ -1233,7 +1233,7 @@ void SceneTree::_update_root_rect() {
 			root->update_canvas_items(); //force them to update just in case
 
 			if (use_font_oversampling) {
-				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
+				WARN_PRINT("Font oversampling does not work in \"Viewport\" stretch mode, only \"2D\". To remove this warning, disable Rendering > Quality > Dynamic Fonts > Use Oversampling in the Project Settings.");
 			}
 
 		} break;
