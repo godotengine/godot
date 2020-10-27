@@ -535,7 +535,7 @@ ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
 		Controller(p_node),
-		missing_inputs_averager(p_traced_frames, 0.0) {
+		missing_inputs_stats(p_traced_frames, 0.0) {
 }
 
 void ServerController::update_peers() {
@@ -708,7 +708,7 @@ bool ServerController::fetch_next_input() {
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
 			// Start tracing the packets from this moment on.
-			missing_inputs_averager.reset(0.0);
+			missing_inputs_stats.reset(0.0);
 		} else {
 			is_new_input = false;
 		}
@@ -998,11 +998,11 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	const real_t missing_consecutive_inputs =
 			MAX(0.0, optimal_input_count - consecutive_inputs);
 
-	missing_inputs_averager.push(
+	missing_inputs_stats.push(
 			(missing_inputs + missed_inputs + missing_consecutive_inputs) *
 			missing_input_factor);
 
-	const real_t missing_inputs_avg = missing_inputs_averager.average();
+	const real_t missing_inputs_avg = missing_inputs_stats.average();
 
 	// -- Phase two: calculates the optimal_input_count --
 	// The input count can be increased at any time, however it is lowered in

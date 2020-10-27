@@ -109,7 +109,7 @@ private:
 	real_t tick_speedup_notification_delay = 0.33;
 
 	/// Used to set the amount of traced frames to determine the connection
-	/// healt trend.
+	/// health trend.
 	///
 	/// This parameter depends a lot on the physics iteration per second, and
 	/// an optimal parameter, with 60 physics iteration per second, is 120;
@@ -174,11 +174,10 @@ private:
 	/// of the previous arrived batches.
 	int doll_network_traced_batches = 5;
 
-	/// Used to control the sensitivity a doll react to the network quality
-	/// changes.
+	/// Used to control the doll sensibility on the network quality changes.
 	real_t doll_net_poorness_sentitivity = 2.0;
 
-	/// Max speedup / slodown the doll can apply to recover its epoch buffer size.
+	/// Max speedup / slowdown the doll can apply to recover its epoch buffer size.
 	real_t doll_interpolation_max_speedup = 0.2;
 
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
@@ -358,7 +357,7 @@ struct ServerController : public Controller {
 	uint32_t missed_inputs = 0;
 	real_t optimal_input_count = 0.0;
 	real_t optimal_input_count_decreasing_timer = 0.0;
-	StatisticalRingBuffer<real_t> missing_inputs_averager;
+	StatisticalRingBuffer<real_t> missing_inputs_stats;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
 
