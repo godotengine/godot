@@ -64,6 +64,7 @@ elif env["builtin_vulkan"]:
                 "VK_USE_PLATFORM_WIN32_KHR",
                 "VULKAN_NON_CMAKE_BUILD",
                 "WIN32_LEAN_AND_MEAN",
+                "STRSAFE_NO_DEPRECATE",
                 'API_NAME=\\"%s\\"' % "Vulkan",
             ]
         )
