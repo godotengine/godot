@@ -54,14 +54,14 @@
 #endif
 
 template <class T>
-class RingAverager {
+class StatisticalRingBuffer {
 	LocalVector<T> data;
 	uint32_t index = 0;
 
 	T avg_sum = 0;
 
 public:
-	RingAverager(uint32_t p_size, T p_default);
+	StatisticalRingBuffer(uint32_t p_size, T p_default);
 	void resize(uint32_t p_size, T p_default);
 	void reset(T p_default);
 
@@ -84,19 +84,19 @@ private:
 };
 
 template <class T>
-RingAverager<T>::RingAverager(uint32_t p_size, T p_default) {
+StatisticalRingBuffer<T>::StatisticalRingBuffer(uint32_t p_size, T p_default) {
 	resize(p_size, p_default);
 }
 
 template <class T>
-void RingAverager<T>::resize(uint32_t p_size, T p_default) {
+void StatisticalRingBuffer<T>::resize(uint32_t p_size, T p_default) {
 	data.resize(p_size);
 
 	reset(p_default);
 }
 
 template <class T>
-void RingAverager<T>::reset(T p_default) {
+void StatisticalRingBuffer<T>::reset(T p_default) {
 	for (uint32_t i = 0; i < data.size(); i += 1) {
 		data[i] = p_default;
 	}
@@ -106,7 +106,7 @@ void RingAverager<T>::reset(T p_default) {
 }
 
 template <class T>
-void RingAverager<T>::push(T p_value) {
+void StatisticalRingBuffer<T>::push(T p_value) {
 	avg_sum -= data[index];
 	avg_sum += p_value;
 	data[index] = p_value;
@@ -119,7 +119,7 @@ void RingAverager<T>::push(T p_value) {
 }
 
 template <class T>
-T RingAverager<T>::max() const {
+T StatisticalRingBuffer<T>::max() const {
 	CRASH_COND(data.size() == 0);
 
 	T a = data[0];
@@ -130,7 +130,7 @@ T RingAverager<T>::max() const {
 }
 
 template <class T>
-T RingAverager<T>::min(uint32_t p_consider_last) const {
+T StatisticalRingBuffer<T>::min(uint32_t p_consider_last) const {
 	CRASH_COND(data.size() == 0);
 	p_consider_last = MIN(p_consider_last, data.size());
 
@@ -149,7 +149,7 @@ T RingAverager<T>::min(uint32_t p_consider_last) const {
 }
 
 template <class T>
-T RingAverager<T>::average() const {
+T StatisticalRingBuffer<T>::average() const {
 	CRASH_COND(data.size() == 0);
 
 #ifdef DEBUG_ENABLED
@@ -171,7 +171,7 @@ T RingAverager<T>::average() const {
 }
 
 template <class T>
-T RingAverager<T>::get_deviation(T p_mean) const {
+T StatisticalRingBuffer<T>::get_deviation(T p_mean) const {
 	if (data.size() <= 0) {
 		return T();
 	}
@@ -185,7 +185,7 @@ T RingAverager<T>::get_deviation(T p_mean) const {
 }
 
 template <class T>
-void RingAverager<T>::force_recompute_avg_sum() {
+void StatisticalRingBuffer<T>::force_recompute_avg_sum() {
 #ifdef DEBUG_ENABLED
 	// This class is not supposed to be used with 0 size.
 	CRASH_COND(data.size() <= 0);

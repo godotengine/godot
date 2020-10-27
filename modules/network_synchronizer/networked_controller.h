@@ -358,7 +358,7 @@ struct ServerController : public Controller {
 	uint32_t missed_inputs = 0;
 	real_t optimal_input_count = 0.0;
 	real_t optimal_input_count_decreasing_timer = 0.0;
-	RingAverager<real_t> missing_inputs_averager;
+	StatisticalRingBuffer<real_t> missing_inputs_averager;
 	std::deque<FrameSnapshot> snapshots;
 	bool streaming_paused = false;
 
@@ -458,7 +458,7 @@ struct DollController : public Controller {
 	// Any received epoch prior to this one is discarded.
 	uint32_t paused_epoch = 0;
 	/// Used to track how network is performing.
-	RingAverager<real_t> network_watcher = RingAverager<real_t>(1, 0);
+	StatisticalRingBuffer<real_t> network_watcher = StatisticalRingBuffer<real_t>(1, 0);
 
 	DollController(NetworkedController *p_node);
 	~DollController();
