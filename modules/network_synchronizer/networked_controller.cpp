@@ -1469,8 +1469,9 @@ void DollController::receive_batch(Vector<uint8_t> p_data) {
 	additional_speed = doll_interpolation_max_speedup * (real_t(initially_stored_epochs - optimal_stored_epochs) / real_t(next_batch_arrives_in));
 	additional_speed = CLAMP(additional_speed, -doll_interpolation_max_speedup, doll_interpolation_max_speedup);
 
+	// TODO remove this.
 	//print_line("Network Poorness " + rtos(net_poorness) + " next_batch_arrive_in: " + itos(next_batch_arrives_in) + " additional: " + itos(additional_epochs));
-	print_line("Network Poorness " + rtos(net_poorness) + " optimal stored epochs: " + rtos(optimal_stored_epochs) + " Initial stored epochs: " + itos(initially_stored_epochs) + " Additional speed: " + rtos(additional_speed));
+	//print_line("Network Poorness " + rtos(net_poorness) + " optimal stored epochs: " + rtos(optimal_stored_epochs) + " Initial stored epochs: " + itos(initially_stored_epochs) + " Additional speed: " + rtos(additional_speed));
 }
 
 uint32_t DollController::receive_epoch(Vector<uint8_t> p_data) {
@@ -1555,8 +1556,6 @@ uint32_t DollController::next_epoch(real_t p_delta) {
 		// Keep the floating point part.
 		advancing_epoch -= uint32_t(advancing_epoch);
 	}
-
-	print_line(itos(current_epoch));
 
 	return current_epoch;
 }
