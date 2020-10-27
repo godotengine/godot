@@ -1224,7 +1224,7 @@
 			<argument index="0" name="type" type="String">
 			</argument>
 			<description>
-				Returns whether the given class exists in [ClassDB].
+				Returns whether the given class exists in [ClassDB] or whether the class is a global class defined via script.
 				[codeblock]
 				type_exists("Sprite2D") # Returns true
 				type_exists("Variant") # Returns false
