@@ -366,6 +366,9 @@ Rect2 Sprite2D::get_rect() const {
 	if (centered) {
 		ofs -= Size2(s) / 2;
 	}
+	if (Engine::get_singleton()->get_use_pixel_snap()) {
+		ofs = ofs.floor();
+	}
 
 	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
