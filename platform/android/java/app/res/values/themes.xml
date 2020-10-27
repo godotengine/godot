@@ -5,5 +5,6 @@
 
 	<style name="GodotAppSplashTheme" parent="@style/GodotAppMainTheme">
 		<item name="android:windowBackground">@drawable/splash_drawable</item>
+		<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
 	</style>
 </resources>

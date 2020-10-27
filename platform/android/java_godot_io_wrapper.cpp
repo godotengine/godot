@@ -52,6 +52,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
+		_get_window_safe_area = p_env->GetMethodID(cls, "getWindowSafeArea", "()[I"),
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;ZIII)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
@@ -118,6 +119,19 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 		return env->CallIntMethod(godot_io_instance, _get_screen_DPI);
 	} else {
 		return 160;
+	}
+}
+
+void GodotIOJavaWrapper::get_window_safe_area(int (&p_rect_xywh)[4]) {
+	if (_get_window_safe_area) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jintArray returnArray = (jintArray)env->CallObjectMethod(godot_io_instance, _get_window_safe_area);
+		ERR_FAIL_COND(env->GetArrayLength(returnArray) != 4);
+		jint *arrayBody = env->GetIntArrayElements(returnArray, JNI_FALSE);
+		for (int i = 0; i < 4; i++) {
+			p_rect_xywh[i] = arrayBody[i];
+		}
+		env->ReleaseIntArrayElements(returnArray, arrayBody, 0);
 	}
 }
 
