@@ -686,6 +686,8 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 	_exit_canvas();
 	top_level = p_top_level;
 	_enter_canvas();
+
+	_notify_transform();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
