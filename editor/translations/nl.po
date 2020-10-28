@@ -1638,6 +1638,37 @@ msgstr ""
 "Schakel 'Import Etc' in bij de Projectinstellingen, of schakel de optie "
 "'Driver Fallback Enabled' uit."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Doelplatform vereist 'ETC' textuurcompressie voor GLES2. Schakel 'Import "
+"Etc' in bij de Projectinstellingen."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Doelplatform vereist 'ETC2' textuurcompressie voor GLES3. Schakel 'Import "
+"Etc 2' in de Projectinstellingen in."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Doelplatform vereist 'ETC' textuurcompressie zodat het stuurprogramma kan "
+"terugvallen op GLES2.\n"
+"Schakel 'Import Etc' in bij de Projectinstellingen, of schakel de optie "
+"'Driver Fallback Enabled' uit."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -2973,8 +3004,7 @@ msgstr "Exportsjablonen beheren..."
 msgid "Help"
 msgstr "Help"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4407,7 +4437,6 @@ msgid "Add Node to BlendTree"
 msgstr "Voeg knoop toe aan BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Knoop verplaatst"
 
@@ -5236,27 +5265,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Maak nieuwe horizontale en verticale gidsen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Draaipunt verplaatsen"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "CanvasItem roteren"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Anker verplaatsen"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "CanvasItem roteren"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Formaat van CanvasItem wijzigen"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Verplaats CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Schaal CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Schaal CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Verplaats CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Verplaats CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6543,12 +6595,22 @@ msgid "Move Points"
 msgstr "Beweeg Punten"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Roteer"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Sleep: Roteer"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Beweeg alles"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Schaal"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Roteer"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6593,12 +6655,14 @@ msgid "Radius:"
 msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Polygon→UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Creëer Polygon & UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV→Polygon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Naar Polygon2D omzetten"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7044,17 +7108,17 @@ msgstr "Syntax Markeren"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Ga Naar"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Favorieten"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Breekpunten"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Ga Naar"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8145,6 +8209,15 @@ msgid "Paint Tile"
 msgstr "Teken Tegel"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+LMB: Lijn Tekenen\n"
+"Shift+Ctrl+LMB: Vierkant Tekenen"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
@@ -8671,6 +8744,11 @@ msgid "Add Node to Visual Shader"
 msgstr "VisualShader-knoop toevoegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Knoop verplaatst"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Knopen dupliceren"
 
@@ -8686,6 +8764,11 @@ msgstr "VisualShader-knoop/knopen verwijderen"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Visuele Shader Invoertype Gewijzigd"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Uniforme naam instellen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9412,6 +9495,10 @@ msgstr ""
 "constanten declareren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Alleen voor fragment/light-modus) Scalaire afgeleide functie."
 
@@ -9482,18 +9569,6 @@ msgstr "VisualShader-modus aangepast"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Uitvoerbaar"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Voer initiële export toe..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "Voeg vorige patches toe..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Verwijder patch '%s' van lijst?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9592,18 +9667,6 @@ msgid ""
 msgstr ""
 "Filters om bestanden uit te sluiten van het project\n"
 "(scheiden met een komma, bijv.: *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Patches"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Maak Patch"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Pakket Bestand"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12125,6 +12188,22 @@ msgstr ""
 "staat."
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12157,8 +12236,14 @@ msgstr ""
 "Zie anders Android bouwdocumentatie op docs.godotengine.org."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "Geen build APK gegeneerd op: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12919,6 +13004,42 @@ msgstr "Varyings kunnen alleen worden toegewezenin vertex functies."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+#~ msgid "Move pivot"
+#~ msgstr "Draaipunt verplaatsen"
+
+#~ msgid "Move anchor"
+#~ msgstr "Anker verplaatsen"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Formaat van CanvasItem wijzigen"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Polygon→UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV→Polygon"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Voer initiële export toe..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "Voeg vorige patches toe..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Verwijder patch '%s' van lijst?"
+
+#~ msgid "Patches"
+#~ msgstr "Patches"
+
+#~ msgid "Make Patch"
+#~ msgstr "Maak Patch"
+
+#~ msgid "Pack File"
+#~ msgstr "Pakket Bestand"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "Geen build APK gegeneerd op: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Bestandssysteem- en Importtablad"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-05 09:37+0000\n"
+"PO-Revision-Date: 2020-10-03 15:29+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -900,9 +900,8 @@ msgid "Signals"
 msgstr "Signaalit"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Suodata laattoja"
+msgstr "Suodata signaaleja"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1595,6 +1594,36 @@ msgstr ""
 "Kytke 'Import Etc' päälle projektin asetuksista tai poista 'Driver Fallback "
 "Enabled' asetus."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"GLES2 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke 'Import Etc' "
+"päälle projektin asetuksista."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"GLES3 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke 'Import Etc "
+"2' päälle projektin asetuksista."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"GLES2 vara-ajuri tarvitsee kohdealustalla 'ETC' tekstuuripakkausta.\n"
+"Kytke 'Import Etc' päälle projektin asetuksista tai poista 'Driver Fallback "
+"Enabled' asetus."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1637,9 +1666,8 @@ msgid "Node Dock"
 msgstr "Solmutelakka"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "Tiedostojärjestelmä"
+msgstr "Tiedostojärjestelmätelakka"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2787,14 +2815,18 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"Kun tämä asetus on päällä, yhden napin käyttöönotto saa suoritettavan "
+"ohjelman yrittämään yhteyttä tämän tietokoneen IP-osoitteeseen, jotta "
+"ajettavaa projektia voidaan debugata.\n"
+"Tämä valinta on tarkoitettu etädebuggaukseen (tyypillisesti mobiililaitteen "
+"kanssa).\n"
+"Sitä ei tarvitse asettaa päälle paikallista GDScriptin debuggausta varten."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
-msgstr "Kevyt käyttöönotto verkkolevyn avulla"
+msgstr "Kevyt käyttöönotto verkkolevyltä"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2803,72 +2835,68 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"Kun tämä on valittuna, vienti tai julkaisu tuottaa pienimmän mahdollisen "
-"käynnistystiedoston.\n"
-"Tiedostojärjestelmän tarjoaa projektin editori, verkon kautta. \n"
-"Androidilla julkaisu käyttää USB kaapelia nopeamman toimivuuden "
-"saavuttamiseksi. Tämä nopeuttaa testaamista varsinkin suurempien pelien "
-"kohdalla."
+"Kun tämä on valittuna, yhden napsautuksen käyttöönotto Androidille vie "
+"ainoastaan suoritettavan tiedoston ilman projektin dataa.\n"
+"Editori välittää tiedostojärjestelmän projektilta verkon yli.\n"
+"Androidilla käyttöönotto käyttää USB-kaapelia nopeampaa suorituskykyä "
+"varten. Tämä valinta nopeuttaa testaamista projekteilla, jotka sisältävät "
+"suuria resursseja."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "Näytä törmäysmuodot"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"Törmäysmuodot ja raycast-solmut (2D ja 3D) ovat näkyvillä peliä ajettaessa "
-"tämän ollessa valittuna."
+"Kun tämä on valittuna, törmäysmuodot ja raycast-solmut (2D ja 3D) ovat "
+"näkyvillä peliä ajettaessa."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "Näkyvä navigaatio"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"Navigointiverkot ja niiden polygonit ovat näkyvillä peliä ajettaessa tämän "
-"ollessa valittuna."
+"Kun tämä on valittuna, navigointiverkot ja polygonit ovat näkyvillä peliä "
+"ajettaessa."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "Synkronoi skenen muutokset"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Tämän ollessa valittuna, kaikki skeneen tehdyt muutokset toteutetaan myös "
-"käynnissä olevassa pelissä.\n"
-"Mikäli peliä ajetaan etälaitteella, on tehokkaampaa käyttää verkkolevyä."
+"Tämän ollessa valittuna, kaikki editorissa skeneen tehdyt muutokset "
+"replikoidaan käynnissä olevaan projektiin.\n"
+"Mikäli peliä ajetaan etälaitteella, tämä on tehokkaampaa silloin kun "
+"verkkolevyvalinta on päällä."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
 msgstr "Synkronoi skriptin muutokset"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Jos tämä on valittu, kaikki tallennetut skriptit ladataan uudelleen pelin "
-"käynnistyessä.\n"
-"Mikäli peliä ajetaan etälaitteella, on tehokkaampaa käyttää verkkolevyä."
+"Kun tämä on valittuna, kaikki tallennetut skriptit ladataan uudelleen "
+"käynnissä olevassa pelissä.\n"
+"Mikäli peliä ajetaan etälaitteella, tämä on tehokkaampaa kun "
+"verkkolevyvalinta on päällä."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
@@ -2922,8 +2950,7 @@ msgstr "Hallinnoi vientimalleja..."
 msgid "Help"
 msgstr "Ohje"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3345,14 +3372,14 @@ msgid "Add Key/Value Pair"
 msgstr "Lisää avain/arvopari"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
 "as runnable."
 msgstr ""
-"Käynnistettävää vientipohjaa ei löytynyt tälle alustalle.\n"
-"Lisää sellainen vientivalikosta."
+"Tälle alustalle ei löytynyt ajettavaa viennin esiasetusta.\n"
+"Ole hyvä ja lisää ajettava esiasetus Vienti-valikosta tai määrittele "
+"olemassa oleva esiasetus ajettavaksi."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -4353,7 +4380,6 @@ msgid "Add Node to BlendTree"
 msgstr "Lisää BlendTree solmu"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Solmu siirretty"
 
@@ -5184,27 +5210,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Luo vaaka- ja pystysuorat apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Siirrä keskikohtaa"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Kierrä CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Siirrä ankkuri"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Kierrä CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Muokkaa CanvasItemin kokoa"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Siirrä CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Skaalaa CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Skaalaa CanvasItemiä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Siirrä CanvasItemiä"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Siirrä CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6486,12 +6535,22 @@ msgid "Move Points"
 msgstr "Siirrä pisteitä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Kierrä"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Vedä: Kierrä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Siirrä kaikkia"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Skaalaa"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Kierrä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6535,12 +6594,14 @@ msgid "Radius:"
 msgstr "Säde:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Polygoni->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Luo polygoni ja UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Polygoni"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Muunna Polygon2D solmuksi"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6988,17 +7049,17 @@ msgstr "Syntaksin korostaja"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Mene"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Kirjanmerkit"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Keskeytyskohdat"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Mene"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7273,7 +7334,7 @@ msgstr "Oikea näkymä."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Right"
-msgstr "OIkea"
+msgstr "Oikea"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View."
@@ -7767,9 +7828,8 @@ msgid "New Animation"
 msgstr "Uusi animaatio"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Speed:"
-msgstr "Nopeus (FPS):"
+msgstr "Nopeus:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -8087,6 +8147,15 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "Maalaa laatta"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+Hiiren vasen: Piirrä viiva\n"
+"Shift+Ctrl+Hiiren vasen: Suorakaidemaalaus"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8614,6 +8683,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Lisää solmu Visual Shaderiin"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Solmu siirretty"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Kahdenna solmut"
 
@@ -8629,6 +8703,11 @@ msgstr "Poista solmut"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Visual Shaderin syötteen tyyppi vaihdettu"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Aseta uniformin nimi"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9340,6 +9419,10 @@ msgstr ""
 "uniformeja ja vakioita."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Vain Fragment/Light tilat) Skalaariderivaattafunktio."
 
@@ -9410,18 +9493,6 @@ msgstr "Visual Shaderin tila vaihdettu"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Suoritettava"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Lisää ensimmäinen vienti..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "Lisää edelliset päivitykset..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Poista päivitys '%s' listasta?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9521,18 +9592,6 @@ msgid ""
 msgstr ""
 "Suodattimet tiedostoille ja kansioille, jotka jätetään projektista pois \n"
 "(pilkulla erotettuna, esim. *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Päivitykset"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Luo päivitys"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Pakkaa tiedosto"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -10333,19 +10392,16 @@ msgid "Batch Rename"
 msgstr "Niputettu uudelleennimeäminen"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "Korvaa: "
+msgstr "Korvaa:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "Etuliite"
+msgstr "Etuliite:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "Pääte"
+msgstr "Pääte:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10392,9 +10448,8 @@ msgid "Per-level Counter"
 msgstr "Per taso -laskuri"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "Jos asetettu, laskuri alkaa alusta jokaiselle alisolmujen ryhmälle"
+msgstr "Jos asetettu, laskuri alkaa alusta jokaiselle alisolmujen ryhmälle."
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10453,9 +10508,8 @@ msgid "Reset"
 msgstr "Palauta"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "Säännöllisen lausekkeen virhe"
+msgstr "Säännöllisen lausekkeen virhe:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -12058,6 +12112,22 @@ msgstr ""
 "\"Oculus Mobile VR\"."
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12091,8 +12161,14 @@ msgstr ""
 "käännösdokumentaatio."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "Käännöksen apk:ta ei generoitu: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12542,7 +12618,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
+msgstr "InterpolatedCamera on vanhentunut ja poistetaan Godot 4.0 versiossa."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12850,6 +12926,42 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Move pivot"
+#~ msgstr "Siirrä keskikohtaa"
+
+#~ msgid "Move anchor"
+#~ msgstr "Siirrä ankkuri"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Muokkaa CanvasItemin kokoa"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Polygoni->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Polygoni"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Lisää ensimmäinen vienti..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "Lisää edelliset päivitykset..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Poista päivitys '%s' listasta?"
+
+#~ msgid "Patches"
+#~ msgstr "Päivitykset"
+
+#~ msgid "Make Patch"
+#~ msgstr "Luo päivitys"
+
+#~ msgid "Pack File"
+#~ msgstr "Pakkaa tiedosto"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "Käännöksen apk:ta ei generoitu: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Tiedostojärjestelmä- ja tuontitelakat"

@@ -19,12 +19,13 @@
 # Myeongjin Lee <aranet100@gmail.com>, 2020.
 # Doyun Kwon <caen4516@gmail.com>, 2020.
 # Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
+# Yongjin Jo <wnrhd114@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-16 18:09+0000\n"
-"Last-Translator: Ch. <ccwpc@hanmail.net>\n"
+"PO-Revision-Date: 2020-10-05 01:02+0000\n"
+"Last-Translator: Yongjin Jo <wnrhd114@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -913,9 +914,8 @@ msgid "Signals"
 msgstr "시그널"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "타일 필터"
+msgstr "시그널 필터"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1604,6 +1604,37 @@ msgstr ""
 "프로젝트 설정에서 'Import Etc' 설정을 활성화 하거나, 'Driver Fallback "
 "Enabled' 설정을 비활성화 하세요."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"대상 플랫폼에서 GLES2 용 'ETC' 텍스처 압축이 필요합니다. 프로젝트 설정에서 "
+"'Import Etc' 설정을 켜세요."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"대상 플랫폼에서 GLES3 용 'ETC2' 텍스처 압축이 필요합니다. 프로젝트 설정에서 "
+"'Import Etc 2' 설정을 켜세요."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"대상 플랫폼에서 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스처 압축이 필요합니"
+"다.\n"
+"프로젝트 설정에서 'Import Etc' 설정을 활성화 하거나, 'Driver Fallback "
+"Enabled' 설정을 비활성화 하세요."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1645,9 +1676,8 @@ msgid "Node Dock"
 msgstr "노드 도킹"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "파일 시스템"
+msgstr "파일 시스템 독"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2928,8 +2958,7 @@ msgstr "내보내기 템플릿 관리..."
 msgid "Help"
 msgstr "도움말"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4345,7 +4374,6 @@ msgid "Add Node to BlendTree"
 msgstr "BlendTree에 노드 추가"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "노드 이동됨"
 
@@ -5172,27 +5200,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "수평 및 수직 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "피벗 이동"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "CanvasItem 회전"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "앵커 이동"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "CanvasItem 회전"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "CanvasItem 크기 조절"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "CanvasItem 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "CanvasItem 규모"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "CanvasItem 규모"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "CanvasItem 이동"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "CanvasItem 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6461,12 +6512,22 @@ msgid "Move Points"
 msgstr "점 이동"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: 회전"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "드래그: 회전"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: 모두 이동"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: 크기 조절"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: 회전"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6509,12 +6570,14 @@ msgid "Radius:"
 msgstr "반지름:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "폴리곤->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "폴리곤 & UV 만들기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->폴리곤"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Polygon2D로 변환"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6962,17 +7025,17 @@ msgstr "구문 강조"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "이동"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "북마크"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "중단점"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "이동"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8060,6 +8123,15 @@ msgid "Paint Tile"
 msgstr "타일 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+우클릭: 선 그리기\n"
+"Shift+Ctrl+우클릭: 사각 영역 페인트"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
@@ -8582,6 +8654,11 @@ msgid "Add Node to Visual Shader"
 msgstr "노드를 비주얼 셰이더에 추가"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "노드 이동됨"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "노드 복제"
 
@@ -8597,6 +8674,11 @@ msgstr "노드 삭제"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "비주얼 셰이더 입력 유형 변경됨"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Uniform 이름 설정"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9296,6 +9378,10 @@ msgstr ""
 "수 있습니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(프래그먼트/조명 모드만 가능) 스칼라 미분 함수."
 
@@ -9356,18 +9442,6 @@ msgstr "비주얼 셰이더 모드 변경됨"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "실행가능"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "초기 내보내기 추가..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "이전 패치 추가..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "'%s'을(를) 패치 목록에서 삭제할까요?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9465,18 +9539,6 @@ msgid ""
 msgstr ""
 "프로젝트에서 제외할 파일/폴더 필터\n"
 "(쉼표로 구분, 예: *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "패치"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "패치 만들기"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "팩 파일"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -11975,6 +12037,22 @@ msgstr ""
 "니다."
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12007,8 +12085,14 @@ msgstr ""
 "또는 docs.godotengine.org에서 안드로이드 빌드 문서를 찾아 보세요."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "여기에 빌드 apk를 만들지 않음: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12745,6 +12829,42 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Move pivot"
+#~ msgstr "피벗 이동"
+
+#~ msgid "Move anchor"
+#~ msgstr "앵커 이동"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "CanvasItem 크기 조절"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "폴리곤->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->폴리곤"
+
+#~ msgid "Add initial export..."
+#~ msgstr "초기 내보내기 추가..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "이전 패치 추가..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "'%s'을(를) 패치 목록에서 삭제할까요?"
+
+#~ msgid "Patches"
+#~ msgstr "패치"
+
+#~ msgid "Make Patch"
+#~ msgstr "패치 만들기"
+
+#~ msgid "Pack File"
+#~ msgstr "팩 파일"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "여기에 빌드 apk를 만들지 않음: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "파일 시스템과 가져오기 독"

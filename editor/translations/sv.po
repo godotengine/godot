@@ -18,12 +18,13 @@
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
+# Gustav Andersson <gustav.andersson96@outlook.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-18 02:54+0000\n"
-"Last-Translator: Andreas Westrell <andreas.westrell@gmail.com>\n"
+"PO-Revision-Date: 2020-09-29 09:14+0000\n"
+"Last-Translator: Gustav Andersson <gustav.andersson96@outlook.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1035,7 +1036,7 @@ msgstr "Sök Ersättningsresurs:"
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
-msgstr "Öppen"
+msgstr "Öppna"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
@@ -1615,6 +1616,35 @@ msgid ""
 "Enabled'."
 msgstr ""
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Målplattformen kräver 'ETC' texturkomprimering för GLES2. Aktivera 'Import "
+"Etc' i Projektinställningarna."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Målplattformen kräver 'ETC2' texturkomprimering för GLES3. Aktivera 'Import "
+"Etc 2' i Projektinställningarna."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Målplattformen kräver 'ETC' texturkomprimering för GLES2. Aktivera 'Import "
+"Etc' i Projektinställningarna."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1803,18 +1833,16 @@ msgid "Manage Editor Feature Profiles"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Skapa Mapp"
+msgstr "Välj Nuvarande Mapp"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "Filen finns redan, skriv över?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
-msgstr "Välj en Node"
+msgstr "Välj Denna Mapp"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1922,9 +1950,8 @@ msgid "Go to next folder."
 msgstr "Gå till överordnad mapp"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Gå till överordnad mapp"
+msgstr "Gå till överordnad mapp."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
@@ -2213,7 +2240,7 @@ msgstr ""
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr "Node"
+msgstr "Nod"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -2995,8 +3022,7 @@ msgstr "Mallar"
 msgid "Help"
 msgstr "Hjälp"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3120,9 +3146,8 @@ msgid "Android build template is missing, please install relevant templates."
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "Mallar"
+msgstr "Hantera Mallar"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4477,7 +4502,6 @@ msgid "Add Node to BlendTree"
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Node Moved"
 msgstr "Node Namn:"
@@ -5113,14 +5137,12 @@ msgid "Asset Download Error:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading (%s / %s)..."
-msgstr "Laddar ner"
+msgstr "Laddar ner (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading..."
-msgstr "Laddar ner"
+msgstr "Laddar ner..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
@@ -5135,9 +5157,8 @@ msgid "Idle"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Installera"
+msgstr "Installera..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -5153,38 +5174,35 @@ msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr ""
+msgstr "Nyligen Uppdaterade"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
-msgstr ""
+msgstr "Äldst Uppdaterade"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (A-Z)"
-msgstr ""
+msgstr "Namn (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Name (Z-A)"
-msgstr ""
+msgstr "Namn (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (A-Z)"
-msgstr "Licens"
+msgstr "Licens (A-Z)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "License (Z-A)"
-msgstr "Licens"
+msgstr "Licens (Z-A)"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
-msgstr ""
+msgstr "Första"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Previous"
-msgstr "Föregående flik"
+msgstr "Föregående"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
@@ -5192,7 +5210,7 @@ msgstr "Nästa"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Sista"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "All"
@@ -5200,16 +5218,15 @@ msgstr "Alla"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Inga resultat för \"%s\"."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Import..."
-msgstr "Importera"
+msgstr "Importera..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Plugins..."
-msgstr ""
+msgstr "Tillägg..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
@@ -5225,9 +5242,8 @@ msgid "Site:"
 msgstr "Webbplats:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Support"
-msgstr "Importera"
+msgstr "Support"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -5238,9 +5254,8 @@ msgid "Testing"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Loading..."
-msgstr "Ladda"
+msgstr "Laddar..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5338,29 +5353,44 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Move pivot"
-msgstr "Flytta Upp"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move anchor"
-msgstr "Flytta Ner"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Roterar %s grader."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale %d CanvasItems"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Move %d CanvasItems"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6656,12 +6686,22 @@ msgid "Move Points"
 msgstr "Flytta Ner"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
+#, fuzzy
+msgid "Command: Rotate"
 msgstr "Ctrl: Rotera"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Skift: Flytta Alla"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Skift+Ctrl: Skala"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Rotera"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6702,12 +6742,13 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
+msgid "Copy Polygon to UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr ""
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Konvertera till %s"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7179,11 +7220,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7191,6 +7227,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Radera punkter"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8325,6 +8366,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8890,6 +8937,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node Namn:"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Duplicera Nod(er)"
 
@@ -8906,6 +8958,11 @@ msgstr "Ta bort Nod(er)"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Uppdatera Ändringar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9576,6 +9633,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9634,19 +9695,6 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Favoriter:"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9738,19 +9786,6 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Patchar"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Gör Patch"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr "Packar"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9850,11 +9885,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
-msgstr ""
+msgstr "Välj en tom mapp."
 
 #: editor/project_manager.cpp
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr ""
+msgstr "Välj en \"project.godot\" eller \".zip\" fil."
 
 #: editor/project_manager.cpp
 msgid "This directory already contains a Godot project."
@@ -9913,18 +9948,16 @@ msgid "Import Existing Project"
 msgstr "Importera Befintligt Projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import & Edit"
-msgstr "Importera"
+msgstr "Importera & Ändra"
 
 #: editor/project_manager.cpp
 msgid "Create New Project"
 msgstr "Skapa Nytt Projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Create & Edit"
-msgstr "Skapa Skript"
+msgstr "Skapa & Ändra"
 
 #: editor/project_manager.cpp
 msgid "Install Project:"
@@ -9950,7 +9983,7 @@ msgstr "Sökväg till projektet:"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderare:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
@@ -9963,6 +9996,10 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Högre visuell kvalitet\n"
+"Alla funktioner tillgängliga\n"
+"Inkompatibel med äldre hårdvara\n"
+"Inte rekommenderad för webbspel"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
@@ -9975,10 +10012,14 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Lägre visuell kvalitet\n"
+"Några funktioner fattas\n"
+"Fungerar på de flesta hårdvaror\n"
+"Rekommenderad för webbspel"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
-msgstr ""
+msgstr "Rendrerare kan bytas senare men scener kan behöva ändras."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -10065,6 +10106,8 @@ msgid ""
 "Remove this project from the list?\n"
 "The project folder's contents won't be modified."
 msgstr ""
+"Vill du ta bort projektet från listan?\n"
+"Projektetmappens innehåll kommer inte ändras."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -10096,7 +10139,7 @@ msgstr "Projekt"
 
 #: editor/project_manager.cpp
 msgid "Last Modified"
-msgstr ""
+msgstr "Senast Ändrad"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -12273,6 +12316,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12297,7 +12356,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12966,6 +13031,28 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Move pivot"
+#~ msgstr "Flytta Upp"
+
+#, fuzzy
+#~ msgid "Move anchor"
+#~ msgstr "Flytta Ner"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Favoriter:"
+
+#~ msgid "Patches"
+#~ msgstr "Patchar"
+
+#~ msgid "Make Patch"
+#~ msgstr "Gör Patch"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr "Packar"
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

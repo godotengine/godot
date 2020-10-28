@@ -1612,6 +1612,37 @@ msgstr ""
 "Povolte 'Import Etc' v nastaveních projektu, nebo vypněte 'Driver Fallback "
 "Enabled'."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC' pro GLES2. Povolte 'Import "
+"Etc' v nastaveních projektu."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC2' pro GLES3. Povolte 'Import "
+"Etc 2' v nastaveních projektu."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC' pro použití GLES2 jako "
+"zálohy.\n"
+"Povolte 'Import Etc' v nastaveních projektu, nebo vypněte 'Driver Fallback "
+"Enabled'."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -2936,8 +2967,7 @@ msgstr "Spravovat exportní šablony..."
 msgid "Help"
 msgstr "Nápověda"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4355,7 +4385,6 @@ msgid "Add Node to BlendTree"
 msgstr "Přidat uzel do BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Uzel přesunut"
 
@@ -5177,27 +5206,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Vytvořit vodorovná a svislá vodítka"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Přemístit pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Rotovat CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Přesunout kotvu"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Rotovat CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Změnit velikost CanvasItem"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Přemístit CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Škálovat CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Škálovat CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Přemístit CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Přemístit CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6489,12 +6541,22 @@ msgid "Move Points"
 msgstr "Přesunout body"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Otočit"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Táhnutí: Otočit"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Přesunout vše"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Změnit měřítko"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Otočit"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6537,12 +6599,14 @@ msgid "Radius:"
 msgstr "Poloměr:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Polygon->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Vytvořit polygon a UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Polygon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Přesunout polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6989,11 +7053,6 @@ msgstr "Zvýrazňovač syntaxe"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7001,6 +7060,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Vytvořit body."
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8132,6 +8196,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8690,6 +8760,11 @@ msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Uzel přesunut"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Duplikovat uzel/uzly"
 
@@ -8706,6 +8781,11 @@ msgstr "Smazat uzel"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Změna transformace"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9383,6 +9463,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9443,20 +9527,6 @@ msgstr "Změny shaderu"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Spustitelný"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Přidat vstup"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Delete patch '%s' from list?"
-msgstr "Odstranit"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9545,19 +9615,6 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Patches"
-msgstr "Shody:"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Soubour balíčk"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12070,6 +12127,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12094,7 +12167,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12811,6 +12890,36 @@ msgstr "Odlišnosti mohou být přiřazeny pouze ve vertex funkci."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "Move pivot"
+#~ msgstr "Přemístit pivot"
+
+#~ msgid "Move anchor"
+#~ msgstr "Přesunout kotvu"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Změnit velikost CanvasItem"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Polygon->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Polygon"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Přidat vstup"
+
+#, fuzzy
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Odstranit"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "Shody:"
+
+#~ msgid "Pack File"
+#~ msgstr "Soubour balíčk"
 
 #, fuzzy
 #~ msgid "FileSystem and Import Docks"

@@ -1607,6 +1607,37 @@ msgstr ""
 "Activeu \"Import Etc\" a Configuració del Projecte o desactiveu la opció "
 "'Driver Fallback Enabled''."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"La plataforma de destí requereix compressió de textures 'ETC' per a GLES2. "
+"Activa 'Import Etc' en la Configuració del Projecte."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"La plataforma de destí requereix compressió de textures 'ETC' per a GLES2. "
+"Activa 'Import Etc 2' en la Configuració del Projecte."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"La plataforma de destinació requereix una compressió de textura 'ETC' per a "
+"utilitzar GLES2 com a controlador alternatiu.\n"
+"Activeu \"Import Etc\" a Configuració del Projecte o desactiveu la opció "
+"'Driver Fallback Enabled''."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -2953,8 +2984,7 @@ msgstr "Administrar Plantilles d'Exportació..."
 msgid "Help"
 msgstr "Ajuda"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4406,7 +4436,6 @@ msgid "Add Node to BlendTree"
 msgstr "Afegeix Nodes des d'Arbre"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Node mogut"
 
@@ -5257,31 +5286,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Crea guies horitzontal i vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Moure pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
-msgstr "Modifica el elementCanvas"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Moure àncora"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6600,12 +6648,22 @@ msgid "Move Points"
 msgstr "Moure Punts"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Gira"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Arrossega: gira"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Maj.: Mou'ho tot"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Maj.+Ctrl: Escala"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Gira"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6653,12 +6711,14 @@ msgid "Radius:"
 msgstr "Radi:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Polígon -> UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Crear Polígon i UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Polígon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Convertir a Polígon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7115,17 +7175,17 @@ msgstr "Ressaltador de sintaxi"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Anar a"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Marcadors"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Punts d’interrupció"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Anar a"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8264,6 +8324,15 @@ msgstr "Pinta Rajola"
 #, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Maj + RMB: dibuixar una línia\n"
+"Maj + Ctrl + RMB: pintar rectangle"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 "Maj + RMB: dibuixar una línia\n"
@@ -8848,6 +8917,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Afegir node al VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node mogut"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Duplicar Nodes"
 
@@ -8864,6 +8938,11 @@ msgstr "Eliminar Nodes"
 #, fuzzy
 msgid "Visual Shader Input Type Changed"
 msgstr "El tipus d'entrada VisualShader ha canviat"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Definir nom uniforme"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9616,6 +9695,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9674,19 +9757,6 @@ msgstr "El mode Visual Shader ha canviat"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Executable"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Afegeix una Entrada"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Eliminar el Pedaç '%s' de la llista?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9783,19 +9853,6 @@ msgid ""
 msgstr ""
 "Filtres per excloure fitxers/carpetes del projecte\n"
 "(separats per comes, ex:*.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Pedaços"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Crea un Pedaç"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr "Fitxers"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12408,6 +12465,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 #, fuzzy
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
@@ -12447,9 +12520,14 @@ msgstr ""
 "compilació d'Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
-msgid "No build apk generated at: "
-msgstr "No s'ha generat cap compilació apk a: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -13213,6 +13291,43 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Move pivot"
+#~ msgstr "Moure pivot"
+
+#~ msgid "Move anchor"
+#~ msgstr "Moure àncora"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Modifica el elementCanvas"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Polígon -> UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Polígon"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Afegeix una Entrada"
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Eliminar el Pedaç '%s' de la llista?"
+
+#~ msgid "Patches"
+#~ msgstr "Pedaços"
+
+#~ msgid "Make Patch"
+#~ msgstr "Crea un Pedaç"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr "Fitxers"
+
+#, fuzzy
+#~ msgid "No build apk generated at: "
+#~ msgstr "No s'ha generat cap compilació apk a: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Importació i sistema de fitxers"
