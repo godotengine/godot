@@ -42,24 +42,24 @@ template <class T>
 struct PtrToArg {
 };
 
-#define MAKE_PTRARG(m_type)                                            \
-	template <>                                                        \
-	struct PtrToArg<m_type> {                                          \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
-		}                                                              \
-	};                                                                 \
-	template <>                                                        \
-	struct PtrToArg<const m_type &> {                                  \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
-		}                                                              \
+#define MAKE_PTRARG(m_type)                                                   \
+	template <>                                                               \
+	struct PtrToArg<m_type> {                                                 \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const m_type *>(p_ptr);                  \
+		}                                                                     \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
+			*((m_type *)p_ptr) = p_val;                                       \
+		}                                                                     \
+	};                                                                        \
+	template <>                                                               \
+	struct PtrToArg<const m_type &> {                                         \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const m_type *>(p_ptr);                  \
+		}                                                                     \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
+			*((m_type *)p_ptr) = p_val;                                       \
+		}                                                                     \
 	}
 
 #define MAKE_PTRARGCONV(m_type, m_conv)                                           \
@@ -68,7 +68,7 @@ struct PtrToArg {
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) {     \
 			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
 		}                                                                         \
 	};                                                                            \
@@ -77,7 +77,7 @@ struct PtrToArg {
 		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
+		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) {     \
 			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
 		}                                                                         \
 	}
@@ -201,7 +201,7 @@ struct PtrToArg<ObjectID> {
 			}                                                                            \
 			return ret;                                                                  \
 		}                                                                                \
-		_FORCE_INLINE_ static void encode(Vector<m_type> p_vec, void *p_ptr) {           \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) {    \
 			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);              \
 			int len = p_vec.size();                                                      \
 			dv->resize(len);                                                             \
@@ -230,49 +230,49 @@ struct PtrToArg<ObjectID> {
 		}                                                                                \
 	}
 
-#define MAKE_VECARG_ALT(m_type, m_type_alt)                                              \
-	template <>                                                                          \
-	struct PtrToArg<Vector<m_type_alt>> {                                                \
-		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {            \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr); \
-			Vector<m_type_alt> ret;                                                      \
-			int len = dvs->size();                                                       \
-			ret.resize(len);                                                             \
-			{                                                                            \
-				const m_type *r = dvs->ptr();                                            \
-				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
-				}                                                                        \
-			}                                                                            \
-			return ret;                                                                  \
-		}                                                                                \
-		_FORCE_INLINE_ static void encode(Vector<m_type_alt> p_vec, void *p_ptr) {       \
-			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);              \
-			int len = p_vec.size();                                                      \
-			dv->resize(len);                                                             \
-			{                                                                            \
-				m_type *w = dv->ptrw();                                                  \
-				for (int i = 0; i < len; i++) {                                          \
-					w[i] = p_vec[i];                                                     \
-				}                                                                        \
-			}                                                                            \
-		}                                                                                \
-	};                                                                                   \
-	template <>                                                                          \
-	struct PtrToArg<const Vector<m_type_alt> &> {                                        \
-		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {            \
-			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr); \
-			Vector<m_type_alt> ret;                                                      \
-			int len = dvs->size();                                                       \
-			ret.resize(len);                                                             \
-			{                                                                            \
-				const m_type *r = dvs->ptr();                                            \
-				for (int i = 0; i < len; i++) {                                          \
-					ret.write[i] = r[i];                                                 \
-				}                                                                        \
-			}                                                                            \
-			return ret;                                                                  \
-		}                                                                                \
+#define MAKE_VECARG_ALT(m_type, m_type_alt)                                               \
+	template <>                                                                           \
+	struct PtrToArg<Vector<m_type_alt>> {                                                 \
+		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {             \
+			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);  \
+			Vector<m_type_alt> ret;                                                       \
+			int len = dvs->size();                                                        \
+			ret.resize(len);                                                              \
+			{                                                                             \
+				const m_type *r = dvs->ptr();                                             \
+				for (int i = 0; i < len; i++) {                                           \
+					ret.write[i] = r[i];                                                  \
+				}                                                                         \
+			}                                                                             \
+			return ret;                                                                   \
+		}                                                                                 \
+		_FORCE_INLINE_ static void encode(const Vector<m_type_alt> &p_vec, void *p_ptr) { \
+			Vector<m_type> *dv = reinterpret_cast<Vector<m_type> *>(p_ptr);               \
+			int len = p_vec.size();                                                       \
+			dv->resize(len);                                                              \
+			{                                                                             \
+				m_type *w = dv->ptrw();                                                   \
+				for (int i = 0; i < len; i++) {                                           \
+					w[i] = p_vec[i];                                                      \
+				}                                                                         \
+			}                                                                             \
+		}                                                                                 \
+	};                                                                                    \
+	template <>                                                                           \
+	struct PtrToArg<const Vector<m_type_alt> &> {                                         \
+		_FORCE_INLINE_ static Vector<m_type_alt> convert(const void *p_ptr) {             \
+			const Vector<m_type> *dvs = reinterpret_cast<const Vector<m_type> *>(p_ptr);  \
+			Vector<m_type_alt> ret;                                                       \
+			int len = dvs->size();                                                        \
+			ret.resize(len);                                                              \
+			{                                                                             \
+				const m_type *r = dvs->ptr();                                             \
+				for (int i = 0; i < len; i++) {                                           \
+					ret.write[i] = r[i];                                                  \
+				}                                                                         \
+			}                                                                             \
+			return ret;                                                                   \
+		}                                                                                 \
 	}
 /*
 MAKE_VECARG(String);
@@ -286,89 +286,89 @@ MAKE_VECARG(Color);
 MAKE_VECARG_ALT(String, StringName);
 
 //for stuff that gets converted to Array vectors
-#define MAKE_VECARR(m_type)                                                    \
-	template <>                                                                \
-	struct PtrToArg<Vector<m_type>> {                                          \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {      \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);         \
-			Vector<m_type> ret;                                                \
-			int len = arr->size();                                             \
-			ret.resize(len);                                                   \
-			for (int i = 0; i < len; i++) {                                    \
-				ret.write[i] = (*arr)[i];                                      \
-			}                                                                  \
-			return ret;                                                        \
-		}                                                                      \
-		_FORCE_INLINE_ static void encode(Vector<m_type> p_vec, void *p_ptr) { \
-			Array *arr = reinterpret_cast<Array *>(p_ptr);                     \
-			int len = p_vec.size();                                            \
-			arr->resize(len);                                                  \
-			for (int i = 0; i < len; i++) {                                    \
-				(*arr)[i] = p_vec[i];                                          \
-			}                                                                  \
-		}                                                                      \
-	};                                                                         \
-	template <>                                                                \
-	struct PtrToArg<const Vector<m_type> &> {                                  \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {      \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);         \
-			Vector<m_type> ret;                                                \
-			int len = arr->size();                                             \
-			ret.resize(len);                                                   \
-			for (int i = 0; i < len; i++) {                                    \
-				ret.write[i] = (*arr)[i];                                      \
-			}                                                                  \
-			return ret;                                                        \
-		}                                                                      \
+#define MAKE_VECARR(m_type)                                                           \
+	template <>                                                                       \
+	struct PtrToArg<Vector<m_type>> {                                                 \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
+			Vector<m_type> ret;                                                       \
+			int len = arr->size();                                                    \
+			ret.resize(len);                                                          \
+			for (int i = 0; i < len; i++) {                                           \
+				ret.write[i] = (*arr)[i];                                             \
+			}                                                                         \
+			return ret;                                                               \
+		}                                                                             \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) { \
+			Array *arr = reinterpret_cast<Array *>(p_ptr);                            \
+			int len = p_vec.size();                                                   \
+			arr->resize(len);                                                         \
+			for (int i = 0; i < len; i++) {                                           \
+				(*arr)[i] = p_vec[i];                                                 \
+			}                                                                         \
+		}                                                                             \
+	};                                                                                \
+	template <>                                                                       \
+	struct PtrToArg<const Vector<m_type> &> {                                         \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
+			Vector<m_type> ret;                                                       \
+			int len = arr->size();                                                    \
+			ret.resize(len);                                                          \
+			for (int i = 0; i < len; i++) {                                           \
+				ret.write[i] = (*arr)[i];                                             \
+			}                                                                         \
+			return ret;                                                               \
+		}                                                                             \
 	}
 
 MAKE_VECARR(Variant);
 MAKE_VECARR(RID);
 MAKE_VECARR(Plane);
 
-#define MAKE_DVECARR(m_type)                                                   \
-	template <>                                                                \
-	struct PtrToArg<Vector<m_type>> {                                          \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {      \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);         \
-			Vector<m_type> ret;                                                \
-			int len = arr->size();                                             \
-			ret.resize(len);                                                   \
-			{                                                                  \
-				m_type *w = ret.ptrw();                                        \
-				for (int i = 0; i < len; i++) {                                \
-					w[i] = (*arr)[i];                                          \
-				}                                                              \
-			}                                                                  \
-			return ret;                                                        \
-		}                                                                      \
-		_FORCE_INLINE_ static void encode(Vector<m_type> p_vec, void *p_ptr) { \
-			Array *arr = reinterpret_cast<Array *>(p_ptr);                     \
-			int len = p_vec.size();                                            \
-			arr->resize(len);                                                  \
-			{                                                                  \
-				const m_type *r = p_vec.ptr();                                 \
-				for (int i = 0; i < len; i++) {                                \
-					(*arr)[i] = r[i];                                          \
-				}                                                              \
-			}                                                                  \
-		}                                                                      \
-	};                                                                         \
-	template <>                                                                \
-	struct PtrToArg<const Vector<m_type> &> {                                  \
-		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {      \
-			const Array *arr = reinterpret_cast<const Array *>(p_ptr);         \
-			Vector<m_type> ret;                                                \
-			int len = arr->size();                                             \
-			ret.resize(len);                                                   \
-			{                                                                  \
-				m_type *w = ret.ptrw();                                        \
-				for (int i = 0; i < len; i++) {                                \
-					w[i] = (*arr)[i];                                          \
-				}                                                              \
-			}                                                                  \
-			return ret;                                                        \
-		}                                                                      \
+#define MAKE_DVECARR(m_type)                                                          \
+	template <>                                                                       \
+	struct PtrToArg<Vector<m_type>> {                                                 \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
+			Vector<m_type> ret;                                                       \
+			int len = arr->size();                                                    \
+			ret.resize(len);                                                          \
+			{                                                                         \
+				m_type *w = ret.ptrw();                                               \
+				for (int i = 0; i < len; i++) {                                       \
+					w[i] = (*arr)[i];                                                 \
+				}                                                                     \
+			}                                                                         \
+			return ret;                                                               \
+		}                                                                             \
+		_FORCE_INLINE_ static void encode(const Vector<m_type> &p_vec, void *p_ptr) { \
+			Array *arr = reinterpret_cast<Array *>(p_ptr);                            \
+			int len = p_vec.size();                                                   \
+			arr->resize(len);                                                         \
+			{                                                                         \
+				const m_type *r = p_vec.ptr();                                        \
+				for (int i = 0; i < len; i++) {                                       \
+					(*arr)[i] = r[i];                                                 \
+				}                                                                     \
+			}                                                                         \
+		}                                                                             \
+	};                                                                                \
+	template <>                                                                       \
+	struct PtrToArg<const Vector<m_type> &> {                                         \
+		_FORCE_INLINE_ static Vector<m_type> convert(const void *p_ptr) {             \
+			const Array *arr = reinterpret_cast<const Array *>(p_ptr);                \
+			Vector<m_type> ret;                                                       \
+			int len = arr->size();                                                    \
+			ret.resize(len);                                                          \
+			{                                                                         \
+				m_type *w = ret.ptrw();                                               \
+				for (int i = 0; i < len; i++) {                                       \
+					w[i] = (*arr)[i];                                                 \
+				}                                                                     \
+			}                                                                         \
+			return ret;                                                               \
+		}                                                                             \
 	}
 
 // Special case for IP_Address.
@@ -429,6 +429,7 @@ struct PtrToArg<Vector<Face3>> {
 		}
 	}
 };
+
 template <>
 struct PtrToArg<const Vector<Face3> &> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
