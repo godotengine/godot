@@ -71,9 +71,10 @@ public:
 		OverlappingObjectData(const OverlappingObjectData &other) {
 			operator=(other);
 		}
-		void operator=(const OverlappingObjectData &other) {
+		OverlappingObjectData &operator=(const OverlappingObjectData &other) {
 			object = other.object;
 			state = other.state;
+			return *this;
 		}
 	};
 

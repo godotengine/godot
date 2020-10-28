@@ -149,7 +149,7 @@ private:
 
 		VSet<PosKey> cells;
 
-		void operator=(const Quadrant &q) {
+		Quadrant &operator=(const Quadrant &q) {
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			body = q.body;
@@ -157,6 +157,7 @@ private:
 			cells = q.cells;
 			navpoly_ids = q.navpoly_ids;
 			occluder_instances = q.occluder_instances;
+			return *this;
 		}
 		Quadrant(const Quadrant &q) :
 				dirty_list(this) {
