@@ -8,12 +8,14 @@
 # Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 # Hasibul Hasan <hasibeng78@gmail.com>, 2019.
 # Oymate <dhruboadittya96@gmail.com>, 2020.
+# Mokarrom Hossain <mhb2016.bzs@gmail.com>, 2020.
+# Sagen Soren <sagensoren03@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-04 15:11+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-10-22 19:41+0000\n"
+"Last-Translator: Sagen Soren <sagensoren03@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -21,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.3.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -43,28 +45,24 @@ msgid "Invalid input %i (not passed) in expression"
 msgstr "অবৈধ ইনপুট %i (পাস করা হয়নি) প্রকাশে"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self ব্যবাহার করা যাবে না কারণ instance যুক্তিযুক্ত নয়"
+msgstr "self ব্যবহার করা যাবে না কারণ instance যুক্তিযুক্ত নয়"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "%s নোডে সূচক/ইনডেক্স মানের অগ্রহনযোগ্য নাম '%s'।"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "%s নোডে সূচক/ইনডেক্স মানের অগ্রহনযোগ্য নাম '%s'।"
+msgstr "টাইপ %s এর অবৈধ সূচক বেস টাইপ %s এর জন্য"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
 msgstr "অবৈধ নামকরণ সূচক I '%s' for ভিত্তি type %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": অগ্রহনযোগ্য মান/আর্গুমেন্ট-এর ধরণ:"
+msgstr "'%s' নির্মাণে একাধিক অবৈধ আর্গুমেন্ট"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -72,32 +70,31 @@ msgstr "কল করুন '%s'"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "কিবি"
 
 #: core/ustring.cpp
-#, fuzzy
 msgid "MiB"
-msgstr "মিশ্রিত করুন"
+msgstr "এম বি"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "জিবি"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "টিবি"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "পেটা বাইট"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "এক্সি বাইট"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -108,9 +105,8 @@ msgid "Balanced"
 msgstr "স্থির"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "প্রতিবিম্ব X"
+msgstr "প্রতিবিম্ব"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
@@ -131,24 +127,20 @@ msgid "Duplicate Selected Key(s)"
 msgstr "নির্বাচিত সমূহ অনুলিপি করুন"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
 msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "ইনপুট যোগ করুন"
+msgstr "বেজিয়ার ইনপুট করুন"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "বিন্দু সরান"
+msgstr "বেজিয়ার বিন্দু সরান"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "অ্যানিমেশন (Anim) ডুপ্লিকেট করুন কি"
+msgstr "অ্যানিমেশন (Anim) ডুপ্লিকেট/নকল করুন কি"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
@@ -168,7 +160,6 @@ msgid "Anim Change Transform"
 msgstr "অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Value"
 msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
 
@@ -1689,6 +1680,26 @@ msgid ""
 "Enabled'."
 msgstr ""
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -3129,8 +3140,7 @@ msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লো�
 msgid "Help"
 msgstr "হেল্প"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4701,7 +4711,6 @@ msgid "Add Node to BlendTree"
 msgstr "শাখা (tree) হতে নোড (সমূহ) যুক্ত করুন"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Node Moved"
 msgstr "মোড (Mode) সরান"
@@ -5586,33 +5595,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "নতুন হরাইজন্টাল এবং ভার্টিক্যাল গাইড তৈরী করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Move pivot"
-msgstr "কেন্দ্র স্থানান্তর করুন"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move anchor"
-msgstr "প্রক্রিয়া স্থানান্তর করুন"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "CanvasItem সম্পাদন করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "CanvasItem সম্পাদন করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "CanvasItem সম্পাদন করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6976,12 +7002,22 @@ msgid "Move Points"
 msgstr "বিন্দু সরান"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "কন্ট্রোল বোতাম: ঘূর্ণন"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "টান: ঘূর্ণন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "শিফট্‌: সবগুলি নড়ান"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "শিফট্‌ + কন্ট্রোল: মাপ"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "কন্ট্রোল বোতাম: ঘূর্ণন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -7022,12 +7058,14 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "পলিগন->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Poly তৈরি করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->পলিগন"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "পলিগন সরান"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7514,11 +7552,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7526,6 +7559,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "বিন্দু অপসারণ করুন"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8717,6 +8755,12 @@ msgstr "TileMap আঁকুন"
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -9302,6 +9346,11 @@ msgstr "শেডার"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "মোড (Mode) সরান"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "নোড(সমূহ) প্রতিলিপি করুন"
 
@@ -9318,6 +9367,11 @@ msgstr "নোড(সমূহ) অপসারণ করুন"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "রুপান্তরের পরিবর্তন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -10000,6 +10054,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -10062,20 +10120,6 @@ msgstr "পরিবর্তনসমূহ হাল-নাগাদ করু
 #, fuzzy
 msgid "Runnable"
 msgstr "সক্রিয় করুন"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "ইনপুট যোগ করুন"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Delete patch '%s' from list?"
-msgstr "ইনপুট অপসারণ করুন"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -10180,21 +10224,6 @@ msgid ""
 msgstr ""
 "এক্সপোর্ট (export) হতে বর্জনকৃত ফিল্টারসমূহ (filter) (কমা-বিভক্ত, যেমন: *.json, *."
 "txt):"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Patches"
-msgstr "মিলসমূহ:"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Make Patch"
-msgstr "উদ্দেশ্যিত পথ:"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr "ফাইল"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -12867,6 +12896,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12891,7 +12936,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -13600,6 +13651,44 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Move pivot"
+#~ msgstr "কেন্দ্র স্থানান্তর করুন"
+
+#, fuzzy
+#~ msgid "Move anchor"
+#~ msgstr "প্রক্রিয়া স্থানান্তর করুন"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "CanvasItem সম্পাদন করুন"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "পলিগন->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->পলিগন"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "ইনপুট যোগ করুন"
+
+#, fuzzy
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "ইনপুট অপসারণ করুন"
+
+#, fuzzy
+#~ msgid "Patches"
+#~ msgstr "মিলসমূহ:"
+
+#, fuzzy
+#~ msgid "Make Patch"
+#~ msgstr "উদ্দেশ্যিত পথ:"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr "ফাইল"
 
 #, fuzzy
 #~ msgid "FileSystem and Import Docks"
