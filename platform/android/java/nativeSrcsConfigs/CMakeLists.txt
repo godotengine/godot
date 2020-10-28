@@ -1,3 +1,4 @@
+# Non functional cmake build file used to provide Android Studio editor support to the project.
 cmake_minimum_required(VERSION 3.6)
 project(godot)
 
