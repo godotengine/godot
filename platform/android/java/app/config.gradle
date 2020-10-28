@@ -6,7 +6,8 @@ ext.versions = [
     buildTools         : '30.0.1',
     supportCoreUtils   : '1.0.0',
     kotlinVersion      : '1.4.10',
-    v4Support          : '1.0.0'
+    v4Support          : '1.0.0',
+    javaVersion        : 1.8
 
 ]
 
