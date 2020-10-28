@@ -219,6 +219,9 @@
 		</constant>
 		<constant name="TEXT_ORD" value="67" enum="BuiltinFunc">
 		</constant>
+		<constant name="MATH_ANGLE_DIFF" value="69" enum="BuiltinFunc">
+			Return the angle difference (within the range of -PI to PI) between [b]to[/b] and [b]from[/b]. All angles are in radians.
+		</constant>
 		<constant name="FUNC_MAX" value="68" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>

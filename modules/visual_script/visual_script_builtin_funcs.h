@@ -106,6 +106,7 @@ public:
 		MATH_POSMOD,
 		MATH_LERP_ANGLE,
 		TEXT_ORD,
+		MATH_ANGLE_DIFF,
 		FUNC_MAX
 	};
 
