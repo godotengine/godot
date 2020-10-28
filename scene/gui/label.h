@@ -60,6 +60,7 @@ private:
 	String xl_text;
 	bool autowrap = false;
 	bool clip = false;
+	bool localize = true;
 	Size2 minsize;
 	int line_count = 0;
 	bool uppercase = false;
@@ -118,6 +119,9 @@ public:
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
+
+	void set_localize(bool p_localize);
+	bool is_localizing() const;
 
 	void set_percent_visible(float p_percent);
 	float get_percent_visible() const;

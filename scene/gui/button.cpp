@@ -66,7 +66,7 @@ void Button::_set_internal_margin(Margin p_margin, float p_value) {
 void Button::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			xl_text = tr(text);
+			xl_text = localize_text ? tr(text) : text;
 			minimum_size_changed();
 			update();
 		} break;
@@ -244,7 +244,7 @@ void Button::set_text(const String &p_text) {
 		return;
 	}
 	text = p_text;
-	xl_text = tr(p_text);
+	xl_text = localize_text ? tr(p_text) : p_text;
 	update();
 	_change_notify("text");
 	minimum_size_changed();
@@ -298,6 +298,16 @@ bool Button::get_clip_text() const {
 	return clip_text;
 }
 
+void Button::set_localize_text(bool p_localize_text) {
+	localize_text = p_localize_text;
+	update();
+	minimum_size_changed();
+}
+
+bool Button::is_localizing_text() const {
+	return localize_text;
+}
+
 void Button::set_text_align(TextAlign p_align) {
 	align = p_align;
 	update();
@@ -316,10 +326,12 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &Button::set_flat);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enabled"), &Button::set_clip_text);
+	ClassDB::bind_method(D_METHOD("set_localize_text", "enabled"), &Button::set_localize_text);
 	ClassDB::bind_method(D_METHOD("get_clip_text"), &Button::get_clip_text);
 	ClassDB::bind_method(D_METHOD("set_text_align", "align"), &Button::set_text_align);
 	ClassDB::bind_method(D_METHOD("get_text_align"), &Button::get_text_align);
 	ClassDB::bind_method(D_METHOD("is_flat"), &Button::is_flat);
+	ClassDB::bind_method(D_METHOD("is_localizing_text"), &Button::is_localizing_text);
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -331,12 +343,14 @@ void Button::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize_text"), "set_localize_text", "is_localizing_text");
 }
 
 Button::Button(const String &p_text) {
 	flat = false;
 	clip_text = false;
 	expand_icon = false;
+	localize_text = true;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
 	align = ALIGN_CENTER;
