@@ -75,7 +75,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-09-24 12:43+0000\n"
+"PO-Revision-Date: 2020-10-18 14:21+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -84,7 +84,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -107,11 +107,11 @@ msgstr "表达式中包含的%i无效（未传递）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "实例为null（未传递）,无法传递自身self"
+msgstr "实例为 null（未传递），无法使用 self"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "操作符 %s ，%s 和 %s 的操作数无效。"
+msgstr "操作符 %s 的操作数 %s 和 %s 无效。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -309,7 +309,7 @@ msgstr "动画剪辑："
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "改变轨迹路径"
+msgstr "改变轨道路径"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -353,7 +353,7 @@ msgstr "触发器"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr "截图"
+msgstr "捕获"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
@@ -407,7 +407,7 @@ msgstr "移除轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "是否为“%s”新建轨道并插入关键帧？"
+msgstr "是否为 %s 新建轨道并插入关键帧？"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -495,23 +495,23 @@ msgstr "轨道路径无效，因此无法添加键。"
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "轨道不是Spatial类型，不能插入键"
+msgstr "轨道不是Spatial类型，无法插入帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Transform Track Key"
-msgstr "添加转换轨道键"
+msgstr "添加变换轨道帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr "添加轨道键"
+msgstr "添加轨道帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "轨道路径无效，所以不能添加方法帧。"
+msgstr "轨道路径无效，所以无法添加方法帧。"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
-msgstr "添加方法轨道键"
+msgstr "添加方法轨道帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -519,7 +519,7 @@ msgstr "方法未找到： "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "移动关键帧"
+msgstr "移动动画关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -531,12 +531,12 @@ msgstr "粘贴轨道"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "缩放关键帧"
+msgstr "缩放动画关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
-msgstr "此选项不适用于Bezier编辑，因为它只是一个轨迹。"
+msgstr "此选项不适用于贝塞尔编辑，因为它只是单个轨道。"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -552,13 +552,14 @@ msgid ""
 msgstr ""
 "此动画属于导入的场景，因此不会保存对导入轨道的更改。\n"
 "\n"
-"要启用添加自定义轨道的功能，可以导航到场景的导入设置，将\n"
-"“动画 > 存储”设为“文件”，启用“动画 > 保留自定义轨道”并重新导入。\n"
-"或者也可以选择一个导入动画的导入预设以分隔文件。"
+"要启用添加自定义轨道的功能，可以在场景的导入设置中将\n"
+"“Animation > Storage”设为“ Files”，启用“Animation > Keep Custom Tracks”，然后"
+"重新导入。\n"
+"或者也可以使用将动画导入为单独文件的导入预设。"
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr "警告: 正在编辑导入的动画"
+msgstr "警告：正在编辑导入的动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
@@ -657,15 +658,15 @@ msgstr "动画优化器"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "最大线性错误:"
+msgstr "最大线性误差："
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "最大角度错误:"
+msgstr "最大角度误差："
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
-msgstr "调整最大的可优化角度:"
+msgstr "最大可优化角度："
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
@@ -673,7 +674,7 @@ msgstr "优化"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "移除无效键"
+msgstr "移除无效帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -685,7 +686,7 @@ msgstr "清除所有动画"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "清除所有动画吗（无法撤销！）"
+msgstr "清除动画（无法撤销！）"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -710,7 +711,7 @@ msgstr "复制"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "取消/选择 全部"
+msgstr "全选/取消"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -742,7 +743,7 @@ msgstr "转到行"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr "行号:"
+msgstr "行号："
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
@@ -825,11 +826,11 @@ msgstr "找不到目标方法。请指定一个有效的方法或者把脚本附
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
-msgstr "连接到节点:"
+msgstr "连接到节点："
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr "连接到脚本:"
+msgstr "连接到脚本："
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
@@ -929,12 +930,12 @@ msgstr "断开所有与信号“%s”的连接"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "连接信号..."
+msgstr "连接..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "删除信号连接"
+msgstr "断开连接"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
@@ -953,9 +954,8 @@ msgid "Signals"
 msgstr "信号"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "筛选图块"
+msgstr "筛选信号"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -998,13 +998,13 @@ msgstr "最近使用："
 #: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr "搜索:"
+msgstr "搜索："
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
-msgstr "匹配项:"
+msgstr "匹配项："
 
 #: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
@@ -1012,11 +1012,11 @@ msgstr "匹配项:"
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
-msgstr "描述:"
+msgstr "描述："
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr "搜索替换:"
+msgstr "搜索替换："
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
@@ -1054,7 +1054,7 @@ msgstr "路径"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr "依赖:"
+msgstr "依赖："
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
@@ -1258,7 +1258,7 @@ msgstr "许可证"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
-msgstr "打开压缩文件时出错，非zip格式。"
+msgstr "打开压缩文件时出错，非ZIP格式。"
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (Already Exists)"
@@ -1637,6 +1637,31 @@ msgstr ""
 "目标平台需要“ETC”纹理压缩，以便驱动程序回退到GLES2。\n"
 "在项目设置中启用“导入Etc”，或禁用“启用驱动程序回退”。"
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr "目标平台需要GLES2的“ETC”纹理压缩。在项目设置中启用“导入Etc”。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr "目标平台需要GLES3的“ETC2”纹理压缩。在项目设置中启用“导入Etc 2”。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"目标平台需要“ETC”纹理压缩，以便驱动程序回退到GLES2。\n"
+"在项目设置中启用“导入Etc”，或禁用“启用驱动程序回退”。"
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1678,9 +1703,8 @@ msgid "Node Dock"
 msgstr "节点面板"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "文件系统"
+msgstr "文件系统面板"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2498,7 +2522,7 @@ msgstr "在打开项目管理器之前保存更改吗？"
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
-msgstr "此选项已弃用。必须强制刷新的情况现在被视为 bug。请报告。"
+msgstr "该选项已废弃。必须强制刷新的情况现在被视为 bug。请报告。"
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2805,14 +2829,16 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"启用该选项时，一键部署后的可执行文件将尝试连接到这台电脑的IP以便调试所运行的"
+"工程。\n"
+"该选项意在进行远程调试（尤其是移动设备）。\n"
+"在本地使用GDScript调试器无需启用。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
 msgstr "使用网络文件系统进行小型部署"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2821,63 +2847,58 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"当启用此项后，将在导出或发布项目时生成最小化可自行文件。\n"
-"文件系统将通过网络连接到编辑器来实现。\n"
-"在Android平台，通过USB发布能获得更快的效率。此选项可以加快大体积游戏的测试。"
+"启用该选项时，一键部署到Android时所导出的可执行文件将不包含工程数据。\n"
+"文件系统将由编辑器基于工程通过网络提供。\n"
+"在Android平台，部署将通过USB线缆进行以提高性能。如果工程中包含较大的素材，该"
+"选项会提高测试速度。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "显示碰撞区域"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
-msgstr "如果启用此项，节点的碰撞区域和raycast将在游戏运行时可见。"
+msgstr "启用该选项时，碰撞区域和光线投射节点（2D和3D）将在工程运行时可见。"
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "显示导航"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
-msgstr "如果启用此项，用于导航的mesh和多边形将在游戏运行时可见。"
+msgstr "启用该选项时，导航网格和多边形将在工程运行时可见。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "同步场景修改"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"开启此项后，在编辑器中对场景的所有修改都会被应用与正在运行的游戏中。\n"
-"当使用远程设备调试时，使用网络文件系统能有效提高编辑效率。"
+"启用该选项时，在编辑器中对场景的任何修改都会被应用于正在运行的工程中。\n"
+"当使用于远程设备时，启用网络文件系统能提高编辑效率。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "同步脚本变更"
+msgstr "同步脚本修改"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"开启此项后，所有脚本在保存时都会被正在运行的游戏重新加载。\n"
-"当使用远程设备调试时，使用网络文件系统能有效提高编辑效率。"
+"启用该选项时，保存的任何脚本都会被正在运行的工程重新加载。\n"
+"当使用于远程设备时，启用网络文件系统能提高编辑效率。"
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
@@ -2931,8 +2952,7 @@ msgstr "管理导出模板..."
 msgid "Help"
 msgstr "帮助"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3287,7 +3307,7 @@ msgstr "新建脚本"
 
 #: editor/editor_properties.cpp editor/scene_tree_dock.cpp
 msgid "Extend Script"
-msgstr "打开脚本"
+msgstr "扩展脚本"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -3345,14 +3365,13 @@ msgid "Add Key/Value Pair"
 msgstr "添加键/值对"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
 "as runnable."
 msgstr ""
 "没有对应该平台的可执行导出预设。\n"
-"请在导出菜单中添加可执行预设。"
+"请在导出菜单中添加可执行预设，或将已有预设设为可执行。"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3765,8 +3784,8 @@ msgid ""
 "Scanning Files,\n"
 "Please Wait..."
 msgstr ""
-"扫描文件，\n"
-"请稍候。"
+"正在扫描文件，\n"
+"请稍候……"
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
@@ -4336,7 +4355,6 @@ msgid "Add Node to BlendTree"
 msgstr "在合成树中添加节点"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "节点已移动"
 
@@ -5155,27 +5173,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "创建垂直水平参考线"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "移动轴心点"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "旋转 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "移动锚点"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "旋转 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "调整 CanvasItem 尺寸"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "移动 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "缩放包含项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "缩放包含项"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "移动 CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "移动 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6439,12 +6480,22 @@ msgid "Move Points"
 msgstr "移动点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl：旋转"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "拖动来旋转"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: 移动所有"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: 缩放"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl：旋转"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6485,12 +6536,14 @@ msgid "Radius:"
 msgstr "半径："
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "多边形->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "创建多边形和 UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->多边形"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "转换为Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6542,7 +6595,7 @@ msgstr "同步骨骼到多边形"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr "错误:无法加载资源！"
+msgstr "错误：无法加载资源！"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
@@ -6568,14 +6621,14 @@ msgstr "粘贴资源"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
-msgstr "实例:"
+msgstr "实例："
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
-msgstr "类型:"
+msgstr "类型："
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
@@ -6933,17 +6986,17 @@ msgstr "语法高亮显示"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "跳转到"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "书签"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "断点"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "跳转到"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7406,7 +7459,7 @@ msgstr "仰视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View"
-msgstr "俯视"
+msgstr "俯视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
@@ -7711,9 +7764,8 @@ msgid "New Animation"
 msgstr "新建动画"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Speed:"
-msgstr "速度（FPS）："
+msgstr "速度："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -8029,6 +8081,15 @@ msgstr "为图块地图设置图块集资源后，才能使用其图块。"
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "绘制图块"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+鼠标左键：绘制直线\n"
+"Shift+Ctrl+鼠标左键：绘制矩形"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8550,6 +8611,11 @@ msgid "Add Node to Visual Shader"
 msgstr "将节点添加到可视着色器"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "节点已移动"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "复制节点"
 
@@ -8565,6 +8631,11 @@ msgstr "删除节点"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "可视着色器输入类型已更改"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "设置统一名称"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9253,6 +9324,10 @@ msgstr ""
 "种函数定义，然后在表达式中调用。您还可以声明 varying、uniform 和常量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "（仅限片段/光照模式）标量导数函数。"
 
@@ -9311,18 +9386,6 @@ msgstr "可视着色器模式已更改"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "可执行的"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "添加原始导出项..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "添加已有补丁..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "是否从列表中删除补丁“%s”？"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9420,18 +9483,6 @@ msgid ""
 msgstr ""
 "从项目中排除文件或目录\n"
 "（以英文逗号分隔，如：*.json, *.txt, docs/*）"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "补丁"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "制作补丁"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "包文件"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9552,7 +9603,7 @@ msgstr "无法创建文件夹。"
 
 #: editor/project_manager.cpp
 msgid "There is already a folder in this path with the specified name."
-msgstr "此路径中已经有一个具有指定名称的文件夹。"
+msgstr "该路径中已存在同名文件夹。"
 
 #: editor/project_manager.cpp
 msgid "It would be a good idea to name your project."
@@ -9560,7 +9611,7 @@ msgstr "为项目命名是一个好主意。"
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "项目路径非法（被外部修改？）。"
+msgstr "项目路径无效（被外部修改？）。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9762,7 +9813,7 @@ msgid ""
 "Remove all missing projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"是否从列表中删除所有缺失的项目？\n"
+"是否从列表中移除所有缺失的项目？\n"
 "项目文件夹的内容不会被修改。"
 
 #: editor/project_manager.cpp
@@ -9808,7 +9859,7 @@ msgstr "新建项目"
 
 #: editor/project_manager.cpp
 msgid "Remove Missing"
-msgstr "删除缺失"
+msgstr "移除缺失项"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -10217,19 +10268,16 @@ msgid "Batch Rename"
 msgstr "批量重命名"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "替换： "
+msgstr "替换："
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "前缀"
+msgstr "前缀："
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "后缀"
+msgstr "后缀："
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10276,9 +10324,8 @@ msgid "Per-level Counter"
 msgstr "各级单独计数"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "如果启用，计数器将为每组子节点重置"
+msgstr "如果启用，计数器将为每组子节点重置。"
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10337,9 +10384,8 @@ msgid "Reset"
 msgstr "重置"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "正则表达式出错"
+msgstr "正则表达式出错："
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -11193,7 +11239,7 @@ msgstr "实例字典格式不正确（无效脚本@path）"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "非法的字典实例（派生类非法）"
+msgstr "实例字典无效（派生类无效）"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
@@ -11891,6 +11937,22 @@ msgid ""
 msgstr "“焦点感知”只有在当“Xr Mode”是“Oculus Mobile VR”时才有效。"
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -11922,8 +11984,14 @@ msgstr ""
 "你也可以访问docs.godotengine.org查看Android构建文档。"
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "在以下位置未生成构建APK： "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -11995,11 +12063,11 @@ msgstr "发布者显示名称无效。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
-msgstr "产品GUID非法。"
+msgstr "产品GUID无效。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
-msgstr "发布GUID非法。"
+msgstr "发布者GUID无效。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid background color."
@@ -12333,7 +12401,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
+msgstr "InterpolatedCamera已废弃，将在Godot 4.0中删除。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12485,7 +12553,7 @@ msgstr "AnimationPlayer根节点不是有效节点。"
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr "这个节点已被弃用。请使用Animation Tree代替。"
+msgstr "该节点已废弃。请使用Animation Tree代替。"
 
 #: scene/gui/color_picker.cpp
 msgid ""
@@ -12596,7 +12664,7 @@ msgstr "预览的源资源无效。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
-msgstr "非法的着色器源。"
+msgstr "着色器的源资源无效。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid comparison function for that type."
@@ -12617,6 +12685,42 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Move pivot"
+#~ msgstr "移动轴心点"
+
+#~ msgid "Move anchor"
+#~ msgstr "移动锚点"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "调整 CanvasItem 尺寸"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "多边形->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->多边形"
+
+#~ msgid "Add initial export..."
+#~ msgstr "添加原始导出项..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "添加已有补丁..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "是否从列表中删除补丁“%s”？"
+
+#~ msgid "Patches"
+#~ msgstr "补丁"
+
+#~ msgid "Make Patch"
+#~ msgstr "制作补丁"
+
+#~ msgid "Pack File"
+#~ msgstr "包文件"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "在以下位置未生成构建APK： "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "文件系统和导入面板"

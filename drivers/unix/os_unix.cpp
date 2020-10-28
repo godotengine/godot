@@ -357,7 +357,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		int status;
 		waitpid(pid, &status, 0);
 		if (r_exitcode)
-			*r_exitcode = WEXITSTATUS(status);
+			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 
 	} else {
 

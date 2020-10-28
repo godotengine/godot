@@ -31,12 +31,11 @@
    */
 
 
-#include <ft2build.h>
 
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftstream.h>
+#include <freetype/internal/ftobjs.h>
 
 #include "bdf.h"
 #include "bdferror.h"

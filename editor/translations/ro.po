@@ -13,12 +13,13 @@
 # Marincia Cătălin <catalinmarincia@gmail.com>, 2020.
 # Teodor <teo.virghi@yahoo.ro>, 2020.
 # f0roots <f0rootss@gmail.com>, 2020.
+# Gigel2 <mihalacher02@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
-"Last-Translator: Filip <filipanton@tutanota.com>\n"
+"PO-Revision-Date: 2020-10-22 21:37+0000\n"
+"Last-Translator: Gigel2 <mihalacher02@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -27,14 +28,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argument de tip invalid pentru convert(), folosiți constante TYPE_*."
+msgstr "Argument invalid pentru transformare(), folosiți constante TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
+#, fuzzy
 msgid "Expected a string of length 1 (a character)."
 msgstr "Se așteaptă un șir de lungime 1 (un caracter)."
 
@@ -42,15 +45,16 @@ msgstr "Se așteaptă un șir de lungime 1 (un caracter)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Bytes insuficienti pentru decodare bytes, sau format invalid."
+msgstr "Insuficienți bytes pentru decodare bytes, sau format invalid."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
 msgstr "Intrare invalida %i (nu a fost transmisă) in expresie"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self nu poate fi folosit deoarece instanța este nulă (nefurnizat)"
+msgstr "insuși nu poate fi folosit deoarece instanța este nulă(nu a trecut)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -909,9 +913,8 @@ msgid "Signals"
 msgstr "Semnale"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtrare Tiles"
+msgstr "Filtrare semne"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1156,14 +1159,12 @@ msgid "Gold Sponsors"
 msgstr "Sponsori Aur"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
-msgstr "Donatori de Argint"
+msgstr "Sponsori de argint"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
-msgstr "Donatori de Bronz"
+msgstr "Sponsori de bronz"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1608,6 +1609,37 @@ msgstr ""
 "Activați „Import Etc” în Setările de proiect sau dezactivați „Driver "
 "Fallback Enabled”."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platforma țintă necesită textură compresată „ETC” pentru GLES2. Activați "
+"„Import Etc” în Setările proiectului."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platforma țintă necesită textură compresata „ETC2” pentru GLES3. Activați "
+"„Import Etc 2” în Setările proiectului."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Platforma țintă necesită o textură compresată „ETC” pentru revenirea "
+"driverului la GLES2.\n"
+"Activați „Import Etc” în Setările de proiect sau dezactivați „Driver "
+"Fallback Enabled”."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1652,7 +1684,7 @@ msgstr "Nod Bară"
 #: editor/editor_feature_profile.cpp
 #, fuzzy
 msgid "FileSystem Dock"
-msgstr "Sistemul De Fișiere"
+msgstr "Locul FișierelorSystem"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2625,9 +2657,8 @@ msgid "Undo Close Tab"
 msgstr "Anulare fila Închidere"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close Other Tabs"
-msgstr "Închideți Alte File"
+msgstr "Închideți Celelalte File"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2950,8 +2981,7 @@ msgstr "Gestionare șabloane export..."
 msgid "Help"
 msgstr "Ajutor"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4360,7 +4390,6 @@ msgid "Add Node to BlendTree"
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Node Moved"
 msgstr "Mod Mutare"
@@ -5219,33 +5248,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Creează ghizi noi orizontal și vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Move pivot"
-msgstr "Mută Pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "Editează ObiectulPânză"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move anchor"
-msgstr "Acțiune de Mutare"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Editează ObiectulPânză"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Editează ObiectulPânză"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Editează ObiectulPânză"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Editează ObiectulPânză"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Editează ObiectulPânză"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Editează ObiectulPânză"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6562,12 +6608,22 @@ msgid "Move Points"
 msgstr "Deplasare punct"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Rotație"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Trage: Rotire"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Deplasați tot"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Dimensiune"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Rotație"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6608,12 +6664,14 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Poligon->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Crează Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Poligon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Deplasare poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7076,11 +7134,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7088,6 +7141,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Șterge puncte"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8213,6 +8271,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8772,6 +8836,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Mod Mutare"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Anim Clonare Chei"
 
@@ -8788,6 +8857,11 @@ msgstr "Creează Nod"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Modificări ale Actualizării"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9445,6 +9519,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9503,18 +9581,6 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Adăugare export inițial..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9605,18 +9671,6 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Împachetează Fișierul"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12094,6 +12148,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12118,7 +12188,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12754,6 +12830,30 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Move pivot"
+#~ msgstr "Mută Pivot"
+
+#, fuzzy
+#~ msgid "Move anchor"
+#~ msgstr "Acțiune de Mutare"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Editează ObiectulPânză"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Poligon->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Poligon"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Adăugare export inițial..."
+
+#~ msgid "Pack File"
+#~ msgstr "Împachetează Fișierul"
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Sistemul De Fișiere și încărcare Bare"

@@ -1612,6 +1612,36 @@ msgstr ""
 "Chọn kích hoạt 'Nhập ETC' trong Cài đặt Dự án, hoặc chọn tắt 'Kích hoạt "
 "Trình điều khiển Dự phòng'."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Nền tảng yêu cầu dùng kiểu nén 'ETC' cho GLES2. Bật 'Nhập ETC' trong Cài đặt "
+"Dự án."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Nền tảng yêu cầu dùng kiểu nén 'ETC2' cho GLES3. Bật 'Nhập ETC2' trong Cài "
+"đặt Dự án."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Nền tảng yêu cầu kiểu nén 'ETC' cho trình điều khiển dự phòng GLES2.\n"
+"Chọn kích hoạt 'Nhập ETC' trong Cài đặt Dự án, hoặc chọn tắt 'Kích hoạt "
+"Trình điều khiển Dự phòng'."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -2933,8 +2963,7 @@ msgstr "Quản lý Các Mẫu Xuất Bản ..."
 msgid "Help"
 msgstr "Trợ giúp"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4363,7 +4392,6 @@ msgid "Add Node to BlendTree"
 msgstr "Thêm nút vào cây Blend"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Đã di chuyển Nút"
 
@@ -5205,27 +5233,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Di chuyển trục"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Xoay CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Di chuyển neo"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Xoay CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Đổi kích thước CanvasItem"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Di chuyển CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Tỉ lệ CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Tỉ lệ CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Di chuyển CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Di chuyển CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6504,11 +6555,20 @@ msgid "Move Points"
 msgstr "Di chuyển đến..."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr ""
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Kéo: Xoay"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Shift+Command: Scale"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -6550,12 +6610,13 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
+msgid "Copy Polygon to UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr ""
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Xóa Animation"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7015,11 +7076,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -7027,6 +7083,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Tạo các điểm."
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8143,6 +8204,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8691,6 +8758,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Thêm nút vào Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Đã di chuyển Nút"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Nhân bản các nút"
 
@@ -8706,6 +8778,11 @@ msgstr "Xoá các nút"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Đối số đã thay đổi"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9374,6 +9451,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9431,19 +9512,6 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Thêm Input"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9540,19 +9608,6 @@ msgid ""
 msgstr ""
 "Bộ lọc loại trừ các tệp tin/thư mục khỏi từ dự án\n"
 "(phân tách bằng dấu phẩy, ví dụ: *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr " Tệp tin"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12074,6 +12129,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12106,7 +12177,13 @@ msgstr ""
 "Hoặc truy cập 'docs.godotengine.org' xem tài liệu xây dựng Android."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12749,6 +12826,23 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Không thể chỉnh sửa hằng số."
+
+#~ msgid "Move pivot"
+#~ msgstr "Di chuyển trục"
+
+#~ msgid "Move anchor"
+#~ msgstr "Di chuyển neo"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Đổi kích thước CanvasItem"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Thêm Input"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr " Tệp tin"
 
 #~ msgid ""
 #~ "When exporting or deploying, the resulting executable will attempt to "

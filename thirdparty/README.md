@@ -120,7 +120,7 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.1 (2019)
+- Version: 2.10.4 (2020)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
