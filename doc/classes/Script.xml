@@ -32,15 +32,6 @@
 				Returns the script's base type.
 			</description>
 		</method>
-		<method name="get_property_default_value">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="property" type="StringName">
-			</argument>
-			<description>
-				Returns the default value of the specified property.
-			</description>
-		</method>
 		<method name="get_script_constant_map">
 			<return type="Dictionary">
 			</return>
