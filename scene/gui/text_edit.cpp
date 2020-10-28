@@ -1367,10 +1367,6 @@ void TextEdit::_notification(int p_what) {
 				int scrollw = get_theme_constant("completion_scroll_width");
 				Color scrollc = get_theme_color("completion_scroll_color");
 
-#ifdef TOOLS_ENABLED
-				scrollw *= EDSCALE;
-#endif
-
 				const int completion_options_size = completion_options.size();
 				int lines = MIN(completion_options_size, maxlines);
 				int w = 0;
