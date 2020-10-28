@@ -216,6 +216,8 @@ public:
 
 	void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
 
+	void canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
+
 	RID canvas_light_create();
 	void canvas_light_attach_to_canvas(RID p_light, RID p_canvas);
 	void canvas_light_set_enabled(RID p_light, bool p_enabled);

@@ -246,7 +246,7 @@ void RasterizerEffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_fr
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst) {
+void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst, bool p_alpha_to_one) {
 	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 	if (p_flip_y) {
 		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
@@ -258,6 +258,10 @@ void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_textu
 
 	if (p_all_source) {
 		copy.push_constant.flags |= COPY_FLAG_ALL_SOURCE;
+	}
+
+	if (p_alpha_to_one) {
+		copy.push_constant.flags |= COPY_FLAG_ALPHA_TO_ONE;
 	}
 
 	copy.push_constant.section[0] = 0;
@@ -354,6 +358,31 @@ void RasterizerEffectsRD::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst) {
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_region.size.width;
+	copy.push_constant.section[3] = p_region.size.height;
+	copy.push_constant.target[0] = p_region.position.x;
+	copy.push_constant.target[1] = p_region.position.y;
+	copy.push_constant.set_color[0] = p_color.r;
+	copy.push_constant.set_color[1] = p_color.g;
+	copy.push_constant.set_color[2] = p_color.b;
+	copy.push_constant.set_color[3] = p_color.a;
+
+	int32_t x_groups = (p_region.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_region.size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8bit_dst ? COPY_MODE_SET_COLOR_8BIT : COPY_MODE_SET_COLOR]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
+}
+
 void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
 	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 
@@ -369,7 +398,7 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, 
 	RD::DrawListID compute_list = RD::get_singleton()->compute_list_begin();
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8bit_dst ? COPY_MODE_GAUSSIAN_COPY_8BIT : COPY_MODE_GAUSSIAN_COPY]);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 3);
 
 	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL;
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
@@ -380,7 +409,7 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, 
 
 	//VERTICAL
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_back_texture), 0);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 3);
 
 	copy.push_constant.flags = base_flags;
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
@@ -1346,6 +1375,8 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n#define DST_IMAGE_8BIT\n");
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY_DEPTH\n");
+		copy_modes.push_back("\n#define MODE_SET_COLOR\n");
+		copy_modes.push_back("\n#define MODE_SET_COLOR\n#define DST_IMAGE_8BIT\n");
 		copy_modes.push_back("\n#define MODE_MIPMAP\n");
 		copy_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
 		copy_modes.push_back("\n#define MODE_CUBEMAP_TO_PANORAMA\n");

@@ -989,6 +989,7 @@ private:
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
 		RID backbuffer; //used for effects
+		RID backbuffer_fb;
 		RID backbuffer_mipmap0;
 
 		struct BackbufferMipmap {
@@ -1916,7 +1917,9 @@ public:
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	bool render_target_was_used(RID p_render_target);
 	void render_target_set_as_unused(RID p_render_target);
-	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region);
+	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
+	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
+	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
 
 	RID render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader);
 
@@ -1930,6 +1933,7 @@ public:
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
 	RID render_target_get_rd_backbuffer(RID p_render_target);
+	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
 
 	RID render_target_get_framebuffer_uniform_set(RID p_render_target);
 	RID render_target_get_backbuffer_uniform_set(RID p_render_target);

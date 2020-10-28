@@ -642,6 +642,8 @@ public:
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
+	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
+
 	FUNC0R(RID, canvas_light_create)
 	FUNC2(canvas_light_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_set_enabled, RID, bool)

@@ -1184,6 +1184,14 @@ public:
 
 	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable) = 0;
 
+	enum CanvasGroupMode {
+		CANVAS_GROUP_MODE_DISABLED,
+		CANVAS_GROUP_MODE_OPAQUE,
+		CANVAS_GROUP_MODE_TRANSPARENT,
+	};
+
+	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
+
 	virtual RID canvas_light_create() = 0;
 	virtual void canvas_light_attach_to_canvas(RID p_light, RID p_canvas) = 0;
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled) = 0;

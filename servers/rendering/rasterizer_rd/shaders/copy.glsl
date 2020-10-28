@@ -15,6 +15,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_FORCE_LUMINANCE (1 << 6)
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
 #define FLAG_HIGH_QUALITY_GLOW (1 << 8)
+#define FLAG_ALPHA_TO_ONE (1 << 9)
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	ivec4 section;
@@ -35,6 +36,8 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float camera_z_far;
 	float camera_z_near;
 	uint pad2[2];
+
+	vec4 set_color;
 }
 params;
 
@@ -42,7 +45,7 @@ params;
 layout(set = 0, binding = 0) uniform samplerCubeArray source_color;
 #elif defined(MODE_CUBEMAP_TO_PANORAMA)
 layout(set = 0, binding = 0) uniform samplerCube source_color;
-#else
+#elif !defined(MODE_SET_COLOR)
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 #endif
 
@@ -203,24 +206,23 @@ void main() {
 		}
 		color = textureLod(source_color, uv, 0.0);
 
-		if (bool(params.flags & FLAG_FORCE_LUMINANCE)) {
-			color.rgb = vec3(max(max(color.r, color.g), color.b));
-		}
-		imageStore(dest_buffer, pos + params.target, color);
-
 	} else {
 		color = texelFetch(source_color, pos + params.section.xy, 0);
-
-		if (bool(params.flags & FLAG_FORCE_LUMINANCE)) {
-			color.rgb = vec3(max(max(color.r, color.g), color.b));
-		}
 
 		if (bool(params.flags & FLAG_FLIP_Y)) {
 			pos.y = params.section.w - pos.y - 1;
 		}
-
-		imageStore(dest_buffer, pos + params.target, color);
 	}
+
+	if (bool(params.flags & FLAG_FORCE_LUMINANCE)) {
+		color.rgb = vec3(max(max(color.r, color.g), color.b));
+	}
+
+	if (bool(params.flags & FLAG_ALPHA_TO_ONE)) {
+		color.a = 1.0;
+	}
+
+	imageStore(dest_buffer, pos + params.target, color);
 
 #endif
 
@@ -269,5 +271,9 @@ void main() {
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
 	imageStore(dest_buffer, pos + params.target, color);
+#endif
+
+#ifdef MODE_SET_COLOR
+	imageStore(dest_buffer, pos + params.target, params.set_color);
 #endif
 }

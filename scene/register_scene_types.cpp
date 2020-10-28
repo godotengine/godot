@@ -38,6 +38,7 @@
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/2d/back_buffer_copy.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/2d/canvas_group.h"
 #include "scene/2d/canvas_modulate.h"
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/collision_shape_2d.h"
@@ -602,6 +603,7 @@ void register_scene_types() {
 	/* REGISTER 2D */
 
 	ClassDB::register_class<Node2D>();
+	ClassDB::register_class<CanvasGroup>();
 	ClassDB::register_class<CPUParticles2D>();
 	ClassDB::register_class<GPUParticles2D>();
 	ClassDB::register_class<Sprite2D>();
