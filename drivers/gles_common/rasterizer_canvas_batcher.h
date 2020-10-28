@@ -536,7 +536,7 @@ protected:
 
 private:
 	// flush once full or end of joined item
-	void flush_render_batches(RasterizerCanvas::Item *p_first_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material);
+	void flush_render_batches(RasterizerCanvas::Item *p_first_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, uint32_t p_sequence_batch_type_flags);
 
 	// a single joined item can contain multiple itemrefs, and thus create lots of batches
 	bool prefill_joined_item(FillState &r_fill_state, int &r_command_start, RasterizerCanvas::Item *p_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material);
@@ -2190,7 +2190,7 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 	return false;
 }
 
-PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material) {
+PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, uint32_t p_sequence_batch_type_flags) {
 
 	// some heuristic to decide whether to use colored verts.
 	// feel free to tweak this.
@@ -2198,34 +2198,47 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 	// .. however probably not necessary
 	bdata.use_colored_vertices = false;
 
-	// switch from regular to colored?
-	if (bdata.fvf == RasterizerStorageCommon::FVF_REGULAR) {
-		// only check whether to convert if there are quads (prevent divide by zero)
-		// and we haven't decided to prevent color baking (due to e.g. MODULATE
-		// being used in a shader)
-		if (bdata.total_quads && !(bdata.joined_item_batch_flags & RasterizerStorageCommon::PREVENT_COLOR_BAKING)) {
-			// minus 1 to prevent single primitives (ratio 1.0) always being converted to colored..
-			// in that case it is slightly cheaper to just have the color as part of the batch
-			float ratio = (float)(bdata.total_color_changes - 1) / (float)bdata.total_quads;
+	RasterizerStorageCommon::FVF backup_fvf = bdata.fvf;
 
-			// use bigger than or equal so that 0.0 threshold can force always using colored verts
-			if (ratio >= bdata.settings_colored_vertex_format_threshold) {
+	// the batch type in this flush can override the fvf from the joined item.
+	// The joined item uses the material to determine fvf, assuming a rect...
+	// however with custom drawing, lines or polys may be drawn.
+	// lines contain no color (this is stored in the batch), and polys contain vertex and color only.
+	if (p_sequence_batch_type_flags & (RasterizerStorageCommon::BTF_LINE | RasterizerStorageCommon::BTF_LINE_AA)) {
+		// do nothing, use the default regular FVF
+		bdata.fvf = RasterizerStorageCommon::FVF_REGULAR;
+	} else {
+		// switch from regular to colored?
+		if (bdata.fvf == RasterizerStorageCommon::FVF_REGULAR) {
+			// only check whether to convert if there are quads (prevent divide by zero)
+			// and we haven't decided to prevent color baking (due to e.g. MODULATE
+			// being used in a shader)
+			if (bdata.total_quads && !(bdata.joined_item_batch_flags & RasterizerStorageCommon::PREVENT_COLOR_BAKING)) {
+				// minus 1 to prevent single primitives (ratio 1.0) always being converted to colored..
+				// in that case it is slightly cheaper to just have the color as part of the batch
+				float ratio = (float)(bdata.total_color_changes - 1) / (float)bdata.total_quads;
+
+				// use bigger than or equal so that 0.0 threshold can force always using colored verts
+				if (ratio >= bdata.settings_colored_vertex_format_threshold) {
+					bdata.use_colored_vertices = true;
+					bdata.fvf = RasterizerStorageCommon::FVF_COLOR;
+				}
+			}
+
+			// if we used vertex colors
+			if (bdata.vertex_colors.size()) {
 				bdata.use_colored_vertices = true;
 				bdata.fvf = RasterizerStorageCommon::FVF_COLOR;
 			}
+
+			// needs light angles?
+			if (bdata.use_light_angles) {
+				bdata.fvf = RasterizerStorageCommon::FVF_LIGHT_ANGLE;
+			}
 		}
 
-		// if we used vertex colors
-		if (bdata.vertex_colors.size()) {
-			bdata.use_colored_vertices = true;
-			bdata.fvf = RasterizerStorageCommon::FVF_COLOR;
-		}
-
-		// needs light angles?
-		if (bdata.use_light_angles) {
-			bdata.fvf = RasterizerStorageCommon::FVF_LIGHT_ANGLE;
-		}
-	}
+		backup_fvf = bdata.fvf;
+	} // if everything else except lines
 
 	// translate if required to larger FVFs
 	switch (bdata.fvf) {
@@ -2264,6 +2277,9 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 #endif
 
 	get_this()->render_batches(commands, p_current_clip, r_reclip, p_material);
+
+	// if we overrode the fvf for lines, set it back to the joined item fvf
+	bdata.fvf = backup_fvf;
 }
 
 PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, RasterizerCanvas::Item *p_current_clip, bool &r_reclip, typename T_STORAGE::Material *p_material, bool p_lit) {
@@ -2332,7 +2348,7 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 
 			if (bFull) {
 				// always pass first item (commands for default are always first item)
-				flush_render_batches(first_item, p_current_clip, r_reclip, p_material);
+				flush_render_batches(first_item, p_current_clip, r_reclip, p_material, fill_state.sequence_batch_type_flags);
 
 				// zero all the batch data ready for a new run
 				bdata.reset_flush();
@@ -2344,7 +2360,7 @@ PREAMBLE(void)::render_joined_item_commands(const BItemJoined &p_bij, Rasterizer
 	}
 
 	// flush if any left
-	flush_render_batches(first_item, p_current_clip, r_reclip, p_material);
+	flush_render_batches(first_item, p_current_clip, r_reclip, p_material, fill_state.sequence_batch_type_flags);
 
 	// zero all the batch data ready for a new run
 	bdata.reset_flush();
