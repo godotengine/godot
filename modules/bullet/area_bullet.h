@@ -68,13 +68,6 @@ public:
 		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
 				object(p_object),
 				state(p_state) {}
-		OverlappingObjectData(const OverlappingObjectData &other) {
-			operator=(other);
-		}
-		void operator=(const OverlappingObjectData &other) {
-			object = other.object;
-			state = other.state;
-		}
 	};
 
 private:
@@ -105,7 +98,7 @@ public:
 	~AreaBullet();
 
 	_FORCE_INLINE_ btGhostObject *get_bt_ghost() const { return btGhost; }
-	int find_overlapping_object(CollisionObjectBullet *p_colObj);
+	int find_overlapping_object(CollisionObjectBullet *p_colObj, uint32_t p_search_from);
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
