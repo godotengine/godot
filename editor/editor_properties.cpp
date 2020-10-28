@@ -2975,6 +2975,7 @@ void EditorPropertyResource::update_property() {
 	if (res == RES()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("[empty]"));
+		assign->set_custom_minimum_size(Size2(1, 1));
 	} else {
 		assign->set_icon(EditorNode::get_singleton()->get_object_icon(res.operator->(), "Object"));
 
