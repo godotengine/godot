@@ -6838,7 +6838,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					builtins = p_functions[name];
 				}
 
-				if (p_functions.has("global")) { // Adds global variables: 'TIME'
+				if (p_functions.has("global")) { // Adds global variables eg. 'TIME'
 					for (Map<StringName, BuiltInInfo>::Element *E = p_functions["global"].built_ins.front(); E; E = E->next()) {
 						builtins.built_ins.insert(E->key(), E->value());
 					}
