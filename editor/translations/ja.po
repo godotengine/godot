@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-22 03:23+0000\n"
+"PO-Revision-Date: 2020-10-19 21:08+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -927,9 +927,8 @@ msgid "Signals"
 msgstr "シグナル"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "タイルを絞り込む"
+msgstr "シグナルを絞り込む"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1619,6 +1618,37 @@ msgstr ""
 "プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To Gles 2' をオフ"
 "にしてください。"
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
+"クト設定より 'Import Etc' をオンにしてください。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"対象プラットフォームではGLES3のために'ETC2'テクスチャ圧縮が必要です。プロジェ"
+"クト設定より 'Import Etc 2' をオンにしてください。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"対象プラットフォームではGLES2へフォールバックするために'ETC'テクスチャ圧縮が"
+"必要です。\n"
+"プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To Gles 2' をオフ"
+"にしてください。"
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1661,9 +1691,8 @@ msgid "Node Dock"
 msgstr "ノードドック"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "ファイルシステム"
+msgstr "ファイルシステム ドック"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2817,14 +2846,18 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"このオプションを有効にすると、ワンクリック・デプロイをするときに実行ファイル"
+"がこのコンピュータの IP に接続しようとするので、実行中のプロジェクトをデバッ"
+"グすることができます。\n"
+"このオプションは、リモートデバッグに使用することを意図しています (通常はモバ"
+"イルデバイスにおいて)。\n"
+"ローカルで GDScript デバッガを使用するためには有効にする必要はありません。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
 msgstr "ネットワークファイルシステムでスモールデプロイ"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2833,46 +2866,42 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"このオプションを有効にすると、エクスポートまたはデプロイ時に最小限の実行可能"
-"ファイルが生成されます。\n"
-"ファイルシステムは、ネットワーク上のエディタによってプロジェクトから提供され"
-"ます。\n"
-"AndroidではUSBケーブルの利用でより高速になります。このオプションは大きなゲー"
-"ムのテストを高速化できます。"
+"このオプションを有効にすると、Androidへのワンクリック・デプロイ時にプロジェク"
+"ト用データ無しの実行可能ファイルのみをエクスポートします。\n"
+"ファイルシステムは、エディタによってプロジェクトからネットワークを通じて供給"
+"されます。\n"
+"Androidでは、デプロイはUSBケーブルの利用でさらに高速になります。このオプショ"
+"ンは大きなアセットのあるプロジェクトでテストを高速化できます。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "コリジョン形状の表示"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"このオプションを有効にすると、コリジョン形状とレイキャストノードが、ゲーム実"
-"行中にも表示されるようになります。"
+"このオプションを有効にすると、コリジョン形状とレイキャストノード (2Dおよび"
+"3D) が、ゲーム実行中にも表示されるようになります。"
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "ナビゲーションの表示"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"このオプションを有効にすると、ナビゲーションメッシュが、ゲーム実行中にも表示"
-"されるようになります。"
+"このオプションを有効にすると、ナビゲーションメッシュおよびポリゴンが、ゲーム"
+"実行中にも表示されるようになります。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
 msgstr "シーンの変更を同期"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
@@ -2880,25 +2909,25 @@ msgid ""
 "filesystem option is enabled."
 msgstr ""
 "このオプションを有効にすると、エディタからシーンに加えられた変更が、実行中の"
-"ゲームに反映されるようになります。\n"
-"リモート実行の場合、ネットワークファイルシステムを使うとより効果的です。"
+"プロジェクトに反映されるようになります。\n"
+"リモートのデバイス上で使用する場合、ネットワークファイルシステムのオプション"
+"も有効であればより効率的になります。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
 msgstr "スクリプトの変更を同期"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"このオプションを有効にすると、保存したスクリプトが、実行中のゲームに反映され"
-"るようになります。\n"
-"リモート実行の場合、ネットワークファイルシステムを使うとより効果的です。"
+"このオプションを有効にすると、保存したスクリプトが、実行中のプロジェクトで再"
+"読み込みされます。\n"
+"リモートのデバイス上で使用する場合、ネットワークファイルシステムのオプション"
+"も有効であればより効率的になります。"
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
@@ -2952,8 +2981,7 @@ msgstr "エクスポートテンプレートの管理..."
 msgid "Help"
 msgstr "ヘルプ"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3375,14 +3403,14 @@ msgid "Add Key/Value Pair"
 msgstr "キー/値のペアを追加"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
 "as runnable."
 msgstr ""
 "このプラットフォームで実行可能なエクスポートプリセットがありません。\n"
-"エクスポートメニューに実行可能なプリセットを追加してください。"
+"エクスポートメニューに実行可能なプリセットを追加するか、既存のプリセットを実"
+"行可能にしてください。"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -4375,7 +4403,6 @@ msgid "Add Node to BlendTree"
 msgstr "BlendTreeにノードを追加"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "ノードを移動"
 
@@ -5204,27 +5231,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "水平垂直ガイドを作成"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "ピボットを移動"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "CanvasItemを回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "アンカーを移動"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "CanvasItemを回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "CanvasItemをリサイズ"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "CanvasItemを移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "キャンバスアイテムの拡大/縮小"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "キャンバスアイテムの拡大/縮小"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "CanvasItemを移動"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "CanvasItemを移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6502,12 +6552,22 @@ msgid "Move Points"
 msgstr "ポイントを移動"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: 回転"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "ドラッグ: 回転"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: すべて移動"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: スケール"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: 回転"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6550,12 +6610,14 @@ msgid "Radius:"
 msgstr "半径:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "ポリゴン->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "ポリゴンとUVを生成"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->ポリゴン"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Polygon2Dに変換する"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7005,17 +7067,17 @@ msgstr "シンタックスハイライト"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "参照"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "ブックマーク"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "ブレークポイント"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "参照"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7783,9 +7845,8 @@ msgid "New Animation"
 msgstr "新規アニメーション"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Speed:"
-msgstr "速度(FPS):"
+msgstr "速度:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -8103,6 +8164,15 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "タイルをペイント"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+左マウスボタン: 直線に描く\n"
+"Shift+Ctrl+左マウスボタン: 長方形ペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8630,6 +8700,11 @@ msgid "Add Node to Visual Shader"
 msgstr "ビジュアルシェーダにノードを追加"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "ノードを移動"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "ノードを複製"
 
@@ -8645,6 +8720,11 @@ msgstr "ノードを削除"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "ビジュアルシェーダの入力タイプが変更されました"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "統一名を設定"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9350,6 +9430,10 @@ msgstr ""
 "数、uniform変数、定数を宣言することができます。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(フラグメント/ライトモードのみ)スカラー導関数。"
 
@@ -9418,18 +9502,6 @@ msgstr "ビジュアルシェーダモードが変更されました"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "実行可能"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "初回エクスポートを追加…"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "前回のパッチを追加…"
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "パッチ '%s' をリストから削除しますか?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9532,18 +9604,6 @@ msgid ""
 msgstr ""
 "プロジェクトからファイル/フォルダを除外するフィルタ\n"
 "(コンマで区切る、 例: *.json,*.txt,docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "パッチ"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "パッチ生成"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "パックファイル"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -10345,19 +10405,16 @@ msgid "Batch Rename"
 msgstr "名前の一括変更"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "置換: "
+msgstr "置換:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "プレフィックス"
+msgstr "接頭辞:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "サフィックス"
+msgstr "接尾辞:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10404,9 +10461,8 @@ msgid "Per-level Counter"
 msgstr "レベルごとのカウンター"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "設定すると、子ノードのグループごとにカウンタが再起動します"
+msgstr "設定すると、子ノードのグループごとにカウンタが再起動します。"
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10465,9 +10521,8 @@ msgid "Reset"
 msgstr "リセット"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "正規表現エラー"
+msgstr "正規表現エラー:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -11114,7 +11169,7 @@ msgstr "CSVファイルにリストをエクスポート"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "リソースのパス(ResourcePath)"
+msgstr "リソース パス"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -12060,6 +12115,22 @@ msgstr ""
 "なります。"
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12094,8 +12165,14 @@ msgstr ""
 "い。"
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "ビルドAPKは生成されていません: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12548,7 +12625,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
+msgstr "InterpolatedCamera は廃止予定であり、Godot 4.0で除去されます。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12794,9 +12871,9 @@ msgid ""
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer は子コントロールひとつのみで動作するようになっています。\n"
-"コンテナ (VBox, HBoxなど) を子とするか、コントロールをカスタム最小サイズを手"
-"動設定して使用してください。"
+"ScrollContainer はひとつの子Controlと合わせて動作するようになっています。\n"
+"コンテナ (VBox, HBoxなど) を子とするか、Controlをカスタム最小サイズを手動設定"
+"して使用してください。"
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -12853,6 +12930,42 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Move pivot"
+#~ msgstr "ピボットを移動"
+
+#~ msgid "Move anchor"
+#~ msgstr "アンカーを移動"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "CanvasItemをリサイズ"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "ポリゴン->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->ポリゴン"
+
+#~ msgid "Add initial export..."
+#~ msgstr "初回エクスポートを追加…"
+
+#~ msgid "Add previous patches..."
+#~ msgstr "前回のパッチを追加…"
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "パッチ '%s' をリストから削除しますか?"
+
+#~ msgid "Patches"
+#~ msgstr "パッチ"
+
+#~ msgid "Make Patch"
+#~ msgstr "パッチ生成"
+
+#~ msgid "Pack File"
+#~ msgstr "パックファイル"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "ビルドAPKは生成されていません: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "ファイルシステムとインポートドック"

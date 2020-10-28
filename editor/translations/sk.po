@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-08 11:40+0000\n"
+"PO-Revision-Date: 2020-10-03 15:29+0000\n"
 "Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
@@ -898,9 +898,8 @@ msgid "Signals"
 msgstr "Signály"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filter:"
+msgstr "Signály Filtru"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1590,6 +1589,37 @@ msgstr ""
 "Povoľte 'Import Etc' v Nastaveniach Projektu, alebo vipnite 'Driver Fallback "
 "Enabled'."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Target platforma potrebuje 'ETC' kompresor textúr pre GLES2. Povoliť 'Import "
+"Etc' v Nastaveniach Projektu."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Target platforma potrebuje 'ETC2' kompresor textúr pre GLES3. Povoliť'Import "
+"Etc 2' v Nastaveniach Projektu."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Target platform potrebuje'ETC' kompresor textúr pre driver fallback do "
+"GLES2.\n"
+"Povoľte 'Import Etc' v Nastaveniach Projektu, alebo vipnite 'Driver Fallback "
+"Enabled'."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1631,9 +1661,8 @@ msgid "Node Dock"
 msgstr "Node Dock"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "FileSystém"
+msgstr "FileSystém Dock"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -2785,14 +2814,18 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"Keď je povolená táto možnosť, použitím one-click deploy sa spraví pokus o "
+"pripojenie k IP tohoto počítača takže spustený projekt sa bude dať "
+"debuggovať.\n"
+"Táto možnosť je určená k debughovaniu na diaľku (typicky pre mobilné "
+"zariadenia).\n"
+"Nemusíte ju povoľovať aby ste použili GDScript debugger lokálne."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
-msgstr "Malý Deploy z Network FS"
+msgstr "Malý Deploy z Network Filesystémom"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2801,63 +2834,57 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"Keď bude povolená táto možnosť, export alebo deploy vyprodukujú menej \n"
-"súboru executable.\n"
+"Keď povolíte túto možnosť, použitím one-click deploy pre Android exportuje "
+"spustiteľný bez dát projektu.\n"
 "Filesystém bude z projektu poskytovaný editorom v sieti.\n"
-"Na Androide, predeploy budete potrebovať USB kábel pre rýchlejší výkon. Táto "
-"možnosť zrýchľuje proces testovania."
+"Na Androide, deployovanie bude potrebovať USB kábel pre rýchlejší výkon. "
+"Táto možnosť zrýchľuje proces testovania."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "Viditeľné Tvary Kolízie"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"Tvary Kolízie a raycast node-y (pre 2D a 3D) budú viditeľné po spustení hry "
-"ak budete mať zapnutú túto možnosť."
+"Keď je povolená táto možnosť,\n"
+"Tvary Kolízie a raycast node-y (2D a 3D) budú viditeľné po spustení projektu."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "Viditeľná Navigácia"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"Navigačné mesh-e a polygony budú viditeľné po spustení hry ak budete mať "
-"zapnutú túto možnosť."
+"Keď bude povolená táto možnosť,\n"
+"Navigačné mesh-e a polygony budú viditeľné po spustení projektu."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
-msgstr "Zmeny Synchronizácie Scény"
+msgstr "Zosynchronizovať Zmeny Scény"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Keď zapnete túto možnosť, akékoľvek zmeny v scéne v editore budú náhradné so "
-"spustenou hrou.\n"
-"Keď je použitá na diaľku v zariadení, je to viac efektívne z network "
-"filesystémom."
+"Keď zapnete túto možnosť, akékoľvek zmeny do scény v editore budú náhradené "
+"so spusteným projektom.\n"
+"Keď je použitá na diaľku v zariadení, je to viac efektívne keď je zapnutá "
+"možnosť network filesytem."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "Zmeny Synchronizácie Scriptu"
+msgstr "Zosynchronizovať Zmeny Scriptov"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
@@ -2865,9 +2892,9 @@ msgid ""
 "filesystem option is enabled."
 msgstr ""
 "Keď je zapnutá táto Možnosť, akýkoľvek uložený script bude znovu načítaný v "
-"spustenej hre.\n"
-"Keď je použitá na diaľku zo zariadenia, toto je viac efektívnejšie z network "
-"filesystémom."
+"spustenom projekte.\n"
+"Keď je použitá na diaľku zo zariadenia, tak je to viac efektívnejšie keď je "
+"povolený network filesystem."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
@@ -2921,8 +2948,7 @@ msgstr "Spravovať Export Templates..."
 msgid "Help"
 msgstr "Pomoc"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3342,14 +3368,14 @@ msgid "Add Key/Value Pair"
 msgstr "Pridať Kľúč/Hodnota \"Pair\""
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
 "as runnable."
 msgstr ""
 "Pre túto platformu sa nenašiel žiadny spustiteľný \"export preset\" .\n"
-"Prosím pridajte spustiteľný \"preset\" v export menu."
+"Prosím pridajte spustiteľný \"preset\" v export menu alebo definujte "
+"existujúci \"preset\" ako spustiteľný."
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -4345,7 +4371,6 @@ msgid "Add Node to BlendTree"
 msgstr "Pridať Node do BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Node sa pohol"
 
@@ -5172,27 +5197,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Vytvoriť Horizontálne a Vertikálne Návody"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Presunúť pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Otočiť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Presunúť kovadlinu"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Otočiť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Zmeniť Veľkosť CanvasItem-u"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Presunúť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Veľkosť CanvasItem-u"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Veľkosť CanvasItem-u"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Presunúť CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Presunúť CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5670,6 +5718,8 @@ msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Zoberte a položte + Shift : pridajte node ako súrodenca\n"
+"Zoberte a položte + Alt : Zmente typ node-u"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
@@ -6468,11 +6518,20 @@ msgid "Move Points"
 msgstr "Všetky vybrané"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr ""
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Potiahnutím: Otáčenie"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Shift+Command: Scale"
+msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -6514,12 +6573,13 @@ msgid "Radius:"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
+msgid "Copy Polygon to UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr ""
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Všetky vybrané"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6975,11 +7035,6 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
 
@@ -6987,6 +7042,11 @@ msgstr ""
 #, fuzzy
 msgid "Breakpoints"
 msgstr "Všetky vybrané"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8100,6 +8160,12 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
@@ -8662,6 +8728,11 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node sa pohol"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Duplikovať výber"
 
@@ -8679,6 +8750,11 @@ msgstr "Všetky vybrané"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Parameter sa Zmenil"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9345,6 +9421,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9403,19 +9483,6 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Runnable"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Signály:"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -9504,19 +9571,6 @@ msgid ""
 "Filters to exclude files/folders from project\n"
 "(comma-separated, e.g: *.json, *.txt, docs/*)"
 msgstr ""
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr ""
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr "Súbor:"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -11989,6 +12043,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12013,7 +12083,13 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
 msgstr ""
 
 #: platform/iphone/export/export.cpp
@@ -12664,6 +12740,23 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Move pivot"
+#~ msgstr "Presunúť pivot"
+
+#~ msgid "Move anchor"
+#~ msgstr "Presunúť kovadlinu"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Zmeniť Veľkosť CanvasItem-u"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Signály:"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr "Súbor:"
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Systém súborov a Import Dock-y"

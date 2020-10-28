@@ -31,8 +31,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-12 08:00+0000\n"
-"Last-Translator: MonsterGila <fikrirazor@outlook.co.id>\n"
+"PO-Revision-Date: 2020-10-03 15:29+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -40,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -922,9 +922,8 @@ msgid "Signals"
 msgstr "Sinyal"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filter tile"
+msgstr "Filter sinyal"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1169,7 +1168,6 @@ msgid "Gold Sponsors"
 msgstr "Sponsor Emas"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
 msgstr "Donatur Perak"
 
@@ -1496,7 +1494,7 @@ msgstr "Mengatur kembali Autoload-autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Tidak dapat menambahkan autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1617,6 +1615,37 @@ msgstr ""
 "Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
 "Enabled'."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platform target membutuhkan kompresi tekstur 'ETC' untuk GLES2. Aktifkan "
+"'Impor Lainnya' di Pengaturan Proyek."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platform target membutuhkan kompresi tekstur 'ETC2' untuk GLES3. Aktifkan "
+"'Impor Lainnya 2' di Pengaturan Proyek."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Platform target membutuhkan kompressi tekstur 'ETC' untuk mengembalikan "
+"driver ke GLES2. \n"
+"Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
+"Enabled'."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1658,7 +1687,6 @@ msgid "Node Dock"
 msgstr "Dok Node"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
 msgstr "Berkas Sistem"
 
@@ -2450,9 +2478,8 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Tidak bisa memuat ulang skena yang belum pernah disimpan."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Simpan Skena"
+msgstr "Muat ulang scene yang sudah disimpan"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2815,6 +2842,13 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"Saat pilihan ini diaktifkan, menggunakan 'one-click deploy' akan membuat "
+"file yang bisa dieksekusi mencoba untuk terhubung ke IP komputer ini, "
+"sehingga proyek yang sedang berajalan dapat didebug.\n"
+"Pilihan ini dimaksudkan untuk digunakan sebagai cara men-debug jarak jauh "
+"(biasanya menggunakan perangkat  selular).\n"
+"Kamu tidak perlu mengaktifkan ini jika menggunakan GDScript debugger secara "
+"lokal."
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2951,8 +2985,7 @@ msgstr "Kelola Templat Ekspor…"
 msgid "Help"
 msgstr "Bantuan"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -4377,7 +4410,6 @@ msgid "Add Node to BlendTree"
 msgstr "Tambah Node ke BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Node Dipindahkan"
 
@@ -5203,27 +5235,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Buat Panduan Horisontal dan Vertikal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Pindahkan poros"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Putar CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Pindahkan jangkar"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Putar CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Ubah Ukuran CanvasItem"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Pindahkan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Skalakan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Skalakan CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Pindahkan CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Pindahkan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6507,12 +6562,22 @@ msgid "Move Points"
 msgstr "Geser Titik"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Putar"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Geser: Putar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Geser Semua"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Skala"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Putar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6555,12 +6620,14 @@ msgid "Radius:"
 msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Poligon->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Buat Poligon & UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Poligon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Konversikan menjadi Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7010,17 +7077,17 @@ msgstr "Penyorot Sintaks"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Pergi Ke"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Bilah Marka"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Breakpoint"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Pergi Ke"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8105,6 +8172,15 @@ msgid "Paint Tile"
 msgstr "Cat Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift + Klik Kiri: Menggambar Garis\n"
+"Shift + Ctrl + Klik Kiri: Cat Persegi Panjang"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
@@ -8631,6 +8707,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Tambah Node ke Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node Dipindahkan"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Duplikat Node"
 
@@ -8646,6 +8727,11 @@ msgstr "Hapus Node"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Tipe Input Visual Shader Berubah"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Tetapkan Nama Uniform"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9366,6 +9452,10 @@ msgstr ""
 "variasi, seragam, dan konstanta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Khusus mode Fragmen / Cahaya) Fungsi skalar turunan."
 
@@ -9436,18 +9526,6 @@ msgstr "Mode Shader Visual Berubah"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Dapat dijalankan"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Tambah ekspor awal..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "Tambahkan patch sebelumnya..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Hapus entri penambalan '%s' dari daftar?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9547,18 +9625,6 @@ msgid ""
 msgstr ""
 "Filter untuk mengecualikan berkas/folder dari proyek\n"
 "(pisahkan dengan koma, contoh: *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Tambalan"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Buat Tambalan"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Berkas Pack"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -12081,6 +12147,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12113,8 +12195,14 @@ msgstr ""
 "Atau kunjungi docs.godotengine.org untuk dokumentasi build Android."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "Tak ada build apk yang dihasilkan di: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12864,6 +12952,42 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Move pivot"
+#~ msgstr "Pindahkan poros"
+
+#~ msgid "Move anchor"
+#~ msgstr "Pindahkan jangkar"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Ubah Ukuran CanvasItem"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Poligon->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Poligon"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Tambah ekspor awal..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "Tambahkan patch sebelumnya..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Hapus entri penambalan '%s' dari daftar?"
+
+#~ msgid "Patches"
+#~ msgstr "Tambalan"
+
+#~ msgid "Make Patch"
+#~ msgstr "Buat Tambalan"
+
+#~ msgid "Pack File"
+#~ msgstr "Berkas Pack"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "Tak ada build apk yang dihasilkan di: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Dok Impor dan Berkas Sistem"

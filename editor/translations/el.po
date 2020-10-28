@@ -9,12 +9,13 @@
 # Overloaded @ Orama Interactive http://orama-interactive.com/ <manoschool@yahoo.gr>, 2020.
 # pandektis <pandektis@gmail.com>, 2020.
 # KostasMSC <kargyris@athtech.gr>, 2020.
+# lawfulRobot <czavantias@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-08-11 14:04+0000\n"
-"Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
+"PO-Revision-Date: 2020-09-30 12:32+0000\n"
+"Last-Translator: lawfulRobot <czavantias@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -909,9 +910,8 @@ msgid "Signals"
 msgstr "Σήματα"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Φιλτράρισμα πλακιδίων"
+msgstr "Φιλτράρισμα σημάτων"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1156,12 +1156,10 @@ msgid "Gold Sponsors"
 msgstr "Χρυσοί Χορυγοί"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
 msgstr "Αργυροί Δωρητές"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
 msgstr "Χάλκινοι Δωρητές"
 
@@ -1606,6 +1604,37 @@ msgstr ""
 "Ενεργοποιήστε το «Import Etc» στις Ρυθμίσεις Έργου, ή απενεργοποιήστε το "
 "«Driver Fallback Enabled»."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Η πλατφόρμα προορισμού απαιτεί «ETC» συμπίεση υφών για το GLES2. "
+"Ενεργοποιήστε το «Import Etc» στις Ρυθμίσεις Έργου."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Η πλατφόρμα προορισμού απαιτεί «ETC2» συμπίεση υφών για το GLES3. "
+"Ενεργοποιήστε το «Import Etc 2» στις Ρυθμίσεις Έργου."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Η πλατφόρμα προορισμού απαιτεί «ETC» συμπίεση υφών για εναλλαγή οδηγού στο "
+"GLES2.\n"
+"Ενεργοποιήστε το «Import Etc» στις Ρυθμίσεις Έργου, ή απενεργοποιήστε το "
+"«Driver Fallback Enabled»."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1648,7 +1677,6 @@ msgid "Node Dock"
 msgstr "Πλατφόρμα Κόμβου"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
 msgstr "Σύστημα αρχείων"
 
@@ -2813,14 +2841,19 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"Όταν αυτή η επιλογή είναι ενεργοποιημένη, χρησιμοποιώντας την ανάπτυξη με "
+"ένα κλικ το εκτελέσιμο αρχείο θα επειχηρησει να συνδεθεί στην IP αυτού του "
+"υπολογιστή για να μπορέσει το τρεχούμενο έργο να αποσφαλματωθεί.\n"
+"Αυτή η επιλογή προορίζεται να χρησημοποιηθεί για απομακρισμένη αποσφαλμάτωση "
+"(συνήθως με μια φορητή συσκευή).\n"
+"Δεν χρειάζεται να την ενεργοποιήσετε για να χρησημοποιήσετε τον τοπικό "
+"αποσφαλματωτή GDScript."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
 msgstr "Μικρή ανάπτυξη με δικτυωμένο σύστημα αρχείων"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2831,17 +2864,16 @@ msgid ""
 msgstr ""
 "Όταν ενεργοποιείται αυτή η επιλογή, η εξαγωγή ή η ανάπτυξη θα παράξουν ένα "
 "ελαχιστοποιημένο εκτελέσιμο.\n"
-"Το σύστημα αρχείων θα διατεθεί από τον επεξεργαστή μέσω του διαδικτύου.\n"
+"Το σύστημα αρχείων θα διατεθεί από τον επεξεργαστή μέσω του δικτύου.\n"
 "Στο Android, η ανάπτυξη θα χρησιμοποιήσει το καλώδιο USB για μεγαλύτερη "
-"απόδοση. Αυτή η επιλογή επιταχύνει τις δοκιμές για παιχνίδια με μεγάλο "
-"αποτύπωμα."
+"απόδοση. Αυτή η επιλογή επιταχύνει τις δοκιμές για παιχνίδια με μεγάλους "
+"πόρους."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "Ορατά σχήματα σύγκρουσης"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
@@ -2854,7 +2886,6 @@ msgid "Visible Navigation"
 msgstr "Ορατή πλοήγηση"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
@@ -2863,12 +2894,10 @@ msgstr ""
 "επιλογή είναι ενεργοποιημένη."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
-msgstr "Συγχρονισμός αλλαγών στη σκηνή"
+msgstr "Συγχρονισμός αλλαγών της σκηνής"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
@@ -2881,19 +2910,17 @@ msgstr ""
 "σύστημα αρχείων."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "Συγχρονισμός αλλαγών στις δεσμές ενεργειών"
+msgstr "Συγχρονισμός αλλαγών στις δέσμες ενεργειών"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
 "the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Η ενεργοποίηση της επιλογής αυτής θα συγχρονίσει κάθε δέσμη ενεργειών που "
+"Η ενεργοποίηση αυτής της επιλογής θα συγχρονίσει κάθε δέσμη ενεργειών που "
 "αποθηκεύεται με το παιχνίδι που εκτελείται.\n"
 "Σε απομακρυσμένες συσκευές, η επιλογή είναι ποιο αποδοτική με δικτυωμένο "
 "σύστημα αρχείων."
@@ -2952,8 +2979,7 @@ msgstr "Διαχείριση Προτύπων Εξαγωγής..."
 msgid "Help"
 msgstr "Βοήθεια"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
@@ -3377,7 +3403,6 @@ msgid "Add Key/Value Pair"
 msgstr "Προσθήκη ζεύγους κλειδιού/τιμής"
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -4388,7 +4413,6 @@ msgid "Add Node to BlendTree"
 msgstr "Προσθήκη Κόμβους στο BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Μετακίνηση Κόμβου"
 
@@ -5224,27 +5248,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Δημιουργία Οριζοντίων και Καθέτων Οδηγών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Μετακίνηση πηγαίου σημείου"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Περιστροφή CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Μετακίνηση άγκυρας"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Περιστροφή CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Αλλαγή μεγέθους CanvasItem"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Μετακίνηση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Κλιμάκωση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Κλιμάκωση CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Μετακίνηση CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Μετακίνηση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6534,12 +6581,22 @@ msgid "Move Points"
 msgstr "Μετακίνηση Σημείων"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Περιστροφή"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Σύρσιμο: Περιστροφή"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Μετακίνηση όλων"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift + Ctrl: Κλιμάκωση"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Περιστροφή"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6584,12 +6641,14 @@ msgid "Radius:"
 msgstr "Ακτίνα:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Πολύγωνο -> UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Δημιουργία Πολυγώνου & UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV -> Πολύγωνο"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Μετακίνηση σε Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7042,17 +7101,17 @@ msgstr "Επισημαντής Σύνταξης"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Πήγαινε Σε"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Αγαπημένα"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Σημεία Διακοπής"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Πήγαινε Σε"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7825,9 +7884,8 @@ msgid "New Animation"
 msgstr "Νέα Κίνηση"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Speed:"
-msgstr "Ταχύτητα (FPS):"
+msgstr "Ταχύτητα:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -8145,6 +8203,15 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "Βάψιμο πλακιδίου"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+Αριστερό Κλικ Ποντικιού: Σχεδίαση Γραμμής\n"
+"Shift+Ctrl+Αριστερό Κλικ Ποντικιού: Ζωγραφιά Ορθογωνίου Παραλληλογράμμου"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8673,6 +8740,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Προσθήκη Κόμβου στο Οπτικό Πρόγραμμα Σκίασης"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Μετακίνηση Κόμβου"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Αναπαραγωγή Κόμβων"
 
@@ -8688,6 +8760,11 @@ msgstr "Διαγραφή Κόμβων"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Αλλαγή Τύπου Εισόδου Οπτικού Προγράμματος Σκίασης"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Αλλαγή Ονόματος Ενιαίας Μεταβλητής"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9401,6 +9478,10 @@ msgstr ""
 "τις σταθερές."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Μόνο σε σκίαση Τμήματος/Φωτός) Βαθμωτή παράγωγη συνάρτηση."
 
@@ -9471,18 +9552,6 @@ msgstr "Αλλαγή Λειτουργίας Οπτικού Προγράμματ�
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Εκτελέσιμο"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Προσθέστε αρχική εξαγωγή..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "Προσθέστε προηγούμενα λογισμικά επιδιόρθωσης..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Διαγραφή ενημέρωσης '%s' από την λίστα;"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9583,18 +9652,6 @@ msgid ""
 msgstr ""
 "Φίλτρα για την εξαίρεση αρχείων/καταλόγων από το έργο\n"
 "(χωρισμένα με κόμμα π.χ. *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Ενημερώσεις"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Δημιουργία ενημέρωσης"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Αρχείο Pack"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -10398,19 +10455,16 @@ msgid "Batch Rename"
 msgstr "Ομαδική Μετονομασία"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "Αντικατάσταση: "
+msgstr "Αντικατάσταση:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "Πρόθεμα"
+msgstr "Πρόθεμα:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "Επίθεμα"
+msgstr "Επίθεμα:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10457,9 +10511,8 @@ msgid "Per-level Counter"
 msgstr "Μετρητής Ανά Επίπεδο"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "Εάν ο μετρητής επανεκκινείται για κάθε ομάδα παιδικών κόμβων"
+msgstr "Εάν οριστεί, ο μετρητής επανεκκινείται για κάθε ομάδα παιδικών κόμβων."
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10518,9 +10571,8 @@ msgid "Reset"
 msgstr "Επαναφορά"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "Σφάλμα Κανονικής Εκφράσεως"
+msgstr "Σφάλμα Κανονικής Εκφράσεως:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -12136,6 +12188,22 @@ msgstr ""
 "Mobile VR»."
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12170,8 +12238,14 @@ msgstr ""
 "δόμησης Android."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "Δεν παράχθηκε δόμησης apk στο: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12628,7 +12702,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
+msgstr "Η InterpolatedCamera έχει καταργηθεί και θα αφαιρεθεί στο Godot 4.0."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12941,6 +13015,42 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Move pivot"
+#~ msgstr "Μετακίνηση πηγαίου σημείου"
+
+#~ msgid "Move anchor"
+#~ msgstr "Μετακίνηση άγκυρας"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Αλλαγή μεγέθους CanvasItem"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Πολύγωνο -> UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV -> Πολύγωνο"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Προσθέστε αρχική εξαγωγή..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "Προσθέστε προηγούμενα λογισμικά επιδιόρθωσης..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Διαγραφή ενημέρωσης '%s' από την λίστα;"
+
+#~ msgid "Patches"
+#~ msgstr "Ενημερώσεις"
+
+#~ msgid "Make Patch"
+#~ msgstr "Δημιουργία ενημέρωσης"
+
+#~ msgid "Pack File"
+#~ msgstr "Αρχείο Pack"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "Δεν παράχθηκε δόμησης apk στο: "
 
 #~ msgid "FileSystem and Import Docks"
 #~ msgstr "Πλατφόρμες Συστήματος Αρχείων και Εισαγωγής"
