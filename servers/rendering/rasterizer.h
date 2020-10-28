@@ -815,7 +815,8 @@ public:
 		CANVAS_RECT_FLIP_H = 4,
 		CANVAS_RECT_FLIP_V = 8,
 		CANVAS_RECT_TRANSPOSE = 16,
-		CANVAS_RECT_CLIP_UV = 32
+		CANVAS_RECT_CLIP_UV = 32,
+		CANVAS_RECT_IS_GROUP = 64,
 	};
 
 	struct Light {
@@ -1060,7 +1061,16 @@ public:
 		bool visible;
 		bool behind;
 		bool update_when_visible;
-		//RS::MaterialBlendMode blend_mode;
+
+		struct CanvasGroup {
+			RS::CanvasGroupMode mode;
+			bool fit_empty;
+			float fit_margin;
+			bool blur_mipmaps;
+			float clear_margin;
+		};
+
+		CanvasGroup *canvas_group = nullptr;
 		int light_mask;
 		int z_final;
 
@@ -1084,6 +1094,7 @@ public:
 		Rect2 final_clip_rect;
 		Item *final_clip_owner;
 		Item *material_owner;
+		Item *canvas_group_owner;
 		ViewportRender *vp_render;
 		bool distance_field;
 		bool light_masked;
@@ -1242,6 +1253,8 @@ public:
 		}
 
 		void clear() {
+			// The first one is always allocated on heap
+			// the rest go in the blocks
 			Command *c = commands;
 			while (c) {
 				Command *n = c->next;
@@ -1282,6 +1295,7 @@ public:
 			vp_render = nullptr;
 			next = nullptr;
 			final_clip_owner = nullptr;
+			canvas_group_owner = nullptr;
 			clip = false;
 			final_modulate = Color(1, 1, 1, 1);
 			visible = true;

@@ -1102,28 +1102,36 @@ RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_
 	return uniform_set;
 }
 
-void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights) {
+void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer) {
 	Item *current_clip = nullptr;
 
 	Transform2D canvas_transform_inverse = p_canvas_transform_inverse;
 
-	RID framebuffer = storage->render_target_get_rd_framebuffer(p_to_render_target);
-
-	Vector<Color> clear_colors;
+	RID framebuffer;
+	RID fb_uniform_set;
 	bool clear = false;
-	if (storage->render_target_is_clear_requested(p_to_render_target)) {
-		clear = true;
-		clear_colors.push_back(storage->render_target_get_clear_request_color(p_to_render_target));
-		storage->render_target_disable_clear_request(p_to_render_target);
-	}
+	Vector<Color> clear_colors;
+
+	if (p_to_backbuffer) {
+		framebuffer = storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target);
+		fb_uniform_set = storage->render_target_get_backbuffer_uniform_set(p_to_render_target);
+	} else {
+		framebuffer = storage->render_target_get_rd_framebuffer(p_to_render_target);
+
+		if (storage->render_target_is_clear_requested(p_to_render_target)) {
+			clear = true;
+			clear_colors.push_back(storage->render_target_get_clear_request_color(p_to_render_target));
+			storage->render_target_disable_clear_request(p_to_render_target);
+		}
 #ifndef _MSC_VER
 #warning TODO obtain from framebuffer format eventually when this is implemented
 #endif
 
-	RID fb_uniform_set = storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
+		fb_uniform_set = storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
+	}
 
 	if (fb_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(fb_uniform_set)) {
-		fb_uniform_set = _create_base_uniform_set(p_to_render_target, false);
+		fb_uniform_set = _create_base_uniform_set(p_to_render_target, p_to_backbuffer);
 	}
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
@@ -1152,10 +1160,16 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 			}
 		}
 
-		if (ci->material != prev_material) {
+		RID material = ci->material;
+
+		if (material.is_null() && ci->canvas_group != nullptr) {
+			material = default_canvas_group_material;
+		}
+
+		if (material != prev_material) {
 			MaterialData *material_data = nullptr;
-			if (ci->material.is_valid()) {
-				material_data = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+			if (material.is_valid()) {
+				material_data = (MaterialData *)storage->material_get_data(material, RasterizerStorageRD::SHADER_TYPE_2D);
 			}
 
 			if (material_data) {
@@ -1174,7 +1188,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 		_render_item(draw_list, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants);
 
-		prev_material = ci->material;
+		prev_material = material;
 	}
 
 	RD::get_singleton()->draw_list_end();
@@ -1306,8 +1320,10 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
 
+	Item *canvas_group_owner = nullptr;
+
 	while (ci) {
-		if (ci->copy_back_buffer) {
+		if (ci->copy_back_buffer && canvas_group_owner == nullptr) {
 			backbuffer_copy = true;
 
 			if (ci->copy_back_buffer->full) {
@@ -1320,7 +1336,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		if (ci->material.is_valid()) {
 			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
 			if (md && md->shader_data->valid) {
-				if (md->shader_data->uses_screen_texture) {
+				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
@@ -1338,12 +1354,44 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			}
 		}
 
+		if (ci->canvas_group_owner != nullptr) {
+			if (canvas_group_owner == nullptr) {
+				//Canvas group begins here, render until before this item
+				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
+				item_count = 0;
+
+				Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
+
+				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+					storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
+				} else {
+					storage->render_target_clear_back_buffer(p_to_render_target, group_rect, Color(0, 0, 0, 0));
+				}
+
+				backbuffer_copy = false;
+				canvas_group_owner = ci->canvas_group_owner; //continue until owner found
+			}
+
+			ci->canvas_group_owner = nullptr; //must be cleared
+		}
+
+		if (ci == canvas_group_owner) {
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, true);
+			item_count = 0;
+
+			if (ci->canvas_group->blur_mipmaps) {
+				storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, ci->global_rect_cache);
+			}
+
+			canvas_group_owner = nullptr;
+		}
+
 		if (backbuffer_copy) {
 			//render anything pending, including clearing if no items
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect);
+			storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
 
 			backbuffer_copy = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
@@ -1672,10 +1720,11 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_MIX: {
 			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.color_blend_op = RD::BLEND_OP_ADD;
 			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 
@@ -2013,6 +2062,20 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		shader.default_version = shader.canvas_shader.version_create();
 		shader.default_version_rd_shader = shader.canvas_shader.version_get_shader(shader.default_version, SHADER_VARIANT_QUAD);
 
+		RD::PipelineColorBlendState blend_state;
+		RD::PipelineColorBlendState::Attachment blend_attachment;
+
+		blend_attachment.enable_blend = true;
+		blend_attachment.color_blend_op = RD::BLEND_OP_ADD;
+		blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+		blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		blend_attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+		blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		blend_state.attachments.push_back(blend_attachment);
+
 		for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
 			for (int j = 0; j < PIPELINE_VARIANT_MAX; j++) {
 				RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = {
@@ -2054,7 +2117,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 				};
 
 				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[i][j]);
-				shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
+				shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
 			}
 		}
 	}
@@ -2260,6 +2323,13 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 
 	state.time = 0;
 
+	{
+		default_canvas_group_shader = storage->shader_create();
+		storage->shader_set_code(default_canvas_group_shader, "shader_type canvas_item; \nvoid fragment() {\n\tvec4 c = textureLod(SCREEN_TEXTURE,SCREEN_UV,0.0); if (c.a > 0.0001) c.rgb/=c.a; COLOR *= c; \n}\n");
+		default_canvas_group_material = storage->material_create();
+		storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
+	}
+
 	static_assert(sizeof(PushConstant) == 128);
 }
 
@@ -2306,6 +2376,9 @@ void RasterizerCanvasRD::set_shadow_texture_size(int p_size) {
 
 RasterizerCanvasRD::~RasterizerCanvasRD() {
 	//canvas state
+
+	storage->free(default_canvas_group_material);
+	storage->free(default_canvas_group_shader);
 
 	{
 		if (state.canvas_state_buffer.is_valid()) {
