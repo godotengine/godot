@@ -471,8 +471,21 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 			//zero texture
 			PoolVector<uint8_t>::Write w = tex.imgdata.write();
 			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
-			for (int i = 0; i < texsize * texsize * p_color_size; i++) {
-				w[i] = 0;
+
+			// Initialize the texture to all-white pixels to prevent artifacts when the
+			// font is displayed at a non-default scale with filtering enabled.
+			if (p_color_size == 2) {
+				for (int i = 0; i < texsize * texsize * p_color_size; i += 2) {
+					w[i + 0] = 255;
+					w[i + 1] = 0;
+				}
+			} else {
+				for (int i = 0; i < texsize * texsize * p_color_size; i += 4) {
+					w[i + 0] = 255;
+					w[i + 1] = 255;
+					w[i + 2] = 255;
+					w[i + 3] = 0;
+				}
 			}
 		}
 		tex.offsets.resize(texsize);
