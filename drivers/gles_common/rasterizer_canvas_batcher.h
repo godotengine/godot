@@ -2068,6 +2068,11 @@ PREAMBLE(bool)::prefill_joined_item(FillState &r_fill_state, int &r_command_star
 				// break this extra matrix software path (as we don't want to unset it on the GPU etc)
 				if (r_fill_state.extra_matrix_sent) {
 					_prefill_default_batch(r_fill_state, command_num, *p_item);
+
+					// keep track of the combined matrix on the CPU in parallel, in case we use large vertex format
+					RasterizerCanvas::Item::CommandTransform *transform = static_cast<RasterizerCanvas::Item::CommandTransform *>(command);
+					const Transform2D &extra_matrix = transform->xform;
+					r_fill_state.transform_combined = p_item->final_transform * extra_matrix;
 				} else {
 					// Extra matrix fast path.
 					// Instead of sending the command immediately, we store the modified transform (in combined)
