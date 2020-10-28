@@ -256,6 +256,13 @@ void UndoRedo::commit_action() {
 	committing++;
 	redo(); // perform action
 	committing--;
+
+	if (max_actions > 0 && actions.size() > max_actions) {
+		//clear early steps
+		while (actions.size() > max_actions)
+			_pop_history_tail();
+	}
+
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -370,6 +377,22 @@ String UndoRedo::get_current_action_name() const {
 		return "";
 	}
 	return actions[current_action].name;
+}
+
+int UndoRedo::get_action_count() const {
+	return actions.size();
+}
+
+int UndoRedo::get_current_action() const {
+	return current_action;
+}
+
+void UndoRedo::set_max_actions(int p_max_actions) {
+	max_actions = p_max_actions;
+}
+
+int UndoRedo::get_max_actions() const {
+	return max_actions;
 }
 
 bool UndoRedo::has_undo() {
@@ -506,6 +529,10 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
 	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
+	ClassDB::bind_method(D_METHOD("set_max_actions", "max_actions"), &UndoRedo::set_max_actions);
+	ClassDB::bind_method(D_METHOD("get_max_actions"), &UndoRedo::get_max_actions);
+	ClassDB::bind_method(D_METHOD("get_action_count"), &UndoRedo::get_action_count);
+	ClassDB::bind_method(D_METHOD("get_current_action"), &UndoRedo::get_current_action);
 	ClassDB::bind_method(D_METHOD("has_undo"), &UndoRedo::has_undo);
 	ClassDB::bind_method(D_METHOD("has_redo"), &UndoRedo::has_redo);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);

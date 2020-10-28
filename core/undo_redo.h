@@ -77,6 +77,7 @@ private:
 	Vector<Action> actions;
 	int current_action = -1;
 	int action_level = 0;
+	int max_actions = -1;
 	MergeMode merge_mode = MERGE_DISABLE;
 	bool merging = false;
 	uint64_t version = 1;
@@ -114,6 +115,10 @@ public:
 	bool redo();
 	bool undo();
 	String get_current_action_name() const;
+	int get_action_count() const;
+	int get_current_action() const;
+	void set_max_actions(int p_max_actions);
+	int get_max_actions() const;
 	void clear_history(bool p_increase_version = true);
 
 	bool has_undo();
