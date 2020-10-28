@@ -219,6 +219,7 @@ struct ScriptCodeCompletionOption {
 	String display;
 	String insert_text;
 	RES icon;
+	Variant default_value;
 
 	ScriptCodeCompletionOption() {
 		kind = KIND_PLAIN_TEXT;
