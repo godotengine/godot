@@ -51,6 +51,7 @@ class ConfirmationDialog;
 class Control;
 class DependencyEditor;
 class DependencyErrorDialog;
+class DocumentationGenerationDialog;
 class EditorAbout;
 class EditorExport;
 class EditorFeatureProfileManager;

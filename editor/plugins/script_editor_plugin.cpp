@@ -427,6 +427,10 @@ void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	}
 }
 
+void ScriptEditor::_docs_generated() {
+	// Nothing for now.
+}
+
 void ScriptEditor::_script_created(Ref<Script> p_script) {
 	editor->push_item(p_script.operator->());
 }
@@ -1042,19 +1046,37 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 		} break;
 		case FILE_SAVE_AS: {
+			String path = ProjectSettings::get_singleton()->localize_path(p_file);
+
 			ScriptEditorBase *current = _get_current_editor();
 			if (current) {
 				RES resource = current->get_edited_resource();
-				String path = ProjectSettings::get_singleton()->localize_path(p_file);
 				Error err = _save_text_file(resource, path);
 
 				if (err != OK) {
 					editor->show_accept(TTR("Error saving file!"), TTR("OK"));
 					return;
 				}
-
 				resource->set_path(path);
 				_update_script_names();
+			} else {
+				EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
+				if (help) {
+					String xml_text;
+					XmlWriteStream xws(&xml_text);
+					DocData::ClassDoc c = EditorHelp::get_doc_data()->class_list[help->get_class()];
+					DocData::write_class(c, xws);
+					Ref<TextFile> doc_xml;
+					doc_xml.instance();
+					doc_xml->set_text(xml_text);
+
+					// TODO-DOC: "\"src/player/player.gd\"" is not a valid file name -> probably crash!
+					Error err = _save_text_file(doc_xml, path);
+					if (err != OK) {
+						editor->show_accept(TTR("Error saving file!"), TTR("OK"));
+						return;
+					}
+				}
 			}
 		} break;
 		case THEME_SAVE_AS: {
@@ -1190,6 +1212,10 @@ void ScriptEditor::_menu_option(int p_option) {
 			}
 
 			save_all_scripts();
+		} break;
+		case GENERATE_DOCUMENTATIONS: {
+			doc_gen_dialog->config("", "");
+			doc_gen_dialog->popup_centered();
 		} break;
 		case SEARCH_IN_FILES: {
 			_on_find_in_files_requested("");
@@ -1394,6 +1420,19 @@ void ScriptEditor::_menu_option(int p_option) {
 				} break;
 				case HELP_SEARCH_FIND_PREVIOUS: {
 					help->search_again(true);
+				} break;
+				case FILE_SAVE_AS: {
+					ERR_FAIL_COND(!EditorHelp::get_doc_data()->class_list.has(help->get_class()));
+
+					file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+					file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+					file_dialog_option = FILE_SAVE_AS;
+
+					file_dialog->clear_filters();
+					file_dialog->set_current_file(help->get_class() + ".xml");
+					file_dialog->popup_centered_ratio();
+					file_dialog->set_title(TTR("Save File As..."));
+
 				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
@@ -2699,6 +2738,10 @@ void ScriptEditor::_make_script_list_context_menu() {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_SAVE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
 	}
+	EditorHelp *help = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
+	if (help) {
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_SAVE_AS);
+	}
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_CLOSE);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), CLOSE_ALL);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), CLOSE_OTHER_TABS);
@@ -3315,6 +3358,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_S), FILE_SAVE_ALL);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/generate_docs", TTR("Generate Docs")), GENERATE_DOCUMENTATIONS);
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
@@ -3418,6 +3462,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
+
+	doc_gen_dialog = memnew(DocumentationGenerationDialog);
+	doc_gen_dialog->set_title(TTR("Generate Script Documentations"));
+	add_child(doc_gen_dialog);
+	doc_gen_dialog->connect("documentations_generated", callable_mp(this, &ScriptEditor::_docs_generated));
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_title(TTR("Create Script"));

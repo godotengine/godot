@@ -1341,6 +1341,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		}
 
 		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		Vector<String> split_tag_block = tag.split(" ", false);
 
 		if (tag.begins_with("/")) {
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
@@ -1459,6 +1460,33 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			pos = end;
 			tag_stack.push_front(tag);
+		} else if (tag.begins_with("img=")) {
+			int width = 0;
+			int height = 0;
+
+			String params = tag.substr(4, tag.length());
+			int sep = params.find("x");
+			if (sep == -1) {
+				width = params.to_int();
+			} else {
+				width = params.substr(0, sep).to_int();
+				height = params.substr(sep + 1, params.length()).to_int();
+			}
+
+			int end = p_bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = p_bbcode.length();
+			}
+
+			String image = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture");
+			if (texture.is_valid()) {
+				p_rt->add_image(texture, width, height);
+			}
+
+			pos = end;
+			tag_stack.push_front("img");
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6, tag.length());
 			Color color;
@@ -1517,7 +1545,119 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
+		} else if (tag.begins_with("fade")) {
+			int startIndex = 0;
+			int length = 10;
 
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("start=")) {
+						String start_str = expr.substr(6, expr.length());
+						startIndex = start_str.to_int();
+					} else if (expr.begins_with("length=")) {
+						String end_str = expr.substr(7, expr.length());
+						length = end_str.to_int();
+					}
+				}
+			}
+
+			p_rt->push_fade(startIndex, length);
+			pos = brk_end + 1;
+			tag_stack.push_front("fade");
+		} else if (tag.begins_with("shake")) {
+			int strength = 5;
+			float rate = 20.0f;
+
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("level=")) {
+						String str_str = expr.substr(6, expr.length());
+						strength = str_str.to_int();
+					} else if (expr.begins_with("rate=")) {
+						String rate_str = expr.substr(5, expr.length());
+						rate = rate_str.to_float();
+					}
+				}
+			}
+
+			p_rt->push_shake(strength, rate);
+			pos = brk_end + 1;
+			tag_stack.push_front("shake");
+			p_rt->set_process_internal(true);
+		} else if (tag.begins_with("wave")) {
+			float amplitude = 20.0f;
+			float period = 5.0f;
+
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("amp=")) {
+						String amp_str = expr.substr(4, expr.length());
+						amplitude = amp_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String period_str = expr.substr(5, expr.length());
+						period = period_str.to_float();
+					}
+				}
+			}
+
+			p_rt->push_wave(period, amplitude);
+			pos = brk_end + 1;
+			tag_stack.push_front("wave");
+			p_rt->set_process_internal(true);
+		} else if (tag.begins_with("tornado")) {
+			float radius = 10.0f;
+			float frequency = 1.0f;
+
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("radius=")) {
+						String amp_str = expr.substr(7, expr.length());
+						radius = amp_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String period_str = expr.substr(5, expr.length());
+						frequency = period_str.to_float();
+					}
+				}
+			}
+
+			p_rt->push_tornado(frequency, radius);
+			pos = brk_end + 1;
+			tag_stack.push_front("tornado");
+			p_rt->set_process_internal(true);
+		} else if (tag.begins_with("rainbow")) {
+			float saturation = 0.8f;
+			float value = 0.8f;
+			float frequency = 1.0f;
+
+			if (split_tag_block.size() > 1) {
+				split_tag_block.remove(0);
+				for (int i = 0; i < split_tag_block.size(); i++) {
+					String expr = split_tag_block[i];
+					if (expr.begins_with("sat=")) {
+						String sat_str = expr.substr(4, expr.length());
+						saturation = sat_str.to_float();
+					} else if (expr.begins_with("val=")) {
+						String val_str = expr.substr(4, expr.length());
+						value = val_str.to_float();
+					} else if (expr.begins_with("freq=")) {
+						String freq_str = expr.substr(5, expr.length());
+						frequency = freq_str.to_float();
+					}
+				}
+			}
+
+			p_rt->push_rainbow(saturation, value, frequency);
+			pos = brk_end + 1;
+			tag_stack.push_front("rainbow");
+			p_rt->set_process_internal(true);
 		} else {
 			p_rt->add_text("["); //ignore
 			pos = brk_pos + 1;
