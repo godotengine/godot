@@ -154,7 +154,7 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 			}
 		}
 		if (!found) {
-			ERR_PRINT("Can't find layer: " + String(check_names[i]));
+			WARN_PRINT("Can't find layer: " + String(check_names[i]));
 			return 0;
 		}
 	}
@@ -1479,23 +1479,6 @@ VkPhysicalDeviceLimits VulkanContext::get_device_limits() const {
 	return gpu_props.limits;
 }
 
-VulkanContext::VulkanContext() {
-	queue_props = nullptr;
-	command_buffer_count = 0;
-	instance_validation_layers = nullptr;
-	use_validation_layers = true;
-	VK_KHR_incremental_present_enabled = true;
-	VK_GOOGLE_display_timing_enabled = true;
-
-	command_buffer_queue.resize(1); //first one is the setup command always
-	command_buffer_queue.write[0] = nullptr;
-	command_buffer_count = 1;
-	queues_initialized = false;
-
-	buffers_prepared = false;
-	swapchainImageCount = 0;
-}
-
 RID VulkanContext::local_device_create() {
 	LocalDevice ld;
 
@@ -1583,6 +1566,13 @@ void VulkanContext::local_device_free(RID p_local_device) {
 	local_device_owner.free(p_local_device);
 }
 
+VulkanContext::VulkanContext() {
+	use_validation_layers = Engine::get_singleton()->is_validation_layers_enabled();
+
+	command_buffer_queue.resize(1); // First one is always the setup command.
+	command_buffer_queue.write[0] = nullptr;
+}
+
 VulkanContext::~VulkanContext() {
 	if (queue_props) {
 		free(queue_props);
@@ -1596,7 +1586,7 @@ VulkanContext::~VulkanContext() {
 				vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
 			}
 		}
-		if (inst_initialized) {
+		if (inst_initialized && use_validation_layers) {
 			DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 		}
 		vkDestroyDevice(device, nullptr);
