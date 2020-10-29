@@ -459,6 +459,8 @@ DynamicFontAtSize::TexturePosition DynamicFontAtSize::_find_texture_pos_for_glyp
 			uint8_t *w = tex.imgdata.ptrw();
 			ERR_FAIL_COND_V(texsize * texsize * p_color_size > tex.imgdata.size(), ret);
 
+			// Initialize the texture to all-white pixels to prevent artifacts when the
+			// font is displayed at a non-default scale with filtering enabled.
 			if (p_color_size == 2) {
 				for (int i = 0; i < texsize * texsize * p_color_size; i += 2) {
 					w[i + 0] = 255;
