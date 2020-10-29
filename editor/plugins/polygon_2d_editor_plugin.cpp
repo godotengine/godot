@@ -209,7 +209,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		uv_button[UV_MODE_CREATE]->hide();
 		uv_button[UV_MODE_CREATE_INTERNAL]->hide();
 		uv_button[UV_MODE_REMOVE_INTERNAL]->hide();
-		for (int i = UV_MODE_MOVE; i <= UV_MODE_SCALE; i++) {
+		for (int i = UV_MODE_EDIT_POINT; i <= UV_MODE_SCALE; i++) {
 			uv_button[i]->show();
 		}
 		uv_button[UV_MODE_ADD_POLYGON]->hide();
