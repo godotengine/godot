@@ -371,8 +371,10 @@ void TabContainer::_notification(int p_what) {
 			// Draw the tab area.
 			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 
-			// Draw selected tab in front
-			_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current);
+			// Draw selected tab in front. Need to check tabs.size() in case of no contents at all.
+			if (tabs.size() > 0) {
+				_draw_tab(tab_fg, font_color_fg, current, tabs_ofs_cache + x_current);
+			}
 
 			// Draw the popup menu.
 			x = get_size().width;
