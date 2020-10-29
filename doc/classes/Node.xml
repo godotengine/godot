@@ -37,13 +37,13 @@
 				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
-		<method name="_get_configuration_warning" qualifiers="virtual">
-			<return type="String">
+		<method name="_get_configuration_warnings" qualifiers="virtual">
+			<return type="Array">
 			</return>
 			<description>
-				The string returned from this method is displayed as a warning in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
-				Returning an empty string produces no warning.
-				Call [method update_configuration_warning] when the warning needs to be updated for this node.
+				The elements in the array returned from this method are displayed as warnings in the Scene Dock if the script that overrides it is a [code]tool[/code] script.
+				Returning an empty array produces no warnings.
+				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -856,12 +856,12 @@
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
-		<method name="update_configuration_warning">
+		<method name="update_configuration_warnings">
 			<return type="void">
 			</return>
 			<description>
 				Updates the warning displayed for this node in the Scene Dock.
-				Use [method _get_configuration_warning] to setup the warning message to display.
+				Use [method _get_configuration_warnings] to setup the warning message to display.
 			</description>
 		</method>
 	</methods>

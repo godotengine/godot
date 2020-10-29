@@ -66,7 +66,7 @@ public:
 	void bake_navigation_mesh();
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

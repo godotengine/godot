@@ -503,19 +503,15 @@ Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
-String GIProbe::get_configuration_warning() const {
-	String warning = VisualInstance3D::get_configuration_warning();
+TypedArray<String> GIProbe::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		warnings.push_back(TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead."));
 	} else if (probe_data.is_null()) {
-		warning += TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI.");
+		warnings.push_back(TTR("No GIProbe data set, so this node is disabled. Bake static objects to enable GI."));
 	}
-
-	return warning;
+	return warnings;
 }
 
 void GIProbe::_bind_methods() {

@@ -412,9 +412,10 @@ public:
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
-	virtual String get_configuration_warning() const;
+	virtual TypedArray<String> get_configuration_warnings() const;
+	String get_configuration_warnings_as_string() const;
 
-	void update_configuration_warning();
+	void update_configuration_warnings();
 
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;

@@ -61,7 +61,7 @@ public:
 
 	void set_base_offset_and_scale(const Point2 &p_offset, real_t p_scale, const Point2 &p_screen_offset);
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 	ParallaxLayer();
 };
 

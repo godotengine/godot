@@ -444,7 +444,7 @@ void RigidBody3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		if (Engine::get_singleton()->is_editor_hint()) {
-			update_configuration_warning();
+			update_configuration_warnings();
 		}
 	}
 
@@ -469,7 +469,7 @@ void RigidBody3D::set_mode(Mode p_mode) {
 			PhysicsServer3D::get_singleton()->body_set_mode(get_rid(), PhysicsServer3D::BODY_MODE_KINEMATIC);
 		} break;
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 RigidBody3D::Mode RigidBody3D::get_mode() const {
@@ -709,19 +709,16 @@ Array RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-String RigidBody3D::get_configuration_warning() const {
+TypedArray<String> RigidBody3D::get_configuration_warnings() const {
 	Transform t = get_transform();
 
-	String warning = CollisionObject3D::get_configuration_warning();
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warnings.push_back(TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void RigidBody3D::_bind_methods() {

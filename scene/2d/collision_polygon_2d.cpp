@@ -204,7 +204,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 		_update_in_shape_owner();
 	}
 	update();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Vector<Point2> CollisionPolygon2D::get_polygon() const {
@@ -219,7 +219,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 		_update_in_shape_owner();
 	}
 	update();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
@@ -240,40 +240,28 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 }
 #endif
 
-String CollisionPolygon2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> CollisionPolygon2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."));
 	}
 
 	int polygon_count = polygon.size();
 	if (polygon_count == 0) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An empty CollisionPolygon2D has no effect on collision.");
+		warnings.push_back(TTR("An empty CollisionPolygon2D has no effect on collision."));
 	} else {
 		bool solids = build_mode == BUILD_SOLIDS;
 		if (solids) {
 			if (polygon_count < 3) {
-				if (!warning.is_empty()) {
-					warning += "\n\n";
-				}
-				warning += TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode.");
+				warnings.push_back(TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
 			}
 		} else if (polygon_count < 2) {
-			if (!warning.is_empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode.");
+			warnings.push_back(TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
 		}
 	}
 
-	return warning;
+	return warnings;
 }
 
 void CollisionPolygon2D::set_disabled(bool p_disabled) {

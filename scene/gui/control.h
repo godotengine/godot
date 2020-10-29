@@ -524,7 +524,7 @@ public:
 	bool is_visibility_clip_disabled() const;
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	Control() {}
 };

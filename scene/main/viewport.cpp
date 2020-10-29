@@ -3175,20 +3175,17 @@ Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
 
-String Viewport::get_configuration_warning() const {
+TypedArray<String> Viewport::get_configuration_warnings() const {
 	/*if (get_parent() && !Object::cast_to<Control>(get_parent()) && !render_target) {
 		return TTR("This viewport is not set as render target. If you intend for it to display its contents directly to the screen, make it a child of a Control so it can obtain a size. Otherwise, make it a RenderTarget and assign its internal texture to some node for display.");
 	}*/
 
-	String warning = Node::get_configuration_warning();
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (size.x == 0 || size.y == 0) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Viewport size must be greater than 0 to render anything.");
+		warnings.push_back(TTR("Viewport size must be greater than 0 to render anything."));
 	}
-	return warning;
+	return warnings;
 }
 
 void Viewport::gui_reset_canvas_sort_index() {

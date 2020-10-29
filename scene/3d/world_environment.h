@@ -55,7 +55,7 @@ public:
 	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
 	Ref<CameraEffects> get_camera_effects() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	WorldEnvironment();
 };

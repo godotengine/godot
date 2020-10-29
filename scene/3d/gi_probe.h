@@ -165,7 +165,7 @@ public:
 	virtual AABB get_aabb() const override;
 	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	GIProbe();
 	~GIProbe();

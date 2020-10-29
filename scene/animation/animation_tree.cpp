@@ -458,7 +458,7 @@ void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	properties_dirty = true;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<AnimationNode> AnimationTree::get_tree_root() const {
@@ -1262,7 +1262,7 @@ void AnimationTree::_notification(int p_what) {
 
 void AnimationTree::set_animation_player(const NodePath &p_player) {
 	animation_player = p_player;
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 NodePath AnimationTree::get_animation_player() const {
@@ -1281,38 +1281,26 @@ uint64_t AnimationTree::get_last_process_pass() const {
 	return process_pass;
 }
 
-String AnimationTree::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> AnimationTree::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!root.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("No root AnimationNode for the graph is set.");
+		warnings.push_back(TTR("No root AnimationNode for the graph is set."));
 	}
 
 	if (!has_node(animation_player)) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Path to an AnimationPlayer node containing animations is not set.");
+		warnings.push_back(TTR("Path to an AnimationPlayer node containing animations is not set."));
 	} else {
 		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
 		if (!player) {
-			if (!warning.is_empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
+			warnings.push_back(TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node."));
 		} else if (!player->has_node(player->get_root())) {
-			if (!warning.is_empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("The AnimationPlayer root node is not a valid node.");
+			warnings.push_back(TTR("The AnimationPlayer root node is not a valid node."));
 		}
 	}
 
-	return warning;
+	return warnings;
 }
 
 void AnimationTree::set_root_motion_track(const NodePath &p_track) {

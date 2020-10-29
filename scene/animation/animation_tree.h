@@ -300,7 +300,7 @@ public:
 	void set_animation_player(const NodePath &p_player);
 	NodePath get_animation_player() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;

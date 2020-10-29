@@ -65,7 +65,7 @@ void WorldEnvironment::_update_current_environment() {
 	} else {
 		get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
 	}
-	get_tree()->call_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warning");
+	get_tree()->call_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
 }
 
 void WorldEnvironment::_update_current_camera_effects() {
@@ -76,7 +76,7 @@ void WorldEnvironment::_update_current_camera_effects() {
 		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
 	}
 
-	get_tree()->call_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warning");
+	get_tree()->call_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
@@ -96,7 +96,7 @@ void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 	if (is_inside_tree()) {
 		_update_current_environment();
 	} else {
-		update_configuration_warning();
+		update_configuration_warnings();
 	}
 }
 
@@ -121,7 +121,7 @@ void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_eff
 	if (is_inside_tree()) {
 		_update_current_camera_effects();
 	} else {
-		update_configuration_warning();
+		update_configuration_warnings();
 	}
 }
 
@@ -129,35 +129,26 @@ Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
 	return camera_effects;
 }
 
-String WorldEnvironment::get_configuration_warning() const {
-	String warning = Node::get_configuration_warning();
+TypedArray<String> WorldEnvironment::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!environment.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
+		warnings.push_back(TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect."));
 	}
 
 	if (!is_inside_tree()) {
-		return warning;
+		return warnings;
 	}
 
 	if (environment.is_valid() && get_viewport()->find_world_3d()->get_environment() != environment) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Only the first Environment has an effect in a scene (or set of instantiated scenes).");
+		warnings.push_back(("Only the first Environment has an effect in a scene (or set of instantiated scenes)."));
 	}
 
 	if (camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() != camera_effects) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Only the first CameraEffects has an effect in a scene (or set of instantiated scenes).");
+		warnings.push_back(TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void WorldEnvironment::_bind_methods() {

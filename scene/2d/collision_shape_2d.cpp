@@ -162,7 +162,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		shape->connect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
@@ -177,19 +177,23 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-String CollisionShape2D::get_configuration_warning() const {
+TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		return TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."));
 	}
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!");
+		warnings.push_back(TTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
+
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		return TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead.");
+		warnings.push_back(TTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
 	}
-	return String();
+
+	return warnings;
 }
 
 void CollisionShape2D::set_disabled(bool p_disabled) {

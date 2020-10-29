@@ -120,34 +120,25 @@ void CollisionShape3D::resource_changed(RES res) {
 	update_gizmo();
 }
 
-String CollisionShape3D::get_configuration_warning() const {
-	String warning = Node3D::get_configuration_warning();
+TypedArray<String> CollisionShape3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
+		warnings.push_back(TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape."));
 	}
 
 	if (!shape.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it.");
+		warnings.push_back(TTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
 	}
 
 	if (shape.is_valid() &&
 			Object::cast_to<RigidBody3D>(get_parent()) &&
 			Object::cast_to<ConcavePolygonShape3D>(*shape) &&
 			Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static.");
+		warnings.push_back(TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void CollisionShape3D::_bind_methods() {
@@ -188,7 +179,7 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (is_inside_tree()) {
 		_shape_changed();
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Shape3D> CollisionShape3D::get_shape() const {

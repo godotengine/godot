@@ -70,7 +70,7 @@ public:
 
 	void force_update_cache();
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	RemoteTransform2D();
 };

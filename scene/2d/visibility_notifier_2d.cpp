@@ -310,18 +310,15 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 	nodes.erase(p_node);
 }
 
-String VisibilityEnabler2D::get_configuration_warning() const {
-	String warning = VisibilityNotifier2D::get_configuration_warning();
+TypedArray<String> VisibilityEnabler2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
 	if (is_inside_tree() && get_parent() && (get_parent()->get_filename() == String() && get_parent() != get_tree()->get_edited_scene_root())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent.");
+		warnings.push_back(TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent."));
 	}
 #endif
-	return warning;
+	return warnings;
 }
 
 void VisibilityEnabler2D::_bind_methods() {
