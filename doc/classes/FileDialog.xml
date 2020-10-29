@@ -82,6 +82,8 @@
 			If [code]true[/code], the dialog will show hidden files.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
+			The window's title. 
+			[b]Note:[/b] The title bar background is drawn by [WindowDialog]'s [theme_item WindowDialog.panel] stylebox.
 	</members>
 	<signals>
 		<signal name="dir_selected">
