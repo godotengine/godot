@@ -72,6 +72,34 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
+		<method name="randv_circle">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="min_radius" type="float" default="1.0">
+			</argument>
+			<argument index="1" name="max_radius" type="float" default="1.0">
+			</argument>
+			<description>
+				Generates a random point uniformly distributed on the circle's boundary, within the circle's area, or the area confined by inner and outer circle ranges specified with [code]min_radius[/code] and [code]max_radius[/code] parameters.
+				By default, generates points [b]on[/b] unit circle with radius [code]1[/code], which produces normalized vectors.
+				If [code]min_radius == 0[/code], generates points inside a unit circle, such that [method Geometry2D.is_point_in_circle] shall return [code]true[/code] given the same radius.
+				If [code]min_radius != max_radius[/code], generates points in a ring, such that the inner area remains unaffected.
+				If [code]min_radius == max_radius[/code], generates points exactly [b]on[/b] the circle's boundary, but do note that a point may slightly deviate from the actual circle's boundary due to floating point error accumulation.
+				[codeblock]
+				var rng = RandomNumberGenerator.new()
+				var point: Vector2()
+				point = rng.randv_circle() # Unit vector.
+				point = rng.randv_circle(0.0, 1.0) # Inside a circle.
+				point = rng.randv_circle(0.5, 1.0) # Within a ring.
+				[/codeblock]
+				The [code]min_radius[/code] and [code]max_radius[/code] are not restricted to unit length of [code]1[/code]. The generated unit vector can be multiplied by a scalar value as well:
+				[codeblock]
+				var rng = RandomNumberGenerator.new()
+				var radius = 64.0
+				var point = rng.randv_circle() * radius
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="-6398989897141750821">

@@ -66,6 +66,14 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ Vector2 randv_circle(real_t p_min_radius = 1.0, real_t p_max_radius = 1.0) { // Unit length by default.
+		real_t r2_max = p_max_radius * p_max_radius;
+		real_t r2_min = p_min_radius * p_min_radius;
+		real_t r = Math::sqrt(randbase.random(0.0, 1.0) * (r2_max - r2_min) + r2_min);
+		real_t t = randbase.random(0.0, 1.0) * Math_TAU;
+		return Vector2(r * Math::cos(t), r * Math::sin(t));
+	}
+
 	RandomNumberGenerator() {}
 };
 
