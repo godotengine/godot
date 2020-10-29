@@ -144,7 +144,7 @@
 			<argument index="1" name="ignore_half_ofs" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the global position corresponding to the given tilemap (grid-based) coordinates.
+				Returns the local position corresponding to the given tilemap (grid-based) coordinates.
 				Optionally, the tilemap's half offset can be ignored.
 			</description>
 		</method>
