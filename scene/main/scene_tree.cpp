@@ -1394,6 +1394,12 @@ SceneTree::SceneTree() {
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/screen_filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
+	bool snap_2d_transforms = GLOBAL_DEF("rendering/quality/2d/snap_2d_transforms_to_pixel", false);
+	root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
+
+	bool snap_2d_vertices = GLOBAL_DEF("rendering/quality/2d/snap_2d_vertices_to_pixel", false);
+	root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+
 	{ //load default fallback environment
 		//get possible extensions
 		List<String> exts;

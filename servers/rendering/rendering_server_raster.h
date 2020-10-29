@@ -528,6 +528,8 @@ public:
 	BIND2(viewport_remove_canvas, RID, RID)
 	BIND3(viewport_set_canvas_transform, RID, RID, const Transform2D &)
 	BIND2(viewport_set_transparent_background, RID, bool)
+	BIND2(viewport_set_snap_2d_transforms_to_pixel, RID, bool)
+	BIND2(viewport_set_snap_2d_vertices_to_pixel, RID, bool)
 
 	BIND2(viewport_set_default_canvas_item_texture_filter, RID, CanvasItemTextureFilter)
 	BIND2(viewport_set_default_canvas_item_texture_repeat, RID, CanvasItemTextureRepeat)
