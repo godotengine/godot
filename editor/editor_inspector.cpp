@@ -3003,6 +3003,11 @@ void EditorInspector::set_use_filter(bool p_use) {
 	update_tree();
 }
 
+void EditorInspector::set_filter(String p_string) {
+	search_box->set_text(p_string);
+	_filter_changed(p_string);
+}
+
 void EditorInspector::register_text_enter(Node *p_line_edit) {
 	search_box = Object::cast_to<LineEdit>(p_line_edit);
 	if (search_box) {

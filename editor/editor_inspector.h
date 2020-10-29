@@ -522,6 +522,7 @@ public:
 	void set_hide_script(bool p_hide);
 
 	void set_use_filter(bool p_use);
+	void set_filter(String p_string);
 	void register_text_enter(Node *p_line_edit);
 
 	void set_use_folding(bool p_enable);

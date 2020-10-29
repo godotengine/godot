@@ -101,6 +101,8 @@ void SceneTreeDock::unhandled_key_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_COPY);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
 		_tool_selected(TOOL_PASTE);
+	} else if (ED_IS_SHORTCUT("scene_tree/property_editor", p_event)) {
+		_tool_selected(TOOL_PROPERTY_EDIT);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
 		_tool_selected(TOOL_REPLACE);
 	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
@@ -403,12 +405,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				EditorNode::get_singleton()->new_inherited_scene();
 				break;
 			}
-
 			quick_open->popup_dialog("PackedScene", true);
 			quick_open->set_title(TTR("Instantiate Child Scene"));
 			if (!p_confirm_override) {
 				emit_signal(SNAME("add_node_used"));
 			}
+		} break;
+		case TOOL_PROPERTY_EDIT: {
+			if (!edited_scene) {
+				break;
+			}
+			ERR_FAIL_COND(!property_editor);
+			property_search_timer->start();
+			property_editor->popup_centered_ratio(0.5f);
+			property_editor_search_box->grab_focus();
 		} break;
 		case TOOL_EXPAND_COLLAPSE: {
 			Tree *tree = scene_tree->get_scene_tree();
@@ -1220,6 +1230,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			button_property_edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
 			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
@@ -1301,6 +1312,7 @@ void SceneTreeDock::_notification(int p_what) {
 			scene_tree->set_auto_expand_selected(EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"), false);
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
+			button_property_edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
 			button_detach_script->set_icon(get_theme_icon(SNAME("ScriptRemove"), SNAME("EditorIcons")));
 			button_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
@@ -2662,6 +2674,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		if (profile_allow_editing) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/property_editor"), TOOL_PROPERTY_EDIT);
 		}
 
 		menu->set_size(Size2(1, 1));
@@ -2695,6 +2708,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 			menu->add_icon_shortcut(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANTIATE);
+			menu->add_icon_shortcut(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/property_editor"), TOOL_PROPERTY_EDIT);
 		}
 		menu->add_separator();
 
@@ -3107,12 +3121,14 @@ void SceneTreeDock::_feature_profile_changed() {
 		button_3d->set_visible(profile_allow_3d);
 		button_add->set_visible(profile_allow_editing);
 		button_instance->set_visible(profile_allow_editing);
+		button_property_edit->set_visible(profile_allow_editing);
 		scene_tree->set_can_rename(profile_allow_editing);
 
 	} else {
 		button_3d->set_visible(true);
 		button_add->set_visible(true);
 		button_instance->set_visible(true);
+		button_property_edit->set_visible(true);
 		scene_tree->set_can_rename(true);
 		profile_allow_editing = true;
 		profile_allow_script_editing = true;
@@ -3231,6 +3247,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/cut_node", TTR("Cut"), KEY_MASK_CMD | KEY_X);
 	ED_SHORTCUT("scene_tree/copy_node", TTR("Copy"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("scene_tree/paste_node", TTR("Paste"), KEY_MASK_CMD | KEY_V);
+	ED_SHORTCUT("scene_tree/property_editor", TTR("Edit properties"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
 	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
 	ED_SHORTCUT("scene_tree/extend_script", TTR("Extend Script"));
@@ -3259,6 +3276,13 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	button_instance->set_tooltip(TTR("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
 	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
 	filter_hbc->add_child(button_instance);
+
+	button_property_edit = memnew(Button);
+	button_property_edit->set_flat(true);
+	button_property_edit->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_PROPERTY_EDIT, false));
+	button_property_edit->set_tooltip(TTR("Edit current scene in the property editor."));
+	button_property_edit->set_shortcut(ED_GET_SHORTCUT("scene_tree/property_editor"));
+	filter_hbc->add_child(button_property_edit);
 
 	vbc->add_child(filter_hbc);
 	filter = memnew(LineEdit);
@@ -3409,6 +3433,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	clear_inherit_confirm->get_ok_button()->set_text(TTR("Clear"));
 	add_child(clear_inherit_confirm);
 
+	property_editor = _create_scene_property_editor();
+	add_child(property_editor);
+	property_editor->hide();
+	add_child(edit_variable_dialog);
+	edit_variable_dialog->add_child(edit_variable_edit);
+	edit_variable_dialog->hide();
 	set_process_input(true);
 	set_process(true);
 
@@ -3427,4 +3457,302 @@ SceneTreeDock::~SceneTreeDock() {
 	if (!node_clipboard.is_empty()) {
 		_clear_clipboard();
 	}
+}
+
+ConfirmationDialog *SceneTreeDock::_create_scene_property_editor() {
+	property_search_timer->set_one_shot(true);
+	property_search_timer->set_wait_time(0.3f);
+	add_child(property_search_timer);
+
+	ConfirmationDialog *dialog = memnew(ConfirmationDialog);
+	dialog->set_title(TTR("Scene Property Editor"));
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	dialog->add_child(vbc);
+
+	HBoxContainer *search_bar = memnew(HBoxContainer);
+	Label *label = memnew(Label);
+	exact_search_button = memnew(CheckBox);
+	exact_search_button->set_text("Exact Search");
+	label->set_text(TTR("Find:"));
+	search_bar->add_child(label);
+	property_editor_search_box = memnew(LineEdit);
+	property_editor_search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_bar->add_child(property_editor_search_box);
+	Vector<Variant> params;
+	if (property_editor_search_box) {
+		params.push_back(property_editor_search_box->get_text());
+	}
+	Button *search_button = memnew(Button);
+	search_button->set_text(TTR("Search"));
+	search_bar->add_child(search_button);
+	vbc->add_child(search_bar);
+	vbc->add_child(exact_search_button);
+	property_editor_tree = memnew(Tree);
+	property_editor_tree->set_hide_root(true);
+	property_editor_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	property_editor_tree->set_columns(3);
+	property_editor_tree->set_select_mode(Tree::SELECT_ROW);
+	property_editor_tree->set_column_titles_visible(true);
+	property_editor_tree->set_column_custom_minimum_width(PROPERTY_EDITOR_TABLE_PATH, 30 * EDSCALE);
+	property_editor_tree->set_column_custom_minimum_width(PROPERTY_EDITOR_TABLE_NAME, 10 * EDSCALE);
+	property_editor_tree->set_column_custom_minimum_width(PROPERTY_EDITOR_TABLE_VALUE, 30 * EDSCALE);
+	property_editor_tree->set_column_expand(PROPERTY_EDITOR_TABLE_PATH, true);
+	property_editor_tree->set_column_expand(PROPERTY_EDITOR_TABLE_NAME, true);
+	property_editor_tree->set_column_expand(PROPERTY_EDITOR_TABLE_VALUE, true);
+	property_editor_tree->set_column_clip_content(PROPERTY_EDITOR_TABLE_PATH, true);
+	property_editor_tree->set_column_clip_content(PROPERTY_EDITOR_TABLE_NAME, true);
+	property_editor_tree->set_column_clip_content(PROPERTY_EDITOR_TABLE_VALUE, true);
+	property_editor_tree->set_column_title(PROPERTY_EDITOR_TABLE_PATH, TTR("Path"));
+	property_editor_tree->set_column_title(PROPERTY_EDITOR_TABLE_NAME, TTR("Property"));
+	property_editor_tree->set_column_title(PROPERTY_EDITOR_TABLE_VALUE, TTR("Value"));
+
+	button_property_edit->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected), make_binds(TOOL_PROPERTY_EDIT, false));
+
+	property_editor_tree->connect("item_activated", callable_mp(this, &SceneTreeDock::_scene_property_editor_action_activated));
+	property_editor_tree->connect("button_pressed", callable_mp(this, &SceneTreeDock::_scene_property_editor_button_pressed));
+	vbc->add_child(property_editor_tree);
+	// Searching on text change takes excessive time
+	property_editor_search_box->connect("text_entered", callable_mp(this, &SceneTreeDock::_scene_property_editor_changed));
+	property_editor_search_box->connect("text_submitted", callable_mp(this, &SceneTreeDock::_scene_property_editor_changed));
+	search_button->connect("pressed", callable_mp(property_search_timer, &Timer::start), make_binds(0.3f));
+	exact_search_button->connect("pressed", callable_mp(property_search_timer, &Timer::start), make_binds(0.3f));
+	property_search_timer->connect("timeout", callable_mp(this, &SceneTreeDock::_scene_property_editor_update));
+	return dialog;
+}
+
+void SceneTreeDock::_scene_property_editor_button_pressed(Object *p_item, int32_t p_column, int32_t p_id) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_COND(!ti);
+	Node *scene = edited_scene;
+	if (!scene) {
+		return;
+	}
+	String path = ti->get_text(PROPERTY_EDITOR_TABLE_PATH);
+	String name = ti->get_text(PROPERTY_EDITOR_TABLE_VALUE);
+	if (p_id == 0) {
+		_scene_property_editor_select(path, name);
+	} else if (p_id == 1) {
+		bool valid = false;
+		Variant property;
+		Ref<Resource> res;
+		Node *node = nullptr;
+		if (path.is_resource_file()) {
+			res = ResourceLoader::load(path);
+			property = res->get(name, &valid);
+		} else {
+			node = scene->get_node(path);
+			ERR_FAIL_COND(!node);
+			property = node->get(name, &valid);
+		}
+		if (!valid) {
+			return;
+		}
+		Callable::CallError err;
+		Variant var;
+		Variant::construct(property.get_type(), var, nullptr, 0, err);
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Revert scene property"));
+		if (path.is_resource_file()) {
+			var = ClassDB::class_get_default_property_value(res->get_class_name(), name);
+			ur->add_do_method(res.ptr(), "set", name, var);
+			ur->add_undo_method(res.ptr(), "set", name, property);
+		} else {
+			ur->add_do_method(node, "set", name, var);
+			ur->add_undo_method(node, "set", name, property);
+			Ref<Script> script = node->get_script();
+			if (script.is_null()) {
+				var = ClassDB::class_get_default_property_value(node->get_class_name(), name);
+			} else if (!script->get_property_default_value(name, var)) {
+				ur->add_do_method(property_search_timer, "start");
+				ur->add_undo_method(property_search_timer, "start");
+				ur->commit_action();
+				return;
+			}
+			ur->add_do_method(node, "set", name, var);
+			ur->add_undo_method(node, "set", name, property);
+		}
+		ur->add_do_method(property_search_timer, "start");
+		ur->add_undo_method(property_search_timer, "start");
+		ur->commit_action();
+	}
+}
+
+void SceneTreeDock::_scene_property_editor_action_activated() {
+	ERR_FAIL_COND(!property_editor_tree);
+	TreeItem *ti = property_editor_tree->get_selected();
+	ERR_FAIL_COND(!ti);
+	Node *scene = edited_scene;
+	if (!scene) {
+		return;
+	}
+	String path = ti->get_text(0);
+	String name = ti->get_text(1);
+	_scene_property_editor_select(path, name);
+}
+
+void SceneTreeDock::_scene_property_editor_select(String p_path, String p_name) {
+	if (p_path.begins_with("res://")) {
+		p_path = p_path.simplify_path();
+		p_path = p_path.split("::")[0];
+		Ref<Resource> res = ResourceLoader::load(p_path);
+		ERR_FAIL_COND(res.is_null());
+		EditorNode::get_singleton()->get_inspector_dock()->edit_resource(res);
+		_focus_filter(p_name);
+	} else {
+		Node *node = EditorInterface::get_singleton()->get_edited_scene_root()->get_node_or_null(p_path);
+		ERR_FAIL_COND(!node);
+		Set<Node *> empty_selection;
+		scene_tree->set_marked(empty_selection);
+		scene_tree->set_selected(node, true);
+		_node_selected();
+		call_deferred("_focus_filter", p_name);
+	}
+	EditorNode::get_singleton()->get_inspector_dock()->get_inspector()->set_filter("");
+	property_editor->hide();
+}
+
+void SceneTreeDock::_focus_filter(String p_name) {
+	Vector<String> props = p_name.split("/");
+	for (int32_t i = 0; i < props.size(); i++) {
+		String property = props[i];
+		EditorNode::get_singleton()->get_inspector_dock()->get_inspector()->set_filter(property.capitalize());
+		EditorNode::get_singleton()->get_inspector_dock()->get_inspector()->expand_all_folding();
+	}
+}
+
+void SceneTreeDock::_update_scene_property_editor(int32_t &r_count, Vector<VariantInfo> &r_queue, String p_search_term, Tree *p_tree, TreeItem *p_tree_item, Node *p_root, Node *p_current_node) {
+	if (r_count % 20 == 0) {
+		EditorNode::get_singleton()->progress_task_step("ScanSceneNodes", p_current_node->get_name(), r_count);
+	}
+	r_count++;
+	List<PropertyInfo> property_info;
+	p_current_node->get_property_list(&property_info);
+	Set<PropertyInfo> property_info_set;
+	for (int32_t property_i = 0; property_i < property_info.size(); property_i++) {
+		property_info_set.insert(property_info[property_i]);
+	}
+	for (Set<PropertyInfo>::Element *E = property_info_set.front(); E; E = E->next()) {
+		String name = E->get().name;
+		String path = p_root->get_path_to(p_current_node);
+		bool valid = false;
+		Variant value = p_current_node->get(name, &valid);
+		if (!valid) {
+			continue;
+		}
+		VariantInfo variant_info;
+		variant_info.info = E->get();
+		bool has_editor = (variant_info.info.usage & PropertyUsageFlags::PROPERTY_USAGE_EDITOR) != 0;
+		if (!has_editor) {
+			continue;
+		}
+		variant_info.variant = value;
+		variant_info.path = path;
+		r_queue.push_back(variant_info);
+	}
+	for (int32_t i = 0; i < r_queue.size(); i++) {
+		VariantInfo front = r_queue[i];
+		String name = front.info.name;
+		Variant value = front.variant;
+		String path;
+		if (r_queue[i].info.hint == PropertyHint::PROPERTY_HINT_RESOURCE_TYPE) {
+			Ref<Resource> res = front.variant;
+			if (res.is_null()) {
+				continue;
+			}
+			List<PropertyInfo> res_property_info;
+			res->get_property_list(&res_property_info);
+			{
+				VariantInfo variant_info;
+				variant_info.info = res_property_info[0];
+				bool valid = false;
+				variant_info.variant = res->get(variant_info.info.name, &valid);
+				if (valid) {
+					variant_info.path = res->get_path();
+					if (r_queue.find(variant_info) != -1) {
+						continue;
+					}
+				}
+			}
+			Vector<VariantInfo> new_queue;
+			for (int32_t property_i = 0; property_i < res_property_info.size(); property_i++) {
+				VariantInfo variant_info;
+				variant_info.info = res_property_info[property_i];
+				bool valid = false;
+				variant_info.variant = res->get(variant_info.info.name, &valid);
+				if (!valid) {
+					continue;
+				}
+				variant_info.path = res->get_path();
+				if (r_queue.find(variant_info) != -1) {
+					break;
+				}
+				new_queue.push_back(variant_info);
+			}
+			r_queue.append_array(new_queue);
+		}
+	}
+	for (int32_t node_i = 0; node_i < p_current_node->get_child_count(); node_i++) {
+		_update_scene_property_editor(r_count, r_queue, p_search_term, p_tree, p_tree_item, p_root, p_current_node->get_child(node_i));
+	}
+}
+
+void SceneTreeDock::_count_scene_property_editor(int32_t &r_count, Node *p_root, Node *p_current_node) {
+	r_count++;
+	for (int32_t node_i = 0; node_i < p_current_node->get_child_count(); node_i++) {
+		_count_scene_property_editor(r_count, p_root, p_current_node->get_child(node_i));
+	}
+}
+
+void SceneTreeDock::_scene_property_editor_update() {
+	Node *scene = edited_scene;
+	if (!scene) {
+		return;
+	}
+	ERR_FAIL_COND(!property_editor_tree);
+	Tree *tree = property_editor_tree;
+	tree->clear();
+	TreeItem *root = tree->create_item();
+	Vector<VariantInfo> variant_infos;
+	String search_term = property_editor_search_box->get_text();
+	int32_t total = 0;
+	_count_scene_property_editor(total, scene, scene);
+	int32_t count = 0;
+	EditorNode::get_singleton()->progress_add_task("ScanSceneNodes", TTR("Node"), total);
+	_update_scene_property_editor(count, variant_infos, search_term, property_editor_tree, root, scene, scene);
+	EditorNode::get_singleton()->progress_end_task("ScanSceneNodes");
+	EditorNode::get_singleton()->progress_add_task("ScanSceneProperties", TTR("Node"), variant_infos.size());
+	for (int32_t queue_i = 0; queue_i < variant_infos.size(); queue_i++) {
+		VariantInfo front = variant_infos[queue_i];
+		String name = front.info.name;
+		Variant value = front.variant;
+		String path = front.path;
+		bool has_name = name.findn(search_term) != -1 || name.replace("_", " ").strip_edges().findn(search_term) != -1;
+		bool has_path = path.findn(search_term) != -1 || path.replace("_", " ").strip_edges().findn(search_term) != -1;
+		bool has_value = String(value).findn(search_term) != -1 || String(value).replace("_", " ").strip_edges().findn(search_term) != -1;
+		if (!(search_term.is_empty() || has_name || has_path || has_value)) {
+			continue;
+		}
+		bool has_exact_name = search_term.find(name) != -1;
+		bool has_exact_path = search_term.find(path) != -1;
+		bool has_exact_value = search_term.find(String(value)) != -1;
+		if (exact_search_button->is_pressed() && !(search_term.is_empty() || has_exact_name || has_exact_path || has_exact_value)) {
+			continue;
+		}
+		TreeItem *current_item = property_editor_tree->create_item(root);
+		current_item->set_text(PROPERTY_EDITOR_TABLE_PATH, path);
+		current_item->set_text(PROPERTY_EDITOR_TABLE_NAME, name);
+		current_item->set_text(PROPERTY_EDITOR_TABLE_VALUE, value);
+		String type = Variant::get_type_name(variant_infos[queue_i].info.type);
+		current_item->set_metadata(PROPERTY_EDITOR_TABLE_VALUE, type);
+		current_item->add_button(PROPERTY_EDITOR_TABLE_VALUE, get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")), 0);
+		current_item->add_button(PROPERTY_EDITOR_TABLE_VALUE, get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), 0);
+		if (queue_i % 10000 == 0) {
+			EditorNode::get_singleton()->progress_task_step("ScanSceneProperties", name, queue_i);
+		}
+	}
+	EditorNode::get_singleton()->progress_end_task("ScanSceneProperties");
+}
+
+void SceneTreeDock::_scene_property_editor_changed(String p_search_term) {
+	property_search_timer->start();
 }
