@@ -3227,8 +3227,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		}
 		if (reference.layout != description.finalLayout) {
 			// NOTE: this should be smarter based on the textures knowledge of it's subsequent role
-			dependency_from_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-			dependency_from_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+			dependency_to_external.dstStageMask |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+			dependency_to_external.dstAccessMask |= VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
 		}
 	}
 
@@ -3258,7 +3258,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	render_pass_create_info.pAttachments = attachments.ptr();
 	render_pass_create_info.subpassCount = 1;
 	render_pass_create_info.pSubpasses = &subpass;
-	render_pass_create_info.dependencyCount = 0; //2 - throws validation layer error
+	render_pass_create_info.dependencyCount = 2;
 	render_pass_create_info.pDependencies = dependencies;
 
 	VkRenderPass render_pass;
