@@ -144,7 +144,7 @@ VERTEX_SHADER_CODE
 
 	color_interp = color;
 
-	if (bool(draw_data.flags & FLAGS_USE_PIXEL_SNAP)) {
+	if (canvas_data.use_pixel_snap) {
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid

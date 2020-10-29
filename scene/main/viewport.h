@@ -225,6 +225,8 @@ private:
 	bool gen_mipmaps;
 
 	bool snap_controls_to_pixels;
+	bool snap_2d_transforms_to_pixel;
+	bool snap_2d_vertices_to_pixel;
 
 	bool physics_object_picking;
 	List<Ref<InputEvent>> physics_picking_events;
@@ -555,6 +557,12 @@ public:
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;
+
+	void set_snap_2d_transforms_to_pixel(bool p_enable);
+	bool is_snap_2d_transforms_to_pixel_enabled() const;
+
+	void set_snap_2d_vertices_to_pixel(bool p_enable);
+	bool is_snap_2d_vertices_to_pixel_enabled() const;
 
 	void set_input_as_handled();
 	bool is_input_handled() const;

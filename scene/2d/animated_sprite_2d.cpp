@@ -31,6 +31,7 @@
 #include "animated_sprite_2d.h"
 
 #include "core/os/os.h"
+#include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
@@ -443,7 +444,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 				ofs -= s / 2;
 			}
 
-			if (Engine::get_singleton()->get_use_pixel_snap()) {
+			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 				ofs = ofs.floor();
 			}
 			Rect2 dst_rect(ofs, s);

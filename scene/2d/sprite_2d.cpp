@@ -99,7 +99,8 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	if (centered) {
 		dest_offset -= frame_size / 2;
 	}
-	if (Engine::get_singleton()->get_use_pixel_snap()) {
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		dest_offset = dest_offset.floor();
 	}
 
@@ -366,7 +367,8 @@ Rect2 Sprite2D::get_rect() const {
 	if (centered) {
 		ofs -= Size2(s) / 2;
 	}
-	if (Engine::get_singleton()->get_use_pixel_snap()) {
+
+	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
 		ofs = ofs.floor();
 	}
 

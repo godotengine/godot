@@ -37,7 +37,7 @@
 
 static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
-void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat) {
+void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
@@ -68,7 +68,7 @@ void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Can
 
 	RENDER_TIMESTAMP("Render Canvas Items");
 
-	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_transform, p_default_filter, p_default_repeat);
+	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 }
 
 void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transform2D p_transform, RenderingServerCanvas::Item *p_material_owner, RenderingServerCanvas::Item **r_items, int &r_index) {
@@ -113,7 +113,12 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 
 	Rect2 rect = ci->get_rect();
-	Transform2D xform = p_transform * ci->xform;
+	Transform2D xform = ci->xform;
+	if (snapping_2d_transforms_to_pixel) {
+		xform.elements[2].floor();
+	}
+	xform = p_transform * xform;
+
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
@@ -314,8 +319,10 @@ void RenderingServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::
 	}
 }
 
-void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat) {
+void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel) {
 	RENDER_TIMESTAMP(">Render Canvas");
+
+	snapping_2d_transforms_to_pixel = p_snap_2d_transforms_to_pixel;
 
 	if (p_canvas->children_order_dirty) {
 		p_canvas->child_items.sort();
@@ -334,26 +341,26 @@ void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas,
 	}
 
 	if (!has_mirror) {
-		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat);
+		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 
 	} else {
 		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat);
+			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 			if (ci2.mirror.y != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 		}
 	}

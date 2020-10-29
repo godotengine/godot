@@ -3170,6 +3170,24 @@ bool Viewport::is_snap_controls_to_pixels_enabled() const {
 	return snap_controls_to_pixels;
 }
 
+void Viewport::set_snap_2d_transforms_to_pixel(bool p_enable) {
+	snap_2d_transforms_to_pixel = p_enable;
+	RS::get_singleton()->viewport_set_snap_2d_transforms_to_pixel(viewport, snap_2d_transforms_to_pixel);
+}
+
+bool Viewport::is_snap_2d_transforms_to_pixel_enabled() const {
+	return snap_2d_transforms_to_pixel;
+}
+
+void Viewport::set_snap_2d_vertices_to_pixel(bool p_enable) {
+	snap_2d_vertices_to_pixel = p_enable;
+	RS::get_singleton()->viewport_set_snap_2d_vertices_to_pixel(viewport, snap_2d_vertices_to_pixel);
+}
+
+bool Viewport::is_snap_2d_vertices_to_pixel_enabled() const {
+	return snap_2d_vertices_to_pixel;
+}
+
 bool Viewport::gui_is_dragging() const {
 	return gui.dragging;
 }
@@ -3395,6 +3413,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snap_controls_to_pixels", "enabled"), &Viewport::set_snap_controls_to_pixels);
 	ClassDB::bind_method(D_METHOD("is_snap_controls_to_pixels_enabled"), &Viewport::is_snap_controls_to_pixels_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_snap_2d_transforms_to_pixel", "enabled"), &Viewport::set_snap_2d_transforms_to_pixel);
+	ClassDB::bind_method(D_METHOD("is_snap_2d_transforms_to_pixel_enabled"), &Viewport::is_snap_2d_transforms_to_pixel_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_snap_2d_vertices_to_pixel", "enabled"), &Viewport::set_snap_2d_vertices_to_pixel);
+	ClassDB::bind_method(D_METHOD("is_snap_2d_vertices_to_pixel_enabled"), &Viewport::is_snap_2d_vertices_to_pixel_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
@@ -3419,6 +3443,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transparent_bg"), "set_transparent_background", "has_transparent_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_transforms_to_pixel"), "set_snap_2d_transforms_to_pixel", "is_snap_2d_transforms_to_pixel_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"), "set_screen_space_aa", "get_screen_space_aa");
@@ -3577,6 +3603,9 @@ Viewport::Viewport() {
 	debug_draw = DEBUG_DRAW_DISABLED;
 
 	snap_controls_to_pixels = true;
+	snap_2d_transforms_to_pixel = false;
+	snap_2d_vertices_to_pixel = false;
+
 	physics_last_mouse_state.alt = false;
 	physics_last_mouse_state.control = false;
 	physics_last_mouse_state.shift = false;
