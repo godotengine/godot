@@ -72,6 +72,19 @@
 				Setups a time-based seed to generator.
 			</description>
 		</method>
+		<method name="randv_circle">
+			<return type="Vector2">
+			</return>
+			<description>
+				Generates a normalized vector, also known as point on a unit circle. The unit vector can be multiplied by a scalar value to produce points on a circle with an arbitrary radius:
+				[codeblock]
+				var rng = RandomNumberGenerator.new()
+				var direction = rng.randv_circle()
+				var radius = 64
+				var impulse = direction * radius
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
