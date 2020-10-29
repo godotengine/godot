@@ -71,6 +71,9 @@
 #include <devpkey.h>
 #include <winternl.h>
 #include <strsafe.h>
+#ifdef __MINGW32__
+#undef strcpy  // fix error with redfined strcpy when building with MinGW-w64
+#endif
 #include <dxgi1_6.h>
 #include "adapters.h"
 
@@ -695,7 +698,11 @@ VkResult loaderGetDeviceRegistryFiles(const struct loader_instance *inst, char *
                                       LPCSTR value_name) {
     static const wchar_t *softwareComponentGUID = L"{5c4c3332-344d-483c-8739-259e934c9cc8}";
     static const wchar_t *displayGUID = L"{4d36e968-e325-11ce-bfc1-08002be10318}";
+#ifdef CM_GETIDLIST_FILTER_PRESENT
     const ULONG flags = CM_GETIDLIST_FILTER_CLASS | CM_GETIDLIST_FILTER_PRESENT;
+#else
+    const ULONG flags = 0x300;
+#endif
 
     wchar_t childGuid[MAX_GUID_STRING_LEN + 2];  // +2 for brackets {}
     ULONG childGuidSize = sizeof(childGuid);
