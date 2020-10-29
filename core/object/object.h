@@ -482,8 +482,6 @@ private:
 	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
 	Variant _get_indexed_bind(const NodePath &p_name) const;
 
-	void property_list_changed_notify();
-
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
 	friend class Reference;
@@ -525,6 +523,7 @@ protected:
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);
 
+	void property_list_changed_notify();
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 	//Variant _call_bind(const StringName& p_name, const Variant& p_arg1 = Variant(), const Variant& p_arg2 = Variant(), const Variant& p_arg3 = Variant(), const Variant& p_arg4 = Variant());
