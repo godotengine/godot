@@ -1269,6 +1269,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_main_vb->add_child(uv_mode_hb);
 	for (int i = 0; i < UV_MODE_MAX; i++) {
 		uv_button[i] = memnew(Button);
+		uv_button[i]->set_flat(true);
 		uv_button[i]->set_toggle_mode(true);
 		uv_mode_hb->add_child(uv_button[i]);
 		uv_button[i]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_mode), varray(i));
