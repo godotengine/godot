@@ -142,7 +142,7 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 GDScriptFunction::GDScriptFunction() :
 		function_list(this) {
 	_stack_size = 0;
-	_call_size = 0;
+	_instruction_args_size = 0;
 	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED

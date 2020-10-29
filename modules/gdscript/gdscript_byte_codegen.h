@@ -66,7 +66,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 #endif
 	int current_line = 0;
 	int stack_max = 0;
-	int call_max = 0;
+	int ptrcall_max = 0;
+	int instr_args_max = 0;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
 	List<int> for_jmp_addrs;
@@ -167,9 +168,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			stack_max = p_level + 1;
 	}
 
-	void alloc_call(int p_params) {
-		if (p_params >= call_max)
-			call_max = p_params;
+	void alloc_ptr_call(int p_params) {
+		if (p_params >= ptrcall_max)
+			ptrcall_max = p_params;
 	}
 
 	int increase_stack() {
@@ -203,6 +204,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 				return GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
 		}
 		return -1; // Unreachable.
+	}
+
+	void append(GDScriptFunction::Opcode code, int p_variant_arguments) {
+		opcodes.push_back((code & GDScriptFunction::INSTR_MASK) | (p_variant_arguments << GDScriptFunction::INSTR_BITS));
+		instr_args_max = MAX(instr_args_max, p_variant_arguments);
 	}
 
 	void append(int code) {

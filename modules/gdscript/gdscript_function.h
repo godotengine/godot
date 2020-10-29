@@ -575,6 +575,12 @@ public:
 		ADDR_TYPE_NIL = 9
 	};
 
+	enum Instruction {
+		INSTR_BITS = 20,
+		INSTR_MASK = ((1 << INSTR_BITS) - 1),
+		INSTR_ARGS_MASK = ~INSTR_MASK,
+	};
+
 	struct StackDebug {
 		int line;
 		int pos;
@@ -589,26 +595,27 @@ private:
 	StringName source;
 
 	mutable Variant nil;
-	mutable Variant *_constants_ptr;
-	int _constant_count;
-	const StringName *_global_names_ptr;
-	int _global_names_count;
-	const int *_default_arg_ptr;
-	int _default_arg_count;
-	const int *_code_ptr;
-	int _code_size;
-	int _methods_count;
-	MethodBind **_methods_ptr;
-	int _variant_methods_count;
+	mutable Variant *_constants_ptr = nullptr;
+	int _constant_count = 0;
+	const StringName *_global_names_ptr = nullptr;
+	int _global_names_count = 0;
+	const int *_default_arg_ptr = nullptr;
+	int _default_arg_count = 0;
+	const int *_code_ptr = nullptr;
+	int _code_size = 0;
+	int _methods_count = 0;
+	MethodBind **_methods_ptr = nullptr;
+	int _variant_methods_count = 0;
 	Variant::InternalMethod **_variant_methods_ptr;
-	int _argument_count;
-	int _stack_size;
-	int _call_size;
-	int _initial_line;
-	bool _static;
-	MultiplayerAPI::RPCMode rpc_mode;
+	int _argument_count = 0;
+	int _stack_size = 0;
+	int _ptrcall_args_size = 0;
+	int _instruction_args_size = 0;
+	int _initial_line = 0;
+	bool _static = false;
+	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
-	GDScript *_script;
+	GDScript *_script = nullptr;
 
 	StringName name;
 	Vector<Variant> constants;
