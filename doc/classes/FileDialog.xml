@@ -83,7 +83,7 @@
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Save a File&quot;" />
 			The title of the window.
-			[b]Note:[/b] The title bar background is drawn by the window panel and its [Theme].
+			[b]Note:[/b] The title bar background is drawn by the window panel and its [StyleBox]. For the title bar, increase the top Expand Margin to ~20 pixels and set the top border width to ~20 pixels in order to use a different background color.
 	</members>
 	<signals>
 		<signal name="dir_selected">
