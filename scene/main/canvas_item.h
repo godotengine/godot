@@ -200,6 +200,7 @@ private:
 	Window *window;
 	bool first_draw;
 	bool visible;
+	bool clip_children;
 	bool pending_update;
 	bool top_level;
 	bool drawing;
@@ -314,6 +315,9 @@ public:
 	void hide();
 
 	void update();
+
+	void set_clip_children(bool p_enabled);
+	bool is_clipping_children() const;
 
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;

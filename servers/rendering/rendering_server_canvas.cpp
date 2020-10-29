@@ -167,8 +167,15 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 		p_z = ci->z_index;
 	}
 
+	RasterizerCanvas::Item *canvas_group_from = nullptr;
+	bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+	if (use_canvas_group) {
+		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+		canvas_group_from = z_last_list[zidx];
+	}
+
 	for (int i = 0; i < child_item_count; i++) {
-		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
+		if ((!child_items[i]->behind && !use_canvas_group) || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
 		}
 		if (ci->sort_y) {
@@ -180,6 +187,70 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 
 	if (ci->copy_back_buffer) {
 		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+	}
+
+	if (use_canvas_group) {
+		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+		if (canvas_group_from == nullptr) {
+			// no list before processing this item, means must put stuff in group from the beginning of list.
+			canvas_group_from = z_list[zidx];
+		} else {
+			// there was a list before processing, so begin group from this one.
+			canvas_group_from = canvas_group_from->next;
+		}
+
+		if (canvas_group_from) {
+			// Has a place to begin the group from!
+
+			//compute a global rect (in global coords) for children in the same z layer
+			Rect2 rect_accum;
+			RasterizerCanvas::Item *c = canvas_group_from;
+			while (c) {
+				if (c == canvas_group_from) {
+					rect_accum = c->global_rect_cache;
+				} else {
+					rect_accum = rect_accum.merge(c->global_rect_cache);
+				}
+
+				c = c->next;
+			}
+
+			// We have two choices now, if user has drawn something, we must assume users wants to draw the "mask", so compute the size based on this.
+			// If nothing has been drawn, we just take it over and draw it ourselves.
+			if (ci->canvas_group->fit_empty && (ci->commands == nullptr ||
+													   (ci->commands->next == nullptr && ci->commands->type == Item::Command::TYPE_RECT && (static_cast<Item::CommandRect *>(ci->commands)->flags & RasterizerCanvas::CANVAS_RECT_IS_GROUP)))) {
+				// No commands, or sole command is the one used to draw, so we (re)create the draw command.
+				ci->clear();
+
+				if (rect_accum == Rect2()) {
+					rect_accum.size = Size2(1, 1);
+				}
+
+				rect_accum = rect_accum.grow(ci->canvas_group->fit_margin);
+
+				//draw it?
+				RasterizerCanvas::Item::CommandRect *crect = ci->alloc_command<RasterizerCanvas::Item::CommandRect>();
+
+				crect->flags = RasterizerCanvas::CANVAS_RECT_IS_GROUP; // so we can recognize it later
+				crect->rect = xform.affine_inverse().xform(rect_accum);
+				crect->modulate = Color(1, 1, 1, 1);
+
+				//the global rect is used to do the copying, so update it
+				global_rect = rect_accum.grow(ci->canvas_group->clear_margin); //grow again by clear margin
+				global_rect.position += p_clip_rect.position;
+			} else {
+				global_rect.position -= p_clip_rect.position;
+
+				global_rect = global_rect.merge(rect_accum); //must use both rects for this
+				global_rect = global_rect.grow(ci->canvas_group->clear_margin); //grow by clear margin
+
+				global_rect.position += p_clip_rect.position;
+			}
+
+			// Very important that this is cleared after used in RasterizerCanvas to avoid
+			// potential crashes.
+			canvas_group_from->canvas_group_owner = ci;
+		}
 	}
 
 	if (ci->update_when_visible) {
@@ -211,7 +282,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 
 	for (int i = 0; i < child_item_count; i++) {
-		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
+		if (child_items[i]->behind || use_canvas_group || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
 		}
 		if (ci->sort_y) {
@@ -933,6 +1004,27 @@ void RenderingServerCanvas::canvas_item_set_use_parent_material(RID p_item, bool
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->use_parent_material = p_enable;
+}
+
+void RenderingServerCanvas::canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin, bool p_fit_empty, float p_fit_margin, bool p_blur_mipmaps) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	if (p_mode == RS::CANVAS_GROUP_MODE_DISABLED) {
+		if (canvas_item->canvas_group != nullptr) {
+			memdelete(canvas_item->canvas_group);
+			canvas_item->canvas_group = nullptr;
+		}
+	} else {
+		if (canvas_item->canvas_group == nullptr) {
+			canvas_item->canvas_group = memnew(RasterizerCanvas::Item::CanvasGroup);
+		}
+		canvas_item->canvas_group->mode = p_mode;
+		canvas_item->canvas_group->fit_empty = p_fit_empty;
+		canvas_item->canvas_group->fit_margin = p_fit_margin;
+		canvas_item->canvas_group->blur_mipmaps = p_blur_mipmaps;
+		canvas_item->canvas_group->clear_margin = p_clear_margin;
+	}
 }
 
 RID RenderingServerCanvas::canvas_light_create() {

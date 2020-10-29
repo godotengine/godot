@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/message_queue.h"
+#include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
@@ -1199,6 +1200,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_repeat", "mode"), &CanvasItem::set_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &CanvasItem::get_texture_repeat);
 
+	ClassDB::bind_method(D_METHOD("set_clip_children", "enable"), &CanvasItem::set_clip_children);
+	ClassDB::bind_method(D_METHOD("is_clipping_children"), &CanvasItem::is_clipping_children);
+
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility", "");
@@ -1208,6 +1212,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_on_top", PROPERTY_HINT_NONE, "", 0), "_set_on_top", "_is_on_top"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_children"), "set_clip_children", "is_clipping_children");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 
 	ADD_GROUP("Texture", "texture_");
@@ -1383,6 +1388,22 @@ void CanvasItem::set_texture_repeat(TextureRepeat p_texture_repeat) {
 	_change_notify();
 }
 
+void CanvasItem::set_clip_children(bool p_enabled) {
+	if (clip_children == p_enabled) {
+		return;
+	}
+	clip_children = p_enabled;
+
+	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
+		//avoid accidental bugs, make this not work on CanvasGroup
+		return;
+	}
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), clip_children ? RS::CANVAS_GROUP_MODE_OPAQUE : RS::CANVAS_GROUP_MODE_DISABLED);
+}
+bool CanvasItem::is_clipping_children() const {
+	return clip_children;
+}
+
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 	return texture_repeat;
 }
@@ -1399,6 +1420,7 @@ CanvasItem::CanvasItem() :
 	first_draw = false;
 	drawing = false;
 	behind = false;
+	clip_children = false;
 	block_transform_notify = false;
 	canvas_layer = nullptr;
 	use_parent_material = false;
