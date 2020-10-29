@@ -50,7 +50,7 @@ void Path3D::_curve_changed() {
 		for (int i = 0; i < get_child_count(); i++) {
 			PathFollow3D *child = Object::cast_to<PathFollow3D>(get_child(i));
 			if (child) {
-				child->update_configuration_warning();
+				child->update_configuration_warnings();
 			}
 		}
 	}
@@ -241,29 +241,21 @@ void PathFollow3D::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-String PathFollow3D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> PathFollow3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warning = Node3D::get_configuration_warning();
-
-	if (!Object::cast_to<Path3D>(get_parent())) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("PathFollow3D only works when set as a child of a Path3D node.");
-	} else {
-		Path3D *path = Object::cast_to<Path3D>(get_parent());
-		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			if (!warning.is_empty()) {
-				warning += "\n\n";
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!Object::cast_to<Path3D>(get_parent())) {
+			warnings.push_back(TTR("PathFollow3D only works when set as a child of a Path3D node."));
+		} else {
+			Path3D *path = Object::cast_to<Path3D>(get_parent());
+			if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
+				warnings.push_back(TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource."));
 			}
-			warning += TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource.");
 		}
 	}
 
-	return warning;
+	return warnings;
 }
 
 void PathFollow3D::_bind_methods() {
@@ -368,7 +360,7 @@ float PathFollow3D::get_unit_offset() const {
 void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
 	rotation_mode = p_rotation_mode;
 
-	update_configuration_warning();
+	update_configuration_warnings();
 	_update_transform();
 }
 

@@ -48,7 +48,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 		update_gizmo();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
-			update_configuration_warning();
+			update_configuration_warnings();
 		}
 	}
 }
@@ -63,7 +63,7 @@ void Light3D::set_shadow(bool p_enable) {
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
 	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
-		update_configuration_warning();
+		update_configuration_warnings();
 	}
 
 	notify_property_list_changed();
@@ -153,7 +153,7 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 	projector = p_texture;
 	RID tex_id = projector.is_valid() ? projector->get_rid() : RID();
 	RS::get_singleton()->light_set_projector(light, tex_id);
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<Texture2D> Light3D::get_projector() const {
@@ -457,17 +457,14 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-String OmniLight3D::get_configuration_warning() const {
-	String warning = Light3D::get_configuration_warning();
+TypedArray<String> OmniLight3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Projector texture only works with shadows active.");
+		warnings.push_back(TTR("Projector texture only works with shadows active."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void OmniLight3D::_bind_methods() {
@@ -491,24 +488,18 @@ OmniLight3D::OmniLight3D() :
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 2.0);
 }
 
-String SpotLight3D::get_configuration_warning() const {
-	String warning = Light3D::get_configuration_warning();
+TypedArray<String> SpotLight3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
+		warnings.push_back(TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("Projector texture only works with shadows active.");
+		warnings.push_back(TTR("Projector texture only works with shadows active."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void SpotLight3D::_bind_methods() {

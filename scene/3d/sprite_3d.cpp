@@ -928,7 +928,7 @@ void AnimatedSprite3D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	notify_property_list_changed();
 	_reset_timeout();
 	_queue_update();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<SpriteFrames> AnimatedSprite3D::get_sprite_frames() const {
@@ -1058,17 +1058,14 @@ StringName AnimatedSprite3D::get_animation() const {
 	return animation;
 }
 
-String AnimatedSprite3D::get_configuration_warning() const {
-	String warning = SpriteBase3D::get_configuration_warning();
+TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (frames.is_null()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
+		warnings.push_back(TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void AnimatedSprite3D::_bind_methods() {

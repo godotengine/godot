@@ -340,7 +340,7 @@ public:
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 

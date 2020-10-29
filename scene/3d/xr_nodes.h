@@ -50,7 +50,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -97,7 +97,7 @@ public:
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRController3D() {}
 	~XRController3D() {}
@@ -133,7 +133,7 @@ public:
 
 	Ref<Mesh> get_mesh() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	XRAnchor3D() {}
 	~XRAnchor3D() {}
@@ -158,7 +158,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	void set_tracked_camera(XRCamera3D *p_tracked_camera);
 	void clear_tracked_camera_if(XRCamera3D *p_tracked_camera);

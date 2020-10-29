@@ -110,7 +110,7 @@ public:
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	CollisionObject3D();
 	~CollisionObject3D();

@@ -109,7 +109,7 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 	AnimatedSprite2D();
 };
 

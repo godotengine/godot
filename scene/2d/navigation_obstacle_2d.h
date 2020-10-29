@@ -52,7 +52,7 @@ public:
 		return agent;
 	}
 
-	virtual String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 private:
 	void update_agent_shape();

@@ -135,7 +135,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmes
 	emit_signal("navigation_mesh_changed");
 
 	update_gizmo();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
@@ -177,21 +177,16 @@ void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	emit_signal("bake_finished");
 }
 
-String NavigationRegion3D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+TypedArray<String> NavigationRegion3D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	String warning = Node3D::get_configuration_warning();
-
-	if (!navmesh.is_valid()) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
+	if (is_visible_in_tree() && is_inside_tree()) {
+		if (!navmesh.is_valid()) {
+			warnings.push_back(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		}
-		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
 
-	return warning;
+	return warnings;
 }
 
 void NavigationRegion3D::_bind_methods() {
@@ -217,7 +212,7 @@ void NavigationRegion3D::_bind_methods() {
 
 void NavigationRegion3D::_navigation_changed() {
 	update_gizmo();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 NavigationRegion3D::NavigationRegion3D() {

@@ -59,7 +59,7 @@ void TileMap::_notification(int p_what) {
 			RID space = get_world_2d()->get_space();
 			_update_quadrant_transform();
 			_update_quadrant_space(space);
-			update_configuration_warning();
+			update_configuration_warnings();
 
 		} break;
 
@@ -1301,7 +1301,7 @@ void TileMap::set_collision_use_parent(bool p_use_parent) {
 
 	_recreate_quadrants();
 	notify_property_list_changed();
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 void TileMap::set_collision_friction(float p_friction) {
@@ -1693,17 +1693,14 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 	}
 }
 
-String TileMap::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> TileMap::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 
 	if (use_parent && !collision_parent) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		return TTR("TileMap with Use Parent on needs a parent CollisionObject2D to give shapes to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(TTR("TileMap with Use Parent on needs a parent CollisionObject2D to give shapes to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void TileMap::_bind_methods() {

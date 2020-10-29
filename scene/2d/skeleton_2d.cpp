@@ -100,7 +100,7 @@ void Bone2D::set_rest(const Transform2D &p_rest) {
 		skeleton->_make_bone_setup_dirty();
 	}
 
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 Transform2D Bone2D::get_rest() const {
@@ -133,27 +133,21 @@ int Bone2D::get_index_in_skeleton() const {
 	return skeleton_index;
 }
 
-String Bone2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+TypedArray<String> Bone2D::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
 	if (!skeleton) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
 		if (parent_bone) {
-			warning += TTR("This Bone2D chain should end at a Skeleton2D node.");
+			warnings.push_back(TTR("This Bone2D chain should end at a Skeleton2D node."));
 		} else {
-			warning += TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node.");
+			warnings.push_back(TTR("A Bone2D only works with a Skeleton2D or another Bone2D as parent node."));
 		}
 	}
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
-		if (!warning.is_empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
+		warnings.push_back(TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 Bone2D::Bone2D() {

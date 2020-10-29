@@ -169,7 +169,7 @@ public:
 	void set_texture_scale(real_t p_scale);
 	real_t get_texture_scale() const;
 
-	String get_configuration_warning() const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 	PointLight2D();
 };
