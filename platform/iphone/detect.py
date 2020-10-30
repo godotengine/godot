@@ -119,7 +119,7 @@ def configure(env):
         arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
         env.Append(
             CCFLAGS=(
-                "-arch "
+                "-fobjc-arc -arch "
                 + arch_flag
                 + " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
                 " -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=13.0"
