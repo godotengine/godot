@@ -1807,6 +1807,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		node_dock->set_node(nullptr);
 		scene_tree_dock->set_selected(nullptr);
 		inspector_dock->update(nullptr);
+		_display_top_editors(false);
 		return;
 	}
 
