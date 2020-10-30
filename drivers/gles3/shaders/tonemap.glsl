@@ -311,6 +311,18 @@ vec3 apply_fxaa(vec3 color, float exposure, vec2 uv_interp, vec2 pixel_size) {
 	}
 }
 
+// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+vec3 screen_space_dither(vec2 frag_coord) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	return (dither.rgb - 0.5) / 255.0;
+}
+
 void main() {
 	vec3 color = textureLod(source, uv_interp, 0.0f).rgb;
 
@@ -325,6 +337,12 @@ void main() {
 #ifdef USE_FXAA
 	// FXAA must be applied before tonemapping.
 	color = apply_fxaa(color, exposure, uv_interp, pixel_size);
+#endif
+
+#ifdef USE_DEBANDING
+	// For best results, debanding should be done before tonemapping.
+	// Otherwise, we're adding noise to an already-quantized image.
+	color += screen_space_dither(gl_FragCoord.xy);
 #endif
 
 	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp

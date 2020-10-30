@@ -5421,6 +5421,17 @@ void RasterizerStorageGLES2::render_target_set_use_fxaa(RID p_render_target, boo
 	rt->use_fxaa = p_fxaa;
 }
 
+void RasterizerStorageGLES2::render_target_set_use_debanding(RID p_render_target, bool p_debanding) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_debanding) {
+		WARN_PRINT_ONCE("Debanding is not supported in the GLES2 backend. Switch to the GLES3 backend and make sure HDR is enabled.");
+	}
+
+	rt->use_debanding = p_debanding;
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {

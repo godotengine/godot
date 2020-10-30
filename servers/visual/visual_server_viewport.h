@@ -191,6 +191,7 @@ public:
 
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
 	void viewport_set_use_fxaa(RID p_viewport, bool p_fxaa);
+	void viewport_set_use_debanding(RID p_viewport, bool p_debanding);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
 

@@ -2479,13 +2479,16 @@ void SpatialEditorViewport::_notification(int p_what) {
 			viewport_container->set_stretch_shrink(shrink ? 2 : 1);
 		}
 
-		//update msaa if changed
+		// Update MSAA, FXAA, debanding and HDR if changed.
 
 		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
 		bool use_fxaa = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_fxaa");
 		viewport->set_use_fxaa(use_fxaa);
+
+		bool use_debanding = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_debanding");
+		viewport->set_use_debanding(use_debanding);
 
 		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
 		viewport->set_hdr(hdr);
