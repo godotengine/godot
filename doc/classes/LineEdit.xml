@@ -103,12 +103,20 @@
 			</argument>
 			<description>
 				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				text = "Welcome"
 				select() # Will select "Welcome".
 				select(4) # Will select "ome".
 				select(2, 5) # Will select "lco".
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				Text = "Welcome";
+				Select(); // Will select "Welcome".
+				Select(4); // Will select "ome".
+				Select(2, 5); // Will select "lco".
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="select_all">
