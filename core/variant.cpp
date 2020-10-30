@@ -2338,12 +2338,20 @@ Variant::Variant(const RID &p_rid) {
 Variant::Variant(const Object *p_object) {
 
 	type = OBJECT;
+	Object *obj = const_cast<Object *>(p_object);
 
 	memnew_placement(_data._mem, ObjData);
+	Reference *ref = Object::cast_to<Reference>(obj);
+	if (unlikely(ref)) {
+		*reinterpret_cast<Ref<Reference> *>(_get_obj().ref.get_data()) = Ref<Reference>(ref);
 #ifdef DEBUG_ENABLED
-	_get_obj().rc = p_object ? const_cast<Object *>(p_object)->_use_rc() : NULL;
-#else
-	_get_obj().obj = const_cast<Object *>(p_object);
+		_get_obj().rc = NULL;
+	} else {
+		_get_obj().rc = likely(obj) ? obj->_use_rc() : NULL;
+#endif
+	}
+#if !defined(DEBUG_ENABLED)
+	_get_obj().obj = obj;
 #endif
 }
 
