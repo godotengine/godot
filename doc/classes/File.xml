@@ -6,7 +6,8 @@
 	<description>
 		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
 		Here's a sample on how to write and read from a file:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func save(content):
 		    var file = File.new()
 		    file.open("user://save_game.dat", File.WRITE)
@@ -19,7 +20,26 @@
 		    var content = file.get_as_text()
 		    file.close()
 		    return content
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public void Save(string content)
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Write);
+		    file.StoreString(content);
+		    file.Close();
+		}
+
+		public string Load()
+		{
+		    var file = new File();
+		    file.Open("user://save_game.dat", File.ModeFlags.Read);
+		    string content = file.GetAsText();
+		    file.Close();
+		    return content;
+		}
+		[/csharp]
+		[/codeblocks]
 		In the example above, the file will be saved in the user data folder as specified in the [url=https://docs.godotengine.org/en/latest/tutorials/io/data_paths.html]Data paths[/url] documentation.
 		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [File] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 	</description>
@@ -303,7 +323,8 @@
 				Stores an integer as 16 bits in the file.
 				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code]. Any other value will overflow and wrap around.
 				To store a signed integer, use [method store_64] or store a signed integer from the interval [code][-2^15, 2^15 - 1][/code] (i.e. keeping one bit for the signedness) and compute its sign manually when reading. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				const MAX_15B = 1 &lt;&lt; 15
 				const MAX_16B = 1 &lt;&lt; 16
 
@@ -320,7 +341,22 @@
 				    var read2 = f.get_16() # 121
 				    var converted1 = unsigned16_to_signed(read1) # -42
 				    var converted2 = unsigned16_to_signed(read2) # 121
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var f = new File();
+				    f.Open("user://file.dat", File.ModeFlags.WriteRead);
+				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
+				    f.Store16(121); // In bounds, will store 121.
+				    f.Seek(0); // Go back to start to read the stored value.
+				    ushort read1 = f.Get16(); // 65494
+				    ushort read2 = f.Get16(); // 121
+				    short converted1 = BitConverter.ToInt16(BitConverter.GetBytes(read1), 0); // -42
+				    short converted2 = BitConverter.ToInt16(BitConverter.GetBytes(read2), 0); // 121
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="store_32">

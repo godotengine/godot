@@ -7,7 +7,8 @@
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 		[b]Example of contacting a REST API and printing one of its returned fields:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func _ready():
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
@@ -34,9 +35,48 @@
 
 		    # Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
 		    print(response.headers["User-Agent"])
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    // Create an HTTP request node and connect its completion signal.
+		    var httpRequest = new HTTPRequest();
+		    AddChild(httpRequest);
+		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+
+		    // Perform a GET request. The URL below returns JSON as of writing.
+		    Error error = httpRequest.Request("https://httpbin.org/get");
+		    if (error != Error.Ok)
+		    {
+		        GD.PushError("An error occurred in the HTTP request.");
+		    }
+
+		    // Perform a POST request. The URL below returns JSON as of writing.
+		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
+		    // The snippet below is provided for reference only.
+		    string[] body = { "name", "Godette" };
+		    // GDScript to_json is non existent, so we use JSON.Print() here.
+		    error = httpRequest.Request("https://httpbin.org/post", null, true, HTTPClient.Method.Post, JSON.Print(body));
+		    if (error != Error.Ok)
+		    {
+		        GD.PushError("An error occurred in the HTTP request.");
+		    }
+		}
+
+
+		// Called when the HTTP request is completed.
+		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		{
+		    // GDScript parse_json is non existent so we have to use JSON.parse, which has a slightly different syntax.
+		    var response = JSON.Parse(body.GetStringFromUTF8()).Result as Godot.Collections.Dictionary;
+		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
+		    GD.Print((response["headers"] as Godot.Collections.Dictionary)["User-Agent"]);
+		}
+		[/csharp]
+		[/codeblocks]
 		[b]Example of loading and displaying an image using HTTPRequest:[/b]
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func _ready():
 		    # Create an HTTP request node and connect its completion signal.
 		    var http_request = HTTPRequest.new()
@@ -51,6 +91,9 @@
 
 		# Called when the HTTP request is completed.
 		func _http_request_completed(result, response_code, headers, body):
+		    if result != HTTPRequest.RESULT_SUCCESS:
+		        push_error("Image couldn't be downloaded. Try a different image.")
+
 		    var image = Image.new()
 		    var error = image.load_png_from_buffer(body)
 		    if error != OK:
@@ -63,7 +106,48 @@
 		    var texture_rect = TextureRect.new()
 		    add_child(texture_rect)
 		    texture_rect.texture = texture
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public override void _Ready()
+		{
+		    // Create an HTTP request node and connect its completion signal.
+		    var httpRequest = new HTTPRequest();
+		    AddChild(httpRequest);
+		    httpRequest.Connect("request_completed", this, nameof(HttpRequestCompleted));
+
+		    // Perform the HTTP request. The URL below returns a PNG image as of writing.
+		    Error error = httpRequest.Request("https://via.placeholder.com/512");
+		    if (error != Error.Ok)
+		    {
+		        GD.PushError("An error occurred in the HTTP request.");
+		    }
+		}
+
+
+		// Called when the HTTP request is completed.
+		private void HttpRequestCompleted(int result, int response_code, string[] headers, byte[] body)
+		{
+		    if (result != (int)HTTPRequest.Result.Success)
+		    {
+		        GD.PushError("Image couldn't be downloaded. Try a different image.");
+		    }
+		    var image = new Image();
+		    Error error = image.LoadPngFromBuffer(body);
+		    if (error != Error.Ok)
+		    {
+		        GD.PushError("Couldn't load the image.");
+		    }
+
+		    var texture = new ImageTexture();
+		    texture.CreateFromImage(image);
+
+		    // Display the image in a TextureRect node.
+		    var textureRect = new TextureRect();
+		    AddChild(textureRect);
+		    textureRect.Texture = texture;
+		}
+		[/csharp]
+		[/codeblocks]
 
 		[b]Gzipped response bodies[/b]: HTTPRequest will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 		[b]Note:[/b] When performing HTTP requests from a project exported to HTML5, keep in mind the remote server may not allow requests from foreign origins due to [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS]CORS[/url]. If you host the server in question, you should modify its backend to allow requests from foreign origins by adding the [code]Access-Control-Allow-Origin: *[/code] HTTP header.

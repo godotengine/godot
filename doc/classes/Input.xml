@@ -299,12 +299,20 @@
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
 				Example:
-				[codeblock]
-				var a = InputEventAction.new()
-				a.action = "ui_cancel"
-				a.pressed = true
-				Input.parse_input_event(a)
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				var cancel_event = InputEventAction.new()
+				cancel_event.action = "ui_cancel"
+				cancel_event.pressed = true
+				Input.parse_input_event(cancel_event)
+				[/gdscript]
+				[csharp]
+				var cancelEvent = new InputEventAction();
+				cancelEvent.Action = "ui_cancel";
+				cancelEvent.Pressed = true;
+				Input.ParseInputEvent(cancelEvent);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
