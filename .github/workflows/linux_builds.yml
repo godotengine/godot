@@ -198,8 +198,20 @@ jobs:
           wget2 https://github.com/qarmin/RegressionTestProject/archive/3.2.zip
           unzip 3.2.zip
           mv "RegressionTestProject-3.2" "test_project"
+
+          echo "----- Open editor to import all project resources -----"
           DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s -e --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
+
+          echo "----- Open it again, because this not always works -----"
+          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s -e --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+          echo "----- Open it third time but this time without timout but with -q flag -----"
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          misc/scripts/check_ci_log.py sanitizers_log.txt
+
+          echo "----- Run and test project -----"
           DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 20 --video-driver GLES3 --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
