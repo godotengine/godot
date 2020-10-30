@@ -68,6 +68,8 @@ private:
 	bool control_mem = false;
 	bool meta_mem = false;
 
+	int buttons_state;
+
 	bool keep_screen_on;
 
 	Vector<TouchPos> touch;
@@ -90,6 +92,12 @@ private:
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
 	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
+
+	static int _button_index_from_mask(int button_mask);
+
+	static int _android_button_mask_to_godot_button_mask(int android_button_mask);
+
+	void _wheel_button_click(int event_buttons_mask, const Ref<InputEventMouseButton> &ev, int wheel_button, float factor);
 
 public:
 	static DisplayServerAndroid *get_singleton();
@@ -162,9 +170,10 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
-	void process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points);
+	void process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_hover(int p_type, Point2 p_pos);
-	void process_double_tap(Point2 p_pos);
+	void process_mouse_event(int event_action, int event_android_buttons_mask, Point2 event_pos, float event_vertical_factor = 0, float event_horizontal_factor = 0);
+	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_keycode, int p_scancode, int p_unicode_char, bool p_pressed);
@@ -174,6 +183,9 @@ public:
 	static void register_android_driver();
 
 	void reset_window();
+
+	virtual Point2i mouse_get_position() const;
+	virtual int mouse_get_button_state() const;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();
