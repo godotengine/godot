@@ -1194,7 +1194,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat) {
+void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
 	int item_count = 0;
 
 	//setup canvas state uniforms if needed
@@ -1229,6 +1229,8 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
 
 		state_buffer.time = state.time;
+		state_buffer.use_pixel_snap = p_snap_2d_vertices_to_pixel;
+
 		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
 	}
 

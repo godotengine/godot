@@ -40,11 +40,21 @@ static Transform2D _canvas_get_transform(RenderingServerViewport::Viewport *p_vi
 
 	float scale = 1.0;
 	if (p_viewport->canvas_map.has(p_canvas->parent)) {
-		xf = xf * p_viewport->canvas_map[p_canvas->parent].transform;
+		Transform2D c_xform = p_viewport->canvas_map[p_canvas->parent].transform;
+		if (p_viewport->snap_2d_transforms_to_pixel) {
+			c_xform.elements[2] = c_xform.elements[2].floor();
+		}
+		xf = xf * c_xform;
 		scale = p_canvas->parent_scale;
 	}
 
-	xf = xf * p_canvas_data->transform;
+	Transform2D c_xform = p_canvas_data->transform;
+
+	if (p_viewport->snap_2d_transforms_to_pixel) {
+		c_xform.elements[2] = c_xform.elements[2].floor();
+	}
+
+	xf = xf * c_xform;
 
 	if (scale != 1.0 && !RSG::canvas->disable_scale) {
 		Vector2 pivot = p_vp_size * 0.5;
@@ -255,7 +265,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 				ptr = ptr->filter_next_ptr;
 			}
 
-			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, lights_with_mask, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat);
+			RSG::canvas->render_canvas(p_viewport->render_target, canvas, xform, canvas_lights, lights_with_mask, clip_rect, p_viewport->texture_filter, p_viewport->texture_repeat, p_viewport->snap_2d_transforms_to_pixel, p_viewport->snap_2d_vertices_to_pixel);
 			i++;
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
@@ -772,6 +782,18 @@ float RenderingServerViewport::viewport_get_measured_render_time_gpu(RID p_viewp
 	ERR_FAIL_COND_V(!viewport, 0);
 
 	return double((viewport->time_gpu_end - viewport->time_gpu_begin) / 1000) / 1000.0;
+}
+
+void RenderingServerViewport::viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+	viewport->snap_2d_transforms_to_pixel = p_enabled;
+}
+
+void RenderingServerViewport::viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+	viewport->snap_2d_vertices_to_pixel = p_enabled;
 }
 
 void RenderingServerViewport::viewport_set_default_canvas_item_texture_filter(RID p_viewport, RS::CanvasItemTextureFilter p_filter) {

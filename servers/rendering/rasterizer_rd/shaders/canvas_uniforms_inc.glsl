@@ -15,7 +15,6 @@
 #define FLAGS_USING_LIGHT_MASK (1 << 11)
 #define FLAGS_NINEPACH_DRAW_CENTER (1 << 12)
 #define FLAGS_USING_PARTICLES (1 << 13)
-#define FLAGS_USE_PIXEL_SNAP (1 << 14)
 
 #define FLAGS_NINEPATCH_H_MODE_SHIFT 16
 #define FLAGS_NINEPATCH_V_MODE_SHIFT 18
@@ -67,7 +66,8 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 	vec4 canvas_modulation;
 	vec2 screen_pixel_size;
 	float time;
-	float time_pad;
+	bool use_pixel_snap;
+
 	//uint light_count;
 }
 canvas_data;

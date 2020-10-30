@@ -79,7 +79,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
 		FLAGS_USING_PARTICLES = (1 << 13),
-		FLAGS_USE_PIXEL_SNAP = (1 << 14),
 
 		FLAGS_USE_SKELETON = (1 << 15),
 		FLAGS_NINEPATCH_H_MODE_SHIFT = 16,
@@ -334,7 +333,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			float canvas_modulate[4];
 			float screen_pixel_size[2];
 			float time;
-			float pad;
+			uint32_t use_pixel_snap;
 
 			//uint32_t light_count;
 			//uint32_t pad[3];
@@ -422,7 +421,7 @@ public:
 	void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines);
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
