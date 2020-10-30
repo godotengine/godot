@@ -145,7 +145,6 @@ private:
 
 public:
 	EditorPlugin *get_editor(Object *p_object);
-	EditorPlugin *get_subeditor(Object *p_object);
 	Vector<EditorPlugin *> get_subeditors(Object *p_object);
 	EditorPlugin *get_editor(String p_name);
 
