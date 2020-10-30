@@ -273,16 +273,6 @@ EditorPlugin *EditorData::get_editor(Object *p_object) {
 	return nullptr;
 }
 
-EditorPlugin *EditorData::get_subeditor(Object *p_object) {
-	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (!editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			return editor_plugins[i];
-		}
-	}
-
-	return nullptr;
-}
-
 Vector<EditorPlugin *> EditorData::get_subeditors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (int i = editor_plugins.size() - 1; i > -1; i--) {
