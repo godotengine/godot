@@ -313,6 +313,17 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	return date;
 }
 
+void *OS_Windows::get_native_handle(int p_handle_type, int p_index) {
+	switch (p_handle_type) {
+		case APPLICATION_HANDLE: return hInstance;
+		case DISPLAY_HANDLE: return NULL; // Do we have a value to return here?
+		case WINDOW_HANDLE: return NULL;
+		case WINDOW_VIEW: return NULL;
+		case OPENGL_CONTEXT: return NULL;
+		default: return NULL;
+	}
+}
+
 OS::Time OS_Windows::get_time(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)

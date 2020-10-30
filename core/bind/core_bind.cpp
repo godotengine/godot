@@ -628,6 +628,11 @@ String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
 }
 
+int64_t _OS::get_native_handle(HandleType p_handle_type, int p_index) {
+
+	return (int64_t)OS::get_singleton()->get_native_handle(p_handle_type, p_index);
+}
+
 bool _OS::is_debug_build() const {
 #ifdef DEBUG_ENABLED
 	return true;
@@ -691,6 +696,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
 
+	ClassDB::bind_method(D_METHOD("get_native_handle", "handle_type", "index"), &_OS::get_native_handle);
 	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode", "enable"), &_OS::set_low_processor_usage_mode);
 	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"), &_OS::is_in_low_processor_usage_mode);
 
@@ -805,6 +811,12 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONTH_OCTOBER);
 	BIND_ENUM_CONSTANT(MONTH_NOVEMBER);
 	BIND_ENUM_CONSTANT(MONTH_DECEMBER);
+
+	BIND_ENUM_CONSTANT(APPLICATION_HANDLE);
+	BIND_ENUM_CONSTANT(DISPLAY_HANDLE);
+	BIND_ENUM_CONSTANT(WINDOW_HANDLE);
+	BIND_ENUM_CONSTANT(WINDOW_VIEW);
+	BIND_ENUM_CONSTANT(OPENGL_CONTEXT);
 
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DESKTOP);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
