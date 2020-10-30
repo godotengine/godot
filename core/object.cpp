@@ -628,6 +628,129 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 }
 
+String Object::get_property_hint_name(const PropertyHint &p_hint) {
+	switch (p_hint) {
+		case PROPERTY_HINT_NONE: {
+			return "None";
+		} break;
+		case PROPERTY_HINT_RANGE: {
+			return "Range";
+		} break;
+		case PROPERTY_HINT_EXP_RANGE: {
+			return "ExpRange";
+		} break;
+		case PROPERTY_HINT_ENUM: {
+			return "Enum";
+		} break;
+		case PROPERTY_HINT_EXP_EASING: {
+			return "ExpEasing";
+		} break;
+		case PROPERTY_HINT_LENGTH: {
+			return "Length";
+		} break;
+		case PROPERTY_HINT_KEY_ACCEL: {
+			return "KeyAccel";
+		} break;
+		case PROPERTY_HINT_FLAGS: {
+			return "Flags";
+		} break;
+		case PROPERTY_HINT_LAYERS_2D_RENDER: {
+			return "Layers2DRender";
+		} break;
+		case PROPERTY_HINT_LAYERS_2D_PHYSICS: {
+			return "Layers2DPhysics";
+		} break;
+		case PROPERTY_HINT_LAYERS_3D_RENDER: {
+			return "Layers3DRender";
+		} break;
+		case PROPERTY_HINT_LAYERS_3D_PHYSICS: {
+			return "Layers3DPhysics";
+		} break;
+		case PROPERTY_HINT_FILE: {
+			return "File";
+		} break;
+		case PROPERTY_HINT_DIR: {
+			return "Dir";
+		} break;
+		case PROPERTY_HINT_GLOBAL_FILE: {
+			return "GlobalFile";
+		} break;
+		case PROPERTY_HINT_GLOBAL_DIR: {
+			return "GlobalDir";
+		} break;
+		case PROPERTY_HINT_RESOURCE_TYPE: {
+			return "ResourceType";
+		} break;
+		case PROPERTY_HINT_MULTILINE_TEXT: {
+			return "MultilineText";
+		} break;
+		case PROPERTY_HINT_PLACEHOLDER_TEXT: {
+			return "PlaceholderText";
+		} break;
+		case PROPERTY_HINT_COLOR_NO_ALPHA: {
+			return "ColorNoAlpha";
+		} break;
+		case PROPERTY_HINT_IMAGE_COMPRESS_LOSSY: {
+			return "ImageCompressLossy";
+		} break;
+		case PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS: {
+			return "ImageCompressLossLess";
+		} break;
+		case PROPERTY_HINT_OBJECT_ID: {
+			return "ObjectID";
+		} break;
+		case PROPERTY_HINT_TYPE_STRING: {
+			return "String";
+		} break;
+		case PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE: {
+			return "NodePathToEditedNode";
+		} break;
+		case PROPERTY_HINT_METHOD_OF_VARIANT_TYPE: {
+			return "MethodOfVariantType";
+		} break;
+		case PROPERTY_HINT_METHOD_OF_BASE_TYPE: {
+			return "MethodOfBaseType";
+		} break;
+		case PROPERTY_HINT_METHOD_OF_INSTANCE: {
+			return "MethodOfInstance";
+		} break;
+		case PROPERTY_HINT_METHOD_OF_SCRIPT: {
+			return "MethodOfScript";
+		} break;
+		case PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE: {
+			return "PropertyOfVariantType";
+		} break;
+		case PROPERTY_HINT_PROPERTY_OF_BASE_TYPE: {
+			return "PropertyOfBaseType";
+		} break;
+		case PROPERTY_HINT_PROPERTY_OF_INSTANCE: {
+			return "PropertyOfInstance";
+		} break;
+		case PROPERTY_HINT_PROPERTY_OF_SCRIPT: {
+			return "PropertyOfScript";
+		} break;
+		case PROPERTY_HINT_OBJECT_TOO_BIG: {
+			return "ObjectTooBig";
+		} break;
+		case PROPERTY_HINT_NODE_PATH_VALID_TYPES: {
+			return "NodePathValidTypes";
+		} break;
+		case PROPERTY_HINT_SAVE_FILE: {
+			return "SaveFile";
+		} break;
+		case PROPERTY_HINT_INT_IS_OBJECTID: {
+			return "IntIsObjectID";
+		} break;
+		case PROPERTY_HINT_ARRAY_TYPE: {
+			return "ArrayType";
+		} break;
+		default: {
+			ERR_FAIL_V_MSG("", "Invalid property hint type");
+		}
+	}
+	return "";
+}
+
 void Object::_validate_property(PropertyInfo &property) const {
 }
 

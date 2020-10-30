@@ -94,7 +94,6 @@ enum PropertyHint {
 	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_ARRAY_TYPE,
 	PROPERTY_HINT_MAX,
-	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
 
 enum PropertyUsageFlags {
@@ -651,6 +650,7 @@ public:
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
+	static String get_property_hint_name(const PropertyHint &p_hint);
 
 	bool has_method(const StringName &p_method) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
