@@ -18,7 +18,7 @@
 		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path" default="&quot;&quot;">
 			The path to the vector font file.
 		</member>
-		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting" default="2">
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting" default="1">
 			The font hinting mode used by FreeType. See [enum Hinting] for options.
 		</member>
 	</members>
@@ -27,10 +27,10 @@
 			Disables font hinting (smoother but less crisp).
 		</constant>
 		<constant name="HINTING_LIGHT" value="1" enum="Hinting">
-			Use the light font hinting mode.
+			Use the light font hinting mode (default).
 		</constant>
 		<constant name="HINTING_NORMAL" value="2" enum="Hinting">
-			Use the default font hinting mode (crisper but less smooth).
+			Use the full font hinting mode (crisper but less smooth).
 		</constant>
 	</constants>
 </class>

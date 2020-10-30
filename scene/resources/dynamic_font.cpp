@@ -101,7 +101,7 @@ void DynamicFontData::_bind_methods() {
 DynamicFontData::DynamicFontData() {
 	antialiased = true;
 	force_autohinter = false;
-	hinting = DynamicFontData::HINTING_NORMAL;
+	hinting = DynamicFontData::HINTING_LIGHT;
 	font_mem = nullptr;
 	font_mem_size = 0;
 }
