@@ -195,15 +195,15 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
-		<method name="subarray">
+		<method name="slice">
 			<return type="PackedByteArray">
 			</return>
-			<argument index="0" name="from" type="int">
+			<argument index="0" name="begin" type="int">
 			</argument>
-			<argument index="1" name="to" type="int">
+			<argument index="1" name="end" type="int">
 			</argument>
 			<description>
-				Returns the slice of the [PackedByteArray] between indices (inclusive) as a new [PackedByteArray]. Any negative index is considered to be from the end of the array.
+				Returns the slice of the [PackedByteArray] between indices [code]begin[/code] (inclusive) and [code]end[/code] (exclusive) as a new [PackedByteArray]. Any negative index is considered to be from the end of the array.
 			</description>
 		</method>
 	</methods>

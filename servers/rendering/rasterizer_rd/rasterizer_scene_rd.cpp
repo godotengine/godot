@@ -7501,7 +7501,7 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 		Ref<Image> img;
 		img.instance();
 		for (uint32_t i = 0; i < rb->sdfgi->cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i, 128 * 128 * (i + 1) - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
 			img->create(rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, false, Image::FORMAT_L8, subarr);
 			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
 		}
@@ -7514,7 +7514,7 @@ void RasterizerSceneRD::render_sdfgi(RID p_render_buffers, int p_region, Instanc
 		Ref<Image> img;
 		img.instance();
 		for (uint32_t i = 0; i < rb->sdfgi->cascade_size; i++) {
-			Vector<uint8_t> subarr = data.subarray(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2 - 1);
+			Vector<uint8_t> subarr = data.slice(128 * 128 * i * 2, 128 * 128 * (i + 1) * 2);
 			img->create(rb->sdfgi->cascade_size, rb->sdfgi->cascade_size, false, Image::FORMAT_RGB565, subarr);
 			img->convert(Image::FORMAT_RGBA8);
 			img->save_png("res://cascade_" + itos(cascade) + "_" + itos(i) + ".png");

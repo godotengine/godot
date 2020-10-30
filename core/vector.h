@@ -134,24 +134,24 @@ public:
 		return ret;
 	}
 
-	Vector<T> subarray(int p_from, int p_to) const {
-		if (p_from < 0) {
-			p_from = size() + p_from;
+	Vector<T> slice(int p_begin, int p_end) const {
+		if (p_begin < 0) {
+			p_begin += size();
 		}
-		if (p_to < 0) {
-			p_to = size() + p_to;
+		if (p_end < 0) {
+			p_end += size();
 		}
 
-		ERR_FAIL_INDEX_V(p_from, size(), Vector<T>());
-		ERR_FAIL_INDEX_V(p_to, size(), Vector<T>());
+		ERR_FAIL_INDEX_V(p_begin, size(), Vector<T>());
+		ERR_FAIL_INDEX_V(p_end - 1, size(), Vector<T>());
 
 		Vector<T> slice;
-		int span = 1 + p_to - p_from;
+		int span = p_end - p_begin;
 		slice.resize(span);
 		const T *r = ptr();
 		T *w = slice.ptrw();
 		for (int i = 0; i < span; ++i) {
-			w[i] = r[p_from + i];
+			w[i] = r[p_begin + i];
 		}
 
 		return slice;

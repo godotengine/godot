@@ -124,6 +124,17 @@
 				Sorts the elements of the array in ascending order.
 			</description>
 		</method>
+		<method name="slice">
+			<return type="PackedFloat32Array">
+			</return>
+			<argument index="0" name="begin" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<description>
+				Returns the slice of the [PackedFloat32Array] between indices [code]begin[/code] (inclusive) and [code]end[/code] (exclusive) as a new [PackedFloat32Array]. Any negative index is considered to be from the end of the array.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
