@@ -147,7 +147,6 @@ private:
 		bool connected = false;
 		bool last_buttons[JOY_BUTTON_MAX] = { false };
 		float last_axis[JOY_AXIS_MAX] = { 0.0f };
-		float filter = 0.01f;
 		int last_hat = HAT_MASK_CENTER;
 		int mapping = -1;
 		int hat_current = 0;
