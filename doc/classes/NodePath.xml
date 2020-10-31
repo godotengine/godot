@@ -35,7 +35,7 @@
 				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
 				Examples of valid NodePaths (assuming that those nodes exist and have the referenced resources or properties):
 				[codeblock]
-				# Points to the Sprite2D node
+				# Points to the Sprite2D node.
 				"Path2D/PathFollow2D/Sprite2D"
 				# Points to the Sprite2D node and its "texture" resource.
 				# get_node() would retrieve "Sprite2D", while get_node_and_resource()
@@ -54,14 +54,23 @@
 			<return type="NodePath">
 			</return>
 			<description>
-				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
-				[codeblock]
-				# This will be parsed as a node path to the "x" property in the "position" node
+				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the from the current node).
+				[codeblocks]
+				[gdscript]
+				# This will be parsed as a node path to the "x" property in the "position" node.
 				var node_path = NodePath("position:x")
-				# This will be parsed as a node path to the "x" component of the "position" property in the current node
+				# This will be parsed as a node path to the "x" component of the "position" property in the current node.
 				var property_path = node_path.get_as_property_path()
 				print(property_path) # :position:x
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// This will be parsed as a node path to the "x" property in the "position" node.
+				var nodePath = new NodePath("position:x");
+				// This will be parsed as a node path to the "x" component of the "position" property in the current node.
+				NodePath propertyPath = nodePath.GetAsPropertyPath();
+				GD.Print(propertyPath); // :position:x
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_concatenated_subnames">
@@ -69,10 +78,16 @@
 			</return>
 			<description>
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var nodepath = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
 				print(nodepath.get_concatenated_subnames()) # texture:load_path
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var nodepath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
+				GD.Print(nodepath.GetConcatenatedSubnames()); // texture:load_path
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_name">
@@ -82,12 +97,20 @@
 			</argument>
 			<description>
 				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D")
 				print(node_path.get_name(0)) # Path2D
 				print(node_path.get_name(1)) # PathFollow2D
 				print(node_path.get_name(2)) # Sprite
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D");
+				GD.Print(nodePath.GetName(0)); // Path2D
+				GD.Print(nodePath.GetName(1)); // PathFollow2D
+				GD.Print(nodePath.GetName(2)); // Sprite
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_name_count">
@@ -105,11 +128,18 @@
 			</argument>
 			<description>
 				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var node_path = NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path")
 				print(node_path.get_subname(0)) # texture
 				print(node_path.get_subname(1)) # load_path
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var nodePath = new NodePath("Path2D/PathFollow2D/Sprite2D:texture:load_path");
+				GD.Print(nodePath.GetSubname(0)); // texture
+				GD.Print(nodePath.GetSubname(1)); // load_path
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_subname_count">

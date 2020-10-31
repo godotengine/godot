@@ -119,10 +119,16 @@
 			</return>
 			<description>
 				Returns a hexadecimal representation of this array as a [String].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var array = PackedByteArray([11, 46, 255])
 				print(array.hex_encode()) # Prints: 0b2eff
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var array = new byte[] {11, 46, 255};
+				GD.Print(array.HexEncode()); // Prints: 0b2eff
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="insert">
