@@ -23,7 +23,7 @@
 		    # Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    # The snippet below is provided for reference only.
 		    var body = {"name": "Godette"}
-		    var error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
+		    error = http_request.request("https://httpbin.org/post", [], true, HTTPClient.METHOD_POST, body)
 		    if error != OK:
 		        push_error("An error occurred in the HTTP request.")
 
