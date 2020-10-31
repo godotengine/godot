@@ -550,13 +550,13 @@ public class GodotIO {
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
 			} break;
 			case SCREEN_SENSOR_LANDSCAPE: {
-				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
 			} break;
 			case SCREEN_SENSOR_PORTRAIT: {
-				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
 			} break;
 			case SCREEN_SENSOR: {
-				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER);
 			} break;
 		}
 	};
