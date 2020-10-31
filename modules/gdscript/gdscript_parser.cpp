@@ -1421,7 +1421,11 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 #ifdef DEBUG_ENABLED
 	if (unreachable) {
 		current_suite->has_unreachable_code = true;
-		push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier->name);
+		if (current_function) {
+			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier->name);
+		} else {
+			// TODO: Properties setters and getters with unreachable code are not being warned
+		}
 	}
 #endif
 
