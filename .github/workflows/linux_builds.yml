@@ -192,7 +192,8 @@ jobs:
           ls -l bin/
 #          scons tools=no target=release debug_symbols=full use_ubsan=yes use_asan=yes
 
-      # Download and test project to check leaks and invalid memory usage
+      # Download and test project to check leaks and invalid memory usage.
+      # CI has no audio device, so use the Dummy audio driver to avoid spurious error messages.
       - name: Importing and running project project
         run: |
           wget2 https://github.com/qarmin/RegressionTestProject/archive/3.2.zip
@@ -200,19 +201,19 @@ jobs:
           mv "RegressionTestProject-3.2" "test_project"
 
           echo "----- Open editor to import all project resources -----"
-          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s -e --path test_project 2>&1 | tee sanitizers_log.txt || true
+          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
-          echo "----- Open it again, because this not always works -----"
-          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s -e --path test_project 2>&1 | tee sanitizers_log.txt || true
+          echo "----- Open the editor again, because this doesn't always work -----"
+          DRI_PRIME=0 timeout 25s xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
-          echo "----- Open it third time but this time without timout but with -q flag -----"
-          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
+          echo "----- Open the editor a third time, this time without timeout but with the -q flag -----"
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s --audio-driver Dummy -e -q --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
           echo "----- Run and test project -----"
-          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 20 --video-driver GLES3 --path test_project 2>&1 | tee sanitizers_log.txt || true
+          DRI_PRIME=0 xvfb-run bin/godot.x11.tools.64s 20 --video-driver GLES3 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
 #      # Export project and run it to check for possible leaks and invalid memory usage
