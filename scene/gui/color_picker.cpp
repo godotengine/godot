@@ -928,6 +928,7 @@ void ColorPickerButton::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 		if (popup && !is_visible_in_tree()) {
 			popup->hide();
 		}
