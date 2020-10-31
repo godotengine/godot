@@ -24,14 +24,53 @@
 			</argument>
 			<description>
 				Adds a custom monitor with name same as id. You can specify the category of monitor using '/' in id. If there are more than one '/' then default category is used. Default category is "Custom".
-				[codeblock]
-				Performance.add_custom_monitor("MyCategory/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "MyCategory"
-				Performance.add_custom_monitor("MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
-				# Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so above code is valid
-				Performance.add_custom_monitor("Custom/MyMonitor", some_callable) # Adds monitor with name "MyName" to category "Custom"
-				# Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so above code is valid
-				Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", some_callable) # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom"
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				func _ready():
+				    var monitor_value = Callable(self, "get_monitor_value")
+
+				    # Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+				    Performance.add_custom_monitor("MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyName" to category "Custom".
+				    # Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+				    Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
+
+				    # Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
+
+				func get_monitor_value():
+				    return randi() % 25
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    var monitorValue = new Callable(this, nameof(GetMonitorValue));
+
+				    // Adds monitor with name "MyName" to category "MyCategory".
+				    Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
+				    Performance.AddCustomMonitor("MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyName" to category "Custom".
+				    // Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
+				    Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
+
+				    // Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
+				    Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
+				}
+
+				public int GetMonitorValue()
+				{
+				    return GD.Randi() % 25;
+				}
+				[/csharp]
+				[/codeblocks]
 				The debugger calls the callable to get the value of custom monitor. The callable must return a number.
 				Callables are called with arguments supplied in argument array.
 				[b]Note:[/b] It throws an error if given id is already present.
@@ -61,9 +100,14 @@
 			</argument>
 			<description>
 				Returns the value of one of the available monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
-				[codeblock]
-				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console
-				[/codeblock]
+				[codeblocks]
+				[gdscript]
+				print(Performance.get_monitor(Performance.TIME_FPS)) # Prints the FPS to the console.
+				[/gdscript]
+				[csharp]
+				GD.Print(Performance.GetMonitor(Performance.Monitor.TimeFps)); // Prints the FPS to the console.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_monitor_modification_time">

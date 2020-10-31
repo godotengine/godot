@@ -85,18 +85,36 @@
 				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
 				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
 				Example of blocking mode and retrieving the shell output:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var output = []
 				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var output = new Godot.Collections.Array();
+				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, true, output);
+				[/csharp]
+				[/codeblocks]
 				Example of non-blocking mode, running another instance of the project and storing its process ID:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var pid = OS.execute(OS.get_executable_path(), [], false)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var pid = OS.Execute(OS.GetExecutablePath(), new string[] {}, false);
+				[/csharp]
+				[/codeblocks]
 				If you wish to access a shell built-in or perform a composite command, a platform-specific shell can be invoked. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
+				var output = []
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], true, output)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var output = new Godot.Collections.Array();
+				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, true, output);
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
@@ -118,13 +136,26 @@
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [code]editor/main_run_args[/code] in the Project Settings to define command-line arguments to be passed by the editor when running the project.
 				Here's a minimal example on how to parse command-line arguments into a dictionary using the [code]--key=value[/code] form for arguments:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
 				    if argument.find("=") &gt; -1:
 				        var key_value = argument.split("=")
 				        arguments[key_value[0].lstrip("--")] = key_value[1]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var arguments = new Godot.Collections.Dictionary();
+				foreach (var argument in OS.GetCmdlineArgs())
+				{
+				    if (argument.Find("=") &gt; -1)
+				    {
+				        string[] keyValue = argument.Split("=");
+				        arguments[keyValue[0].LStrip("--")] = keyValue[1];
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_connected_midi_inputs">

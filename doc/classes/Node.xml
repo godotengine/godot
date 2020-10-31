@@ -130,11 +130,22 @@
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
+				var child_node = get_child(0)
 				if child_node.get_parent():
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				Node childNode = GetChild(0);
+				if (childNode.GetParent() != null)
+				{
+				    childNode.GetParent().RemoveChild(childNode);
+				}
+				AddChild(childNode);
+				[/csharp]
+				[/codeblocks]
 				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
@@ -275,12 +286,20 @@
 				/root/Swamp/Goblin
 				[/codeblock]
 				Possible paths are:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				get_node("Sword")
 				get_node("Backpack/Dagger")
 				get_node("../Swamp/Alligator")
 				get_node("/root/MyGame")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GetNode("Sword");
+				GetNode("Backpack/Dagger");
+				GetNode("../Swamp/Alligator");
+				GetNode("/root/MyGame");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_node_and_resource">
@@ -292,11 +311,18 @@
 				Fetches a node and one of its resources as specified by the [NodePath]'s subname (e.g. [code]Area2D/CollisionShape2D:shape[/code]). If several nested resources are specified in the [NodePath], the last one will be fetched.
 				The return value is an array of size 3: the first index points to the [Node] (or [code]null[/code] if not found), the second index points to the [Resource] (or [code]null[/code] if not found), and the third index is the remaining [NodePath], if any.
 				For example, assuming that [code]Area2D/CollisionShape2D[/code] is a valid node and that its [code]shape[/code] property has been assigned a [RectangleShape2D] resource, one could have this kind of output:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(get_node_and_resource("Area2D/CollisionShape2D")) # [[CollisionShape2D:1161], Null, ]
 				print(get_node_and_resource("Area2D/CollisionShape2D:shape")) # [[CollisionShape2D:1161], [RectangleShape2D:1156], ]
 				print(get_node_and_resource("Area2D/CollisionShape2D:shape:extents")) # [[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D")); // [[CollisionShape2D:1161], Null, ]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D:shape")); // [[CollisionShape2D:1161], [RectangleShape2D:1156], ]
+				GD.Print(GetNodeAndResource("Area2D/CollisionShape2D:shape:extents")); // [[CollisionShape2D:1161], [RectangleShape2D:1156], :extents]
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_node_or_null" qualifiers="const">

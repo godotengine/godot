@@ -14,11 +14,18 @@
 			</return>
 			<description>
 				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
-				[codeblock]
-				var c := CylinderMesh.new()
-				var arr_mesh := ArrayMesh.new()
+				[codeblocks]
+				[gdscript]
+				var c = CylinderMesh.new()
+				var arr_mesh = ArrayMesh.new()
 				arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, c.get_mesh_arrays())
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var c = new CylinderMesh();
+				var arrMesh = new ArrayMesh();
+				arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, c.GetMeshArrays());
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
