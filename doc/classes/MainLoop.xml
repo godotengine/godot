@@ -78,38 +78,6 @@
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 			</description>
 		</method>
-		<method name="finish">
-			<return type="void">
-			</return>
-			<description>
-				Should not be called manually, override [method _finalize] instead. Will be removed in Godot 4.0.
-			</description>
-		</method>
-		<method name="idle">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<description>
-				Should not be called manually, override [method _idle] instead. Will be removed in Godot 4.0.
-			</description>
-		</method>
-		<method name="init">
-			<return type="void">
-			</return>
-			<description>
-				Should not be called manually, override [method _initialize] instead. Will be removed in Godot 4.0.
-			</description>
-		</method>
-		<method name="iteration">
-			<return type="bool">
-			</return>
-			<argument index="0" name="delta" type="float">
-			</argument>
-			<description>
-				Should not be called manually, override [method _iteration] instead. Will be removed in Godot 4.0.
-			</description>
-		</method>
 	</methods>
 	<signals>
 		<signal name="on_request_permissions_result">
