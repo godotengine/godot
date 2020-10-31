@@ -390,28 +390,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jcla
 	if (step == 0)
 		return;
 
-	Ref<InputEventKey> ievent;
-	ievent.instance();
-	int val = p_unicode_char;
-	int scancode = android_get_keysym(p_scancode);
-	ievent->set_scancode(scancode);
-	ievent->set_unicode(val);
-	ievent->set_pressed(p_pressed);
-
-	if (val == '\n') {
-		ievent->set_scancode(KEY_ENTER);
-	} else if (val == 61448) {
-		ievent->set_scancode(KEY_BACKSPACE);
-		ievent->set_unicode(KEY_BACKSPACE);
-	} else if (val == 61453) {
-		ievent->set_scancode(KEY_ENTER);
-		ievent->set_unicode(KEY_ENTER);
-	} else if (p_scancode == 4) {
-
-		os_android->main_loop_request_go_back();
-	}
-
-	os_android->process_event(ievent);
+	os_android->process_key_event(p_scancode, p_unicode_char, p_pressed);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {

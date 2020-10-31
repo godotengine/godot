@@ -46,8 +46,10 @@
 #include "net_socket_android.h"
 
 #include <android/input.h>
+#include <core/os/keyboard.h>
 #include <dlfcn.h>
 
+#include "android_keys_utils.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 
@@ -364,9 +366,59 @@ void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 	}
 }
 
+void OS_Android::_set_key_modifier_state(Ref<InputEventWithModifiers> ev) const {
+	ev->set_shift(shift_mem);
+	ev->set_alt(alt_mem);
+	ev->set_metakey(meta_mem);
+	ev->set_control(control_mem);
+}
+
 void OS_Android::process_event(Ref<InputEvent> p_event) {
 
 	input->parse_input_event(p_event);
+}
+
+void OS_Android::process_key_event(int p_scancode, int p_unicode_char, bool p_pressed) {
+
+	Ref<InputEventKey> ev;
+	ev.instance();
+	int val = p_unicode_char;
+	unsigned int scancode = android_get_keysym(p_scancode);
+
+	switch (scancode) {
+		case KEY_SHIFT: {
+			shift_mem = p_pressed;
+		} break;
+		case KEY_ALT: {
+			alt_mem = p_pressed;
+		} break;
+		case KEY_CONTROL: {
+			control_mem = p_pressed;
+		} break;
+		case KEY_META: {
+			meta_mem = p_pressed;
+		} break;
+	}
+
+	ev->set_scancode(scancode);
+	ev->set_unicode(val);
+	ev->set_pressed(p_pressed);
+
+	_set_key_modifier_state(ev);
+
+	if (val == '\n') {
+		ev->set_scancode(KEY_ENTER);
+	} else if (val == 61448) {
+		ev->set_scancode(KEY_BACKSPACE);
+		ev->set_unicode(KEY_BACKSPACE);
+	} else if (val == 61453) {
+		ev->set_scancode(KEY_ENTER);
+		ev->set_unicode(KEY_ENTER);
+	} else if (p_scancode == 4) {
+		main_loop_request_go_back();
+	}
+
+	input->parse_input_event(ev);
 }
 
 void OS_Android::process_touch(int p_event, int p_pointer, const Vector<TouchPos> &p_points) {
@@ -488,6 +540,7 @@ void OS_Android::process_hover(int p_type, Point2 p_pos) {
 		case AMOTION_EVENT_ACTION_HOVER_EXIT: { // hover exit
 			Ref<InputEventMouseMotion> ev;
 			ev.instance();
+			_set_key_modifier_state(ev);
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
@@ -504,6 +557,7 @@ void OS_Android::process_mouse_event(int event_action, int event_android_buttons
 		case AMOTION_EVENT_ACTION_BUTTON_RELEASE: {
 			Ref<InputEventMouseButton> ev;
 			ev.instance();
+			_set_key_modifier_state(ev);
 			ev->set_position(event_pos);
 			ev->set_global_position(event_pos);
 			ev->set_pressed(event_action == AMOTION_EVENT_ACTION_BUTTON_PRESS);
@@ -519,6 +573,7 @@ void OS_Android::process_mouse_event(int event_action, int event_android_buttons
 		case AMOTION_EVENT_ACTION_MOVE: {
 			Ref<InputEventMouseMotion> ev;
 			ev.instance();
+			_set_key_modifier_state(ev);
 			ev->set_position(event_pos);
 			ev->set_global_position(event_pos);
 			ev->set_relative(event_pos - hover_prev_pos);
@@ -529,6 +584,7 @@ void OS_Android::process_mouse_event(int event_action, int event_android_buttons
 		case AMOTION_EVENT_ACTION_SCROLL: {
 			Ref<InputEventMouseButton> ev;
 			ev.instance();
+			_set_key_modifier_state(ev);
 			ev->set_position(event_pos);
 			ev->set_global_position(event_pos);
 			ev->set_pressed(true);
@@ -564,6 +620,7 @@ void OS_Android::process_double_tap(int event_android_button_mask, Point2 p_pos)
 	int event_button_mask = _android_button_mask_to_godot_button_mask(event_android_button_mask);
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
+	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
 	ev->set_pressed(event_button_mask != 0);
@@ -576,6 +633,7 @@ void OS_Android::process_double_tap(int event_android_button_mask, Point2 p_pos)
 void OS_Android::process_scroll(Point2 p_pos) {
 	Ref<InputEventPanGesture> ev;
 	ev.instance();
+	_set_key_modifier_state(ev);
 	ev->set_position(p_pos);
 	ev->set_delta(p_pos - scroll_prev_pos);
 	input->parse_input_event(ev);
