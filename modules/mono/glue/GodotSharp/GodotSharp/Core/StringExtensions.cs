@@ -330,6 +330,15 @@ namespace Godot
             return instance.IndexOf(what, from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Find the first occurrence of a char. Optionally, the search starting position can be passed.</summary>
+        /// <returns>The first instance of the char, or -1 if not found.</returns>
+        public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
+        {
+            // TODO: Could be more efficient if we get a char version of `IndexOf`.
+            // See https://github.com/dotnet/runtime/issues/44116
+            return instance.IndexOf(what.ToString(), from, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>Find the last occurrence of a substring.</summary>
         /// <returns>The starting position of the substring, or -1 if not found.</returns>
         public static int FindLast(this string instance, string what, bool caseSensitive = true)
@@ -667,6 +676,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns a copy of the string with characters removed from the left.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the left.</returns>
+        public static string LStrip(this string instance, string chars)
+        {
+            int len = instance.Length;
+            int beg;
+
+            for (beg = 0; beg < len; beg++)
+            {
+                if (chars.Find(instance[beg]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (beg == 0)
+            {
+                return instance;
+            }
+
+            return instance.Substr(beg, len - beg);
+        }
+
+        /// <summary>
         /// Do a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
         /// </summary>
         private static bool ExprMatch(this string instance, string expr, bool caseSensitive)
@@ -892,6 +928,33 @@ namespace Godot
                 return string.Empty;
 
             return instance.Substring(pos, instance.Length - pos);
+        }
+
+        /// <summary>
+        /// Returns a copy of the string with characters removed from the right.
+        /// </summary>
+        /// <param name="instance">The string to remove characters from.</param>
+        /// <param name="chars">The characters to be removed.</param>
+        /// <returns>A copy of the string with characters removed from the right.</returns>
+        public static string RStrip(this string instance, string chars)
+        {
+            int len = instance.Length;
+            int end;
+
+            for (end = len - 1; end >= 0; end--)
+            {
+                if (chars.Find(instance[end]) == -1)
+                {
+                    break;
+                }
+            }
+
+            if (end == len - 1)
+            {
+                return instance;
+            }
+
+            return instance.Substr(0, end + 1);
         }
 
         public static byte[] SHA256Buffer(this string instance)
