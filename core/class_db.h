@@ -161,6 +161,11 @@ public:
 	static HashMap<StringName, HashMap<StringName, Variant> > default_values;
 	static Set<StringName> default_values_cached;
 
+private:
+	// Non-locking variants of get_parent_class and is_parent_class.
+	static StringName _get_parent_class(const StringName &p_class);
+	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
+
 public:
 	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
 	template <class T>

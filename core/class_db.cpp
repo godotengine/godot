@@ -270,9 +270,7 @@ ClassDB::ClassInfo::ClassInfo() {
 ClassDB::ClassInfo::~ClassInfo() {
 }
 
-bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) {
-
-	OBJTYPE_RLOCK;
+bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 
 	StringName inherits = p_class;
 
@@ -280,11 +278,19 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 
 		if (inherits == p_inherits)
 			return true;
-		inherits = get_parent_class(inherits);
+		inherits = _get_parent_class(inherits);
 	}
 
 	return false;
 }
+
+bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) {
+
+	OBJTYPE_RLOCK;
+
+	return _is_parent_class(p_class, p_inherits);
+}
+
 void ClassDB::get_class_list(List<StringName> *p_classes) {
 
 	OBJTYPE_RLOCK;
@@ -307,7 +313,7 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 
 	while ((k = classes.next(k))) {
 
-		if (*k != p_class && is_parent_class(*k, p_class))
+		if (*k != p_class && _is_parent_class(*k, p_class))
 			p_classes->push_back(*k);
 	}
 }
@@ -320,7 +326,7 @@ void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<S
 
 	while ((k = classes.next(k))) {
 
-		if (*k != p_class && get_parent_class(*k) == p_class)
+		if (*k != p_class && _get_parent_class(*k) == p_class)
 			p_classes->push_back(*k);
 	}
 }
@@ -335,13 +341,18 @@ StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 	return ti->inherits;
 }
 
-StringName ClassDB::get_parent_class(const StringName &p_class) {
-
-	OBJTYPE_RLOCK;
+StringName ClassDB::_get_parent_class(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V_MSG(!ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
 	return ti->inherits;
+}
+
+StringName ClassDB::get_parent_class(const StringName &p_class) {
+
+	OBJTYPE_RLOCK;
+
+	return _get_parent_class(p_class);
 }
 
 ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
