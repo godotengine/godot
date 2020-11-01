@@ -251,9 +251,8 @@ void touch_preprocessing(JNIEnv *env, jclass clazz, jint input_device, jint ev, 
 		tp.id = (int)p[0];
 		points.push_back(tp);
 	}
-
-	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE) {
-		DisplayServerAndroid::get_singleton()->process_mouse_event(ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
+	if ((input_device & AINPUT_SOURCE_MOUSE) == AINPUT_SOURCE_MOUSE || (input_device & AINPUT_SOURCE_MOUSE_RELATIVE) == AINPUT_SOURCE_MOUSE_RELATIVE) {
+		DisplayServerAndroid::get_singleton()->process_mouse_event(input_device, ev, buttons_mask, points[0].pos, vertical_factor, horizontal_factor);
 	} else {
 		DisplayServerAndroid::get_singleton()->process_touch(ev, pointer, points);
 	}

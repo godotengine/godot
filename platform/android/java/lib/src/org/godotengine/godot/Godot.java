@@ -988,4 +988,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public void initInputDevices() {
 		mRenderView.initInputDevices();
 	}
+
+	@Keep
+	private GodotRenderView getRenderView() { // used by native side to get renderView
+		return mRenderView;
+	}
 }
