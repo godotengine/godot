@@ -695,31 +695,10 @@ namespace Godot
             return ig;
         }
 
-        private String ToHex32(float val)
+        private string ToHex32(float val)
         {
-            int v = Mathf.RoundToInt(Mathf.Clamp(val * 255, 0, 255));
-
-            var ret = string.Empty;
-
-            for (int i = 0; i < 2; i++)
-            {
-                char c;
-                int lv = v & 0xF;
-
-                if (lv < 10)
-                {
-                    c = (char)('0' + lv);
-                }
-                else
-                {
-                    c = (char)('a' + lv - 10);
-                }
-
-                v >>= 4;
-                ret = c + ret;
-            }
-
-            return ret;
+            byte b = (byte)Mathf.RoundToInt(Mathf.Clamp(val * 255, 0, 255));
+            return b.HexEncode();
         }
 
         internal static bool HtmlIsValid(string color)

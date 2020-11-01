@@ -454,6 +454,53 @@ namespace Godot
             return hashv;
         }
 
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte as a string.
+        /// </summary>
+        /// <param name="bytes">The byte to encode.</param>
+        /// <returns>The hexadecimal representation of this byte.</returns>
+        internal static string HexEncode(this byte b)
+        {
+            var ret = string.Empty;
+
+            for (int i = 0; i < 2; i++)
+            {
+                char c;
+                int lv = b & 0xF;
+
+                if (lv < 10)
+                {
+                    c = (char)('0' + lv);
+                }
+                else
+                {
+                    c = (char)('a' + lv - 10);
+                }
+
+                b >>= 4;
+                ret = c + ret;
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Returns a hexadecimal representation of this byte array as a string.
+        /// </summary>
+        /// <param name="bytes">The byte array to encode.</param>
+        /// <returns>The hexadecimal representation of this byte array.</returns>
+        public static string HexEncode(this byte[] bytes)
+        {
+            var ret = string.Empty;
+
+            foreach (byte b in bytes)
+            {
+                ret += b.HexEncode();
+            }
+
+            return ret;
+        }
+
         // <summary>
         // Convert a string containing an hexadecimal number into an int.
         // </summary>
