@@ -159,23 +159,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="contrasted">
-			<return type="Color">
-			</return>
-			<description>
-				Returns the most contrasting color.
-				[codeblocks]
-				[gdscript]
-				var color = Color(0.3, 0.4, 0.9)
-				var contrasted_color = color.contrasted() # Equivalent to RGBA(204, 229, 102, 255)
-				[/gdscript]
-				[csharp]
-				var color = new Color(0.3f, 0.4f, 0.9f);
-				Color contrastedColor = color.Contrasted(); // Equivalent to RGBA(204, 229, 102, 255)
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
 		<method name="darkened">
 			<return type="Color">
 			</return>

@@ -1614,7 +1614,6 @@ void register_variant_methods() {
 	bind_method(Color, to_rgba64, sarray(), varray());
 
 	bind_method(Color, inverted, sarray(), varray());
-	bind_method(Color, contrasted, sarray(), varray());
 	bind_method(Color, lerp, sarray("b", "t"), varray());
 	bind_method(Color, lightened, sarray("amount"), varray());
 	bind_method(Color, darkened, sarray("amount"), varray());
