@@ -185,9 +185,6 @@ TEST_CASE("[Color] Manipulation methods") {
 	CHECK_MESSAGE(
 			blue.inverted().is_equal_approx(Color(1, 1, 0, 0.4)),
 			"Inverted color should have its red, green and blue components inverted.");
-	CHECK_MESSAGE(
-			blue.contrasted().is_equal_approx(Color(0.5, 0.5, 0.5, 0.4)),
-			"Contrasted pure blue should be fully gray.");
 
 	const Color purple = Color(0.5, 0.2, 0.5, 0.25);
 
