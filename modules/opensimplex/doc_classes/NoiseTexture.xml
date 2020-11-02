@@ -32,6 +32,7 @@
 		</member>
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">
 			Whether the texture can be tiled without visible seams or not. Seamless textures take longer to generate.
+			[b]Note:[/b] Seamless noise has a lower contrast compared to non-seamless noise. This is due to the way noise uses higher dimensions for generating seamless noise.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="512">
 			Width of the generated texture.

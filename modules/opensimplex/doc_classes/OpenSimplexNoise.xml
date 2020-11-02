@@ -109,6 +109,7 @@
 			</argument>
 			<description>
 				Generate a tileable noise image in [constant Image.FORMAT_L8] format, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] × [code]size[/code]).
+				[b]Note:[/b] Seamless noise has a lower contrast compared to non-seamless noise. This is due to the way noise uses higher dimensions for generating seamless noise.
 			</description>
 		</method>
 	</methods>
