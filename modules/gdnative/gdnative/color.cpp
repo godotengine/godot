@@ -148,13 +148,6 @@ godot_color GDAPI godot_color_inverted(const godot_color *p_self) {
 	return dest;
 }
 
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self) {
-	godot_color dest;
-	const Color *self = (const Color *)p_self;
-	*((Color *)&dest) = self->contrasted();
-	return dest;
-}
-
 godot_color GDAPI godot_color_lerp(const godot_color *p_self, const godot_color *p_b, const godot_real p_t) {
 	godot_color dest;
 	const Color *self = (const Color *)p_self;

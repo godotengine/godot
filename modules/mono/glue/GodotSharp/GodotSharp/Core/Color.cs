@@ -257,20 +257,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the most contrasting color.
-        /// </summary>
-        /// <returns>The most contrasting color</returns>
-        public Color Contrasted()
-        {
-            return new Color(
-                (r + 0.5f) % 1.0f,
-                (g + 0.5f) % 1.0f,
-                (b + 0.5f) % 1.0f,
-                a
-            );
-        }
-
-        /// <summary>
         /// Returns a new color resulting from making this color darker
         /// by the specified ratio (on the range of 0 to 1).
         /// </summary>

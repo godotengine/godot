@@ -1255,13 +1255,6 @@
         ]
       },
       {
-        "name": "godot_color_contrasted",
-        "return_type": "godot_color",
-        "arguments": [
-          ["const godot_color *", "p_self"]
-        ]
-      },
-      {
         "name": "godot_color_lerp",
         "return_type": "godot_color",
         "arguments": [

@@ -93,8 +93,6 @@ godot_int GDAPI godot_color_to_argb32(const godot_color *p_self);
 
 godot_color GDAPI godot_color_inverted(const godot_color *p_self);
 
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self);
-
 godot_color GDAPI godot_color_lerp(const godot_color *p_self, const godot_color *p_b, const godot_real p_t);
 
 godot_color GDAPI godot_color_blend(const godot_color *p_self, const godot_color *p_over);

@@ -357,7 +357,7 @@ void GradientEdit::_notification(int p_what) {
 
 		//Draw point markers
 		for (int i = 0; i < points.size(); i++) {
-			Color col = points[i].color.contrasted();
+			Color col = points[i].color.inverted();
 			col.a = 0.9;
 
 			draw_line(Vector2(points[i].offset * total_w, 0), Vector2(points[i].offset * total_w, h / 2), col);
