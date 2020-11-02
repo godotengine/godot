@@ -118,6 +118,7 @@
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
 			Repeats the texture (instead of clamp to edge).
+			[b]Note:[/b] Ignored when using an [AtlasTexture] as these don't support repetition.
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
 			Uses a magnifying filter, to enable smooth zooming in of the texture.
@@ -131,6 +132,7 @@
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
 			Repeats the texture with alternate sections mirrored.
+			[b]Note:[/b] Ignored when using an [AtlasTexture] as these don't support repetition.
 		</constant>
 		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.

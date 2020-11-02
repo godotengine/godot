@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		[Texture] resource aimed at managing big textures files that pack multiple smaller textures. Consists of a [Texture], a margin that defines the border width, and a region that defines the actual area of the AtlasTexture.
+		[b]Note:[/b] AtlasTextures don't support repetition. The [constant Texture.FLAG_REPEAT] and [constant Texture.FLAG_MIRRORED_REPEAT] flags are ignored when using an AtlasTexture.
 	</description>
 	<tutorials>
 	</tutorials>
