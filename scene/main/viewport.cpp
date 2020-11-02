@@ -3020,6 +3020,9 @@ Viewport::MSAA Viewport::get_msaa() const {
 
 void Viewport::set_use_fxaa(bool p_fxaa) {
 
+	if (p_fxaa == use_fxaa) {
+		return;
+	}
 	use_fxaa = p_fxaa;
 	VS::get_singleton()->viewport_set_use_fxaa(viewport, use_fxaa);
 }
@@ -3031,6 +3034,9 @@ bool Viewport::get_use_fxaa() const {
 
 void Viewport::set_use_debanding(bool p_debanding) {
 
+	if (p_debanding == use_debanding) {
+		return;
+	}
 	use_debanding = p_debanding;
 	VS::get_singleton()->viewport_set_use_debanding(viewport, use_debanding);
 }
