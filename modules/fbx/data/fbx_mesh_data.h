@@ -75,7 +75,7 @@ struct FBXMeshData : Reference {
 	// translate fbx mesh data from document context to FBX Mesh Geometry Context
 	bool valid_weight_indexes = false;
 
-	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *mesh_geometry, const FBXDocParser::Model *model);
+	MeshInstance *create_fbx_mesh(const ImportState &state, const FBXDocParser::MeshGeometry *mesh_geometry, const FBXDocParser::Model *model, bool use_compression);
 
 	void gen_weight_info(Ref<SurfaceTool> st, int vertex_id) const;
 
