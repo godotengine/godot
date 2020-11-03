@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  net_utilities.cpp                                                    */
+/*  scene_diff.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -32,73 +32,42 @@
 	@author AndreaCatania
 */
 
+#ifndef SCENE_DIFF_H
+#define SCENE_DIFF_H
+
+#include "core/local_vector.h"
+#include "core/oa_hash_map.h"
+#include "core/object.h"
 #include "net_utilities.h"
 
-#include "core/variant.h"
-#include "scene/main/node.h"
+class SceneSynchronizer;
 
-NetUtility::VarData::VarData() {}
+struct NodeDiff {
+	Ref<NetUtility::NodeData> node_data;
+	OAHashMap<uint32_t, Variant> var_diff;
+};
 
-NetUtility::VarData::VarData(StringName p_name) {
-	var.name = p_name;
-}
+/// This class is used to track the scene changes during a particular period of
+/// the frame. You can use it to generate partial FrameSnapshot that contains
+/// only portion of a change.
+class SceneDiff : public Object {
+	GDCLASS(SceneDiff, Object);
 
-NetUtility::VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
-		id(p_id),
-		skip_rewinding(p_skip_rewinding),
-		enabled(p_enabled) {
-	var.name = p_name;
-	var.value = p_val.duplicate(true);
-}
+	friend class SceneSynchronizer;
 
-bool NetUtility::VarData::operator==(const NetUtility::VarData &p_other) const {
-	return var.name == p_other.var.name;
-}
+	static void _bind_methods();
 
-NetUtility::NodeData::NodeData() {}
+	uint32_t start_tracking_count = 0;
+	LocalVector<NetUtility::NodeTrackingData> tracking;
+	OAHashMap<uint32_t, NodeDiff> diff;
 
-int64_t NetUtility::NodeData::find_var_by_id(uint32_t p_id) const {
-	if (p_id == 0) {
-		return -1;
-	}
-	const NetUtility::VarData *ptr = vars.ptr();
-	for (int i = 0; i < vars.size(); i += 1) {
-		if (ptr[i].id == p_id) {
-			return i;
-		}
-	}
-	return -1;
-}
+public:
+	SceneDiff();
 
-void NetUtility::NodeData::process(const real_t p_delta) const {
-	const Variant var_delta = p_delta;
-	const Variant *fake_array_vars = &var_delta;
+	void start_tracking_scene_changes(const LocalVector<Ref<NetUtility::NodeData> > &p_nodes);
+	void stop_tracking_scene_changes(const SceneSynchronizer *p_synchronizer);
 
-	Callable::CallError e;
-	for (uint32_t i = 0; i < functions.size(); i += 1) {
-		node->call(functions[i], &fake_array_vars, 1, e);
-	}
-}
+	bool is_tracking_in_progress() const;
+};
 
-NetUtility::Snapshot::operator String() const {
-	String s;
-	s += "Snapshot input ID: " + itos(input_id);
-
-	for (
-			OAHashMap<ObjectID, Vector<NetUtility::VarData>>::Iterator it = node_vars.iter();
-			it.valid;
-			it = node_vars.next_iter(it)) {
-		s += "\nNode Data: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-		for (int i = 0; i < it.value->size(); i += 1) {
-			s += "\n|- Variable: ";
-			s += (*it.value)[i].var.name;
-			s += " = ";
-			s += String((*it.value)[i].var.value);
-		}
-	}
-	return s;
-}
+#endif // SCENE_DIFF_H

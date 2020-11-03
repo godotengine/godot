@@ -38,6 +38,8 @@
 #include "core/local_vector.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
+#include "core/oa_hash_map.h"
+#include "core/reference.h"
 #include "core/typedefs.h"
 
 #ifdef DEBUG_ENABLED
@@ -52,6 +54,10 @@
 #define NET_DEBUG_WARN(msg)
 #define NET_DEBUG_ERR(msg)
 #endif
+
+typedef ObjectID ControllerID;
+
+namespace NetUtility {
 
 template <class T>
 class StatisticalRingBuffer {
@@ -195,5 +201,76 @@ void StatisticalRingBuffer<T>::force_recompute_avg_sum() {
 		avg_sum += data[i];
 	}
 }
+
+struct Var {
+	StringName name;
+	Variant value;
+};
+
+struct VarData {
+	uint32_t id = 0;
+	Var var;
+	bool skip_rewinding = false;
+	bool enabled = false;
+
+	VarData();
+	VarData(StringName p_name);
+	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
+
+	bool operator==(const VarData &p_other) const;
+};
+
+struct NodeData : public Reference {
+	GDCLASS(NodeData, Reference);
+
+public:
+	// ID used to reference this Node in the networked calls.
+	bool valid = true;
+	uint32_t id = 0;
+	ObjectID instance_id = ObjectID();
+	NodeData *controlled_by = nullptr;
+
+	bool is_controller = false;
+	LocalVector<NodeData *> controlled_nodes;
+
+	Vector<VarData> vars;
+	LocalVector<StringName> functions;
+
+	// This is valid to use only inside the process function.
+	Node *node = nullptr;
+
+	NodeData();
+
+	// Returns the index to access the variable.
+	int64_t find_var_by_id(uint32_t p_id) const;
+	void process(const real_t p_delta) const;
+};
+
+struct PeerData {
+	ControllerID controller_id = ControllerID();
+	// For new peers notify the state as soon as possible.
+	bool force_notify_snapshot = true;
+	// For new peers a full snapshot is needed.
+	bool need_full_snapshot = true;
+};
+
+struct Snapshot {
+	uint32_t input_id;
+	OAHashMap<ObjectID, Vector<VarData>> node_vars;
+
+	operator String() const;
+};
+
+struct PostponedRecover {
+	NodeData *node_data = nullptr;
+	Vector<Var> vars;
+};
+
+struct NodeTrackingData {
+	Ref<NetUtility::NodeData> node_data;
+	LocalVector<Variant> variables;
+};
+
+} // namespace NetUtility
 
 #endif

@@ -37,10 +37,12 @@
 #include "data_buffer.h"
 #include "interpolator.h"
 #include "networked_controller.h"
+#include "scene_diff.h"
 #include "scene_synchronizer.h"
 
 void register_network_synchronizer_types() {
 	ClassDB::register_class<DataBuffer>();
+	ClassDB::register_class<SceneDiff>();
 	ClassDB::register_class<Interpolator>();
 	ClassDB::register_class<NetworkedController>();
 	ClassDB::register_class<SceneSynchronizer>();

@@ -69,6 +69,7 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_vector3", "value", "compression_level"), &DataBuffer::add_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_precise_vector3", "value", "compression_level"), &DataBuffer::add_precise_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("add_normalized_vector3", "value", "compression_level"), &DataBuffer::add_normalized_vector3, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("add_variant", "value"), &DataBuffer::add_variant);
 
 	ClassDB::bind_method(D_METHOD("read_bool"), &DataBuffer::read_bool);
 	ClassDB::bind_method(D_METHOD("read_int", "compression_level"), &DataBuffer::read_int, DEFVAL(COMPRESSION_LEVEL_1));
@@ -81,6 +82,7 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read_vector3", "compression_level"), &DataBuffer::read_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_precise_vector3", "compression_level"), &DataBuffer::read_precise_vector3, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("read_normalized_vector3", "compression_level"), &DataBuffer::read_normalized_vector3, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_variant"), &DataBuffer::read_variant);
 
 	ClassDB::bind_method(D_METHOD("skip_bool"), &DataBuffer::skip_bool);
 	ClassDB::bind_method(D_METHOD("skip_int", "compression_level"), &DataBuffer::skip_int, DEFVAL(COMPRESSION_LEVEL_1));
@@ -105,6 +107,19 @@ void DataBuffer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vector3_size", "compression_level"), &DataBuffer::get_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_precise_vector3_size", "compression_level"), &DataBuffer::get_precise_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &DataBuffer::get_normalized_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
+
+	ClassDB::bind_method(D_METHOD("read_bool_size"), &DataBuffer::read_bool_size);
+	ClassDB::bind_method(D_METHOD("read_int_size", "compression_level"), &DataBuffer::read_int_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_real_size", "compression_level"), &DataBuffer::read_real_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_precise_real_size", "compression_level"), &DataBuffer::read_precise_real_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_unit_real_size", "compression_level"), &DataBuffer::read_unit_real_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_vector2_size", "compression_level"), &DataBuffer::read_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_precise_vector2_size", "compression_level"), &DataBuffer::read_precise_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_normalized_vector2_size", "compression_level"), &DataBuffer::read_normalized_vector2_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_vector3_size", "compression_level"), &DataBuffer::read_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_precise_vector3_size", "compression_level"), &DataBuffer::read_precise_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_normalized_vector3_size", "compression_level"), &DataBuffer::read_normalized_vector3_size, DEFVAL(COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_variant_size"), &DataBuffer::read_variant_size);
 
 	ClassDB::bind_method(D_METHOD("begin_read"), &DataBuffer::begin_read);
 	ClassDB::bind_method(D_METHOD("begin_write", "meta_size"), &DataBuffer::begin_write);
@@ -525,6 +540,84 @@ Vector3 DataBuffer::read_normalized_vector3(CompressionLevel p_compression_level
 	return Vector3(decompressed_x_axis, decompressed_y_axis, decompressed_z_axis);
 }
 
+Variant DataBuffer::add_variant(Variant p_input) {
+	// TODO consider to use a method similar to `_encode_and_compress_variant`
+	// to compress the encoded data a bit.
+
+	// Get the variant size.
+	int len = 0;
+
+	const Error len_err = encode_variant(
+			p_input,
+			nullptr,
+			len,
+			false);
+
+	ERR_FAIL_COND_V_MSG(
+			len_err != OK,
+			Variant(),
+			"Was not possible encode the variant.");
+
+	// Variant encoding pads the data to byte, so doesn't make sense write it
+	// unpadded.
+	make_room_pad_to_next_byte();
+	make_room_in_bits(len * 8);
+
+#ifdef DEBUG_ENABLED
+	// This condition is always false thanks to the `make_room_pad_to_next_byte`.
+	// so it's safe to assume we are starting from the begin of the byte.
+	CRASH_COND((bit_offset % 8) != 0);
+#endif
+
+	const Error write_err = encode_variant(
+			p_input,
+			buffer.get_bytes_mut().ptrw() + (bit_offset / 8),
+			len,
+			false);
+
+	ERR_FAIL_COND_V_MSG(
+			write_err != OK,
+			Variant(),
+			"Was not possible encode the variant.");
+
+	bit_offset += len * 8;
+
+	return p_input;
+}
+
+Variant DataBuffer::read_variant() {
+
+	Variant ret;
+
+	int len = 0;
+
+	// The Variant is always written starting from the beginning of the byte.
+	const bool success = pad_to_next_byte();
+	ERR_FAIL_COND_V_MSG(success == false, Variant(), "Padding failed.");
+
+#ifdef DEBUG_ENABLED
+	// This condition is always false thanks to the `pad_to_next_byte`; So is
+	// safe to assume we are starting from the begin of the byte.
+	CRASH_COND((bit_offset % 8) != 0);
+#endif
+
+	const Error read_err = decode_variant(
+			ret,
+			buffer.get_bytes().ptr() + (bit_offset / 8),
+			buffer.size_in_bytes() - (bit_offset / 8),
+			&len,
+			false);
+
+	ERR_FAIL_COND_V_MSG(
+			read_err != OK,
+			Variant(),
+			"Was not possible decode the variant.");
+
+	bit_offset += len * 8;
+
+	return ret;
+}
+
 void DataBuffer::zero() {
 	buffer.zero();
 }
@@ -628,6 +721,104 @@ int DataBuffer::get_normalized_vector3_size(CompressionLevel p_compression) cons
 	return DataBuffer::get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression);
 }
 
+int DataBuffer::read_bool_size() {
+	const int bits = get_bool_size();
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_int_size(CompressionLevel p_compression) {
+	const int bits = get_int_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_real_size(CompressionLevel p_compression) {
+	const int bits = get_real_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_precise_real_size(CompressionLevel p_compression) {
+	const int bits = get_precise_real_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_unit_real_size(CompressionLevel p_compression) {
+	const int bits = get_unit_real_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_vector2_size(CompressionLevel p_compression) {
+	const int bits = get_vector2_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_precise_vector2_size(CompressionLevel p_compression) {
+	const int bits = get_precise_vector2_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_normalized_vector2_size(CompressionLevel p_compression) {
+	const int bits = get_normalized_vector2_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_vector3_size(CompressionLevel p_compression) {
+	const int bits = get_vector3_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_precise_vector3_size(CompressionLevel p_compression) {
+	const int bits = get_precise_vector3_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_normalized_vector3_size(CompressionLevel p_compression) {
+	const int bits = get_normalized_vector3_size(p_compression);
+	skip(bits);
+	return bits;
+}
+
+int DataBuffer::read_variant_size() {
+	int len = 0;
+
+	Variant ret;
+
+	// The Variant is always written starting from the beginning of the byte.
+	const bool success = pad_to_next_byte();
+	ERR_FAIL_COND_V_MSG(success == false, Variant(), "Padding failed.");
+
+#ifdef DEBUG_ENABLED
+	// This condition is always false thanks to the `pad_to_next_byte`; So is
+	// safe to assume we are starting from the begin of the byte.
+	CRASH_COND((bit_offset % 8) != 0);
+#endif
+
+	const Error read_err = decode_variant(
+			ret,
+			buffer.get_bytes().ptr() + (bit_offset / 8),
+			buffer.size_in_bytes() - (bit_offset / 8),
+			&len,
+			false);
+
+	ERR_FAIL_COND_V_MSG(
+			read_err != OK,
+			0,
+			"Was not possible to decode the variant, error: " + itos(read_err));
+
+	bit_offset += len * 8;
+
+	return len * 8;
+}
+
 // TODO please add an unit test to make sure the returned data are right.
 int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compression) {
 	switch (p_data_type) {
@@ -721,6 +912,9 @@ int DataBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compressi
 					return 6 * 3;
 			}
 		} break;
+		case DATA_TYPE_VARIANT: {
+			ERR_FAIL_V_MSG(0, "The variant size is dynamic and can't be know at compile time.");
+		}
 		default:
 			// Unreachable
 			CRASH_NOW_MSG("Input type not supported!");
@@ -751,4 +945,20 @@ void DataBuffer::make_room_in_bits(int p_dim) {
 			bit_size = new_bit_size;
 		}
 	}
+}
+
+void DataBuffer::make_room_pad_to_next_byte() {
+	const int bits_to_next_byte = 8 - (bit_offset % 8);
+	make_room_in_bits(bits_to_next_byte);
+	bit_offset += bits_to_next_byte;
+}
+
+bool DataBuffer::pad_to_next_byte() {
+	const int bits_to_next_byte = 8 - (bit_offset % 8);
+	ERR_FAIL_COND_V_MSG(
+			bit_offset + bits_to_next_byte > buffer.size_in_bits(),
+			false,
+			"");
+	bit_offset += bits_to_next_byte;
+	return true;
 }

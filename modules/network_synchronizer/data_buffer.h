@@ -54,7 +54,9 @@ public:
 		DATA_TYPE_NORMALIZED_VECTOR2,
 		DATA_TYPE_VECTOR3,
 		DATA_TYPE_PRECISE_VECTOR3,
-		DATA_TYPE_NORMALIZED_VECTOR3
+		DATA_TYPE_NORMALIZED_VECTOR3,
+		// The only dynamic sized value.
+		DATA_TYPE_VARIANT
 	};
 
 	/// Compression level for the stored input data.
@@ -141,6 +143,9 @@ public:
 	/// COMPRESSION_LEVEL_1: 10 * 3 bits are used - Max loss 0.09% per axis
 	/// COMPRESSION_LEVEL_2: 8 * 3 bits are used - Max loss 0.3 per axis
 	/// COMPRESSION_LEVEL_3: 6 * 3 bits are used - Max loss 3.2% per axis
+	///
+	/// ## Variant
+	/// It's dynamic sized. It's not possible to compress it.
 	enum CompressionLevel {
 		COMPRESSION_LEVEL_0,
 		COMPRESSION_LEVEL_1,
@@ -311,8 +316,16 @@ public:
 	/// Parse next data as normalized vector3 from the input buffer.
 	Vector3 read_normalized_vector3(CompressionLevel p_compression_level);
 
-	// Puts all the bytes to 0.
+	/// Add a variant. This is the only supported dynamic sized value.
+	Variant add_variant(Variant p_input);
+
+	/// Parse the next data as Variant and returns it.
+	Variant read_variant();
+
+	/// Puts all the bytes to 0.
 	void zero();
+
+	/** Skips the amount of bits a type takes. */
 
 	void skip_bool();
 	void skip_int(CompressionLevel p_compression);
@@ -326,6 +339,8 @@ public:
 	void skip_precise_vector3(CompressionLevel p_compression);
 	void skip_normalized_vector3(CompressionLevel p_compression);
 
+	/** Just returns the size of a specific type. */
+
 	int get_bool_size() const;
 	int get_int_size(CompressionLevel p_compression) const;
 	int get_real_size(CompressionLevel p_compression) const;
@@ -338,6 +353,21 @@ public:
 	int get_precise_vector3_size(CompressionLevel p_compression) const;
 	int get_normalized_vector3_size(CompressionLevel p_compression) const;
 
+	/** Read the size and pass to the next parameter. */
+
+	int read_bool_size();
+	int read_int_size(CompressionLevel p_compression);
+	int read_real_size(CompressionLevel p_compression);
+	int read_precise_real_size(CompressionLevel p_compression);
+	int read_unit_real_size(CompressionLevel p_compression);
+	int read_vector2_size(CompressionLevel p_compression);
+	int read_precise_vector2_size(CompressionLevel p_compression);
+	int read_normalized_vector2_size(CompressionLevel p_compression);
+	int read_vector3_size(CompressionLevel p_compression);
+	int read_precise_vector3_size(CompressionLevel p_compression);
+	int read_normalized_vector3_size(CompressionLevel p_compression);
+	int read_variant_size();
+
 	static int get_bit_taken(DataType p_data_type, CompressionLevel p_compression);
 
 private:
@@ -345,6 +375,8 @@ private:
 	static double decompress_unit_float(uint64_t p_value, double p_scale_factor);
 
 	void make_room_in_bits(int p_dim);
+	void make_room_pad_to_next_byte();
+	bool pad_to_next_byte();
 };
 
 VARIANT_ENUM_CAST(DataBuffer::DataType)

@@ -36,6 +36,7 @@
 
 #include "core/local_vector.h"
 #include "core/oa_hash_map.h"
+#include "net_utilities.h"
 #include <deque>
 
 #ifndef SCENE_SYNCHRONIZER_H
@@ -112,6 +113,7 @@ class SceneSynchronizer : public Node {
 	friend class ServerSynchronizer;
 	friend class ClientSynchronizer;
 	friend class NoNetSynchronizer;
+	friend class SceneDiff;
 
 public:
 	enum SynchronizerType {
@@ -119,68 +121,6 @@ public:
 		SYNCHRONIZER_TYPE_NONETWORK,
 		SYNCHRONIZER_TYPE_CLIENT,
 		SYNCHRONIZER_TYPE_SERVER
-	};
-
-	typedef ObjectID ControllerID;
-
-	struct Var {
-		StringName name;
-		Variant value;
-	};
-
-	struct VarData {
-		uint32_t id = 0;
-		Var var;
-		bool skip_rewinding = false;
-		bool enabled = false;
-
-		VarData();
-		VarData(StringName p_name);
-		VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
-
-		bool operator==(const VarData &p_other) const;
-	};
-
-	struct NodeData {
-		// ID used to reference this Node in the networked calls.
-		uint32_t id = 0;
-		ObjectID instance_id = ObjectID();
-		NodeData *controlled_by = nullptr;
-
-		bool is_controller = false;
-		LocalVector<NodeData *> controlled_nodes;
-
-		Vector<VarData> vars;
-		LocalVector<StringName> functions;
-
-		// This is valid to use only inside the process function.
-		Node *node = nullptr;
-
-		NodeData();
-
-		// Returns the index to access the variable.
-		int64_t find_var_by_id(uint32_t p_id) const;
-		void process(const real_t p_delta) const;
-	};
-
-	struct PeerData {
-		ControllerID controller_id = ControllerID();
-		// For new peers notify the state as soon as possible.
-		bool force_notify_snapshot = true;
-		// For new peers a full snapshot is needed.
-		bool need_full_snapshot = true;
-	};
-
-	struct Snapshot {
-		uint32_t input_id;
-		OAHashMap<ObjectID, Vector<SceneSynchronizer::VarData>> node_vars;
-
-		operator String() const;
-	};
-
-	struct PostponedRecover {
-		SceneSynchronizer::NodeData *node_data = nullptr;
-		Vector<SceneSynchronizer::Var> vars;
 	};
 
 private:
@@ -194,16 +134,16 @@ private:
 	bool rewinding_in_progress = false;
 
 	bool peer_dirty = false;
-	OAHashMap<int, PeerData> peer_data;
+	OAHashMap<int, NetUtility::PeerData> peer_data;
 
 	uint32_t node_counter = 1;
 	bool generate_id = false; // TODO The id generator in this way is bad. Please make sure to regenerate all the ids only on server. Most important, each time a new reset is executed the id must be regenerated so also clients can become servers.
 	// All possible registered nodes.
-	LocalVector<NodeData *> node_data;
+	LocalVector<Ref<NetUtility::NodeData>> node_data;
 	// Controller nodes.
-	LocalVector<NodeData *> controllers_node_data;
+	LocalVector<Ref<NetUtility::NodeData>> controllers_node_data;
 	// Global nodes.
-	LocalVector<NodeData *> global_nodes_node_data;
+	LocalVector<Ref<NetUtility::NodeData>> global_nodes_node_data;
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
@@ -239,6 +179,11 @@ public:
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
 
+	void start_tracking_scene_changes(Object *p_diff_handle) const;
+	void stop_tracking_scene_changes(Object *p_diff_handle) const;
+	Variant pop_scene_changes(Object *p_diff_handle) const;
+	void apply_scene_changes(Variant p_sync_data);
+
 	bool is_recovered() const;
 	bool is_resetted() const;
 	bool is_rewinding() const;
@@ -260,9 +205,9 @@ public:
 	void update_peers();
 
 private:
-	NodeData *get_node_data(ObjectID p_object_id) const;
+	NetUtility::NodeData *get_node_data(ObjectID p_object_id);
 	uint32_t find_global_node(ObjectID p_object_id) const;
-	NodeData *get_controller_node_data(ControllerID p_controller_id) const;
+	NetUtility::NodeData *get_controller_node_data(ControllerID p_controller_id);
 
 	void process();
 
@@ -272,16 +217,17 @@ private:
 
 	// Read the node variables and store the value if is different from the
 	// previous one and emits a signal.
-	void pull_node_changes(NodeData *p_node_data);
+	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
-	NodeData *register_node(Node *p_node);
+	NetUtility::NodeData *register_node(Node *p_node);
 
+public:
 	// Returns true when the vectors are the same.
-	bool vec2_evaluation(const Vector2 a, const Vector2 b);
+	bool vec2_evaluation(const Vector2 a, const Vector2 b) const;
 	// Returns true when the vectors are the same.
-	bool vec3_evaluation(const Vector3 a, const Vector3 b);
+	bool vec3_evaluation(const Vector3 a, const Vector3 b) const;
 	// Returns true when the variants are the same.
-	bool synchronizer_variant_evaluation(const Variant &v_1, const Variant &v_2);
+	bool synchronizer_variant_evaluation(const Variant &v_1, const Variant &v_2) const;
 
 	bool is_client() const;
 };
@@ -298,10 +244,10 @@ public:
 
 	virtual void process() = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
-	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) {}
-	virtual void on_node_removed(SceneSynchronizer::NodeData *p_node_data) {}
-	virtual void on_variable_added(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) {}
-	virtual void on_variable_changed(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) {}
+	virtual void on_node_added(NetUtility::NodeData *p_node_data) {}
+	virtual void on_node_removed(NetUtility::NodeData *p_node_data) {}
+	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
 };
 
 class NoNetSynchronizer : public Synchronizer {
@@ -334,26 +280,26 @@ public:
 	virtual void clear() override;
 	virtual void process() override;
 	virtual void receive_snapshot(Variant p_snapshot) override;
-	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) override;
-	virtual void on_variable_added(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) override;
-	virtual void on_variable_changed(SceneSynchronizer::NodeData *p_node_data, StringName p_var_name) override;
+	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
+	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
 
 	void process_snapshot_notificator(real_t p_delta);
 	Vector<Variant> global_nodes_generate_snapshot(bool p_force_full_snapshot) const;
-	void controller_generate_snapshot(const SceneSynchronizer::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_snapshot_result) const;
-	void generate_snapshot_node_data(const SceneSynchronizer::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_result) const;
+	void controller_generate_snapshot(const NetUtility::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_snapshot_result) const;
+	void generate_snapshot_node_data(const NetUtility::NodeData *p_node_data, bool p_force_full_snapshot, Vector<Variant> &r_result) const;
 };
 
 class ClientSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
-	SceneSynchronizer::NodeData *player_controller_node_data = nullptr;
+	NetUtility::NodeData *player_controller_node_data = nullptr;
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	SceneSynchronizer::Snapshot last_received_snapshot;
-	std::deque<SceneSynchronizer::Snapshot> client_snapshots;
-	std::deque<SceneSynchronizer::Snapshot> server_snapshots;
+	NetUtility::Snapshot last_received_snapshot;
+	std::deque<NetUtility::Snapshot> client_snapshots;
+	std::deque<NetUtility::Snapshot> server_snapshots;
 
 	bool need_full_snapshot_notified = false;
 
@@ -364,20 +310,27 @@ public:
 
 	virtual void process() override;
 	virtual void receive_snapshot(Variant p_snapshot) override;
-	virtual void on_node_added(SceneSynchronizer::NodeData *p_node_data) override;
-	virtual void on_node_removed(SceneSynchronizer::NodeData *p_node_data) override;
+	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
+	virtual void on_node_removed(NetUtility::NodeData *p_node_data) override;
+
+	bool parse_sync_data(
+			Variant p_snapshot,
+			void *p_user_pointer,
+			void (*p_node_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data),
+			void (*p_controller_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id),
+			void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, StringName p_variable_name, const Variant &p_value));
 
 private:
 	/// Store node data organized per controller.
 	void store_snapshot();
 
 	void store_controllers_snapshot(
-			const SceneSynchronizer::Snapshot &p_snapshot,
-			std::deque<SceneSynchronizer::Snapshot> &r_snapshot_storage);
+			const NetUtility::Snapshot &p_snapshot,
+			std::deque<NetUtility::Snapshot> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
-	bool compare_vars(const SceneSynchronizer::NodeData *p_synchronizer_node_data, const Vector<SceneSynchronizer::VarData> &p_server_vars, const Vector<SceneSynchronizer::VarData> &p_client_vars, Vector<SceneSynchronizer::Var> &r_postponed_recover);
+	bool compare_vars(const NetUtility::NodeData *p_synchronizer_node_data, const Vector<NetUtility::VarData> &p_server_vars, const Vector<NetUtility::VarData> &p_client_vars, Vector<NetUtility::Var> &r_postponed_recover);
 
 	void notify_server_full_snapshot_is_needed();
 };
