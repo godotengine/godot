@@ -37,7 +37,7 @@
 
 static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
 
-void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
+void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
@@ -68,7 +68,7 @@ void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Can
 
 	RENDER_TIMESTAMP("Render Canvas Items");
 
-	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+	RSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_directional_lights, p_transform, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 }
 
 void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transform2D p_transform, RenderingServerCanvas::Item *p_material_owner, RenderingServerCanvas::Item **r_items, int &r_index) {
@@ -298,28 +298,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 }
 
-void RenderingServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights) {
-	if (!p_masked_lights) {
-		return;
-	}
-
-	RasterizerCanvas::Item *ci = p_canvas_item;
-
-	while (ci) {
-		RasterizerCanvas::Light *light = p_masked_lights;
-		while (light) {
-			if (ci->light_mask & light->item_mask && p_z >= light->z_min && p_z <= light->z_max && ci->global_rect_cache.intersects_transformed(light->xform_cache, light->rect_cache)) {
-				ci->light_masked = true;
-			}
-
-			light = light->mask_next_ptr;
-		}
-
-		ci = ci->next;
-	}
-}
-
-void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel) {
+void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, const Rect2 &p_clip_rect, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel) {
 	RENDER_TIMESTAMP(">Render Canvas");
 
 	snapping_2d_transforms_to_pixel = p_snap_2d_transforms_to_pixel;
@@ -341,26 +320,26 @@ void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas,
 	}
 
 	if (!has_mirror) {
-		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 
 	} else {
 		//used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
-			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 			if (ci2.mirror.y != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
-				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
+				_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights, p_directional_lights, p_default_filter, p_default_repeat, p_snap_2d_vertices_to_pixel);
 			}
 		}
 	}
@@ -1040,13 +1019,38 @@ RID RenderingServerCanvas::canvas_light_create() {
 	return canvas_light_owner.make_rid(clight);
 }
 
+void RenderingServerCanvas::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
+	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
+	ERR_FAIL_COND(!clight);
+
+	if (clight->mode == p_mode) {
+		return;
+	}
+
+	RID canvas = clight->canvas;
+
+	if (canvas.is_valid()) {
+		canvas_light_attach_to_canvas(p_light, RID());
+	}
+
+	clight->mode = p_mode;
+
+	if (canvas.is_valid()) {
+		canvas_light_attach_to_canvas(p_light, canvas);
+	}
+}
+
 void RenderingServerCanvas::canvas_light_attach_to_canvas(RID p_light, RID p_canvas) {
 	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
 	ERR_FAIL_COND(!clight);
 
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(clight->canvas);
-		canvas->lights.erase(clight);
+		if (clight->mode == RS::CANVAS_LIGHT_MODE_POINT) {
+			canvas->lights.erase(clight);
+		} else {
+			canvas->directional_lights.erase(clight);
+		}
 	}
 
 	if (!canvas_owner.owns(p_canvas)) {
@@ -1057,7 +1061,11 @@ void RenderingServerCanvas::canvas_light_attach_to_canvas(RID p_light, RID p_can
 
 	if (clight->canvas.is_valid()) {
 		Canvas *canvas = canvas_owner.getornull(clight->canvas);
-		canvas->lights.insert(clight);
+		if (clight->mode == RS::CANVAS_LIGHT_MODE_POINT) {
+			canvas->lights.insert(clight);
+		} else {
+			canvas->directional_lights.insert(clight);
+		}
 	}
 }
 
@@ -1068,7 +1076,7 @@ void RenderingServerCanvas::canvas_light_set_enabled(RID p_light, bool p_enabled
 	clight->enabled = p_enabled;
 }
 
-void RenderingServerCanvas::canvas_light_set_scale(RID p_light, float p_scale) {
+void RenderingServerCanvas::canvas_light_set_texture_scale(RID p_light, float p_scale) {
 	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
 	ERR_FAIL_COND(!clight);
 
@@ -1152,11 +1160,18 @@ void RenderingServerCanvas::canvas_light_set_item_shadow_cull_mask(RID p_light, 
 	clight->item_shadow_mask = p_mask;
 }
 
-void RenderingServerCanvas::canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode) {
+void RenderingServerCanvas::canvas_light_set_directional_distance(RID p_light, float p_distance) {
 	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
 	ERR_FAIL_COND(!clight);
 
-	clight->mode = p_mode;
+	clight->directional_distance = p_distance;
+}
+
+void RenderingServerCanvas::canvas_light_set_blend_mode(RID p_light, RS::CanvasLightBlendMode p_mode) {
+	RasterizerCanvas::Light *clight = canvas_light_owner.getornull(p_light);
+	ERR_FAIL_COND(!clight);
+
+	clight->blend_mode = p_mode;
 }
 
 void RenderingServerCanvas::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled) {

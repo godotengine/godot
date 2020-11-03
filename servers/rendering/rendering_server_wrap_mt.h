@@ -647,9 +647,12 @@ public:
 	FUNC6(canvas_item_set_canvas_group_mode, RID, CanvasGroupMode, float, bool, float, bool)
 
 	FUNC0R(RID, canvas_light_create)
+
+	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
+
 	FUNC2(canvas_light_attach_to_canvas, RID, RID)
 	FUNC2(canvas_light_set_enabled, RID, bool)
-	FUNC2(canvas_light_set_scale, RID, float)
+	FUNC2(canvas_light_set_texture_scale, RID, float)
 	FUNC2(canvas_light_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_light_set_texture, RID, RID)
 	FUNC2(canvas_light_set_texture_offset, RID, const Vector2 &)
@@ -660,8 +663,9 @@ public:
 	FUNC3(canvas_light_set_layer_range, RID, int, int)
 	FUNC2(canvas_light_set_item_cull_mask, RID, int)
 	FUNC2(canvas_light_set_item_shadow_cull_mask, RID, int)
+	FUNC2(canvas_light_set_directional_distance, RID, float)
 
-	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)
+	FUNC2(canvas_light_set_blend_mode, RID, CanvasLightBlendMode)
 
 	FUNC2(canvas_light_set_shadow_enabled, RID, bool)
 	FUNC2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
