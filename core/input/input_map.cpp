@@ -31,6 +31,7 @@
 #include "input_map.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 
 InputMap *InputMap::singleton = nullptr;
@@ -145,6 +146,9 @@ void InputMap::action_erase_event(const StringName &p_action, const Ref<InputEve
 	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event);
 	if (E) {
 		input_map[p_action].inputs.erase(E);
+		if (Input::get_singleton()->is_action_pressed(p_action)) {
+			Input::get_singleton()->action_release(p_action);
+		}
 	}
 }
 
