@@ -57,6 +57,13 @@
 				The new item will be the [code]idx[/code]th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
 		</method>
+		<method name="edit_selected">
+			<return type="bool">
+			</return>
+			<description>
+				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
+			</description>
+		</method>
 		<method name="ensure_cursor_is_visible">
 			<return type="void">
 			</return>
