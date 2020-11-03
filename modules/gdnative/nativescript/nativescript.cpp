@@ -1905,6 +1905,9 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				for (Map<String, Set<NativeScript *>>::Element *U = NSL->library_script_users.front(); U; U = U->next()) {
+					if (L->key() != U->key())
+						continue;
+
 					for (Set<NativeScript *>::Element *S = U->get().front(); S; S = S->next()) {
 						NativeScript *script = S->get();
 
