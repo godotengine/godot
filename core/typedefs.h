@@ -277,6 +277,9 @@ struct BuildIndexSequence : BuildIndexSequence<N - 1, N - 1, Is...> {};
 template <size_t... Is>
 struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
+// Limit the depth of recursive algorithms when dealing with Array/Dictionary
+#define MAX_RECURSION 100
+
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
 #endif

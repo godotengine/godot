@@ -32,6 +32,7 @@
 #define TEST_MACROS_H
 
 #include "core/map.h"
+#include "core/print_string.h"
 #include "core/variant.h"
 
 // See documentation for doctest at:

@@ -518,16 +518,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
 
-				int l = arr_a->size();
-				if (arr_b->size() != l)
-					_RETURN(false);
-				for (int i = 0; i < l; i++) {
-					if (!((*arr_a)[i] == (*arr_b)[i])) {
-						_RETURN(false);
-					}
-				}
-
-				_RETURN(true);
+				_RETURN(*arr_a == *arr_b);
 			}
 
 			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, INT, ==, _int);
@@ -618,16 +609,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
 				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
 
-				int l = arr_a->size();
-				if (arr_b->size() != l)
-					_RETURN(true);
-				for (int i = 0; i < l; i++) {
-					if (((*arr_a)[i] != (*arr_b)[i])) {
-						_RETURN(true);
-					}
-				}
-
-				_RETURN(false);
+				_RETURN(*arr_a != *arr_b);
 			}
 
 			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, INT, !=, _int);
@@ -4089,7 +4071,11 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 	return Variant();
 }
 
-Variant Variant::duplicate(bool deep) const {
+Variant Variant::duplicate(bool p_deep) const {
+	return recursive_duplicate(p_deep, 0);
+}
+
+Variant Variant::recursive_duplicate(bool deep, int recursion_count) const {
 	switch (type) {
 		case OBJECT: {
 			/*  breaks stuff :(
@@ -4103,9 +4089,9 @@ Variant Variant::duplicate(bool deep) const {
 			return *this;
 		} break;
 		case DICTIONARY:
-			return operator Dictionary().duplicate(deep);
+			return operator Dictionary().recursive_duplicate(deep, recursion_count);
 		case ARRAY:
-			return operator Array().duplicate(deep);
+			return operator Array().recursive_duplicate(deep, recursion_count);
 		default:
 			return *this;
 	}

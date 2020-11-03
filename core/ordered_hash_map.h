@@ -207,8 +207,12 @@ public:
 			(*list_element)->get().second = p_value;
 			return Element(*list_element);
 		}
-		typename InternalList::Element *new_element = list.push_back(Pair<const K *, V>(nullptr, p_value));
+		// Incorrectly set the first value of the pair with a value that will
+		// be invalid as soon as we leave this function...
+		typename InternalList::Element *new_element = list.push_back(Pair<const K *, V>(&p_key, p_value));
+		// ...this is needed here in case the hashmap recursively reference itself...
 		typename InternalMap::Element *e = map.set(p_key, new_element);
+		// ...now we can set the right value !
 		new_element->get().first = &e->key();
 
 		return Element(new_element);

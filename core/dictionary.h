@@ -68,10 +68,12 @@ public:
 
 	bool erase(const Variant &p_key);
 
+	bool recursive_equal(const Dictionary &p_dictionary, int recursion_count) const;
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
 
 	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 	void operator=(const Dictionary &p_dictionary);
 
 	const Variant *next(const Variant *p_key = nullptr) const;
@@ -80,6 +82,7 @@ public:
 	Array values() const;
 
 	Dictionary duplicate(bool p_deep = false) const;
+	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
 
 	const void *id() const;
 

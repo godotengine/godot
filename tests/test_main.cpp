@@ -32,11 +32,13 @@
 
 #include "core/list.h"
 
+#include "test_array.h"
 #include "test_astar.h"
 #include "test_basis.h"
 #include "test_class_db.h"
 #include "test_color.h"
 #include "test_command_queue.h"
+#include "test_dictionary.h"
 #include "test_expression.h"
 #include "test_gradient.h"
 #include "test_gui.h"
