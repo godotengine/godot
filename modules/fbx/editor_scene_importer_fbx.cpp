@@ -694,17 +694,10 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 			Ref<FBXBone> bone = elem->value();
 			Transform ignore_t;
 			Ref<FBXSkeleton> skeleton = bone->fbx_skeleton;
-
-			if (!bone->cluster) {
-				continue; // some bones have no skin this is OK.
-			}
-
-			Ref<FBXNode> bone_link = bone->get_link(state);
-			ERR_CONTINUE_MSG(bone_link.is_null(), "invalid skin pose bone link");
-
+			// grab the skin bind
 			bool valid_bind = false;
-
 			Transform bind = bone->get_vertex_skin_xform(state, fbx_node->pivot_transform->GlobalTransform, valid_bind);
+
 			ERR_CONTINUE_MSG(!valid_bind, "invalid bind");
 
 			if (bind.basis.determinant() == 0) {
@@ -918,7 +911,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 						// note: do not use C++17 syntax here for dicts.
 						// this is banned in Godot.
 						for (std::pair<const std::string, const FBXDocParser::AnimationCurve *> &kvp : curves) {
-							String curve_element = ImportUtils::FBXNodeToName(kvp.first);
+							const String curve_element = ImportUtils::FBXNodeToName(kvp.first);
 							const FBXDocParser::AnimationCurve *curve = kvp.second;
 							String curve_name = ImportUtils::FBXNodeToName(curve->Name());
 							uint64_t curve_id = curve->ID();
@@ -930,7 +923,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 							}
 
 							// FBX has no name for AnimCurveNode::, most of the time, not seen any with valid name here.
-							const std::map<int64_t, float> track_time = curve->GetValueTimeTrack();
+							const std::map<int64_t, float> &track_time = curve->GetValueTimeTrack();
 
 							if (track_time.size() > 0) {
 								for (std::pair<int64_t, float> keyframe : track_time) {
