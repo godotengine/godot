@@ -198,7 +198,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_player_changed(Object *p_pl);
 
-	void _animation_key_editor_seek(float p_pos, bool p_drag);
 	void _animation_key_editor_anim_len_changed(float p_len);
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
@@ -235,6 +234,8 @@ public:
 	void set_state(const Dictionary &p_state);
 
 	void ensure_visibility();
+
+	void _animation_key_editor_seek(float p_pos, bool p_drag);
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(AnimationPlayer *p_player);
