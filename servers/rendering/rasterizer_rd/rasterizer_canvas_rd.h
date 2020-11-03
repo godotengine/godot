@@ -75,7 +75,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		FLAGS_CLIP_RECT_UV = (1 << 9),
 		FLAGS_TRANSPOSE_RECT = (1 << 10),
-		FLAGS_USING_LIGHT_MASK = (1 << 11),
 
 		FLAGS_NINEPACH_DRAW_CENTER = (1 << 12),
 		FLAGS_USING_PARTICLES = (1 << 13),
@@ -269,6 +268,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			bool enabled = false;
 			float z_far;
 			float y_offset;
+			Transform2D directional_xform;
 		} shadow;
 	};
 
@@ -331,12 +331,13 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			float screen_transform[16];
 			float canvas_normal_transform[16];
 			float canvas_modulate[4];
+
 			float screen_pixel_size[2];
 			float time;
 			uint32_t use_pixel_snap;
 
-			//uint32_t light_count;
-			//uint32_t pad[3];
+			uint32_t directional_light_count;
+			uint32_t pad[3];
 		};
 
 		LightUniform *light_uniforms;
@@ -355,6 +356,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		uint32_t max_lights_per_item;
 
 		double time;
+
 	} state;
 
 	struct PushConstant {
@@ -388,6 +390,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	Item *items[MAX_RENDER_ITEMS];
 
+	bool using_directional_lights = false;
 	RID default_canvas_texture;
 
 	RID default_canvas_group_shader;
@@ -408,6 +411,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	_FORCE_INLINE_ void _update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4);
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
 
+	void _update_shadow_atlas();
+
 public:
 	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>());
 	void free_polygon(PolygonID p_polygon);
@@ -416,12 +421,13 @@ public:
 	void light_set_texture(RID p_rid, RID p_texture);
 	void light_set_use_shadow(RID p_rid, bool p_enable);
 	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
+	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders);
 
 	RID occluder_polygon_create();
 	void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines);
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 

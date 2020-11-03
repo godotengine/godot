@@ -68,7 +68,10 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 	float time;
 	bool use_pixel_snap;
 
-	//uint light_count;
+	uint directional_light_count;
+	uint pad0;
+	uint pad1;
+	uint pad2;
 }
 canvas_data;
 

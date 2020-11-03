@@ -628,7 +628,9 @@ void register_scene_types() {
 	ClassDB::register_class<Polygon2D>();
 	ClassDB::register_class<Skeleton2D>();
 	ClassDB::register_class<Bone2D>();
-	ClassDB::register_class<Light2D>();
+	ClassDB::register_virtual_class<Light2D>();
+	ClassDB::register_class<PointLight2D>();
+	ClassDB::register_class<DirectionalLight2D>();
 	ClassDB::register_class<LightOccluder2D>();
 	ClassDB::register_class<OccluderPolygon2D>();
 	ClassDB::register_class<YSort>();
@@ -917,6 +919,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
 	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
+	ClassDB::add_compatibility_class("Light2D", "PointLight2D");
 
 #endif
 

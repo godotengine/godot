@@ -416,10 +416,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				light_count++;
 
-				if (light->mode == RS::CANVAS_LIGHT_MODE_MASK) {
-					base_flags |= FLAGS_USING_LIGHT_MASK;
-				}
-
 				if (light_count == MAX_LIGHTS_PER_ITEM) {
 					break;
 				}
@@ -430,7 +426,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 		base_flags |= light_count << FLAGS_LIGHT_COUNT_SHIFT;
 	}
 
-	light_mode = light_count > 0 ? PIPELINE_LIGHT_MODE_ENABLED : PIPELINE_LIGHT_MODE_DISABLED;
+	light_mode = (light_count > 0 || using_directional_lights) ? PIPELINE_LIGHT_MODE_ENABLED : PIPELINE_LIGHT_MODE_DISABLED;
 
 	PipelineVariants *pipeline_variants = p_pipeline_variants;
 
@@ -1194,51 +1190,83 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
+void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
 	int item_count = 0;
 
 	//setup canvas state uniforms if needed
 
 	Transform2D canvas_transform_inverse = p_canvas_transform.affine_inverse();
 
+	//setup directional lights if exist
+
+	uint32_t light_count = 0;
+	uint32_t directional_light_count = 0;
 	{
-		//update canvas state uniform buffer
-		State::Buffer state_buffer;
+		Light *l = p_directional_light_list;
+		uint32_t index = 0;
 
-		Size2i ssize = storage->render_target_get_size(p_to_render_target);
+		while (l) {
+			if (index == state.max_lights_per_render) {
+				l->render_index_cache = -1;
+				l = l->next_ptr;
+				continue;
+			}
 
-		Transform screen_transform;
-		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
-		screen_transform.scale(Vector3(2.0f / ssize.width, 2.0f / ssize.height, 1.0f));
-		_update_transform_to_mat4(screen_transform, state_buffer.screen_transform);
-		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
+			CanvasLight *clight = canvas_light_owner.getornull(l->light_internal);
+			if (!clight) { //unused or invalid texture
+				l->render_index_cache = -1;
+				l = l->next_ptr;
+				ERR_CONTINUE(!clight);
+			}
 
-		Transform2D normal_transform = p_canvas_transform;
-		normal_transform.elements[0].normalize();
-		normal_transform.elements[1].normalize();
-		normal_transform.elements[2] = Vector2();
-		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
+			Vector2 canvas_light_dir = l->xform_cache.elements[1].normalized();
 
-		state_buffer.canvas_modulate[0] = p_modulate.r;
-		state_buffer.canvas_modulate[1] = p_modulate.g;
-		state_buffer.canvas_modulate[2] = p_modulate.b;
-		state_buffer.canvas_modulate[3] = p_modulate.a;
+			state.light_uniforms[index].position[0] = -canvas_light_dir.x;
+			state.light_uniforms[index].position[1] = -canvas_light_dir.y;
 
-		Size2 render_target_size = storage->render_target_get_size(p_to_render_target);
-		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
-		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
+			_update_transform_2d_to_mat2x4(clight->shadow.directional_xform, state.light_uniforms[index].shadow_matrix);
 
-		state_buffer.time = state.time;
-		state_buffer.use_pixel_snap = p_snap_2d_vertices_to_pixel;
+			state.light_uniforms[index].height = l->height; //0..1 here
 
-		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
+			for (int i = 0; i < 4; i++) {
+				state.light_uniforms[index].shadow_color[i] = uint8_t(CLAMP(int32_t(l->shadow_color[i] * 255.0), 0, 255));
+				state.light_uniforms[index].color[i] = l->color[i];
+			}
+
+			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
+
+			if (state.shadow_fb.is_valid()) {
+				state.light_uniforms[index].shadow_pixel_size = (1.0 / state.shadow_texture_size) * (1.0 + l->shadow_smooth);
+				state.light_uniforms[index].shadow_z_far_inv = 1.0 / clight->shadow.z_far;
+				state.light_uniforms[index].shadow_y_ofs = clight->shadow.y_offset;
+			} else {
+				state.light_uniforms[index].shadow_pixel_size = 1.0;
+				state.light_uniforms[index].shadow_z_far_inv = 1.0;
+				state.light_uniforms[index].shadow_y_ofs = 0;
+			}
+
+			state.light_uniforms[index].flags = l->blend_mode << LIGHT_FLAGS_BLEND_SHIFT;
+			state.light_uniforms[index].flags |= l->shadow_filter << LIGHT_FLAGS_FILTER_SHIFT;
+			if (clight->shadow.enabled) {
+				state.light_uniforms[index].flags |= LIGHT_FLAGS_HAS_SHADOW;
+			}
+
+			l->render_index_cache = index;
+
+			index++;
+			l = l->next_ptr;
+		}
+
+		light_count = index;
+		directional_light_count = light_count;
+		using_directional_lights = directional_light_count > 0;
 	}
 
 	//setup lights if exist
 
 	{
 		Light *l = p_light_list;
-		uint32_t index = 0;
+		uint32_t index = light_count;
 
 		while (l) {
 			if (index == state.max_lights_per_render) {
@@ -1280,7 +1308,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 				state.light_uniforms[index].shadow_y_ofs = 0;
 			}
 
-			state.light_uniforms[index].flags |= l->mode << LIGHT_FLAGS_BLEND_SHIFT;
+			state.light_uniforms[index].flags = l->blend_mode << LIGHT_FLAGS_BLEND_SHIFT;
 			state.light_uniforms[index].flags |= l->shadow_filter << LIGHT_FLAGS_FILTER_SHIFT;
 			if (clight->shadow.enabled) {
 				state.light_uniforms[index].flags |= LIGHT_FLAGS_HAS_SHADOW;
@@ -1306,9 +1334,46 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			l = l->next_ptr;
 		}
 
-		if (index > 0) {
-			RD::get_singleton()->buffer_update(state.lights_uniform_buffer, 0, sizeof(LightUniform) * index, &state.light_uniforms[0], true);
-		}
+		light_count = index;
+	}
+
+	if (light_count > 0) {
+		RD::get_singleton()->buffer_update(state.lights_uniform_buffer, 0, sizeof(LightUniform) * light_count, &state.light_uniforms[0], true);
+	}
+
+	{
+		//update canvas state uniform buffer
+		State::Buffer state_buffer;
+
+		Size2i ssize = storage->render_target_get_size(p_to_render_target);
+
+		Transform screen_transform;
+		screen_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
+		screen_transform.scale(Vector3(2.0f / ssize.width, 2.0f / ssize.height, 1.0f));
+		_update_transform_to_mat4(screen_transform, state_buffer.screen_transform);
+		_update_transform_2d_to_mat4(p_canvas_transform, state_buffer.canvas_transform);
+
+		Transform2D normal_transform = p_canvas_transform;
+		normal_transform.elements[0].normalize();
+		normal_transform.elements[1].normalize();
+		normal_transform.elements[2] = Vector2();
+		_update_transform_2d_to_mat4(normal_transform, state_buffer.canvas_normal_transform);
+
+		state_buffer.canvas_modulate[0] = p_modulate.r;
+		state_buffer.canvas_modulate[1] = p_modulate.g;
+		state_buffer.canvas_modulate[2] = p_modulate.b;
+		state_buffer.canvas_modulate[3] = p_modulate.a;
+
+		Size2 render_target_size = storage->render_target_get_size(p_to_render_target);
+		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
+		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
+
+		state_buffer.time = state.time;
+		state_buffer.use_pixel_snap = p_snap_2d_vertices_to_pixel;
+
+		state_buffer.directional_light_count = directional_light_count;
+
+		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
 	}
 
 	{ //default filter/repeat
@@ -1439,10 +1504,7 @@ void RasterizerCanvasRD::light_set_use_shadow(RID p_rid, bool p_enable) {
 	cl->shadow.enabled = p_enable;
 }
 
-void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
-	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
-	ERR_FAIL_COND(!cl->shadow.enabled);
-
+void RasterizerCanvasRD::_update_shadow_atlas() {
 	if (state.shadow_fb == RID()) {
 		//ah, we lack the shadow texture..
 		RD::get_singleton()->free(state.shadow_texture); //erase placeholder
@@ -1474,6 +1536,12 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, cons
 
 		state.shadow_fb = RD::get_singleton()->framebuffer_create(fb_textures);
 	}
+}
+void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) {
+	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	ERR_FAIL_COND(!cl->shadow.enabled);
+
+	_update_shadow_atlas();
 
 	cl->shadow.z_far = p_far;
 	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(state.max_lights_per_render * 2);
@@ -1545,6 +1613,86 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, int p_shadow_index, cons
 
 		RD::get_singleton()->draw_list_end();
 	}
+}
+
+void RasterizerCanvasRD::light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) {
+	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
+	ERR_FAIL_COND(!cl->shadow.enabled);
+
+	_update_shadow_atlas();
+
+	Vector2 light_dir = p_light_xform.elements[1].normalized();
+
+	Vector2 center = p_clip_rect.position + p_clip_rect.size * 0.5;
+
+	float to_edge_distance = ABS(light_dir.dot(p_clip_rect.get_support(light_dir)) - light_dir.dot(center));
+
+	Vector2 from_pos = center - light_dir * (to_edge_distance + p_cull_distance);
+	float distance = to_edge_distance * 2.0 + p_cull_distance;
+	float half_size = p_clip_rect.size.length() * 0.5; //shadow length, must keep this no matter the angle
+
+	cl->shadow.z_far = distance;
+	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(state.max_lights_per_render * 2);
+
+	Transform2D to_light_xform;
+
+	to_light_xform[2] = from_pos;
+	to_light_xform[1] = light_dir;
+	to_light_xform[0] = -light_dir.tangent();
+
+	to_light_xform.invert();
+
+	Vector<Color> cc;
+	cc.push_back(Color(1, 1, 1, 1));
+
+	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, rect);
+
+	CameraMatrix projection;
+	projection.set_orthogonal(-half_size, half_size, -0.5, 0.5, 0.0, distance);
+	projection = projection * CameraMatrix(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, -1)).affine_inverse());
+
+	ShadowRenderPushConstant push_constant;
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+		}
+	}
+
+	push_constant.direction[0] = 0.0;
+	push_constant.direction[1] = 1.0;
+	push_constant.z_far = distance;
+	push_constant.pad = 0;
+
+	LightOccluderInstance *instance = p_occluders;
+
+	while (instance) {
+		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+
+		if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
+			instance = instance->next;
+			continue;
+		}
+
+		_update_transform_2d_to_mat2x4(to_light_xform * instance->xform_cache, push_constant.modelview);
+
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[co->cull_mode]);
+		RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->vertex_array);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, co->index_array);
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(ShadowRenderPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+
+		instance = instance->next;
+	}
+
+	RD::get_singleton()->draw_list_end();
+
+	Transform2D to_shadow;
+	to_shadow.elements[0].x = 1.0 / -(half_size * 2.0);
+	to_shadow.elements[2].x = 0.5;
+
+	cl->shadow.directional_xform = to_shadow * to_light_xform;
 }
 
 RID RasterizerCanvasRD::occluder_polygon_create() {
