@@ -55,9 +55,10 @@ out_files = [
     zip_dir.File(binary_name + ".js"),
     zip_dir.File(binary_name + ".wasm"),
     zip_dir.File(binary_name + ".html"),
+    zip_dir.File(binary_name + ".audio.worklet.js"),
 ]
 html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
-in_files = [js_wrapped, build[1], html_file]
+in_files = [js_wrapped, build[1], html_file, "#platform/javascript/native/audio.worklet.js"]
 if env["threads_enabled"]:
     in_files.append(build[2])
     out_files.append(zip_dir.File(binary_name + ".worker.js"))
