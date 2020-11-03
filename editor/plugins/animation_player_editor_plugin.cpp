@@ -1029,7 +1029,9 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 }
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
-	timeline_position = p_pos;
+
+	if (p_pos != -1)
+		timeline_position = p_pos;
 
 	if (!is_visible_in_tree()) {
 		return;
@@ -1050,7 +1052,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	updating = true;
 	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
 	updating = false;
-	_seek_value_changed(p_pos, !p_drag);
+	_seek_value_changed(timeline_position, !p_drag);
 
 	EditorNode::get_singleton()->get_inspector()->refresh();
 }
