@@ -2279,10 +2279,12 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	StringName name = p_identifier->name;
 	p_identifier->source = GDScriptParser::IdentifierNode::UNDEFINED_SOURCE;
 
-	// Check globals.
-	if (GDScriptParser::get_builtin_type(name) < Variant::VARIANT_MAX) {
+	// Check globals. We make an exception for Variant::OBJECT because it's the base class for
+	// non-builtin types so we allow doing e.g. Object.new()
+	Variant::Type builtin_type = GDScriptParser::get_builtin_type(name);
+	if (builtin_type != Variant::OBJECT && builtin_type < Variant::VARIANT_MAX) {
 		if (can_be_builtin) {
-			p_identifier->set_datatype(make_builtin_meta_type(GDScriptParser::get_builtin_type(name)));
+			p_identifier->set_datatype(make_builtin_meta_type(builtin_type));
 			return;
 		} else {
 			push_error(R"(Builtin type cannot be used as a name on its own.)", p_identifier);
