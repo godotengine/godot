@@ -77,6 +77,7 @@ public:
 		CANVAS_ITEM_Z_MAX = 4096,
 		MAX_GLOW_LEVELS = 7,
 		MAX_CURSORS = 8,
+		MAX_2D_DIRECTIONAL_LIGHTS = 8
 	};
 
 	/* TEXTURE API */
@@ -1195,12 +1196,17 @@ public:
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
 	virtual RID canvas_light_create() = 0;
+
+	enum CanvasLightMode {
+		CANVAS_LIGHT_MODE_POINT,
+		CANVAS_LIGHT_MODE_DIRECTIONAL,
+	};
+
+	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode) = 0;
+
 	virtual void canvas_light_attach_to_canvas(RID p_light, RID p_canvas) = 0;
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled) = 0;
-	virtual void canvas_light_set_scale(RID p_light, float p_scale) = 0;
 	virtual void canvas_light_set_transform(RID p_light, const Transform2D &p_transform) = 0;
-	virtual void canvas_light_set_texture(RID p_light, RID p_texture) = 0;
-	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) = 0;
 	virtual void canvas_light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void canvas_light_set_height(RID p_light, float p_height) = 0;
 	virtual void canvas_light_set_energy(RID p_light, float p_energy) = 0;
@@ -1209,14 +1215,19 @@ public:
 	virtual void canvas_light_set_item_cull_mask(RID p_light, int p_mask) = 0;
 	virtual void canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask) = 0;
 
-	enum CanvasLightMode {
-		CANVAS_LIGHT_MODE_ADD,
-		CANVAS_LIGHT_MODE_SUB,
-		CANVAS_LIGHT_MODE_MIX,
-		CANVAS_LIGHT_MODE_MASK,
+	virtual void canvas_light_set_directional_distance(RID p_light, float p_distance) = 0;
+
+	virtual void canvas_light_set_texture_scale(RID p_light, float p_scale) = 0;
+	virtual void canvas_light_set_texture(RID p_light, RID p_texture) = 0;
+	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset) = 0;
+
+	enum CanvasLightBlendMode {
+		CANVAS_LIGHT_BLEND_MODE_ADD,
+		CANVAS_LIGHT_BLEND_MODE_SUB,
+		CANVAS_LIGHT_BLEND_MODE_MIX,
 	};
 
-	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode) = 0;
+	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_mode) = 0;
 
 	enum CanvasLightShadowFilter {
 		CANVAS_LIGHT_FILTER_NONE,
@@ -1435,6 +1446,7 @@ VARIANT_ENUM_CAST(RenderingServer::NinePatchAxisMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasItemTextureFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasItemTextureRepeat);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
+VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);

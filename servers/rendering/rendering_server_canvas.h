@@ -116,6 +116,7 @@ public:
 		};
 
 		Set<RasterizerCanvas::Light *> lights;
+		Set<RasterizerCanvas::Light *> directional_lights;
 
 		Set<RasterizerCanvas::LightOccluderInstance *> occluders;
 
@@ -155,15 +156,14 @@ public:
 	bool snapping_2d_transforms_to_pixel = false;
 
 private:
-	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
+	void _render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
 	void _cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
-	void _light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights);
 
 	RasterizerCanvas::Item **z_list;
 	RasterizerCanvas::Item **z_last_list;
 
 public:
-	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);
+	void render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_directional_lights, const Rect2 &p_clip_rect, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_transforms_to_pixel, bool p_snap_2d_vertices_to_pixel);
 
 	RID canvas_create();
 	void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring);
@@ -220,9 +220,10 @@ public:
 	void canvas_item_set_canvas_group_mode(RID p_item, RS::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false);
 
 	RID canvas_light_create();
+	void canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode);
 	void canvas_light_attach_to_canvas(RID p_light, RID p_canvas);
 	void canvas_light_set_enabled(RID p_light, bool p_enabled);
-	void canvas_light_set_scale(RID p_light, float p_scale);
+	void canvas_light_set_texture_scale(RID p_light, float p_scale);
 	void canvas_light_set_transform(RID p_light, const Transform2D &p_transform);
 	void canvas_light_set_texture(RID p_light, RID p_texture);
 	void canvas_light_set_texture_offset(RID p_light, const Vector2 &p_offset);
@@ -233,8 +234,9 @@ public:
 	void canvas_light_set_layer_range(RID p_light, int p_min_layer, int p_max_layer);
 	void canvas_light_set_item_cull_mask(RID p_light, int p_mask);
 	void canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask);
+	void canvas_light_set_directional_distance(RID p_light, float p_distance);
 
-	void canvas_light_set_mode(RID p_light, RS::CanvasLightMode p_mode);
+	void canvas_light_set_blend_mode(RID p_light, RS::CanvasLightBlendMode p_mode);
 
 	void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
 	void canvas_light_set_shadow_filter(RID p_light, RS::CanvasLightShadowFilter p_filter);

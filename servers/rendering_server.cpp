@@ -1833,7 +1833,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_create"), &RenderingServer::canvas_light_create);
 	ClassDB::bind_method(D_METHOD("canvas_light_attach_to_canvas", "light", "canvas"), &RenderingServer::canvas_light_attach_to_canvas);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_enabled", "light", "enabled"), &RenderingServer::canvas_light_set_enabled);
-	ClassDB::bind_method(D_METHOD("canvas_light_set_scale", "light", "scale"), &RenderingServer::canvas_light_set_scale);
+	ClassDB::bind_method(D_METHOD("canvas_light_set_texture_scale", "light", "scale"), &RenderingServer::canvas_light_set_texture_scale);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_transform", "light", "transform"), &RenderingServer::canvas_light_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_texture", "light", "texture"), &RenderingServer::canvas_light_set_texture);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_texture_offset", "light", "offset"), &RenderingServer::canvas_light_set_texture_offset);
@@ -2190,10 +2190,9 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
 	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_ADD);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_SUB);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_MIX);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_MASK);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_MIX);
 
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_NONE);
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_PCF5);

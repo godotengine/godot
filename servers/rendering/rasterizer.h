@@ -832,7 +832,9 @@ public:
 		int layer_max;
 		int item_mask;
 		int item_shadow_mask;
+		float directional_distance;
 		RS::CanvasLightMode mode;
+		RS::CanvasLightBlendMode blend_mode;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
@@ -854,7 +856,7 @@ public:
 		Light *shadows_next_ptr;
 		Light *filter_next_ptr;
 		Light *next_ptr;
-		Light *mask_next_ptr;
+		Light *directional_next_ptr;
 
 		RID light_internal;
 		uint64_t version;
@@ -875,16 +877,18 @@ public:
 			scale = 1.0;
 			energy = 1.0;
 			item_shadow_mask = 1;
-			mode = RS::CANVAS_LIGHT_MODE_ADD;
+			mode = RS::CANVAS_LIGHT_MODE_POINT;
+			blend_mode = RS::CANVAS_LIGHT_BLEND_MODE_ADD;
 			//			texture_cache = nullptr;
 			next_ptr = nullptr;
-			mask_next_ptr = nullptr;
+			directional_next_ptr = nullptr;
 			filter_next_ptr = nullptr;
 			use_shadow = false;
 			shadow_buffer_size = 2048;
 			shadow_filter = RS::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;
 			render_index_cache = -1;
+			directional_distance = 10000.0;
 		}
 	};
 
@@ -1322,7 +1326,7 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
@@ -1350,6 +1354,7 @@ public:
 	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
 	virtual void light_set_use_shadow(RID p_rid, bool p_enable) = 0;
 	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
+	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) = 0;
 
 	virtual RID occluder_polygon_create() = 0;
 	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) = 0;

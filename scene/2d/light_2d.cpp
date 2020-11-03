@@ -33,54 +33,6 @@
 #include "core/engine.h"
 #include "servers/rendering_server.h"
 
-#ifdef TOOLS_ENABLED
-Dictionary Light2D::_edit_get_state() const {
-	Dictionary state = Node2D::_edit_get_state();
-	state["offset"] = get_texture_offset();
-	return state;
-}
-
-void Light2D::_edit_set_state(const Dictionary &p_state) {
-	Node2D::_edit_set_state(p_state);
-	set_texture_offset(p_state["offset"]);
-}
-
-void Light2D::_edit_set_pivot(const Point2 &p_pivot) {
-	set_position(get_transform().xform(p_pivot));
-	set_texture_offset(get_texture_offset() - p_pivot);
-}
-
-Point2 Light2D::_edit_get_pivot() const {
-	return Vector2();
-}
-
-bool Light2D::_edit_use_pivot() const {
-	return true;
-}
-
-Rect2 Light2D::_edit_get_rect() const {
-	if (texture.is_null()) {
-		return Rect2();
-	}
-
-	Size2 s = texture->get_size() * _scale;
-	return Rect2(texture_offset - s / 2.0, s);
-}
-
-bool Light2D::_edit_use_rect() const {
-	return !texture.is_null();
-}
-#endif
-
-Rect2 Light2D::get_anchorable_rect() const {
-	if (texture.is_null()) {
-		return Rect2();
-	}
-
-	Size2 s = texture->get_size() * _scale;
-	return Rect2(texture_offset - s / 2.0, s);
-}
-
 void Light2D::_update_light_visibility() {
 	if (!is_inside_tree()) {
 		return;
@@ -123,32 +75,6 @@ bool Light2D::is_editor_only() const {
 	return editor_only;
 }
 
-void Light2D::set_texture(const Ref<Texture2D> &p_texture) {
-	texture = p_texture;
-	if (texture.is_valid()) {
-		RS::get_singleton()->canvas_light_set_texture(canvas_light, texture->get_rid());
-	} else {
-		RS::get_singleton()->canvas_light_set_texture(canvas_light, RID());
-	}
-
-	update_configuration_warning();
-}
-
-Ref<Texture2D> Light2D::get_texture() const {
-	return texture;
-}
-
-void Light2D::set_texture_offset(const Vector2 &p_offset) {
-	texture_offset = p_offset;
-	RS::get_singleton()->canvas_light_set_texture_offset(canvas_light, texture_offset);
-	item_rect_changed();
-	_change_notify("offset");
-}
-
-Vector2 Light2D::get_texture_offset() const {
-	return texture_offset;
-}
-
 void Light2D::set_color(const Color &p_color) {
 	color = p_color;
 	RS::get_singleton()->canvas_light_set_color(canvas_light, color);
@@ -174,20 +100,6 @@ void Light2D::set_energy(float p_energy) {
 
 float Light2D::get_energy() const {
 	return energy;
-}
-
-void Light2D::set_texture_scale(float p_scale) {
-	_scale = p_scale;
-	// Avoid having 0 scale values, can lead to errors in physics and rendering.
-	if (_scale == 0) {
-		_scale = CMP_EPSILON;
-	}
-	RS::get_singleton()->canvas_light_set_scale(canvas_light, _scale);
-	item_rect_changed();
-}
-
-float Light2D::get_texture_scale() const {
-	return _scale;
 }
 
 void Light2D::set_z_range_min(int p_min_z) {
@@ -244,15 +156,6 @@ int Light2D::get_item_shadow_cull_mask() const {
 	return item_shadow_mask;
 }
 
-void Light2D::set_mode(Mode p_mode) {
-	mode = p_mode;
-	RS::get_singleton()->canvas_light_set_mode(canvas_light, RS::CanvasLightMode(p_mode));
-}
-
-Light2D::Mode Light2D::get_mode() const {
-	return mode;
-}
-
 void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
@@ -281,6 +184,15 @@ Color Light2D::get_shadow_color() const {
 	return shadow_color;
 }
 
+void Light2D::set_blend_mode(BlendMode p_mode) {
+	blend_mode = p_mode;
+	RS::get_singleton()->canvas_light_set_blend_mode(_get_light(), RS::CanvasLightBlendMode(p_mode));
+}
+
+Light2D::BlendMode Light2D::get_blend_mode() const {
+	return blend_mode;
+}
+
 void Light2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		RS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
@@ -300,19 +212,6 @@ void Light2D::_notification(int p_what) {
 	}
 }
 
-String Light2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
-
-	if (!texture.is_valid()) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
-	}
-
-	return warning;
-}
-
 void Light2D::set_shadow_smooth(float p_amount) {
 	shadow_smooth = p_amount;
 	RS::get_singleton()->canvas_light_set_shadow_smooth(canvas_light, shadow_smooth);
@@ -329,23 +228,11 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light2D::set_editor_only);
 	ClassDB::bind_method(D_METHOD("is_editor_only"), &Light2D::is_editor_only);
 
-	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Light2D::set_texture);
-	ClassDB::bind_method(D_METHOD("get_texture"), &Light2D::get_texture);
-
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &Light2D::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &Light2D::get_texture_offset);
-
 	ClassDB::bind_method(D_METHOD("set_color", "color"), &Light2D::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &Light2D::get_color);
 
-	ClassDB::bind_method(D_METHOD("set_height", "height"), &Light2D::set_height);
-	ClassDB::bind_method(D_METHOD("get_height"), &Light2D::get_height);
-
 	ClassDB::bind_method(D_METHOD("set_energy", "energy"), &Light2D::set_energy);
 	ClassDB::bind_method(D_METHOD("get_energy"), &Light2D::get_energy);
-
-	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &Light2D::set_texture_scale);
-	ClassDB::bind_method(D_METHOD("get_texture_scale"), &Light2D::get_texture_scale);
 
 	ClassDB::bind_method(D_METHOD("set_z_range_min", "z"), &Light2D::set_z_range_min);
 	ClassDB::bind_method(D_METHOD("get_z_range_min"), &Light2D::get_z_range_min);
@@ -365,9 +252,6 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_shadow_cull_mask", "item_shadow_cull_mask"), &Light2D::set_item_shadow_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_item_shadow_cull_mask"), &Light2D::get_item_shadow_cull_mask);
 
-	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &Light2D::set_mode);
-	ClassDB::bind_method(D_METHOD("get_mode"), &Light2D::get_mode);
-
 	ClassDB::bind_method(D_METHOD("set_shadow_enabled", "enabled"), &Light2D::set_shadow_enabled);
 	ClassDB::bind_method(D_METHOD("is_shadow_enabled"), &Light2D::is_shadow_enabled);
 
@@ -380,16 +264,18 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_color", "shadow_color"), &Light2D::set_shadow_color);
 	ClassDB::bind_method(D_METHOD("get_shadow_color"), &Light2D::get_shadow_color);
 
+	ClassDB::bind_method(D_METHOD("set_blend_mode", "mode"), &Light2D::set_blend_mode);
+	ClassDB::bind_method(D_METHOD("get_blend_mode"), &Light2D::get_blend_mode);
+
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &Light2D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &Light2D::get_height);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_texture_offset", "get_texture_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Add,Sub,Mix,Mask"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Add,Sub,Mix"), "set_blend_mode", "get_blend_mode");
 	ADD_GROUP("Range", "range_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "range_height", PROPERTY_HINT_RANGE, "-2048,2048,0.1,or_lesser,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_min", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_min", "get_z_range_min");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_z_max", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_range_max", "get_z_range_max");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "range_layer_min", PROPERTY_HINT_RANGE, "-512,512,1"), "set_layer_range_min", "get_layer_range_min");
@@ -403,14 +289,13 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_shadow_cull_mask", "get_item_shadow_cull_mask");
 
-	BIND_ENUM_CONSTANT(MODE_ADD);
-	BIND_ENUM_CONSTANT(MODE_SUB);
-	BIND_ENUM_CONSTANT(MODE_MIX);
-	BIND_ENUM_CONSTANT(MODE_MASK);
-
 	BIND_ENUM_CONSTANT(SHADOW_FILTER_NONE);
 	BIND_ENUM_CONSTANT(SHADOW_FILTER_PCF5);
 	BIND_ENUM_CONSTANT(SHADOW_FILTER_PCF13);
+
+	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
 }
 
 Light2D::Light2D() {
@@ -420,22 +305,170 @@ Light2D::Light2D() {
 	shadow = false;
 	color = Color(1, 1, 1);
 	height = 0;
-	_scale = 1.0;
 	z_min = -1024;
 	z_max = 1024;
 	layer_min = 0;
 	layer_max = 0;
 	item_mask = 1;
 	item_shadow_mask = 1;
-	mode = MODE_ADD;
 	energy = 1.0;
 	shadow_color = Color(0, 0, 0, 0);
 	shadow_filter = SHADOW_FILTER_NONE;
 	shadow_smooth = 0;
-
+	blend_mode = BLEND_MODE_ADD;
 	set_notify_transform(true);
 }
 
 Light2D::~Light2D() {
 	RenderingServer::get_singleton()->free(canvas_light);
+}
+
+//////////////////////////////
+
+#ifdef TOOLS_ENABLED
+
+Dictionary PointLight2D::_edit_get_state() const {
+	Dictionary state = Node2D::_edit_get_state();
+	state["offset"] = get_texture_offset();
+	return state;
+}
+
+void PointLight2D::_edit_set_state(const Dictionary &p_state) {
+	Node2D::_edit_set_state(p_state);
+	set_texture_offset(p_state["offset"]);
+}
+
+void PointLight2D::_edit_set_pivot(const Point2 &p_pivot) {
+	set_position(get_transform().xform(p_pivot));
+	set_texture_offset(get_texture_offset() - p_pivot);
+}
+
+Point2 PointLight2D::_edit_get_pivot() const {
+	return Vector2();
+}
+
+bool PointLight2D::_edit_use_pivot() const {
+	return true;
+}
+
+Rect2 PointLight2D::_edit_get_rect() const {
+	if (texture.is_null()) {
+		return Rect2();
+	}
+
+	Size2 s = texture->get_size() * _scale;
+	return Rect2(texture_offset - s / 2.0, s);
+}
+
+bool PointLight2D::_edit_use_rect() const {
+	return !texture.is_null();
+}
+#endif
+
+Rect2 PointLight2D::get_anchorable_rect() const {
+	if (texture.is_null()) {
+		return Rect2();
+	}
+
+	Size2 s = texture->get_size() * _scale;
+	return Rect2(texture_offset - s / 2.0, s);
+}
+
+void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
+	texture = p_texture;
+	if (texture.is_valid()) {
+		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
+	} else {
+		RS::get_singleton()->canvas_light_set_texture(_get_light(), RID());
+	}
+
+	update_configuration_warning();
+}
+
+Ref<Texture2D> PointLight2D::get_texture() const {
+	return texture;
+}
+
+void PointLight2D::set_texture_offset(const Vector2 &p_offset) {
+	texture_offset = p_offset;
+	RS::get_singleton()->canvas_light_set_texture_offset(_get_light(), texture_offset);
+	item_rect_changed();
+	_change_notify("offset");
+}
+
+Vector2 PointLight2D::get_texture_offset() const {
+	return texture_offset;
+}
+
+String PointLight2D::get_configuration_warning() const {
+	String warning = Node2D::get_configuration_warning();
+
+	if (!texture.is_valid()) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
+	}
+
+	return warning;
+}
+
+void PointLight2D::set_texture_scale(float p_scale) {
+	_scale = p_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (_scale == 0) {
+		_scale = CMP_EPSILON;
+	}
+	RS::get_singleton()->canvas_light_set_texture_scale(_get_light(), _scale);
+	item_rect_changed();
+}
+
+float PointLight2D::get_texture_scale() const {
+	return _scale;
+}
+
+void PointLight2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &PointLight2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &PointLight2D::get_texture);
+
+	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &PointLight2D::set_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_offset"), &PointLight2D::get_texture_offset);
+
+	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &PointLight2D::set_texture_scale);
+	ClassDB::bind_method(D_METHOD("get_texture_scale"), &PointLight2D::get_texture_scale);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"), "set_height", "get_height");
+}
+
+PointLight2D::PointLight2D() {
+	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+	_scale = 1.0;
+}
+
+PointLight2D::~PointLight2D() {
+}
+
+//////////
+
+void DirectionalLight2D::set_max_distance(float p_distance) {
+	max_distance = p_distance;
+	RS::get_singleton()->canvas_light_set_directional_distance(_get_light(), max_distance);
+}
+float DirectionalLight2D::get_max_distance() const {
+	return max_distance;
+}
+
+void DirectionalLight2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_max_distance", "pixels"), &DirectionalLight2D::set_max_distance);
+	ClassDB::bind_method(D_METHOD("get_max_distance"), &DirectionalLight2D::get_max_distance);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384.0,1.0,or_greater"), "set_max_distance", "get_max_distance");
+}
+DirectionalLight2D::DirectionalLight2D() {
+	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
+	set_max_distance(10000.0);
 }

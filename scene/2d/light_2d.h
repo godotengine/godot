@@ -37,18 +37,17 @@ class Light2D : public Node2D {
 	GDCLASS(Light2D, Node2D);
 
 public:
-	enum Mode {
-		MODE_ADD,
-		MODE_SUB,
-		MODE_MIX,
-		MODE_MASK,
-	};
-
 	enum ShadowFilter {
 		SHADOW_FILTER_NONE,
 		SHADOW_FILTER_PCF5,
 		SHADOW_FILTER_PCF13,
 		SHADOW_FILTER_MAX
+	};
+
+	enum BlendMode {
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MIX,
 	};
 
 private:
@@ -68,42 +67,24 @@ private:
 	int item_mask;
 	int item_shadow_mask;
 	float shadow_smooth;
-	Mode mode;
 	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 	ShadowFilter shadow_filter;
+	BlendMode blend_mode;
 
 	void _update_light_visibility();
 
 protected:
+	_FORCE_INLINE_ RID _get_light() const { return canvas_light; }
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
-
-	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
-	virtual Point2 _edit_get_pivot() const override;
-	virtual bool _edit_use_pivot() const override;
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
-#endif
-
-	virtual Rect2 get_anchorable_rect() const override;
-
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
-
-	void set_texture(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_texture() const;
-
-	void set_texture_offset(const Vector2 &p_offset);
-	Vector2 get_texture_offset() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;
@@ -113,9 +94,6 @@ public:
 
 	void set_energy(float p_energy);
 	float get_energy() const;
-
-	void set_texture_scale(float p_scale);
-	float get_texture_scale() const;
 
 	void set_z_range_min(int p_min_z);
 	int get_z_range_min() const;
@@ -135,9 +113,6 @@ public:
 	void set_item_shadow_cull_mask(int p_mask);
 	int get_item_shadow_cull_mask() const;
 
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
-
 	void set_shadow_enabled(bool p_enabled);
 	bool is_shadow_enabled() const;
 
@@ -150,13 +125,69 @@ public:
 	void set_shadow_smooth(float p_amount);
 	float get_shadow_smooth() const;
 
-	String get_configuration_warning() const override;
+	void set_blend_mode(BlendMode p_mode);
+	BlendMode get_blend_mode() const;
 
 	Light2D();
 	~Light2D();
 };
 
-VARIANT_ENUM_CAST(Light2D::Mode);
 VARIANT_ENUM_CAST(Light2D::ShadowFilter);
+VARIANT_ENUM_CAST(Light2D::BlendMode);
+
+class PointLight2D : public Light2D {
+	GDCLASS(PointLight2D, Light2D);
+
+private:
+	float _scale;
+	Ref<Texture2D> texture;
+	Vector2 texture_offset;
+
+protected:
+	static void _bind_methods();
+
+public:
+#ifdef TOOLS_ENABLED
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
+
+	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
+	virtual Point2 _edit_get_pivot() const override;
+	virtual bool _edit_use_pivot() const override;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+#endif
+
+	virtual Rect2 get_anchorable_rect() const override;
+
+	void set_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture() const;
+
+	void set_texture_offset(const Vector2 &p_offset);
+	Vector2 get_texture_offset() const;
+
+	void set_texture_scale(float p_scale);
+	float get_texture_scale() const;
+
+	String get_configuration_warning() const override;
+
+	PointLight2D();
+	~PointLight2D();
+};
+
+class DirectionalLight2D : public Light2D {
+	GDCLASS(DirectionalLight2D, Light2D);
+
+	float max_distance = 10000.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_max_distance(float p_distance);
+	float get_max_distance() const;
+
+	DirectionalLight2D();
+};
 
 #endif // LIGHT_2D_H
