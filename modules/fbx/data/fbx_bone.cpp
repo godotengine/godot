@@ -35,7 +35,12 @@
 
 Ref<FBXNode> FBXBone::get_link(const ImportState &state) const {
 	print_verbose("bone name: " + bone_name);
-	ERR_FAIL_COND_V_MSG(cluster == nullptr, nullptr, "bone has invalid cluster");
+
+	// safe for when deformers must be polyfilled when skin has different count of binds to bones in the scene ;)
+	if (!cluster) {
+		return nullptr;
+	}
+
 	ERR_FAIL_COND_V_MSG(cluster->TargetNode() == nullptr, nullptr, "bone has invalid target node");
 
 	Ref<FBXNode> link_node;
@@ -59,6 +64,14 @@ Ref<FBXNode> FBXBone::get_link(const ImportState &state) const {
 Transform FBXBone::get_vertex_skin_xform(const ImportState &state, Transform mesh_global_position, bool &r_valid_pose) {
 	r_valid_pose = false;
 	print_verbose("get_vertex_skin_xform: " + bone_name);
+
+	// safe to do, this means we have 'remove unused deformer' checked.
+	if (!cluster) {
+		print_verbose("bone [" + itos(bone_id) + "] " + bone_name + ": has no skin offset poly-filling the skin to make rasterizer happy with unused deformers not being skinned");
+		r_valid_pose = true;
+		return Transform();
+	}
+
 	ERR_FAIL_COND_V_MSG(cluster == nullptr, Transform(), "[serious] unable to resolve the fbx cluster for this bone " + bone_name);
 	// these methods will ONLY work for Maya.
 	if (cluster->TransformAssociateModelValid()) {
