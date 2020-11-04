@@ -249,7 +249,7 @@ vec4 light_compute(
 		inout vec4 shadow_modulate,
 		vec2 screen_uv,
 		vec2 uv,
-		vec4 color) {
+		vec4 color, bool is_directional) {
 	vec4 light = vec4(0.0);
 	/* clang-format off */
 LIGHT_SHADER_CODE
@@ -302,6 +302,99 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 
 #endif
 
+#ifdef USE_LIGHTING
+
+vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 light_color, vec4 specular_shininess, bool specular_shininess_used) {
+	float cNdotL = max(0.0, dot(normal, light_vec));
+
+	if (specular_shininess_used) {
+		//blinn
+		vec3 view = vec3(0.0, 0.0, 1.0); // not great but good enough
+		vec3 half_vec = normalize(view + light_vec);
+
+		float cNdotV = max(dot(normal, view), 0.0);
+		float cNdotH = max(dot(normal, half_vec), 0.0);
+		float cVdotH = max(dot(view, half_vec), 0.0);
+		float cLdotH = max(dot(light_vec, half_vec), 0.0);
+		float shininess = exp2(15.0 * specular_shininess.a + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float s = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+
+		return specular_shininess.rgb * light_color * s + light_color * base_color * cNdotL;
+	} else {
+		return light_color * base_color * cNdotL;
+	}
+}
+
+//float distance = length(shadow_pos);
+vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
+#ifdef LIGHT_SHADER_CODE_USED
+		,
+		vec3 shadow_modulate
+#endif
+) {
+	float shadow;
+	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
+
+	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
+		shadow = textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
+		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		shadow = 0.0;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
+		shadow /= 5.0;
+	} else { //PCF13
+		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
+		shadow = 0.0;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 6.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 5.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 4.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 3.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 3.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 4.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 5.0, 0.0).x;
+		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 6.0, 0.0).x;
+		shadow /= 13.0;
+	}
+
+	vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
+#ifdef LIGHT_SHADER_CODE_USED
+	shadow_color *= shadow_modulate;
+#endif
+
+	shadow_color.a *= light_color.a; //respect light alpha
+
+	return mix(light_color, shadow_color, shadow);
+}
+
+void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
+	uint blend_mode = light_array.data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
+
+	switch (blend_mode) {
+		case LIGHT_FLAGS_BLEND_MODE_ADD: {
+			color.rgb += light_color.rgb * light_color.a;
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_SUB: {
+			color.rgb -= light_color.rgb * light_color.a;
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_MIX: {
+			color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
+		} break;
+	}
+}
+
+#endif
+
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
@@ -332,6 +425,7 @@ void main() {
 	color *= texture(sampler2D(color_texture, texture_sampler), uv);
 
 	uint light_count = (draw_data.flags >> FLAGS_LIGHT_COUNT_SHIFT) & 0xF; //max 16 lights
+	bool using_light = light_count > 0 || canvas_data.directional_light_count > 0;
 
 	vec3 normal;
 
@@ -341,7 +435,7 @@ void main() {
 	bool normal_used = false;
 #endif
 
-	if (normal_used || (light_count > 0 && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
+	if (normal_used || (using_light && bool(draw_data.flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(sampler2D(normal_texture, texture_sampler), uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
@@ -358,7 +452,7 @@ void main() {
 	bool specular_shininess_used = false;
 #endif
 
-	if (specular_shininess_used || (light_count > 0 && normal_used && bool(draw_data.flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
+	if (specular_shininess_used || (using_light && normal_used && bool(draw_data.flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(sampler2D(specular_texture, texture_sampler), uv);
 		specular_shininess *= unpackUnorm4x8(draw_data.specular_shininess);
 		specular_shininess_used = true;
@@ -401,13 +495,52 @@ FRAGMENT_SHADER_CODE
 		normal = normalize((canvas_data.canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
 
-	vec4 base_color = color;
+	vec3 base_color = color.rgb;
 	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
 		color = vec4(0.0); //invisible by default due to using light mask
 	}
 
 	color *= canvas_data.canvas_modulation;
 #ifdef USE_LIGHTING
+
+	// Directional Lights
+
+	for (uint i = 0; i < canvas_data.directional_light_count; i++) {
+		uint light_base = i;
+
+		vec2 direction = light_array.data[light_base].position;
+		vec4 light_color = light_array.data[light_base].color;
+
+#ifdef LIGHT_SHADER_CODE_USED
+
+		vec4 shadow_modulate = vec4(1.0);
+		light_color = light_compute(light_vertex, direction, normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv, true);
+#else
+
+		if (normal_used) {
+			vec3 light_vec = normalize(mix(vec3(direction, 0.0), vec3(0, 0, 1), light_array.data[light_base].height));
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
+		}
+#endif
+
+		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+
+			vec4 shadow_uv = vec4(shadow_pos.x, light_array.data[light_base].shadow_y_ofs, shadow_pos.y * light_array.data[light_base].shadow_zfar_inv, 1.0);
+
+			light_color = light_shadow_compute(light_base, light_color, shadow_uv
+#ifdef LIGHT_SHADER_CODE_USED
+					,
+					shadow_modulate
+#endif
+			);
+		}
+
+		light_blend_compute(light_base, light_color, color.rgb);
+	}
+
+	// Positional Lights
+
 	for (uint i = 0; i < MAX_LIGHTS_PER_ITEM; i++) {
 		if (i >= light_count) {
 			break;
@@ -440,7 +573,7 @@ FRAGMENT_SHADER_CODE
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 
 		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv);
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, color, uv, false);
 #else
 
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
@@ -451,24 +584,7 @@ FRAGMENT_SHADER_CODE
 			vec3 light_vec = normalize(light_pos - pos);
 			float cNdotL = max(0.0, dot(normal, light_vec));
 
-			if (specular_shininess_used) {
-				//blinn
-				vec3 view = vec3(0.0, 0.0, 1.0); // not great but good enough
-				vec3 half_vec = normalize(view + light_vec);
-
-				float cNdotV = max(dot(normal, view), 0.0);
-				float cNdotH = max(dot(normal, half_vec), 0.0);
-				float cVdotH = max(dot(view, half_vec), 0.0);
-				float cLdotH = max(dot(light_vec, half_vec), 0.0);
-				float shininess = exp2(15.0 * specular_shininess.a + 1.0) * 0.25;
-				float blinn = pow(cNdotH, shininess);
-				blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
-				float s = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
-
-				light_color.rgb = specular_shininess.rgb * light_base_color.rgb * s + light_color.rgb * cNdotL;
-			} else {
-				light_color.rgb *= cNdotL;
-			}
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
 		}
 #endif
 		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
@@ -506,69 +622,17 @@ FRAGMENT_SHADER_CODE
 			distance *= light_array.data[light_base].shadow_zfar_inv;
 
 			//float distance = length(shadow_pos);
-			float shadow;
-			uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
-
 			vec4 shadow_uv = vec4(tex_ofs, light_array.data[light_base].shadow_y_ofs, distance, 1.0);
 
-			if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
-				shadow = textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-			} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
-				vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
-				shadow = 0.0;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
-				shadow /= 5.0;
-			} else { //PCF13
-				vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
-				shadow = 0.0;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 6.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 5.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 4.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 3.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 3.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 4.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 5.0, 0.0).x;
-				shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 6.0, 0.0).x;
-				shadow /= 13.0;
-			}
-
-			vec4 shadow_color = unpackUnorm4x8(light_array.data[light_base].shadow_color);
+			light_color = light_shadow_compute(light_base, light_color, shadow_uv
 #ifdef LIGHT_SHADER_CODE_USED
-			shadow_color *= shadow_modulate;
+					,
+					shadow_modulate
 #endif
-
-			shadow_color.a *= light_color.a; //respect light alpha
-
-			light_color = mix(light_color, shadow_color, shadow);
-			//light_color = mix(light_color, shadow_color, shadow);
+			);
 		}
 
-		uint blend_mode = light_array.data[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
-
-		switch (blend_mode) {
-			case LIGHT_FLAGS_BLEND_MODE_ADD: {
-				color.rgb += light_color.rgb * light_color.a;
-			} break;
-			case LIGHT_FLAGS_BLEND_MODE_SUB: {
-				color.rgb -= light_color.rgb * light_color.a;
-			} break;
-			case LIGHT_FLAGS_BLEND_MODE_MIX: {
-				color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
-			} break;
-			case LIGHT_FLAGS_BLEND_MODE_MASK: {
-				light_color.a *= base_color.a;
-				color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
-			} break;
-		}
+		light_blend_compute(light_base, light_color, color.rgb);
 	}
 #endif
 
