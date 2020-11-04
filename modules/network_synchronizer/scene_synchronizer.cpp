@@ -1813,9 +1813,11 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 	struct ParseData {
 		NetUtility::Snapshot &snapshot;
-		NetUtility::NodeData *player_controller_node_data = nullptr;
-		Vector<NetUtility::VarData> *snapshot_node_data = nullptr;
-	} parse_data{
+		NetUtility::NodeData *player_controller_node_data;
+		Vector<NetUtility::VarData> *snapshot_node_data;
+	};
+
+	ParseData parse_data {
 		last_received_snapshot,
 		player_controller_node_data,
 		nullptr
