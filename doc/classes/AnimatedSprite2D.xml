@@ -63,12 +63,6 @@
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
-		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
-			Strength of the specular light effect of this [AnimatedSprite2D].
-		</member>
-		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
-			The color of the specular light effect.
-		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The animation speed is multiplied by this value.
 		</member>

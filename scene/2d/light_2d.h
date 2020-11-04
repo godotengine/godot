@@ -58,7 +58,6 @@ private:
 	Color color;
 	Color shadow_color;
 	float height;
-	float _scale;
 	float energy;
 	int z_min;
 	int z_max;
@@ -139,7 +138,7 @@ class PointLight2D : public Light2D {
 	GDCLASS(PointLight2D, Light2D);
 
 private:
-	float _scale;
+	float _scale = 1.0;
 	Ref<Texture2D> texture;
 	Vector2 texture_offset;
 
@@ -172,7 +171,6 @@ public:
 	String get_configuration_warning() const override;
 
 	PointLight2D();
-	~PointLight2D();
 };
 
 class DirectionalLight2D : public Light2D {

@@ -379,7 +379,7 @@
 				Remember that you have to manage the visibility of all your editor controls manually.
 			</description>
 		</method>
-		<method name="queue_save_layout" qualifiers="const">
+		<method name="queue_save_layout">
 			<return type="void">
 			</return>
 			<description>
