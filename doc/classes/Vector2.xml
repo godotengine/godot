@@ -177,7 +177,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="v" type="Vector2">
+			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
@@ -208,7 +208,7 @@
 		<method name="lerp">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="b" type="Vector2">
+			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<argument index="1" name="t" type="float">
 			</argument>
@@ -296,7 +296,7 @@
 		<method name="slerp">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="b" type="Vector2">
+			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<argument index="1" name="t" type="float">
 			</argument>

@@ -818,6 +818,8 @@
 		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
+		<member name="memory/limits/command_queue/multithreading_queue_size_kb" type="int" setter="" getter="" default="256">
+		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="" default="4096">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
@@ -1004,8 +1006,11 @@
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 		</member>
-		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
+		<member name="rendering/quality/2d/snap_2d_transforms_to_pixel" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/quality/2d/snap_2d_vertices_to_pixel" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="rendering/quality/2d_shadow_atlas/size" type="int" setter="" getter="" default="2048">
 		</member>
 		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
@@ -1101,6 +1106,8 @@
 		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_enabled" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_limit" type="float" setter="" getter="" default="0.18">
+		</member>
+		<member name="rendering/quality/screen_filters/use_debanding" type="bool" setter="" getter="" default="false">
 		</member>
 		<member name="rendering/quality/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
 			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.

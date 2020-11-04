@@ -33,7 +33,7 @@
 			</description>
 		</method>
 		<method name="disconnect">
-			<return type="Variant">
+			<return type="void">
 			</return>
 			<argument index="0" name="callable" type="Callable">
 			</argument>
