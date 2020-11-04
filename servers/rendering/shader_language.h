@@ -734,10 +734,12 @@ public:
 		struct Argument {
 			StringName name;
 			DataType type;
+			ArgumentQualifier qualifier;
 
-			Argument(const StringName &p_name = StringName(), DataType p_type = TYPE_VOID) {
+			Argument(const StringName &p_name = StringName(), DataType p_type = TYPE_VOID, ArgumentQualifier p_qualifier = ARGUMENT_QUALIFIER_IN) {
 				name = p_name;
 				type = p_type;
+				qualifier = p_qualifier;
 			}
 		};
 
@@ -855,6 +857,7 @@ private:
 	Error _validate_datatype(DataType p_type);
 	bool _compare_datatypes_in_nodes(Node *a, Node *b) const;
 
+	bool _validate_out_argument(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, StringName p_name, int p_arg_idx);
 	bool _validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str);
 	bool _parse_function_arguments(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, int *r_complete_arg = nullptr);
 	bool _propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat);

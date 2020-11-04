@@ -515,6 +515,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 #ifdef LIGHT_ANISOTROPY_USED
 		vec3 B, vec3 T, float anisotropy,
 #endif
+		bool is_main_light,
 #ifdef USE_SHADOW_TO_OPACITY
 		inout float alpha,
 #endif
@@ -1127,6 +1128,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
+			false,
 #ifdef USE_SHADOW_TO_OPACITY
 			alpha,
 #endif
@@ -1330,6 +1332,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #ifdef LIGHT_ANISOTROPY_USED
 			binormal, tangent, anisotropy,
 #endif
+			false,
 #ifdef USE_SHADOW_TO_OPACITY
 			alpha,
 #endif
@@ -1725,6 +1728,33 @@ vec4 fog_process(vec3 vertex) {
 
 #endif
 
+#ifndef MODE_RENDER_DEPTH
+uvec4 cluster_cell;
+#endif
+
+void godot_sample_ambient(vec3 vertex, vec3 normal, float roughness, float specular, float metallic, vec2 uv2, vec4 custom_radiance, vec4 custom_irradiance, out vec3 ambient_light, out vec3 specular_light);
+
+void main_lighting(vec3 vertex, vec3 normal, vec3 view, vec3 albedo, vec3 emission, float roughness, float metallic, float specular, vec3 backlight, vec4 transmittance_color, float transmittance_depth, float transmittance_curve, float transmittance_boost, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, vec3 binormal, vec3 tangent, float anisotropy, float alpha, vec2 screen_uv, float sss_strength, vec2 uv2,
+#if defined(CUSTOM_FOG_USED)
+		vec4 custom_fog,
+#endif
+#if defined(CUSTOM_RADIANCE_USED)
+		vec4 custom_radiance,
+#endif
+#if defined(CUSTOM_IRRADIANCE_USED)
+		vec4 custom_irradiance,
+#endif
+#if defined(AO_USED)
+		float ao, float ao_light_affect,
+#endif
+#if defined(ALPHA_SCISSOR_USED)
+		float alpha_scissor,
+#endif
+#if defined(MAIN_LIGHT_USED)
+		uint main_light_idx,
+#endif
+		vec3 ambient_light, vec3 diffuse_light, vec3 specular_light);
+
 void main() {
 #ifdef MODE_DUAL_PARABOLOID
 
@@ -1760,11 +1790,32 @@ void main() {
 #if defined(CUSTOM_IRRADIANCE_USED)
 	vec4 custom_irradiance = vec4(0.0);
 #endif
+#if defined(MAIN_LIGHT_USED)
+	bool has_main_light = false;
+	uint main_light_idx = uint(-1);
+	{
+		float max_intensity = 0.0;
+		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
+				continue; //not masked
+			}
+			vec3 color = directional_lights.data[i].color * directional_lights.data[i].energy;
+			float intensity = max(color.r, max(color.g, color.b));
+			if (intensity > max_intensity) {
+				has_main_light = true;
+				main_light_idx = i;
+			}
+		}
+	}
+#endif
 
 #if defined(AO_USED)
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 #endif
+	vec3 ambient_light = vec3(0.0);
+	vec3 diffuse_light = vec3(0.0);
+	vec3 specular_light = vec3(0.0);
 
 	float alpha = 1.0;
 
@@ -1816,6 +1867,10 @@ void main() {
 	float alpha_antialiasing_edge = 0.0;
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
+
+#ifndef MODE_RENDER_DEPTH
+	cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]), vec3(screen_uv, (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)));
+#endif
 
 	{
 		/* clang-format off */
@@ -1900,7 +1955,6 @@ FRAGMENT_SHADER_CODE
 
 #ifndef MODE_RENDER_DEPTH
 
-	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]), vec3(screen_uv, (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)));
 	//used for interpolating anything cluster related
 	vec3 vertex_ddx = dFdx(vertex);
 	vec3 vertex_ddy = dFdy(vertex);
@@ -1979,11 +2033,40 @@ FRAGMENT_SHADER_CODE
 		float filteredRoughness2 = min(1.0, roughness2 + kernelRoughness2);
 		roughness = sqrt(filteredRoughness2);
 	}
+
+	main_lighting(vertex, normal, view, albedo, emission, roughness, metallic, specular, backlight, transmittance_color, transmittance_depth, transmittance_curve, transmittance_boost, rim, rim_tint, clearcoat, clearcoat_gloss, binormal, tangent, anisotropy, alpha, screen_uv, sss_strength,
+#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+			uv2,
+#else
+			vec2(0.0),
+#endif
+#if defined(CUSTOM_FOG_USED)
+			custom_fog,
+#endif
+#if defined(CUSTOM_RADIANCE_USED)
+			custom_radiance,
+#endif
+#if defined(CUSTOM_IRRADIANCE_USED)
+			custom_irradiance,
+#endif
+#if defined(AO_USED)
+			ao, ao_light_affect,
+#endif
+#if defined(ALPHA_SCISSOR_USED)
+			alpha_scissor_threshold,
+#endif
+#if defined(MAIN_LIGHT_USED)
+			main_light_idx,
+#endif
+			ambient_light, diffuse_light, specular_light);
+}
+
+void godot_sample_ambient(vec3 vertex, vec3 normal, float roughness, float specular, float metallic, vec2 uv2, vec4 custom_radiance, vec4 custom_irradiance, out vec3 ambient_light, out vec3 specular_light) {
+	vec3 view = -normalize(vertex);
 	//apply energy conservation
 
-	vec3 specular_light = vec3(0.0, 0.0, 0.0);
-	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
-	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
+	specular_light = vec3(0.0, 0.0, 0.0);
+	ambient_light = vec3(0.0, 0.0, 0.0);
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -2004,7 +2087,7 @@ FRAGMENT_SHADER_CODE
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 
-#if defined(CUSTOM_RADIANCE_USED)
+#if defined(CUSTOM_RADIANCE_USED) || defined(AMBIENT_LIGHT_USED)
 	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
 #endif
 
@@ -2025,18 +2108,12 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif // USE_LIGHTMAP
-#if defined(CUSTOM_IRRADIANCE_USED)
-	ambient_light = mix(specular_light, custom_irradiance.rgb, custom_irradiance.a);
+#if defined(CUSTOM_IRRADIANCE_USED) || defined(AMBIENT_LIGHT_USED)
+	ambient_light = mix(ambient_light, custom_irradiance.rgb, custom_irradiance.a);
 #endif
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	//radiance
-
-	float specular_blob_intensity = 1.0;
-
-#if defined(SPECULAR_TOON)
-	specular_blob_intensity *= specular * 2.0;
-#endif
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -2275,6 +2352,42 @@ FRAGMENT_SHADER_CODE
 		}
 #endif
 	}
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+}
+
+void main_lighting(vec3 vertex, vec3 normal, vec3 view, vec3 albedo, vec3 emission, float roughness, float metallic, float specular, vec3 backlight, vec4 transmittance_color, float transmittance_depth, float transmittance_curve, float transmittance_boost, float rim, float rim_tint, float clearcoat, float clearcoat_gloss, vec3 binormal, vec3 tangent, float anisotropy, float alpha, vec2 screen_uv, float sss_strength, vec2 uv2,
+#if defined(CUSTOM_FOG_USED)
+		vec4 custom_fog,
+#endif
+#if defined(CUSTOM_RADIANCE_USED)
+		vec4 custom_radiance,
+#endif
+#if defined(CUSTOM_IRRADIANCE_USED)
+		vec4 custom_irradiance,
+#endif
+#if defined(AO_USED)
+		float ao, float ao_light_affect,
+#endif
+#if defined(ALPHA_SCISSOR_USED)
+		float alpha_scissor,
+#endif
+#if defined(MAIN_LIGHT_USED)
+		uint main_light_idx,
+#endif
+		vec3 ambient_light, vec3 diffuse_light, vec3 specular_light) {
+#if !defined(AMBIENT_LIGHT_USED) && !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+	godot_sample_ambient(vertex, normal, roughness, specular, metallic, uv2,
+#ifdef CUSTOM_RADIANCE_USED
+			custom_radiance,
+#else
+			vec4(0.0),
+#endif
+#ifdef CUSTOM_IRRADIANCE_USED
+			custom_irradiance,
+#else
+			vec4(0.0),
+#endif
+			ambient_light, specular_light);
 
 	{
 #if defined(DIFFUSE_TOON)
@@ -2297,6 +2410,15 @@ FRAGMENT_SHADER_CODE
 		specular_light *= env.x * f0 + env.y;
 #endif
 	}
+#endif //!defined(AMBIENT_LIGHT_USED)
+
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+	float specular_blob_intensity = 1.0;
+
+#if defined(SPECULAR_TOON)
+	specular_blob_intensity *= specular * 2.0;
+#endif
 
 	{ //directional light
 
@@ -2555,6 +2677,11 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
 #endif
+#ifdef MAIN_LIGHT_USED
+					i == main_light_idx,
+#else
+					false,
+#endif
 #ifdef USE_SHADOW_TO_OPACITY
 					alpha,
 #endif
@@ -2562,6 +2689,10 @@ FRAGMENT_SHADER_CODE
 					specular_light);
 		}
 	}
+
+	//used for interpolating anything cluster related
+	vec3 vertex_ddx = dFdx(vertex);
+	vec3 vertex_ddy = dFdy(vertex);
 
 	{ //omni lights
 

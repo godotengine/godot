@@ -119,6 +119,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["AMBIENT_LIGHT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["DIFFUSE_LIGHT"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["SPECULAR_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["OUTPUT_IS_SRGB"] = constt(ShaderLanguage::TYPE_BOOL);
 
@@ -132,6 +135,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FOG"] = ShaderLanguage::TYPE_VEC4; // TODO consider adding to light shader
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RADIANCE"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["IRRADIANCE"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["HAS_MAIN_LIGHT"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].can_discard = true;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_SCISSOR_THRESHOLD"] = ShaderLanguage::TYPE_FLOAT;
@@ -155,6 +159,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ATTENUATION"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SHADOW_ATTENUATION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["IS_MAIN_LIGHT"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALBEDO"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["BACKLIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["METALLIC"] = constt(ShaderLanguage::TYPE_FLOAT);
@@ -165,6 +170,22 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].can_discard = true;
+
+	{
+		ShaderLanguage::StageFunctionInfo sample_ambient_func;
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("vertex", ShaderLanguage::TYPE_VEC3));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("normal", ShaderLanguage::TYPE_VEC3));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("roughness", ShaderLanguage::TYPE_FLOAT));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("specular", ShaderLanguage::TYPE_FLOAT));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("metallic", ShaderLanguage::TYPE_FLOAT));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("uv2", ShaderLanguage::TYPE_VEC2));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("custom_radiance", ShaderLanguage::TYPE_VEC4));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("custom_irradiance", ShaderLanguage::TYPE_VEC4));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("ambient_light", ShaderLanguage::TYPE_VEC3, ShaderLanguage::ARGUMENT_QUALIFIER_OUT));
+		sample_ambient_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("specular_light", ShaderLanguage::TYPE_VEC3, ShaderLanguage::ARGUMENT_QUALIFIER_OUT));
+		sample_ambient_func.return_type = ShaderLanguage::TYPE_VOID;
+		shader_modes[RS::SHADER_SPATIAL].functions["fragment"].stage_functions["godot_sample_ambient"] = sample_ambient_func;
+	}
 
 	//order used puts first enum mode (default) first
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_mix");
