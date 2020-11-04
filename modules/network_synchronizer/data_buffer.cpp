@@ -948,13 +948,13 @@ void DataBuffer::make_room_in_bits(int p_dim) {
 }
 
 void DataBuffer::make_room_pad_to_next_byte() {
-	const int bits_to_next_byte = 8 - (bit_offset % 8);
+	const int bits_to_next_byte = ((bit_offset + 7) & ~7) - bit_offset;
 	make_room_in_bits(bits_to_next_byte);
 	bit_offset += bits_to_next_byte;
 }
 
 bool DataBuffer::pad_to_next_byte() {
-	const int bits_to_next_byte = 8 - (bit_offset % 8);
+	const int bits_to_next_byte = ((bit_offset + 7) & ~7) - bit_offset;
 	ERR_FAIL_COND_V_MSG(
 			bit_offset + bits_to_next_byte > buffer.size_in_bits(),
 			false,
