@@ -99,6 +99,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Transform xform;
 		String name;
+		String empty_draw_type;
 
 		GLTFMeshIndex mesh = -1;
 		GLTFCameraIndex camera = -1;

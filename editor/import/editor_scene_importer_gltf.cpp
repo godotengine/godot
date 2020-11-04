@@ -307,6 +307,12 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 				node->children.push_back(children[j]);
 			}
 		}
+		if (n.has("extras")) {
+			Dictionary extras = n["extras"];
+			if (extras.has("empty_draw_type")) {
+				node->empty_draw_type = extras["empty_draw_type"];
+			}
+		}
 
 		state.nodes.push_back(node);
 	}
@@ -2740,6 +2746,12 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 		current_node->set_owner(scene_root);
 		current_node->set_transform(gltf_node->xform);
 		current_node->set_name(gltf_node->name);
+	}
+
+	if (current_node != nullptr) {
+		if (gltf_node->empty_draw_type != "") {
+			current_node->set_meta("empty_draw_type", Variant(gltf_node->empty_draw_type));
+		}
 	}
 
 	state.scene_nodes.insert(node_index, current_node);
