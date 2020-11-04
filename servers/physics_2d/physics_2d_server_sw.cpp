@@ -183,6 +183,19 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			cbk->invalid_by_dir++;
 			return;
 		}
+
+		// Don't collide if the test object isn't moving towards the collision edge
+		// and the collision object isn't trying to catch up and collide with
+		// the test object by moving towards its collision edge faster
+		// Unless trying to unstick, if so, consider for collision if
+		// the relative velocity between the two objects is zero
+		if (cbk->check_motion && cbk->p_motion.normalized().dot(normal_to_check) > -CMP_EPSILON) {
+			real_t motion_dot = (cbk->p_motion - cbk->obj_motion).normalized().dot(normal_to_check);
+			if (motion_dot >= CMP_EPSILON || (!cbk->unstick && Math::abs(motion_dot) < CMP_EPSILON)) {
+				cbk->invalid_by_dir++;
+				return;
+			}
+		}
 	}
 
 	if (cbk->amount == cbk->max) {

@@ -86,6 +86,10 @@ public:
 		int passed;
 		int invalid_by_dir;
 		Vector2 *ptr;
+		Vector2 p_motion;
+		Vector2 obj_motion;
+		bool check_motion;
+		bool unstick;
 	};
 
 	virtual RID line_shape_create();

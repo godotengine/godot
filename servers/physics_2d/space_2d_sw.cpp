@@ -384,6 +384,9 @@ struct _RestCallbackData2D {
 	int best_shape;
 	Vector2 best_contact;
 	Vector2 best_normal;
+	Vector2 p_motion;
+	Vector2 obj_motion;
+	bool check_motion;
 	real_t best_len;
 	Vector2 valid_dir;
 	real_t valid_depth;
@@ -406,6 +409,15 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 		Vector2 normal_to_check = normal != Vector2() ? normal.normalized() : -rel_dir.normalized();
 		if (valid_dir.dot(normal_to_check) > -CMP_EPSILON)
 			return;
+
+		// Don't collide if the test object isn't moving towards the collision edge
+		// and the collision object isn't trying to catch up and collide with
+		// the test object by moving towards its collision edge faster
+		if (rd->check_motion && rd->p_motion.normalized().dot(normal_to_check) > -CMP_EPSILON) {
+			if ((rd->p_motion - rd->obj_motion).normalized().dot(normal_to_check) > -CMP_EPSILON) {
+				return;
+			}
+		}
 	}
 
 	Vector2 contact_rel = p_point_B - p_point_A;
@@ -813,6 +825,14 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					cbk.invalid_by_dir = 0;
 					cbk.valid_dir = _get_valid_dir(col_obj, shape_idx, col_obj_shape_xform);
 					cbk.valid_depth = _get_valid_depth(col_obj, shape_idx, cbk.valid_dir, p_margin);
+					cbk.p_motion = p_motion;
+					cbk.check_motion = true;
+					cbk.unstick = true;
+					if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
+						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+						cbk.obj_motion = b->get_linear_velocity() * Physics2DDirectBodyStateSW::singleton->step;
+					}
+
 					if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
 						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
 						if (b->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC || b->get_mode() == Physics2DServer::BODY_MODE_RIGID) {
@@ -986,6 +1006,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					cbk.ptr = cd;
 					cbk.valid_dir = valid_dir;
 					cbk.valid_depth = 10e20; // Infinite depth just to check for pass-through, will adjust to within margin later
+					cbk.check_motion = true;
+					cbk.p_motion = p_motion;
+					if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
+						const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+						cbk.obj_motion = b->get_linear_velocity() * Physics2DDirectBodyStateSW::singleton->step;
+					}
 
 					Vector2 sep = mnormal; //important optimization for this to work fast enough
 					real_t hi_with_extra = hi + contact_max_allowed_penetration;
@@ -1119,6 +1145,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					rcd.valid_depth = 0;
 				}
 
+				rcd.check_motion = true;
+				rcd.p_motion = p_motion;
+				if (CollisionObject2DSW::TYPE_BODY == col_obj->get_type()) {
+					const Body2DSW *b = static_cast<const Body2DSW *>(col_obj);
+					rcd.obj_motion = b->get_linear_velocity() * Physics2DDirectBodyStateSW::singleton->step;
+				}
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
 				rcd.local_shape = j;
