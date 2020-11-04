@@ -47,4 +47,6 @@ public interface GodotRenderView {
 	abstract public void onBackPressed();
 
 	abstract public GodotInputHandler getInputHandler();
+
+	abstract public void setPointerIcon(int pointerType);
 }

@@ -36,8 +36,6 @@
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 
-#include <android/input.h>
-
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/android/vulkan/vulkan_context_android.h"
@@ -51,7 +49,7 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		//case FEATURE_CONSOLE_WINDOW:
-		//case FEATURE_CURSOR_SHAPE:
+		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
@@ -829,6 +827,12 @@ void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
+	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
+	} else {
+		cursor_set_shape(cursor_shape);
+	}
+
 	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
 	} else {
@@ -869,4 +873,20 @@ int DisplayServerAndroid::_android_button_mask_to_godot_button_mask(int android_
 	}
 
 	return godot_button_mask;
+}
+
+void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	if (cursor_shape == p_shape) {
+		return;
+	}
+
+	cursor_shape = p_shape;
+
+	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
+		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
+	}
+}
+
+DisplayServer::CursorShape DisplayServerAndroid::cursor_get_shape() const {
+	return cursor_shape;
 }
