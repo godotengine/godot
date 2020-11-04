@@ -16,19 +16,16 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="from" type="Basis">
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<argument index="3" name="w" type="float">
 			</argument>
 			<description>
-				Constructs a quaternion from the given [Basis].
-			</description>
-		</method>
-		<method name="Quat">
-			<return type="Quat">
-			</return>
-			<argument index="0" name="euler" type="Vector3">
-			</argument>
-			<description>
-				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
+				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
 		<method name="Quat">
@@ -45,16 +42,19 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
-			<argument index="3" name="w" type="float">
+			<argument index="0" name="euler" type="Vector3">
 			</argument>
 			<description>
-				Constructs a quaternion defined by the given values.
+				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="from" type="Basis">
+			</argument>
+			<description>
+				Constructs a quaternion from the given [Basis].
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -75,7 +75,7 @@
 		<method name="dot">
 			<return type="float">
 			</return>
-			<argument index="0" name="b" type="Quat">
+			<argument index="0" name="with" type="Quat">
 			</argument>
 			<description>
 				Returns the dot product of two quaternions.
@@ -98,7 +98,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="quat" type="Quat">
+			<argument index="0" name="to" type="Quat">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this quaterion and [code]quat[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
@@ -132,26 +132,6 @@
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
-		<method name="set_axis_angle">
-			<return type="void">
-			</return>
-			<argument index="0" name="axis" type="Vector3">
-			</argument>
-			<argument index="1" name="angle" type="float">
-			</argument>
-			<description>
-				Sets the quaternion to a rotation which rotates around axis by the specified angle, in radians. The axis must be a normalized vector.
-			</description>
-		</method>
-		<method name="set_euler">
-			<return type="void">
-			</return>
-			<argument index="0" name="euler" type="Vector3">
-			</argument>
-			<description>
-				Sets the quaternion to a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
-			</description>
-		</method>
 		<method name="slerp">
 			<return type="Quat">
 			</return>
@@ -173,15 +153,6 @@
 			</argument>
 			<description>
 				Returns the result of the spherical linear interpolation between this quaternion and [code]to[/code] by amount [code]weight[/code], but without checking if the rotation path is not bigger than 90 degrees.
-			</description>
-		</method>
-		<method name="xform">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by this quaternion.
 			</description>
 		</method>
 	</methods>

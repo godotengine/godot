@@ -314,6 +314,14 @@
 				Returns the bigrams (pairs of consecutive letters) of this string.
 			</description>
 		</method>
+		<method name="bin_to_int">
+			<return type="int">
+			</return>
+			<argument index="0" name="with_prefix" type="bool" default="true">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="c_escape">
 			<return type="String">
 			</return>
@@ -397,17 +405,6 @@
 				Returns [code]true[/code] if the string ends with the given string.
 			</description>
 		</method>
-		<method name="erase">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
-			<argument index="1" name="chars" type="int">
-			</argument>
-			<description>
-				Erases [code]chars[/code] characters from the string starting from [code]position[/code].
-			</description>
-		</method>
 		<method name="find">
 			<return type="int">
 			</return>
@@ -485,10 +482,13 @@
 		<method name="hex_to_int">
 			<return type="int">
 			</return>
+			<argument index="0" name="with_prefix" type="bool" default="true">
+			</argument>
 			<description>
-				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				Converts a string containing a hexadecimal number into a decimal integer. If [code]with_prefix[/code] is [code]true[/code], the hexadecimal string should start with the [code]0x[/code] prefix, otherwise [code]0[/code] is returned.
 				[codeblock]
 				print("0xff".hex_to_int()) # Print "255"
+				print("ab".hex_to_int(false)) # Print "171"
 				[/codeblock]
 			</description>
 		</method>
@@ -509,20 +509,6 @@
 				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
 				[codeblock]
 				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".http_unescape())
-				[/codeblock]
-			</description>
-		</method>
-		<method name="humanize_size">
-			<return type="String">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
-			<description>
-				Converts [code]size[/code] represented as number of bytes to human-readable format using internationalized set of data size units, namely: B, KiB, MiB, GiB, TiB, PiB, EiB. Note that the next smallest unit is picked automatically to hold at most 1024 units.
-				[codeblock]
-				var bytes = 133790307
-				var size = String.humanize_size(bytes)
-				print(size) # prints "127.5 MiB"
 				[/codeblock]
 			</description>
 		</method>
@@ -990,11 +976,11 @@
 				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
-		<method name="to_ascii">
+		<method name="to_ascii_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
+				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8_buffer], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
 			</description>
 		</method>
 		<method name="to_float">
@@ -1025,25 +1011,25 @@
 				Returns the string converted to uppercase.
 			</description>
 		</method>
-		<method name="to_utf16">
+		<method name="to_utf16_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to UTF-16 encoded [PackedByteArray] (which is an array of bytes).
 			</description>
 		</method>
-		<method name="to_utf32">
+		<method name="to_utf32_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
 				Converts the String (which is an array of characters) to UTF-32 encoded [PackedByteArray] (which is an array of bytes).
 			</description>
 		</method>
-		<method name="to_utf8">
+		<method name="to_utf8_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
+				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii_buffer], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii_buffer].
 			</description>
 		</method>
 		<method name="trim_prefix">
@@ -1067,8 +1053,10 @@
 		<method name="xml_escape">
 			<return type="String">
 			</return>
+			<argument index="0" name="escape_quotes" type="bool" default="false">
+			</argument>
 			<description>
-				Returns a copy of the string with special characters escaped using the XML standard.
+				Returns a copy of the string with special characters escaped using the XML standard. If [code]escape_quotes[/code] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
 			</description>
 		</method>
 		<method name="xml_unescape">

@@ -445,10 +445,6 @@ void PointLight2D::_bind_methods() {
 
 PointLight2D::PointLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
-	_scale = 1.0;
-}
-
-PointLight2D::~PointLight2D() {
 }
 
 //////////
@@ -457,6 +453,7 @@ void DirectionalLight2D::set_max_distance(float p_distance) {
 	max_distance = p_distance;
 	RS::get_singleton()->canvas_light_set_directional_distance(_get_light(), max_distance);
 }
+
 float DirectionalLight2D::get_max_distance() const {
 	return max_distance;
 }
@@ -468,7 +465,8 @@ void DirectionalLight2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384.0,1.0,or_greater"), "set_max_distance", "get_max_distance");
 }
+
 DirectionalLight2D::DirectionalLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
-	set_max_distance(10000.0);
+	set_max_distance(max_distance); // Update RenderingServer.
 }

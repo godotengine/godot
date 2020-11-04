@@ -195,29 +195,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="from_hsv">
-			<return type="Color">
-			</return>
-			<argument index="0" name="h" type="float">
-			</argument>
-			<argument index="1" name="s" type="float">
-			</argument>
-			<argument index="2" name="v" type="float">
-			</argument>
-			<argument index="3" name="a" type="float" default="1.0">
-			</argument>
-			<description>
-				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
-				[codeblocks]
-				[gdscript]
-				var color = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
-				[/gdscript]
-				[csharp]
-				Color color = Color.FromHsv(0.58f, 0.5f, 0.79f, 0.8f); // Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
 		<method name="inverted">
 			<return type="Color">
 			</return>
@@ -238,7 +215,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="color" type="Color">
+			<argument index="0" name="to" type="Color">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this color and [code]color[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.

@@ -187,25 +187,6 @@
 				Returns the transposed version of the matrix.
 			</description>
 		</method>
-		<method name="xform">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the matrix.
-			</description>
-		</method>
-		<method name="xform_inv">
-			<return type="Vector3">
-			</return>
-			<argument index="0" name="v" type="Vector3">
-			</argument>
-			<description>
-				Returns a vector transformed (multiplied) by the transposed basis matrix.
-				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="x" type="Vector3" setter="" getter="" default="Vector3( 1, 0, 0 )">

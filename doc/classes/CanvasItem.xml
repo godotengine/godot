@@ -86,16 +86,6 @@
 			</argument>
 			<argument index="3" name="texture" type="Texture2D" default="null">
 			</argument>
-			<argument index="4" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="5" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="8" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
-			</argument>
 			<description>
 				Draws a colored polygon of any amount of points, convex or concave.
 			</description>
@@ -122,19 +112,9 @@
 			</argument>
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
-			<argument index="2" name="normal_map" type="Texture2D" default="null">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
-			<argument index="3" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="4" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="5" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
-			</argument>
-			<argument index="6" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="8" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
 				Draws a [Mesh] in 2D, using the provided texture. See [MeshInstance2D] for related documentation.
@@ -173,16 +153,6 @@
 			</argument>
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
-			<argument index="2" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="3" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="4" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="5" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="6" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
-			</argument>
 			<description>
 				Draws a [MultiMesh] in 2D with the provided texture. See [MultiMeshInstance2D] for related documentation.
 			</description>
@@ -197,16 +167,6 @@
 			<argument index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
 			<argument index="3" name="texture" type="Texture2D" default="null">
-			</argument>
-			<argument index="4" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="5" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="7" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="8" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
 			</argument>
 			<description>
 				Draws a polygon of any amount of points, convex or concave.
@@ -250,16 +210,6 @@
 			<argument index="3" name="texture" type="Texture2D" default="null">
 			</argument>
 			<argument index="4" name="width" type="float" default="1.0">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
 			</argument>
 			<description>
 				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad.
@@ -358,16 +308,6 @@
 			</argument>
 			<argument index="2" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="3" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="4" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="5" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="6" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="7" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
-			</argument>
 			<description>
 				Draws a texture at a given position.
 			</description>
@@ -384,16 +324,6 @@
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
 			</argument>
 			<description>
 				Draws a textured rectangle at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
@@ -412,17 +342,7 @@
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
-			<argument index="5" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="7" name="specular_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="8" name="clip_uv" type="bool" default="true">
-			</argument>
-			<argument index="9" name="texture_filter" type="int" enum="CanvasItem.TextureFilter" default="0">
-			</argument>
-			<argument index="10" name="texture_repeat" type="int" enum="CanvasItem.TextureRepeat" default="0">
+			<argument index="5" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Draws a textured rectangle region at a given position, optionally modulated by a color. If [code]transpose[/code] is [code]true[/code], the texture will have its X and Y coordinates swapped.
@@ -592,6 +512,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clip_children" type="bool" setter="set_clip_children" getter="is_clipping_children" default="false">
+		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
 		</member>

@@ -79,7 +79,7 @@
 		<method name="interpolate_with">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="transform" type="Transform">
+			<argument index="0" name="xform" type="Transform">
 			</argument>
 			<argument index="1" name="weight" type="float">
 			</argument>
@@ -97,7 +97,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="transform" type="Transform">
+			<argument index="0" name="xform" type="Transform">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
@@ -151,24 +151,6 @@
 			<description>
 				Translates the transform by the given offset, relative to the transform's basis vectors.
 				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
-			</description>
-		</method>
-		<method name="xform">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
-			<description>
-				Transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
-			</description>
-		</method>
-		<method name="xform_inv">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="v" type="Variant">
-			</argument>
-			<description>
-				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
 			</description>
 		</method>
 	</methods>

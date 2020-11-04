@@ -160,7 +160,7 @@
 			</argument>
 			<argument index="1" name="obj" type="Object">
 			</argument>
-			<argument index="2" name="func" type="String">
+			<argument index="2" name="func" type="StringName">
 			</argument>
 			<argument index="3" name="before" type="bool" default="true">
 			</argument>
@@ -362,7 +362,7 @@
 			</description>
 		</method>
 		<method name="resize">
-			<return type="void">
+			<return type="int">
 			</return>
 			<argument index="0" name="size" type="int">
 			</argument>
@@ -433,7 +433,7 @@
 			</return>
 			<argument index="0" name="obj" type="Object">
 			</argument>
-			<argument index="1" name="func" type="String">
+			<argument index="1" name="func" type="StringName">
 			</argument>
 			<description>
 				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code].

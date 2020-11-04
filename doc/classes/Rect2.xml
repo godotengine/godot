@@ -108,7 +108,7 @@
 			</argument>
 			<argument index="2" name="right" type="float">
 			</argument>
-			<argument index="3" name=" bottom" type="float">
+			<argument index="3" name="bottom" type="float">
 			</argument>
 			<description>
 				Returns a copy of the [Rect2] grown a given amount of units towards each direction individually.

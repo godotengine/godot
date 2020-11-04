@@ -36,6 +36,12 @@
 				Constructs a new [Vector3i] from [Vector3]. The floating point coordinates will be truncated.
 			</description>
 		</method>
+		<method name="abs">
+			<return type="Vector3i">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="max_axis">
 			<return type="int">
 			</return>

@@ -367,8 +367,8 @@ struct Rect2i {
 		new_rect.position.x = MAX(p_rect.position.x, position.x);
 		new_rect.position.y = MAX(p_rect.position.y, position.y);
 
-		Point2 p_rect_end = p_rect.position + p_rect.size;
-		Point2 end = position + size;
+		Point2i p_rect_end = p_rect.position + p_rect.size;
+		Point2i end = position + size;
 
 		new_rect.size.x = (int)(MIN(p_rect_end.x, end.x) - new_rect.position.x);
 		new_rect.size.y = (int)(MIN(p_rect_end.y, end.y) - new_rect.position.y);
@@ -390,7 +390,7 @@ struct Rect2i {
 
 		return new_rect;
 	}
-	bool has_point(const Point2 &p_point) const {
+	bool has_point(const Point2i &p_point) const {
 		if (p_point.x < position.x) {
 			return false;
 		}
@@ -485,10 +485,10 @@ struct Rect2i {
 			size(p_r2.size) {
 	}
 	Rect2i(int p_x, int p_y, int p_width, int p_height) :
-			position(Point2(p_x, p_y)),
-			size(Size2(p_width, p_height)) {
+			position(Point2i(p_x, p_y)),
+			size(Size2i(p_width, p_height)) {
 	}
-	Rect2i(const Point2 &p_pos, const Size2 &p_size) :
+	Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}

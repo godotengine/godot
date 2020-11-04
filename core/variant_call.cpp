@@ -1357,7 +1357,7 @@ void register_variant_methods() {
 	_VariantCall::construct_funcs = memnew_arr(_VariantCall::ConstructFunc, Variant::VARIANT_MAX);
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
-	/* STRING */
+	/* String */
 
 	bind_method(String, casecmp_to, sarray("to"), varray());
 	bind_method(String, nocasecmp_to, sarray("to"), varray());
@@ -1405,7 +1405,7 @@ void register_variant_methods() {
 	bind_method(String, plus_file, sarray("file"), varray());
 	bind_method(String, ord_at, sarray("at"), varray());
 	bind_method(String, dedent, sarray(), varray());
-	//string needs to be immutable when binding
+	// FIXME: String needs to be immutable when binding
 	//bind_method(String, erase, sarray("position", "chars"), varray());
 	bind_method(String, hash, sarray(), varray());
 	bind_method(String, md5_text, sarray(), varray());
@@ -1415,7 +1415,7 @@ void register_variant_methods() {
 	bind_method(String, sha1_buffer, sarray(), varray());
 	bind_method(String, sha256_buffer, sarray(), varray());
 	bind_method(String, empty, sarray(), varray());
-	//static function, not sure how to bind
+	// FIXME: Static function, not sure how to bind
 	//bind_method(String, humanize_size, sarray("size"), varray());
 
 	bind_method(String, is_abs_path, sarray(), varray());
@@ -1457,7 +1457,7 @@ void register_variant_methods() {
 	bind_method(String, to_utf16_buffer, sarray(), varray());
 	bind_method(String, to_utf32_buffer, sarray(), varray());
 
-	/* VECTOR2 */
+	/* Vector2 */
 
 	bind_method(Vector2, angle, sarray(), varray());
 	bind_method(Vector2, angle_to, sarray("to"), varray());
@@ -1490,15 +1490,16 @@ void register_variant_methods() {
 	bind_method(Vector2, cross, sarray("with"), varray());
 	bind_method(Vector2, abs, sarray(), varray());
 	bind_method(Vector2, sign, sarray(), varray());
+	bind_method(Vector2, snapped, sarray("by"), varray());
 	bind_method(Vector2, clamped, sarray("length"), varray());
 
-	/* VECTOR2I */
+	/* Vector2i */
 
 	bind_method(Vector2i, aspect, sarray(), varray());
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 
-	/* RECT2 */
+	/* Rect2 */
 
 	bind_method(Rect2, get_area, sarray(), varray());
 	bind_method(Rect2, has_no_area, sarray(), varray());
@@ -1585,7 +1586,7 @@ void register_variant_methods() {
 	bind_methodv(intersects_ray, &Plane::intersects_ray_bind, sarray("from", "dir"), varray());
 	bind_methodv(intersects_segment, &Plane::intersects_segment_bind, sarray("from", "to"), varray());
 
-	/* Quaternion */
+	/* Quat */
 
 	bind_method(Quat, length, sarray(), varray());
 	bind_method(Quat, length_squared, sarray(), varray());
@@ -1594,13 +1595,12 @@ void register_variant_methods() {
 	bind_method(Quat, is_equal_approx, sarray("to"), varray());
 	bind_method(Quat, inverse, sarray(), varray());
 	bind_method(Quat, dot, sarray("with"), varray());
-	bind_method(Quat, xform, sarray("v3"), varray());
 	bind_method(Quat, slerp, sarray("b", "t"), varray());
 	bind_method(Quat, slerpni, sarray("b", "t"), varray());
 	bind_method(Quat, cubic_slerp, sarray("b", "pre_a", "post_b", "t"), varray());
 	bind_method(Quat, get_euler, sarray(), varray());
 
-	//Quat is atomic, this should be done via construcror
+	// FIXME: Quat is atomic, this should be done via construcror
 	//ADDFUNC1(QUAT, NIL, Quat, set_euler, VECTOR3, "euler", varray());
 	//ADDFUNC2(QUAT, NIL, Quat, set_axis_angle, VECTOR3, "axis", FLOAT, "angle", varray());
 
@@ -1621,7 +1621,7 @@ void register_variant_methods() {
 	bind_method(Color, to_html, sarray("with_alpha"), varray(true));
 	bind_method(Color, blend, sarray("over"), varray());
 
-	//Color is immutable, need to probably find a way to do this via constructor
+	// FIXME: Color is immutable, need to probably find a way to do this via constructor
 	//ADDFUNC4R(COLOR, COLOR, Color, from_hsv, FLOAT, "h", FLOAT, "s", FLOAT, "v", FLOAT, "a", varray(1.0));
 	bind_method(Color, is_equal_approx, sarray("to"), varray());
 
@@ -1650,8 +1650,6 @@ void register_variant_methods() {
 	bind_method(Callable, get_method, sarray(), varray());
 	bind_method(Callable, hash, sarray(), varray());
 	bind_method(Callable, unbind, sarray("argcount"), varray());
-
-	//#define bind_custom(m_type, m_name, m_method, m_flags, m_arg_types, m_ret_type, m_arg_names) _VariantCall::_bind_custom(m_type, m_name, m_method, m_flags, m_arg_types, m_ret_type)
 
 	bind_custom(Variant::CALLABLE, "call", _VariantCall::func_Callable_call, Variant::InternalMethod::FLAG_VARARGS | Variant::InternalMethod::FLAG_RETURNS_VARIANT, Vector<Variant::Type>(), Variant::NIL, sarray());
 	bind_custom(Variant::CALLABLE, "call_deferred", _VariantCall::func_Callable_call_deferred, Variant::InternalMethod::FLAG_VARARGS, Vector<Variant::Type>(), Variant::NIL, sarray());
@@ -1682,9 +1680,6 @@ void register_variant_methods() {
 	bind_method(Transform2D, rotated, sarray("phi"), varray());
 	bind_method(Transform2D, scaled, sarray("scale"), varray());
 	bind_method(Transform2D, translated, sarray("offset"), varray());
-	//too complex to bind this, operator * should be used instead
-	//ADDFUNC1R(TRANSFORM2D, NIL, Transform2D, xform, NIL, "v", varray());
-	//ADDFUNC1R(TRANSFORM2D, NIL, Transform2D, xform_inv, NIL, "v", varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "t"), varray());
@@ -1703,9 +1698,6 @@ void register_variant_methods() {
 	bind_method(Basis, tdotx, sarray("with"), varray());
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
-	//use the operators instead
-	//ADDFUNC1R(BASIS, VECTOR3, Basis, xform, VECTOR3, "v", varray());
-	//ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	bind_method(Basis, get_orthogonal_index, sarray(), varray());
 	bind_method(Basis, slerp, sarray("b", "t"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
@@ -1748,9 +1740,6 @@ void register_variant_methods() {
 	bind_method(Transform, looking_at, sarray("target", "up"), varray());
 	bind_method(Transform, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform, is_equal_approx, sarray("xform"), varray());
-	//use the operators instead
-	//ADDFUNC1R(TRANSFORM, NIL, Transform, xform, NIL, "v", varray());
-	//ADDFUNC1R(TRANSFORM, NIL, Transform, xform_inv, NIL, "v", varray());
 
 	/* Dictionary */
 
@@ -1923,6 +1912,7 @@ void register_variant_methods() {
 	bind_method(PackedVector2Array, invert, sarray(), varray());
 	bind_method(PackedVector2Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector2Array, to_byte_array, sarray(), varray());
+	bind_method(PackedVector2Array, sort, sarray(), varray());
 
 	/* Vector3 Array */
 
@@ -1939,6 +1929,7 @@ void register_variant_methods() {
 	bind_method(PackedVector3Array, invert, sarray(), varray());
 	bind_method(PackedVector3Array, subarray, sarray("from", "to"), varray());
 	bind_method(PackedVector3Array, to_byte_array, sarray(), varray());
+	bind_method(PackedVector3Array, sort, sarray(), varray());
 
 	/* Color Array */
 
@@ -1955,8 +1946,9 @@ void register_variant_methods() {
 	bind_method(PackedColorArray, invert, sarray(), varray());
 	bind_method(PackedColorArray, subarray, sarray("from", "to"), varray());
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
+	bind_method(PackedColorArray, sort, sarray(), varray());
 
-	/* REGISTER CONSTRUCTORS */
+	/* Register constructors */
 
 	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::FLOAT, "y", Variant::FLOAT);
 	_VariantCall::add_constructor(_VariantCall::Vector2i_init1, Variant::VECTOR2I, "x", Variant::INT, "y", Variant::INT);
@@ -1964,7 +1956,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "x", Variant::FLOAT, "y", Variant::FLOAT, "width", Variant::FLOAT, "height", Variant::FLOAT);
 
-	_VariantCall::add_constructor(_VariantCall::Rect2i_init1, Variant::RECT2I, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Rect2i_init1, Variant::RECT2I, "position", Variant::VECTOR2I, "size", Variant::VECTOR2I);
 	_VariantCall::add_constructor(_VariantCall::Rect2i_init2, Variant::RECT2I, "x", Variant::INT, "y", Variant::INT, "width", Variant::INT, "height", Variant::INT);
 
 	_VariantCall::add_constructor(_VariantCall::Transform2D_init2, Variant::TRANSFORM2D, "rotation", Variant::FLOAT, "position", Variant::VECTOR2);
@@ -1997,7 +1989,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Callable_init2, Variant::CALLABLE, "object", Variant::OBJECT, "method_name", Variant::STRING_NAME);
 	_VariantCall::add_constructor(_VariantCall::Signal_init2, Variant::SIGNAL, "object", Variant::OBJECT, "signal_name", Variant::STRING_NAME);
 
-	/* REGISTER CONSTANTS */
+	/* Register constants */
 
 	_populate_named_colors();
 	for (Map<String, Color>::Element *color = _named_colors.front(); color; color = color->next()) {

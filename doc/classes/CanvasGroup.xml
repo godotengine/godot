@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasGroup" inherits="Node2D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="clear_margin" type="float" setter="set_clear_margin" getter="get_clear_margin" default="10.0">
+		</member>
+		<member name="fit_margin" type="float" setter="set_fit_margin" getter="get_fit_margin" default="10.0">
+		</member>
+		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="is_using_mipmaps" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

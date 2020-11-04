@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="bind" qualifiers="vararg">
-			<return type="void">
+			<return type="Callable">
 			</return>
 			<description>
 			</description>
