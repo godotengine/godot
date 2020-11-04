@@ -213,6 +213,12 @@
 				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 			</description>
 		</method>
+		<method name="get_selection_column" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_selection_from_column" qualifiers="const">
 			<return type="int">
 			</return>
@@ -225,6 +231,18 @@
 			</return>
 			<description>
 				Returns the selection begin line.
+			</description>
+		</method>
+		<method name="get_selection_line" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_selection_mode" qualifiers="const">
+			<return type="int" enum="TextEdit.SelectionMode">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_selection_text" qualifiers="const">
@@ -555,6 +573,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_selection_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="TextEdit.SelectionMode">
+			</argument>
+			<argument index="1" name="line" type="int" default="-1">
+			</argument>
+			<argument index="2" name="column" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="toggle_fold_line">
 			<return type="void">
 			</return>
@@ -731,6 +761,16 @@
 		</constant>
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
+		</constant>
+		<constant name="SELECTION_MODE_NONE" value="0" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_SHIFT" value="1" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_POINTER" value="2" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_WORD" value="3" enum="SelectionMode">
+		</constant>
+		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
 		</constant>
 		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
 		</constant>

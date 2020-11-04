@@ -74,7 +74,7 @@
 		<method name="cross">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="b" type="Vector3">
+			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
 				Returns the cross product of this vector and [code]b[/code].
@@ -126,7 +126,7 @@
 		<method name="dot">
 			<return type="float">
 			</return>
-			<argument index="0" name="b" type="Vector3">
+			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
 				Returns the dot product of this vector and [code]b[/code]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
@@ -152,7 +152,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="v" type="Vector3">
+			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this vector and [code]v[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
@@ -226,7 +226,7 @@
 		<method name="outer">
 			<return type="Basis">
 			</return>
-			<argument index="0" name="b" type="Vector3">
+			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
 				Returns the outer product with [code]b[/code].
@@ -271,7 +271,7 @@
 		<method name="rotated">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="axis" type="Vector3">
+			<argument index="0" name="by_axis" type="Vector3">
 			</argument>
 			<argument index="1" name="phi" type="float">
 			</argument>

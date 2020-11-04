@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="get_concatenated_subnames">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
@@ -76,7 +76,7 @@
 			</description>
 		</method>
 		<method name="get_name">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -99,7 +99,7 @@
 			</description>
 		</method>
 		<method name="get_subname">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

@@ -77,7 +77,7 @@
 			</description>
 		</method>
 		<method name="intersect_3">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="b" type="Plane">
 			</argument>
@@ -88,7 +88,7 @@
 			</description>
 		</method>
 		<method name="intersects_ray">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
@@ -99,11 +99,11 @@
 			</description>
 		</method>
 		<method name="intersects_segment">
-			<return type="Vector3">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="begin" type="Vector3">
+			<argument index="0" name="from" type="Vector3">
 			</argument>
-			<argument index="1" name="end" type="Vector3">
+			<argument index="1" name="to" type="Vector3">
 			</argument>
 			<description>
 				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
@@ -112,7 +112,7 @@
 		<method name="is_equal_approx">
 			<return type="bool">
 			</return>
-			<argument index="0" name="plane" type="Plane">
+			<argument index="0" name="to_plane" type="Plane">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this plane and [code]plane[/code] are approximately equal, by running [method @GDScript.is_equal_approx] on each component.
@@ -121,7 +121,7 @@
 		<method name="is_point_over">
 			<return type="bool">
 			</return>
-			<argument index="0" name="point" type="Vector3">
+			<argument index="0" name="plane" type="Vector3">
 			</argument>
 			<description>
 				Returns [code]true[/code] if [code]point[/code] is located above the plane.

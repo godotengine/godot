@@ -15,9 +15,9 @@
 		<method name="Rect2i">
 			<return type="Rect2i">
 			</return>
-			<argument index="0" name="position" type="Vector2">
+			<argument index="0" name="position" type="Vector2i">
 			</argument>
-			<argument index="1" name="size" type="Vector2">
+			<argument index="1" name="size" type="Vector2i">
 			</argument>
 			<description>
 				Constructs a [Rect2i] by position and size.
@@ -106,7 +106,7 @@
 			</argument>
 			<argument index="2" name="right" type="int">
 			</argument>
-			<argument index="3" name=" bottom" type="int">
+			<argument index="3" name="bottom" type="int">
 			</argument>
 			<description>
 				Returns a copy of the [Rect2i] grown a given amount of units towards each direction individually.

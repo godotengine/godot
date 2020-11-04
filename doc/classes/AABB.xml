@@ -176,8 +176,18 @@
 				Returns [code]true[/code] if the [AABB] is on both sides of a plane.
 			</description>
 		</method>
+		<method name="intersects_ray">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="intersects_segment">
-			<return type="bool">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Vector3">
 			</argument>
