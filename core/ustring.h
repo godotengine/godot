@@ -254,6 +254,8 @@ public:
 
 	bool operator<(const String &p_str) const;
 	bool operator<=(const String &p_str) const;
+	bool operator>(const String &p_str) const;
+	bool operator>=(const String &p_str) const;
 
 	signed char casecmp_to(const String &p_str) const;
 	signed char nocasecmp_to(const String &p_str) const;
@@ -456,6 +458,8 @@ public:
 
 bool operator==(const char *p_chr, const String &p_str);
 bool operator==(const wchar_t *p_chr, const String &p_str);
+bool operator!=(const char *p_chr, const String &p_str);
+bool operator!=(const wchar_t *p_chr, const String &p_str);
 
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);

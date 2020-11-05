@@ -637,6 +637,20 @@ bool operator==(const wchar_t *p_chr, const String &p_str) {
 #endif
 }
 
+bool operator!=(const char *p_chr, const String &p_str) {
+	return !(p_str == p_chr);
+}
+
+bool operator!=(const wchar_t *p_chr, const String &p_str) {
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return !(p_str == String::utf16((const char16_t *)p_chr));
+#else
+	// wchar_t is 32-bi
+	return !(p_str == String((const char32_t *)p_chr));
+#endif
+}
+
 bool String::operator!=(const char *p_str) const {
 	return (!(*this == p_str));
 }
@@ -654,7 +668,14 @@ bool String::operator!=(const String &p_str) const {
 }
 
 bool String::operator<=(const String &p_str) const {
-	return (*this < p_str) || (*this == p_str);
+	return !(p_str < *this);
+}
+
+bool String::operator>(const String &p_str) const {
+	return p_str < *this;
+}
+bool String::operator>=(const String &p_str) const {
+	return !(*this < p_str);
 }
 
 bool String::operator<(const char *p_str) const {
@@ -4455,7 +4476,9 @@ String String::sprintf(const Array &values, bool *error) const {
 	bool left_justified = false;
 	bool show_sign = false;
 
-	*error = true;
+	if (error) {
+		*error = true;
+	}
 
 	for (; *self; self++) {
 		const char32_t c = *self;
@@ -4716,7 +4739,9 @@ String String::sprintf(const Array &values, bool *error) const {
 		return "not all arguments converted during string formatting";
 	}
 
-	*error = false;
+	if (error) {
+		*error = false;
+	}
 	return formatted;
 }
 

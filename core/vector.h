@@ -157,6 +157,32 @@ public:
 		return slice;
 	}
 
+	bool operator==(const Vector<T> &p_arr) const {
+		int s = size();
+		if (s != p_arr.size()) {
+			return false;
+		}
+		for (int i = 0; i < s; i++) {
+			if (operator[](i) != p_arr[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const Vector<T> &p_arr) const {
+		int s = size();
+		if (s != p_arr.size()) {
+			return true;
+		}
+		for (int i = 0; i < s; i++) {
+			if (operator[](i) != p_arr[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 

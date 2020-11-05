@@ -4687,7 +4687,7 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 			}
 			int state = EditorNode3DGizmoPlugin::VISIBLE;
 			for (int i = 0; i < keys.size(); i++) {
-				if (gizmo_plugins_by_name.write[j]->get_name() == keys[i]) {
+				if (gizmo_plugins_by_name.write[j]->get_name() == String(keys[i])) {
 					state = gizmos_status[keys[i]];
 					break;
 				}

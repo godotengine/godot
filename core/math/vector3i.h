@@ -80,11 +80,15 @@ struct Vector3i {
 	_FORCE_INLINE_ Vector3i operator*(const Vector3i &p_v) const;
 	_FORCE_INLINE_ Vector3i &operator/=(const Vector3i &p_v);
 	_FORCE_INLINE_ Vector3i operator/(const Vector3i &p_v) const;
+	_FORCE_INLINE_ Vector3i &operator%=(const Vector3i &p_v);
+	_FORCE_INLINE_ Vector3i operator%(const Vector3i &p_v) const;
 
 	_FORCE_INLINE_ Vector3i &operator*=(int32_t p_scalar);
 	_FORCE_INLINE_ Vector3i operator*(int32_t p_scalar) const;
 	_FORCE_INLINE_ Vector3i &operator/=(int32_t p_scalar);
 	_FORCE_INLINE_ Vector3i operator/(int32_t p_scalar) const;
+	_FORCE_INLINE_ Vector3i &operator%=(int32_t p_scalar);
+	_FORCE_INLINE_ Vector3i operator%(int32_t p_scalar) const;
 
 	_FORCE_INLINE_ Vector3i operator-() const;
 
@@ -159,6 +163,17 @@ Vector3i Vector3i::operator/(const Vector3i &p_v) const {
 	return Vector3i(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
+Vector3i &Vector3i::operator%=(const Vector3i &p_v) {
+	x %= p_v.x;
+	y %= p_v.y;
+	z %= p_v.z;
+	return *this;
+}
+
+Vector3i Vector3i::operator%(const Vector3i &p_v) const {
+	return Vector3i(x % p_v.x, y % p_v.y, z % p_v.z);
+}
+
 Vector3i &Vector3i::operator*=(int32_t p_scalar) {
 	x *= p_scalar;
 	y *= p_scalar;
@@ -183,6 +198,17 @@ Vector3i &Vector3i::operator/=(int32_t p_scalar) {
 
 Vector3i Vector3i::operator/(int32_t p_scalar) const {
 	return Vector3i(x / p_scalar, y / p_scalar, z / p_scalar);
+}
+
+Vector3i &Vector3i::operator%=(int32_t p_scalar) {
+	x %= p_scalar;
+	y %= p_scalar;
+	z %= p_scalar;
+	return *this;
+}
+
+Vector3i Vector3i::operator%(int32_t p_scalar) const {
+	return Vector3i(x % p_scalar, y % p_scalar, z % p_scalar);
 }
 
 Vector3i Vector3i::operator-() const {

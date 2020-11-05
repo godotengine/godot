@@ -381,7 +381,6 @@ public:
 		OP_NEGATE,
 		OP_POSITIVE,
 		OP_MODULE,
-		OP_STRING_CONCAT,
 		//bitwise
 		OP_SHIFT_LEFT,
 		OP_SHIFT_RIGHT,
@@ -408,6 +407,14 @@ public:
 		evaluate(p_op, p_a, p_b, res, valid);
 		return res;
 	}
+
+	Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
+	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
+	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
+#ifdef PTRCALL_ENABLED
+	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
+	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
+#endif
 
 	void zero();
 	Variant duplicate(bool deep = false) const;

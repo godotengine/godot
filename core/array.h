@@ -61,6 +61,7 @@ public:
 	void clear();
 
 	bool operator==(const Array &p_array) const;
+	bool operator!=(const Array &p_array) const;
 
 	uint32_t hash() const;
 	void operator=(const Array &p_array);
@@ -97,6 +98,11 @@ public:
 	Array duplicate(bool p_deep = false) const;
 
 	Array slice(int p_begin, int p_end, int p_step = 1, bool p_deep = false) const;
+
+	bool operator<(const Array &p_array) const;
+	bool operator<=(const Array &p_array) const;
+	bool operator>(const Array &p_array) const;
+	bool operator>=(const Array &p_array) const;
 
 	Variant min() const;
 	Variant max() const;

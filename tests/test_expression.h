@@ -381,7 +381,7 @@ TEST_CASE("[Expression] Unusual expressions") {
 
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			expression.parse("$1.00 + €5") == OK,
+			expression.parse("$1.00 + ???5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			int(expression.execute()) == 0,
@@ -410,8 +410,8 @@ TEST_CASE("[Expression] Unusual expressions") {
 			"The expression should parse successfully.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			Math::is_zero_approx(float(expression.execute())),
-			"`-25.4 / 0` should return 0.");
+			Math::is_inf(float(expression.execute())),
+			"`-25.4 / 0` should return inf.");
 	ERR_PRINT_ON;
 
 	CHECK_MESSAGE(

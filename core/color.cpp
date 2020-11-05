@@ -493,7 +493,7 @@ Color Color::operator*(const Color &p_color) const {
 			a * p_color.a);
 }
 
-Color Color::operator*(const real_t &rvalue) const {
+Color Color::operator*(real_t rvalue) const {
 	return Color(
 			r * rvalue,
 			g * rvalue,
@@ -508,7 +508,7 @@ void Color::operator*=(const Color &p_color) {
 	a = a * p_color.a;
 }
 
-void Color::operator*=(const real_t &rvalue) {
+void Color::operator*=(real_t rvalue) {
 	r = r * rvalue;
 	g = g * rvalue;
 	b = b * rvalue;
@@ -523,7 +523,7 @@ Color Color::operator/(const Color &p_color) const {
 			a / p_color.a);
 }
 
-Color Color::operator/(const real_t &rvalue) const {
+Color Color::operator/(real_t rvalue) const {
 	return Color(
 			r / rvalue,
 			g / rvalue,
@@ -538,7 +538,7 @@ void Color::operator/=(const Color &p_color) {
 	a = a / p_color.a;
 }
 
-void Color::operator/=(const real_t &rvalue) {
+void Color::operator/=(real_t rvalue) {
 	if (rvalue == 0) {
 		r = 1.0;
 		g = 1.0;
