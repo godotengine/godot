@@ -52,6 +52,9 @@ public:
 	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
 		return _id > p_rid._id;
 	}
+	_FORCE_INLINE_ bool operator>=(const RID &p_rid) const {
+		return _id >= p_rid._id;
+	}
 	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
 		return _id != p_rid._id;
 	}

@@ -2397,7 +2397,7 @@ void ScriptEditor::_editor_settings_changed() {
 
 	if (current_theme == "") {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
-	} else if (current_theme != EditorSettings::get_singleton()->get("text_editor/theme/color_theme")) {
+	} else if (current_theme != String(EditorSettings::get_singleton()->get("text_editor/theme/color_theme"))) {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
 		EditorSettings::get_singleton()->load_text_editor_theme();
 	}
