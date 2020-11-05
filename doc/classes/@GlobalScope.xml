@@ -804,10 +804,7 @@
 		<method name="randomize">
 			<description>
 				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
-				[codeblock]
-				func _ready():
-				    randomize()
-				[/codeblock]
+				[b]Note:[/b] This method is called automatically when the project is run. If you need to fix the seed to have reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
 		<method name="range_lerp">

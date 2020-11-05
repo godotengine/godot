@@ -1349,6 +1349,8 @@ SceneTree::SceneTree() {
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
+	Math::randomize();
+
 	// Create with mainloop.
 
 	root = memnew(Window);
