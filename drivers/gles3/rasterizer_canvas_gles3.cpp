@@ -1924,7 +1924,7 @@ void RasterizerCanvasGLES3::canvas_render_items_implementation(Item *p_item_list
 	ris.prev_distance_field = false;
 
 	glBindBuffer(GL_UNIFORM_BUFFER, state.canvas_item_ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(CanvasItemUBO), &state.canvas_item_ubo_data, _buffer_upload_usage_flag);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	state.current_tex = RID();
@@ -1969,26 +1969,34 @@ void RasterizerCanvasGLES3::_batch_upload_buffers() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, bdata.gl_vertex_buffer);
 
+	// usage flag is a project setting
+	GLenum buffer_usage_flag = GL_DYNAMIC_DRAW;
+	if (bdata.buffer_mode_batch_upload_flag_stream) {
+		buffer_usage_flag = GL_STREAM_DRAW;
+	}
+
 	// orphan the old (for now)
-	//glBufferData(GL_ARRAY_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
+	if (bdata.buffer_mode_batch_upload_send_null) {
+		glBufferData(GL_ARRAY_BUFFER, 0, 0, buffer_usage_flag); // GL_DYNAMIC_DRAW);
+	}
 
 	switch (bdata.fvf) {
 		case RasterizerStorageCommon::FVF_UNBATCHED: // should not happen
 			break;
 		case RasterizerStorageCommon::FVF_REGULAR: // no change
-			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertex) * bdata.vertices.size(), bdata.vertices.get_data(), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertex) * bdata.vertices.size(), bdata.vertices.get_data(), buffer_usage_flag);
 			break;
 		case RasterizerStorageCommon::FVF_COLOR:
-			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexColored) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexColored) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), buffer_usage_flag);
 			break;
 		case RasterizerStorageCommon::FVF_LIGHT_ANGLE:
-			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexLightAngled) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexLightAngled) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), buffer_usage_flag);
 			break;
 		case RasterizerStorageCommon::FVF_MODULATED:
-			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexModulated) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexModulated) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), buffer_usage_flag);
 			break;
 		case RasterizerStorageCommon::FVF_LARGE:
-			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexLarge) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), GL_DYNAMIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(BatchVertexLarge) * bdata.unit_vertices.size(), bdata.unit_vertices.get_unit(0), buffer_usage_flag);
 			break;
 	}
 

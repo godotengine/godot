@@ -349,7 +349,7 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
@@ -417,7 +417,7 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 
 	//bind the indices buffer.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
-	storage->buffer_orphan_and_upload(data.polygon_index_buffer_size, 0, sizeof(int) * p_index_count, p_indices, GL_ELEMENT_ARRAY_BUFFER);
+	storage->buffer_orphan_and_upload(data.polygon_index_buffer_size, 0, sizeof(int) * p_index_count, p_indices, GL_ELEMENT_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	//draw the triangles.
 	glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
@@ -441,7 +441,7 @@ void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_c
 
 	//vertex
 	uint32_t buffer_ofs = 0;
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
@@ -489,7 +489,7 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 
 	//vertex
 	uint32_t buffer_ofs = 0;
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
@@ -535,7 +535,7 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 
 	//bind the indices buffer.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
-	storage->buffer_orphan_and_upload(data.polygon_index_buffer_size, 0, sizeof(int) * p_index_count, p_indices, GL_ELEMENT_ARRAY_BUFFER);
+	storage->buffer_orphan_and_upload(data.polygon_index_buffer_size, 0, sizeof(int) * p_index_count, p_indices, GL_ELEMENT_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	//draw the triangles.
 	glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
@@ -610,7 +610,7 @@ void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 	//TODO the below call may need to be replaced with: p_points * stride * 4 * sizeof(float), &b[0]);
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * 4, &b[0]);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * 4, &b[0], GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glBindVertexArray(data.polygon_buffer_quad_arrays[version]);
 	glDrawArrays(prim[p_points], 0, p_points);
@@ -1139,6 +1139,13 @@ void RasterizerCanvasBaseGLES3::draw_window_margins(int *black_margin, RID *blac
 }
 
 void RasterizerCanvasBaseGLES3::initialize() {
+
+	bool flag_stream = GLOBAL_GET("rendering/options/api_usage_legacy/flag_stream");
+	if (flag_stream) {
+		_buffer_upload_usage_flag = GL_STREAM_DRAW;
+	} else {
+		_buffer_upload_usage_flag = GL_DYNAMIC_DRAW;
+	}
 
 	{
 		//quad buffers

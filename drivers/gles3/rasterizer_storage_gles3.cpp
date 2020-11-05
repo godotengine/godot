@@ -5089,7 +5089,11 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 
 			glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
 			uint32_t buffer_size = multimesh->data.size() * sizeof(float);
-			glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
+			if (config.should_orphan) {
+				glBufferData(GL_ARRAY_BUFFER, buffer_size, multimesh->data.ptr(), GL_DYNAMIC_DRAW);
+			} else {
+				glBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, multimesh->data.ptr());
+			}
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
@@ -8553,6 +8557,8 @@ void RasterizerStorageGLES3::initialize() {
 			}
 		}
 	}
+
+	config.should_orphan = GLOBAL_GET("rendering/options/api_usage_legacy/orphan_buffers");
 }
 
 void RasterizerStorageGLES3::finalize() {
@@ -8572,4 +8578,5 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
+	config.should_orphan = true;
 }

@@ -2450,6 +2450,11 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/2d/ninepatch_mode", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/2d/ninepatch_mode", PropertyInfo(Variant::INT, "rendering/quality/2d/ninepatch_mode", PROPERTY_HINT_ENUM, "Default,Scaling"));
 
+	GLOBAL_DEF_RST("rendering/options/api_usage_batching/send_null", true);
+	GLOBAL_DEF_RST("rendering/options/api_usage_batching/flag_stream", false);
+	GLOBAL_DEF_RST("rendering/options/api_usage_legacy/flag_stream", false);
+	GLOBAL_DEF_RST("rendering/options/api_usage_legacy/orphan_buffers", true);
+
 	GLOBAL_DEF("rendering/batching/options/use_batching", true);
 	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", true);
 	GLOBAL_DEF("rendering/batching/options/single_rect_fallback", false);

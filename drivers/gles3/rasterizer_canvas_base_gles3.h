@@ -102,6 +102,9 @@ public:
 
 	RasterizerStorageGLES3 *storage;
 
+	// allow user to choose api usage
+	GLenum _buffer_upload_usage_flag;
+
 	struct LightInternal : public RID_Data {
 
 		struct UBOData {
