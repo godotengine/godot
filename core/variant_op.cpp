@@ -34,4544 +34,2051 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 
-#define CASE_TYPE_ALL(PREFIX, OP) \
-	CASE_TYPE(PREFIX, OP, INT)    \
-	CASE_TYPE_ALL_BUT_INT(PREFIX, OP)
-
-#define CASE_TYPE_ALL_BUT_INT(PREFIX, OP)       \
-	CASE_TYPE(PREFIX, OP, NIL)                  \
-	CASE_TYPE(PREFIX, OP, BOOL)                 \
-	CASE_TYPE(PREFIX, OP, FLOAT)                \
-	CASE_TYPE(PREFIX, OP, STRING)               \
-	CASE_TYPE(PREFIX, OP, VECTOR2)              \
-	CASE_TYPE(PREFIX, OP, VECTOR2I)             \
-	CASE_TYPE(PREFIX, OP, RECT2)                \
-	CASE_TYPE(PREFIX, OP, RECT2I)               \
-	CASE_TYPE(PREFIX, OP, VECTOR3)              \
-	CASE_TYPE(PREFIX, OP, VECTOR3I)             \
-	CASE_TYPE(PREFIX, OP, TRANSFORM2D)          \
-	CASE_TYPE(PREFIX, OP, PLANE)                \
-	CASE_TYPE(PREFIX, OP, QUAT)                 \
-	CASE_TYPE(PREFIX, OP, AABB)                 \
-	CASE_TYPE(PREFIX, OP, BASIS)                \
-	CASE_TYPE(PREFIX, OP, TRANSFORM)            \
-	CASE_TYPE(PREFIX, OP, COLOR)                \
-	CASE_TYPE(PREFIX, OP, STRING_NAME)          \
-	CASE_TYPE(PREFIX, OP, NODE_PATH)            \
-	CASE_TYPE(PREFIX, OP, _RID)                 \
-	CASE_TYPE(PREFIX, OP, OBJECT)               \
-	CASE_TYPE(PREFIX, OP, CALLABLE)             \
-	CASE_TYPE(PREFIX, OP, SIGNAL)               \
-	CASE_TYPE(PREFIX, OP, DICTIONARY)           \
-	CASE_TYPE(PREFIX, OP, ARRAY)                \
-	CASE_TYPE(PREFIX, OP, PACKED_BYTE_ARRAY)    \
-	CASE_TYPE(PREFIX, OP, PACKED_INT32_ARRAY)   \
-	CASE_TYPE(PREFIX, OP, PACKED_INT64_ARRAY)   \
-	CASE_TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY) \
-	CASE_TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY) \
-	CASE_TYPE(PREFIX, OP, PACKED_STRING_ARRAY)  \
-	CASE_TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY) \
-	CASE_TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY) \
-	CASE_TYPE(PREFIX, OP, PACKED_COLOR_ARRAY)
-
-#ifdef __GNUC__
-#define TYPE(PREFIX, OP, TYPE) &&PREFIX##_##OP##_##TYPE
-
-/* clang-format off */
-#define TYPES(PREFIX, OP) {                     \
-		TYPE(PREFIX, OP, NIL),                  \
-		TYPE(PREFIX, OP, BOOL),                 \
-		TYPE(PREFIX, OP, INT),                  \
-		TYPE(PREFIX, OP, FLOAT),                \
-		TYPE(PREFIX, OP, STRING),               \
-		TYPE(PREFIX, OP, VECTOR2),              \
-		TYPE(PREFIX, OP, VECTOR2I),             \
-		TYPE(PREFIX, OP, RECT2),                \
-		TYPE(PREFIX, OP, RECT2I),               \
-		TYPE(PREFIX, OP, VECTOR3),              \
-		TYPE(PREFIX, OP, VECTOR3I),             \
-		TYPE(PREFIX, OP, TRANSFORM2D),          \
-		TYPE(PREFIX, OP, PLANE),                \
-		TYPE(PREFIX, OP, QUAT),                 \
-		TYPE(PREFIX, OP, AABB),                 \
-		TYPE(PREFIX, OP, BASIS),                \
-		TYPE(PREFIX, OP, TRANSFORM),            \
-		TYPE(PREFIX, OP, COLOR),                \
-		TYPE(PREFIX, OP, STRING_NAME),          \
-		TYPE(PREFIX, OP, NODE_PATH),            \
-		TYPE(PREFIX, OP, _RID),                 \
-		TYPE(PREFIX, OP, OBJECT),               \
-		TYPE(PREFIX, OP, CALLABLE),             \
-		TYPE(PREFIX, OP, SIGNAL),               \
-		TYPE(PREFIX, OP, DICTIONARY),           \
-		TYPE(PREFIX, OP, ARRAY),                \
-		TYPE(PREFIX, OP, PACKED_BYTE_ARRAY),    \
-		TYPE(PREFIX, OP, PACKED_INT32_ARRAY),   \
-		TYPE(PREFIX, OP, PACKED_INT64_ARRAY),   \
-		TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY), \
-		TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY), \
-		TYPE(PREFIX, OP, PACKED_STRING_ARRAY),  \
-		TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY), \
-		TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY), \
-		TYPE(PREFIX, OP, PACKED_COLOR_ARRAY),   \
-}
-
-/* clang-format on */
-
-#define CASES(PREFIX) static const void *switch_table_##PREFIX[Variant::OP_MAX][Variant::VARIANT_MAX] = { \
-	TYPES(PREFIX, OP_EQUAL),                                                                              \
-	TYPES(PREFIX, OP_NOT_EQUAL),                                                                          \
-	TYPES(PREFIX, OP_LESS),                                                                               \
-	TYPES(PREFIX, OP_LESS_EQUAL),                                                                         \
-	TYPES(PREFIX, OP_GREATER),                                                                            \
-	TYPES(PREFIX, OP_GREATER_EQUAL),                                                                      \
-	TYPES(PREFIX, OP_ADD),                                                                                \
-	TYPES(PREFIX, OP_SUBTRACT),                                                                           \
-	TYPES(PREFIX, OP_MULTIPLY),                                                                           \
-	TYPES(PREFIX, OP_DIVIDE),                                                                             \
-	TYPES(PREFIX, OP_NEGATE),                                                                             \
-	TYPES(PREFIX, OP_POSITIVE),                                                                           \
-	TYPES(PREFIX, OP_MODULE),                                                                             \
-	TYPES(PREFIX, OP_STRING_CONCAT),                                                                      \
-	TYPES(PREFIX, OP_SHIFT_LEFT),                                                                         \
-	TYPES(PREFIX, OP_SHIFT_RIGHT),                                                                        \
-	TYPES(PREFIX, OP_BIT_AND),                                                                            \
-	TYPES(PREFIX, OP_BIT_OR),                                                                             \
-	TYPES(PREFIX, OP_BIT_XOR),                                                                            \
-	TYPES(PREFIX, OP_BIT_NEGATE),                                                                         \
-	TYPES(PREFIX, OP_AND),                                                                                \
-	TYPES(PREFIX, OP_OR),                                                                                 \
-	TYPES(PREFIX, OP_XOR),                                                                                \
-	TYPES(PREFIX, OP_NOT),                                                                                \
-	TYPES(PREFIX, OP_IN),                                                                                 \
-}
-
-#define SWITCH(PREFIX, op, val) goto *switch_table_##PREFIX[op][val];
-#define SWITCH_OP(PREFIX, OP, val)
-#define CASE_TYPE(PREFIX, OP, TYPE) PREFIX##_##OP##_##TYPE:
-
-#else
-#define CASES(PREFIX)
-#define SWITCH(PREFIX, op, val) switch (op)
-#define SWITCH_OP(PREFIX, OP, val) \
-	case OP:                       \
-		switch (val)
-#define CASE_TYPE(PREFIX, OP, TYPE) case TYPE:
-#endif
-
-Variant::operator bool() const {
-	return booleanize();
-}
-
-// We consider all uninitialized or empty types to be false based on the type's
-// zeroiness.
-bool Variant::booleanize() const {
-	return !is_zero();
-}
-
-#define _RETURN(m_what) \
-	{                   \
-		r_ret = m_what; \
-		return;         \
+template <class R, class A, class B>
+class OperatorEvaluatorAdd {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a + b;
+		r_valid = true;
 	}
-
-#define _RETURN_FAIL     \
-	{                    \
-		r_valid = false; \
-		return;          \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) + *VariantGetInternalPtr<B>::get_ptr(right);
 	}
-
-#define DEFAULT_OP_NUM(m_prefix, m_op_name, m_name, m_op, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                      \
-		if (p_b.type == INT)                                      \
-			_RETURN(p_a._data.m_type m_op p_b._data._int);        \
-		if (p_b.type == FLOAT)                                    \
-			_RETURN(p_a._data.m_type m_op p_b._data._float);      \
-                                                                  \
-		_RETURN_FAIL                                              \
-	}
-
-#define DEFAULT_OP_NUM_NULL(m_prefix, m_op_name, m_name, m_op, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                           \
-		if (p_b.type == INT)                                           \
-			_RETURN(p_a._data.m_type m_op p_b._data._int);             \
-		if (p_b.type == FLOAT)                                         \
-			_RETURN(p_a._data.m_type m_op p_b._data._float);           \
-		if (p_b.type == NIL)                                           \
-			_RETURN(!(p_b.type m_op NIL));                             \
-                                                                       \
-		_RETURN_FAIL                                                   \
-	}
-
-#ifdef DEBUG_ENABLED
-#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
-		if (p_b.type == INT) {                                  \
-			if (p_b._data._int == 0) {                          \
-				r_valid = false;                                \
-				_RETURN("Division By Zero");                    \
-			}                                                   \
-			_RETURN(p_a._data.m_type / p_b._data._int);         \
-		}                                                       \
-		if (p_b.type == FLOAT) {                                \
-			if (p_b._data._float == 0) {                        \
-				r_valid = false;                                \
-				_RETURN("Division By Zero");                    \
-			}                                                   \
-			_RETURN(p_a._data.m_type / p_b._data._float);       \
-		}                                                       \
-                                                                \
-		_RETURN_FAIL                                            \
-	}
-#else
-#define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
-		if (p_b.type == INT)                                    \
-			_RETURN(p_a._data.m_type / p_b._data._int);         \
-		if (p_b.type == FLOAT)                                  \
-			_RETURN(p_a._data.m_type / p_b._data._float);       \
-                                                                \
-		_RETURN_FAIL                                            \
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) + PtrToArg<B>::convert(right), r_ret);
 	}
 #endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
 
-#define DEFAULT_OP_NUM_NEG(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
-		_RETURN(-p_a._data.m_type);                             \
+template <class R, class A, class B>
+class OperatorEvaluatorSub {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a - b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) - *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) - PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorMul {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a * b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) * *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) * PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorXForm {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a.xform(b);
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<A>::get_ptr(left)->xform(*VariantGetInternalPtr<B>::get_ptr(right));
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left).xform(PtrToArg<B>::convert(right)), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorXFormInv {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = b.xform_inv(a);
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<B>::get_ptr(right)->xform_inv(*VariantGetInternalPtr<A>::get_ptr(left));
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<B>::convert(right).xform_inv(PtrToArg<A>::convert(left)), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorDiv {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorDivNZ {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		if (b == 0) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = a / b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorMod {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorModNZ {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		if (b == 0) {
+			r_valid = false;
+			*r_ret = "Module by zero error";
+			return;
+		}
+		*r_ret = a % b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) % PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A>
+class OperatorEvaluatorNeg {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		*r_ret = -a;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = -*VariantGetInternalPtr<A>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(-PtrToArg<A>::convert(left), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A>
+class OperatorEvaluatorPos {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		*r_ret = a;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorShiftLeft {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a << b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) << *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) << PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorShiftRight {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a >> b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >> *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) >> PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorBitOr {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a | b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) | *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) | PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorBitAnd {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a & b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) & *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) & PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A, class B>
+class OperatorEvaluatorBitXor {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a ^ b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) ^ *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(PtrToArg<A>::convert(left) ^ PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class R, class A>
+class OperatorEvaluatorBitNeg {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		*r_ret = ~a;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<R>::get_ptr(r_ret) = ~*VariantGetInternalPtr<A>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<R>::encode(~PtrToArg<A>::convert(left), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorEqual {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a == b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) == *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) == PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+//equalobject
+class OperatorEvaluatorEqualObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Object *a = p_left.get_validated_object();
+		const Object *b = p_right.get_validated_object();
+		*r_ret = a == b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Object *a = left->get_validated_object();
+		const Object *b = right->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == b;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == PtrToArg<Object *>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorEqualObjectNil {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Object *a = p_left.get_validated_object();
+		*r_ret = a == nullptr;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Object *a = left->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == nullptr;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == nullptr, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorEqualNilObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Object *b = p_right.get_validated_object();
+		*r_ret = nullptr == b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Object *b = right->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr == b;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(nullptr == PtrToArg<Object *>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorNotEqual {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a != b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) != *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) != PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotEqualObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		Object *a = p_left.get_validated_object();
+		Object *b = p_right.get_validated_object();
+		*r_ret = a != b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		Object *a = left->get_validated_object();
+		Object *b = right->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != b;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) != PtrToArg<Object *>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotEqualObjectNil {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		Object *a = p_left.get_validated_object();
+		*r_ret = a != nullptr;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		Object *a = left->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != nullptr;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) != nullptr, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotEqualNilObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		Object *b = p_right.get_validated_object();
+		*r_ret = nullptr != b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		Object *b = right->get_validated_object();
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr != b;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(nullptr != PtrToArg<Object *>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorLess {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a < b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) < *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) < PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorLessEqual {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a <= b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) <= *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) <= PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorGreater {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a > b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) > *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) > PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorGreaterEqual {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a >= b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >= *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) >= PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorAnd {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a && b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) && *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) && PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorOr {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = a || b;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) || *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) || PtrToArg<B>::convert(right), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+#define XOR_OP(m_a, m_b) (((m_a) || (m_b)) && !((m_a) && (m_b)))
+template <class A, class B>
+class OperatorEvaluatorXor {
+public:
+	_FORCE_INLINE_ static bool xor_op(const A &a, const B &b) {
+		return ((a) || (b)) && !((a) && (b));
 	}
 
-#define DEFAULT_OP_NUM_POS(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
-		_RETURN(p_a._data.m_type);                              \
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = xor_op(a, b);
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = xor_op(*VariantGetInternalPtr<A>::get_ptr(left), *VariantGetInternalPtr<B>::get_ptr(right));
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(xor_op(PtrToArg<A>::convert(left), PtrToArg<B>::convert(right)), r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A>
+class OperatorEvaluatorNot {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		*r_ret = !a;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(!PtrToArg<A>::convert(left));
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+//// CUSTOM ////
+
+class OperatorEvaluatorAddArray {
+public:
+	_FORCE_INLINE_ static void _add_arrays(Array &sum, const Array &array_a, const Array &array_b) {
+		int asize = array_a.size();
+		int bsize = array_b.size();
+		sum.resize(asize + bsize);
+		for (int i = 0; i < asize; i++) {
+			sum[i] = array_a[i];
+		}
+		for (int i = 0; i < bsize; i++) {
+			sum[i + asize] = array_b[i];
+		}
+	}
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Array &array_a = *VariantGetInternalPtr<Array>::get_ptr(&p_left);
+		const Array &array_b = *VariantGetInternalPtr<Array>::get_ptr(&p_right);
+		Array sum;
+		_add_arrays(sum, array_a, array_b);
+		*r_ret = sum;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		_add_arrays(*VariantGetInternalPtr<Array>::get_ptr(r_ret), *VariantGetInternalPtr<Array>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right));
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		Array ret;
+		_add_arrays(ret, PtrToArg<Array>::convert(left), PtrToArg<Array>::convert(right));
+		PtrToArg<Array>::encode(ret, r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::ARRAY; }
+};
+
+template <class T>
+class OperatorEvaluatorAppendArray {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Vector<T> &array_a = *VariantGetInternalPtr<Vector<T>>::get_ptr(&p_left);
+		const Vector<T> &array_b = *VariantGetInternalPtr<Vector<T>>::get_ptr(&p_right);
+		Vector<T> sum = array_a;
+		sum.append_array(array_b);
+		*r_ret = sum;
+		r_valid = true;
+	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector<T>>::get_ptr(left);
+		VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret)->append_array(*VariantGetInternalPtr<Vector<T>>::get_ptr(right));
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		Vector<T> sum = PtrToArg<Vector<T>>::convert(left);
+		sum.append_array(PtrToArg<Vector<T>>::convert(right));
+		PtrToArg<Vector<T>>::encode(sum, r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return GetTypeInfo<Vector<T>>::VARIANT_TYPE; }
+};
+
+class OperatorEvaluatorStringModNil {
+public:
+	_FORCE_INLINE_ static String do_mod(const String &s, bool *r_valid) {
+		Array values;
+		values.push_back(Variant());
+
+		String a = s.sprintf(values, r_valid);
+		if (r_valid) {
+			*r_valid = !*r_valid;
+		}
+		return a;
+	}
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		*r_ret = do_mod(a, &r_valid);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                           \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                    \
-		if (p_b.type == INT)                                                                    \
-			_RETURN(p_a._data.m_type m_op p_b._data._int);                                      \
-		if (p_b.type == FLOAT)                                                                  \
-			_RETURN(p_a._data.m_type m_op p_b._data._float);                                    \
-		if (p_b.type == VECTOR2)                                                                \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2 *>(p_b._data._mem));  \
-		if (p_b.type == VECTOR3)                                                                \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem));  \
-		if (p_b.type == VECTOR2I)                                                               \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector2i *>(p_b._data._mem)); \
-		if (p_b.type == VECTOR3I)                                                               \
-			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3i *>(p_b._data._mem)); \
-                                                                                                \
-		_RETURN_FAIL                                                                            \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), nullptr);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), nullptr), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::STRING; }
+};
+
+class OperatorEvaluatorStringModArray {
+public:
+	_FORCE_INLINE_ static String do_mod(const String &s, const Array &p_values, bool *r_valid) {
+		String a = s.sprintf(p_values, r_valid);
+		if (r_valid) {
+			*r_valid = !*r_valid;
+		}
+		return a;
+	}
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		*r_ret = do_mod(a, *VariantGetInternalPtr<Array>::get_ptr(&p_right), &r_valid);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                              \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
-		if (p_b.type == STRING)                                                                                                    \
-			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const String *>(p_a._data._mem));     \
-		if (p_b.type == STRING_NAME)                                                                                               \
-			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const StringName *>(p_a._data._mem)); \
-		if (p_b.type == NODE_PATH)                                                                                                 \
-			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const NodePath *>(p_a._data._mem));   \
-                                                                                                                                   \
-		_RETURN_FAIL                                                                                                               \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), nullptr);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Array>::convert(right), nullptr), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::STRING; }
+};
+
+class OperatorEvaluatorStringModObject {
+public:
+	_FORCE_INLINE_ static String do_mod(const String &s, const Object *p_object, bool *r_valid) {
+		Array values;
+		values.push_back(p_object);
+		String a = s.sprintf(values, r_valid);
+		if (r_valid) {
+			*r_valid = !*r_valid;
+		}
+
+		return a;
+	}
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		*r_ret = do_mod(a, p_right.get_validated_object(), &r_valid);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_STR(m_prefix, m_op_name, m_name, m_op, m_type)                                                                  \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
-		if (p_b.type == STRING)                                                                                                    \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));     \
-		if (p_b.type == STRING_NAME)                                                                                               \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const StringName *>(p_b._data._mem)); \
-		if (p_b.type == NODE_PATH)                                                                                                 \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem));   \
-                                                                                                                                   \
-		_RETURN_FAIL                                                                                                               \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), nullptr);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<Object *>::convert(right), nullptr), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::STRING; }
+};
+
+template <class T>
+class OperatorEvaluatorStringModT {
+public:
+	_FORCE_INLINE_ static String do_mod(const String &s, const T &p_value, bool *r_valid) {
+		Array values;
+		values.push_back(p_value);
+		String a = s.sprintf(values, r_valid);
+		if (r_valid) {
+			*r_valid = !*r_valid;
+		}
+		return a;
+	}
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		*r_ret = do_mod(a, *VariantGetInternalPtr<T>::get_ptr(&p_right), &r_valid);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_STR_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                             \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
-		if (p_b.type == STRING)                                                                                                    \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));     \
-		if (p_b.type == STRING_NAME)                                                                                               \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const StringName *>(p_b._data._mem)); \
-		if (p_b.type == NODE_PATH)                                                                                                 \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem));   \
-		if (p_b.type == NIL)                                                                                                       \
-			_RETURN(!(p_b.type m_op NIL));                                                                                         \
-                                                                                                                                   \
-		_RETURN_FAIL                                                                                                               \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), nullptr);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<String>::encode(do_mod(PtrToArg<String>::convert(left), PtrToArg<T>::convert(right), nullptr), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::STRING; }
+};
+
+template <Variant::Operator op, Variant::Type type_left, Variant::Type type_right>
+class OperatorEvaluatorAlwaysTrue {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = true;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_STR_NULL_NP(m_prefix, m_op_name, m_name, m_op, m_type)                                                        \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                     \
-		if (p_b.type == STRING)                                                                                                  \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));   \
-		if (p_b.type == NODE_PATH)                                                                                               \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem)); \
-		if (p_b.type == NIL)                                                                                                     \
-			_RETURN(!(p_b.type m_op NIL));                                                                                       \
-                                                                                                                                 \
-		_RETURN_FAIL                                                                                                             \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = true;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(true, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <Variant::Operator op, Variant::Type type_left, Variant::Type type_right>
+class OperatorEvaluatorAlwaysFalse {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = false;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_STR_NULL_SN(m_prefix, m_op_name, m_name, m_op, m_type)                                                          \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
-		if (p_b.type == STRING)                                                                                                    \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const String *>(p_b._data._mem));     \
-		if (p_b.type == STRING_NAME)                                                                                               \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const StringName *>(p_b._data._mem)); \
-		if (p_b.type == NIL)                                                                                                       \
-			_RETURN(!(p_b.type m_op NIL));                                                                                         \
-                                                                                                                                   \
-		_RETURN_FAIL                                                                                                               \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = false;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(false, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+///// OR ///////
+
+_FORCE_INLINE_ static bool _operate_or(bool p_left, bool p_right) {
+	return p_left || p_right;
+}
+_FORCE_INLINE_ static bool _operate_and(bool p_left, bool p_right) {
+	return p_left && p_right;
+}
+_FORCE_INLINE_ static bool _operate_xor(bool p_left, bool p_right) {
+	return (p_left || p_right) && !(p_left && p_right);
+}
+
+_FORCE_INLINE_ static bool _operate_get_nil(const Variant *p_ptr) {
+	return p_ptr->get_validated_object() != nullptr;
+}
+
+_FORCE_INLINE_ static bool _operate_get_bool(const Variant *p_ptr) {
+	return *VariantGetInternalPtr<bool>::get_ptr(p_ptr);
+}
+
+_FORCE_INLINE_ static bool _operate_get_int(const Variant *p_ptr) {
+	return *VariantGetInternalPtr<int64_t>::get_ptr(p_ptr) != 0;
+}
+
+_FORCE_INLINE_ static bool _operate_get_float(const Variant *p_ptr) {
+	return *VariantGetInternalPtr<double>::get_ptr(p_ptr) != 0.0;
+}
+
+_FORCE_INLINE_ static bool _operate_get_object(const Variant *p_ptr) {
+	return p_ptr->get_validated_object() != nullptr;
+}
+
+#ifndef PTRCALL_ENABLED
+
+#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op)                                                                    \
+	class m_class_name {                                                                                                     \
+	public:                                                                                                                  \
+		static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {                 \
+			*r_ret = m_op(_operate_get_##m_left(&p_left), _operate_get_##m_right(&p_right));                                 \
+			r_valid = true;                                                                                                  \
+		}                                                                                                                    \
+                                                                                                                             \
+		static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                          \
+			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
+		}                                                                                                                    \
+                                                                                                                             \
+		static Variant::Type                                                                                                 \
+		get_return_type() {                                                                                                  \
+			return Variant::BOOL;                                                                                            \
+		}                                                                                                                    \
+	};
+
+#else
+
+_FORCE_INLINE_ static bool _operate_get_ptr_nil(const void *p_ptr) {
+	return false;
+}
+
+_FORCE_INLINE_ static bool _operate_get_ptr_bool(const void *p_ptr) {
+	return PtrToArg<bool>::convert(p_ptr);
+}
+
+_FORCE_INLINE_ static bool _operate_get_ptr_int(const void *p_ptr) {
+	return PtrToArg<int64_t>::convert(p_ptr) != 0;
+}
+
+_FORCE_INLINE_ static bool _operate_get_ptr_float(const void *p_ptr) {
+	return PtrToArg<double>::convert(p_ptr) != 0.0;
+}
+
+_FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
+	return PtrToArg<Object *>::convert(p_ptr) != nullptr;
+}
+
+#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op)                                                                    \
+	class m_class_name {                                                                                                     \
+	public:                                                                                                                  \
+		static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {                 \
+			*r_ret = m_op(_operate_get_##m_left(&p_left), _operate_get_##m_right(&p_right));                                 \
+			r_valid = true;                                                                                                  \
+		}                                                                                                                    \
+                                                                                                                             \
+		static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                          \
+			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
+		}                                                                                                                    \
+                                                                                                                             \
+		static void ptr_evaluate(const void *left, const void *right, void *r_ret) {                                         \
+			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret);         \
+		}                                                                                                                    \
+                                                                                                                             \
+		static Variant::Type get_return_type() {                                                                             \
+			return Variant::BOOL;                                                                                            \
+		}                                                                                                                    \
+	};
+
+#endif
+
+// OR
+
+//nil
+OP_EVALUATOR(OperatorEvaluatorNilXBoolOr, nil, bool, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorBoolXNilOr, bool, nil, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorNilXIntOr, nil, int, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorIntXNilOr, int, nil, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorNilXFloatOr, nil, float, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorFloatXNilOr, float, nil, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorObjectXNilOr, object, nil, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorNilXObjectOr, nil, object, _operate_or)
+
+//bool
+OP_EVALUATOR(OperatorEvaluatorBoolXBoolOr, bool, bool, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXIntOr, bool, int, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorIntXBoolOr, int, bool, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXFloatOr, bool, float, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorFloatXBoolOr, float, bool, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXObjectOr, bool, object, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorObjectXBoolOr, object, bool, _operate_or)
+
+//int
+
+OP_EVALUATOR(OperatorEvaluatorIntXIntOr, int, int, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorIntXFloatOr, int, float, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorFloatXIntOr, float, int, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorIntXObjectOr, int, object, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorObjectXIntOr, object, int, _operate_or)
+
+//float
+
+OP_EVALUATOR(OperatorEvaluatorFloatXFloatOr, float, float, _operate_or)
+
+OP_EVALUATOR(OperatorEvaluatorFloatXObjectOr, float, object, _operate_or)
+OP_EVALUATOR(OperatorEvaluatorObjectXFloatOr, object, float, _operate_or)
+
+//object
+
+OP_EVALUATOR(OperatorEvaluatorObjectXObjectOr, object, object, _operate_or)
+
+// AND
+
+//nil
+OP_EVALUATOR(OperatorEvaluatorNilXBoolAnd, nil, bool, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorBoolXNilAnd, bool, nil, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorNilXIntAnd, nil, int, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorIntXNilAnd, int, nil, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorNilXFloatAnd, nil, float, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorFloatXNilAnd, float, nil, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorObjectXNilAnd, object, nil, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorNilXObjectAnd, nil, object, _operate_and)
+
+//bool
+OP_EVALUATOR(OperatorEvaluatorBoolXBoolAnd, bool, bool, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXIntAnd, bool, int, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorIntXBoolAnd, int, bool, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXFloatAnd, bool, float, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorFloatXBoolAnd, float, bool, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXObjectAnd, bool, object, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorObjectXBoolAnd, object, bool, _operate_and)
+
+//int
+
+OP_EVALUATOR(OperatorEvaluatorIntXIntAnd, int, int, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorIntXFloatAnd, int, float, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorFloatXIntAnd, float, int, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorIntXObjectAnd, int, object, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorObjectXIntAnd, object, int, _operate_and)
+
+//float
+
+OP_EVALUATOR(OperatorEvaluatorFloatXFloatAnd, float, float, _operate_and)
+
+OP_EVALUATOR(OperatorEvaluatorFloatXObjectAnd, float, object, _operate_and)
+OP_EVALUATOR(OperatorEvaluatorObjectXFloatAnd, object, float, _operate_and)
+
+//object
+
+OP_EVALUATOR(OperatorEvaluatorObjectXObjectAnd, object, object, _operate_and)
+
+// XOR
+
+//nil
+OP_EVALUATOR(OperatorEvaluatorNilXBoolXor, nil, bool, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorBoolXNilXor, bool, nil, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorNilXIntXor, nil, int, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorIntXNilXor, int, nil, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorNilXFloatXor, nil, float, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorFloatXNilXor, float, nil, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorObjectXNilXor, object, nil, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorNilXObjectXor, nil, object, _operate_xor)
+
+//bool
+OP_EVALUATOR(OperatorEvaluatorBoolXBoolXor, bool, bool, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXIntXor, bool, int, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorIntXBoolXor, int, bool, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXFloatXor, bool, float, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorFloatXBoolXor, float, bool, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorBoolXObjectXor, bool, object, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorObjectXBoolXor, object, bool, _operate_xor)
+
+//int
+
+OP_EVALUATOR(OperatorEvaluatorIntXIntXor, int, int, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorIntXFloatXor, int, float, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorFloatXIntXor, float, int, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorIntXObjectXor, int, object, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorObjectXIntXor, object, int, _operate_xor)
+
+//float
+
+OP_EVALUATOR(OperatorEvaluatorFloatXFloatXor, float, float, _operate_xor)
+
+OP_EVALUATOR(OperatorEvaluatorFloatXObjectXor, float, object, _operate_xor)
+OP_EVALUATOR(OperatorEvaluatorObjectXFloatXor, object, float, _operate_xor)
+
+//object
+
+OP_EVALUATOR(OperatorEvaluatorObjectXObjectXor, object, object, _operate_xor)
+
+class OperatorEvaluatorNotBool {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = !*VariantGetInternalPtr<bool>::get_ptr(&p_left);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                     \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
-		if (p_b.type == m_name)                                                                                                \
-			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const m_type *>(p_a._data._mem)); \
-                                                                                                                               \
-		_RETURN_FAIL                                                                                                           \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<bool>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(!PtrToArg<bool>::convert(left), r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotInt {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = !*VariantGetInternalPtr<int64_t>::get_ptr(&p_left);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM(m_prefix, m_op_name, m_name, m_op, m_type)                                                         \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
-		if (p_b.type == m_name)                                                                                                \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-                                                                                                                               \
-		_RETURN_FAIL                                                                                                           \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<int64_t>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(!PtrToArg<int64_t>::convert(left), r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotFloat {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = !*VariantGetInternalPtr<double>::get_ptr(&p_left);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                    \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
-		if (p_b.type == m_name)                                                                                                \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-		if (p_b.type == NIL)                                                                                                   \
-			_RETURN(!(p_b.type m_op NIL));                                                                                     \
-                                                                                                                               \
-		_RETURN_FAIL                                                                                                           \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<double>::get_ptr(left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(!PtrToArg<double>::convert(left), r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorNotObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		*r_ret = p_left.get_validated_object() == nullptr;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM_NEG(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                         \
-		_RETURN(-*reinterpret_cast<const m_type *>(p_a._data._mem)); \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = left->get_validated_object() == nullptr;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Object *>::convert(left) == nullptr, r_ret);
+	}
+#endif
+
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+////
+
+class OperatorEvaluatorInStringFind {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const String &str_a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(&p_right);
+
+		*r_ret = str_b.find(str_a) != -1;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM_POS(m_prefix, m_op_name, m_name, m_type) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                         \
-		_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem));  \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const String &str_a = *VariantGetInternalPtr<String>::get_ptr(left);
+		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<String>::convert(right).find(PtrToArg<String>::convert(left)) != -1, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A, class B>
+class OperatorEvaluatorInArrayFind {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+
+		*r_ret = b.find(a) != -1;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_LOCALMEM_NUM(m_prefix, m_op_name, m_name, m_op, m_type)                                                     \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
-		if (p_b.type == m_name)                                                                                                \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
-		if (p_b.type == INT)                                                                                                   \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._int);                                    \
-		if (p_b.type == FLOAT)                                                                                                 \
-			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op p_b._data._float);                                  \
-                                                                                                                               \
-		_RETURN_FAIL                                                                                                           \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(a) != -1;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<B>::convert(right).find(PtrToArg<A>::convert(left)) != -1, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorInArrayFindNil {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(&p_right);
+		*r_ret = b.find(Variant()) != -1;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_PTR(m_op, m_name, m_sub)                \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {               \
-		if (p_b.type == m_name)                            \
-			_RETURN(p_a._data.m_sub m_op p_b._data.m_sub); \
-                                                           \
-		_RETURN_FAIL                                       \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(Variant()) != -1;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Array>::convert(right).find(Variant()) != -1, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorInArrayFindObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(&p_right);
+		*r_ret = b.find(p_left) != -1;
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_PTRREF(m_prefix, m_op_name, m_name, m_op, m_sub) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                        \
-		if (p_b.type == m_name)                                     \
-			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);        \
-                                                                    \
-		_RETURN_FAIL                                                \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(*left) != -1;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Array>::convert(right).find(PtrToArg<Object *>::convert(left)) != -1, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+template <class A>
+class OperatorEvaluatorInDictionaryHas {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(&p_right);
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+
+		*r_ret = b.has(a);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_PTRREF_NULL(m_prefix, m_op_name, m_name, m_op, m_sub) \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                             \
-		if (p_b.type == m_name)                                          \
-			_RETURN(*p_a._data.m_sub m_op *p_b._data.m_sub);             \
-		if (p_b.type == NIL)                                             \
-			_RETURN(!(p_b.type m_op NIL));                               \
-                                                                         \
-		_RETURN_FAIL                                                     \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(a);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(PtrToArg<A>::convert(left)), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorInDictionaryHasNil {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(&p_right);
+
+		*r_ret = b.has(Variant());
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_ARRAY_EQ(m_prefix, m_op_name, m_name, m_type)                                  \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                      \
-		if (p_b.type == NIL)                                                                      \
-			_RETURN(false)                                                                        \
-		DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, !=, !=, true, false, false) \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(Variant());
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(Variant()), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorInDictionaryHasObject {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(&p_right);
+
+		*r_ret = b.has(p_left);
+		r_valid = true;
 	}
 
-#define DEFAULT_OP_ARRAY_NEQ(m_prefix, m_op_name, m_name, m_type)                                \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                     \
-		if (p_b.type == NIL)                                                                     \
-			_RETURN(true)                                                                        \
-		DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, !=, !=, false, true, true) \
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(*left);
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<Dictionary>::convert(right).has(PtrToArg<Object *>::convert(left)), r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+class OperatorEvaluatorObjectHasPropertyString {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		Object *b = p_right.get_validated_object();
+		if (!b) {
+			*r_ret = "Invalid base object for 'in'";
+			r_valid = false;
+			return;
+		}
+
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(&p_left);
+
+		b->get(a, &r_valid);
+		*r_ret = r_valid;
 	}
 
-#define DEFAULT_OP_ARRAY_LT(m_prefix, m_op_name, m_name, m_type) \
-	DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, <, !=, false, a_len < array_b.size(), true)
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		Object *l = right->get_validated_object();
+		ERR_FAIL_COND(l == nullptr);
+		const String &a = *VariantGetInternalPtr<String>::get_ptr(left);
 
-#define DEFAULT_OP_ARRAY_GT(m_prefix, m_op_name, m_name, m_type) \
-	DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, >, !=, false, a_len < array_b.size(), true)
+		bool valid;
+		l->get(a, &valid);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
+	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		bool valid;
+		PtrToArg<Object *>::convert(right)->get(PtrToArg<String>::convert(left), &valid);
+		PtrToArg<bool>::encode(valid, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
 
-#define DEFAULT_OP_ARRAY_OP(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f)      \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                     \
-		DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f) \
+class OperatorEvaluatorObjectHasPropertyStringName {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		Object *b = p_right.get_validated_object();
+		if (!b) {
+			*r_ret = "Invalid base object for 'in'";
+			r_valid = false;
+			return;
+		}
+
+		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(&p_left);
+
+		b->get(a, &r_valid);
+		*r_ret = r_valid;
 	}
 
-#define DEFAULT_OP_ARRAY_OP_BODY(m_prefix, m_op_name, m_name, m_type, m_opa, m_opb, m_ret_def, m_ret_s, m_ret_f) \
-	if (p_a.type != p_b.type)                                                                                    \
-		_RETURN_FAIL                                                                                             \
-                                                                                                                 \
-	const Vector<m_type> &array_a = PackedArrayRef<m_type>::get_array(p_a._data.packed_array);                   \
-	const Vector<m_type> &array_b = PackedArrayRef<m_type>::get_array(p_b._data.packed_array);                   \
-                                                                                                                 \
-	int a_len = array_a.size();                                                                                  \
-	if (a_len m_opa array_b.size()) {                                                                            \
-		_RETURN(m_ret_s);                                                                                        \
-	} else {                                                                                                     \
-		const m_type *ra = array_a.ptr();                                                                        \
-		const m_type *rb = array_b.ptr();                                                                        \
-                                                                                                                 \
-		for (int i = 0; i < a_len; i++) {                                                                        \
-			if (ra[i] m_opb rb[i])                                                                               \
-				_RETURN(m_ret_f);                                                                                \
-		}                                                                                                        \
-                                                                                                                 \
-		_RETURN(m_ret_def);                                                                                      \
-	}
+	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		Object *l = right->get_validated_object();
+		ERR_FAIL_COND(l == nullptr);
+		const StringName &a = *VariantGetInternalPtr<StringName>::get_ptr(left);
 
-#define DEFAULT_OP_ARRAY_ADD(m_prefix, m_op_name, m_name, m_type)                                  \
-	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                       \
-		if (p_a.type != p_b.type)                                                                  \
-			_RETURN_FAIL;                                                                          \
-                                                                                                   \
-		const Vector<m_type> &array_a = PackedArrayRef<m_type>::get_array(p_a._data.packed_array); \
-		const Vector<m_type> &array_b = PackedArrayRef<m_type>::get_array(p_b._data.packed_array); \
-		Vector<m_type> sum = array_a;                                                              \
-		sum.append_array(array_b);                                                                 \
-		_RETURN(sum);                                                                              \
+		bool valid;
+		l->get(a, &valid);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
 	}
+#ifdef PTRCALL_ENABLED
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		bool valid;
+		PtrToArg<Object *>::convert(right)->get(PtrToArg<StringName>::convert(left), &valid);
+		PtrToArg<bool>::encode(valid, r_ret);
+	}
+#endif
+	static Variant::Type get_return_type() { return Variant::BOOL; }
+};
+
+typedef void (*VariantEvaluatorFunction)(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid);
+
+static Variant::Type operator_return_type_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
+static VariantEvaluatorFunction operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
+static Variant::ValidatedOperatorEvaluator validated_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
+#ifdef PTRCALL_ENABLED
+static Variant::PTROperatorEvaluator ptr_operator_evaluator_table[Variant::OP_MAX][Variant::VARIANT_MAX][Variant::VARIANT_MAX];
+#endif
+
+template <class T>
+void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p_type_b) {
+	operator_return_type_table[p_op][p_type_a][p_type_b] = T::get_return_type();
+	operator_evaluator_table[p_op][p_type_a][p_type_b] = T::evaluate;
+	validated_operator_evaluator_table[p_op][p_type_a][p_type_b] = T::validated_evaluate;
+#ifdef PTRCALL_ENABLED
+	ptr_operator_evaluator_table[p_op][p_type_a][p_type_b] = T::ptr_evaluate;
+#endif
+}
+
+void register_variant_operators() {
+	printf("size of OT %i\n", (int)sizeof(operator_evaluator_table));
+	zeromem(operator_return_type_table, sizeof(operator_return_type_table));
+	zeromem(operator_evaluator_table, sizeof(operator_evaluator_table));
+	zeromem(validated_operator_evaluator_table, sizeof(validated_operator_evaluator_table));
+#ifdef PTRCALL_ENABLED
+	zeromem(ptr_operator_evaluator_table, sizeof(ptr_operator_evaluator_table));
+#endif
+
+	register_op<OperatorEvaluatorAdd<int64_t, int64_t, int64_t>>(Variant::OP_ADD, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorAdd<double, int64_t, double>>(Variant::OP_ADD, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorAdd<double, double, int64_t>>(Variant::OP_ADD, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorAdd<double, double, double>>(Variant::OP_ADD, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorAdd<String, String, String>>(Variant::OP_ADD, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorAdd<Vector2, Vector2, Vector2>>(Variant::OP_ADD, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorAdd<Vector2i, Vector2i, Vector2i>>(Variant::OP_ADD, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorAdd<Vector3, Vector3, Vector3>>(Variant::OP_ADD, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorAdd<Vector3i, Vector3i, Vector3i>>(Variant::OP_ADD, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorAdd<Quat, Quat, Quat>>(Variant::OP_ADD, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorAdd<Color, Color, Color>>(Variant::OP_ADD, Variant::COLOR, Variant::COLOR);
+	register_op<OperatorEvaluatorAddArray>(Variant::OP_ADD, Variant::ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorAppendArray<uint8_t>>(Variant::OP_ADD, Variant::PACKED_BYTE_ARRAY, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<int32_t>>(Variant::OP_ADD, Variant::PACKED_INT32_ARRAY, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<int64_t>>(Variant::OP_ADD, Variant::PACKED_INT64_ARRAY, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<float>>(Variant::OP_ADD, Variant::PACKED_FLOAT32_ARRAY, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<double>>(Variant::OP_ADD, Variant::PACKED_FLOAT64_ARRAY, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<String>>(Variant::OP_ADD, Variant::PACKED_STRING_ARRAY, Variant::PACKED_STRING_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<Vector2>>(Variant::OP_ADD, Variant::PACKED_VECTOR2_ARRAY, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<Vector3>>(Variant::OP_ADD, Variant::PACKED_VECTOR3_ARRAY, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorAppendArray<Color>>(Variant::OP_ADD, Variant::PACKED_COLOR_ARRAY, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorSub<int64_t, int64_t, int64_t>>(Variant::OP_SUBTRACT, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorSub<double, int64_t, double>>(Variant::OP_SUBTRACT, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorSub<double, double, int64_t>>(Variant::OP_SUBTRACT, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorSub<double, double, double>>(Variant::OP_SUBTRACT, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorSub<Vector2, Vector2, Vector2>>(Variant::OP_SUBTRACT, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorSub<Vector2i, Vector2i, Vector2i>>(Variant::OP_SUBTRACT, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorSub<Vector3, Vector3, Vector3>>(Variant::OP_SUBTRACT, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorSub<Vector3i, Vector3i, Vector3i>>(Variant::OP_SUBTRACT, Variant::VECTOR3I, Variant::VECTOR3I);
+
+	register_op<OperatorEvaluatorMul<int64_t, int64_t, int64_t>>(Variant::OP_MULTIPLY, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorMul<double, int64_t, double>>(Variant::OP_MULTIPLY, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<Vector2, int64_t, Vector2>>(Variant::OP_MULTIPLY, Variant::INT, Variant::VECTOR2);
+	register_op<OperatorEvaluatorMul<Vector2i, int64_t, Vector2i>>(Variant::OP_MULTIPLY, Variant::INT, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorMul<Vector3, int64_t, Vector3>>(Variant::OP_MULTIPLY, Variant::INT, Variant::VECTOR3);
+	register_op<OperatorEvaluatorMul<Vector3i, int64_t, Vector3i>>(Variant::OP_MULTIPLY, Variant::INT, Variant::VECTOR3I);
+
+	register_op<OperatorEvaluatorMul<double, double, double>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<double, double, int64_t>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorMul<Vector2, double, Vector2>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR2);
+	register_op<OperatorEvaluatorMul<Vector2i, double, Vector2i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorMul<Vector3, double, Vector3>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR3);
+	register_op<OperatorEvaluatorMul<Vector3i, double, Vector3i>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::VECTOR3I);
+
+	register_op<OperatorEvaluatorMul<Vector2, Vector2, Vector2>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorMul<Vector2, Vector2, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::INT);
+	register_op<OperatorEvaluatorMul<Vector2, Vector2, double>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, Vector2i>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::INT);
+	register_op<OperatorEvaluatorMul<Vector2i, Vector2i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR2I, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Vector3, Vector3, Vector3>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorMul<Vector3, Vector3, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::INT);
+	register_op<OperatorEvaluatorMul<Vector3, Vector3, double>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, Vector3i>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, int64_t>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::INT);
+	register_op<OperatorEvaluatorMul<Vector3i, Vector3i, double>>(Variant::OP_MULTIPLY, Variant::VECTOR3I, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Quat, Quat, Quat>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorMul<Quat, Quat, int64_t>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::INT);
+	register_op<OperatorEvaluatorMul<Quat, Quat, double>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Color, Color, Color>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::COLOR);
+	register_op<OperatorEvaluatorMul<Color, Color, int64_t>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::INT);
+	register_op<OperatorEvaluatorMul<Color, Color, double>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorMul<Transform2D, Transform2D, Transform2D>>(Variant::OP_MULTIPLY, Variant::TRANSFORM2D, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorXForm<Vector2, Transform2D, Vector2>>(Variant::OP_MULTIPLY, Variant::TRANSFORM2D, Variant::VECTOR2);
+	register_op<OperatorEvaluatorXFormInv<Vector2, Vector2, Transform2D>>(Variant::OP_MULTIPLY, Variant::VECTOR2, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorXForm<Rect2, Transform2D, Rect2>>(Variant::OP_MULTIPLY, Variant::TRANSFORM2D, Variant::RECT2);
+	register_op<OperatorEvaluatorXFormInv<Rect2, Rect2, Transform2D>>(Variant::OP_MULTIPLY, Variant::RECT2, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorXForm<Vector<Vector2>, Transform2D, Vector<Vector2>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM2D, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorXFormInv<Vector<Vector2>, Vector<Vector2>, Transform2D>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR2_ARRAY, Variant::TRANSFORM2D);
+
+	register_op<OperatorEvaluatorMul<Transform, Transform, Transform>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorXForm<Vector3, Transform, Vector3>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::VECTOR3);
+	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Transform>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorXForm<AABB, Transform, AABB>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::AABB);
+	register_op<OperatorEvaluatorXFormInv<AABB, AABB, Transform>>(Variant::OP_MULTIPLY, Variant::AABB, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorXForm<Vector<Vector3>, Transform, Vector<Vector3>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorXFormInv<Vector<Vector3>, Vector<Vector3>, Transform>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR3_ARRAY, Variant::TRANSFORM);
+
+	register_op<OperatorEvaluatorMul<Basis, Basis, Basis>>(Variant::OP_MULTIPLY, Variant::BASIS, Variant::BASIS);
+	register_op<OperatorEvaluatorXForm<Vector3, Basis, Vector3>>(Variant::OP_MULTIPLY, Variant::BASIS, Variant::VECTOR3);
+	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Basis>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::BASIS);
+
+	register_op<OperatorEvaluatorMul<Quat, Quat, Quat>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorMul<Quat, Quat, int64_t>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::INT);
+	register_op<OperatorEvaluatorMul<Quat, int64_t, Quat>>(Variant::OP_MULTIPLY, Variant::INT, Variant::QUAT);
+	register_op<OperatorEvaluatorMul<Quat, Quat, double>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<Quat, double, Quat>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::QUAT);
+	register_op<OperatorEvaluatorXForm<Vector3, Quat, Vector3>>(Variant::OP_MULTIPLY, Variant::QUAT, Variant::VECTOR3);
+	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Quat>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::QUAT);
+
+	register_op<OperatorEvaluatorMul<Color, Color, Color>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::COLOR);
+	register_op<OperatorEvaluatorMul<Color, Color, int64_t>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::INT);
+	register_op<OperatorEvaluatorMul<Color, int64_t, Color>>(Variant::OP_MULTIPLY, Variant::INT, Variant::COLOR);
+	register_op<OperatorEvaluatorMul<Color, Color, double>>(Variant::OP_MULTIPLY, Variant::COLOR, Variant::FLOAT);
+	register_op<OperatorEvaluatorMul<Color, double, Color>>(Variant::OP_MULTIPLY, Variant::FLOAT, Variant::COLOR);
+
+	register_op<OperatorEvaluatorDivNZ<int64_t, int64_t, int64_t>>(Variant::OP_DIVIDE, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorDiv<double, double, int64_t>>(Variant::OP_DIVIDE, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorDiv<double, int64_t, double>>(Variant::OP_DIVIDE, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<double, double, double>>(Variant::OP_DIVIDE, Variant::FLOAT, Variant::FLOAT);
+
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, Vector2>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, double>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Vector2i, Vector2i, Vector2i>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, double>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::FLOAT);
+	register_op<OperatorEvaluatorDivNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2I, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, Vector2>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, double>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<Vector2, Vector2, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR2, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Vector3, Vector3, Vector3>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorDiv<Vector3, Vector3, double>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<Vector3, Vector3, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Vector3i, Vector3i, Vector3i>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, double>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::FLOAT);
+	register_op<OperatorEvaluatorDivNZ<Vector3i, Vector3i, int64_t>>(Variant::OP_DIVIDE, Variant::VECTOR3I, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Quat, Quat, double>>(Variant::OP_DIVIDE, Variant::QUAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<Quat, Quat, int64_t>>(Variant::OP_DIVIDE, Variant::QUAT, Variant::INT);
+
+	register_op<OperatorEvaluatorDiv<Color, Color, Color>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::COLOR);
+	register_op<OperatorEvaluatorDiv<Color, Color, double>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::FLOAT);
+	register_op<OperatorEvaluatorDiv<Color, Color, int64_t>>(Variant::OP_DIVIDE, Variant::COLOR, Variant::INT);
+
+	register_op<OperatorEvaluatorModNZ<int64_t, int64_t, int64_t>>(Variant::OP_MODULE, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorMod<Vector2i, Vector2i, Vector2i>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorModNZ<Vector2i, Vector2i, int64_t>>(Variant::OP_MODULE, Variant::VECTOR2I, Variant::INT);
+
+	register_op<OperatorEvaluatorMod<Vector3i, Vector3i, Vector3i>>(Variant::OP_MODULE, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorModNZ<Vector3i, Vector3i, int64_t>>(Variant::OP_MODULE, Variant::VECTOR3I, Variant::INT);
+
+	register_op<OperatorEvaluatorStringModNil>(Variant::OP_MODULE, Variant::STRING, Variant::NIL);
+
+	register_op<OperatorEvaluatorStringModT<bool>>(Variant::OP_MODULE, Variant::STRING, Variant::BOOL);
+	register_op<OperatorEvaluatorStringModT<int64_t>>(Variant::OP_MODULE, Variant::STRING, Variant::INT);
+	register_op<OperatorEvaluatorStringModT<double>>(Variant::OP_MODULE, Variant::STRING, Variant::FLOAT);
+	register_op<OperatorEvaluatorStringModT<String>>(Variant::OP_MODULE, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorStringModT<Vector2>>(Variant::OP_MODULE, Variant::STRING, Variant::VECTOR2);
+	register_op<OperatorEvaluatorStringModT<Vector2i>>(Variant::OP_MODULE, Variant::STRING, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorStringModT<Rect2>>(Variant::OP_MODULE, Variant::STRING, Variant::RECT2);
+	register_op<OperatorEvaluatorStringModT<Rect2i>>(Variant::OP_MODULE, Variant::STRING, Variant::RECT2I);
+	register_op<OperatorEvaluatorStringModT<Vector3>>(Variant::OP_MODULE, Variant::STRING, Variant::VECTOR3);
+	register_op<OperatorEvaluatorStringModT<Vector3i>>(Variant::OP_MODULE, Variant::STRING, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorStringModT<Transform2D>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorStringModT<Plane>>(Variant::OP_MODULE, Variant::STRING, Variant::PLANE);
+	register_op<OperatorEvaluatorStringModT<Quat>>(Variant::OP_MODULE, Variant::STRING, Variant::QUAT);
+	register_op<OperatorEvaluatorStringModT<AABB>>(Variant::OP_MODULE, Variant::STRING, Variant::AABB);
+	register_op<OperatorEvaluatorStringModT<Basis>>(Variant::OP_MODULE, Variant::STRING, Variant::BASIS);
+	register_op<OperatorEvaluatorStringModT<Transform>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM);
+
+	register_op<OperatorEvaluatorStringModT<Color>>(Variant::OP_MODULE, Variant::STRING, Variant::COLOR);
+	register_op<OperatorEvaluatorStringModT<StringName>>(Variant::OP_MODULE, Variant::STRING, Variant::STRING_NAME);
+	register_op<OperatorEvaluatorStringModT<NodePath>>(Variant::OP_MODULE, Variant::STRING, Variant::NODE_PATH);
+	register_op<OperatorEvaluatorStringModObject>(Variant::OP_MODULE, Variant::STRING, Variant::OBJECT);
+	register_op<OperatorEvaluatorStringModT<Callable>>(Variant::OP_MODULE, Variant::STRING, Variant::CALLABLE);
+	register_op<OperatorEvaluatorStringModT<Signal>>(Variant::OP_MODULE, Variant::STRING, Variant::SIGNAL);
+	register_op<OperatorEvaluatorStringModT<Dictionary>>(Variant::OP_MODULE, Variant::STRING, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorStringModArray>(Variant::OP_MODULE, Variant::STRING, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorStringModT<PackedByteArray>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedInt32Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedInt64Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedFloat32Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedFloat64Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedStringArray>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_STRING_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedVector2Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedVector3Array>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorStringModT<PackedColorArray>>(Variant::OP_MODULE, Variant::STRING, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorNeg<int64_t, int64_t>>(Variant::OP_NEGATE, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<double, double>>(Variant::OP_NEGATE, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Vector2, Vector2>>(Variant::OP_NEGATE, Variant::VECTOR2, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Vector2i, Vector2i>>(Variant::OP_NEGATE, Variant::VECTOR2I, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Vector3, Vector3>>(Variant::OP_NEGATE, Variant::VECTOR3, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Vector3i, Vector3i>>(Variant::OP_NEGATE, Variant::VECTOR3I, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Quat, Quat>>(Variant::OP_NEGATE, Variant::QUAT, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Plane, Plane>>(Variant::OP_NEGATE, Variant::PLANE, Variant::NIL);
+	register_op<OperatorEvaluatorNeg<Color, Color>>(Variant::OP_NEGATE, Variant::COLOR, Variant::NIL);
+
+	register_op<OperatorEvaluatorPos<int64_t, int64_t>>(Variant::OP_POSITIVE, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorPos<double, double>>(Variant::OP_POSITIVE, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Vector2, Vector2>>(Variant::OP_POSITIVE, Variant::VECTOR2, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Vector2i, Vector2i>>(Variant::OP_POSITIVE, Variant::VECTOR2I, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Vector3, Vector3>>(Variant::OP_POSITIVE, Variant::VECTOR3, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Vector3i, Vector3i>>(Variant::OP_POSITIVE, Variant::VECTOR3I, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Quat, Quat>>(Variant::OP_POSITIVE, Variant::QUAT, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Plane, Plane>>(Variant::OP_POSITIVE, Variant::PLANE, Variant::NIL);
+	register_op<OperatorEvaluatorPos<Color, Color>>(Variant::OP_POSITIVE, Variant::COLOR, Variant::NIL);
+
+	register_op<OperatorEvaluatorShiftLeft<int64_t, int64_t, int64_t>>(Variant::OP_SHIFT_LEFT, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorShiftRight<int64_t, int64_t, int64_t>>(Variant::OP_SHIFT_RIGHT, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorBitOr<int64_t, int64_t, int64_t>>(Variant::OP_BIT_OR, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorBitAnd<int64_t, int64_t, int64_t>>(Variant::OP_BIT_AND, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorBitXor<int64_t, int64_t, int64_t>>(Variant::OP_BIT_XOR, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorBitNeg<int64_t, int64_t>>(Variant::OP_BIT_NEGATE, Variant::INT, Variant::NIL);
+
+	register_op<OperatorEvaluatorBitNeg<int64_t, int64_t>>(Variant::OP_BIT_NEGATE, Variant::INT, Variant::NIL);
+
+	register_op<OperatorEvaluatorAlwaysTrue<Variant::OP_EQUAL, Variant::NIL, Variant::NIL>>(Variant::OP_EQUAL, Variant::NIL, Variant::NIL);
+	register_op<OperatorEvaluatorEqual<bool, bool>>(Variant::OP_EQUAL, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorEqual<int64_t, int64_t>>(Variant::OP_EQUAL, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorEqual<int64_t, double>>(Variant::OP_EQUAL, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorEqual<double, int64_t>>(Variant::OP_EQUAL, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorEqual<double, double>>(Variant::OP_EQUAL, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorEqual<String, String>>(Variant::OP_EQUAL, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorEqual<Vector2, Vector2>>(Variant::OP_EQUAL, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorEqual<Vector2i, Vector2i>>(Variant::OP_EQUAL, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorEqual<Rect2, Rect2>>(Variant::OP_EQUAL, Variant::RECT2, Variant::RECT2);
+	register_op<OperatorEvaluatorEqual<Rect2i, Rect2i>>(Variant::OP_EQUAL, Variant::RECT2I, Variant::RECT2I);
+	register_op<OperatorEvaluatorEqual<Vector3, Vector3>>(Variant::OP_EQUAL, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorEqual<Vector3i, Vector3i>>(Variant::OP_EQUAL, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorEqual<Transform2D, Transform2D>>(Variant::OP_EQUAL, Variant::TRANSFORM2D, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorEqual<Plane, Plane>>(Variant::OP_EQUAL, Variant::PLANE, Variant::PLANE);
+	register_op<OperatorEvaluatorEqual<Quat, Quat>>(Variant::OP_EQUAL, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorEqual<AABB, AABB>>(Variant::OP_EQUAL, Variant::AABB, Variant::AABB);
+	register_op<OperatorEvaluatorEqual<Basis, Basis>>(Variant::OP_EQUAL, Variant::BASIS, Variant::BASIS);
+	register_op<OperatorEvaluatorEqual<Transform, Transform>>(Variant::OP_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorEqual<Color, Color>>(Variant::OP_EQUAL, Variant::COLOR, Variant::COLOR);
+
+	register_op<OperatorEvaluatorEqual<StringName, String>>(Variant::OP_EQUAL, Variant::STRING_NAME, Variant::STRING);
+	register_op<OperatorEvaluatorEqual<String, StringName>>(Variant::OP_EQUAL, Variant::STRING, Variant::STRING_NAME);
+	register_op<OperatorEvaluatorEqual<StringName, StringName>>(Variant::OP_EQUAL, Variant::STRING_NAME, Variant::STRING_NAME);
+
+	register_op<OperatorEvaluatorEqual<NodePath, NodePath>>(Variant::OP_EQUAL, Variant::NODE_PATH, Variant::NODE_PATH);
+	register_op<OperatorEvaluatorEqual<RID, RID>>(Variant::OP_EQUAL, Variant::_RID, Variant::_RID);
+
+	register_op<OperatorEvaluatorEqualObject>(Variant::OP_EQUAL, Variant::OBJECT, Variant::OBJECT);
+	register_op<OperatorEvaluatorEqualObjectNil>(Variant::OP_EQUAL, Variant::OBJECT, Variant::NIL);
+	register_op<OperatorEvaluatorEqualNilObject>(Variant::OP_EQUAL, Variant::NIL, Variant::OBJECT);
+
+	register_op<OperatorEvaluatorEqual<Callable, Callable>>(Variant::OP_EQUAL, Variant::CALLABLE, Variant::CALLABLE);
+	register_op<OperatorEvaluatorEqual<Signal, Signal>>(Variant::OP_EQUAL, Variant::SIGNAL, Variant::SIGNAL);
+	register_op<OperatorEvaluatorEqual<Dictionary, Dictionary>>(Variant::OP_EQUAL, Variant::DICTIONARY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorEqual<Array, Array>>(Variant::OP_EQUAL, Variant::ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedByteArray, PackedByteArray>>(Variant::OP_EQUAL, Variant::PACKED_BYTE_ARRAY, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedInt32Array, PackedInt32Array>>(Variant::OP_EQUAL, Variant::PACKED_INT32_ARRAY, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedInt64Array, PackedInt64Array>>(Variant::OP_EQUAL, Variant::PACKED_INT64_ARRAY, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedFloat32Array, PackedFloat32Array>>(Variant::OP_EQUAL, Variant::PACKED_FLOAT32_ARRAY, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedFloat64Array, PackedFloat64Array>>(Variant::OP_EQUAL, Variant::PACKED_FLOAT64_ARRAY, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedStringArray, PackedStringArray>>(Variant::OP_EQUAL, Variant::PACKED_STRING_ARRAY, Variant::PACKED_STRING_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedVector2Array, PackedVector2Array>>(Variant::OP_EQUAL, Variant::PACKED_VECTOR2_ARRAY, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedVector3Array, PackedVector3Array>>(Variant::OP_EQUAL, Variant::PACKED_VECTOR3_ARRAY, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorEqual<PackedColorArray, PackedColorArray>>(Variant::OP_EQUAL, Variant::PACKED_COLOR_ARRAY, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorAlwaysFalse<Variant::OP_NOT_EQUAL, Variant::NIL, Variant::NIL>>(Variant::OP_NOT_EQUAL, Variant::NIL, Variant::NIL);
+	register_op<OperatorEvaluatorNotEqual<bool, bool>>(Variant::OP_NOT_EQUAL, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorNotEqual<int64_t, int64_t>>(Variant::OP_NOT_EQUAL, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorNotEqual<int64_t, double>>(Variant::OP_NOT_EQUAL, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorNotEqual<double, int64_t>>(Variant::OP_NOT_EQUAL, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorNotEqual<double, double>>(Variant::OP_NOT_EQUAL, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorNotEqual<String, String>>(Variant::OP_NOT_EQUAL, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorNotEqual<Vector2, Vector2>>(Variant::OP_NOT_EQUAL, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorNotEqual<Vector2i, Vector2i>>(Variant::OP_NOT_EQUAL, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorNotEqual<Rect2, Rect2>>(Variant::OP_NOT_EQUAL, Variant::RECT2, Variant::RECT2);
+	register_op<OperatorEvaluatorNotEqual<Rect2i, Rect2i>>(Variant::OP_NOT_EQUAL, Variant::RECT2I, Variant::RECT2I);
+	register_op<OperatorEvaluatorNotEqual<Vector3, Vector3>>(Variant::OP_NOT_EQUAL, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorNotEqual<Vector3i, Vector3i>>(Variant::OP_NOT_EQUAL, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorNotEqual<Transform2D, Transform2D>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM2D, Variant::TRANSFORM2D);
+	register_op<OperatorEvaluatorNotEqual<Plane, Plane>>(Variant::OP_NOT_EQUAL, Variant::PLANE, Variant::PLANE);
+	register_op<OperatorEvaluatorNotEqual<Quat, Quat>>(Variant::OP_NOT_EQUAL, Variant::QUAT, Variant::QUAT);
+	register_op<OperatorEvaluatorNotEqual<AABB, AABB>>(Variant::OP_NOT_EQUAL, Variant::AABB, Variant::AABB);
+	register_op<OperatorEvaluatorNotEqual<Basis, Basis>>(Variant::OP_NOT_EQUAL, Variant::BASIS, Variant::BASIS);
+	register_op<OperatorEvaluatorNotEqual<Transform, Transform>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorNotEqual<Color, Color>>(Variant::OP_NOT_EQUAL, Variant::COLOR, Variant::COLOR);
+
+	register_op<OperatorEvaluatorNotEqual<StringName, String>>(Variant::OP_NOT_EQUAL, Variant::STRING_NAME, Variant::STRING);
+	register_op<OperatorEvaluatorNotEqual<String, StringName>>(Variant::OP_NOT_EQUAL, Variant::STRING, Variant::STRING_NAME);
+	register_op<OperatorEvaluatorNotEqual<StringName, StringName>>(Variant::OP_NOT_EQUAL, Variant::STRING_NAME, Variant::STRING_NAME);
+
+	register_op<OperatorEvaluatorNotEqual<NodePath, NodePath>>(Variant::OP_NOT_EQUAL, Variant::NODE_PATH, Variant::NODE_PATH);
+	register_op<OperatorEvaluatorNotEqual<RID, RID>>(Variant::OP_NOT_EQUAL, Variant::_RID, Variant::_RID);
+
+	register_op<OperatorEvaluatorNotEqualObject>(Variant::OP_NOT_EQUAL, Variant::OBJECT, Variant::OBJECT);
+	register_op<OperatorEvaluatorNotEqualObjectNil>(Variant::OP_NOT_EQUAL, Variant::OBJECT, Variant::NIL);
+	register_op<OperatorEvaluatorNotEqualNilObject>(Variant::OP_NOT_EQUAL, Variant::NIL, Variant::OBJECT);
+
+	register_op<OperatorEvaluatorNotEqual<Callable, Callable>>(Variant::OP_NOT_EQUAL, Variant::CALLABLE, Variant::CALLABLE);
+	register_op<OperatorEvaluatorNotEqual<Signal, Signal>>(Variant::OP_NOT_EQUAL, Variant::SIGNAL, Variant::SIGNAL);
+	register_op<OperatorEvaluatorNotEqual<Dictionary, Dictionary>>(Variant::OP_NOT_EQUAL, Variant::DICTIONARY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorNotEqual<Array, Array>>(Variant::OP_NOT_EQUAL, Variant::ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedByteArray, PackedByteArray>>(Variant::OP_NOT_EQUAL, Variant::PACKED_BYTE_ARRAY, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedInt32Array, PackedInt32Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_INT32_ARRAY, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedInt64Array, PackedInt64Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_INT64_ARRAY, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedFloat32Array, PackedFloat32Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_FLOAT32_ARRAY, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedFloat64Array, PackedFloat64Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_FLOAT64_ARRAY, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedStringArray, PackedStringArray>>(Variant::OP_NOT_EQUAL, Variant::PACKED_STRING_ARRAY, Variant::PACKED_STRING_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedVector2Array, PackedVector2Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_VECTOR2_ARRAY, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedVector3Array, PackedVector3Array>>(Variant::OP_NOT_EQUAL, Variant::PACKED_VECTOR3_ARRAY, Variant::PACKED_VECTOR3_ARRAY);
+	register_op<OperatorEvaluatorNotEqual<PackedColorArray, PackedColorArray>>(Variant::OP_NOT_EQUAL, Variant::PACKED_COLOR_ARRAY, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorLess<bool, bool>>(Variant::OP_LESS, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorLess<int64_t, int64_t>>(Variant::OP_LESS, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorLess<int64_t, double>>(Variant::OP_LESS, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorLess<double, int64_t>>(Variant::OP_LESS, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorLess<double, double>>(Variant::OP_LESS, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorLess<String, String>>(Variant::OP_LESS, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorLess<Vector2, Vector2>>(Variant::OP_LESS, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorLess<Vector2i, Vector2i>>(Variant::OP_LESS, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorLess<Vector3, Vector3>>(Variant::OP_LESS, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorLess<Vector3i, Vector3i>>(Variant::OP_LESS, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorLess<RID, RID>>(Variant::OP_LESS, Variant::_RID, Variant::_RID);
+	register_op<OperatorEvaluatorLess<Array, Array>>(Variant::OP_LESS, Variant::ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorLessEqual<int64_t, int64_t>>(Variant::OP_LESS_EQUAL, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorLessEqual<int64_t, double>>(Variant::OP_LESS_EQUAL, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorLessEqual<double, int64_t>>(Variant::OP_LESS_EQUAL, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorLessEqual<double, double>>(Variant::OP_LESS_EQUAL, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorLessEqual<String, String>>(Variant::OP_LESS_EQUAL, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorLessEqual<Vector2, Vector2>>(Variant::OP_LESS_EQUAL, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorLessEqual<Vector2i, Vector2i>>(Variant::OP_LESS_EQUAL, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorLessEqual<Vector3, Vector3>>(Variant::OP_LESS_EQUAL, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorLessEqual<Vector3i, Vector3i>>(Variant::OP_LESS_EQUAL, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorLessEqual<RID, RID>>(Variant::OP_LESS_EQUAL, Variant::_RID, Variant::_RID);
+	register_op<OperatorEvaluatorLessEqual<Array, Array>>(Variant::OP_LESS_EQUAL, Variant::ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorGreater<bool, bool>>(Variant::OP_GREATER, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorGreater<int64_t, int64_t>>(Variant::OP_GREATER, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorGreater<int64_t, double>>(Variant::OP_GREATER, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorGreater<double, int64_t>>(Variant::OP_GREATER, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorGreater<double, double>>(Variant::OP_GREATER, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorGreater<String, String>>(Variant::OP_GREATER, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorGreater<Vector2, Vector2>>(Variant::OP_GREATER, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorGreater<Vector2i, Vector2i>>(Variant::OP_GREATER, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorGreater<Vector3, Vector3>>(Variant::OP_GREATER, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorGreater<Vector3i, Vector3i>>(Variant::OP_GREATER, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorGreater<RID, RID>>(Variant::OP_GREATER, Variant::_RID, Variant::_RID);
+	register_op<OperatorEvaluatorGreater<Array, Array>>(Variant::OP_GREATER, Variant::ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorGreaterEqual<int64_t, int64_t>>(Variant::OP_GREATER_EQUAL, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorGreaterEqual<int64_t, double>>(Variant::OP_GREATER_EQUAL, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorGreaterEqual<double, int64_t>>(Variant::OP_GREATER_EQUAL, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorGreaterEqual<double, double>>(Variant::OP_GREATER_EQUAL, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorGreaterEqual<String, String>>(Variant::OP_GREATER_EQUAL, Variant::STRING, Variant::STRING);
+	register_op<OperatorEvaluatorGreaterEqual<Vector2, Vector2>>(Variant::OP_GREATER_EQUAL, Variant::VECTOR2, Variant::VECTOR2);
+	register_op<OperatorEvaluatorGreaterEqual<Vector2i, Vector2i>>(Variant::OP_GREATER_EQUAL, Variant::VECTOR2I, Variant::VECTOR2I);
+	register_op<OperatorEvaluatorGreaterEqual<Vector3, Vector3>>(Variant::OP_GREATER_EQUAL, Variant::VECTOR3, Variant::VECTOR3);
+	register_op<OperatorEvaluatorGreaterEqual<Vector3i, Vector3i>>(Variant::OP_GREATER_EQUAL, Variant::VECTOR3I, Variant::VECTOR3I);
+	register_op<OperatorEvaluatorGreaterEqual<RID, RID>>(Variant::OP_GREATER_EQUAL, Variant::_RID, Variant::_RID);
+	register_op<OperatorEvaluatorGreaterEqual<Array, Array>>(Variant::OP_GREATER_EQUAL, Variant::ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorAlwaysFalse<Variant::OP_OR, Variant::NIL, Variant::NIL>>(Variant::OP_OR, Variant::NIL, Variant::NIL);
+
+	//OR
+	register_op<OperatorEvaluatorNilXBoolOr>(Variant::OP_OR, Variant::NIL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXNilOr>(Variant::OP_OR, Variant::BOOL, Variant::NIL);
+	register_op<OperatorEvaluatorNilXIntOr>(Variant::OP_OR, Variant::NIL, Variant::INT);
+	register_op<OperatorEvaluatorIntXNilOr>(Variant::OP_OR, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXFloatOr>(Variant::OP_OR, Variant::NIL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXNilOr>(Variant::OP_OR, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXObjectOr>(Variant::OP_OR, Variant::NIL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXNilOr>(Variant::OP_OR, Variant::OBJECT, Variant::NIL);
+
+	register_op<OperatorEvaluatorBoolXBoolOr>(Variant::OP_OR, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXIntOr>(Variant::OP_OR, Variant::BOOL, Variant::INT);
+	register_op<OperatorEvaluatorIntXBoolOr>(Variant::OP_OR, Variant::INT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXFloatOr>(Variant::OP_OR, Variant::BOOL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXBoolOr>(Variant::OP_OR, Variant::FLOAT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXObjectOr>(Variant::OP_OR, Variant::BOOL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXBoolOr>(Variant::OP_OR, Variant::OBJECT, Variant::BOOL);
+
+	register_op<OperatorEvaluatorIntXIntOr>(Variant::OP_OR, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorIntXFloatOr>(Variant::OP_OR, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXIntOr>(Variant::OP_OR, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorIntXObjectOr>(Variant::OP_OR, Variant::INT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXIntOr>(Variant::OP_OR, Variant::OBJECT, Variant::INT);
+
+	register_op<OperatorEvaluatorFloatXFloatOr>(Variant::OP_OR, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXObjectOr>(Variant::OP_OR, Variant::FLOAT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXFloatOr>(Variant::OP_OR, Variant::OBJECT, Variant::FLOAT);
+	register_op<OperatorEvaluatorObjectXObjectOr>(Variant::OP_OR, Variant::OBJECT, Variant::OBJECT);
+	//AND
+	register_op<OperatorEvaluatorNilXBoolAnd>(Variant::OP_AND, Variant::NIL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXNilAnd>(Variant::OP_AND, Variant::BOOL, Variant::NIL);
+	register_op<OperatorEvaluatorNilXIntAnd>(Variant::OP_AND, Variant::NIL, Variant::INT);
+	register_op<OperatorEvaluatorIntXNilAnd>(Variant::OP_AND, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXFloatAnd>(Variant::OP_AND, Variant::NIL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXNilAnd>(Variant::OP_AND, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXObjectAnd>(Variant::OP_AND, Variant::NIL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXNilAnd>(Variant::OP_AND, Variant::OBJECT, Variant::NIL);
+
+	register_op<OperatorEvaluatorBoolXBoolAnd>(Variant::OP_AND, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXIntAnd>(Variant::OP_AND, Variant::BOOL, Variant::INT);
+	register_op<OperatorEvaluatorIntXBoolAnd>(Variant::OP_AND, Variant::INT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXFloatAnd>(Variant::OP_AND, Variant::BOOL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXBoolAnd>(Variant::OP_AND, Variant::FLOAT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXObjectAnd>(Variant::OP_AND, Variant::BOOL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXBoolAnd>(Variant::OP_AND, Variant::OBJECT, Variant::BOOL);
+
+	register_op<OperatorEvaluatorIntXIntAnd>(Variant::OP_AND, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorIntXFloatAnd>(Variant::OP_AND, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXIntAnd>(Variant::OP_AND, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorIntXObjectAnd>(Variant::OP_AND, Variant::INT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXIntAnd>(Variant::OP_AND, Variant::OBJECT, Variant::INT);
+
+	register_op<OperatorEvaluatorFloatXFloatAnd>(Variant::OP_AND, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXObjectAnd>(Variant::OP_AND, Variant::FLOAT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXFloatAnd>(Variant::OP_AND, Variant::OBJECT, Variant::FLOAT);
+	register_op<OperatorEvaluatorObjectXObjectAnd>(Variant::OP_AND, Variant::OBJECT, Variant::OBJECT);
+	//XOR
+	register_op<OperatorEvaluatorNilXBoolXor>(Variant::OP_XOR, Variant::NIL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXNilXor>(Variant::OP_XOR, Variant::BOOL, Variant::NIL);
+	register_op<OperatorEvaluatorNilXIntXor>(Variant::OP_XOR, Variant::NIL, Variant::INT);
+	register_op<OperatorEvaluatorIntXNilXor>(Variant::OP_XOR, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXFloatXor>(Variant::OP_XOR, Variant::NIL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXNilXor>(Variant::OP_XOR, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorNilXObjectXor>(Variant::OP_XOR, Variant::NIL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXNilXor>(Variant::OP_XOR, Variant::OBJECT, Variant::NIL);
+
+	register_op<OperatorEvaluatorBoolXBoolXor>(Variant::OP_XOR, Variant::BOOL, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXIntXor>(Variant::OP_XOR, Variant::BOOL, Variant::INT);
+	register_op<OperatorEvaluatorIntXBoolXor>(Variant::OP_XOR, Variant::INT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXFloatXor>(Variant::OP_XOR, Variant::BOOL, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXBoolXor>(Variant::OP_XOR, Variant::FLOAT, Variant::BOOL);
+	register_op<OperatorEvaluatorBoolXObjectXor>(Variant::OP_XOR, Variant::BOOL, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXBoolXor>(Variant::OP_XOR, Variant::OBJECT, Variant::BOOL);
+
+	register_op<OperatorEvaluatorIntXIntXor>(Variant::OP_XOR, Variant::INT, Variant::INT);
+	register_op<OperatorEvaluatorIntXFloatXor>(Variant::OP_XOR, Variant::INT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXIntXor>(Variant::OP_XOR, Variant::FLOAT, Variant::INT);
+	register_op<OperatorEvaluatorIntXObjectXor>(Variant::OP_XOR, Variant::INT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXIntXor>(Variant::OP_XOR, Variant::OBJECT, Variant::INT);
+
+	register_op<OperatorEvaluatorFloatXFloatXor>(Variant::OP_XOR, Variant::FLOAT, Variant::FLOAT);
+	register_op<OperatorEvaluatorFloatXObjectXor>(Variant::OP_XOR, Variant::FLOAT, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectXFloatXor>(Variant::OP_XOR, Variant::OBJECT, Variant::FLOAT);
+	register_op<OperatorEvaluatorObjectXObjectXor>(Variant::OP_XOR, Variant::OBJECT, Variant::OBJECT);
+
+	register_op<OperatorEvaluatorAlwaysTrue<Variant::OP_NOT, Variant::NIL, Variant::NIL>>(Variant::OP_NOT, Variant::NIL, Variant::NIL);
+	register_op<OperatorEvaluatorNotBool>(Variant::OP_NOT, Variant::BOOL, Variant::NIL);
+	register_op<OperatorEvaluatorNotInt>(Variant::OP_NOT, Variant::INT, Variant::NIL);
+	register_op<OperatorEvaluatorNotFloat>(Variant::OP_NOT, Variant::FLOAT, Variant::NIL);
+	register_op<OperatorEvaluatorNotObject>(Variant::OP_NOT, Variant::OBJECT, Variant::NIL);
+
+	register_op<OperatorEvaluatorInStringFind>(Variant::OP_IN, Variant::STRING, Variant::STRING);
+
+	register_op<OperatorEvaluatorInDictionaryHasNil>(Variant::OP_IN, Variant::NIL, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<bool>>(Variant::OP_IN, Variant::BOOL, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<int64_t>>(Variant::OP_IN, Variant::INT, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<double>>(Variant::OP_IN, Variant::FLOAT, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<String>>(Variant::OP_IN, Variant::STRING, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Vector2>>(Variant::OP_IN, Variant::VECTOR2, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Vector2i>>(Variant::OP_IN, Variant::VECTOR2I, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Rect2>>(Variant::OP_IN, Variant::RECT2, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Rect2i>>(Variant::OP_IN, Variant::RECT2I, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Vector3>>(Variant::OP_IN, Variant::VECTOR3, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Vector3i>>(Variant::OP_IN, Variant::VECTOR3I, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Transform2D>>(Variant::OP_IN, Variant::TRANSFORM2D, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Plane>>(Variant::OP_IN, Variant::PLANE, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Quat>>(Variant::OP_IN, Variant::QUAT, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<AABB>>(Variant::OP_IN, Variant::AABB, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Basis>>(Variant::OP_IN, Variant::BASIS, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Transform>>(Variant::OP_IN, Variant::TRANSFORM, Variant::DICTIONARY);
+
+	register_op<OperatorEvaluatorInDictionaryHas<Color>>(Variant::OP_IN, Variant::COLOR, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<StringName>>(Variant::OP_IN, Variant::STRING_NAME, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<NodePath>>(Variant::OP_IN, Variant::NODE_PATH, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHasObject>(Variant::OP_IN, Variant::OBJECT, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Callable>>(Variant::OP_IN, Variant::CALLABLE, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Signal>>(Variant::OP_IN, Variant::SIGNAL, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Dictionary>>(Variant::OP_IN, Variant::DICTIONARY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<Array>>(Variant::OP_IN, Variant::ARRAY, Variant::DICTIONARY);
+
+	register_op<OperatorEvaluatorInDictionaryHas<PackedByteArray>>(Variant::OP_IN, Variant::PACKED_BYTE_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedInt32Array>>(Variant::OP_IN, Variant::PACKED_INT32_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedInt64Array>>(Variant::OP_IN, Variant::PACKED_INT64_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedFloat32Array>>(Variant::OP_IN, Variant::PACKED_FLOAT32_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedFloat64Array>>(Variant::OP_IN, Variant::PACKED_FLOAT64_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedStringArray>>(Variant::OP_IN, Variant::PACKED_STRING_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedVector2Array>>(Variant::OP_IN, Variant::PACKED_VECTOR2_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedVector3Array>>(Variant::OP_IN, Variant::PACKED_VECTOR3_ARRAY, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<PackedColorArray>>(Variant::OP_IN, Variant::PACKED_COLOR_ARRAY, Variant::DICTIONARY);
+
+	register_op<OperatorEvaluatorInArrayFindNil>(Variant::OP_IN, Variant::NIL, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<bool, Array>>(Variant::OP_IN, Variant::BOOL, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<int64_t, Array>>(Variant::OP_IN, Variant::INT, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<double, Array>>(Variant::OP_IN, Variant::FLOAT, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<String, Array>>(Variant::OP_IN, Variant::STRING, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Vector2, Array>>(Variant::OP_IN, Variant::VECTOR2, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Vector2i, Array>>(Variant::OP_IN, Variant::VECTOR2I, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Rect2, Array>>(Variant::OP_IN, Variant::RECT2, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Rect2i, Array>>(Variant::OP_IN, Variant::RECT2I, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Vector3, Array>>(Variant::OP_IN, Variant::VECTOR3, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Vector3i, Array>>(Variant::OP_IN, Variant::VECTOR3I, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Transform2D, Array>>(Variant::OP_IN, Variant::TRANSFORM2D, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Plane, Array>>(Variant::OP_IN, Variant::PLANE, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Quat, Array>>(Variant::OP_IN, Variant::QUAT, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<AABB, Array>>(Variant::OP_IN, Variant::AABB, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Basis, Array>>(Variant::OP_IN, Variant::BASIS, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Transform, Array>>(Variant::OP_IN, Variant::TRANSFORM, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<Color, Array>>(Variant::OP_IN, Variant::COLOR, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<StringName, Array>>(Variant::OP_IN, Variant::STRING_NAME, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<NodePath, Array>>(Variant::OP_IN, Variant::NODE_PATH, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFindObject>(Variant::OP_IN, Variant::OBJECT, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Callable, Array>>(Variant::OP_IN, Variant::CALLABLE, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Signal, Array>>(Variant::OP_IN, Variant::SIGNAL, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Dictionary, Array>>(Variant::OP_IN, Variant::DICTIONARY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Array, Array>>(Variant::OP_IN, Variant::ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<PackedByteArray, Array>>(Variant::OP_IN, Variant::PACKED_BYTE_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedInt32Array, Array>>(Variant::OP_IN, Variant::PACKED_INT32_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedInt64Array, Array>>(Variant::OP_IN, Variant::PACKED_INT64_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedFloat32Array, Array>>(Variant::OP_IN, Variant::PACKED_FLOAT32_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedFloat64Array, Array>>(Variant::OP_IN, Variant::PACKED_FLOAT64_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedStringArray, Array>>(Variant::OP_IN, Variant::PACKED_STRING_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedVector2Array, Array>>(Variant::OP_IN, Variant::PACKED_VECTOR2_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedVector3Array, Array>>(Variant::OP_IN, Variant::PACKED_VECTOR3_ARRAY, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<PackedColorArray, Array>>(Variant::OP_IN, Variant::PACKED_COLOR_ARRAY, Variant::ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<int, PackedByteArray>>(Variant::OP_IN, Variant::INT, Variant::PACKED_BYTE_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<float, PackedByteArray>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_BYTE_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<int, PackedInt32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<float, PackedInt32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT32_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<int, PackedInt64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_INT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<float, PackedInt64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_INT64_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<int, PackedFloat32Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT32_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<float, PackedFloat32Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT32_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<int, PackedFloat64Array>>(Variant::OP_IN, Variant::INT, Variant::PACKED_FLOAT64_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<float, PackedFloat64Array>>(Variant::OP_IN, Variant::FLOAT, Variant::PACKED_FLOAT64_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<String, PackedStringArray>>(Variant::OP_IN, Variant::STRING, Variant::PACKED_STRING_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<Vector2, PackedVector2Array>>(Variant::OP_IN, Variant::VECTOR2, Variant::PACKED_VECTOR2_ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<Vector3, PackedVector3Array>>(Variant::OP_IN, Variant::VECTOR3, Variant::PACKED_VECTOR3_ARRAY);
+
+	register_op<OperatorEvaluatorInArrayFind<Color, PackedColorArray>>(Variant::OP_IN, Variant::COLOR, Variant::PACKED_COLOR_ARRAY);
+
+	register_op<OperatorEvaluatorObjectHasPropertyString>(Variant::OP_IN, Variant::STRING, Variant::OBJECT);
+	register_op<OperatorEvaluatorObjectHasPropertyStringName>(Variant::OP_IN, Variant::STRING_NAME, Variant::OBJECT);
+}
+
+void unregister_variant_operators() {
+}
 
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 		const Variant &p_b, Variant &r_ret, bool &r_valid) {
-	CASES(math);
-	r_valid = true;
-
-	SWITCH(math, p_op, p_a.type) {
-		SWITCH_OP(math, OP_EQUAL, p_a.type) {
-			CASE_TYPE(math, OP_EQUAL, NIL) {
-				if (p_b.type == NIL)
-					_RETURN(true);
-				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj == nullptr);
-
-				_RETURN(false);
-			}
-
-			CASE_TYPE(math, OP_EQUAL, BOOL) {
-				if (p_b.type != BOOL) {
-					if (p_b.type == NIL)
-						_RETURN(false);
-					_RETURN_FAIL;
-				}
-
-				_RETURN(p_a._data._bool == p_b._data._bool);
-			}
-
-			CASE_TYPE(math, OP_EQUAL, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
-				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj == nullptr);
-
-				_RETURN_FAIL;
-			}
-
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, CALLABLE, ==, Callable);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, SIGNAL, ==, Signal);
-
-			CASE_TYPE(math, OP_EQUAL, DICTIONARY) {
-				if (p_b.type != DICTIONARY) {
-					if (p_b.type == NIL)
-						_RETURN(false);
-					_RETURN_FAIL;
-				}
-
-				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
-				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
-
-				_RETURN(*arr_a == *arr_b);
-			}
-
-			CASE_TYPE(math, OP_EQUAL, ARRAY) {
-				if (p_b.type != ARRAY) {
-					if (p_b.type == NIL)
-						_RETURN(false);
-					_RETURN_FAIL;
-				}
-				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
-				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
-
-				int l = arr_a->size();
-				if (arr_b->size() != l)
-					_RETURN(false);
-				for (int i = 0; i < l; i++) {
-					if (!((*arr_a)[i] == (*arr_b)[i])) {
-						_RETURN(false);
-					}
-				}
-
-				_RETURN(true);
-			}
-
-			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, INT, ==, _int);
-			DEFAULT_OP_NUM_NULL(math, OP_EQUAL, FLOAT, ==, _float);
-			DEFAULT_OP_STR_NULL(math, OP_EQUAL, STRING, ==, String);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR2, ==, Vector2);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR2I, ==, Vector2i);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, RECT2, ==, Rect2);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, RECT2I, ==, Rect2i);
-			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, TRANSFORM2D, ==, _transform2d);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR3, ==, Vector3);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, VECTOR3I, ==, Vector3i);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, PLANE, ==, Plane);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, QUAT, ==, Quat);
-			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, AABB, ==, _aabb);
-			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, BASIS, ==, _basis);
-			DEFAULT_OP_PTRREF_NULL(math, OP_EQUAL, TRANSFORM, ==, _transform);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, COLOR, ==, Color);
-			DEFAULT_OP_STR_NULL_SN(math, OP_EQUAL, STRING_NAME, ==, StringName);
-			DEFAULT_OP_STR_NULL_NP(math, OP_EQUAL, NODE_PATH, ==, NodePath);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_EQUAL, _RID, ==, RID);
-
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT32_ARRAY, int32_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_INT64_ARRAY, int64_t);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_FLOAT32_ARRAY, float);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_FLOAT64_ARRAY, double);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_EQ(math, OP_EQUAL, PACKED_COLOR_ARRAY, Color);
-		}
-
-		SWITCH_OP(math, OP_NOT_EQUAL, p_a.type) {
-			CASE_TYPE(math, OP_NOT_EQUAL, NIL) {
-				if (p_b.type == NIL)
-					_RETURN(false);
-				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj != nullptr);
-
-				_RETURN(true);
-			}
-
-			CASE_TYPE(math, OP_NOT_EQUAL, BOOL) {
-				if (p_b.type != BOOL) {
-					if (p_b.type == NIL)
-						_RETURN(true);
-
-					_RETURN_FAIL;
-				}
-
-				_RETURN(p_a._data._bool != p_b._data._bool);
-			}
-
-			CASE_TYPE(math, OP_NOT_EQUAL, OBJECT) {
-				if (p_b.type == OBJECT)
-					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
-				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj != nullptr);
-
-				_RETURN_FAIL;
-			}
-
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, CALLABLE, !=, Callable);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, SIGNAL, !=, Signal);
-
-			CASE_TYPE(math, OP_NOT_EQUAL, DICTIONARY) {
-				if (p_b.type != DICTIONARY) {
-					if (p_b.type == NIL)
-						_RETURN(true);
-					_RETURN_FAIL;
-				}
-
-				const Dictionary *arr_a = reinterpret_cast<const Dictionary *>(p_a._data._mem);
-				const Dictionary *arr_b = reinterpret_cast<const Dictionary *>(p_b._data._mem);
-
-				_RETURN(*arr_a != *arr_b);
-			}
-
-			CASE_TYPE(math, OP_NOT_EQUAL, ARRAY) {
-				if (p_b.type != ARRAY) {
-					if (p_b.type == NIL)
-						_RETURN(true);
-
-					_RETURN_FAIL;
-				}
-
-				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
-				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
-
-				int l = arr_a->size();
-				if (arr_b->size() != l)
-					_RETURN(true);
-				for (int i = 0; i < l; i++) {
-					if (((*arr_a)[i] != (*arr_b)[i])) {
-						_RETURN(true);
-					}
-				}
-
-				_RETURN(false);
-			}
-
-			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, INT, !=, _int);
-			DEFAULT_OP_NUM_NULL(math, OP_NOT_EQUAL, FLOAT, !=, _float);
-			DEFAULT_OP_STR_NULL(math, OP_NOT_EQUAL, STRING, !=, String);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR2, !=, Vector2);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR2I, !=, Vector2i);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, RECT2, !=, Rect2);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, RECT2I, !=, Rect2i);
-			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, TRANSFORM2D, !=, _transform2d);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR3, !=, Vector3);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, VECTOR3I, !=, Vector3i);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, PLANE, !=, Plane);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, QUAT, !=, Quat);
-			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, AABB, !=, _aabb);
-			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, BASIS, !=, _basis);
-			DEFAULT_OP_PTRREF_NULL(math, OP_NOT_EQUAL, TRANSFORM, !=, _transform);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, COLOR, !=, Color);
-			DEFAULT_OP_STR_NULL_SN(math, OP_NOT_EQUAL, STRING_NAME, !=, StringName);
-			DEFAULT_OP_STR_NULL_NP(math, OP_NOT_EQUAL, NODE_PATH, !=, NodePath);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_NOT_EQUAL, _RID, !=, RID);
-
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT32_ARRAY, int32_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_INT64_ARRAY, int64_t);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_FLOAT32_ARRAY, float);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_FLOAT64_ARRAY, double);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_NEQ(math, OP_NOT_EQUAL, PACKED_COLOR_ARRAY, Color);
-		}
-
-		SWITCH_OP(math, OP_LESS, p_a.type) {
-			CASE_TYPE(math, OP_LESS, BOOL) {
-				if (p_b.type != BOOL)
-					_RETURN_FAIL;
-
-				if (p_a._data._bool == p_b._data._bool)
-					_RETURN(false);
-
-				if (p_a._data._bool && !p_b._data._bool)
-					_RETURN(false);
-
-				_RETURN(true);
-			}
-
-			CASE_TYPE(math, OP_LESS, OBJECT) {
-				if (p_b.type != OBJECT)
-					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj < p_b._get_obj().obj));
-			}
-
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_LESS, CALLABLE, <, Callable);
-			DEFAULT_OP_LOCALMEM_NULL(math, OP_LESS, SIGNAL, <, Signal);
-
-			CASE_TYPE(math, OP_LESS, ARRAY) {
-				if (p_b.type != ARRAY)
-					_RETURN_FAIL;
-
-				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
-				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
-
-				int l = arr_a->size();
-				if (arr_b->size() < l)
-					_RETURN(false);
-				for (int i = 0; i < l; i++) {
-					if (!((*arr_a)[i] < (*arr_b)[i])) {
-						_RETURN(true);
-					}
-				}
-
-				_RETURN(false);
-			}
-
-			DEFAULT_OP_NUM(math, OP_LESS, INT, <, _int);
-			DEFAULT_OP_NUM(math, OP_LESS, FLOAT, <, _float);
-			DEFAULT_OP_STR(math, OP_LESS, STRING, <, String);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2, <, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR2I, <, Vector2i);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3, <, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS, VECTOR3I, <, Vector3i);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS, _RID, <, RID);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT32_ARRAY, int32_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_INT64_ARRAY, int64_t);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_FLOAT32_ARRAY, float);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_FLOAT64_ARRAY, double);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR2_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_LT(math, OP_LESS, PACKED_COLOR_ARRAY, Color);
-
-			CASE_TYPE(math, OP_LESS, NIL)
-			CASE_TYPE(math, OP_LESS, RECT2)
-			CASE_TYPE(math, OP_LESS, RECT2I)
-			CASE_TYPE(math, OP_LESS, TRANSFORM2D)
-			CASE_TYPE(math, OP_LESS, PLANE)
-			CASE_TYPE(math, OP_LESS, QUAT)
-			CASE_TYPE(math, OP_LESS, AABB)
-			CASE_TYPE(math, OP_LESS, BASIS)
-			CASE_TYPE(math, OP_LESS, TRANSFORM)
-			CASE_TYPE(math, OP_LESS, COLOR)
-			CASE_TYPE(math, OP_LESS, STRING_NAME)
-			CASE_TYPE(math, OP_LESS, NODE_PATH)
-			CASE_TYPE(math, OP_LESS, DICTIONARY)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_LESS_EQUAL, p_a.type) {
-			CASE_TYPE(math, OP_LESS_EQUAL, OBJECT) {
-				if (p_b.type != OBJECT)
-					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj <= p_b._get_obj().obj));
-			}
-
-			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, INT, <=, _int);
-			DEFAULT_OP_NUM(math, OP_LESS_EQUAL, FLOAT, <=, _float);
-			DEFAULT_OP_STR(math, OP_LESS_EQUAL, STRING, <=, String);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2, <=, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR2I, <=, Vector2i);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR3, <=, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, VECTOR3I, <=, Vector3i);
-			DEFAULT_OP_LOCALMEM(math, OP_LESS_EQUAL, _RID, <=, RID);
-
-			CASE_TYPE(math, OP_LESS_EQUAL, NIL)
-			CASE_TYPE(math, OP_LESS_EQUAL, BOOL)
-			CASE_TYPE(math, OP_LESS_EQUAL, RECT2)
-			CASE_TYPE(math, OP_LESS_EQUAL, RECT2I)
-			CASE_TYPE(math, OP_LESS_EQUAL, TRANSFORM2D)
-			CASE_TYPE(math, OP_LESS_EQUAL, PLANE)
-			CASE_TYPE(math, OP_LESS_EQUAL, QUAT)
-			CASE_TYPE(math, OP_LESS_EQUAL, AABB)
-			CASE_TYPE(math, OP_LESS_EQUAL, BASIS)
-			CASE_TYPE(math, OP_LESS_EQUAL, TRANSFORM)
-			CASE_TYPE(math, OP_LESS_EQUAL, COLOR)
-			CASE_TYPE(math, OP_LESS_EQUAL, STRING_NAME)
-			CASE_TYPE(math, OP_LESS_EQUAL, NODE_PATH)
-			CASE_TYPE(math, OP_LESS_EQUAL, CALLABLE)
-			CASE_TYPE(math, OP_LESS_EQUAL, SIGNAL)
-
-			CASE_TYPE(math, OP_LESS_EQUAL, DICTIONARY)
-			CASE_TYPE(math, OP_LESS_EQUAL, ARRAY)
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT32_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_INT64_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_FLOAT32_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_FLOAT64_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_STRING_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_LESS_EQUAL, PACKED_COLOR_ARRAY);
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_GREATER, p_a.type) {
-			CASE_TYPE(math, OP_GREATER, BOOL) {
-				if (p_b.type != BOOL)
-					_RETURN_FAIL;
-
-				if (p_a._data._bool == p_b._data._bool)
-					_RETURN(false);
-
-				if (!p_a._data._bool && p_b._data._bool)
-					_RETURN(false);
-
-				_RETURN(true);
-			}
-
-			CASE_TYPE(math, OP_GREATER, OBJECT) {
-				if (p_b.type != OBJECT)
-					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj > p_b._get_obj().obj));
-			}
-
-			CASE_TYPE(math, OP_GREATER, ARRAY) {
-				if (p_b.type != ARRAY)
-					_RETURN_FAIL;
-
-				const Array *arr_a = reinterpret_cast<const Array *>(p_a._data._mem);
-				const Array *arr_b = reinterpret_cast<const Array *>(p_b._data._mem);
-
-				int l = arr_a->size();
-				if (arr_b->size() > l)
-					_RETURN(false);
-				for (int i = 0; i < l; i++) {
-					if (((*arr_a)[i] < (*arr_b)[i])) {
-						_RETURN(false);
-					}
-				}
-
-				_RETURN(true);
-			}
-
-			DEFAULT_OP_NUM(math, OP_GREATER, INT, >, _int);
-			DEFAULT_OP_NUM(math, OP_GREATER, FLOAT, >, _float);
-			DEFAULT_OP_STR_REV(math, OP_GREATER, STRING, <, String);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2, <, Vector2);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR2I, <, Vector2i);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3, <, Vector3);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, VECTOR3I, <, Vector3i);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER, _RID, <, RID);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT32_ARRAY, int32_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_INT64_ARRAY, int64_t);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_FLOAT32_ARRAY, float);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_FLOAT64_ARRAY, double);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR2_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_GT(math, OP_GREATER, PACKED_COLOR_ARRAY, Color);
-
-			CASE_TYPE(math, OP_GREATER, NIL)
-			CASE_TYPE(math, OP_GREATER, RECT2)
-			CASE_TYPE(math, OP_GREATER, RECT2I)
-			CASE_TYPE(math, OP_GREATER, TRANSFORM2D)
-			CASE_TYPE(math, OP_GREATER, PLANE)
-			CASE_TYPE(math, OP_GREATER, QUAT)
-			CASE_TYPE(math, OP_GREATER, AABB)
-			CASE_TYPE(math, OP_GREATER, BASIS)
-			CASE_TYPE(math, OP_GREATER, TRANSFORM)
-			CASE_TYPE(math, OP_GREATER, COLOR)
-			CASE_TYPE(math, OP_GREATER, STRING_NAME)
-			CASE_TYPE(math, OP_GREATER, NODE_PATH)
-			CASE_TYPE(math, OP_GREATER, DICTIONARY)
-			CASE_TYPE(math, OP_GREATER, CALLABLE)
-			CASE_TYPE(math, OP_GREATER, SIGNAL)
-
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_GREATER_EQUAL, p_a.type) {
-			CASE_TYPE(math, OP_GREATER_EQUAL, OBJECT) {
-				if (p_b.type != OBJECT)
-					_RETURN_FAIL;
-				_RETURN((p_a._get_obj().obj >= p_b._get_obj().obj));
-			}
-
-			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, INT, >=, _int);
-			DEFAULT_OP_NUM(math, OP_GREATER_EQUAL, FLOAT, >=, _float);
-			DEFAULT_OP_STR_REV(math, OP_GREATER_EQUAL, STRING, <=, String);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2, <=, Vector2);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR2I, <=, Vector2i);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR3, <=, Vector3);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, VECTOR3I, <=, Vector3i);
-			DEFAULT_OP_LOCALMEM_REV(math, OP_GREATER_EQUAL, _RID, <=, RID);
-
-			CASE_TYPE(math, OP_GREATER_EQUAL, NIL)
-			CASE_TYPE(math, OP_GREATER_EQUAL, BOOL)
-			CASE_TYPE(math, OP_GREATER_EQUAL, RECT2)
-			CASE_TYPE(math, OP_GREATER_EQUAL, RECT2I)
-			CASE_TYPE(math, OP_GREATER_EQUAL, TRANSFORM2D)
-			CASE_TYPE(math, OP_GREATER_EQUAL, PLANE)
-			CASE_TYPE(math, OP_GREATER_EQUAL, QUAT)
-			CASE_TYPE(math, OP_GREATER_EQUAL, AABB)
-			CASE_TYPE(math, OP_GREATER_EQUAL, BASIS)
-			CASE_TYPE(math, OP_GREATER_EQUAL, TRANSFORM)
-			CASE_TYPE(math, OP_GREATER_EQUAL, COLOR)
-			CASE_TYPE(math, OP_GREATER_EQUAL, STRING_NAME)
-			CASE_TYPE(math, OP_GREATER_EQUAL, NODE_PATH)
-			CASE_TYPE(math, OP_GREATER_EQUAL, CALLABLE)
-			CASE_TYPE(math, OP_GREATER_EQUAL, SIGNAL)
-
-			CASE_TYPE(math, OP_GREATER_EQUAL, DICTIONARY)
-			CASE_TYPE(math, OP_GREATER_EQUAL, ARRAY)
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT32_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_INT64_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_FLOAT32_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_FLOAT64_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_STRING_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_GREATER_EQUAL, PACKED_COLOR_ARRAY);
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_ADD, p_a.type) {
-			CASE_TYPE(math, OP_ADD, ARRAY) {
-				if (p_a.type != p_b.type)
-					_RETURN_FAIL;
-
-				const Array &array_a = *reinterpret_cast<const Array *>(p_a._data._mem);
-				const Array &array_b = *reinterpret_cast<const Array *>(p_b._data._mem);
-				Array sum;
-				int asize = array_a.size();
-				int bsize = array_b.size();
-				sum.resize(asize + bsize);
-				for (int i = 0; i < asize; i++) {
-					sum[i] = array_a[i];
-				}
-				for (int i = 0; i < bsize; i++) {
-					sum[i + asize] = array_b[i];
-				}
-				_RETURN(sum);
-			}
-
-			DEFAULT_OP_NUM(math, OP_ADD, INT, +, _int);
-			DEFAULT_OP_NUM(math, OP_ADD, FLOAT, +, _float);
-			DEFAULT_OP_STR(math, OP_ADD, STRING, +, String);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR2, +, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR2I, +, Vector2i);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR3, +, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, VECTOR3I, +, Vector3i);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, QUAT, +, Quat);
-			DEFAULT_OP_LOCALMEM(math, OP_ADD, COLOR, +, Color);
-
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_BYTE_ARRAY, uint8_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT32_ARRAY, int32_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_INT64_ARRAY, int64_t);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_FLOAT32_ARRAY, float);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_FLOAT64_ARRAY, double);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_STRING_ARRAY, String);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR2_ARRAY, Vector2);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_VECTOR3_ARRAY, Vector3);
-			DEFAULT_OP_ARRAY_ADD(math, OP_ADD, PACKED_COLOR_ARRAY, Color);
-
-			CASE_TYPE(math, OP_ADD, NIL)
-			CASE_TYPE(math, OP_ADD, BOOL)
-			CASE_TYPE(math, OP_ADD, RECT2)
-			CASE_TYPE(math, OP_ADD, RECT2I)
-			CASE_TYPE(math, OP_ADD, TRANSFORM2D)
-			CASE_TYPE(math, OP_ADD, PLANE)
-			CASE_TYPE(math, OP_ADD, AABB)
-			CASE_TYPE(math, OP_ADD, BASIS)
-			CASE_TYPE(math, OP_ADD, TRANSFORM)
-			CASE_TYPE(math, OP_ADD, STRING_NAME)
-			CASE_TYPE(math, OP_ADD, NODE_PATH)
-			CASE_TYPE(math, OP_ADD, _RID)
-			CASE_TYPE(math, OP_ADD, OBJECT)
-			CASE_TYPE(math, OP_ADD, CALLABLE)
-			CASE_TYPE(math, OP_ADD, SIGNAL)
-
-			CASE_TYPE(math, OP_ADD, DICTIONARY)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_SUBTRACT, p_a.type) {
-			DEFAULT_OP_NUM(math, OP_SUBTRACT, INT, -, _int);
-			DEFAULT_OP_NUM(math, OP_SUBTRACT, FLOAT, -, _float);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR2, -, Vector2);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR2I, -, Vector2i);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR3, -, Vector3);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, VECTOR3I, -, Vector3i);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, QUAT, -, Quat);
-			DEFAULT_OP_LOCALMEM(math, OP_SUBTRACT, COLOR, -, Color);
-
-			CASE_TYPE(math, OP_SUBTRACT, NIL)
-			CASE_TYPE(math, OP_SUBTRACT, BOOL)
-			CASE_TYPE(math, OP_SUBTRACT, STRING)
-			CASE_TYPE(math, OP_SUBTRACT, RECT2)
-			CASE_TYPE(math, OP_SUBTRACT, RECT2I)
-			CASE_TYPE(math, OP_SUBTRACT, TRANSFORM2D)
-			CASE_TYPE(math, OP_SUBTRACT, PLANE)
-			CASE_TYPE(math, OP_SUBTRACT, AABB)
-			CASE_TYPE(math, OP_SUBTRACT, BASIS)
-			CASE_TYPE(math, OP_SUBTRACT, TRANSFORM)
-			CASE_TYPE(math, OP_SUBTRACT, STRING_NAME)
-			CASE_TYPE(math, OP_SUBTRACT, NODE_PATH)
-			CASE_TYPE(math, OP_SUBTRACT, _RID)
-			CASE_TYPE(math, OP_SUBTRACT, OBJECT)
-			CASE_TYPE(math, OP_SUBTRACT, CALLABLE)
-			CASE_TYPE(math, OP_SUBTRACT, SIGNAL)
-
-			CASE_TYPE(math, OP_SUBTRACT, DICTIONARY)
-			CASE_TYPE(math, OP_SUBTRACT, ARRAY)
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT32_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_INT64_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_FLOAT32_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_FLOAT64_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_STRING_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_SUBTRACT, PACKED_COLOR_ARRAY);
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_MULTIPLY, p_a.type) {
-			CASE_TYPE(math, OP_MULTIPLY, TRANSFORM2D) {
-				switch (p_b.type) {
-					case TRANSFORM2D: {
-						_RETURN(*p_a._data._transform2d * *p_b._data._transform2d);
-					}
-					case VECTOR2: {
-						_RETURN(p_a._data._transform2d->xform(*(const Vector2 *)p_b._data._mem));
-					}
-					default:
-						_RETURN_FAIL;
-				}
-			}
-
-			CASE_TYPE(math, OP_MULTIPLY, QUAT) {
-				switch (p_b.type) {
-					case VECTOR3: {
-						_RETURN(reinterpret_cast<const Quat *>(p_a._data._mem)->xform(*(const Vector3 *)p_b._data._mem));
-					}
-					case QUAT: {
-						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * *reinterpret_cast<const Quat *>(p_b._data._mem));
-					}
-					case FLOAT: {
-						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._float);
-					}
-					case INT: {
-						_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) * p_b._data._int);
-					}
-					default:
-						_RETURN_FAIL;
-				}
-			}
-
-			CASE_TYPE(math, OP_MULTIPLY, BASIS) {
-				switch (p_b.type) {
-					case VECTOR3: {
-						_RETURN(p_a._data._basis->xform(*(const Vector3 *)p_b._data._mem));
-					}
-					case BASIS: {
-						_RETURN(*p_a._data._basis * *p_b._data._basis);
-					}
-					default:
-						_RETURN_FAIL;
-				}
-			}
-
-			CASE_TYPE(math, OP_MULTIPLY, TRANSFORM) {
-				switch (p_b.type) {
-					case VECTOR3: {
-						_RETURN(p_a._data._transform->xform(*(const Vector3 *)p_b._data._mem));
-					}
-					case TRANSFORM: {
-						_RETURN(*p_a._data._transform * *p_b._data._transform);
-					}
-					default:
-						_RETURN_FAIL;
-				}
-			}
-
-			CASE_TYPE(math, OP_MULTIPLY, INT) {
-				if (p_b.type == INT) {
-					_RETURN(p_a._data._int * p_b._data._int);
-				}
-				if (p_b.type == FLOAT) {
-					_RETURN(p_a._data._int * p_b._data._float);
-				}
-				if (p_b.type == VECTOR2) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Vector2 *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR3) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Vector3 *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR2I) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Vector2i *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR3I) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Vector3i *>(p_b._data._mem));
-				}
-				if (p_b.type == QUAT) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Quat *>(p_b._data._mem));
-				}
-				if (p_b.type == COLOR) {
-					_RETURN(p_a._data._int * *reinterpret_cast<const Color *>(p_b._data._mem));
-				}
-
-				_RETURN_FAIL
-			}
-
-			CASE_TYPE(math, OP_MULTIPLY, FLOAT) {
-				if (p_b.type == INT) {
-					_RETURN(p_a._data._float * p_b._data._int);
-				}
-				if (p_b.type == FLOAT) {
-					_RETURN(p_a._data._float * p_b._data._float);
-				}
-				if (p_b.type == VECTOR2) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Vector2 *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR3) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Vector3 *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR2I) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Vector2i *>(p_b._data._mem));
-				}
-				if (p_b.type == VECTOR3I) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Vector3i *>(p_b._data._mem));
-				}
-				if (p_b.type == QUAT) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Quat *>(p_b._data._mem));
-				}
-				if (p_b.type == COLOR) {
-					_RETURN(p_a._data._float * *reinterpret_cast<const Color *>(p_b._data._mem));
-				}
-
-				_RETURN_FAIL
-			}
-
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2, *, Vector2);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR2I, *, Vector2i);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3, *, Vector3);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, VECTOR3I, *, Vector3i);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_MULTIPLY, COLOR, *, Color);
-
-			CASE_TYPE(math, OP_MULTIPLY, NIL)
-			CASE_TYPE(math, OP_MULTIPLY, BOOL)
-			CASE_TYPE(math, OP_MULTIPLY, STRING)
-			CASE_TYPE(math, OP_MULTIPLY, RECT2)
-			CASE_TYPE(math, OP_MULTIPLY, RECT2I)
-			CASE_TYPE(math, OP_MULTIPLY, PLANE)
-			CASE_TYPE(math, OP_MULTIPLY, AABB)
-			CASE_TYPE(math, OP_MULTIPLY, STRING_NAME)
-			CASE_TYPE(math, OP_MULTIPLY, NODE_PATH)
-			CASE_TYPE(math, OP_MULTIPLY, _RID)
-			CASE_TYPE(math, OP_MULTIPLY, OBJECT)
-			CASE_TYPE(math, OP_MULTIPLY, CALLABLE)
-			CASE_TYPE(math, OP_MULTIPLY, SIGNAL)
-
-			CASE_TYPE(math, OP_MULTIPLY, DICTIONARY)
-			CASE_TYPE(math, OP_MULTIPLY, ARRAY)
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT32_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_INT64_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_FLOAT32_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_FLOAT64_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_STRING_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_MULTIPLY, PACKED_COLOR_ARRAY);
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_DIVIDE, p_a.type) {
-			CASE_TYPE(math, OP_DIVIDE, QUAT) {
-				if (p_b.type != FLOAT)
-					_RETURN_FAIL;
-#ifdef DEBUG_ENABLED
-				if (p_b._data._float == 0) {
-					r_valid = false;
-					_RETURN("Division By Zero");
-				}
-#endif
-				_RETURN(*reinterpret_cast<const Quat *>(p_a._data._mem) / p_b._data._float);
-			}
-
-			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, INT, _int);
-			DEFAULT_OP_NUM_DIV(math, OP_DIVIDE, FLOAT, _float);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2, /, Vector2);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR2I, /, Vector2i);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3, /, Vector3);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, VECTOR3I, /, Vector3i);
-			DEFAULT_OP_LOCALMEM_NUM(math, OP_DIVIDE, COLOR, /, Color);
-
-			CASE_TYPE(math, OP_DIVIDE, NIL)
-			CASE_TYPE(math, OP_DIVIDE, BOOL)
-			CASE_TYPE(math, OP_DIVIDE, STRING)
-			CASE_TYPE(math, OP_DIVIDE, RECT2)
-			CASE_TYPE(math, OP_DIVIDE, RECT2I)
-			CASE_TYPE(math, OP_DIVIDE, TRANSFORM2D)
-			CASE_TYPE(math, OP_DIVIDE, PLANE)
-			CASE_TYPE(math, OP_DIVIDE, AABB)
-			CASE_TYPE(math, OP_DIVIDE, BASIS)
-			CASE_TYPE(math, OP_DIVIDE, TRANSFORM)
-			CASE_TYPE(math, OP_DIVIDE, STRING_NAME)
-			CASE_TYPE(math, OP_DIVIDE, NODE_PATH)
-			CASE_TYPE(math, OP_DIVIDE, _RID)
-			CASE_TYPE(math, OP_DIVIDE, OBJECT)
-			CASE_TYPE(math, OP_DIVIDE, CALLABLE)
-			CASE_TYPE(math, OP_DIVIDE, SIGNAL)
-
-			CASE_TYPE(math, OP_DIVIDE, DICTIONARY)
-			CASE_TYPE(math, OP_DIVIDE, ARRAY)
-			CASE_TYPE(math, OP_DIVIDE, PACKED_BYTE_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_INT32_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_INT64_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_FLOAT32_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_FLOAT64_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_STRING_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR2_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_VECTOR3_ARRAY);
-			CASE_TYPE(math, OP_DIVIDE, PACKED_COLOR_ARRAY);
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_POSITIVE, p_a.type) {
-			DEFAULT_OP_NUM_POS(math, OP_POSITIVE, INT, _int);
-			DEFAULT_OP_NUM_POS(math, OP_POSITIVE, FLOAT, _float);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR3, Vector3);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR3I, Vector3i);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, PLANE, Plane);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, QUAT, Quat);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR2, Vector2);
-			DEFAULT_OP_LOCALMEM_POS(math, OP_POSITIVE, VECTOR2I, Vector2i);
-
-			CASE_TYPE(math, OP_POSITIVE, NIL)
-			CASE_TYPE(math, OP_POSITIVE, BOOL)
-			CASE_TYPE(math, OP_POSITIVE, STRING)
-			CASE_TYPE(math, OP_POSITIVE, RECT2)
-			CASE_TYPE(math, OP_POSITIVE, RECT2I)
-			CASE_TYPE(math, OP_POSITIVE, TRANSFORM2D)
-			CASE_TYPE(math, OP_POSITIVE, AABB)
-			CASE_TYPE(math, OP_POSITIVE, BASIS)
-			CASE_TYPE(math, OP_POSITIVE, TRANSFORM)
-			CASE_TYPE(math, OP_POSITIVE, COLOR)
-			CASE_TYPE(math, OP_POSITIVE, STRING_NAME)
-			CASE_TYPE(math, OP_POSITIVE, NODE_PATH)
-			CASE_TYPE(math, OP_POSITIVE, _RID)
-			CASE_TYPE(math, OP_POSITIVE, OBJECT)
-			CASE_TYPE(math, OP_POSITIVE, CALLABLE)
-			CASE_TYPE(math, OP_POSITIVE, SIGNAL)
-
-			CASE_TYPE(math, OP_POSITIVE, DICTIONARY)
-			CASE_TYPE(math, OP_POSITIVE, ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_INT32_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_INT64_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_FLOAT32_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_FLOAT64_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_STRING_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_POSITIVE, PACKED_COLOR_ARRAY)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_NEGATE, p_a.type) {
-			DEFAULT_OP_NUM_NEG(math, OP_NEGATE, INT, _int);
-			DEFAULT_OP_NUM_NEG(math, OP_NEGATE, FLOAT, _float);
-
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR2, Vector2);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR2I, Vector2i);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR3, Vector3);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, VECTOR3I, Vector3i);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, PLANE, Plane);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, QUAT, Quat);
-			DEFAULT_OP_LOCALMEM_NEG(math, OP_NEGATE, COLOR, Color);
-
-			CASE_TYPE(math, OP_NEGATE, NIL)
-			CASE_TYPE(math, OP_NEGATE, BOOL)
-			CASE_TYPE(math, OP_NEGATE, STRING)
-			CASE_TYPE(math, OP_NEGATE, RECT2)
-			CASE_TYPE(math, OP_NEGATE, RECT2I)
-			CASE_TYPE(math, OP_NEGATE, TRANSFORM2D)
-			CASE_TYPE(math, OP_NEGATE, AABB)
-			CASE_TYPE(math, OP_NEGATE, BASIS)
-			CASE_TYPE(math, OP_NEGATE, TRANSFORM)
-			CASE_TYPE(math, OP_NEGATE, STRING_NAME)
-			CASE_TYPE(math, OP_NEGATE, NODE_PATH)
-			CASE_TYPE(math, OP_NEGATE, _RID)
-			CASE_TYPE(math, OP_NEGATE, OBJECT)
-			CASE_TYPE(math, OP_NEGATE, CALLABLE)
-			CASE_TYPE(math, OP_NEGATE, SIGNAL)
-
-			CASE_TYPE(math, OP_NEGATE, DICTIONARY)
-			CASE_TYPE(math, OP_NEGATE, ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_INT32_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_INT64_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_FLOAT32_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_FLOAT64_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_STRING_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_NEGATE, PACKED_COLOR_ARRAY)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_MODULE, p_a.type) {
-			CASE_TYPE(math, OP_MODULE, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-#ifdef DEBUG_ENABLED
-				if (p_b._data._int == 0) {
-					r_valid = false;
-					_RETURN("Division By Zero");
-				}
-#endif
-				_RETURN(p_a._data._int % p_b._data._int);
-			}
-
-			CASE_TYPE(math, OP_MODULE, STRING) {
-				const String *format = reinterpret_cast<const String *>(p_a._data._mem);
-
-				String result;
-				bool error;
-				if (p_b.type == ARRAY) {
-					// e.g. "frog %s %d" % ["fish", 12]
-					const Array *args = reinterpret_cast<const Array *>(p_b._data._mem);
-					result = format->sprintf(*args, &error);
-				} else {
-					// e.g. "frog %d" % 12
-					Array args;
-					args.push_back(p_b);
-					result = format->sprintf(args, &error);
-				}
-				r_valid = !error;
-				_RETURN(result);
-			}
-
-			CASE_TYPE(math, OP_MODULE, NIL)
-			CASE_TYPE(math, OP_MODULE, BOOL)
-			CASE_TYPE(math, OP_MODULE, FLOAT)
-			CASE_TYPE(math, OP_MODULE, VECTOR2)
-			CASE_TYPE(math, OP_MODULE, VECTOR2I)
-			CASE_TYPE(math, OP_MODULE, RECT2)
-			CASE_TYPE(math, OP_MODULE, RECT2I)
-			CASE_TYPE(math, OP_MODULE, VECTOR3)
-			CASE_TYPE(math, OP_MODULE, VECTOR3I)
-			CASE_TYPE(math, OP_MODULE, TRANSFORM2D)
-			CASE_TYPE(math, OP_MODULE, PLANE)
-			CASE_TYPE(math, OP_MODULE, QUAT)
-			CASE_TYPE(math, OP_MODULE, AABB)
-			CASE_TYPE(math, OP_MODULE, BASIS)
-			CASE_TYPE(math, OP_MODULE, TRANSFORM)
-			CASE_TYPE(math, OP_MODULE, COLOR)
-			CASE_TYPE(math, OP_MODULE, STRING_NAME)
-			CASE_TYPE(math, OP_MODULE, NODE_PATH)
-			CASE_TYPE(math, OP_MODULE, _RID)
-			CASE_TYPE(math, OP_MODULE, OBJECT)
-			CASE_TYPE(math, OP_MODULE, CALLABLE)
-			CASE_TYPE(math, OP_MODULE, SIGNAL)
-
-			CASE_TYPE(math, OP_MODULE, DICTIONARY)
-			CASE_TYPE(math, OP_MODULE, ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_BYTE_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_INT32_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_INT64_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_FLOAT32_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_FLOAT64_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_STRING_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR2_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_VECTOR3_ARRAY)
-			CASE_TYPE(math, OP_MODULE, PACKED_COLOR_ARRAY)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_STRING_CONCAT, p_a.type) {
-			CASE_TYPE_ALL(math, OP_STRING_CONCAT)
-
-			_RETURN(p_a.operator String() + p_b.operator String());
-		}
-
-		SWITCH_OP(math, OP_SHIFT_LEFT, p_a.type) {
-			CASE_TYPE(math, OP_SHIFT_LEFT, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-				if (p_b._data._int < 0 || p_b._data._int >= 64)
-					_RETURN_FAIL;
-				_RETURN(p_a._data._int << p_b._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_SHIFT_LEFT)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_SHIFT_RIGHT, p_a.type) {
-			CASE_TYPE(math, OP_SHIFT_RIGHT, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-				if (p_b._data._int < 0 || p_b._data._int >= 64)
-					_RETURN_FAIL;
-				_RETURN(p_a._data._int >> p_b._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_SHIFT_RIGHT)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_BIT_AND, p_a.type) {
-			CASE_TYPE(math, OP_BIT_AND, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-				_RETURN(p_a._data._int & p_b._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_AND)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_BIT_OR, p_a.type) {
-			CASE_TYPE(math, OP_BIT_OR, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-				_RETURN(p_a._data._int | p_b._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_OR)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_BIT_XOR, p_a.type) {
-			CASE_TYPE(math, OP_BIT_XOR, INT) {
-				if (p_b.type != INT)
-					_RETURN_FAIL;
-				_RETURN(p_a._data._int ^ p_b._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_XOR)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_BIT_NEGATE, p_a.type) {
-			CASE_TYPE(math, OP_BIT_NEGATE, INT) {
-				_RETURN(~p_a._data._int);
-			}
-
-			CASE_TYPE_ALL_BUT_INT(math, OP_BIT_NEGATE)
-			_RETURN_FAIL;
-		}
-
-		SWITCH_OP(math, OP_AND, p_a.type) {
-			CASE_TYPE_ALL(math, OP_AND) {
-				bool l = p_a.booleanize();
-				bool r = p_b.booleanize();
-
-				_RETURN(l && r);
-			}
-		}
-
-		SWITCH_OP(math, OP_OR, p_a.type) {
-			CASE_TYPE_ALL(math, OP_OR) {
-				bool l = p_a.booleanize();
-				bool r = p_b.booleanize();
-
-				_RETURN(l || r);
-			}
-		}
-
-		SWITCH_OP(math, OP_XOR, p_a.type) {
-			CASE_TYPE_ALL(math, OP_XOR) {
-				bool l = p_a.booleanize();
-				bool r = p_b.booleanize();
-
-				_RETURN((l || r) && !(l && r));
-			}
-		}
-
-		SWITCH_OP(math, OP_NOT, p_a.type) {
-			CASE_TYPE_ALL(math, OP_NOT) {
-				bool l = p_a.booleanize();
-				_RETURN(!l);
-			}
-		}
-
-		SWITCH_OP(math, OP_IN, p_a.type) {
-			CASE_TYPE_ALL(math, OP_IN)
-			_RETURN(p_b.in(p_a, &r_valid));
-		}
-	}
-}
-
-void Variant::set_named(const StringName &p_index, const Variant &p_value, bool *r_valid) {
-	bool valid = false;
-	switch (type) {
-		case VECTOR2: {
-			if (p_value.type == Variant::INT) {
-				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._float;
-					valid = true;
-				}
-			}
-
-		} break;
-		case VECTOR2I: {
-			if (p_value.type == Variant::INT) {
-				Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._float;
-					valid = true;
-				}
-			}
-
-		} break;
-		case RECT2: {
-			if (p_value.type == Variant::VECTOR2) {
-				Rect2 *v = reinterpret_cast<Rect2 *>(_data._mem);
-				//scalar name
-				if (p_index == CoreStringNames::singleton->position) {
-					v->position = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->size) {
-					v->size = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->end) {
-					v->size = *reinterpret_cast<const Vector2 *>(p_value._data._mem) - v->position;
-					valid = true;
-				}
-			}
-		} break;
-		case RECT2I: {
-			if (p_value.type == Variant::VECTOR2I) {
-				Rect2i *v = reinterpret_cast<Rect2i *>(_data._mem);
-				//scalar name
-				if (p_index == CoreStringNames::singleton->position) {
-					v->position = *reinterpret_cast<const Vector2i *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->size) {
-					v->size = *reinterpret_cast<const Vector2i *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->end) {
-					v->size = *reinterpret_cast<const Vector2i *>(p_value._data._mem) - v->position;
-					valid = true;
-				}
-			}
-		} break;
-		case TRANSFORM2D: {
-			if (p_value.type == Variant::VECTOR2) {
-				Transform2D *v = _data._transform2d;
-				if (p_index == CoreStringNames::singleton->x) {
-					v->elements[0] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->elements[1] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->origin) {
-					v->elements[2] = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
-					valid = true;
-				}
-			}
-
-		} break;
-		case VECTOR3: {
-			if (p_value.type == Variant::INT) {
-				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._float;
-					valid = true;
-				}
-			}
-
-		} break;
-		case VECTOR3I: {
-			if (p_value.type == Variant::INT) {
-				Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._float;
-					valid = true;
-				}
-			}
-
-		} break;
-		case PLANE: {
-			if (p_value.type == Variant::INT) {
-				Plane *v = reinterpret_cast<Plane *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->normal.x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->normal.y = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->normal.z = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->d) {
-					v->d = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Plane *v = reinterpret_cast<Plane *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->normal.x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->normal.y = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->normal.z = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->d) {
-					v->d = p_value._data._float;
-					valid = true;
-				}
-
-			} else if (p_value.type == Variant::VECTOR3) {
-				Plane *v = reinterpret_cast<Plane *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->normal) {
-					v->normal = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
-					valid = true;
-				}
-			}
-
-		} break;
-		case QUAT: {
-			if (p_value.type == Variant::INT) {
-				Quat *v = reinterpret_cast<Quat *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->w) {
-					v->w = p_value._data._int;
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Quat *v = reinterpret_cast<Quat *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->x) {
-					v->x = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->y = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->z = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->w) {
-					v->w = p_value._data._float;
-					valid = true;
-				}
-			}
-
-		} break;
-		case AABB: {
-			if (p_value.type == Variant::VECTOR3) {
-				::AABB *v = _data._aabb;
-				//scalar name
-				if (p_index == CoreStringNames::singleton->position) {
-					v->position = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->size) {
-					v->size = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->end) {
-					v->size = *reinterpret_cast<const Vector3 *>(p_value._data._mem) - v->position;
-					valid = true;
-				}
-			}
-		} break;
-		case BASIS: {
-			if (p_value.type == Variant::VECTOR3) {
-				Basis *v = _data._basis;
-				//scalar name
-				if (p_index == CoreStringNames::singleton->x) {
-					v->set_axis(0, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->y) {
-					v->set_axis(1, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->z) {
-					v->set_axis(2, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
-					valid = true;
-				}
-			}
-		} break;
-		case TRANSFORM: {
-			if (p_value.type == Variant::BASIS && p_index == CoreStringNames::singleton->basis) {
-				_data._transform->basis = *p_value._data._basis;
-				valid = true;
-			} else if (p_value.type == Variant::VECTOR3 && p_index == CoreStringNames::singleton->origin) {
-				_data._transform->origin = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
-				valid = true;
-			}
-
-		} break;
-		case COLOR: {
-			if (p_value.type == Variant::INT) {
-				Color *v = reinterpret_cast<Color *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->r) {
-					v->r = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->g) {
-					v->g = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->b) {
-					v->b = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->a) {
-					v->a = p_value._data._int;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->r8) {
-					v->r = p_value._data._int / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->g8) {
-					v->g = p_value._data._int / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->b8) {
-					v->b = p_value._data._int / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->a8) {
-					v->a = p_value._data._int / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._int, v->get_s(), v->get_v(), v->a);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._int, v->get_v(), v->a);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_v(), p_value._data._int, v->a);
-					valid = true;
-				}
-			} else if (p_value.type == Variant::FLOAT) {
-				Color *v = reinterpret_cast<Color *>(_data._mem);
-				if (p_index == CoreStringNames::singleton->r) {
-					v->r = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->g) {
-					v->g = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->b) {
-					v->b = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->a) {
-					v->a = p_value._data._float;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->r8) {
-					v->r = p_value._data._float / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->g8) {
-					v->g = p_value._data._float / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->b8) {
-					v->b = p_value._data._float / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->a8) {
-					v->a = p_value._data._float / 255.0;
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->h) {
-					v->set_hsv(p_value._data._float, v->get_s(), v->get_v(), v->a);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->s) {
-					v->set_hsv(v->get_h(), p_value._data._float, v->get_v(), v->a);
-					valid = true;
-				} else if (p_index == CoreStringNames::singleton->v) {
-					v->set_hsv(v->get_h(), v->get_s(), p_value._data._float, v->a);
-					valid = true;
-				}
-			}
-		} break;
-		case OBJECT: {
-#ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
-				break;
-			} else if (EngineDebugger::is_active() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-				break;
-			}
-
-#endif
-			_get_obj().obj->set(p_index, p_value, &valid);
-
-		} break;
-		default: {
-			set(p_index.operator String(), p_value, &valid);
-		} break;
-	}
-
-	if (r_valid) {
-		*r_valid = valid;
-	}
-}
-
-Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
-	if (r_valid) {
-		*r_valid = true;
-	}
-
-	switch (type) {
-		case VECTOR2: {
-			const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->y;
-			}
-
-		} break;
-		case VECTOR2I: {
-			const Vector2i *v = reinterpret_cast<const Vector2i *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->y;
-			}
-
-		} break;
-		case RECT2: {
-			const Rect2 *v = reinterpret_cast<const Rect2 *>(_data._mem);
-			//scalar name
-			if (p_index == CoreStringNames::singleton->position) {
-				return v->position;
-			} else if (p_index == CoreStringNames::singleton->size) {
-				return v->size;
-			} else if (p_index == CoreStringNames::singleton->end) {
-				return v->size + v->position;
-			}
-		} break;
-		case RECT2I: {
-			const Rect2i *v = reinterpret_cast<const Rect2i *>(_data._mem);
-			//scalar name
-			if (p_index == CoreStringNames::singleton->position) {
-				return v->position;
-			} else if (p_index == CoreStringNames::singleton->size) {
-				return v->size;
-			} else if (p_index == CoreStringNames::singleton->end) {
-				return v->size + v->position;
-			}
-		} break;
-		case TRANSFORM2D: {
-			const Transform2D *v = _data._transform2d;
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->elements[0];
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->elements[1];
-			} else if (p_index == CoreStringNames::singleton->origin) {
-				return v->elements[2];
-			}
-
-		} break;
-		case VECTOR3: {
-			const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->y;
-			} else if (p_index == CoreStringNames::singleton->z) {
-				return v->z;
-			}
-
-		} break;
-		case VECTOR3I: {
-			const Vector3i *v = reinterpret_cast<const Vector3i *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->y;
-			} else if (p_index == CoreStringNames::singleton->z) {
-				return v->z;
-			}
-
-		} break;
-		case PLANE: {
-			const Plane *v = reinterpret_cast<const Plane *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->normal.x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->normal.y;
-			} else if (p_index == CoreStringNames::singleton->z) {
-				return v->normal.z;
-			} else if (p_index == CoreStringNames::singleton->d) {
-				return v->d;
-			} else if (p_index == CoreStringNames::singleton->normal) {
-				return v->normal;
-			}
-
-		} break;
-		case QUAT: {
-			const Quat *v = reinterpret_cast<const Quat *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->x;
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->y;
-			} else if (p_index == CoreStringNames::singleton->z) {
-				return v->z;
-			} else if (p_index == CoreStringNames::singleton->w) {
-				return v->w;
-			}
-
-		} break;
-		case AABB: {
-			const ::AABB *v = _data._aabb;
-			//scalar name
-			if (p_index == CoreStringNames::singleton->position) {
-				return v->position;
-			} else if (p_index == CoreStringNames::singleton->size) {
-				return v->size;
-			} else if (p_index == CoreStringNames::singleton->end) {
-				return v->size + v->position;
-			}
-		} break;
-		case BASIS: {
-			const Basis *v = _data._basis;
-			//scalar name
-			if (p_index == CoreStringNames::singleton->x) {
-				return v->get_axis(0);
-			} else if (p_index == CoreStringNames::singleton->y) {
-				return v->get_axis(1);
-			} else if (p_index == CoreStringNames::singleton->z) {
-				return v->get_axis(2);
-			}
-
-		} break;
-		case TRANSFORM: {
-			if (p_index == CoreStringNames::singleton->basis) {
-				return _data._transform->basis;
-			} else if (p_index == CoreStringNames::singleton->origin) {
-				return _data._transform->origin;
-			}
-
-		} break;
-		case COLOR: {
-			const Color *v = reinterpret_cast<const Color *>(_data._mem);
-			if (p_index == CoreStringNames::singleton->r) {
-				return v->r;
-			} else if (p_index == CoreStringNames::singleton->g) {
-				return v->g;
-			} else if (p_index == CoreStringNames::singleton->b) {
-				return v->b;
-			} else if (p_index == CoreStringNames::singleton->a) {
-				return v->a;
-			} else if (p_index == CoreStringNames::singleton->r8) {
-				return int(Math::round(v->r * 255.0));
-			} else if (p_index == CoreStringNames::singleton->g8) {
-				return int(Math::round(v->g * 255.0));
-			} else if (p_index == CoreStringNames::singleton->b8) {
-				return int(Math::round(v->b * 255.0));
-			} else if (p_index == CoreStringNames::singleton->a8) {
-				return int(Math::round(v->a * 255.0));
-			} else if (p_index == CoreStringNames::singleton->h) {
-				return v->get_h();
-			} else if (p_index == CoreStringNames::singleton->s) {
-				return v->get_s();
-			} else if (p_index == CoreStringNames::singleton->v) {
-				return v->get_v();
-			}
-		} break;
-		case OBJECT: {
-#ifdef DEBUG_ENABLED
-			if (!_get_obj().obj) {
-				if (r_valid) {
-					*r_valid = false;
-				}
-				return "Instance base is null.";
-			} else {
-				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					if (r_valid) {
-						*r_valid = false;
-					}
-					return "Attempted use of stray pointer object.";
-				}
-			}
-
-#endif
-
-			return _get_obj().obj->get(p_index, r_valid);
-
-		} break;
-		default: {
-			return get(p_index.operator String(), r_valid);
-		}
-	}
-
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return Variant();
-}
-
-#define DEFAULT_OP_ARRAY_CMD(m_name, m_type, skip_test, cmd)                              \
-	case m_name: {                                                                        \
-		skip_test;                                                                        \
-                                                                                          \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) { \
-			int index = p_index;                                                          \
-			m_type *arr = reinterpret_cast<m_type *>(_data._mem);                         \
-                                                                                          \
-			if (index < 0)                                                                \
-				index += arr->size();                                                     \
-			if (index >= 0 && index < arr->size()) {                                      \
-				valid = true;                                                             \
-				cmd;                                                                      \
-			}                                                                             \
-		}                                                                                 \
-	} break;
-
-#define DEFAULT_OP_DVECTOR_SET(m_name, m_type, skip_cond)                                    \
-	case m_name: {                                                                           \
-		if (skip_cond)                                                                       \
-			return;                                                                          \
-                                                                                             \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {    \
-			int index = p_index;                                                             \
-			Vector<m_type> *arr = PackedArrayRef<m_type>::get_array_ptr(_data.packed_array); \
-                                                                                             \
-			if (index < 0)                                                                   \
-				index += arr->size();                                                        \
-			if (index >= 0 && index < arr->size()) {                                         \
-				valid = true;                                                                \
-				arr->set(index, p_value);                                                    \
-			}                                                                                \
-		}                                                                                    \
-	} break;
-
-#define DEFAULT_OP_DVECTOR_GET(m_name, m_type)                                                  \
-	case m_name: {                                                                              \
-		if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {       \
-			int index = p_index;                                                                \
-			const Vector<m_type> *arr = &PackedArrayRef<m_type>::get_array(_data.packed_array); \
-                                                                                                \
-			if (index < 0)                                                                      \
-				index += arr->size();                                                           \
-			if (index >= 0 && index < arr->size()) {                                            \
-				valid = true;                                                                   \
-				return arr->get(index);                                                         \
-			}                                                                                   \
-		}                                                                                       \
-	} break;
-
-void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid) {
-	static bool _dummy = false;
-
-	bool &valid = r_valid ? *r_valid : _dummy;
-	valid = false;
-
-	switch (type) {
-		case NIL: {
-			return;
-		} break;
-		case BOOL: {
-			return;
-		} break;
-		case INT: {
-			return;
-		} break;
-		case FLOAT: {
-			return;
-		} break;
-		case STRING: {
-			if (p_index.type != Variant::INT && p_index.type != Variant::FLOAT) {
-				return;
-			}
-
-			int idx = p_index;
-			String *str = reinterpret_cast<String *>(_data._mem);
-			int len = str->length();
-			if (idx < 0) {
-				idx += len;
-			}
-			if (idx < 0 || idx >= len) {
-				return;
-			}
-
-			String chr;
-			if (p_value.type == Variant::INT || p_value.type == Variant::FLOAT) {
-				chr = String::chr(p_value);
-			} else if (p_value.type == Variant::STRING) {
-				chr = p_value;
-			} else {
-				return;
-			}
-
-			*str = str->substr(0, idx) + chr + str->substr(idx + 1, len);
-			valid = true;
-			return;
-
-		} break;
-		case VECTOR2: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				// scalar index
-				int idx = p_index;
-
-				if (idx < 0) {
-					idx += 2;
-				}
-				if (idx >= 0 && idx < 2) {
-					Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
-					valid = true;
-					(*v)[idx] = p_value;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					v->x = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->y = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case VECTOR2I: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				// scalar index
-				int idx = p_index;
-
-				if (idx < 0) {
-					idx += 2;
-				}
-				if (idx >= 0 && idx < 2) {
-					Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
-					valid = true;
-					(*v)[idx] = p_value;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					v->x = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->y = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case RECT2: {
-			if (p_value.type != Variant::VECTOR2) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Rect2 *v = reinterpret_cast<Rect2 *>(_data._mem);
-				if (*str == "position") {
-					valid = true;
-					v->position = p_value;
-					return;
-				} else if (*str == "size") {
-					valid = true;
-					v->size = p_value;
-					return;
-				} else if (*str == "end") {
-					valid = true;
-					v->size = Vector2(p_value) - v->position;
-					return;
-				}
-			}
-		} break;
-		case RECT2I: {
-			if (p_value.type != Variant::VECTOR2I) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Rect2i *v = reinterpret_cast<Rect2i *>(_data._mem);
-				if (*str == "position") {
-					valid = true;
-					v->position = p_value;
-					return;
-				} else if (*str == "size") {
-					valid = true;
-					v->size = p_value;
-					return;
-				} else if (*str == "end") {
-					valid = true;
-					v->size = Vector2i(p_value) - v->position;
-					return;
-				}
-			}
-		} break;
-		case TRANSFORM2D: {
-			if (p_value.type != Variant::VECTOR2) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-
-				if (index < 0) {
-					index += 3;
-				}
-				if (index >= 0 && index < 3) {
-					Transform2D *v = _data._transform2d;
-
-					valid = true;
-					v->elements[index] = p_value;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING && p_value.get_type() == Variant::VECTOR2) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Transform2D *v = _data._transform2d;
-				if (*str == "x") {
-					valid = true;
-					v->elements[0] = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->elements[1] = p_value;
-					return;
-				} else if (*str == "origin") {
-					valid = true;
-					v->elements[2] = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case VECTOR3: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 3;
-				}
-				if (idx >= 0 && idx < 3) {
-					Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
-					valid = true;
-					(*v)[idx] = p_value;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					v->x = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->y = p_value;
-					return;
-				} else if (*str == "z") {
-					valid = true;
-					v->z = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case VECTOR3I: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 3;
-				}
-				if (idx >= 0 && idx < 3) {
-					Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
-					valid = true;
-					(*v)[idx] = p_value;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					v->x = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->y = p_value;
-					return;
-				} else if (*str == "z") {
-					valid = true;
-					v->z = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case PLANE: {
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Plane *v = reinterpret_cast<Plane *>(_data._mem);
-				if (*str == "x") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-						return;
-					}
-
-					valid = true;
-					v->normal.x = p_value;
-					return;
-				} else if (*str == "y") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-						return;
-					}
-
-					valid = true;
-					v->normal.y = p_value;
-					return;
-				} else if (*str == "z") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-						return;
-					}
-
-					valid = true;
-					v->normal.z = p_value;
-					return;
-				} else if (*str == "normal") {
-					if (p_value.type != Variant::VECTOR3) {
-						return;
-					}
-
-					valid = true;
-					v->normal = p_value;
-					return;
-				} else if (*str == "d") {
-					valid = true;
-					v->d = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case QUAT: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Quat *v = reinterpret_cast<Quat *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					v->x = p_value;
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->y = p_value;
-					return;
-				} else if (*str == "z") {
-					valid = true;
-					v->z = p_value;
-					return;
-				} else if (*str == "w") {
-					valid = true;
-					v->w = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case AABB: {
-			if (p_value.type != Variant::VECTOR3) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				::AABB *v = _data._aabb;
-				if (*str == "position") {
-					valid = true;
-					v->position = p_value;
-					return;
-				} else if (*str == "size") {
-					valid = true;
-					v->size = p_value;
-					return;
-				} else if (*str == "end") {
-					valid = true;
-					v->size = Vector3(p_value) - v->position;
-					return;
-				}
-			}
-		} break;
-		case BASIS: {
-			if (p_value.type != Variant::VECTOR3) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-
-				if (index < 0) {
-					index += 3;
-				}
-				if (index >= 0 && index < 3) {
-					Basis *v = _data._basis;
-
-					valid = true;
-					v->set_axis(index, p_value);
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Basis *v = _data._basis;
-
-				if (*str == "x") {
-					valid = true;
-					v->set_axis(0, p_value);
-					return;
-				} else if (*str == "y") {
-					valid = true;
-					v->set_axis(1, p_value);
-					return;
-				} else if (*str == "z") {
-					valid = true;
-					v->set_axis(2, p_value);
-					return;
-				}
-			}
-
-		} break;
-		case TRANSFORM: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				if (p_value.type != Variant::VECTOR3) {
-					return;
-				}
-
-				int index = p_index;
-
-				if (index < 0) {
-					index += 4;
-				}
-				if (index >= 0 && index < 4) {
-					Transform *v = _data._transform;
-					valid = true;
-					if (index == 3) {
-						v->origin = p_value;
-					} else {
-						v->basis.set_axis(index, p_value);
-					}
-					return;
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				Transform *v = _data._transform;
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-
-				if (*str == "basis") {
-					if (p_value.type != Variant::BASIS) {
-						return;
-					}
-					valid = true;
-					v->basis = p_value;
-					return;
-				}
-				if (*str == "origin") {
-					if (p_value.type != Variant::VECTOR3) {
-						return;
-					}
-					valid = true;
-					v->origin = p_value;
-					return;
-				}
-			}
-
-		} break;
-		case COLOR: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
-				return;
-			}
-
-			if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				Color *v = reinterpret_cast<Color *>(_data._mem);
-				if (*str == "r") {
-					valid = true;
-					v->r = p_value;
-					return;
-				} else if (*str == "g") {
-					valid = true;
-					v->g = p_value;
-					return;
-				} else if (*str == "b") {
-					valid = true;
-					v->b = p_value;
-					return;
-				} else if (*str == "a") {
-					valid = true;
-					v->a = p_value;
-					return;
-				} else if (*str == "h") {
-					valid = true;
-					v->set_hsv(p_value, v->get_s(), v->get_v(), v->a);
-					return;
-				} else if (*str == "s") {
-					valid = true;
-					v->set_hsv(v->get_h(), p_value, v->get_v(), v->a);
-					return;
-				} else if (*str == "v") {
-					valid = true;
-					v->set_hsv(v->get_h(), v->get_s(), p_value, v->a);
-					return;
-				} else if (*str == "r8") {
-					valid = true;
-					v->r = float(p_value) / 255.0;
-					return;
-				} else if (*str == "g8") {
-					valid = true;
-					v->g = float(p_value) / 255.0;
-					return;
-				} else if (*str == "b8") {
-					valid = true;
-					v->b = float(p_value) / 255.0;
-					return;
-				} else if (*str == "a8") {
-					valid = true;
-					v->a = float(p_value) / 255.0;
-					return;
-				}
-			} else if (p_index.get_type() == Variant::INT) {
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 4;
-				}
-				if (idx >= 0 && idx < 4) {
-					Color *v = reinterpret_cast<Color *>(_data._mem);
-					(*v)[idx] = p_value;
-					valid = true;
-				}
-			}
-
-		} break;
-		case STRING_NAME: {
-		} break;
-		case NODE_PATH: {
-		} break;
-		case _RID: {
-		} break;
-		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			//only if debugging!
-
-			if (obj) {
-#ifdef DEBUG_ENABLED
-				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					WARN_PRINT("Attempted use of previously freed pointer object.");
-					valid = false;
-					return;
-				}
-#endif
-
-				if (p_index.get_type() != Variant::STRING_NAME && p_index.get_type() != Variant::STRING) {
-					obj->setvar(p_index, p_value, r_valid);
-					return;
-				}
-
-				obj->set(p_index, p_value, r_valid);
-				return;
-			}
-		} break;
-		case DICTIONARY: {
-			Dictionary *dic = reinterpret_cast<Dictionary *>(_data._mem);
-			dic->operator[](p_index) = p_value;
-			valid = true; //always valid, i guess? should this really be ok?
-			return;
-		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return )
-			DEFAULT_OP_DVECTOR_SET(PACKED_BYTE_ARRAY, uint8_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_INT32_ARRAY, int32_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_INT64_ARRAY, int64_t, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT32_ARRAY, float, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_FLOAT64_ARRAY, double, p_value.type != Variant::FLOAT && p_value.type != Variant::INT)
-			DEFAULT_OP_DVECTOR_SET(PACKED_STRING_ARRAY, String, p_value.type != Variant::STRING)
-			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
-			DEFAULT_OP_DVECTOR_SET(PACKED_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
-			DEFAULT_OP_DVECTOR_SET(PACKED_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
-		default:
-			return;
-	}
-}
-
-Variant Variant::get(const Variant &p_index, bool *r_valid) const {
-	static bool _dummy = false;
-
-	bool &valid = r_valid ? *r_valid : _dummy;
-
-	valid = false;
-
-	switch (type) {
-		case NIL: {
-			return Variant();
-		} break;
-		case BOOL: {
-			return Variant();
-		} break;
-		case INT: {
-			return Variant();
-		} break;
-		case FLOAT: {
-			return Variant();
-		} break;
-		case STRING: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//string index
-
-				int idx = p_index;
-				const String *str = reinterpret_cast<const String *>(_data._mem);
-				if (idx < 0) {
-					idx += str->length();
-				}
-				if (idx >= 0 && idx < str->length()) {
-					valid = true;
-					return str->substr(idx, 1);
-				}
-			}
-
-		} break;
-		case VECTOR2: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				// scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 2;
-				}
-				if (idx >= 0 && idx < 2) {
-					const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
-					valid = true;
-					return (*v)[idx];
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->y;
-				}
-			}
-
-		} break;
-		case VECTOR2I: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				// scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 2;
-				}
-				if (idx >= 0 && idx < 2) {
-					const Vector2i *v = reinterpret_cast<const Vector2i *>(_data._mem);
-					valid = true;
-					return (*v)[idx];
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Vector2i *v = reinterpret_cast<const Vector2i *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->y;
-				}
-			}
-
-		} break;
-		case RECT2: {
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Rect2 *v = reinterpret_cast<const Rect2 *>(_data._mem);
-				if (*str == "position") {
-					valid = true;
-					return v->position;
-				} else if (*str == "size") {
-					valid = true;
-					return v->size;
-				} else if (*str == "end") {
-					valid = true;
-					return v->size + v->position;
-				}
-			}
-		} break;
-		case RECT2I: {
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Rect2i *v = reinterpret_cast<const Rect2i *>(_data._mem);
-				if (*str == "position") {
-					valid = true;
-					return v->position;
-				} else if (*str == "size") {
-					valid = true;
-					return v->size;
-				} else if (*str == "end") {
-					valid = true;
-					return v->size + v->position;
-				}
-			}
-		} break;
-		case VECTOR3: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 3;
-				}
-				if (idx >= 0 && idx < 3) {
-					const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
-					valid = true;
-					return (*v)[idx];
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->y;
-				} else if (*str == "z") {
-					valid = true;
-					return v->z;
-				}
-			}
-
-		} break;
-		case VECTOR3I: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 3;
-				}
-				if (idx >= 0 && idx < 3) {
-					const Vector3i *v = reinterpret_cast<const Vector3i *>(_data._mem);
-					valid = true;
-					return (*v)[idx];
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Vector3i *v = reinterpret_cast<const Vector3i *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->y;
-				} else if (*str == "z") {
-					valid = true;
-					return v->z;
-				}
-			}
-
-		} break;
-		case TRANSFORM2D: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-
-				if (index < 0) {
-					index += 3;
-				}
-				if (index >= 0 && index < 3) {
-					const Transform2D *v = _data._transform2d;
-
-					valid = true;
-					return v->elements[index];
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Transform2D *v = _data._transform2d;
-				if (*str == "x") {
-					valid = true;
-					return v->elements[0];
-				} else if (*str == "y") {
-					valid = true;
-					return v->elements[1];
-				} else if (*str == "origin") {
-					valid = true;
-					return v->elements[2];
-				}
-			}
-
-		} break;
-		case PLANE: {
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Plane *v = reinterpret_cast<const Plane *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->normal.x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->normal.y;
-				} else if (*str == "z") {
-					valid = true;
-					return v->normal.z;
-				} else if (*str == "normal") {
-					valid = true;
-					return v->normal;
-				} else if (*str == "d") {
-					valid = true;
-					return v->d;
-				}
-			}
-
-		} break;
-		case QUAT: {
-			if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Quat *v = reinterpret_cast<const Quat *>(_data._mem);
-				if (*str == "x") {
-					valid = true;
-					return v->x;
-				} else if (*str == "y") {
-					valid = true;
-					return v->y;
-				} else if (*str == "z") {
-					valid = true;
-					return v->z;
-				} else if (*str == "w") {
-					valid = true;
-					return v->w;
-				}
-			}
-
-		} break;
-		case AABB: {
-			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
-
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const ::AABB *v = _data._aabb;
-				if (*str == "position") {
-					valid = true;
-					return v->position;
-				} else if (*str == "size") {
-					valid = true;
-					return v->size;
-				} else if (*str == "end") {
-					valid = true;
-					return v->size + v->position;
-				}
-			}
-		} break;
-		case BASIS: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-				if (index < 0) {
-					index += 3;
-				}
-				if (index >= 0 && index < 3) {
-					const Basis *v = _data._basis;
-
-					valid = true;
-					return v->get_axis(index);
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Basis *v = _data._basis;
-
-				if (*str == "x") {
-					valid = true;
-					return v->get_axis(0);
-				} else if (*str == "y") {
-					valid = true;
-					return v->get_axis(1);
-				} else if (*str == "z") {
-					valid = true;
-					return v->get_axis(2);
-				}
-			}
-
-		} break;
-		case TRANSFORM: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-				if (index < 0) {
-					index += 4;
-				}
-				if (index >= 0 && index < 4) {
-					const Transform *v = _data._transform;
-					valid = true;
-					return index == 3 ? v->origin : v->basis.get_axis(index);
-				}
-			} else if (p_index.get_type() == Variant::STRING) {
-				const Transform *v = _data._transform;
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-
-				if (*str == "basis") {
-					valid = true;
-					return v->basis;
-				}
-				if (*str == "origin") {
-					valid = true;
-					return v->origin;
-				}
-			}
-
-		} break;
-		case COLOR: {
-			if (p_index.get_type() == Variant::STRING) {
-				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
-				const Color *v = reinterpret_cast<const Color *>(_data._mem);
-				if (*str == "r") {
-					valid = true;
-					return v->r;
-				} else if (*str == "g") {
-					valid = true;
-					return v->g;
-				} else if (*str == "b") {
-					valid = true;
-					return v->b;
-				} else if (*str == "a") {
-					valid = true;
-					return v->a;
-				} else if (*str == "h") {
-					valid = true;
-					return v->get_h();
-				} else if (*str == "s") {
-					valid = true;
-					return v->get_s();
-				} else if (*str == "v") {
-					valid = true;
-					return v->get_v();
-				} else if (*str == "r8") {
-					valid = true;
-					return (int)Math::round(v->r * 255.0);
-				} else if (*str == "g8") {
-					valid = true;
-					return (int)Math::round(v->g * 255.0);
-				} else if (*str == "b8") {
-					valid = true;
-					return (int)Math::round(v->b * 255.0);
-				} else if (*str == "a8") {
-					valid = true;
-					return (int)Math::round(v->a * 255.0);
-				}
-			} else if (p_index.get_type() == Variant::INT) {
-				int idx = p_index;
-				if (idx < 0) {
-					idx += 4;
-				}
-				if (idx >= 0 && idx < 4) {
-					const Color *v = reinterpret_cast<const Color *>(_data._mem);
-					valid = true;
-					return (*v)[idx];
-				}
-			}
-
-		} break;
-		case STRING_NAME: {
-		} break;
-		case NODE_PATH: {
-		} break;
-		case _RID: {
-		} break;
-		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			if (obj) {
-#ifdef DEBUG_ENABLED
-
-				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					valid = false;
-					return "Attempted get on previously freed instance.";
-				}
-#endif
-
-				if (p_index.get_type() != Variant::STRING) {
-					return obj->getvar(p_index, r_valid);
-				}
-
-				return obj->get(p_index, r_valid);
-			}
-
-		} break;
-		case DICTIONARY: {
-			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			const Variant *res = dic->getptr(p_index);
-			if (res) {
-				valid = true;
-				return *res;
-			}
-		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
-			DEFAULT_OP_DVECTOR_GET(PACKED_BYTE_ARRAY, uint8_t)
-			DEFAULT_OP_DVECTOR_GET(PACKED_INT32_ARRAY, int32_t)
-			DEFAULT_OP_DVECTOR_GET(PACKED_INT64_ARRAY, int64_t)
-			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT32_ARRAY, float)
-			DEFAULT_OP_DVECTOR_GET(PACKED_FLOAT64_ARRAY, double)
-			DEFAULT_OP_DVECTOR_GET(PACKED_STRING_ARRAY, String)
-			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR2_ARRAY, Vector2)
-			DEFAULT_OP_DVECTOR_GET(PACKED_VECTOR3_ARRAY, Vector3)
-			DEFAULT_OP_DVECTOR_GET(PACKED_COLOR_ARRAY, Color)
-		default:
-			return Variant();
-	}
-
-	return Variant();
-}
-
-bool Variant::in(const Variant &p_index, bool *r_valid) const {
-	if (r_valid) {
-		*r_valid = true;
-	}
-
-	switch (type) {
-		case STRING: {
-			if (p_index.get_type() == Variant::STRING) {
-				//string index
-				String idx = p_index;
-				const String *str = reinterpret_cast<const String *>(_data._mem);
-
-				return str->find(idx) != -1;
-			}
-
-		} break;
-		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			if (obj) {
-				bool valid = false;
-#ifdef DEBUG_ENABLED
-
-				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					if (r_valid) {
-						*r_valid = false;
-					}
-					return true; // Attempted get on stray pointer.
-				}
-
-#endif
-
-				if (p_index.get_type() != Variant::STRING) {
-					obj->getvar(p_index, &valid);
-				} else {
-					obj->get(p_index, &valid);
-				}
-
-				return valid;
-			} else {
-				if (r_valid) {
-					*r_valid = false;
-				}
-			}
-			return false;
-		} break;
-		case DICTIONARY: {
-			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			return dic->has(p_index);
-
-		} break;
-		case ARRAY: {
-			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			int l = arr->size();
-			if (l) {
-				for (int i = 0; i < l; i++) {
-					if (evaluate(OP_EQUAL, (*arr)[i], p_index)) {
-						return true;
-					}
-				}
-			}
-
-			return false;
-
-		} break;
-		case PACKED_BYTE_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int index = p_index;
-				const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
-				int l = arr->size();
-				if (l) {
-					const uint8_t *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break;
-		case PACKED_INT32_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int32_t index = p_index;
-				const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
-				int32_t l = arr->size();
-				if (l) {
-					const int32_t *r = arr->ptr();
-					for (int32_t i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-		} break;
-		case PACKED_INT64_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				int64_t index = p_index;
-				const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
-				int64_t l = arr->size();
-				if (l) {
-					const int64_t *r = arr->ptr();
-					for (int64_t i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-		} break;
-		case PACKED_FLOAT32_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				real_t index = p_index;
-				const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
-				int l = arr->size();
-				if (l) {
-					const float *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break;
-		case PACKED_FLOAT64_ARRAY: {
-			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				real_t index = p_index;
-				const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
-				int l = arr->size();
-				if (l) {
-					const double *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break;
-		case PACKED_STRING_ARRAY: {
-			if (p_index.get_type() == Variant::STRING) {
-				String index = p_index;
-				const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
-
-				int l = arr->size();
-				if (l) {
-					const String *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break; //25
-		case PACKED_VECTOR2_ARRAY: {
-			if (p_index.get_type() == Variant::VECTOR2) {
-				Vector2 index = p_index;
-				const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
-
-				int l = arr->size();
-				if (l) {
-					const Vector2 *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break;
-		case PACKED_VECTOR3_ARRAY: {
-			if (p_index.get_type() == Variant::VECTOR3) {
-				Vector3 index = p_index;
-				const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
-
-				int l = arr->size();
-				if (l) {
-					const Vector3 *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-
-		} break;
-		case PACKED_COLOR_ARRAY: {
-			if (p_index.get_type() == Variant::COLOR) {
-				Color index = p_index;
-				const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
-
-				int l = arr->size();
-				if (l) {
-					const Color *r = arr->ptr();
-					for (int i = 0; i < l; i++) {
-						if (r[i] == index) {
-							return true;
-						}
-					}
-				}
-
-				return false;
-			}
-		} break;
-		default: {
-		}
-	}
-
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return false;
-}
-
-void Variant::get_property_list(List<PropertyInfo> *p_list) const {
-	switch (type) {
-		case VECTOR2: {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
-
-		} break;
-		case VECTOR2I: {
-			p_list->push_back(PropertyInfo(Variant::INT, "x"));
-			p_list->push_back(PropertyInfo(Variant::INT, "y"));
-
-		} break;
-		case RECT2: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "position"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "size"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "end"));
-
-		} break;
-		case RECT2I: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "position"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "size"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "end"));
-
-		} break;
-		case VECTOR3: {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
-
-		} break;
-		case VECTOR3I: {
-			p_list->push_back(PropertyInfo(Variant::INT, "x"));
-			p_list->push_back(PropertyInfo(Variant::INT, "y"));
-			p_list->push_back(PropertyInfo(Variant::INT, "z"));
-
-		} break;
-		case TRANSFORM2D: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "x"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "y"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2, "origin"));
-
-		} break;
-		case PLANE: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "normal"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "d"));
-
-		} break;
-		case QUAT: {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "x"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "y"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "z"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "w"));
-
-		} break;
-		case AABB: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "position"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "size"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "end"));
-		} break;
-		case BASIS: {
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "x"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "y"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "z"));
-
-		} break;
-		case TRANSFORM: {
-			p_list->push_back(PropertyInfo(Variant::BASIS, "basis"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR3, "origin"));
-
-		} break;
-		case COLOR: {
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "r"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "g"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "b"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "a"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "h"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "s"));
-			p_list->push_back(PropertyInfo(Variant::FLOAT, "v"));
-			p_list->push_back(PropertyInfo(Variant::INT, "r8"));
-			p_list->push_back(PropertyInfo(Variant::INT, "g8"));
-			p_list->push_back(PropertyInfo(Variant::INT, "b8"));
-			p_list->push_back(PropertyInfo(Variant::INT, "a8"));
-
-		} break;
-		case STRING_NAME: {
-		} break;
-		case NODE_PATH: {
-		} break;
-		case _RID: {
-		} break;
-		case OBJECT: {
-			Object *obj = _get_obj().obj;
-			if (obj) {
-#ifdef DEBUG_ENABLED
-
-				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					WARN_PRINT("Attempted get_property list on previously freed instance.");
-					return;
-				}
-
-#endif
-
-				obj->get_property_list(p_list);
-			}
-
-		} break;
-		case DICTIONARY: {
-			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			List<Variant> keys;
-			dic->get_key_list(&keys);
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-				if (E->get().get_type() == Variant::STRING) {
-					p_list->push_back(PropertyInfo(Variant::STRING, E->get()));
-				}
-			}
-		} break;
-		case ARRAY:
-		case PACKED_BYTE_ARRAY:
-		case PACKED_INT32_ARRAY:
-		case PACKED_INT64_ARRAY:
-		case PACKED_FLOAT32_ARRAY:
-		case PACKED_FLOAT64_ARRAY:
-		case PACKED_STRING_ARRAY:
-		case PACKED_VECTOR2_ARRAY:
-		case PACKED_VECTOR3_ARRAY:
-		case PACKED_COLOR_ARRAY: {
-			//nothing
-		} break;
-		default: {
-		}
-	}
-}
-
-bool Variant::iter_init(Variant &r_iter, bool &valid) const {
-	valid = true;
-	switch (type) {
-		case INT: {
-			r_iter = 0;
-			return _data._int > 0;
-		} break;
-		case FLOAT: {
-			r_iter = 0;
-			return _data._float > 0.0;
-		} break;
-		case VECTOR2: {
-			double from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
-			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
-
-			r_iter = from;
-
-			return from < to;
-		} break;
-		case VECTOR2I: {
-			int64_t from = reinterpret_cast<const Vector2i *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector2i *>(_data._mem)->y;
-
-			r_iter = from;
-
-			return from < to;
-		} break;
-		case VECTOR3: {
-			double from = reinterpret_cast<const Vector3 *>(_data._mem)->x;
-			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
-
-			r_iter = from;
-
-			if (from == to) {
-				return false;
-			} else if (from < to) {
-				return step > 0;
-			}
-			return step < 0;
-		} break;
-		case VECTOR3I: {
-			int64_t from = reinterpret_cast<const Vector3i *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector3i *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3i *>(_data._mem)->z;
-
-			r_iter = from;
-
-			if (from == to) {
-				return false;
-			} else if (from < to) {
-				return step > 0;
-			}
-			return step < 0;
-		} break;
-		case OBJECT: {
-			if (!_get_obj().obj) {
-				valid = false;
-				return false;
-			}
-
-#ifdef DEBUG_ENABLED
-
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-				valid = false;
-				return false;
-			}
-
-#endif
-			Callable::CallError ce;
-			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
-			Variant vref = ref;
-			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init, refp, 1, ce);
-
-			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-				valid = false;
-				return false;
-			}
-
-			r_iter = ref[0];
-			return ret;
-		} break;
-
-		case STRING: {
-			const String *str = reinterpret_cast<const String *>(_data._mem);
-			if (str->empty()) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-		} break;
-		case DICTIONARY: {
-			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			if (dic->empty()) {
-				return false;
-			}
-
-			const Variant *next = dic->next(nullptr);
-			r_iter = *next;
-			return true;
-
-		} break;
-		case ARRAY: {
-			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			if (arr->empty()) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-		} break;
-		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		case PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		case PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		case PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		case PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-		} break;
-		case PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-		} break;
-		case PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-		} break;
-		case PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
-			if (arr->size() == 0) {
-				return false;
-			}
-			r_iter = 0;
-			return true;
-
-		} break;
-		default: {
-		}
-	}
-
-	valid = false;
-	return false;
-}
-
-bool Variant::iter_next(Variant &r_iter, bool &valid) const {
-	valid = true;
-	switch (type) {
-		case INT: {
-			int64_t idx = r_iter;
-			idx++;
-			if (idx >= _data._int) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case FLOAT: {
-			int64_t idx = r_iter;
-			idx++;
-			if (idx >= _data._float) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case VECTOR2: {
-			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
-
-			double idx = r_iter;
-			idx++;
-
-			if (idx >= to) {
-				return false;
-			}
-
-			r_iter = idx;
-			return true;
-		} break;
-		case VECTOR2I: {
-			int64_t to = reinterpret_cast<const Vector2i *>(_data._mem)->y;
-
-			int64_t idx = r_iter;
-			idx++;
-
-			if (idx >= to) {
-				return false;
-			}
-
-			r_iter = idx;
-			return true;
-		} break;
-		case VECTOR3: {
-			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
-
-			double idx = r_iter;
-			idx += step;
-
-			if (step < 0 && idx <= to) {
-				return false;
-			}
-
-			if (step > 0 && idx >= to) {
-				return false;
-			}
-
-			r_iter = idx;
-			return true;
-		} break;
-		case VECTOR3I: {
-			int64_t to = reinterpret_cast<const Vector3i *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3i *>(_data._mem)->z;
-
-			int64_t idx = r_iter;
-			idx += step;
-
-			if (step < 0 && idx <= to) {
-				return false;
-			}
-
-			if (step > 0 && idx >= to) {
-				return false;
-			}
-
-			r_iter = idx;
-			return true;
-		} break;
-		case OBJECT: {
-			if (!_get_obj().obj) {
-				valid = false;
-				return false;
-			}
-
-#ifdef DEBUG_ENABLED
-
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-				valid = false;
-				return false;
-			}
-
-#endif
-			Callable::CallError ce;
-			ce.error = Callable::CallError::CALL_OK;
-			Array ref;
-			ref.push_back(r_iter);
-			Variant vref = ref;
-			const Variant *refp[] = { &vref };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next, refp, 1, ce);
-
-			if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-				valid = false;
-				return false;
-			}
-
-			r_iter = ref[0];
-
-			return ret;
-		} break;
-
-		case STRING: {
-			const String *str = reinterpret_cast<const String *>(_data._mem);
-			int idx = r_iter;
-			idx++;
-			if (idx >= str->length()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case DICTIONARY: {
-			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			const Variant *next = dic->next(&r_iter);
-			if (!next) {
-				return false;
-			}
-
-			r_iter = *next;
-			return true;
-
-		} break;
-		case ARRAY: {
-			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-
-		} break;
-		case PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
-			int32_t idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-
-		} break;
-		case PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
-			int64_t idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-
-		} break;
-		case PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-
-		} break;
-		case PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-
-		} break;
-		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		case PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
-			int idx = r_iter;
-			idx++;
-			if (idx >= arr->size()) {
-				return false;
-			}
-			r_iter = idx;
-			return true;
-		} break;
-		default: {
-		}
-	}
-
-	valid = false;
-	return false;
-}
-
-Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
-	r_valid = true;
-	switch (type) {
-		case INT: {
-			return r_iter;
-		} break;
-		case FLOAT: {
-			return r_iter;
-		} break;
-		case VECTOR2: {
-			return r_iter;
-		} break;
-		case VECTOR2I: {
-			return r_iter;
-		} break;
-		case VECTOR3: {
-			return r_iter;
-		} break;
-		case VECTOR3I: {
-			return r_iter;
-		} break;
-		case OBJECT: {
-			if (!_get_obj().obj) {
-				r_valid = false;
-				return Variant();
-			}
-#ifdef DEBUG_ENABLED
-			if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-				r_valid = false;
-				return Variant();
-			}
-
-#endif
-			Callable::CallError ce;
-			ce.error = Callable::CallError::CALL_OK;
-			const Variant *refp[] = { &r_iter };
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_get, refp, 1, ce);
-
-			if (ce.error != Callable::CallError::CALL_OK) {
-				r_valid = false;
-				return Variant();
-			}
-
-			//r_iter=ref[0];
-
-			return ret;
-		} break;
-
-		case STRING: {
-			const String *str = reinterpret_cast<const String *>(_data._mem);
-			return str->substr(r_iter, 1);
-		} break;
-		case DICTIONARY: {
-			return r_iter; //iterator is the same as the key
-
-		} break;
-		case ARRAY: {
-			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_BYTE_ARRAY: {
-			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
-			int32_t idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
-			int64_t idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_STRING_ARRAY: {
-			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		case PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
-			int idx = r_iter;
-#ifdef DEBUG_ENABLED
-			if (idx < 0 || idx >= arr->size()) {
-				r_valid = false;
-				return Variant();
-			}
-#endif
-			return arr->get(idx);
-		} break;
-		default: {
-		}
-	}
-
-	r_valid = false;
-	return Variant();
-}
-
-Variant Variant::duplicate(bool deep) const {
-	switch (type) {
-		case OBJECT: {
-			/*  breaks stuff :(
-			if (deep && !_get_obj().ref.is_null()) {
-				Ref<Resource> resource = _get_obj().ref;
-				if (resource.is_valid()) {
-					return resource->duplicate(true);
-				}
-			}
-			*/
-			return *this;
-		} break;
-		case DICTIONARY:
-			return operator Dictionary().duplicate(deep);
-		case ARRAY:
-			return operator Array().duplicate(deep);
-		default:
-			return *this;
-	}
-}
-
-void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst) {
-	if (a.type != b.type) {
-		if (a.is_num() && b.is_num()) {
-			real_t va = a;
-			real_t vb = b;
-			r_dst = va + vb * c;
-		} else {
-			r_dst = a;
-		}
+	ERR_FAIL_INDEX(p_op, Variant::OP_MAX);
+	Variant::Type type_a = p_a.get_type();
+	Variant::Type type_b = p_b.get_type();
+	ERR_FAIL_INDEX(type_a, Variant::VARIANT_MAX);
+	ERR_FAIL_INDEX(type_b, Variant::VARIANT_MAX);
+
+	VariantEvaluatorFunction ev = operator_evaluator_table[p_op][type_a][type_b];
+	if (unlikely(!ev)) {
+		r_valid = false;
+		r_ret = Variant();
 		return;
 	}
 
-	switch (a.type) {
-		case NIL: {
-			r_dst = Variant();
-		}
-			return;
-		case INT: {
-			int64_t va = a._data._int;
-			int64_t vb = b._data._int;
-			r_dst = int(va + vb * c + 0.5);
-		}
-			return;
-		case FLOAT: {
-			double ra = a._data._float;
-			double rb = b._data._float;
-			r_dst = ra + rb * c;
-		}
-			return;
-		case VECTOR2: {
-			r_dst = *reinterpret_cast<const Vector2 *>(a._data._mem) + *reinterpret_cast<const Vector2 *>(b._data._mem) * c;
-		}
-			return;
-		case VECTOR2I: {
-			int32_t vax = reinterpret_cast<const Vector2i *>(a._data._mem)->x;
-			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
-			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
-			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
-			r_dst = Vector2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5));
-		}
-			return;
-		case RECT2: {
-			const Rect2 *ra = reinterpret_cast<const Rect2 *>(a._data._mem);
-			const Rect2 *rb = reinterpret_cast<const Rect2 *>(b._data._mem);
-			r_dst = Rect2(ra->position + rb->position * c, ra->size + rb->size * c);
-		}
-			return;
-		case RECT2I: {
-			const Rect2i *ra = reinterpret_cast<const Rect2i *>(a._data._mem);
-			const Rect2i *rb = reinterpret_cast<const Rect2i *>(b._data._mem);
-
-			int32_t vax = ra->position.x;
-			int32_t vay = ra->position.y;
-			int32_t vbx = ra->size.x;
-			int32_t vby = ra->size.y;
-			int32_t vcx = rb->position.x;
-			int32_t vcy = rb->position.y;
-			int32_t vdx = rb->size.x;
-			int32_t vdy = rb->size.y;
-
-			r_dst = Rect2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vcx + vdx * c + 0.5), int32_t(vcy + vdy * c + 0.5));
-		}
-			return;
-		case VECTOR3: {
-			r_dst = *reinterpret_cast<const Vector3 *>(a._data._mem) + *reinterpret_cast<const Vector3 *>(b._data._mem) * c;
-		}
-			return;
-		case VECTOR3I: {
-			int32_t vax = reinterpret_cast<const Vector3i *>(a._data._mem)->x;
-			int32_t vbx = reinterpret_cast<const Vector3i *>(b._data._mem)->x;
-			int32_t vay = reinterpret_cast<const Vector3i *>(a._data._mem)->y;
-			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
-			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
-			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
-			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
-		}
-			return;
-		case AABB: {
-			const ::AABB *ra = reinterpret_cast<const ::AABB *>(a._data._mem);
-			const ::AABB *rb = reinterpret_cast<const ::AABB *>(b._data._mem);
-			r_dst = ::AABB(ra->position + rb->position * c, ra->size + rb->size * c);
-		}
-			return;
-		case QUAT: {
-			Quat empty_rot;
-			const Quat *qa = reinterpret_cast<const Quat *>(a._data._mem);
-			const Quat *qb = reinterpret_cast<const Quat *>(b._data._mem);
-			r_dst = *qa * empty_rot.slerp(*qb, c);
-		}
-			return;
-		case COLOR: {
-			const Color *ca = reinterpret_cast<const Color *>(a._data._mem);
-			const Color *cb = reinterpret_cast<const Color *>(b._data._mem);
-			float new_r = ca->r + cb->r * c;
-			float new_g = ca->g + cb->g * c;
-			float new_b = ca->b + cb->b * c;
-			float new_a = ca->a + cb->a * c;
-			new_r = new_r > 1.0 ? 1.0 : new_r;
-			new_g = new_g > 1.0 ? 1.0 : new_g;
-			new_b = new_b > 1.0 ? 1.0 : new_b;
-			new_a = new_a > 1.0 ? 1.0 : new_a;
-			r_dst = Color(new_r, new_g, new_b, new_a);
-		}
-			return;
-		default: {
-			r_dst = c < 0.5 ? a : b;
-		}
-			return;
-	}
+	ev(p_a, p_b, &r_ret, r_valid);
 }
 
-void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst) {
-	if (a.type != b.type) {
-		if (a.is_num() && b.is_num()) {
-			//not as efficient but..
-			real_t va = a;
-			real_t vb = b;
-			r_dst = va + (vb - va) * c;
+Variant::Type Variant::get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b) {
+	ERR_FAIL_INDEX_V(p_operator, Variant::OP_MAX, Variant::NIL);
+	ERR_FAIL_INDEX_V(p_type_a, Variant::VARIANT_MAX, Variant::NIL);
+	ERR_FAIL_INDEX_V(p_type_b, Variant::VARIANT_MAX, Variant::NIL);
 
-		} else {
-			r_dst = a;
-		}
-		return;
-	}
-
-	switch (a.type) {
-		case NIL: {
-			r_dst = Variant();
-		}
-			return;
-		case BOOL: {
-			r_dst = a;
-		}
-			return;
-		case INT: {
-			int64_t va = a._data._int;
-			int64_t vb = b._data._int;
-			r_dst = int(va + (vb - va) * c);
-		}
-			return;
-		case FLOAT: {
-			real_t va = a._data._float;
-			real_t vb = b._data._float;
-			r_dst = va + (vb - va) * c;
-		}
-			return;
-		case STRING: {
-			//this is pretty funny and bizarre, but artists like to use it for typewritter effects
-			String sa = *reinterpret_cast<const String *>(a._data._mem);
-			String sb = *reinterpret_cast<const String *>(b._data._mem);
-			String dst;
-			int sa_len = sa.length();
-			int sb_len = sb.length();
-			int csize = sa_len + (sb_len - sa_len) * c;
-			if (csize == 0) {
-				r_dst = "";
-				return;
-			}
-			dst.resize(csize + 1);
-			dst[csize] = 0;
-			int split = csize / 2;
-
-			for (int i = 0; i < csize; i++) {
-				char32_t chr = ' ';
-
-				if (i < split) {
-					if (i < sa.length()) {
-						chr = sa[i];
-					} else if (i < sb.length()) {
-						chr = sb[i];
-					}
-
-				} else {
-					if (i < sb.length()) {
-						chr = sb[i];
-					} else if (i < sa.length()) {
-						chr = sa[i];
-					}
-				}
-
-				dst[i] = chr;
-			}
-
-			r_dst = dst;
-		}
-			return;
-		case VECTOR2: {
-			r_dst = reinterpret_cast<const Vector2 *>(a._data._mem)->lerp(*reinterpret_cast<const Vector2 *>(b._data._mem), c);
-		}
-			return;
-		case VECTOR2I: {
-			int32_t vax = reinterpret_cast<const Vector2i *>(a._data._mem)->x;
-			int32_t vbx = reinterpret_cast<const Vector2i *>(b._data._mem)->x;
-			int32_t vay = reinterpret_cast<const Vector2i *>(a._data._mem)->y;
-			int32_t vby = reinterpret_cast<const Vector2i *>(b._data._mem)->y;
-			r_dst = Vector2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5));
-		}
-			return;
-
-		case RECT2: {
-			r_dst = Rect2(reinterpret_cast<const Rect2 *>(a._data._mem)->position.lerp(reinterpret_cast<const Rect2 *>(b._data._mem)->position, c), reinterpret_cast<const Rect2 *>(a._data._mem)->size.lerp(reinterpret_cast<const Rect2 *>(b._data._mem)->size, c));
-		}
-			return;
-		case RECT2I: {
-			const Rect2i *ra = reinterpret_cast<const Rect2i *>(a._data._mem);
-			const Rect2i *rb = reinterpret_cast<const Rect2i *>(b._data._mem);
-
-			int32_t vax = ra->position.x;
-			int32_t vay = ra->position.y;
-			int32_t vbx = ra->size.x;
-			int32_t vby = ra->size.y;
-			int32_t vcx = rb->position.x;
-			int32_t vcy = rb->position.y;
-			int32_t vdx = rb->size.x;
-			int32_t vdy = rb->size.y;
-
-			r_dst = Rect2i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vcx + vdx * c + 0.5), int32_t(vcy + vdy * c + 0.5));
-		}
-			return;
-
-		case VECTOR3: {
-			r_dst = reinterpret_cast<const Vector3 *>(a._data._mem)->lerp(*reinterpret_cast<const Vector3 *>(b._data._mem), c);
-		}
-			return;
-		case VECTOR3I: {
-			int32_t vax = reinterpret_cast<const Vector3i *>(a._data._mem)->x;
-			int32_t vbx = reinterpret_cast<const Vector3i *>(b._data._mem)->x;
-			int32_t vay = reinterpret_cast<const Vector3i *>(a._data._mem)->y;
-			int32_t vby = reinterpret_cast<const Vector3i *>(b._data._mem)->y;
-			int32_t vaz = reinterpret_cast<const Vector3i *>(a._data._mem)->z;
-			int32_t vbz = reinterpret_cast<const Vector3i *>(b._data._mem)->z;
-			r_dst = Vector3i(int32_t(vax + vbx * c + 0.5), int32_t(vay + vby * c + 0.5), int32_t(vaz + vbz * c + 0.5));
-		}
-			return;
-
-		case TRANSFORM2D: {
-			r_dst = a._data._transform2d->interpolate_with(*b._data._transform2d, c);
-		}
-			return;
-		case PLANE: {
-			r_dst = a;
-		}
-			return;
-		case QUAT: {
-			r_dst = reinterpret_cast<const Quat *>(a._data._mem)->slerp(*reinterpret_cast<const Quat *>(b._data._mem), c);
-		}
-			return;
-		case AABB: {
-			r_dst = ::AABB(a._data._aabb->position.lerp(b._data._aabb->position, c), a._data._aabb->size.lerp(b._data._aabb->size, c));
-		}
-			return;
-		case BASIS: {
-			r_dst = Transform(*a._data._basis).interpolate_with(Transform(*b._data._basis), c).basis;
-		}
-			return;
-		case TRANSFORM: {
-			r_dst = a._data._transform->interpolate_with(*b._data._transform, c);
-		}
-			return;
-		case COLOR: {
-			r_dst = reinterpret_cast<const Color *>(a._data._mem)->lerp(*reinterpret_cast<const Color *>(b._data._mem), c);
-		}
-			return;
-		case STRING_NAME: {
-			r_dst = a;
-		}
-			return;
-		case NODE_PATH: {
-			r_dst = a;
-		}
-			return;
-		case _RID: {
-			r_dst = a;
-		}
-			return;
-		case OBJECT: {
-			r_dst = a;
-		}
-			return;
-		case DICTIONARY: {
-		}
-			return;
-		case ARRAY: {
-			r_dst = a;
-		}
-			return;
-		case PACKED_BYTE_ARRAY: {
-			r_dst = a;
-		}
-			return;
-		case PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr_a = &PackedArrayRef<int32_t>::get_array(a._data.packed_array);
-			const Vector<int32_t> *arr_b = &PackedArrayRef<int32_t>::get_array(b._data.packed_array);
-			int32_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<int32_t> v;
-				v.resize(sz);
-				{
-					int32_t *vw = v.ptrw();
-					const int32_t *ar = arr_a->ptr();
-					const int32_t *br = arr_b->ptr();
-
-					Variant va;
-					for (int32_t i = 0; i < sz; i++) {
-						Variant::interpolate(ar[i], br[i], c, va);
-						vw[i] = va;
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr_a = &PackedArrayRef<int64_t>::get_array(a._data.packed_array);
-			const Vector<int64_t> *arr_b = &PackedArrayRef<int64_t>::get_array(b._data.packed_array);
-			int64_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<int64_t> v;
-				v.resize(sz);
-				{
-					int64_t *vw = v.ptrw();
-					const int64_t *ar = arr_a->ptr();
-					const int64_t *br = arr_b->ptr();
-
-					Variant va;
-					for (int64_t i = 0; i < sz; i++) {
-						Variant::interpolate(ar[i], br[i], c, va);
-						vw[i] = va;
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr_a = &PackedArrayRef<float>::get_array(a._data.packed_array);
-			const Vector<float> *arr_b = &PackedArrayRef<float>::get_array(b._data.packed_array);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<float> v;
-				v.resize(sz);
-				{
-					float *vw = v.ptrw();
-					const float *ar = arr_a->ptr();
-					const float *br = arr_b->ptr();
-
-					Variant va;
-					for (int i = 0; i < sz; i++) {
-						Variant::interpolate(ar[i], br[i], c, va);
-						vw[i] = va;
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr_a = &PackedArrayRef<double>::get_array(a._data.packed_array);
-			const Vector<double> *arr_b = &PackedArrayRef<double>::get_array(b._data.packed_array);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<double> v;
-				v.resize(sz);
-				{
-					double *vw = v.ptrw();
-					const double *ar = arr_a->ptr();
-					const double *br = arr_b->ptr();
-
-					Variant va;
-					for (int i = 0; i < sz; i++) {
-						Variant::interpolate(ar[i], br[i], c, va);
-						vw[i] = va;
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_STRING_ARRAY: {
-			r_dst = a;
-		}
-			return;
-		case PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr_a = &PackedArrayRef<Vector2>::get_array(a._data.packed_array);
-			const Vector<Vector2> *arr_b = &PackedArrayRef<Vector2>::get_array(b._data.packed_array);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<Vector2> v;
-				v.resize(sz);
-				{
-					Vector2 *vw = v.ptrw();
-					const Vector2 *ar = arr_a->ptr();
-					const Vector2 *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr_a = &PackedArrayRef<Vector3>::get_array(a._data.packed_array);
-			const Vector<Vector3> *arr_b = &PackedArrayRef<Vector3>::get_array(b._data.packed_array);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<Vector3> v;
-				v.resize(sz);
-				{
-					Vector3 *vw = v.ptrw();
-					const Vector3 *ar = arr_a->ptr();
-					const Vector3 *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		case PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr_a = &PackedArrayRef<Color>::get_array(a._data.packed_array);
-			const Vector<Color> *arr_b = &PackedArrayRef<Color>::get_array(b._data.packed_array);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				r_dst = a;
-			} else {
-				Vector<Color> v;
-				v.resize(sz);
-				{
-					Color *vw = v.ptrw();
-					const Color *ar = arr_a->ptr();
-					const Color *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				r_dst = v;
-			}
-		}
-			return;
-		default: {
-			r_dst = a;
-		}
-	}
+	return operator_return_type_table[p_operator][p_type_a][p_type_b];
 }
+
+Variant::ValidatedOperatorEvaluator Variant::get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b) {
+	ERR_FAIL_INDEX_V(p_operator, Variant::OP_MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_type_a, Variant::VARIANT_MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_type_b, Variant::VARIANT_MAX, nullptr);
+	return validated_operator_evaluator_table[p_operator][p_type_a][p_type_b];
+}
+#ifdef PTRCALL_ENABLED
+Variant::PTROperatorEvaluator Variant::get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b) {
+	ERR_FAIL_INDEX_V(p_operator, Variant::OP_MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_type_a, Variant::VARIANT_MAX, nullptr);
+	ERR_FAIL_INDEX_V(p_type_b, Variant::VARIANT_MAX, nullptr);
+	return ptr_operator_evaluator_table[p_operator][p_type_a][p_type_b];
+}
+
+#endif
 
 static const char *_op_names[Variant::OP_MAX] = {
 	"==",
@@ -4587,7 +2094,6 @@ static const char *_op_names[Variant::OP_MAX] = {
 	"- (negation)",
 	"+ (positive)",
 	"%",
-	"+ (concatenation)",
 	"<<",
 	">>",
 	"&",
@@ -4605,4 +2111,14 @@ static const char *_op_names[Variant::OP_MAX] = {
 String Variant::get_operator_name(Operator p_op) {
 	ERR_FAIL_INDEX_V(p_op, OP_MAX, "");
 	return _op_names[p_op];
+}
+
+Variant::operator bool() const {
+	return booleanize();
+}
+
+// We consider all uninitialized or empty types to be false based on the type's
+// zeroiness.
+bool Variant::booleanize() const {
+	return !is_zero();
 }

@@ -155,6 +155,11 @@ public:
 	~StringName();
 };
 
+bool operator==(const String &p_name, const StringName &p_string_name);
+bool operator!=(const String &p_name, const StringName &p_string_name);
+bool operator==(const char *p_name, const StringName &p_string_name);
+bool operator!=(const char *p_name, const StringName &p_string_name);
+
 StringName _scs_create(const char *p_chr);
 
 #endif // STRING_NAME_H

@@ -99,6 +99,8 @@ extern void register_global_constants();
 extern void unregister_global_constants();
 extern void register_variant_methods();
 extern void unregister_variant_methods();
+extern void register_variant_operators();
+extern void unregister_variant_operators();
 
 void register_core_types() {
 	//consistency check
@@ -112,6 +114,7 @@ void register_core_types() {
 
 	register_global_constants();
 	register_variant_methods();
+	register_variant_operators();
 
 	CoreStringNames::create();
 
@@ -319,6 +322,7 @@ void unregister_core_types() {
 	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
+	unregister_variant_operators();
 	unregister_variant_methods();
 	unregister_global_constants();
 
