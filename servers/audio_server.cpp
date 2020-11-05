@@ -947,6 +947,7 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 }
 
 void AudioServer::set_global_rate_scale(float p_scale) {
+	ERR_FAIL_COND(p_scale <= 0);
 
 	global_rate_scale = p_scale;
 }
