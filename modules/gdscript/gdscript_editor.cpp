@@ -1058,10 +1058,8 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 	}
 
 	static const char *_keywords[] = {
-		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
-		"breakpoint", "class", "extends", "is", "func", "preload", "signal", "tool", "await",
-		"const", "enum", "static", "super", "var", "break", "continue", "if", "elif",
-		"else", "for", "pass", "return", "match", "while",
+		"false", "PI", "TAU", "INF", "NAN", "self", "true", "breakpoint", "tool", "super",
+		"break", "continue", "pass", "return",
 		0
 	};
 
@@ -1070,6 +1068,33 @@ static void _find_identifiers(GDScriptParser::CompletionContext &p_context, bool
 		ScriptCodeCompletionOption option(*kw, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
 		r_result.insert(option.display, option);
 		kw++;
+	}
+
+	static const char *_keywords_with_space[] = {
+		"and", "in", "not", "or", "as", "class", "extends", "is", "func", "signal", "await",
+		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
+		0
+	};
+
+	const char **kws = _keywords_with_space;
+	while (*kws) {
+		ScriptCodeCompletionOption option(*kws, ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+		option.insert_text += " ";
+		r_result.insert(option.display, option);
+		kws++;
+	}
+
+	static const char *_keywords_with_args[] = {
+		"assert", "preload",
+		0
+	};
+
+	const char **kwa = _keywords_with_args;
+	while (*kwa) {
+		ScriptCodeCompletionOption option(*kwa, ScriptCodeCompletionOption::KIND_FUNCTION);
+		option.insert_text += "(";
+		r_result.insert(option.display, option);
+		kwa++;
 	}
 
 	Map<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
