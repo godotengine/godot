@@ -192,6 +192,19 @@
 			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
+				Called by the engine when the 2D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
+				[codeblock]
+				func forward_canvas_draw_over_viewport(overlay):
+				    # Draw a circle at cursor position.
+				    overlay.draw_circle(overlay.get_local_mouse_position(), 64)
+
+				func forward_canvas_gui_input(event):
+				    if event is InputEventMouseMotion:
+				        # Redraw viewport when cursor is moved.
+				        update_overlays()
+				        return true
+				    return false
+				[/codeblock]
 			</description>
 		</method>
 		<method name="forward_canvas_force_draw_over_viewport" qualifiers="virtual">
@@ -200,6 +213,8 @@
 			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
+				This method is the same as [method forward_canvas_draw_over_viewport], except it draws on top of everything. Useful when you need an extra layer that shows over anything else.
+				You need to enable calling of this method by using [method set_force_draw_over_forwarding_enabled].
 			</description>
 		</method>
 		<method name="forward_canvas_gui_input" qualifiers="virtual">
@@ -475,6 +490,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Enables calling of [method forward_canvas_force_draw_over_viewport] when the 2D editor's viewport is updated. You need to call this method only once and it will work permanently for this plugin.
 			</description>
 		</method>
 		<method name="set_input_event_forwarding_always_enabled">
@@ -506,7 +522,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Updates the overlays of the editor (2D/3D) viewport.
+				Updates the overlays of the 2D and 3D editor viewport. Causes [method forward_canvas_draw_over_viewport] and [method forward_canvas_force_draw_over_viewport] to be called.
 			</description>
 		</method>
 	</methods>
