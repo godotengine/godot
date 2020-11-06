@@ -47,7 +47,7 @@ var GodotAudio = {
 	godot_audio_init: function(mix_rate, latency) {
 		GodotAudio.ctx = new (window.AudioContext || window.webkitAudioContext)({
 			sampleRate: mix_rate,
-			latencyHint: latency
+			// latencyHint: latency / 1000 // Do not specify, leave 'interactive' for good performance.
 		});
 		return GodotAudio.ctx.destination.channelCount;
 	},
