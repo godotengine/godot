@@ -217,12 +217,6 @@ void Color::invert() {
 	b = 1.0 - b;
 }
 
-void Color::contrast() {
-	r = Math::fmod(r + 0.5, 1.0);
-	g = Math::fmod(g + 0.5, 1.0);
-	b = Math::fmod(b + 0.5, 1.0);
-}
-
 Color Color::hex(uint32_t p_hex) {
 	float a = (p_hex & 0xFF) / 255.0;
 	p_hex >>= 8;
@@ -281,12 +275,6 @@ static int _parse_col8(const String &p_str, int p_ofs) {
 Color Color::inverted() const {
 	Color c = *this;
 	c.invert();
-	return c;
-}
-
-Color Color::contrasted() const {
-	Color c = *this;
-	c.contrast();
 	return c;
 }
 

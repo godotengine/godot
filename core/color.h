@@ -91,9 +91,7 @@ struct Color {
 	bool is_equal_approx(const Color &p_color) const;
 
 	void invert();
-	void contrast();
 	Color inverted() const;
-	Color contrasted() const;
 
 	_FORCE_INLINE_ Color lerp(const Color &p_b, float p_t) const {
 		Color res = *this;
