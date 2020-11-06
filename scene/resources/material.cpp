@@ -2637,6 +2637,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	orm = p_orm;
 	// Initialize to the same values as the shader
 	shading_mode = SHADING_MODE_PER_PIXEL;
+	transparency = TRANSPARENCY_DISABLED;
+	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 	set_specular(0.5);
 	set_roughness(1.0);
