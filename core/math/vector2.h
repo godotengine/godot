@@ -290,10 +290,12 @@ struct Vector2i {
 	void operator*=(const int &rvalue);
 
 	Vector2i operator/(const Vector2i &p_v1) const;
-
 	Vector2i operator/(const int &rvalue) const;
-
 	void operator/=(const int &rvalue);
+
+	Vector2i operator%(const Vector2i &p_v1) const;
+	Vector2i operator%(const int &rvalue) const;
+	void operator%=(const int &rvalue);
 
 	Vector2i operator-() const;
 	bool operator<(const Vector2i &p_vec2) const { return (x == p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }

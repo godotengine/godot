@@ -828,7 +828,6 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL }, //OP_NEGATE,
 		{ Variant::NIL, Variant::NIL }, //OP_POSITIVE,
 		{ Variant::INT, Variant::INT }, //OP_MODULE,
-		{ Variant::STRING, Variant::STRING }, //OP_STRING_CONCAT,
 		//bitwise
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_LEFT,
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_RIGHT,
@@ -873,7 +872,6 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 		Variant::NIL, //OP_NEGATE,
 		Variant::NIL, //OP_POSITIVE,
 		Variant::INT, //OP_MODULE,
-		Variant::STRING, //OP_STRING_CONCAT,
 		//bitwise
 		Variant::INT, //OP_SHIFT_LEFT,
 		Variant::INT, //OP_SHIFT_RIGHT,
@@ -3881,7 +3879,6 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/math/negate", create_op_node<Variant::OP_NEGATE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/positive", create_op_node<Variant::OP_POSITIVE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/remainder", create_op_node<Variant::OP_MODULE>);
-	VisualScriptLanguage::singleton->add_register_func("operators/math/string_concat", create_op_node<Variant::OP_STRING_CONCAT>);
 	//bitwise
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_left", create_op_node<Variant::OP_SHIFT_LEFT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_right", create_op_node<Variant::OP_SHIFT_RIGHT>);

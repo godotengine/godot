@@ -91,6 +91,10 @@ public:
 		return v + ((uv * w) + u.cross(uv)) * ((real_t)2);
 	}
 
+	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &v) const {
+		return inverse().xform(v);
+	}
+
 	_FORCE_INLINE_ void operator+=(const Quat &q);
 	_FORCE_INLINE_ void operator-=(const Quat &q);
 	_FORCE_INLINE_ void operator*=(const real_t &s);
