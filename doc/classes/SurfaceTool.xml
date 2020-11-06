@@ -28,7 +28,7 @@
 			<argument index="0" name="bones" type="PoolIntArray">
 			</argument>
 			<description>
-				Adds an array of bones for the next vertex to use. [code]bones[/code] must contain 4 integers.
+				Specifies an array of bones to use for the [i]next[/i] vertex. [code]bones[/code] must contain 4 integers.
 			</description>
 		</method>
 		<method name="add_color">
@@ -37,7 +37,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Specifies a [Color] for the next vertex to use.
+				Specifies a [Color] to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 				[b]Note:[/b] The material must have [member SpatialMaterial.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
 			</description>
 		</method>
@@ -56,7 +56,7 @@
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<description>
-				Specifies a normal for the next vertex to use.
+				Specifies a normal to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_smooth_group">
@@ -74,7 +74,7 @@
 			<argument index="0" name="tangent" type="Plane">
 			</argument>
 			<description>
-				Specifies a tangent for the next vertex to use.
+				Specifies a tangent to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_triangle_fan">
@@ -103,7 +103,7 @@
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
-				Specifies a set of UV coordinates to use for the next vertex.
+				Specifies a set of UV coordinates to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_uv2">
@@ -112,7 +112,7 @@
 			<argument index="0" name="uv2" type="Vector2">
 			</argument>
 			<description>
-				Specifies an optional second set of UV coordinates to use for the next vertex.
+				Specifies an optional second set of UV coordinates to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -130,7 +130,7 @@
 			<argument index="0" name="weights" type="PoolRealArray">
 			</argument>
 			<description>
-				Specifies weight values for next vertex to use. [code]weights[/code] must contain 4 values.
+				Specifies weight values to use for the [i]next[/i] vertex. [code]weights[/code] must contain 4 values. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
 			</description>
 		</method>
 		<method name="append_from">
@@ -233,7 +233,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Shrinks the vertex array by creating an index array (avoids reusing vertices).
+				Shrinks the vertex array by creating an index array. This can improve performance by avoiding vertex reuse.
 			</description>
 		</method>
 		<method name="set_material">
