@@ -2486,26 +2486,28 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		}
 	}
 
-	if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
-		// Arguments.
-		push_completion_call(call);
-		make_completion_context(COMPLETION_CALL_ARGUMENTS, call, 0, true);
-		int argument_index = 0;
-		do {
-			make_completion_context(COMPLETION_CALL_ARGUMENTS, call, argument_index++, true);
-			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
-				// Allow for trailing comma.
-				break;
-			}
-			ExpressionNode *argument = parse_expression(false);
-			if (argument == nullptr) {
-				push_error(R"(Expected expression as the function argument.)");
-			} else {
-				call->arguments.push_back(argument);
-			}
-		} while (match(GDScriptTokenizer::Token::COMMA));
-		pop_completion_call();
+	// Arguments.
+	CompletionType ct = COMPLETION_CALL_ARGUMENTS;
+	if (get_builtin_function(call->function_name) == GDScriptFunctions::RESOURCE_LOAD) {
+		ct = COMPLETION_RESOURCE_PATH;
 	}
+	push_completion_call(call);
+	int argument_index = 0;
+	do {
+		make_completion_context(ct, call, argument_index++, true);
+		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
+			// Allow for trailing comma.
+			break;
+		}
+		ExpressionNode *argument = parse_expression(false);
+		if (argument == nullptr) {
+			push_error(R"(Expected expression as the function argument.)");
+		} else {
+			call->arguments.push_back(argument);
+		}
+		ct = COMPLETION_CALL_ARGUMENTS;
+	} while (match(GDScriptTokenizer::Token::COMMA));
+	pop_completion_call();
 
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected closing ")" after call arguments.)*");
