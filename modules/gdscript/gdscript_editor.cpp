@@ -2315,11 +2315,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	if (GDScriptParser::get_builtin_function(call->function_name) < GDScriptFunctions::FUNC_MAX) {
 		MethodInfo info = GDScriptFunctions::get_info(GDScriptParser::get_builtin_function(call->function_name));
-
-		if ((info.name == "load" || info.name == "preload") && bool(EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))) {
-			_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), r_result);
-		}
-
 		r_arghint = _make_arguments_hint(info, p_argidx);
 		return;
 	} else if (GDScriptParser::get_builtin_type(call->function_name) < Variant::VARIANT_MAX) {
