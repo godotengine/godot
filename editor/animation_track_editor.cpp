@@ -3751,7 +3751,8 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	}
 
 	for (int i = 0; i < leftover_path.size() - 1; i++) {
-		property_info_base = property_info_base.get_named(leftover_path[i]);
+		bool valid;
+		property_info_base = property_info_base.get_named(leftover_path[i], valid);
 	}
 
 	List<PropertyInfo> pinfo;
