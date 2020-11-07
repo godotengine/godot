@@ -35,8 +35,13 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
-#include <wchar.h>
+
+#ifndef __cplusplus
+typedef uint32_t char32_t;
+typedef uint16_t char16_t;
+#endif
 
 typedef char32_t godot_char_type;
 
