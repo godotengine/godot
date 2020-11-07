@@ -30,8 +30,8 @@
 
 #include "gdnative/variant.h"
 
-#include "core/reference.h"
-#include "core/variant.h"
+#include "core/object/reference.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

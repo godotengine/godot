@@ -32,7 +32,7 @@
 
 #include "midi_driver_winmidi.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 void MIDIDriverWinMidi::read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
 	if (wMsg == MIM_DATA) {

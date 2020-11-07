@@ -30,8 +30,8 @@
 
 #include "audio_stream_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"

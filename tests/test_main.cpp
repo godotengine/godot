@@ -30,7 +30,7 @@
 
 #include "test_main.h"
 
-#include "core/list.h"
+#include "core/templates/list.h"
 
 #include "test_astar.h"
 #include "test_basis.h"

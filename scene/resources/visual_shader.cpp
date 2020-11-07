@@ -30,7 +30,7 @@
 
 #include "visual_shader.h"
 
-#include "core/vmap.h"
+#include "core/templates/vmap.h"
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 

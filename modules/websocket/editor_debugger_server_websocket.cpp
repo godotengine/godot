@@ -30,7 +30,7 @@
 
 #include "editor_debugger_server_websocket.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 #include "modules/websocket/remote_debugger_peer_websocket.h"
 

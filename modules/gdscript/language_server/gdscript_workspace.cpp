@@ -32,8 +32,8 @@
 
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
+#include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"

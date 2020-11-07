@@ -30,7 +30,7 @@
 
 #include "path_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/scene_string_names.h"
 
 void Path3D::_notification(int p_what) {

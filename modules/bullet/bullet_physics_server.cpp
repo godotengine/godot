@@ -32,9 +32,9 @@
 
 #include "bullet_utilities.h"
 #include "cone_twist_joint_bullet.h"
-#include "core/class_db.h"
-#include "core/error_macros.h"
-#include "core/ustring.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "generic_6dof_joint_bullet.h"
 #include "hinge_joint_bullet.h"
 #include "pin_joint_bullet.h"

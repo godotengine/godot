@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_COMPILER_H
 #define GDSCRIPT_COMPILER_H
 
-#include "core/set.h"
+#include "core/templates/set.h"
 #include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"

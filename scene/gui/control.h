@@ -32,7 +32,7 @@
 #define CONTROL_H
 
 #include "core/math/transform_2d.h"
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"

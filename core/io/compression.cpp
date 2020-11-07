@@ -30,9 +30,9 @@
 
 #include "compression.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
 #include "core/os/copymem.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 

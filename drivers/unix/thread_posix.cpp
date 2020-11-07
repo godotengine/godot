@@ -32,9 +32,9 @@
 
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
 
+#include "core/object/script_language.h"
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
-#include "core/script_language.h"
+#include "core/templates/safe_refcount.h"
 
 #ifdef PTHREAD_BSD_SET_NAME
 #include <pthread_np.h>

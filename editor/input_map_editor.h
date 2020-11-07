@@ -31,7 +31,7 @@
 #ifndef INPUT_MAP_EDITOR_H
 #define INPUT_MAP_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
 
 class InputMapEditor : public Control {

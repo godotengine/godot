@@ -33,12 +33,12 @@
 
 #include "test_command_queue.h"
 
-#include "core/command_queue_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
+#include "core/templates/command_queue_mt.h"
 
 #if !defined(NO_THREADS)
 

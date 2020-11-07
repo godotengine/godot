@@ -30,7 +30,7 @@
 
 #include "camera_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/math_funcs.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"

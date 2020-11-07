@@ -36,7 +36,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 
 /**

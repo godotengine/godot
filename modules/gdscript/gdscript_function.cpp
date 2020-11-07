@@ -35,7 +35,7 @@
 #include "gdscript_functions.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #endif
 
 Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const {

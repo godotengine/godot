@@ -30,11 +30,11 @@
 
 #include "visual_script_nodes.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -1754,7 +1754,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 }
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
-	String name = GlobalConstants::get_global_constant_name(index);
+	String name = CoreConstants::get_global_constant_name(index);
 	return PropertyInfo(Variant::INT, name);
 }
 
@@ -1778,7 +1778,7 @@ public:
 	//virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
-		*p_outputs[0] = GlobalConstants::get_global_constant_value(index);
+		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
 		return 0;
 	}
 };
@@ -1795,11 +1795,11 @@ void VisualScriptGlobalConstant::_bind_methods() {
 
 	String cc;
 
-	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 		if (i > 0) {
 			cc += ",";
 		}
-		cc += GlobalConstants::get_global_constant_name(i);
+		cc += CoreConstants::get_global_constant_name(i);
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_global_constant", "get_global_constant");
 }

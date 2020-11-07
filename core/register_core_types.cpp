@@ -30,15 +30,13 @@
 
 #include "register_core_types.h"
 
-#include "core/bind/core_bind.h"
-#include "core/class_db.h"
-#include "core/compressed_translation.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/core_string_names.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
 #include "core/crypto/hashing_context.h"
-#include "core/engine.h"
-#include "core/func_ref.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/config_file.h"
@@ -48,6 +46,7 @@
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
+#include "core/io/packed_data_container.h"
 #include "core/io/packet_peer.h"
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
@@ -65,11 +64,11 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
+#include "core/object/class_db.h"
+#include "core/object/undo_redo.h"
 #include "core/os/main_loop.h"
-#include "core/packed_data_container.h"
-#include "core/project_settings.h"
-#include "core/translation.h"
-#include "core/undo_redo.h"
+#include "core/string/compressed_translation.h"
+#include "core/string/translation.h"
 
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
@@ -161,7 +160,6 @@ void register_core_types() {
 	ClassDB::register_class<InputEventPanGesture>();
 	ClassDB::register_class<InputEventMIDI>();
 
-	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
 	ClassDB::register_class<StreamPeerBuffer>();
 	ClassDB::register_class<StreamPeerTCP>();

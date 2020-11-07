@@ -31,9 +31,9 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
+#include "core/config/project_settings.h"
 #include "core/io/xml_parser.h"
-#include "core/map.h"
-#include "core/project_settings.h"
+#include "core/templates/map.h"
 #include "scene/resources/material.h"
 
 class Collada {

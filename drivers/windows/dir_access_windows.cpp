@@ -33,7 +33,7 @@
 #include "dir_access_windows.h"
 
 #include "core/os/memory.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <stdio.h>
 #include <wchar.h>

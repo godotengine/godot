@@ -31,7 +31,7 @@
 #ifndef DEBUGGER_MARSHARLLS_H
 #define DEBUGGER_MARSHARLLS_H
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "servers/rendering_server.h"
 
 struct DebuggerMarshalls {

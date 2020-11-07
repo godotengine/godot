@@ -33,9 +33,9 @@
 
 #include <mono/metadata/object.h>
 
-#include "core/callable.h"
 #include "core/os/mutex.h"
-#include "core/self_list.h"
+#include "core/templates/self_list.h"
+#include "core/variant/callable.h"
 
 #include "mono_gc_handle.h"
 #include "mono_gd/gd_mono_method.h"

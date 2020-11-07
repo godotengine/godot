@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_FUNCTIONS_H
 #define GDSCRIPT_FUNCTIONS_H
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 class GDScriptFunctions {
 public:
@@ -92,7 +92,6 @@ public:
 		LOGIC_CLAMP,
 		LOGIC_NEAREST_PO2,
 		OBJ_WEAKREF,
-		FUNC_FUNCREF,
 		TYPE_CONVERT,
 		TYPE_OF,
 		TYPE_EXISTS,

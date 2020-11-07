@@ -31,8 +31,8 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
-#include "core/array.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/variant/array.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"

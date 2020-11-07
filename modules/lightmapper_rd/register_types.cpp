@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "lightmapper_rd.h"
 #include "scene/3d/lightmapper.h"
 

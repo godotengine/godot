@@ -30,7 +30,7 @@
 
 #include "navigation_agent_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/navigation_3d.h"
 #include "servers/navigation_server_3d.h"
 

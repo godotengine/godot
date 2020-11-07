@@ -30,7 +30,7 @@
 
 #include "file_access_compressed.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {
 	magic = p_magic.ascii().get_data();

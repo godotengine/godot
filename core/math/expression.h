@@ -31,7 +31,7 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class Expression : public Reference {
 	GDCLASS(Expression, Reference);
@@ -92,7 +92,6 @@ public:
 		LOGIC_CLAMP,
 		LOGIC_NEAREST_PO2,
 		OBJ_WEAKREF,
-		FUNC_FUNCREF,
 		TYPE_CONVERT,
 		TYPE_OF,
 		TYPE_EXISTS,

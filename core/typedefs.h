@@ -41,8 +41,8 @@
 #include "platform_config.h"
 
 // Should be available everywhere.
-#include "core/error_list.h"
-#include "core/int_types.h"
+#include "core/error/error_list.h"
+#include <cstdint>
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing

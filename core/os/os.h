@@ -31,13 +31,13 @@
 #ifndef OS_H
 #define OS_H
 
-#include "core/engine.h"
-#include "core/image.h"
+#include "core/config/engine.h"
+#include "core/io/image.h"
 #include "core/io/logger.h"
-#include "core/list.h"
 #include "core/os/main_loop.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
 
 #include <stdarg.h>
 

@@ -30,7 +30,7 @@
 
 #include "editor_run.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor_settings.h"
 #include "servers/display_server.h"
 

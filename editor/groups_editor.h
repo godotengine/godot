@@ -31,7 +31,7 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"

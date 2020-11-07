@@ -31,8 +31,8 @@
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_client.h"
+#include "core/config/project_settings.h"
 #include "core/io/ip.h"
-#include "core/project_settings.h"
 #include "emscripten.h"
 
 extern "C" {

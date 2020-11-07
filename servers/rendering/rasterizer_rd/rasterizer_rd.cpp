@@ -30,7 +30,7 @@
 
 #include "rasterizer_rd.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 void RasterizerRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();

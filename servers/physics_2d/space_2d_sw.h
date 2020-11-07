@@ -37,8 +37,8 @@
 #include "body_pair_2d_sw.h"
 #include "broad_phase_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "core/hash_map.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
 class PhysicsDirectSpaceState2DSW : public PhysicsDirectSpaceState2D {

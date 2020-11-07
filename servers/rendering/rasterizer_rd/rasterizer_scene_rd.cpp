@@ -30,8 +30,8 @@
 
 #include "rasterizer_scene_rd.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "rasterizer_rd.h"
 #include "servers/rendering/rendering_server_raster.h"
 

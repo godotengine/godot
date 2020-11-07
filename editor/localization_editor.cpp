@@ -30,7 +30,7 @@
 
 #include "localization_editor.h"
 
-#include "core/translation.h"
+#include "core/string/translation.h"
 #include "editor_node.h"
 #include "editor_translation_parser.h"
 #include "pot_generator.h"

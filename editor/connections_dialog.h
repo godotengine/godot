@@ -35,7 +35,7 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"

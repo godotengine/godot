@@ -31,8 +31,8 @@
 #ifndef VECTOR3I_H
 #define VECTOR3I_H
 
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include "core/ustring.h"
 
 struct Vector3i {
 	enum Axis {

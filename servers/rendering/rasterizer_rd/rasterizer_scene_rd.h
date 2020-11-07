@@ -31,8 +31,8 @@
 #ifndef RASTERIZER_SCENE_RD_H
 #define RASTERIZER_SCENE_RD_H
 
-#include "core/local_vector.h"
-#include "core/rid_owner.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/rasterizer.h"
 #include "servers/rendering/rasterizer_rd/light_cluster_builder.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_storage_rd.h"

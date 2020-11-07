@@ -30,12 +30,12 @@
 
 #include "tree.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/string/print_string.h"
 #include "scene/main/window.h"
 
 #include "box_container.h"

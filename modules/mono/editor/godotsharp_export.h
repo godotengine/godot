@@ -31,9 +31,9 @@
 #ifndef GODOTSHARP_EXPORT_H
 #define GODOTSHARP_EXPORT_H
 
-#include "core/dictionary.h"
-#include "core/error_list.h"
-#include "core/ustring.h"
+#include "core/error/error_list.h"
+#include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
 
 #include "../mono_gd/gd_mono_header.h"
 

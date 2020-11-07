@@ -30,10 +30,10 @@
 
 #include "editor_translation_parser.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
+#include "core/object/script_language.h"
 #include "core/os/file_access.h"
-#include "core/script_language.h"
-#include "core/set.h"
+#include "core/templates/set.h"
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 

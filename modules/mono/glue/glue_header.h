@@ -58,15 +58,15 @@ void godot_register_glue_header_icalls() {
 
 // Used by the generated glue
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/dictionary.h"
-#include "core/engine.h"
-#include "core/method_bind.h"
-#include "core/node_path.h"
-#include "core/reference.h"
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "core/object/method_bind.h"
+#include "core/object/reference.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include "core/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_internals.h"

@@ -30,12 +30,12 @@
 
 #include "gdscript_analyzer.h"
 
-#include "core/class_db.h"
-#include "core/hash_map.h"
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
+#include "core/templates/hash_map.h"
 #include "gdscript.h"
 
 // TODO: Move this to a central location (maybe core?).

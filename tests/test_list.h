@@ -31,7 +31,7 @@
 #ifndef TEST_LIST_H
 #define TEST_LIST_H
 
-#include "core/list.h"
+#include "core/templates/list.h"
 
 #include "tests/test_macros.h"
 

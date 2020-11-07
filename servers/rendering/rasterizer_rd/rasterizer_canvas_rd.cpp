@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "rasterizer_canvas_rd.h"
+#include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
-#include "core/project_settings.h"
 #include "rasterizer_rd.h"
 
 void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
