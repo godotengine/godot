@@ -31,10 +31,10 @@
 #ifndef SCENE_DEBUGGER_H
 #define SCENE_DEBUGGER_H
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/pair.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/templates/pair.h"
+#include "core/variant/array.h"
 
 class Script;
 

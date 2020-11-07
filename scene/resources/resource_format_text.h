@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {

@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "lightmapper_rd.h"
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
-#include "core/project_settings.h"
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"

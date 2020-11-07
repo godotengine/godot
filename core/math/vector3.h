@@ -33,7 +33,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/math/vector3i.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class Basis;
 

@@ -30,9 +30,9 @@
 
 #include "tile_set.h"
 
-#include "core/array.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/variant/array.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	String n = p_name;

@@ -31,7 +31,7 @@
 #ifndef SKIN_H
 #define SKIN_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class Skin : public Resource {
 	GDCLASS(Skin, Resource)

@@ -32,7 +32,7 @@
 #define VISUAL_INSTANCE_H
 
 #include "core/math/face3.h"
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/material.h"
 

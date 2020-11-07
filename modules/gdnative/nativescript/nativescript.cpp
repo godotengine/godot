@@ -34,12 +34,12 @@
 
 #include "gdnative/gdnative.h"
 
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/core_string_names.h"
-#include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "scene/main/scene_tree.h"
 #include "scene/resources/resource_format_text.h"

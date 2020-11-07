@@ -30,8 +30,8 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/node_path.h"
-#include "core/ustring.h"
+#include "core/string/node_path.h"
+#include "core/string/ustring.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
 

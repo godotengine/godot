@@ -30,7 +30,7 @@
 
 #include "world_2d.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/main/window.h"

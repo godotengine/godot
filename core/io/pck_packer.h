@@ -31,7 +31,7 @@
 #ifndef PCK_PACKER_H
 #define PCK_PACKER_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class FileAccess;
 

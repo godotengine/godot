@@ -32,7 +32,7 @@
 #define BROAD_PHASE_BASIC_H
 
 #include "broad_phase_3d_sw.h"
-#include "core/map.h"
+#include "core/templates/map.h"
 
 class BroadPhase3DBasic : public BroadPhase3DSW {
 	struct Element {

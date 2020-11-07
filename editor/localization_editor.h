@@ -31,7 +31,7 @@
 #ifndef LOCALIZATION_EDITOR_H
 #define LOCALIZATION_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor_file_dialog.h"
 #include "scene/gui/tree.h"
 

@@ -30,7 +30,7 @@
 
 #include "video_stream_gdnative.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "servers/audio_server.h"
 
 VideoDecoderServer *VideoDecoderServer::instance = nullptr;

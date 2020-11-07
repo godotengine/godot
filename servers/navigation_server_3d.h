@@ -35,8 +35,8 @@
 #ifndef NAVIGATION_SERVER_H
 #define NAVIGATION_SERVER_H
 
-#include "core/class_db.h"
-#include "core/rid.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
 #include "scene/3d/navigation_region_3d.h"
 
 /// This server uses the concept of internal mutability.

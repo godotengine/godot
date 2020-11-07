@@ -30,7 +30,7 @@
 
 #include "file_access_buffered.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 
 Error FileAccessBuffered::set_error(Error p_error) const {
 	return (last_error = p_error);

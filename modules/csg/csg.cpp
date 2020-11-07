@@ -32,7 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 
 // Static helper functions.
 

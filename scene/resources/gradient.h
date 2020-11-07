@@ -31,7 +31,7 @@
 #ifndef GRADIENT_H
 #define GRADIENT_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class Gradient : public Resource {
 	GDCLASS(Gradient, Resource);

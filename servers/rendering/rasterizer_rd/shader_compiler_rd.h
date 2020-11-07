@@ -31,7 +31,7 @@
 #ifndef SHADER_COMPILER_RD_H
 #define SHADER_COMPILER_RD_H
 
-#include "core/pair.h"
+#include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"

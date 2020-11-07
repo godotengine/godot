@@ -31,8 +31,8 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
-#include "core/class_db.h"
 #include "core/input/input_event.h"
+#include "core/object/class_db.h"
 
 class InputMap : public Object {
 	GDCLASS(InputMap, Object);

@@ -30,14 +30,14 @@
 
 #include "project_export.h"
 
-#include "core/compressed_translation.h"
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+#include "core/string/compressed_translation.h"
 #include "editor_data.h"
 #include "editor_node.h"
 #include "editor_scale.h"

@@ -31,8 +31,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include "core/ustring.h"
 
 typedef void (*ThreadCreateCallback)(void *p_userdata);
 

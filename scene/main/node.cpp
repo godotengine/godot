@@ -32,8 +32,8 @@
 
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
-#include "core/message_queue.h"
-#include "core/print_string.h"
+#include "core/object/message_queue.h"
+#include "core/string/print_string.h"
 #include "instance_placeholder.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"

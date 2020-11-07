@@ -34,7 +34,7 @@
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class HTTPClient : public Reference {
 	GDCLASS(HTTPClient, Reference);

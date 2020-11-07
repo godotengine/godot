@@ -30,7 +30,7 @@
 
 #include "path_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "scene/scene_string_names.h"
 

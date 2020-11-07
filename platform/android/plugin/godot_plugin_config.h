@@ -31,9 +31,9 @@
 #ifndef GODOT_PLUGIN_CONFIG_H
 #define GODOT_PLUGIN_CONFIG_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/config_file.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 static const char *PLUGIN_CONFIG_EXT = ".gdap";
 

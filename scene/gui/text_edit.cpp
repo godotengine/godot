@@ -30,12 +30,12 @@
 
 #include "text_edit.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
 #include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED

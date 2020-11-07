@@ -31,9 +31,9 @@
 #ifndef GDSCRIPT_ANALYZER_H
 #define GDSCRIPT_ANALYZER_H
 
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/set.h"
+#include "core/object/object.h"
+#include "core/object/reference.h"
+#include "core/templates/set.h"
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 

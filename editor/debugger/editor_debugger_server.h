@@ -32,7 +32,7 @@
 #define EDITOR_DEBUGGER_CONNECTION_H
 
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class EditorDebuggerServer : public Reference {
 public:

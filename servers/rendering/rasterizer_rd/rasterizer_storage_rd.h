@@ -31,7 +31,7 @@
 #ifndef RASTERIZER_STORAGE_RD_H
 #define RASTERIZER_STORAGE_RD_H
 
-#include "core/rid_owner.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/rasterizer.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_effects_rd.h"
 #include "servers/rendering/rasterizer_rd/shader_compiler_rd.h"

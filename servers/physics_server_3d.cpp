@@ -30,8 +30,8 @@
 
 #include "physics_server_3d.h"
 
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/string/print_string.h"
 
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 

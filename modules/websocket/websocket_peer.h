@@ -31,7 +31,7 @@
 #ifndef WEBSOCKETPEER_H
 #define WEBSOCKETPEER_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "websocket_macros.h"
 

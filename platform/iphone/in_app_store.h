@@ -33,7 +33,7 @@
 #ifndef IN_APP_STORE_H
 #define IN_APP_STORE_H
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 
 #ifdef __OBJC__
 @class GodotProductsDelegate;

@@ -30,8 +30,8 @@
 
 #include "aabb.h"
 
-#include "core/print_string.h"
-#include "core/variant.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 real_t AABB::get_area() const {
 	return size.x * size.y * size.z;

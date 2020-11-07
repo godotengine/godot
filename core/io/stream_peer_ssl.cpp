@@ -30,7 +30,7 @@
 
 #include "stream_peer_ssl.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
 

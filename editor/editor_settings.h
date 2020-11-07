@@ -31,11 +31,11 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "core/class_db.h"
 #include "core/io/config_file.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
-#include "core/translation.h"
+#include "core/string/translation.h"
 #include "scene/gui/shortcut.h"
 
 class EditorPlugin;

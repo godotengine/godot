@@ -31,7 +31,7 @@
 #ifndef HASHING_CONTEXT_H
 #define HASHING_CONTEXT_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class HashingContext : public Reference {
 	GDCLASS(HashingContext, Reference);

@@ -31,7 +31,7 @@
 #ifndef JAVA_CLASS_WRAPPER_H
 #define JAVA_CLASS_WRAPPER_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 #ifdef ANDROID_ENABLED
 #include <android/log.h>

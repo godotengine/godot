@@ -30,8 +30,8 @@
 
 #include "os_android.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"

@@ -30,8 +30,8 @@
 
 #include "register_server_types.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 
 #include "audio/audio_effect.h"
 #include "audio/audio_stream.h"

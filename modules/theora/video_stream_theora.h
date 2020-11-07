@@ -35,7 +35,7 @@
 #include "core/os/file_access.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio_server.h"
 

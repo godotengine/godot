@@ -31,7 +31,7 @@
 #ifndef PNG_DRIVER_COMMON_H
 #define PNG_DRIVER_COMMON_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 
 namespace PNGDriverCommon {
 

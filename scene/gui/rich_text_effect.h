@@ -31,7 +31,7 @@
 #ifndef RICH_TEXT_EFFECT_H
 #define RICH_TEXT_EFFECT_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class RichTextEffect : public Resource {
 	GDCLASS(RichTextEffect, Resource);

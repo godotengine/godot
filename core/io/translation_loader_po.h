@@ -33,7 +33,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
-#include "core/translation.h"
+#include "core/string/translation.h"
 
 class TranslationLoaderPO : public ResourceFormatLoader {
 public:

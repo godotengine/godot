@@ -31,8 +31,8 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
-#include "core/map.h"
-#include "core/variant.h"
+#include "core/templates/map.h"
+#include "core/variant/variant.h"
 
 // See documentation for doctest at:
 // https://github.com/onqtam/doctest/blob/master/doc/markdown/readme.md#reference

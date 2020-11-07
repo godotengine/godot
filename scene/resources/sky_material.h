@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/resources/material.h"
 
 #ifndef SKY_MATERIAL_H

@@ -31,8 +31,8 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
-#include "core/self_list.h"
-#include "core/vset.h"
+#include "core/templates/self_list.h"
+#include "core/templates/vset.h"
 #include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"

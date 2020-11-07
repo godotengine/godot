@@ -31,8 +31,8 @@
 #ifndef EDITOR_TRANSLATION_PARSER_H
 #define EDITOR_TRANSLATION_PARSER_H
 
-#include "core/error_list.h"
-#include "core/reference.h"
+#include "core/error/error_list.h"
+#include "core/object/reference.h"
 
 class EditorTranslationParserPlugin : public Reference {
 	GDCLASS(EditorTranslationParserPlugin, Reference);

@@ -31,10 +31,10 @@
 #if defined(TOOLS_ENABLED) && defined(JAVASCRIPT_ENABLED)
 #include "javascript_tools_editor_plugin.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "editor/editor_node.h"
 
 #include <emscripten/emscripten.h>

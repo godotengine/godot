@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #import "view_controller.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "display_server_iphone.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"

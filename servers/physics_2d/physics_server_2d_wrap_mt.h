@@ -31,9 +31,9 @@
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
-#include "core/command_queue_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
+#include "core/templates/command_queue_mt.h"
 #include "servers/physics_server_2d.h"
 
 #ifdef DEBUG_SYNC

@@ -30,10 +30,10 @@
 
 #include "editor_plugin_settings.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
-#include "core/project_settings.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "scene/gui/margin_container.h"

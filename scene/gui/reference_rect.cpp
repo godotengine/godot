@@ -30,7 +30,7 @@
 
 #include "reference_rect.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 void ReferenceRect::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {

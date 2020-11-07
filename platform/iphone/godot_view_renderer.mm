@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #import "godot_view_renderer.h"
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #import "display_server_iphone.h"
 #include "main/main.h"
 #include "os_iphone.h"

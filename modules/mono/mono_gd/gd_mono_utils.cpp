@@ -35,10 +35,10 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/object/reference.h"
 #include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
-#include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_node.h"

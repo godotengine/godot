@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTTEXTURE_H
 #define RESOURCEIMPORTTEXTURE_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "scene/resources/texture.h"

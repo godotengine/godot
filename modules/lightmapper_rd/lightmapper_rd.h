@@ -31,7 +31,7 @@
 #ifndef LIGHTMAPPER_RD_H
 #define LIGHTMAPPER_RD_H
 
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_device.h"

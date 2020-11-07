@@ -30,7 +30,7 @@
 
 #include "create_dialog.h"
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"

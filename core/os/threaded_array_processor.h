@@ -35,7 +35,7 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 
 template <class C, class U>
 struct ThreadArrayProcessData {

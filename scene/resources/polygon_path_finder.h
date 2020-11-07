@@ -31,7 +31,7 @@
 #ifndef POLYGON_PATH_FINDER_H
 #define POLYGON_PATH_FINDER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class PolygonPathFinder : public Resource {
 	GDCLASS(PolygonPathFinder, Resource);

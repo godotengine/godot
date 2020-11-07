@@ -30,9 +30,9 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/string_name.h"
+#include "core/object/class_db.h"
+#include "core/string/string_name.h"
+#include "core/variant/array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 

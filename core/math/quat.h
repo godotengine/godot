@@ -36,7 +36,7 @@
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class Quat {
 public:

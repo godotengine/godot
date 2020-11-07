@@ -31,7 +31,7 @@
 #ifndef GDMONOMARSHAL_H
 #define GDMONOMARSHAL_H
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #include "../managed_callable.h"
 #include "gd_mono.h"

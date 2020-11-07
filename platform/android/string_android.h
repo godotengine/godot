@@ -30,7 +30,7 @@
 
 #ifndef STRING_ANDROID_H
 #define STRING_ANDROID_H
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #include "thread_jandroid.h"
 #include <jni.h>
 

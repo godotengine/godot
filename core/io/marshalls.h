@@ -31,9 +31,9 @@
 #ifndef MARSHALLS_H
 #define MARSHALLS_H
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 #include "core/typedefs.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 /**
   * Miscellaneous helpers for marshalling data types, and encoding

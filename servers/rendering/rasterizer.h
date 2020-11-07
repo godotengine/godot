@@ -32,8 +32,8 @@
 #define RASTERIZER_H
 
 #include "core/math/camera_matrix.h"
-#include "core/pair.h"
-#include "core/self_list.h"
+#include "core/templates/pair.h"
+#include "core/templates/self_list.h"
 #include "servers/rendering_server.h"
 
 class RasterizerScene {

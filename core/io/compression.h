@@ -31,8 +31,8 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
-#include "core/vector.h"
 
 class Compression {
 public:

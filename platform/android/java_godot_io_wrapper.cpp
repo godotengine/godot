@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "java_godot_io_wrapper.h"
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.

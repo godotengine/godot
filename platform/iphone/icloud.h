@@ -33,7 +33,7 @@
 #ifndef ICLOUD_H
 #define ICLOUD_H
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 
 class ICloud : public Object {
 	GDCLASS(ICloud, Object);

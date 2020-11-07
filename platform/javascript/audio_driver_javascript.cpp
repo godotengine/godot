@@ -30,7 +30,7 @@
 
 #include "audio_driver_javascript.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "godot_audio.h"
 
 #include <emscripten.h>

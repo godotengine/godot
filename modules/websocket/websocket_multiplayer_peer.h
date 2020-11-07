@@ -31,9 +31,9 @@
 #ifndef WEBSOCKET_MULTIPLAYER_PEER_H
 #define WEBSOCKET_MULTIPLAYER_PEER_H
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/networked_multiplayer_peer.h"
-#include "core/list.h"
+#include "core/templates/list.h"
 #include "websocket_peer.h"
 
 class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {

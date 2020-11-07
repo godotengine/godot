@@ -31,8 +31,8 @@
 #ifndef GODOT_JSON_RPC_H
 #define GODOT_JSON_RPC_H
 
-#include "core/class_db.h"
-#include "core/variant.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 
 class JSONRPC : public Object {
 	GDCLASS(JSONRPC, Object)

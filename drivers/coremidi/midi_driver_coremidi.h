@@ -34,7 +34,7 @@
 #define MIDI_DRIVER_COREMIDI_H
 
 #include "core/os/midi_driver.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #include <CoreMIDI/CoreMIDI.h>
 #include <stdio.h>

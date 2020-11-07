@@ -34,8 +34,8 @@
 #include "core/math/delaunay_2d.h"
 #include "core/math/rect2.h"
 #include "core/math/triangulate.h"
-#include "core/object.h"
-#include "core/vector.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
 
 class Geometry2D {
 	Geometry2D();

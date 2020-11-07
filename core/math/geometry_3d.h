@@ -32,8 +32,8 @@
 #define GEOMETRY_3D_H
 
 #include "core/math/face3.h"
-#include "core/object.h"
-#include "core/vector.h"
+#include "core/object/object.h"
+#include "core/templates/vector.h"
 
 class Geometry3D {
 	Geometry3D();

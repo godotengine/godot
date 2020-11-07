@@ -30,7 +30,7 @@
 
 #include "light_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "servers/rendering_server.h"
 
 void Light2D::_update_light_visibility() {

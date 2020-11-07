@@ -30,8 +30,8 @@
 
 #include "script_class_parser.h"
 
-#include "core/map.h"
 #include "core/os/os.h"
+#include "core/templates/map.h"
 
 #include "../utils/string_utils.h"
 

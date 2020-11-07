@@ -32,13 +32,13 @@
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/ucaps.h"
+#include "core/string/ucaps.h"
 
 #include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_defs.h"
@@ -3399,7 +3399,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 }
 
 void BindingsGenerator::_populate_global_constants() {
-	int global_constants_count = GlobalConstants::get_global_constant_count();
+	int global_constants_count = CoreConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
 		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
@@ -3409,7 +3409,7 @@ void BindingsGenerator::_populate_global_constants() {
 		const DocData::ClassDoc &global_scope_doc = match->value();
 
 		for (int i = 0; i < global_constants_count; i++) {
-			String constant_name = GlobalConstants::get_global_constant_name(i);
+			String constant_name = CoreConstants::get_global_constant_name(i);
 
 			const DocData::ConstantDoc *const_doc = nullptr;
 			for (int j = 0; j < global_scope_doc.constants.size(); j++) {
@@ -3421,8 +3421,8 @@ void BindingsGenerator::_populate_global_constants() {
 				}
 			}
 
-			int constant_value = GlobalConstants::get_global_constant_value(i);
-			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
+			int constant_value = CoreConstants::get_global_constant_value(i);
+			StringName enum_name = CoreConstants::get_global_constant_enum(i);
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
 			iconstant.const_doc = const_doc;

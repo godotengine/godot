@@ -30,8 +30,8 @@
 
 #include "audio_driver_xaudio2.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 const char *AudioDriverXAudio2::get_name() const {
 	return "XAudio2";

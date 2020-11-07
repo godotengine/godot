@@ -30,15 +30,15 @@
 
 #include "gdscript_parser.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "gdscript.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED

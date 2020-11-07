@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_GENERATOR_H
 #define AUDIO_STREAM_GENERATOR_H
 
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamGenerator : public AudioStream {

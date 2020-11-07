@@ -35,7 +35,7 @@
 
 #include "../utils/macros.h"
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 
 namespace GDMonoInternals {
 

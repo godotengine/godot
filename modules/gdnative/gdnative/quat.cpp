@@ -31,7 +31,7 @@
 #include "gdnative/quat.h"
 
 #include "core/math/quat.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

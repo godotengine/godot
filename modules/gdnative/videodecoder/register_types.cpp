@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "video_stream_gdnative.h"
 
 static Ref<ResourceFormatLoaderVideoStreamGDNative> resource_loader_vsgdnative;

@@ -59,7 +59,7 @@ GDScriptCache *gdscript_cache = nullptr;
 #include "editor/gdscript_translation_parser_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "language_server/gdscript_language_server.h"
 #endif // !GDSCRIPT_NO_LSP
 

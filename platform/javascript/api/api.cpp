@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "api.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "javascript_eval.h"
 #include "javascript_tools_editor_plugin.h"
 

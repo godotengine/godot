@@ -30,8 +30,8 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "navigation_2d.h"

@@ -30,7 +30,7 @@
 
 #include "remote_debugger_peer_websocket.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
 	Vector<String> protocols;

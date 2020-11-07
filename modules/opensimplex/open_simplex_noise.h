@@ -31,8 +31,8 @@
 #ifndef OPEN_SIMPLEX_NOISE_H
 #define OPEN_SIMPLEX_NOISE_H
 
-#include "core/image.h"
-#include "core/reference.h"
+#include "core/io/image.h"
+#include "core/object/reference.h"
 #include "scene/resources/texture.h"
 
 #include "thirdparty/misc/open-simplex-noise.h"

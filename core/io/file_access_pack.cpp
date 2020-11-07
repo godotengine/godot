@@ -31,7 +31,7 @@
 #include "file_access_pack.h"
 
 #include "core/io/file_access_encrypted.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "core/version.h"
 
 #include <stdio.h>

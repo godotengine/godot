@@ -30,7 +30,7 @@
 
 #include "resource_saver_png.h"
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/os/file_access.h"
 #include "drivers/png/png_driver_common.h"
 #include "scene/resources/texture.h"

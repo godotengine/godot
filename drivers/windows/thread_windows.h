@@ -33,8 +33,8 @@
 
 #ifdef WINDOWS_ENABLED
 
+#include "core/object/script_language.h"
 #include "core/os/thread.h"
-#include "core/script_language.h"
 
 #include <windows.h>
 

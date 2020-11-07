@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 #include "core/io/config_file.h"
@@ -42,7 +43,6 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"

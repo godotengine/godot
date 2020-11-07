@@ -31,8 +31,8 @@
 #ifndef TEST_GRADIENT_H
 #define TEST_GRADIENT_H
 
-#include "core/class_db.h"
-#include "core/color.h"
+#include "core/math/color.h"
+#include "core/object/class_db.h"
 #include "scene/resources/gradient.h"
 
 #include "thirdparty/doctest/doctest.h"

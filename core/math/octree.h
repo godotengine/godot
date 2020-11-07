@@ -31,13 +31,13 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "core/list.h"
-#include "core/map.h"
 #include "core/math/aabb.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
-#include "core/print_string.h"
-#include "core/variant.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/variant/variant.h"
 
 typedef uint32_t OctreeElementID;
 

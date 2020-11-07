@@ -30,12 +30,12 @@
 
 #include "gdnative/gdnative.h"
 
-#include "core/class_db.h"
-#include "core/engine.h"
-#include "core/error_macros.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #include "modules/gdnative/gdnative.h"
 
@@ -101,10 +101,10 @@ godot_dictionary GDAPI godot_get_global_constants() {
 	godot_dictionary constants;
 	godot_dictionary_new(&constants);
 	Dictionary *p_constants = (Dictionary *)&constants;
-	const int constants_count = GlobalConstants::get_global_constant_count();
+	const int constants_count = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < constants_count; ++i) {
-		const char *name = GlobalConstants::get_global_constant_name(i);
-		int value = GlobalConstants::get_global_constant_value(i);
+		const char *name = CoreConstants::get_global_constant_name(i);
+		int value = CoreConstants::get_global_constant_value(i);
 		(*p_constants)[name] = value;
 	}
 	return constants;

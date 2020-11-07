@@ -30,7 +30,7 @@
 
 #include "node_2d.h"
 
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
 #include "servers/rendering_server.h"

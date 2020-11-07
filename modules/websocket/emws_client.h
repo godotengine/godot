@@ -33,7 +33,7 @@
 
 #ifdef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "emws_peer.h"
 #include "websocket_client.h"
 

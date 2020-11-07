@@ -30,8 +30,8 @@
 
 #include "gdnative/vector3.h"
 
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

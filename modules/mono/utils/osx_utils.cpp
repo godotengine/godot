@@ -32,7 +32,7 @@
 
 #ifdef OSX_ENABLED
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>

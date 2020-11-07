@@ -31,7 +31,7 @@
 #ifndef SYNTAX_HIGHLIGHTER_H
 #define SYNTAX_HIGHLIGHTER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class TextEdit;
 

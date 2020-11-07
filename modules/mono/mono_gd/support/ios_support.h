@@ -33,7 +33,7 @@
 
 #if defined(IPHONE_ENABLED)
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace gdmono {
 namespace ios {

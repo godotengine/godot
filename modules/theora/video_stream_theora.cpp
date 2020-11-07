@@ -30,8 +30,8 @@
 
 #include "video_stream_theora.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 

@@ -34,9 +34,9 @@
 // Godot imports
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/map.h"
-#include "core/script_language.h"
-#include "core/self_list.h"
+#include "core/object/script_language.h"
+#include "core/templates/map.h"
+#include "core/templates/self_list.h"
 // PluginScript imports
 #include "pluginscript_loader.h"
 #include <pluginscript/godot_pluginscript.h>

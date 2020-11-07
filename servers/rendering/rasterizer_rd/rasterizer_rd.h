@@ -32,7 +32,7 @@
 #define RASTERIZER_RD_H
 
 #include "core/os/os.h"
-#include "core/thread_work_pool.h"
+#include "core/templates/thread_work_pool.h"
 #include "servers/rendering/rasterizer.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_canvas_rd.h"
 #include "servers/rendering/rasterizer_rd/rasterizer_scene_high_end_rd.h"

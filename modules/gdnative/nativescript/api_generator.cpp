@@ -32,11 +32,11 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/class_db.h"
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "core/os/file_access.h"
-#include "core/pair.h"
+#include "core/templates/pair.h"
 
 // helper stuff
 
@@ -173,19 +173,19 @@ List<ClassAPI> generate_c_api_classes() {
 	ClassDB::get_class_list(&classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
-	// Register global constants as a fake GlobalConstants singleton class
+	// Register global constants as a fake CoreConstants singleton class
 	{
 		ClassAPI global_constants_api;
-		global_constants_api.class_name = "GlobalConstants";
+		global_constants_api.class_name = "CoreConstants";
 		global_constants_api.api_type = ClassDB::API_CORE;
 		global_constants_api.is_singleton = true;
-		global_constants_api.singleton_name = "GlobalConstants";
+		global_constants_api.singleton_name = "CoreConstants";
 		global_constants_api.is_instanciable = false;
-		const int constants_count = GlobalConstants::get_global_constant_count();
+		const int constants_count = CoreConstants::get_global_constant_count();
 		for (int i = 0; i < constants_count; ++i) {
 			ConstantAPI constant_api;
-			constant_api.constant_name = GlobalConstants::get_global_constant_name(i);
-			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
+			constant_api.constant_name = CoreConstants::get_global_constant_name(i);
+			constant_api.constant_value = CoreConstants::get_global_constant_value(i);
 			global_constants_api.constants.push_back(constant_api);
 		}
 		global_constants_api.constants.sort_custom<ConstantAPIComparator>();

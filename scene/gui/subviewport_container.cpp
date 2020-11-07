@@ -30,7 +30,7 @@
 
 #include "subviewport_container.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/main/viewport.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {

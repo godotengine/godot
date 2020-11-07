@@ -32,7 +32,7 @@
 #define PACKET_BUFFER_H
 
 #include "core/os/copymem.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 
 template <class T>
 class PacketBuffer {

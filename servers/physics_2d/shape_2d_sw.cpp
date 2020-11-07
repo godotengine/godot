@@ -31,7 +31,7 @@
 #include "shape_2d_sw.h"
 
 #include "core/math/geometry_2d.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;

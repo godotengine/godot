@@ -31,8 +31,8 @@
 #ifndef CODE_COMPLETION_H
 #define CODE_COMPLETION_H
 
-#include "core/ustring.h"
-#include "core/variant.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 namespace gdmono {
 

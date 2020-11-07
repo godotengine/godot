@@ -33,8 +33,8 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
 
 class GDScriptWarning {
 public:

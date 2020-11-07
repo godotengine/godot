@@ -32,8 +32,8 @@
 #define DOC_DATA_H
 
 #include "core/io/xml_parser.h"
-#include "core/map.h"
-#include "core/variant.h"
+#include "core/templates/map.h"
+#include "core/variant/variant.h"
 
 class DocData {
 public:

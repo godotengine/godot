@@ -31,7 +31,7 @@
 #ifndef TEST_COLOR_H
 #define TEST_COLOR_H
 
-#include "core/color.h"
+#include "core/math/color.h"
 
 #include "thirdparty/doctest/doctest.h"
 

@@ -31,7 +31,7 @@
 #include "texture_loader_dummy.h"
 
 #include "core/os/file_access.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <string.h>
 

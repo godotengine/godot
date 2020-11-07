@@ -31,7 +31,7 @@
 #ifndef LIGHTMAP_DENOISER_H
 #define LIGHTMAP_DENOISER_H
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "scene/3d/lightmapper.h"
 
 struct OIDNDeviceImpl;

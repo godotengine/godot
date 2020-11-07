@@ -32,8 +32,8 @@
 #define RASTERIZER_DUMMY_H
 
 #include "core/math/camera_matrix.h"
-#include "core/rid_owner.h"
-#include "core/self_list.h"
+#include "core/templates/rid_owner.h"
+#include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rasterizer.h"
 #include "servers/rendering_server.h"

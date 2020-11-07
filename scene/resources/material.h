@@ -31,8 +31,8 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "core/resource.h"
-#include "core/self_list.h"
+#include "core/io/resource.h"
+#include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/shader_language.h"

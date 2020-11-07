@@ -30,9 +30,9 @@
 
 #include "godotsharp_dirs.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"

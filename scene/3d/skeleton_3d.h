@@ -31,7 +31,7 @@
 #ifndef SKELETON_3D_H
 #define SKELETON_3D_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/skin.h"
 

@@ -30,7 +30,7 @@
 
 #include "environment.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "servers/rendering_server.h"
 #include "texture.h"
 

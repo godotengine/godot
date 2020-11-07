@@ -30,10 +30,10 @@
 
 #include "gdnative/dictionary.h"
 
-#include "core/variant.h"
-// core/variant.h before to avoid compile errors with MSVC
-#include "core/dictionary.h"
+#include "core/variant/variant.h"
+// core/variant/variant.h before to avoid compile errors with MSVC
 #include "core/io/json.h"
+#include "core/variant/dictionary.h"
 
 #ifdef __cplusplus
 extern "C" {

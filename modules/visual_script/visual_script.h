@@ -33,8 +33,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/object/script_language.h"
 #include "core/os/thread.h"
-#include "core/script_language.h"
 
 class VisualScriptInstance;
 class VisualScriptNodeInstance;

@@ -31,11 +31,11 @@
 #ifndef VULKAN_CONTEXT_H
 #define VULKAN_CONTEXT_H
 
-#include "core/error_list.h"
-#include "core/map.h"
+#include "core/error/error_list.h"
 #include "core/os/mutex.h"
-#include "core/rid_owner.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
+#include "core/templates/rid_owner.h"
 #include "servers/display_server.h"
 
 #include <vulkan/vulkan.h>

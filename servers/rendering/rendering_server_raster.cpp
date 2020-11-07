@@ -30,10 +30,10 @@
 
 #include "rendering_server_raster.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/sort_array.h"
+#include "core/templates/sort_array.h"
 #include "rendering_server_canvas.h"
 #include "rendering_server_globals.h"
 #include "rendering_server_scene.h"

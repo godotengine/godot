@@ -31,7 +31,7 @@
 #ifndef RESOURCE_SAVER_H
 #define RESOURCE_SAVER_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class ResourceFormatSaver : public Reference {
 	GDCLASS(ResourceFormatSaver, Reference);

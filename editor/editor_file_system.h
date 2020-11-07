@@ -34,7 +34,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/set.h"
+#include "core/templates/set.h"
 #include "scene/main/node.h"
 class FileAccess;
 

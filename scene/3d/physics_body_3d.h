@@ -31,7 +31,7 @@
 #ifndef PHYSICS_BODY_3D_H
 #define PHYSICS_BODY_3D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_3d.h"

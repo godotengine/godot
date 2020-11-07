@@ -30,7 +30,7 @@
 
 #include "option_button.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 Size2 OptionButton::get_minimum_size() const {
 	Size2 minsize = Button::get_minimum_size();

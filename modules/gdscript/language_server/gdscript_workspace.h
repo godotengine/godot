@@ -32,7 +32,7 @@
 #define GDSCRIPT_WORKSPACE_H
 
 #include "../gdscript_parser.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "editor/editor_file_system.h"
 #include "gdscript_extend_parser.h"
 #include "lsp.hpp"

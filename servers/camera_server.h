@@ -31,11 +31,11 @@
 #ifndef CAMERA_SERVER_H
 #define CAMERA_SERVER_H
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/thread_safe.h"
-#include "core/reference.h"
-#include "core/rid.h"
-#include "core/variant.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>

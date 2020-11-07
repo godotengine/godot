@@ -31,7 +31,7 @@
 #ifndef GD_MONO_HEADER_H
 #define GD_MONO_HEADER_H
 
-#include "core/int_types.h"
+#include <cstdint>
 
 #ifdef WIN32
 #define GD_MONO_STDCALL __stdcall

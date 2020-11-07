@@ -33,7 +33,7 @@
 #include "audio_stream_ogg_vorbis.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "resource_importer_ogg_vorbis.h"
 #endif
 

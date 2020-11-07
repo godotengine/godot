@@ -32,9 +32,9 @@
 #define EDITOR_SCENE_IMPORTER_ASSIMP_H
 
 #ifdef TOOLS_ENABLED
-#include "core/bind/core_bind.h"
+#include "core/core_bind.h"
 #include "core/io/resource_importer.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/project_settings_editor.h"
 #include "scene/3d/mesh_instance_3d.h"

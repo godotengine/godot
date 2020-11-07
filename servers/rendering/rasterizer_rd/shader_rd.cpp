@@ -30,7 +30,7 @@
 
 #include "shader_rd.h"
 
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #include "rasterizer_rd.h"
 #include "servers/rendering/rendering_device.h"
 

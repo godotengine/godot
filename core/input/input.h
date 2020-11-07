@@ -32,7 +32,7 @@
 #define INPUT_H
 
 #include "core/input/input_event.h"
-#include "core/object.h"
+#include "core/object/object.h"
 #include "core/os/thread_safe.h"
 
 class Input : public Object {

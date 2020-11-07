@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "webrtc_data_channel.h"
 #include "webrtc_peer_connection.h"
 

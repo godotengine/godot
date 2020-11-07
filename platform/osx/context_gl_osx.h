@@ -33,7 +33,7 @@
 
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/os/os.h"
 
 #include <AppKit/AppKit.h>

@@ -31,8 +31,8 @@
 #ifndef DISJOINT_SET_H
 #define DISJOINT_SET_H
 
-#include "core/map.h"
-#include "core/vector.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
 
 /**
 	@author Marios Staikopoulos <marios@staik.net>

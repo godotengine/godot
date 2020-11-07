@@ -31,7 +31,7 @@
 #ifndef PHYSICS_SERVER_SW
 #define PHYSICS_SERVER_SW
 
-#include "core/rid_owner.h"
+#include "core/templates/rid_owner.h"
 #include "joints_3d_sw.h"
 #include "servers/physics_server_3d.h"
 #include "shape_3d_sw.h"

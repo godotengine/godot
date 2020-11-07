@@ -31,23 +31,23 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
-#include "core/hash_map.h"
 #include "core/io/multiplayer_api.h"
-#include "core/list.h"
-#include "core/map.h"
-#include "core/reference.h"
-#include "core/resource.h"
-#include "core/script_language.h"
-#include "core/string_name.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/io/resource.h"
+#include "core/object/reference.h"
+#include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
+#include "core/templates/map.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "gdscript_cache.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #include "gdscript_warning.h"
 #endif // DEBUG_ENABLED
 

@@ -33,7 +33,7 @@
 
 #include "core/os/file_access.h"
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class FileAccessBuffered : public FileAccess {
 public:

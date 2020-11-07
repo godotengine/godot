@@ -30,7 +30,7 @@
 
 #include "position_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/resources/texture.h"
 
 const float DEFAULT_GIZMO_EXTENTS = 10.0;

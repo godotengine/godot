@@ -31,10 +31,10 @@
 #ifndef GDSCRIPT_CACHE_H
 #define GDSCRIPT_CACHE_H
 
-#include "core/hash_map.h"
+#include "core/object/reference.h"
 #include "core/os/mutex.h"
-#include "core/reference.h"
-#include "core/set.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/set.h"
 #include "gdscript.h"
 
 class GDScriptAnalyzer;

@@ -30,7 +30,7 @@
 
 #include "quick_hull.h"
 
-#include "core/map.h"
+#include "core/templates/map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 

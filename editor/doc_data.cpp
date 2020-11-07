@@ -30,13 +30,13 @@
 
 #include "doc_data.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/object/script_language.h"
 #include "core/os/dir_access.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
 
@@ -634,16 +634,16 @@ void DocData::generate(bool p_basic_types) {
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
 
-		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			ConstantDoc cd;
-			cd.name = GlobalConstants::get_global_constant_name(i);
-			if (!GlobalConstants::get_ignore_value_in_docs(i)) {
-				cd.value = itos(GlobalConstants::get_global_constant_value(i));
+			cd.name = CoreConstants::get_global_constant_name(i);
+			if (!CoreConstants::get_ignore_value_in_docs(i)) {
+				cd.value = itos(CoreConstants::get_global_constant_value(i));
 				cd.is_value_valid = true;
 			} else {
 				cd.is_value_valid = false;
 			}
-			cd.enumeration = GlobalConstants::get_global_constant_enum(i);
+			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
 

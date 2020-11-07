@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "broad_phase_3d_basic.h"
-#include "core/list.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
 
 BroadPhase3DSW::ID BroadPhase3DBasic::create(CollisionObject3DSW *p_object, int p_subindex) {
 	ERR_FAIL_COND_V(p_object == nullptr, 0);

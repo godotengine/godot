@@ -32,7 +32,7 @@
 #define RANDOM_NUMBER_GENERATOR_H
 
 #include "core/math/random_pcg.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class RandomNumberGenerator : public Reference {
 	GDCLASS(RandomNumberGenerator, Reference);

@@ -32,8 +32,8 @@
 #define GDSCRIPT_CODEGEN
 
 #include "core/io/multiplayer_api.h"
-#include "core/string_name.h"
-#include "core/variant.h"
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 #include "gdscript_function.h"
 #include "gdscript_functions.h"
 

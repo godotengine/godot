@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "rendering_server_wrap_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "servers/display_server.h"
 
 void RenderingServerWrapMT::thread_exit() {

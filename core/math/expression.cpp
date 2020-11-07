@@ -30,13 +30,12 @@
 
 #include "expression.h"
 
-#include "core/class_db.h"
-#include "core/func_ref.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/os.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sin",
@@ -93,7 +92,6 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"clamp",
 	"nearest_po2",
 	"weakref",
-	"funcref",
 	"convert",
 	"typeof",
 	"type_exists",
@@ -185,7 +183,6 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_CARTESIAN2POLAR:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
-		case FUNC_FUNCREF:
 		case TYPE_CONVERT:
 		case COLORN:
 			return 2;
@@ -554,30 +551,6 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 				wref->set_obj(obj);
 				*r_return = wref;
 			}
-
-		} break;
-		case FUNC_FUNCREF: {
-			if (p_inputs[0]->get_type() != Variant::OBJECT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-
-				return;
-			}
-			if (p_inputs[1]->get_type() != Variant::STRING && p_inputs[1]->get_type() != Variant::NODE_PATH) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 1;
-				r_error.expected = Variant::STRING;
-
-				return;
-			}
-
-			Ref<FuncRef> fr = memnew(FuncRef);
-
-			fr->set_instance(*p_inputs[0]);
-			fr->set_function(*p_inputs[1]);
-
-			*r_return = fr;
 
 		} break;
 		case TYPE_CONVERT: {

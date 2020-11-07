@@ -31,7 +31,7 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"

@@ -30,13 +30,13 @@
 
 #include "remote_debugger.h"
 
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
 #include "scene/main/node.h"
 #include "servers/display_server.h"
 

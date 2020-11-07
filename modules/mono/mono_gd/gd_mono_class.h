@@ -31,8 +31,8 @@
 #ifndef GD_MONO_CLASS_H
 #define GD_MONO_CLASS_H
 
-#include "core/map.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
+#include "core/templates/map.h"
 
 #include "gd_mono_field.h"
 #include "gd_mono_header.h"

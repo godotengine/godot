@@ -30,9 +30,9 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/json.h"
 #include "core/os/copymem.h"
-#include "core/project_settings.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 

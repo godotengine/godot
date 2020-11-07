@@ -31,7 +31,7 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 /*
 	Special Key:

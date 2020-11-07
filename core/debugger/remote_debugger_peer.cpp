@@ -30,9 +30,9 @@
 
 #include "remote_debugger_peer.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
 	return connected;

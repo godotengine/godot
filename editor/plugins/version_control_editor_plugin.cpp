@@ -30,7 +30,7 @@
 
 #include "version_control_editor_plugin.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"

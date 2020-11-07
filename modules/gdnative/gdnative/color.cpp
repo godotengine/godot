@@ -30,8 +30,8 @@
 
 #include "gdnative/color.h"
 
-#include "core/color.h"
-#include "core/variant.h"
+#include "core/math/color.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

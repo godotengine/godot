@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
-#include "core/string_builder.h"
+#include "core/string/string_builder.h"
 #include "editor/editor_scale.h"
 #include "editor_node.h"
 #include "editor_settings.h"

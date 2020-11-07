@@ -31,8 +31,8 @@
 #ifndef RENDERING_SERVER_WRAP_MT_H
 #define RENDERING_SERVER_WRAP_MT_H
 
-#include "core/command_queue_mt.h"
 #include "core/os/thread.h"
+#include "core/templates/command_queue_mt.h"
 #include "servers/rendering_server.h"
 
 class RenderingServerWrapMT : public RenderingServer {

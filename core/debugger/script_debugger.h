@@ -31,11 +31,11 @@
 #ifndef SCRIPT_DEBUGGER_H
 #define SCRIPT_DEBUGGER_H
 
-#include "core/map.h"
-#include "core/script_language.h"
-#include "core/set.h"
-#include "core/string_name.h"
-#include "core/vector.h"
+#include "core/object/script_language.h"
+#include "core/string/string_name.h"
+#include "core/templates/map.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
 
 class ScriptDebugger {
 	typedef ScriptLanguage::StackInfo StackInfo;

@@ -31,8 +31,8 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include "core/oa_hash_map.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
+#include "core/templates/oa_hash_map.h"
 
 /**
 	A* pathfinding algorithm

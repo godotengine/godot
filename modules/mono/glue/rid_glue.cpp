@@ -30,9 +30,9 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/class_db.h"
-#include "core/resource.h"
-#include "core/rid.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
 
 #include "../mono_gd/gd_mono_marshal.h"
 

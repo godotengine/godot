@@ -30,9 +30,9 @@
 
 #include "vulkan_context.h"
 
-#include "core/engine.h"
-#include "core/project_settings.h"
-#include "core/ustring.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/string/ustring.h"
 #include "core/version.h"
 
 #include "vk_enum_string_helper.h"

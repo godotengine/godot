@@ -30,7 +30,7 @@
 
 #include "texture_progress.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 void TextureProgress::set_under_texture(const Ref<Texture2D> &p_texture) {
 	under = p_texture;

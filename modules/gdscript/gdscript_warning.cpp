@@ -30,7 +30,7 @@
 
 #include "gdscript_warning.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef DEBUG_ENABLED
 

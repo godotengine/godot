@@ -31,7 +31,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class Animation : public Resource {
 	GDCLASS(Animation, Resource);

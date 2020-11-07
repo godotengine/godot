@@ -30,11 +30,11 @@
 
 #include "nativescript/godot_nativescript.h"
 
-#include "core/class_db.h"
-#include "core/error_macros.h"
-#include "core/global_constants.h"
-#include "core/project_settings.h"
-#include "core/variant.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
+#include "core/error/error_macros.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
 #include "gdnative/gdnative.h"
 #include <stdint.h>
 

@@ -31,8 +31,8 @@
 #ifndef PATH_UTILS_H
 #define PATH_UTILS_H
 
-#include "core/string_builder.h"
-#include "core/ustring.h"
+#include "core/string/string_builder.h"
+#include "core/string/ustring.h"
 
 namespace path {
 

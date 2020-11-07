@@ -30,8 +30,8 @@
 
 #include "gdscript.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
 #include "core/os/file_access.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
@@ -39,7 +39,7 @@
 #include "gdscript_tokenizer.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #endif
@@ -383,8 +383,8 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 		}
 
 		bool skip = false;
-		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
-			if (E->key() == GlobalConstants::get_global_constant_name(i)) {
+		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
+			if (E->key() == CoreConstants::get_global_constant_name(i)) {
 				skip = true;
 				break;
 			}
@@ -2139,9 +2139,9 @@ static void _find_enumeration_candidates(GDScriptParser::CompletionContext &p_co
 				r_result.insert(option.display, option);
 			}
 		} else {
-			for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
-				if (GlobalConstants::get_global_constant_enum(i) == current_enum) {
-					ScriptCodeCompletionOption option(GlobalConstants::get_global_constant_name(i), ScriptCodeCompletionOption::KIND_ENUM);
+			for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
+				if (CoreConstants::get_global_constant_enum(i) == current_enum) {
+					ScriptCodeCompletionOption option(CoreConstants::get_global_constant_name(i), ScriptCodeCompletionOption::KIND_ENUM);
 					r_result.insert(option.display, option);
 				}
 			}

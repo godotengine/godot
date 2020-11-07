@@ -31,7 +31,7 @@
 #ifndef JAVASCRIPT_EVAL_H
 #define JAVASCRIPT_EVAL_H
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 
 class JavaScript : public Object {
 private:

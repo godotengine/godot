@@ -30,7 +30,7 @@
 
 #include "rendering_server.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
