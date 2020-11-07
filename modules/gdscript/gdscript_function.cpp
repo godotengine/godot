@@ -620,7 +620,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
-				dst->set_named(*index, *value, &valid);
+				dst->set_named(*index, *value, valid);
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
@@ -647,10 +647,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool valid;
 #ifdef DEBUG_ENABLED
 				//allow better error message in cases where src and dst are the same stack position
-				Variant ret = src->get_named(*index, &valid);
+				Variant ret = src->get_named(*index, valid);
 
 #else
-				*dst = src->get_named(*index, &valid);
+				*dst = src->get_named(*index, valid);
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
