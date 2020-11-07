@@ -146,7 +146,7 @@
 		<member name="editor_hint" type="bool" setter="set_editor_hint" getter="is_editor_hint" default="true">
 			If [code]true[/code], it is running inside the editor. Useful for tool scripts.
 		</member>
-		<member name="iterations_per_second" type="int" setter="set_iterations_per_second" getter="get_iterations_per_second" default="60">
+		<member name="physics_fps" type="int" setter="set_physics_fps" getter="get_physics_fps" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. This value should generally always be set to [code]60[/code] or above, as Godot doesn't interpolate the physics step. As a result, values lower than [code]60[/code] will look stuttery. This value can be increased to make input more reactive or work around tunneling issues, but keep in mind doing so will increase CPU usage.
 		</member>
 		<member name="physics_jitter_fix" type="float" setter="set_physics_jitter_fix" getter="get_physics_jitter_fix" default="0.5">

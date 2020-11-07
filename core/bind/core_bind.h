@@ -626,8 +626,8 @@ protected:
 
 public:
 	static _Engine *get_singleton() { return singleton; }
-	void set_iterations_per_second(int p_ips);
-	int get_iterations_per_second() const;
+	void set_physics_fps(int p_physics_fps);
+	int get_physics_fps() const;
 
 	void set_physics_jitter_fix(float p_threshold);
 	float get_physics_jitter_fix() const;

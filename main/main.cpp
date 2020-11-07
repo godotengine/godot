@@ -1337,7 +1337,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
+	Engine::get_singleton()->set_physics_fps(GLOBAL_DEF("physics/common/physics_fps", 60));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_fps",
 			PropertyInfo(Variant::INT, "physics/common/physics_fps",
 					PROPERTY_HINT_RANGE, "1,120,1,or_greater"));
@@ -2364,7 +2364,7 @@ bool Main::iteration() {
 
 	uint64_t ticks_elapsed = ticks - last_ticks;
 
-	int physics_fps = Engine::get_singleton()->get_iterations_per_second();
+	int physics_fps = Engine::get_singleton()->get_physics_fps();
 	float frame_slice = 1.0 / physics_fps;
 
 	float time_scale = Engine::get_singleton()->get_time_scale();

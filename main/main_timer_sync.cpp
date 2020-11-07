@@ -73,14 +73,14 @@ int MainTimerSync::get_average_physics_steps(float &p_min, float &p_max) {
 }
 
 // advance physics clock by p_idle_step, return appropriate number of steps to simulate
-MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_per_second, float p_idle_step) {
+MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_physics_fps, float p_idle_step) {
 	MainFrameTime ret;
 
 	ret.idle_step = p_idle_step;
 
 	// simple determination of number of physics iteration
 	time_accum += ret.idle_step;
-	ret.physics_steps = floor(time_accum * p_iterations_per_second);
+	ret.physics_steps = floor(time_accum * p_physics_fps);
 
 	int min_typical_steps = typical_physics_steps[0];
 	int max_typical_steps = min_typical_steps + 1;
@@ -107,7 +107,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 
 	// try to keep it consistent with previous iterations
 	if (ret.physics_steps < min_typical_steps) {
-		const int max_possible_steps = floor((time_accum)*p_iterations_per_second + get_physics_jitter_fix());
+		const int max_possible_steps = floor((time_accum)*p_physics_fps + get_physics_jitter_fix());
 		if (max_possible_steps < min_typical_steps) {
 			ret.physics_steps = max_possible_steps;
 			update_typical = true;
@@ -115,7 +115,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 			ret.physics_steps = min_typical_steps;
 		}
 	} else if (ret.physics_steps > max_typical_steps) {
-		const int min_possible_steps = floor((time_accum)*p_iterations_per_second - get_physics_jitter_fix());
+		const int min_possible_steps = floor((time_accum)*p_physics_fps - get_physics_jitter_fix());
 		if (min_possible_steps > max_typical_steps) {
 			ret.physics_steps = min_possible_steps;
 			update_typical = true;
@@ -146,7 +146,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 }
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iterations_per_second, float p_idle_step) {
+MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_physics_fps, float p_idle_step) {
 	if (fixed_fps != -1) {
 		p_idle_step = 1.0 / fixed_fps;
 	}
@@ -154,7 +154,7 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	// compensate for last deficit
 	p_idle_step += time_deficit;
 
-	MainFrameTime ret = advance_core(p_frame_slice, p_iterations_per_second, p_idle_step);
+	MainFrameTime ret = advance_core(p_frame_slice, p_physics_fps, p_idle_step);
 
 	// we will do some clamping on ret.idle_step and need to sync those changes to time_accum,
 	// that's easiest if we just remember their fixed difference now
@@ -183,7 +183,7 @@ MainFrameTime MainTimerSync::advance_checked(float p_frame_slice, int p_iteratio
 	// track deficit
 	time_deficit = p_idle_step - ret.idle_step;
 
-	// p_frame_slice is 1.0 / iterations_per_sec
+	// p_frame_slice is 1.0 / physics_fps
 	// i.e. the time in seconds taken by a physics tick
 	ret.interpolation_fraction = time_accum / p_frame_slice;
 
@@ -220,8 +220,8 @@ void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 }
 
 // advance one frame, return timesteps to take
-MainFrameTime MainTimerSync::advance(float p_frame_slice, int p_iterations_per_second) {
+MainFrameTime MainTimerSync::advance(float p_frame_slice, int p_physics_fps) {
 	float cpu_idle_step = get_cpu_idle_step();
 
-	return advance_checked(p_frame_slice, p_iterations_per_second, cpu_idle_step);
+	return advance_checked(p_frame_slice, p_physics_fps, cpu_idle_step);
 }

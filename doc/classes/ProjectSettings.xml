@@ -968,7 +968,7 @@
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="" default="60">
 			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run.
-			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.iterations_per_second] instead.
+			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_fps] instead.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="" default="0.5">
 			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.

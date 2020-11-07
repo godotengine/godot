@@ -55,7 +55,7 @@ private:
 	uint64_t _frame_ticks = 0;
 	float _frame_step = 0;
 
-	int ips = 60;
+	int physics_fps = 60;
 	float physics_jitter_fix = 0.5;
 	float _fps = 1;
 	int _target_fps = 0;
@@ -78,8 +78,8 @@ private:
 public:
 	static Engine *get_singleton();
 
-	virtual void set_iterations_per_second(int p_ips);
-	virtual int get_iterations_per_second() const;
+	virtual void set_physics_fps(int p_physics_fps);
+	virtual int get_physics_fps() const;
 
 	void set_physics_jitter_fix(float p_threshold);
 	float get_physics_jitter_fix() const;
