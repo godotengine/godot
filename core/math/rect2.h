@@ -306,6 +306,15 @@ struct Rect2 {
 			return false;
 		}
 	}
+
+	_FORCE_INLINE_ void set_end(const Vector2 &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector2 get_end() const {
+		return position + size;
+	}
+
 	operator String() const { return String(position) + ", " + String(size); }
 
 	Rect2() {}
@@ -473,6 +482,14 @@ struct Rect2i {
 
 	_FORCE_INLINE_ Rect2i abs() const {
 		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+	}
+
+	_FORCE_INLINE_ void set_end(const Vector2i &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector2i get_end() const {
+		return position + size;
 	}
 
 	operator String() const { return String(position) + ", " + String(size); }

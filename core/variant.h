@@ -477,8 +477,66 @@ public:
 	static Vector<StringName> get_method_argument_names(Variant::Type p_type, const StringName &p_method);
 	static bool is_method_const(Variant::Type p_type, const StringName &p_method);
 
-	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get_named(const StringName &p_index, bool *r_valid = nullptr) const;
+	void set_named(const StringName &p_member, const Variant &p_value, bool &r_valid);
+	Variant get_named(const StringName &p_member, bool &r_valid) const;
+
+	typedef void (*ValidatedSetter)(Variant *base, const Variant *value);
+	typedef void (*ValidatedGetter)(const Variant *base, Variant *value);
+
+	static bool has_member(Variant::Type p_type, const StringName &p_member);
+	static Variant::Type get_member_type(Variant::Type p_type, const StringName &p_member);
+	static void get_member_list(Type p_type, List<StringName> *r_members);
+
+	static ValidatedSetter get_member_validated_setter(Variant::Type p_type, const StringName &p_member);
+	static ValidatedGetter get_member_validated_getter(Variant::Type p_type, const StringName &p_member);
+
+	typedef void (*PTRSetter)(void *base, const void *value);
+	typedef void (*PTRGetter)(const void *base, void *value);
+
+	static PTRSetter get_member_ptr_setter(Variant::Type p_type, const StringName &p_member);
+	static PTRGetter get_member_ptr_getter(Variant::Type p_type, const StringName &p_member);
+
+	static bool has_indexing(Variant::Type p_type);
+	static Variant::Type get_indexed_element_type(Variant::Type p_type);
+
+	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool &oob);
+	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool &oob);
+
+	static ValidatedIndexedSetter get_member_validated_indexed_setter(Variant::Type p_type);
+	static ValidatedIndexedGetter get_member_validated_indexed_getter(Variant::Type p_type);
+
+	typedef void (*PTRIndexedSetter)(void *base, int64_t index, const void *value);
+	typedef void (*PTRIndexedGetter)(const void *base, int64_t index, void *value);
+
+	static PTRIndexedSetter get_member_ptr_indexed_setter(Variant::Type p_type);
+	static PTRIndexedGetter get_member_ptr_indexed_getter(Variant::Type p_type);
+
+	void set_indexed(int64_t p_index, const Variant &p_value, bool &r_valid, bool &r_oob);
+	Variant get_indexed(int64_t p_index, bool &r_valid, bool &r_oob) const;
+
+	uint64_t get_indexed_size() const;
+
+	static bool is_keyed(Variant::Type p_type);
+
+	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool &valid);
+	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool &valid);
+	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool &valid);
+
+	static ValidatedKeyedSetter get_member_validated_keyed_setter(Variant::Type p_type);
+	static ValidatedKeyedGetter get_member_validated_keyed_getter(Variant::Type p_type);
+	static ValidatedKeyedChecker get_member_validated_keyed_checker(Variant::Type p_type);
+
+	typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
+	typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
+	typedef bool (*PTRKeyedChecker)(const void *base, const void *key);
+
+	static PTRKeyedSetter get_member_ptr_keyed_setter(Variant::Type p_type);
+	static PTRKeyedGetter get_member_ptr_keyed_getter(Variant::Type p_type);
+	static PTRKeyedChecker get_member_ptr_keyed_checker(Variant::Type p_type);
+
+	void set_keyed(const Variant &p_key, const Variant &p_value, bool &r_valid);
+	Variant get_keyed(const Variant &p_key, bool &r_valid) const;
+	bool has_key(const Variant &p_key, bool &r_valid) const;
 
 	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;

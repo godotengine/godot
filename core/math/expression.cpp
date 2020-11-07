@@ -1980,7 +1980,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			bool valid;
-			r_ret = base.get_named(index->name, &valid);
+			r_ret = base.get_named(index->name, valid);
 			if (!valid) {
 				r_error_str = vformat(RTR("Invalid named index '%s' for base type %s"), String(index->name), Variant::get_type_name(base.get_type()));
 				return true;

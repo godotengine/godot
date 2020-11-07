@@ -2438,7 +2438,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		if (p_subscript->base->is_constant) {
 			// Just try to get it.
 			bool valid = false;
-			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, &valid);
+			Variant value = p_subscript->base->reduced_value.get_named(p_subscript->attribute->name, valid);
 			if (!valid) {
 				push_error(vformat(R"(Cannot get member "%s" from "%s".)", p_subscript->attribute->name, p_subscript->base->reduced_value), p_subscript->index);
 			} else {

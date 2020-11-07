@@ -1481,7 +1481,6 @@ void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p
 }
 
 void register_variant_operators() {
-	printf("size of OT %i\n", (int)sizeof(operator_evaluator_table));
 	zeromem(operator_return_type_table, sizeof(operator_return_type_table));
 	zeromem(operator_evaluator_table, sizeof(operator_evaluator_table));
 	zeromem(validated_operator_evaluator_table, sizeof(validated_operator_evaluator_table));
@@ -2121,4 +2120,16 @@ Variant::operator bool() const {
 // zeroiness.
 bool Variant::booleanize() const {
 	return !is_zero();
+}
+
+bool Variant::in(const Variant &p_index, bool *r_valid) const {
+	bool valid;
+	Variant ret;
+	evaluate(OP_IN, p_index, *this, ret, valid);
+	if (r_valid) {
+		*r_valid = valid;
+		return false;
+	}
+	ERR_FAIL_COND_V(ret.type != BOOL, false);
+	return *VariantGetInternalPtr<bool>::get_ptr(&ret);
 }

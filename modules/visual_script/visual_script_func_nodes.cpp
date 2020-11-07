@@ -1449,11 +1449,11 @@ public:
 
 	_FORCE_INLINE_ void _process_get(Variant &source, const Variant &p_argument, bool &valid) {
 		if (index != StringName() && assign_op == VisualScriptPropertySet::ASSIGN_OP_NONE) {
-			source.set_named(index, p_argument, &valid);
+			source.set_named(index, p_argument, valid);
 		} else {
 			Variant value;
 			if (index != StringName()) {
-				value = source.get_named(index, &valid);
+				value = source.get_named(index, valid);
 			} else {
 				value = source;
 			}
@@ -1497,7 +1497,7 @@ public:
 			}
 
 			if (index != StringName()) {
-				source.set_named(index, value, &valid);
+				source.set_named(index, value, valid);
 			} else {
 				source = value;
 			}
@@ -1562,12 +1562,12 @@ public:
 				bool valid;
 
 				if (needs_get) {
-					Variant value = v.get_named(property, &valid);
+					Variant value = v.get_named(property, valid);
 					_process_get(value, *p_inputs[1], valid);
-					v.set_named(property, value, &valid);
+					v.set_named(property, value, valid);
 
 				} else {
-					v.set_named(property, *p_inputs[1], &valid);
+					v.set_named(property, *p_inputs[1], valid);
 				}
 
 				if (!valid) {
@@ -2111,7 +2111,7 @@ public:
 				*p_outputs[0] = object->get(property, &valid);
 
 				if (index != StringName()) {
-					*p_outputs[0] = p_outputs[0]->get_named(index);
+					*p_outputs[0] = p_outputs[0]->get_named(index, valid);
 				}
 
 				if (!valid) {
@@ -2140,7 +2140,7 @@ public:
 				*p_outputs[0] = another->get(property, &valid);
 
 				if (index != StringName()) {
-					*p_outputs[0] = p_outputs[0]->get_named(index);
+					*p_outputs[0] = p_outputs[0]->get_named(index, valid);
 				}
 
 				if (!valid) {
@@ -2156,7 +2156,7 @@ public:
 
 				*p_outputs[0] = v.get(property, &valid);
 				if (index != StringName()) {
-					*p_outputs[0] = p_outputs[0]->get_named(index);
+					*p_outputs[0] = p_outputs[0]->get_named(index, valid);
 				}
 
 				if (!valid) {

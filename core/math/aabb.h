@@ -107,6 +107,14 @@ public:
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
 	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
 
+	_FORCE_INLINE_ void set_end(const Vector3 &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector3 get_end() const {
+		return position + size;
+	}
+
 	operator String() const;
 
 	_FORCE_INLINE_ AABB() {}

@@ -39,6 +39,9 @@ Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = !err;
 	}
+	if (err) {
+		return Object::getvar(p_key, r_valid);
+	}
 	return ret;
 }
 
