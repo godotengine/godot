@@ -30,9 +30,9 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/class_db.h"
-#include "core/reference.h"
-#include "core/string_name.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
+#include "core/string/string_name.h"
 
 #include "../csharp_script.h"
 #include "../mono_gd/gd_mono_cache.h"

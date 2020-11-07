@@ -30,7 +30,7 @@
 
 #include "visibility_notifier_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "gpu_particles_2d.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/physics_body_2d.h"

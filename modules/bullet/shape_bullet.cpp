@@ -34,7 +34,7 @@
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "shape_owner_bullet.h"
 
 #include <BulletCollision/CollisionDispatch/btInternalEdgeUtility.h>

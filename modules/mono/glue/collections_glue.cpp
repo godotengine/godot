@@ -32,7 +32,7 @@
 
 #include <mono/metadata/exception.h>
 
-#include "core/array.h"
+#include "core/variant/array.h"
 
 #include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_class.h"

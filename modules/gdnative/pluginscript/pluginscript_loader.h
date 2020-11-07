@@ -34,7 +34,7 @@
 // Godot imports
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 class PluginScriptLanguage;
 

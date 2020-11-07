@@ -30,7 +30,7 @@
 
 #include "visibility_notifier_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/animation/animation_player.h"

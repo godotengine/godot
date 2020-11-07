@@ -30,8 +30,8 @@
 
 #include "pot_generator.h"
 
-#include "core/error_macros.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "editor_translation_parser.h"
 #include "plugins/packed_scene_translation_parser_plugin.h"
 

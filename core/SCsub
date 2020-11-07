@@ -34,7 +34,7 @@ if "SCRIPT_AES256_ENCRYPTION_KEY" in os.environ:
 
 # NOTE: It is safe to generate this file here, since this is still executed serially
 with open("script_encryption_key.gen.cpp", "w") as f:
-    f.write('#include "core/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
+    f.write('#include "core/config/project_settings.h"\nuint8_t script_encryption_key[32]={' + txt + "};\n")
 
 
 # Add required thirdparty code.
@@ -174,7 +174,12 @@ SConscript("crypto/SCsub")
 SConscript("io/SCsub")
 SConscript("debugger/SCsub")
 SConscript("input/SCsub")
-SConscript("bind/SCsub")
+SConscript("variant/SCsub")
+SConscript("object/SCsub")
+SConscript("templates/SCsub")
+SConscript("string/SCsub")
+SConscript("config/SCsub")
+SConscript("error/SCsub")
 
 
 # Build it all as a library

@@ -31,9 +31,9 @@
 #ifndef RENDERING_DEVICE_VULKAN_H
 #define RENDERING_DEVICE_VULKAN_H
 
-#include "core/oa_hash_map.h"
 #include "core/os/thread_safe.h"
-#include "core/rid_owner.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED

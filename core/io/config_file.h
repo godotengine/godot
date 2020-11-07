@@ -31,10 +31,10 @@
 #ifndef CONFIG_FILE_H
 #define CONFIG_FILE_H
 
-#include "core/ordered_hash_map.h"
+#include "core/object/reference.h"
 #include "core/os/file_access.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/templates/ordered_hash_map.h"
+#include "core/variant/variant_parser.h"
 
 class ConfigFile : public Reference {
 	GDCLASS(ConfigFile, Reference);

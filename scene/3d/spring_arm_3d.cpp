@@ -30,7 +30,7 @@
 
 #include "spring_arm_3d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "servers/physics_server_3d.h"

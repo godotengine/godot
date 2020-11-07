@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/engine.h"
+#include "core/config/engine.h"
 #endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {

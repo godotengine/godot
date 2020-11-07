@@ -32,7 +32,7 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 PackedStringArray ConfigFile::_get_sections() const {
 	List<String> s;

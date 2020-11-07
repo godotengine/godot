@@ -31,9 +31,9 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/io/resource.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/resource.h"
 
 class ResourceFormatLoader : public Reference {
 	GDCLASS(ResourceFormatLoader, Reference);

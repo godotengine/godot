@@ -33,7 +33,7 @@
 
 #include "scene/main/window.h"
 
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 
 class Popup : public Window {
 	GDCLASS(Popup, Window);

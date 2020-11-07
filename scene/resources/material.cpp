@@ -30,7 +30,7 @@
 
 #include "material.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"

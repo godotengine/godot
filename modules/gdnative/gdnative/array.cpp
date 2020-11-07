@@ -30,12 +30,12 @@
 
 #include "gdnative/array.h"
 
-#include "core/array.h"
 #include "core/os/memory.h"
+#include "core/variant/array.h"
 
-#include "core/color.h"
+#include "core/math/color.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

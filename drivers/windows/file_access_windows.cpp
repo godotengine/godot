@@ -33,7 +33,7 @@
 #include "file_access_windows.h"
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <shlwapi.h>
 #include <windows.h>

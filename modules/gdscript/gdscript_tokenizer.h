@@ -31,10 +31,10 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
-#include "core/list.h"
-#include "core/set.h"
-#include "core/variant.h"
-#include "core/vector.h"
+#include "core/templates/list.h"
+#include "core/templates/set.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 
 class GDScriptTokenizer {
 public:

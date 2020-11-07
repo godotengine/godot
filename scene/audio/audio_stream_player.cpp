@@ -30,7 +30,7 @@
 
 #include "audio_stream_player.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
 	int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);

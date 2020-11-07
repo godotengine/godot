@@ -32,7 +32,7 @@
 #define IMAGE_LOADER_SVG_H
 
 #include "core/io/image_loader.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 /**
 	@author Daniel Ramirez <djrmuv@gmail.com>

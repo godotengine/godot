@@ -31,7 +31,7 @@
 #include "display_server_android.h"
 
 #include "android_keys_utils.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "os_android.h"

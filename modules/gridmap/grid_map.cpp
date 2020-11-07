@@ -31,7 +31,7 @@
 #include "grid_map.h"
 
 #include "core/io/marshalls.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"

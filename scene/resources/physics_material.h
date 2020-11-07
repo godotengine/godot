@@ -31,7 +31,7 @@
 #ifndef PHYSICS_MATERIAL_H
 #define PHYSICS_MATERIAL_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {

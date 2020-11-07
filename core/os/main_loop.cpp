@@ -30,7 +30,7 @@
 
 #include "main_loop.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 void MainLoop::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_initialize"));

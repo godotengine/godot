@@ -31,8 +31,8 @@
 #ifndef VISUALSERVERVIEWPORT_H
 #define VISUALSERVERVIEWPORT_H
 
-#include "core/rid_owner.h"
-#include "core/self_list.h"
+#include "core/templates/rid_owner.h"
+#include "core/templates/self_list.h"
 #include "rasterizer.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"

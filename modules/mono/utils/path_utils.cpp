@@ -30,10 +30,10 @@
 
 #include "path_utils.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef WINDOWS_ENABLED
 #include <windows.h>
