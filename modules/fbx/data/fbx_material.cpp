@@ -37,7 +37,7 @@ String FBXMaterial::get_material_name() const {
 	return material_name;
 }
 
-void FBXMaterial::set_imported_material(const FBXDocParser::Material *p_material) {
+void FBXMaterial::set_imported_material(FBXDocParser::Material *p_material) {
 	material = p_material;
 }
 
@@ -167,6 +167,11 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const FBXDocParser:
 
 		const String file_extension_uppercase = file_extension.to_upper();
 
+		// TODO: one day we can add this
+		if (file_extension.empty()) {
+			continue; // skip it
+		}
+
 		// TODO: we don't support EMBED for DDS and TGA.
 		ERR_CONTINUE_MSG(
 				file_extension_uppercase != "PNG" &&
@@ -178,8 +183,9 @@ FBXMaterial::MaterialInfo FBXMaterial::extract_material_info(const FBXDocParser:
 				"The FBX file contains a texture with an unrecognized extension: " + file_extension_uppercase);
 
 		const String texture_name = absoulte_fbx_file_path.get_file();
+		print_verbose("Getting FBX mapping mode for " + String(fbx_mapping_name.c_str()));
 		const SpatialMaterial::TextureParam mapping_mode = fbx_texture_mapping_desc.at(fbx_mapping_name);
-
+		print_verbose("Set FBX mapping mode to " + get_texture_param_name(mapping_mode));
 		TextureFileMapping file_mapping;
 		file_mapping.map_mode = mapping_mode;
 		file_mapping.name = texture_name;
@@ -261,7 +267,6 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 	// Extract other parameters info.
 	for (FBXDocParser::LazyPropertyMap::value_type iter : material->Props()->GetLazyProperties()) {
 		const std::string name = iter.first;
-		//const Assimp::FBX::ElementPtr element = iter.second;
 
 		if (name.empty()) {
 			continue;
@@ -272,26 +277,31 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 			desc = fbx_properties_desc.at(name);
 		}
 
+		// check if we can ignore this it will be done at the next phase
+		if (desc == PROPERTY_DESC_NOT_FOUND || desc == PROPERTY_DESC_IGNORE) {
+			// count the texture mapping references. Skip this one if it's found and we can't look up a property value.
+			if (fbx_texture_mapping_desc.count(name) > 0) {
+				continue; // safe to ignore it's a texture mapping.
+			}
+		}
+
 		if (desc == PROPERTY_DESC_IGNORE) {
-			print_verbose("The FBX material parameter: `" + String(name.c_str()) + "` is ignored.");
+			WARN_PRINT("[Ignored] The FBX material parameter: `" + String(name.c_str()) + "` is ignored.");
 			continue;
 		} else {
 			print_verbose("FBX Material parameter: " + String(name.c_str()));
 		}
 
+		// DISABLE when adding support for all weird and wonderful material formats
 		if (desc == PROPERTY_DESC_NOT_FOUND) {
 			continue;
 		}
 
 		ERR_CONTINUE_MSG(desc == PROPERTY_DESC_NOT_FOUND, "The FBX material parameter: `" + String(name.c_str()) + "` was not recognized. Please open an issue so we can add the support to it.");
 
-		FBXDocParser::PropertyPtr prop = material->Props()->Get(name);
+		const FBXDocParser::PropertyTable *tbl = material->Props();
+		FBXDocParser::PropertyPtr prop = tbl->Get(name);
 
-		//Assimp::FBX::PropertyPtr prop = prop.second.
-
-		if (prop == nullptr) {
-			continue;
-		}
 		ERR_CONTINUE_MSG(prop == nullptr, "This file may be corrupted because is not possible to extract the material parameter: " + String(name.c_str()));
 
 		if (spatial_material.is_null()) {
@@ -299,54 +309,133 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 			spatial_material.instance();
 		}
 
+		const FBXDocParser::TypedProperty<real_t> *real_value = dynamic_cast<const FBXDocParser::TypedProperty<real_t> *>(prop);
+		const FBXDocParser::TypedProperty<Vector3> *vector_value = dynamic_cast<const FBXDocParser::TypedProperty<Vector3> *>(prop);
+
+		if (!real_value && !vector_value) {
+			WARN_PRINT("unsupported datatype in property: " + String(name.c_str()));
+			continue;
+		}
+
 		switch (desc) {
 			case PROPERTY_DESC_ALBEDO_COLOR: {
-				const Vector3 color = extract_from_prop(prop, Vector3(0, 0, 0), name, "Vector3");
-				// Make sure to not lost any eventual opacity.
-				Color c = spatial_material->get_albedo();
-				c[0] = color[0];
-				c[1] = color[1];
-				c[2] = color[2];
-				spatial_material->set_albedo(c);
+				if (vector_value) {
+					const Vector3 &color = vector_value->Value();
+					// Make sure to not lost any eventual opacity.
+					Color c = spatial_material->get_albedo();
+					c[0] = color[0];
+					c[1] = color[1];
+					c[2] = color[2];
+					spatial_material->set_albedo(c);
+				} else if (real_value) {
+					print_error("albedo is unsupported format?");
+				}
 			} break;
 			case PROPERTY_DESC_TRANSPARENT: {
-				const real_t opacity = extract_from_prop(prop, 1.0f, name, "float");
-				if (opacity < (1.0 - CMP_EPSILON)) {
-					Color c = spatial_material->get_albedo();
-					c[3] = opacity;
-					spatial_material->set_albedo(c);
-					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSPARENT);
-					spatial_material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+				if (real_value) {
+					const real_t opacity = real_value->Value();
+					if (opacity < (1.0 - CMP_EPSILON)) {
+						Color c = spatial_material->get_albedo();
+						c[3] = opacity;
+						spatial_material->set_albedo(c);
+						material_info.features.push_back(SpatialMaterial::Feature::FEATURE_TRANSPARENT);
+						spatial_material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+					}
+				} else if (vector_value) {
+					print_error("unsupported transparent desc type vector!");
+				}
+			} break;
+			case PROPERTY_DESC_SPECULAR: {
+				if (real_value) {
+					print_verbose("specular real value: " + rtos(real_value->Value()));
+					spatial_material->set_specular(MIN(1.0, real_value->Value()));
+				}
+
+				if (vector_value) {
+					print_error("unsupported specular vector value: " + vector_value->Value());
+				}
+			} break;
+			case PROPERTY_DESC_SPECULAR_ROUGHNESS: {
+				if (real_value) {
+					print_verbose("specular roughness value:" + rtos(real_value->Value()));
+					spatial_material->set_roughness(MIN(1.0f, real_value->Value()));
+				}
+
+				if (vector_value) {
+					print_error("unsupported specular roughness color: " + vector_value->Value());
+				}
+			} break;
+			case PROPERTY_DESC_SPECULAR_COLOR: {
+				if (vector_value) {
+					print_error("unsupported specular color: " + vector_value->Value());
+				}
+			} break;
+			case PROPERTY_DESC_SHINYNESS: {
+				if (real_value) {
+					print_error("unsupported shinyness:" + rtos(real_value->Value()));
 				}
 			} break;
 			case PROPERTY_DESC_METALLIC: {
-				spatial_material->set_metallic(std::min(1.0f, extract_from_prop(prop, 1.0f, name, "float")));
+				if (real_value) {
+					print_verbose("metallic real value: " + rtos(real_value->Value()));
+					spatial_material->set_metallic(MIN(1.0f, real_value->Value()));
+				} else {
+					print_error("unsupported value type for metallic");
+				}
 			} break;
 			case PROPERTY_DESC_ROUGHNESS: {
-				spatial_material->set_roughness(std::min(1.0f, extract_from_prop(prop, 1.0f, name, "float")));
+				if (real_value) {
+					print_verbose("roughness real value: " + rtos(real_value->Value()));
+					spatial_material->set_roughness(MIN(1.0f, real_value->Value()));
+				} else {
+					print_error("unsupported value type for roughness");
+				}
 			} break;
 			case PROPERTY_DESC_COAT: {
-				spatial_material->set_clearcoat(extract_from_prop(prop, 1.0f, name, "float"));
-				material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+				if (real_value) {
+					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
+					spatial_material->set_clearcoat(MIN(1.0f, real_value->Value()));
+				} else {
+					print_error("unsupported value type for clearcoat");
+				}
 			} break;
 			case PROPERTY_DESC_COAT_ROUGHNESS: {
-				spatial_material->set_clearcoat_gloss(1.0 - extract_from_prop(prop, 0.5f, name, "float"));
-				material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+				if (real_value) {
+					print_verbose("clearcoat real value: " + rtos(real_value->Value()));
+					spatial_material->set_clearcoat_gloss(1.0 - real_value->Value());
+
+					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_CLEARCOAT);
+				} else {
+					print_error("unsupported value type for clearcoat gloss");
+				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE: {
-				const real_t emissive = extract_from_prop(prop, 0.0f, name, "float");
-				if (emissive > CMP_EPSILON) {
-					spatial_material->set_emission_energy(emissive);
+				if (real_value) {
+					print_verbose("Emissive real value: " + rtos(real_value->Value()));
+					spatial_material->set_emission_energy(real_value->Value());
+					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
+				} else {
+					const Vector3 &color = vector_value->Value();
+					Color c;
+					c[0] = color[0];
+					c[1] = color[1];
+					c[2] = color[2];
+					spatial_material->set_emission(c);
 					material_info.features.push_back(SpatialMaterial::Feature::FEATURE_EMISSION);
 				}
 			} break;
 			case PROPERTY_DESC_EMISSIVE_COLOR: {
-				const Vector3 color = extract_from_prop(prop, Vector3(0, 0, 0), name, "Vector3");
-				Color c;
-				c[0] = color[0];
-				c[1] = color[1];
-				c[2] = color[2];
-				spatial_material->set_emission(c);
+				if (vector_value) {
+					const Vector3 &color = vector_value->Value();
+					Color c;
+					c[0] = color[0];
+					c[1] = color[1];
+					c[2] = color[2];
+					spatial_material->set_emission(c);
+				} else {
+					print_error("unsupported value type for emissive color");
+				}
 			} break;
 			case PROPERTY_DESC_NOT_FOUND:
 			case PROPERTY_DESC_IGNORE:
@@ -386,7 +475,7 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				state.cached_image_searches.insert(mapping.name, texture);
 				print_verbose("Created texture from loaded image file.");
 
-			} else if (mapping.texture != nullptr && mapping.texture->Media() != nullptr) {
+			} else if (mapping.texture != nullptr && mapping.texture->Media() != nullptr && mapping.texture->Media()->IsEmbedded()) {
 				// This is an embedded texture. Extract it.
 				Ref<Image> image;
 				image.instance();
@@ -409,8 +498,8 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				} else if (extension == "TGA") {
 
 					// The stored file is a TGA.
-					//image = Image::_tga_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
-					//ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded TGA image load fail.");
+					image = Image::_tga_mem_loader_func(mapping.texture->Media()->Content(), mapping.texture->Media()->ContentLength());
+					ERR_CONTINUE_MSG(image.is_valid() == false, "FBX Embedded TGA image load fail.");
 
 				} else if (extension == "WEBP") {
 
@@ -475,6 +564,8 @@ Ref<SpatialMaterial> FBXMaterial::import_material(ImportState &state) {
 				// Nothing to do.
 				break;
 		}
+
+		print_verbose("Texture mapping mode: " + itos(mapping.map_mode) + "  name: " + get_texture_param_name(mapping.map_mode));
 
 		spatial_material->set_texture(mapping.map_mode, texture);
 	}

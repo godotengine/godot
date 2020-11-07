@@ -644,6 +644,10 @@ public:
 		return type;
 	}
 
+	bool IsEmbedded() const {
+		return contentLength > 0;
+	}
+
 	const std::string &FileName() const {
 		return fileName;
 	}

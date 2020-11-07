@@ -124,7 +124,7 @@ PropertyPtr ReadTypedProperty(const ElementPtr element) {
 				ParseTokenAsFloat(tok[4]),
 				ParseTokenAsFloat(tok[5]),
 				ParseTokenAsFloat(tok[6])));
-	} else if (!strcmp(cs, "double") || !strcmp(cs, "Number") || !strcmp(cs, "Float") || !strcmp(cs, "FieldOfView") || !strcmp(cs, "UnitScaleFactor")) {
+	} else if (!strcmp(cs, "double") || !strcmp(cs, "Number") || !strcmp(cs, "Float") || !strcmp(cs, "float") || !strcmp(cs, "FieldOfView") || !strcmp(cs, "UnitScaleFactor")) {
 		return new TypedProperty<float>(ParseTokenAsFloat(tok[4]));
 	}
 
@@ -168,10 +168,18 @@ PropertyTable::PropertyTable(const ElementPtr element, const PropertyTable *temp
 		}
 
 		LazyPropertyMap::const_iterator it = lazyProps.find(name);
+
 		if (it != lazyProps.end()) {
 			DOMWarning("duplicate property name, will hide previous value: " + name, v.second);
 			continue;
 		}
+
+		if (it->second == nullptr) {
+			print_error("skipped invalid element insertion for " + String(name.c_str()));
+			continue;
+		}
+
+		//print_verbose("storing lazy property: " + String(name.c_str()));
 
 		// since the above checks for duplicates we can be sure to insert the only match here.
 		lazyProps[name] = v.second;
@@ -187,28 +195,26 @@ PropertyTable::~PropertyTable() {
 
 // ------------------------------------------------------------------------------------------------
 PropertyPtr PropertyTable::Get(const std::string &name) const {
-	PropertyMap::const_iterator it = props.find(name);
-	if (it == props.end()) {
-		// hasn't been parsed yet?
-		LazyPropertyMap::const_iterator lit = lazyProps.find(name);
-		if (lit != lazyProps.end()) {
-			props[name] = ReadTypedProperty(lit->second);
-			it = props.find(name);
 
-			//ai_assert(it != props.end());
-		}
-
-		if (it == props.end()) {
-			// check property template
-			if (templateProps) {
-				return templateProps->Get(name);
-			}
-
-			return nullptr;
-		}
+	// check if loaded already - return it.
+	PropertyMap::const_iterator loaded_property_element = props.find(name);
+	if (loaded_property_element != props.end()) {
+		//print_verbose("Returning conversion for lazy property: " + String(loaded_property_element->first.c_str()));
+		return loaded_property_element->second;
 	}
 
-	return (*it).second;
+	// now load it since we don't have a match
+	LazyPropertyMap::const_iterator unloadedProperty = lazyProps.find(name);
+	if (unloadedProperty != lazyProps.end()) {
+		PropertyPtr loaded_property = ReadTypedProperty(unloadedProperty->second);
+		ERR_FAIL_COND_V_MSG(!loaded_property, nullptr, "[fbx][serious] unable to load typed property");
+
+		//print_verbose("loaded property successfully: " + String(name.c_str()));
+		props.insert(std::make_pair(name, loaded_property));
+		return loaded_property;
+	}
+
+	return nullptr;
 }
 
 DirectPropertyMap PropertyTable::GetUnparsedProperties() const {
