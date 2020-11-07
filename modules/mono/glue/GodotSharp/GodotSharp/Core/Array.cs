@@ -81,6 +81,11 @@ namespace Godot.Collections
             return godot_icall_Array_Resize(GetPtr(), newSize);
         }
 
+        public void Shuffle()
+        {
+            godot_icall_Array_Shuffle(GetPtr());
+        }
+
         public static Array operator +(Array left, Array right)
         {
             return new Array(godot_icall_Array_Concatenate(left.GetPtr(), right.GetPtr()));
@@ -220,6 +225,9 @@ namespace Godot.Collections
         internal extern static Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static Error godot_icall_Array_Shuffle(IntPtr ptr);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -293,6 +301,11 @@ namespace Godot.Collections
         public Error Resize(int newSize)
         {
             return objectArray.Resize(newSize);
+        }
+
+        public void Shuffle()
+        {
+            objectArray.Shuffle();
         }
 
         public static Array<T> operator +(Array<T> left, Array<T> right)
