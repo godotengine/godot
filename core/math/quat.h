@@ -40,8 +40,22 @@
 
 class Quat {
 public:
-	real_t x = 0, y = 0, z = 0, w = 1;
+	union {
+		struct {
+			real_t x;
+			real_t y;
+			real_t z;
+			real_t w;
+		};
+		real_t components[4] = { 0, 0, 0, 1.0 };
+	};
 
+	_FORCE_INLINE_ real_t &operator[](int idx) {
+		return components[idx];
+	}
+	_FORCE_INLINE_ const real_t &operator[](int idx) const {
+		return components[idx];
+	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quat &p_quat) const;
 	real_t length() const;
