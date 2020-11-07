@@ -505,7 +505,7 @@ Spatial *EditorSceneImporterFBX::_generate_scene(
 		for (uint64_t material_id : materials) {
 
 			FBXDocParser::LazyObject *lazy_material = p_document->GetObject(material_id);
-			const FBXDocParser::Material *mat = lazy_material->Get<FBXDocParser::Material>();
+			FBXDocParser::Material *mat = (FBXDocParser::Material *)lazy_material->Get<FBXDocParser::Material>();
 			ERR_CONTINUE_MSG(!mat, "Could not convert fbx material by id: " + itos(material_id));
 
 			Ref<FBXMaterial> material;

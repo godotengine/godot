@@ -109,9 +109,11 @@ Material::Material(uint64_t id, const ElementPtr element, const Document &doc, c
 	std::string templateName;
 
 	if (shading == "phong") {
-		templateName = "Material.FbxSurfacePhong";
+		templateName = "Material.Phong";
 	} else if (shading == "lambert") {
-		templateName = "Material.FbxSurfaceLambert";
+		templateName = "Material.Lambert";
+	} else if (shading == "unknown") {
+		templateName = "Material.StingRay";
 	} else {
 		DOMWarning("shading mode not recognized: " + shading, element);
 	}

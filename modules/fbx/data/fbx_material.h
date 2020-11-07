@@ -38,7 +38,7 @@
 
 struct FBXMaterial : public Reference {
 	String material_name = String();
-	mutable const FBXDocParser::Material *material = nullptr;
+	FBXDocParser::Material *material = nullptr;
 
 	/* Godot materials
 	 *** Texture Maps:
@@ -67,6 +67,48 @@ struct FBXMaterial : public Reference {
 		AmbientOcclusionM,
 		RefractionM,
 		ReflectionM,
+	};
+
+	/* Returns the string representation of the TextureParam enum */
+	static String get_texture_param_name(SpatialMaterial::TextureParam param) {
+		switch (param) {
+			case SpatialMaterial::TEXTURE_ALBEDO:
+				return "TEXTURE_ALBEDO";
+			case SpatialMaterial::TEXTURE_METALLIC:
+				return "TEXTURE_METALLIC";
+			case SpatialMaterial::TEXTURE_ROUGHNESS:
+				return "TEXTURE_ROUGHNESS";
+			case SpatialMaterial::TEXTURE_EMISSION:
+				return "TEXTURE_EMISSION";
+			case SpatialMaterial::TEXTURE_NORMAL:
+				return "TEXTURE_NORMAL";
+			case SpatialMaterial::TEXTURE_RIM:
+				return "TEXTURE_RIM";
+			case SpatialMaterial::TEXTURE_CLEARCOAT:
+				return "TEXTURE_CLEARCOAT";
+			case SpatialMaterial::TEXTURE_FLOWMAP:
+				return "TEXTURE_FLOWMAP";
+			case SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION:
+				return "TEXTURE_AMBIENT_OCCLUSION";
+			case SpatialMaterial::TEXTURE_DEPTH:
+				return "TEXTURE_DEPTH";
+			case SpatialMaterial::TEXTURE_SUBSURFACE_SCATTERING:
+				return "TEXTURE_SUBSURFACE_SCATTERING";
+			case SpatialMaterial::TEXTURE_TRANSMISSION:
+				return "TEXTURE_TRANSMISSION";
+			case SpatialMaterial::TEXTURE_REFRACTION:
+				return "TEXTURE_REFRACTION";
+			case SpatialMaterial::TEXTURE_DETAIL_MASK:
+				return "TEXTURE_DETAIL_MASK";
+			case SpatialMaterial::TEXTURE_DETAIL_ALBEDO:
+				return "TEXTURE_DETAIL_ALBEDO";
+			case SpatialMaterial::TEXTURE_DETAIL_NORMAL:
+				return "TEXTURE_DETAIL_NORMAL";
+			case SpatialMaterial::TEXTURE_MAX:
+				return "TEXTURE_MAX";
+			default:
+				return "broken horribly";
+		}
 	};
 
 	// TODO make this static?
@@ -105,29 +147,33 @@ struct FBXMaterial : public Reference {
 		{ "Maya|specularColor", SpatialMaterial::TextureParam::TEXTURE_METALLIC },
 		{ "Maya|SpecularTexture", SpatialMaterial::TextureParam::TEXTURE_METALLIC },
 		{ "Maya|SpecularTexture|file", SpatialMaterial::TextureParam::TEXTURE_METALLIC },
-		{ "ShininessExponent", SpatialMaterial::TextureParam::TEXTURE_METALLIC },
+
 		/* Roughness */
-		{ "Maya|diffuseRoughness", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
-		{ "Maya|diffuseRoughness|file", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
+
 		{ "3dsMax|Parameters|roughness_map", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
 		{ "Maya|TEX_roughness_map", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
 		{ "Maya|TEX_roughness_map|file", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
-		{ "ReflectionFactor", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
-		{ "Maya|specularRoughness", SpatialMaterial::TextureParam::TEXTURE_ROUGHNESS },
+
 		/* Normal */
 		{ "NormalMap", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
-		{ "Bump", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
-		{ "3dsMax|Parameters|bump_map", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
+		//{ "Bump", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
+		//{ "3dsMax|Parameters|bump_map", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
 		{ "Maya|NormalTexture", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
-		{ "Maya|normalCamera", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
-		{ "Maya|normalCamera|file", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
+		//{ "Maya|normalCamera", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
+		//{ "Maya|normalCamera|file", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
 		{ "Maya|TEX_normal_map", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
 		{ "Maya|TEX_normal_map|file", SpatialMaterial::TextureParam::TEXTURE_NORMAL },
 		/* AO */
 		{ "Maya|TEX_ao_map", SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION },
 		{ "Maya|TEX_ao_map|file", SpatialMaterial::TextureParam::TEXTURE_AMBIENT_OCCLUSION },
-		//	{"TransparentColor",SpatialMaterial::TextureParam::TEXTURE_CHANNEL_ALPHA },
-		//	{"TransparencyFactor",SpatialMaterial::TextureParam::TEXTURE_CHANNEL_ALPHA }
+
+		//{ "Maya|diffuseRoughness", SpatialMaterial::TextureParam::UNSUPPORTED },
+		//{ "Maya|diffuseRoughness|file", SpatialMaterial::TextureParam::UNSUPPORTED },
+		//{ "Maya|specularRoughness", SpatialMaterial::TextureParam::UNSUPPORTED },
+		//{ "ShininessExponent", SpatialMaterial::TextureParam::UNSUPPORTED },
+		//{ "ReflectionFactor", SpatialMaterial::TextureParam::UNSUPPORTED },
+		//{ "TransparentColor",SpatialMaterial::TextureParam::TEXTURE_CHANNEL_ALPHA },
+		//{ "TransparencyFactor",SpatialMaterial::TextureParam::TEXTURE_CHANNEL_ALPHA }
 	};
 
 	// TODO make this static?
@@ -137,6 +183,10 @@ struct FBXMaterial : public Reference {
 		PROPERTY_DESC_TRANSPARENT,
 		PROPERTY_DESC_METALLIC,
 		PROPERTY_DESC_ROUGHNESS,
+		PROPERTY_DESC_SPECULAR,
+		PROPERTY_DESC_SPECULAR_COLOR,
+		PROPERTY_DESC_SPECULAR_ROUGHNESS,
+		PROPERTY_DESC_SHINYNESS,
 		PROPERTY_DESC_COAT,
 		PROPERTY_DESC_COAT_ROUGHNESS,
 		PROPERTY_DESC_EMISSIVE,
@@ -149,6 +199,13 @@ struct FBXMaterial : public Reference {
 		{ "DiffuseColor", PROPERTY_DESC_ALBEDO_COLOR },
 		{ "Maya|baseColor", PROPERTY_DESC_ALBEDO_COLOR },
 
+		/* Specular */
+		{ "Maya|specular", PROPERTY_DESC_SPECULAR },
+		{ "Maya|specularColor", PROPERTY_DESC_SPECULAR_COLOR },
+
+		/* Specular roughness */
+		{ "Maya|specularRoughness", PROPERTY_DESC_SPECULAR_ROUGHNESS },
+
 		/* Transparent */
 		{ "Opacity", PROPERTY_DESC_TRANSPARENT },
 		{ "TransparencyFactor", PROPERTY_DESC_TRANSPARENT },
@@ -158,9 +215,10 @@ struct FBXMaterial : public Reference {
 		{ "Shininess", PROPERTY_DESC_METALLIC },
 		{ "Reflectivity", PROPERTY_DESC_METALLIC },
 		{ "Maya|metalness", PROPERTY_DESC_METALLIC },
+		{ "Maya|metallic", PROPERTY_DESC_METALLIC },
 
 		/* Roughness */
-		{ "Maya|diffuseRoughness", PROPERTY_DESC_ROUGHNESS },
+		{ "Maya|roughness", PROPERTY_DESC_ROUGHNESS },
 
 		/* Coat */
 		{ "Maya|coat", PROPERTY_DESC_COAT },
@@ -170,14 +228,16 @@ struct FBXMaterial : public Reference {
 
 		/* Emissive */
 		{ "Maya|emission", PROPERTY_DESC_EMISSIVE },
+		{ "Maya|emissive", PROPERTY_DESC_EMISSIVE },
 
 		/* Emissive color */
 		{ "EmissiveColor", PROPERTY_DESC_EMISSIVE_COLOR },
 		{ "Maya|emissionColor", PROPERTY_DESC_EMISSIVE_COLOR },
 
 		/* Ignore */
+		{ "Maya|diffuseRoughness", PROPERTY_DESC_IGNORE },
 		{ "Maya", PROPERTY_DESC_IGNORE },
-		{ "Diffuse", PROPERTY_DESC_IGNORE },
+		{ "Diffuse", PROPERTY_DESC_ALBEDO_COLOR },
 		{ "Maya|TypeId", PROPERTY_DESC_IGNORE },
 		{ "Ambient", PROPERTY_DESC_IGNORE },
 		{ "AmbientColor", PROPERTY_DESC_IGNORE },
@@ -218,7 +278,7 @@ struct FBXMaterial : public Reference {
 
 	String get_material_name() const;
 
-	void set_imported_material(const FBXDocParser::Material *p_material);
+	void set_imported_material(FBXDocParser::Material *p_material);
 
 	struct MaterialInfo {
 		Vector<TextureFileMapping> textures;
