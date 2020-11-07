@@ -1341,7 +1341,7 @@ public:
 				}
 
 				bool valid;
-				r_ret = base.get_named(index->name, &valid);
+				r_ret = base.get_named(index->name, valid);
 				if (!valid) {
 					r_error_str = "Invalid index '" + String(index->name) + "' for base of type " + Variant::get_type_name(base.get_type()) + ".";
 					return true;

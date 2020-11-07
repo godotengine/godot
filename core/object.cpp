@@ -421,17 +421,6 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 	}
 
-	{
-		bool valid;
-		setvar(p_name, p_value, &valid);
-		if (valid) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return;
-		}
-	}
-
 #ifdef TOOLS_ENABLED
 	if (script_instance) {
 		bool valid;
@@ -496,18 +485,6 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			return ret;
 		}
 
-		//if nothing else, use getvar
-		{
-			bool valid;
-			ret = getvar(p_name, &valid);
-			if (valid) {
-				if (r_valid) {
-					*r_valid = true;
-				}
-				return ret;
-			}
-		}
-
 #ifdef TOOLS_ENABLED
 		if (script_instance) {
 			bool valid;
@@ -555,9 +532,12 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	}
 
 	for (int i = 1; i < p_names.size() - 1; i++) {
-		value_stack.push_back(value_stack.back()->get().get_named(p_names[i], r_valid));
+		value_stack.push_back(value_stack.back()->get().get_named(p_names[i], valid));
+		if (r_valid) {
+			*r_valid = valid;
+		}
 
-		if (!*r_valid) {
+		if (!valid) {
 			value_stack.clear();
 			return;
 		}
@@ -566,10 +546,13 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	value_stack.push_back(p_value); // p_names[p_names.size() - 1]
 
 	for (int i = p_names.size() - 1; i > 0; i--) {
-		value_stack.back()->prev()->get().set_named(p_names[i], value_stack.back()->get(), r_valid);
+		value_stack.back()->prev()->get().set_named(p_names[i], value_stack.back()->get(), valid);
 		value_stack.pop_back();
 
-		if (!*r_valid) {
+		if (r_valid) {
+			*r_valid = valid;
+		}
+		if (!valid) {
 			value_stack.clear();
 			return;
 		}
@@ -592,7 +575,7 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 
 	Variant current_value = get(p_names[0], &valid);
 	for (int i = 1; i < p_names.size(); i++) {
-		current_value = current_value.get_named(p_names[i], &valid);
+		current_value = current_value.get_named(p_names[i], valid);
 
 		if (!valid) {
 			break;
@@ -698,12 +681,19 @@ Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = false;
 	}
+
+	if (p_key.get_type() == Variant::STRING_NAME || p_key.get_type() == Variant::STRING) {
+		return get(p_key, r_valid);
+	}
 	return Variant();
 }
 
 void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid) {
 	if (r_valid) {
 		*r_valid = false;
+	}
+	if (p_key.get_type() == Variant::STRING_NAME || p_key.get_type() == Variant::STRING) {
+		return set(p_key, p_value, r_valid);
 	}
 }
 
@@ -1711,7 +1701,7 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 			return Variant::NIL;
 		}
 
-		check = check.get_named(p_path[i], &valid);
+		check = check.get_named(p_path[i], valid);
 
 		if (!valid) {
 			if (r_valid) {

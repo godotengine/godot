@@ -193,6 +193,20 @@ struct Color {
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
 	operator String() const;
 
+	//for binder
+	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ int32_t get_r8() const { return CLAMP(uint32_t(r * 255.0), 0, 255); }
+	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ int32_t get_g8() const { return CLAMP(uint32_t(g * 255.0), 0, 255); }
+	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ int32_t get_b8() const { return CLAMP(uint32_t(b * 255.0), 0, 255); }
+	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0); }
+	_FORCE_INLINE_ int32_t get_a8() const { return CLAMP(uint32_t(a * 255.0), 0, 255); }
+
+	_FORCE_INLINE_ void set_h(float h) { set_hsv(h, get_s(), get_v()); }
+	_FORCE_INLINE_ void set_s(float s) { set_hsv(get_h(), s, get_v()); }
+	_FORCE_INLINE_ void set_v(float v) { set_hsv(get_h(), get_s(), v); }
+
 	_FORCE_INLINE_ Color() {}
 
 	/**
