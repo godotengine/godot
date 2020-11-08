@@ -192,6 +192,11 @@ void Array::push_back(const Variant &p_value) {
 	_p->array.push_back(p_value);
 }
 
+void Array::append_array(const Array &p_array) {
+	ERR_FAIL_COND(!_p->typed.validate(p_array, "append_array"));
+	_p->array.append_array(p_array._p->array);
+}
+
 Error Array::resize(int p_new_size) {
 	return _p->array.resize(p_new_size);
 }
