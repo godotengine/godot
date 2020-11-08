@@ -20,6 +20,7 @@
 		var array2 = [3, "Four"]
 		print(array1 + array2) # ["One", 2, 3, "Four"]
 		[/codeblock]
+		Note that concatenating with [code]+=[/code] operator will create a new array. If you want to append another array to an existing array, [method append_array] is more efficient.
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method duplicate].
 	</description>
 	<tutorials>
@@ -93,6 +94,21 @@
 			</argument>
 			<description>
 				Appends an element at the end of the array (alias of [method push_back]).
+			</description>
+		</method>
+		<method name="append_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="array" type="Array">
+			</argument>
+			<description>
+				Appends another array at the end of this array.
+				[codeblock]
+				var array1 = [1, 2, 3]
+				var array2 = [4, 5, 6]
+				array1.append_array(array2)
+				print(array1) # Prints [1, 2, 3, 4, 5, 6].
+				[/codeblock]
 			</description>
 		</method>
 		<method name="back">
