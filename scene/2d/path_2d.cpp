@@ -125,6 +125,12 @@ void Path2D::_curve_changed() {
 	}
 
 	update();
+	for (int i = 0; i < get_child_count(); i++) {
+		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
+		if (follow) {
+			follow->path_changed();
+		}
+	}
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
@@ -153,6 +159,10 @@ void Path2D::_bind_methods() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+
+void PathFollow2D::path_changed() {
+	_update_transform();
+}
 
 void PathFollow2D::_update_transform() {
 	if (!path) {

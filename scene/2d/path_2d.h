@@ -81,6 +81,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void path_changed();
+
 	void set_offset(float p_offset);
 	float get_offset() const;
 
