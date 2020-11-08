@@ -1356,6 +1356,7 @@ void Variant::_register_variant_methods() {
 	bind_method(Array, push_back, sarray("value"), varray());
 	bind_method(Array, push_front, sarray("value"), varray());
 	bind_method(Array, append, sarray("value"), varray());
+	bind_method(Array, append_array, sarray("array"), varray());
 	bind_method(Array, resize, sarray("size"), varray());
 	bind_method(Array, insert, sarray("position", "value"), varray());
 	bind_method(Array, remove, sarray("position"), varray());
