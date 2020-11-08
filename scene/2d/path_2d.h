@@ -34,6 +34,8 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
 
+class Timer;
+
 class Path2D : public Node2D {
 	GDCLASS(Path2D, Node2D);
 
@@ -64,6 +66,7 @@ class PathFollow2D : public Node2D {
 public:
 private:
 	Path2D *path = nullptr;
+	Timer *update_timer = nullptr;
 	real_t offset = 0;
 	real_t h_offset = 0;
 	real_t v_offset = 0;
