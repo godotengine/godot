@@ -32,8 +32,8 @@
 #define LOCAL_DEBUGGER_H
 
 #include "core/debugger/engine_debugger.h"
-#include "core/list.h"
-#include "core/script_language.h"
+#include "core/object/script_language.h"
+#include "core/templates/list.h"
 
 class LocalDebugger : public EngineDebugger {
 private:

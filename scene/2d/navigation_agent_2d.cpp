@@ -30,7 +30,7 @@
 
 #include "navigation_agent_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "scene/2d/navigation_2d.h"
 #include "servers/navigation_server_2d.h"

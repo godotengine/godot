@@ -30,13 +30,13 @@
 
 #include "resource_loader.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
-#include "core/translation.h"
-#include "core/variant_parser.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
+#include "core/variant/variant_parser.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)

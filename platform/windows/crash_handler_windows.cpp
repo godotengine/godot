@@ -30,8 +30,8 @@
 
 #include "crash_handler_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION

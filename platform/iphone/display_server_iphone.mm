@@ -30,8 +30,8 @@
 
 #include "display_server_iphone.h"
 #import "app_delegate.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
-#include "core/project_settings.h"
 #import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"

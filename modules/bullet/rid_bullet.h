@@ -31,7 +31,7 @@
 #ifndef RID_BULLET_H
 #define RID_BULLET_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 
 /**
 	@author AndreaCatania

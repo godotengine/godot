@@ -31,7 +31,7 @@
 #include "collision_shape_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"

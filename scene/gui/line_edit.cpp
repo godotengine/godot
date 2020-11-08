@@ -30,11 +30,11 @@
 
 #include "line_edit.h"
 
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/translation.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
 #include "label.h"
 #include "servers/display_server.h"
 #ifdef TOOLS_ENABLED

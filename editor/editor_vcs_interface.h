@@ -31,8 +31,8 @@
 #ifndef EDITOR_VCS_INTERFACE_H
 #define EDITOR_VCS_INTERFACE_H
 
-#include "core/class_db.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
 #include "scene/gui/panel_container.h"
 
 class EditorVCSInterface : public Object {

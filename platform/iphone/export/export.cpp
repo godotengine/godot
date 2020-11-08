@@ -30,13 +30,13 @@
 
 #include "export.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"

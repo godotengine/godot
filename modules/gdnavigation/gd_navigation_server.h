@@ -31,8 +31,8 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
-#include "core/rid.h"
-#include "core/rid_owner.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "servers/navigation_server_3d.h"
 
 #include "nav_map.h"

@@ -30,8 +30,8 @@
 
 #include "scene_tree_editor.h"
 
-#include "core/message_queue.h"
-#include "core/print_string.h"
+#include "core/object/message_queue.h"
+#include "core/string/print_string.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/node_dock.h"

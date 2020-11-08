@@ -31,7 +31,7 @@
 #ifndef PACKED_SCENE_H
 #define PACKED_SCENE_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 #include "scene/main/node.h"
 
 class SceneState : public Reference {

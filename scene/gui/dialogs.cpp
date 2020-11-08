@@ -31,8 +31,8 @@
 #include "dialogs.h"
 
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
-#include "core/translation.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
 #include "line_edit.h"
 
 #ifdef TOOLS_ENABLED

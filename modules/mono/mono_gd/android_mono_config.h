@@ -33,7 +33,7 @@
 
 #ifdef ANDROID_ENABLED
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 // This function is defined in an auto-generated source file
 String get_godot_android_mono_config();

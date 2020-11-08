@@ -30,8 +30,8 @@
 
 #include "shader_compiler_rd.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "rasterizer_storage_rd.h"
 #include "servers/rendering_server.h"
 

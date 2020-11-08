@@ -31,8 +31,8 @@
 #ifndef WORLD_2D_H
 #define WORLD_2D_H
 
-#include "core/project_settings.h"
-#include "core/resource.h"
+#include "core/config/project_settings.h"
+#include "core/io/resource.h"
 #include "servers/physics_server_2d.h"
 
 class VisibilityNotifier2D;

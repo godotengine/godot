@@ -34,7 +34,7 @@
 
 #include "core/io/image_loader.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"

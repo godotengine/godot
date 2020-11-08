@@ -31,8 +31,8 @@
 #ifndef GPU_PARTICLES_COLLISION_3D_H
 #define GPU_PARTICLES_COLLISION_3D_H
 
-#include "core/local_vector.h"
-#include "core/rid.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/material.h"
 

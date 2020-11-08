@@ -32,10 +32,10 @@
 #define REMOTE_DEBUGGER_PEER_H
 
 #include "core/io/stream_peer_tcp.h"
+#include "core/object/reference.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "core/reference.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 class RemoteDebuggerPeer : public Reference {
 protected:

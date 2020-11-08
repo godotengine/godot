@@ -31,7 +31,7 @@
 #ifndef CAMERA_FEED_H
 #define CAMERA_FEED_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/math/transform_2d.h"
 #include "servers/camera_server.h"
 #include "servers/rendering_server.h"

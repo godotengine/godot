@@ -31,7 +31,7 @@
 #ifndef SHAPE_3D_H
 #define SHAPE_3D_H
 
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 class ArrayMesh;
 

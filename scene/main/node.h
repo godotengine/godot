@@ -31,12 +31,12 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "core/class_db.h"
-#include "core/map.h"
-#include "core/node_path.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
-#include "core/typed_array.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
+#include "core/string/node_path.h"
+#include "core/templates/map.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 
 class Viewport;

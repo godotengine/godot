@@ -33,10 +33,10 @@
 
 #ifndef JAVASCRIPT_ENABLED
 
-#include "core/error_list.h"
+#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/ring_buffer.h"
+#include "core/templates/ring_buffer.h"
 #include "packet_buffer.h"
 #include "websocket_peer.h"
 #include "wslay/wslay.h"

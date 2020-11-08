@@ -35,8 +35,8 @@
 #ifndef NAVIGATION_2D_SERVER_H
 #define NAVIGATION_2D_SERVER_H
 
-#include "core/class_db.h"
-#include "core/rid.h"
+#include "core/object/class_db.h"
+#include "core/templates/rid.h"
 #include "scene/2d/navigation_region_2d.h"
 
 // This server exposes the `NavigationServer3D` features in the 2D world.

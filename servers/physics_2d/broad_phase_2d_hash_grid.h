@@ -32,7 +32,7 @@
 #define BROAD_PHASE_2D_HASH_GRID_H
 
 #include "broad_phase_2d_sw.h"
-#include "core/map.h"
+#include "core/templates/map.h"
 
 class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	struct PairData {

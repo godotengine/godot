@@ -32,7 +32,7 @@
 #define GDSCRIPT_EXTEND_PARSER_H
 
 #include "../gdscript_parser.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "lsp.hpp"
 
 #ifndef LINE_NUMBER_TO_INDEX

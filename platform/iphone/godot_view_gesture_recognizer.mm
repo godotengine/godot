@@ -30,7 +30,7 @@
 
 #import "godot_view_gesture_recognizer.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 // Minimum distance for touches to move to fire
 // a delay timer before scheduled time.

@@ -30,7 +30,7 @@
 
 #include "rename_dialog.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "editor_settings.h"

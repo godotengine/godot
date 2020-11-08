@@ -31,7 +31,7 @@
 #ifndef MAIN_TIMER_SYNC_H
 #define MAIN_TIMER_SYNC_H
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 
 struct MainFrameTime {
 	float idle_step; // time to advance idles for (argument to process())

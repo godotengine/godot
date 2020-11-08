@@ -30,7 +30,7 @@
 
 #include "api.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "java_class_wrapper.h"
 #include "jni_singleton.h"
 

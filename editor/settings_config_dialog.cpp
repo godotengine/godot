@@ -30,8 +30,8 @@
 
 #include "settings_config_dialog.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor_file_system.h"
 #include "editor_log.h"

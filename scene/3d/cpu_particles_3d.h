@@ -31,7 +31,7 @@
 #ifndef CPU_PARTICLES_H
 #define CPU_PARTICLES_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/3d/visual_instance_3d.h"
 
 class CPUParticles3D : public GeometryInstance3D {

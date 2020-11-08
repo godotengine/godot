@@ -30,13 +30,12 @@
 
 #include "visual_script_builtin_funcs.h"
 
-#include "core/class_db.h"
-#include "core/func_ref.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/os.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX] = {
 	"sin",
@@ -90,7 +89,6 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"clamp",
 	"nearest_po2",
 	"weakref",
-	"funcref",
 	"convert",
 	"typeof",
 	"type_exists",
@@ -201,7 +199,6 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_CARTESIAN2POLAR:
 		case LOGIC_MAX:
 		case LOGIC_MIN:
-		case FUNC_FUNCREF:
 		case TYPE_CONVERT:
 		case COLORN:
 			return 2;
@@ -435,13 +432,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case OBJ_WEAKREF: {
 			return PropertyInfo(Variant::OBJECT, "source");
 		} break;
-		case FUNC_FUNCREF: {
-			if (p_idx == 0) {
-				return PropertyInfo(Variant::OBJECT, "instance");
-			} else {
-				return PropertyInfo(Variant::STRING, "funcname");
-			}
-		} break;
 		case TYPE_CONVERT: {
 			if (p_idx == 0) {
 				return PropertyInfo(Variant::NIL, "what");
@@ -602,10 +592,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 			t = Variant::NIL;
 		} break;
 		case OBJ_WEAKREF: {
-			t = Variant::OBJECT;
-
-		} break;
-		case FUNC_FUNCREF: {
 			t = Variant::OBJECT;
 
 		} break;
@@ -1030,30 +1016,6 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			}
 
 		} break;
-		case VisualScriptBuiltinFunc::FUNC_FUNCREF: {
-			if (p_inputs[0]->get_type() != Variant::OBJECT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-
-				return;
-			}
-			if (p_inputs[1]->get_type() != Variant::STRING && p_inputs[1]->get_type() != Variant::NODE_PATH) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 1;
-				r_error.expected = Variant::STRING;
-
-				return;
-			}
-
-			Ref<FuncRef> fr = memnew(FuncRef);
-
-			fr->set_instance(*p_inputs[0]);
-			fr->set_function(*p_inputs[1]);
-
-			*r_return = fr;
-
-		} break;
 		case VisualScriptBuiltinFunc::TYPE_CONVERT: {
 			VALIDATE_ARG_NUM(1);
 			int type = *p_inputs[1];
@@ -1319,7 +1281,6 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOGIC_CLAMP);
 	BIND_ENUM_CONSTANT(LOGIC_NEAREST_PO2);
 	BIND_ENUM_CONSTANT(OBJ_WEAKREF);
-	BIND_ENUM_CONSTANT(FUNC_FUNCREF);
 	BIND_ENUM_CONSTANT(TYPE_CONVERT);
 	BIND_ENUM_CONSTANT(TYPE_OF);
 	BIND_ENUM_CONSTANT(TYPE_EXISTS);
@@ -1415,7 +1376,6 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/nearest_po2", create_builtin_func_node<VisualScriptBuiltinFunc::LOGIC_NEAREST_PO2>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/weakref", create_builtin_func_node<VisualScriptBuiltinFunc::OBJ_WEAKREF>);
-	VisualScriptLanguage::singleton->add_register_func("functions/built_in/funcref", create_builtin_func_node<VisualScriptBuiltinFunc::FUNC_FUNCREF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/convert", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_CONVERT>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/typeof", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_OF>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/type_exists", create_builtin_func_node<VisualScriptBuiltinFunc::TYPE_EXISTS>);

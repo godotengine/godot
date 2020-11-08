@@ -30,14 +30,13 @@
 
 #include "gdscript_functions.h"
 
-#include "core/class_db.h"
-#include "core/func_ref.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/os.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 #include "gdscript.h"
 
 const char *GDScriptFunctions::get_func_name(Function p_func) {
@@ -100,7 +99,6 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"clamp",
 		"nearest_po2",
 		"weakref",
-		"funcref",
 		"convert",
 		"typeof",
 		"type_exists",
@@ -588,31 +586,6 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = Variant();
 				return;
 			}
-		} break;
-		case FUNC_FUNCREF: {
-			VALIDATE_ARG_COUNT(2);
-			if (p_args[0]->get_type() != Variant::OBJECT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = Variant();
-				return;
-			}
-			if (p_args[1]->get_type() != Variant::STRING && p_args[1]->get_type() != Variant::NODE_PATH) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 1;
-				r_error.expected = Variant::STRING;
-				r_ret = Variant();
-				return;
-			}
-
-			Ref<FuncRef> fr = memnew(FuncRef);
-
-			fr->set_instance(*p_args[0]);
-			fr->set_function(*p_args[1]);
-
-			r_ret = fr;
-
 		} break;
 		case TYPE_CONVERT: {
 			VALIDATE_ARG_COUNT(2);
@@ -1758,13 +1731,6 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::OBJECT;
 			mi.return_val.class_name = "WeakRef";
 
-			return mi;
-
-		} break;
-		case FUNC_FUNCREF: {
-			MethodInfo mi("funcref", PropertyInfo(Variant::OBJECT, "instance"), PropertyInfo(Variant::STRING, "funcname"));
-			mi.return_val.type = Variant::OBJECT;
-			mi.return_val.class_name = "FuncRef";
 			return mi;
 
 		} break;

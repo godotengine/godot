@@ -38,7 +38,7 @@
 #include "core/io/ip_address.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"

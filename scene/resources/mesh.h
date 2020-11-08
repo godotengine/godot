@@ -31,9 +31,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
-#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape_3d.h"
 #include "servers/rendering_server.h"

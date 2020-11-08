@@ -30,7 +30,7 @@
 
 #import "godot_view.h"
 #include "core/os/keyboard.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 #import "display_layer.h"
 #include "display_server_iphone.h"
 #import "godot_view_gesture_recognizer.h"

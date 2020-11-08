@@ -30,10 +30,10 @@
 
 #include "rendering_device_vulkan.h"
 
-#include "core/hashfuncs.h"
+#include "core/config/project_settings.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
+#include "core/templates/hashfuncs.h"
 #include "drivers/vulkan/vulkan_context.h"
 
 #include "thirdparty/spirv-reflect/spirv_reflect.h"

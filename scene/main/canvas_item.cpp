@@ -31,7 +31,7 @@
 #include "canvas_item.h"
 
 #include "core/input/input.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"

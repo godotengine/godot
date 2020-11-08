@@ -31,7 +31,7 @@
 #include "space_3d_sw.h"
 
 #include "collision_solver_3d_sw.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "physics_server_3d_sw.h"
 
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObject3DSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {

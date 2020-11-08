@@ -36,7 +36,7 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"

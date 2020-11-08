@@ -30,7 +30,7 @@
 
 #include "os_server.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "servers/rendering/rendering_server_raster.h"

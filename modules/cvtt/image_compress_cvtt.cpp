@@ -32,7 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <ConvectionKernels.h>
 
