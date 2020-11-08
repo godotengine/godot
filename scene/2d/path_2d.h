@@ -34,6 +34,8 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
 
+class Timer;
+
 class Path2D : public Node2D {
 	GDCLASS(Path2D, Node2D);
 
@@ -65,6 +67,7 @@ public:
 private:
 	Path2D *path = nullptr;
 	real_t progress = 0.0;
+	Timer *update_timer = nullptr;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;
 	real_t lookahead = 4.0;
@@ -81,6 +84,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void path_changed();
+
 	void set_progress(real_t p_progress);
 	real_t get_progress() const;
 

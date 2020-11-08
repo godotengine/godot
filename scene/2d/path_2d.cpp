@@ -31,6 +31,7 @@
 #include "path_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/main/timer.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
@@ -171,6 +172,12 @@ void Path2D::_curve_changed() {
 	}
 
 	queue_redraw();
+	for (int i = 0; i < get_child_count(); i++) {
+		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
+		if (follow) {
+			follow->path_changed();
+		}
+	}
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
@@ -199,6 +206,14 @@ void Path2D::_bind_methods() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+
+void PathFollow2D::path_changed() {
+	if (update_timer && !update_timer->is_stopped()) {
+		update_timer->start();
+	} else {
+		_update_transform();
+	}
+}
 
 void PathFollow2D::_update_transform() {
 	if (!path) {
@@ -230,6 +245,16 @@ void PathFollow2D::_update_transform() {
 
 void PathFollow2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				update_timer = memnew(Timer);
+				update_timer->set_wait_time(0.2);
+				update_timer->set_one_shot(true);
+				update_timer->connect("timeout", callable_mp(this, &PathFollow2D::_update_transform));
+				add_child(update_timer, false, Node::INTERNAL_MODE_BACK);
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			path = Object::cast_to<Path2D>(get_parent());
 			if (path) {
