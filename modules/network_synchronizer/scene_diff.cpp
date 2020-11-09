@@ -62,7 +62,7 @@ void SceneDiff::start_tracking_scene_changes(
 
 			for (int v = 0; v < p_nodes[i]->vars.size(); v += 1) {
 				// Take the current variable value and store it.
-				tracking[i].variables[v] = p_nodes[i]->node->get(vars[v].var.name);
+				tracking[i].variables[v] = p_nodes[i]->node->get(vars[v].var.name).duplicate(true);
 			}
 		} else {
 			tracking[i].variables.clear();

@@ -1341,6 +1341,10 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				}
 			}
 		}
+	} else {
+		// No client input, this happens when the stream is paused.
+		process_paused_controller_recovery(p_delta);
+		return;
 	}
 
 	if (checkable_input_id == UINT32_MAX) {
@@ -1589,6 +1593,49 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 	}
 
 	// Popout the server snapshot.
+	server_snapshots.pop_front();
+}
+
+void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(server_snapshots.empty());
+	CRASH_COND(client_snapshots.empty() == false);
+#endif
+
+	// Drop the snapshots till the newest.
+	while (server_snapshots.size() != 1) {
+		server_snapshots.pop_front();
+	}
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(server_snapshots.empty());
+#endif
+	scene_synchronizer->recover_in_progress = true;
+	for (
+			OAHashMap<ObjectID, Vector<NetUtility::VarData> >::Iterator s_snap_it = server_snapshots.front().node_vars.iter();
+			s_snap_it.valid;
+			s_snap_it = server_snapshots.front().node_vars.next_iter(s_snap_it)) {
+		NetUtility::NodeData *rew_node_data = scene_synchronizer->get_node_data(*s_snap_it.key);
+		if (rew_node_data == nullptr) {
+			continue;
+		}
+
+		Node *node = rew_node_data->node;
+
+		const NetUtility::VarData *vars_ptr = s_snap_it.value->ptr();
+		for (int v = 0; v < s_snap_it.value->size(); v += 1) {
+			if (!scene_synchronizer->synchronizer_variant_evaluation(
+						node->get(vars_ptr[v].var.name),
+						vars_ptr[v].var.value)) {
+				// Different
+				node->set(vars_ptr[v].var.name, vars_ptr[v].var.value);
+				NET_DEBUG_PRINT("[Snapshot paused controller] Node: " + node->get_path());
+				NET_DEBUG_PRINT(" |- Variable: " + vars_ptr[v].var.name + "; value: " + vars_ptr[v].var.value);
+				node->emit_signal(scene_synchronizer->get_changed_event_name(vars_ptr[v].var.name));
+			}
+		}
+	}
+	scene_synchronizer->recover_in_progress = false;
 	server_snapshots.pop_front();
 }
 

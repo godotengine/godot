@@ -329,6 +329,7 @@ private:
 			std::deque<NetUtility::Snapshot> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
+	void process_paused_controller_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
 	bool compare_vars(const NetUtility::NodeData *p_synchronizer_node_data, const Vector<NetUtility::VarData> &p_server_vars, const Vector<NetUtility::VarData> &p_client_vars, Vector<NetUtility::Var> &r_postponed_recover);
 
