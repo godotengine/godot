@@ -61,6 +61,27 @@ _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
+template <class T>
+struct TypeAdjust {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+		VariantTypeChanger<typename GetSimpleTypeT<T>::type_t>::change(r_ret);
+	}
+};
+
+template <> //do nothing for variant
+struct TypeAdjust<Variant> {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+	}
+};
+
+template <> //do nothing for variant
+struct TypeAdjust<Object *> {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+		VariantInternal::clear(r_ret);
+		*r_ret = (Object *)nullptr;
+	}
+};
+
 struct _VariantCall {
 	template <class T, class... P>
 	class InternalMethod : public Variant::InternalMethod {
@@ -166,6 +187,7 @@ struct _VariantCall {
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
+			TypeAdjust<R>::adjust(r_ret);
 			call_with_validated_variant_args_ret(base, method, p_args, r_ret);
 		}
 #ifdef PTRCALL_ENABLED
@@ -231,6 +253,7 @@ struct _VariantCall {
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
+			TypeAdjust<R>::adjust(r_ret);
 			call_with_validated_variant_args_retc(base, method, p_args, r_ret);
 		}
 #ifdef PTRCALL_ENABLED
@@ -333,6 +356,7 @@ struct _VariantCall {
 		}
 
 		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) {
+			TypeAdjust<R>::adjust(r_ret);
 			call_with_validated_variant_args_static_retc(base, method, p_args, r_ret);
 		}
 #ifdef PTRCALL_ENABLED
@@ -670,190 +694,6 @@ struct _VariantCall {
 		signal->emit(p_args, p_argcount);
 	}
 
-	struct ConstructData {
-		int arg_count;
-		Vector<Variant::Type> arg_types;
-		Vector<String> arg_names;
-		VariantConstructFunc func;
-	};
-
-	struct ConstructFunc {
-		List<ConstructData> constructors;
-	};
-
-	static ConstructFunc *construct_funcs;
-
-	static void Vector2_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Vector2(*p_args[0], *p_args[1]);
-	}
-
-	static void Vector2i_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Vector2i(*p_args[0], *p_args[1]);
-	}
-
-	static void Rect2_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Rect2(*p_args[0], *p_args[1]);
-	}
-
-	static void Rect2_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Rect2(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
-	}
-
-	static void Rect2i_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Rect2i(*p_args[0], *p_args[1]);
-	}
-
-	static void Rect2i_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Rect2i(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
-	}
-
-	static void Transform2D_init2(Variant &r_ret, const Variant **p_args) {
-		Transform2D m(*p_args[0], *p_args[1]);
-		r_ret = m;
-	}
-
-	static void Transform2D_init3(Variant &r_ret, const Variant **p_args) {
-		Transform2D m;
-		m[0] = *p_args[0];
-		m[1] = *p_args[1];
-		m[2] = *p_args[2];
-		r_ret = m;
-	}
-
-	static void Vector3_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Vector3(*p_args[0], *p_args[1], *p_args[2]);
-	}
-
-	static void Vector3i_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Vector3i(*p_args[0], *p_args[1], *p_args[2]);
-	}
-
-	static void Plane_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
-	}
-
-	static void Plane_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Plane(*p_args[0], *p_args[1], *p_args[2]);
-	}
-
-	static void Plane_init3(Variant &r_ret, const Variant **p_args) {
-		r_ret = Plane(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
-	}
-	static void Plane_init4(Variant &r_ret, const Variant **p_args) {
-		r_ret = Plane(p_args[0]->operator Vector3(), p_args[1]->operator Vector3());
-	}
-
-	static void Quat_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Quat(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
-	}
-
-	static void Quat_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Quat(((Vector3)(*p_args[0])), ((real_t)(*p_args[1])));
-	}
-
-	static void Quat_init3(Variant &r_ret, const Variant **p_args) {
-		r_ret = Quat(((Vector3)(*p_args[0])));
-	}
-
-	static void Color_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color(*p_args[0], *p_args[1], *p_args[2], *p_args[3]);
-	}
-
-	static void Color_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color(*p_args[0], *p_args[1], *p_args[2]);
-	}
-
-	static void Color_init3(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color::html(*p_args[0]);
-	}
-
-	static void Color_init4(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color::hex(*p_args[0]);
-	}
-
-	static void Color_init5(Variant &r_ret, const Variant **p_args) {
-		r_ret = Color(((Color)(*p_args[0])), *p_args[1]);
-	}
-
-	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
-		r_ret = ::AABB(*p_args[0], *p_args[1]);
-	}
-
-	static void Basis_init1(Variant &r_ret, const Variant **p_args) {
-		Basis m;
-		m.set_axis(0, *p_args[0]);
-		m.set_axis(1, *p_args[1]);
-		m.set_axis(2, *p_args[2]);
-		r_ret = m;
-	}
-
-	static void Basis_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Basis(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
-	}
-
-	static void Transform_init1(Variant &r_ret, const Variant **p_args) {
-		Transform t;
-		t.basis.set_axis(0, *p_args[0]);
-		t.basis.set_axis(1, *p_args[1]);
-		t.basis.set_axis(2, *p_args[2]);
-		t.origin = *p_args[3];
-		r_ret = t;
-	}
-
-	static void Transform_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Transform(p_args[0]->operator Basis(), p_args[1]->operator Vector3());
-	}
-
-	static void Callable_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Callable(p_args[0]->operator ObjectID(), p_args[1]->operator String());
-	}
-
-	static void Signal_init2(Variant &r_ret, const Variant **p_args) {
-		r_ret = Signal(p_args[0]->operator ObjectID(), p_args[1]->operator String());
-	}
-
-	static void add_constructor(VariantConstructFunc p_func, const Variant::Type p_type,
-			const String &p_name1 = "", const Variant::Type p_type1 = Variant::NIL,
-			const String &p_name2 = "", const Variant::Type p_type2 = Variant::NIL,
-			const String &p_name3 = "", const Variant::Type p_type3 = Variant::NIL,
-			const String &p_name4 = "", const Variant::Type p_type4 = Variant::NIL) {
-		ConstructData cd;
-		cd.func = p_func;
-		cd.arg_count = 0;
-
-		if (p_name1 == "") {
-			goto end;
-		}
-		cd.arg_count++;
-		cd.arg_names.push_back(p_name1);
-		cd.arg_types.push_back(p_type1);
-
-		if (p_name2 == "") {
-			goto end;
-		}
-		cd.arg_count++;
-		cd.arg_names.push_back(p_name2);
-		cd.arg_types.push_back(p_type2);
-
-		if (p_name3 == "") {
-			goto end;
-		}
-		cd.arg_count++;
-		cd.arg_names.push_back(p_name3);
-		cd.arg_types.push_back(p_type3);
-
-		if (p_name4 == "") {
-			goto end;
-		}
-		cd.arg_count++;
-		cd.arg_names.push_back(p_name4);
-		cd.arg_types.push_back(p_type4);
-
-	end:
-
-		construct_funcs[p_type].constructors.push_back(cd);
-	}
-
 	struct ConstantData {
 		Map<StringName, int> value;
 #ifdef DEBUG_ENABLED
@@ -882,7 +722,6 @@ struct _VariantCall {
 	}
 };
 
-_VariantCall::ConstructFunc *_VariantCall::construct_funcs = nullptr;
 _VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 _VariantCall::MethodMap *_VariantCall::type_internal_methods = nullptr;
 List<StringName> *_VariantCall::type_internal_method_names = nullptr;
@@ -934,213 +773,6 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 }
 
 #define VCALL(m_type, m_method) _VariantCall::_call_##m_type##_##m_method
-
-Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_strict) {
-	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-	ERR_FAIL_INDEX_V(p_type, VARIANT_MAX, Variant());
-
-	r_error.error = Callable::CallError::CALL_OK;
-	if (p_argcount == 0) { //generic construct
-
-		switch (p_type) {
-			case NIL:
-				return Variant();
-
-			// atomic types
-			case BOOL:
-				return Variant(false);
-			case INT:
-				return 0;
-			case FLOAT:
-				return 0.0f;
-			case STRING:
-				return String();
-
-			// math types
-			case VECTOR2:
-				return Vector2();
-			case VECTOR2I:
-				return Vector2i();
-			case RECT2:
-				return Rect2();
-			case RECT2I:
-				return Rect2i();
-			case VECTOR3:
-				return Vector3();
-			case VECTOR3I:
-				return Vector3i();
-			case TRANSFORM2D:
-				return Transform2D();
-			case PLANE:
-				return Plane();
-			case QUAT:
-				return Quat();
-			case AABB:
-				return ::AABB();
-			case BASIS:
-				return Basis();
-			case TRANSFORM:
-				return Transform();
-
-			// misc types
-			case COLOR:
-				return Color();
-			case STRING_NAME:
-				return StringName();
-			case NODE_PATH:
-				return NodePath();
-			case _RID:
-				return RID();
-			case OBJECT:
-				return (Object *)nullptr;
-			case CALLABLE:
-				return Callable();
-			case SIGNAL:
-				return Signal();
-			case DICTIONARY:
-				return Dictionary();
-			case ARRAY:
-				return Array();
-			case PACKED_BYTE_ARRAY:
-				return PackedByteArray();
-			case PACKED_INT32_ARRAY:
-				return PackedInt32Array();
-			case PACKED_INT64_ARRAY:
-				return PackedInt64Array();
-			case PACKED_FLOAT32_ARRAY:
-				return PackedFloat32Array();
-			case PACKED_FLOAT64_ARRAY:
-				return PackedFloat64Array();
-			case PACKED_STRING_ARRAY:
-				return PackedStringArray();
-			case PACKED_VECTOR2_ARRAY:
-				return PackedVector2Array();
-			case PACKED_VECTOR3_ARRAY:
-				return PackedVector3Array();
-			case PACKED_COLOR_ARRAY:
-				return PackedColorArray();
-			default:
-				return Variant();
-		}
-
-	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
-		return *p_args[0]; //copy construct
-	} else if (p_argcount == 1 && (!p_strict || Variant::can_convert(p_args[0]->type, p_type))) {
-		//near match construct
-
-		switch (p_type) {
-			case NIL: {
-				return Variant();
-			} break;
-			case BOOL: {
-				return Variant(bool(*p_args[0]));
-			}
-			case INT: {
-				return (int64_t(*p_args[0]));
-			}
-			case FLOAT: {
-				return double(*p_args[0]);
-			}
-			case STRING: {
-				return String(*p_args[0]);
-			}
-			case VECTOR2: {
-				return Vector2(*p_args[0]);
-			}
-			case VECTOR2I: {
-				return Vector2i(*p_args[0]);
-			}
-			case RECT2:
-				return (Rect2(*p_args[0]));
-			case RECT2I:
-				return (Rect2i(*p_args[0]));
-			case VECTOR3:
-				return (Vector3(*p_args[0]));
-			case VECTOR3I:
-				return (Vector3i(*p_args[0]));
-			case TRANSFORM2D:
-				return (Transform2D(p_args[0]->operator Transform2D()));
-			case PLANE:
-				return (Plane(*p_args[0]));
-			case QUAT:
-				return (p_args[0]->operator Quat());
-			case AABB:
-				return (::AABB(*p_args[0]));
-			case BASIS:
-				return (Basis(p_args[0]->operator Basis()));
-			case TRANSFORM:
-				return (Transform(p_args[0]->operator Transform()));
-
-			// misc types
-			case COLOR:
-				return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
-			case STRING_NAME:
-				return (StringName(p_args[0]->operator StringName()));
-			case NODE_PATH:
-				return (NodePath(p_args[0]->operator NodePath()));
-			case _RID:
-				return (RID(*p_args[0]));
-			case OBJECT:
-				return ((Object *)(p_args[0]->operator Object *()));
-			case CALLABLE:
-				return ((Callable)(p_args[0]->operator Callable()));
-			case SIGNAL:
-				return ((Signal)(p_args[0]->operator Signal()));
-			case DICTIONARY:
-				return p_args[0]->operator Dictionary();
-			case ARRAY:
-				return p_args[0]->operator Array();
-
-			// arrays
-			case PACKED_BYTE_ARRAY:
-				return (PackedByteArray(*p_args[0]));
-			case PACKED_INT32_ARRAY:
-				return (PackedInt32Array(*p_args[0]));
-			case PACKED_INT64_ARRAY:
-				return (PackedInt64Array(*p_args[0]));
-			case PACKED_FLOAT32_ARRAY:
-				return (PackedFloat32Array(*p_args[0]));
-			case PACKED_FLOAT64_ARRAY:
-				return (PackedFloat64Array(*p_args[0]));
-			case PACKED_STRING_ARRAY:
-				return (PackedStringArray(*p_args[0]));
-			case PACKED_VECTOR2_ARRAY:
-				return (PackedVector2Array(*p_args[0]));
-			case PACKED_VECTOR3_ARRAY:
-				return (PackedVector3Array(*p_args[0]));
-			case PACKED_COLOR_ARRAY:
-				return (PackedColorArray(*p_args[0]));
-			default:
-				return Variant();
-		}
-	} else if (p_argcount >= 1) {
-		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
-
-		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
-			const _VariantCall::ConstructData &cd = E->get();
-
-			if (cd.arg_count != p_argcount) {
-				continue;
-			}
-
-			//validate parameters
-			for (int i = 0; i < cd.arg_count; i++) {
-				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
-					r_error.argument = i;
-					r_error.expected = cd.arg_types[i];
-					return Variant();
-				}
-			}
-
-			Variant v;
-			cd.func(v, p_args);
-			return v;
-		}
-	}
-	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
-	return Variant();
-}
 
 bool Variant::has_method(const StringName &p_method) const {
 	if (type == OBJECT) {
@@ -1246,43 +878,6 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 
-void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list) {
-	ERR_FAIL_INDEX(p_type, VARIANT_MAX);
-
-	//custom constructors
-	for (const List<_VariantCall::ConstructData>::Element *E = _VariantCall::construct_funcs[p_type].constructors.front(); E; E = E->next()) {
-		const _VariantCall::ConstructData &cd = E->get();
-		MethodInfo mi;
-		mi.name = Variant::get_type_name(p_type);
-		mi.return_val.type = p_type;
-		for (int i = 0; i < cd.arg_count; i++) {
-			PropertyInfo pi;
-			pi.name = cd.arg_names[i];
-			pi.type = cd.arg_types[i];
-			mi.arguments.push_back(pi);
-		}
-		p_list->push_back(mi);
-	}
-	//default constructors
-	for (int i = 0; i < VARIANT_MAX; i++) {
-		if (i == p_type) {
-			continue;
-		}
-		if (!Variant::can_convert(Variant::Type(i), p_type)) {
-			continue;
-		}
-
-		MethodInfo mi;
-		mi.name = Variant::get_type_name(p_type);
-		PropertyInfo pi;
-		pi.name = "from";
-		pi.type = Variant::Type(i);
-		mi.arguments.push_back(pi);
-		mi.return_val.type = p_type;
-		p_list->push_back(mi);
-	}
-}
-
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
@@ -1350,10 +945,9 @@ Variant::InternalMethod *Variant::get_internal_method(Type p_type, const StringN
 	return nullptr;
 }
 
-void register_variant_methods() {
+void Variant::_register_variant_methods() {
 	_VariantCall::type_internal_methods = memnew_arr(_VariantCall::MethodMap, Variant::VARIANT_MAX);
 	_VariantCall::type_internal_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
-	_VariantCall::construct_funcs = memnew_arr(_VariantCall::ConstructFunc, Variant::VARIANT_MAX);
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
 	/* String */
@@ -1946,47 +1540,6 @@ void register_variant_methods() {
 	bind_method(PackedColorArray, to_byte_array, sarray(), varray());
 	bind_method(PackedColorArray, sort, sarray(), varray());
 
-	/* Register constructors */
-
-	_VariantCall::add_constructor(_VariantCall::Vector2_init1, Variant::VECTOR2, "x", Variant::FLOAT, "y", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Vector2i_init1, Variant::VECTOR2I, "x", Variant::INT, "y", Variant::INT);
-
-	_VariantCall::add_constructor(_VariantCall::Rect2_init1, Variant::RECT2, "position", Variant::VECTOR2, "size", Variant::VECTOR2);
-	_VariantCall::add_constructor(_VariantCall::Rect2_init2, Variant::RECT2, "x", Variant::FLOAT, "y", Variant::FLOAT, "width", Variant::FLOAT, "height", Variant::FLOAT);
-
-	_VariantCall::add_constructor(_VariantCall::Rect2i_init1, Variant::RECT2I, "position", Variant::VECTOR2I, "size", Variant::VECTOR2I);
-	_VariantCall::add_constructor(_VariantCall::Rect2i_init2, Variant::RECT2I, "x", Variant::INT, "y", Variant::INT, "width", Variant::INT, "height", Variant::INT);
-
-	_VariantCall::add_constructor(_VariantCall::Transform2D_init2, Variant::TRANSFORM2D, "rotation", Variant::FLOAT, "position", Variant::VECTOR2);
-	_VariantCall::add_constructor(_VariantCall::Transform2D_init3, Variant::TRANSFORM2D, "x_axis", Variant::VECTOR2, "y_axis", Variant::VECTOR2, "origin", Variant::VECTOR2);
-
-	_VariantCall::add_constructor(_VariantCall::Vector3_init1, Variant::VECTOR3, "x", Variant::FLOAT, "y", Variant::FLOAT, "z", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Vector3i_init1, Variant::VECTOR3I, "x", Variant::INT, "y", Variant::INT, "z", Variant::INT);
-
-	_VariantCall::add_constructor(_VariantCall::Plane_init1, Variant::PLANE, "a", Variant::FLOAT, "b", Variant::FLOAT, "c", Variant::FLOAT, "d", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Plane_init2, Variant::PLANE, "v1", Variant::VECTOR3, "v2", Variant::VECTOR3, "v3", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Plane_init3, Variant::PLANE, "normal", Variant::VECTOR3, "d", Variant::FLOAT);
-
-	_VariantCall::add_constructor(_VariantCall::Quat_init1, Variant::QUAT, "x", Variant::FLOAT, "y", Variant::FLOAT, "z", Variant::FLOAT, "w", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Quat_init2, Variant::QUAT, "axis", Variant::VECTOR3, "angle", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Quat_init3, Variant::QUAT, "euler", Variant::VECTOR3);
-
-	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT, "a", Variant::FLOAT);
-	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT);
-	// init3 and init4 are the constructors for HTML hex strings and integers respectively which don't need binding here, so we skip to init5.
-	_VariantCall::add_constructor(_VariantCall::Color_init5, Variant::COLOR, "c", Variant::COLOR, "a", Variant::FLOAT);
-
-	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
-
-	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::FLOAT);
-
-	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);
-
-	_VariantCall::add_constructor(_VariantCall::Callable_init2, Variant::CALLABLE, "object", Variant::OBJECT, "method_name", Variant::STRING_NAME);
-	_VariantCall::add_constructor(_VariantCall::Signal_init2, Variant::SIGNAL, "object", Variant::OBJECT, "signal_name", Variant::STRING_NAME);
-
 	/* Register constants */
 
 	int ncc = Color::get_named_color_count();
@@ -2071,7 +1624,7 @@ void register_variant_methods() {
 	_VariantCall::add_variant_constant(Variant::QUAT, "IDENTITY", Quat(0, 0, 0, 1));
 }
 
-void unregister_variant_methods() {
+void Variant::_unregister_variant_methods() {
 	//clear methods
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		for (List<StringName>::Element *E = _VariantCall::type_internal_method_names[i].front(); E; E = E->next()) {
@@ -2084,6 +1637,5 @@ void unregister_variant_methods() {
 
 	memdelete_arr(_VariantCall::type_internal_methods);
 	memdelete_arr(_VariantCall::type_internal_method_names);
-	memdelete_arr(_VariantCall::construct_funcs);
 	memdelete_arr(_VariantCall::constant_data);
 }

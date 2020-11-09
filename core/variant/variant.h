@@ -207,7 +207,66 @@ private:
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
-	void clear();
+
+	void _clear_internal();
+
+	_FORCE_INLINE_ void clear() {
+		static const bool needs_deinit[Variant::VARIANT_MAX] = {
+			false, //NIL,
+			false, //BOOL,
+			false, //INT,
+			false, //FLOAT,
+			true, //STRING,
+			false, //VECTOR2,
+			false, //VECTOR2I,
+			false, //RECT2,
+			false, //RECT2I,
+			false, //VECTOR3,
+			false, //VECTOR3I,
+			true, //TRANSFORM2D,
+			false, //PLANE,
+			false, //QUAT,
+			true, //AABB,
+			true, //BASIS,
+			true, //TRANSFORM,
+
+			// misc types
+			false, //COLOR,
+			true, //STRING_NAME,
+			true, //NODE_PATH,
+			false, //_RID,
+			true, //OBJECT,
+			true, //CALLABLE,
+			true, //SIGNAL,
+			true, //DICTIONARY,
+			true, //ARRAY,
+
+			// typed arrays
+			true, //PACKED_BYTE_ARRAY,
+			true, //PACKED_INT32_ARRAY,
+			true, //PACKED_INT64_ARRAY,
+			true, //PACKED_FLOAT32_ARRAY,
+			true, //PACKED_FLOAT64_ARRAY,
+			true, //PACKED_STRING_ARRAY,
+			true, //PACKED_VECTOR2_ARRAY,
+			true, //PACKED_VECTOR3_ARRAY,
+			true, //PACKED_COLOR_ARRAY,
+		};
+
+		if (unlikely(needs_deinit[type])) { //make it fast for types that dont need deinit
+			_clear_internal();
+		}
+		type = NIL;
+	}
+
+	static void _register_variant_operators();
+	static void _unregister_variant_operators();
+	static void _register_variant_methods();
+	static void _unregister_variant_methods();
+	static void _register_variant_setters_getters();
+	static void _unregister_variant_setters_getters();
+	static void _register_variant_constructors();
+	static void _unregister_variant_constructors();
 
 public:
 	_FORCE_INLINE_ Type get_type() const {
@@ -467,7 +526,19 @@ public:
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 
-	static Variant construct(const Variant::Type, const Variant **p_args, int p_argcount, Callable::CallError &r_error, bool p_strict = true);
+	// constructor
+	typedef void (*ValidatedConstructor)(Variant &r_base, const Variant **p_args);
+	typedef void (*PTRConstructor)(void *base, const void **p_args);
+
+	static int get_constructor_count(Variant::Type p_type);
+	static ValidatedConstructor get_validated_constructor(Variant::Type p_type, int p_constructor);
+	static PTRConstructor get_ptr_constructor(Variant::Type p_type, int p_constructor);
+	static int get_constructor_argument_count(Variant::Type p_type, int p_constructor);
+	static Variant::Type get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument);
+	static String get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument);
+	static void construct(Variant::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+
+	static void get_constructor_list(Type p_type, List<MethodInfo> *r_list); //convenience
 
 	void get_method_list(List<MethodInfo> *p_list) const;
 	bool has_method(const StringName &p_method) const;
@@ -560,7 +631,6 @@ public:
 	String stringify(List<const void *> &stack) const;
 
 	void static_assign(const Variant &p_variant);
-	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_constant(Variant::Type p_type, const StringName &p_value);
 	static Variant get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid = nullptr);
@@ -573,12 +643,13 @@ public:
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
 
+	static void register_types();
+	static void unregister_types();
+
 	Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		if (type != Variant::NIL) {
-			clear();
-		}
+		clear();
 	}
 };
 

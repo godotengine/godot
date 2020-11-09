@@ -976,7 +976,7 @@ void VisualScriptPropertySet::_adjust_input_index(PropertyInfo &pinfo) const {
 	if (index != StringName()) {
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(pinfo.type, nullptr, 0, ce);
+		Variant::construct(pinfo.type, v, nullptr, 0, ce);
 		Variant i = v.get(index);
 		pinfo.type = i.get_type();
 	}
@@ -1117,7 +1117,7 @@ void VisualScriptPropertySet::_update_cache() {
 
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(basic_type, nullptr, 0, ce);
+		Variant::construct(basic_type, v, nullptr, 0, ce);
 
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
@@ -1336,7 +1336,8 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "index") {
 		Callable::CallError ce;
-		Variant v = Variant::construct(type_cache.type, nullptr, 0, ce);
+		Variant v;
+		Variant::construct(type_cache.type, v, nullptr, 0, ce);
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
@@ -1786,7 +1787,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(basic_type, nullptr, 0, ce);
+		Variant::construct(basic_type, v, nullptr, 0, ce);
 
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
@@ -2012,7 +2013,8 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "index") {
 		Callable::CallError ce;
-		Variant v = Variant::construct(type_cache, nullptr, 0, ce);
+		Variant v;
+		Variant::construct(type_cache, v, nullptr, 0, ce);
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
@@ -2368,7 +2370,8 @@ void register_visual_script_func_nodes() {
 		Variant::Type t = Variant::Type(i);
 		String type_name = Variant::get_type_name(t);
 		Callable::CallError ce;
-		Variant vt = Variant::construct(t, nullptr, 0, ce);
+		Variant vt;
+		Variant::construct(t, vt, nullptr, 0, ce);
 		List<MethodInfo> ml;
 		vt.get_method_list(&ml);
 

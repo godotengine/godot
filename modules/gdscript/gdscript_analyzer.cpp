@@ -1711,7 +1711,8 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool is_awa
 				}
 
 				Callable::CallError err;
-				Variant value = Variant::construct(builtin_type, (const Variant **)args.ptr(), args.size(), err);
+				Variant value;
+				Variant::construct(builtin_type, value, (const Variant **)args.ptr(), args.size(), err);
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
@@ -2075,7 +2076,8 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				}
 				default: {
 					Callable::CallError temp;
-					Variant dummy = Variant::construct(base.builtin_type, nullptr, 0, temp);
+					Variant dummy;
+					Variant::construct(base.builtin_type, dummy, nullptr, 0, temp);
 					List<PropertyInfo> properties;
 					dummy.get_property_list(&properties);
 					for (const List<PropertyInfo>::Element *E = properties.front(); E != nullptr; E = E->next()) {
@@ -2869,7 +2871,8 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, GD
 	if (p_base_type.kind == GDScriptParser::DataType::BUILTIN) {
 		// Construct a base type to get methods.
 		Callable::CallError err;
-		Variant dummy = Variant::construct(p_base_type.builtin_type, nullptr, 0, err);
+		Variant dummy;
+		Variant::construct(p_base_type.builtin_type, dummy, nullptr, 0, err);
 		if (err.error != Callable::CallError::CALL_OK) {
 			ERR_FAIL_V_MSG(false, "Could not construct base Variant type.");
 		}
@@ -3095,7 +3098,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 		a = a_ref;
 	} else {
 		Callable::CallError err;
-		a = Variant::construct(a_type, nullptr, 0, err);
+		Variant::construct(a_type, a, nullptr, 0, err);
 		if (err.error != Callable::CallError::CALL_OK) {
 			r_valid = false;
 			ERR_FAIL_V_MSG(result, vformat("Could not construct value of type %s", Variant::get_type_name(a_type)));
@@ -3108,7 +3111,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 		b = b_ref;
 	} else {
 		Callable::CallError err;
-		b = Variant::construct(b_type, nullptr, 0, err);
+		Variant::construct(b_type, b, nullptr, 0, err);
 		if (err.error != Callable::CallError::CALL_OK) {
 			r_valid = false;
 			ERR_FAIL_V_MSG(result, vformat("Could not construct value of type %s", Variant::get_type_name(b_type)));
