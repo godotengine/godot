@@ -1266,7 +1266,7 @@ void Variant::zero() {
 	}
 }
 
-void Variant::clear() {
+void Variant::_clear_internal() {
 	switch (type) {
 		case STRING: {
 			reinterpret_cast<String *>(_data._mem)->~String();
@@ -1358,8 +1358,6 @@ void Variant::clear() {
 		default: {
 		} /* not needed */
 	}
-
-	type = NIL;
 }
 
 Variant::operator signed int() const {
@@ -3518,4 +3516,17 @@ String vformat(const String &p_text, const Variant &p1, const Variant &p2, const
 	ERR_FAIL_COND_V_MSG(error, String(), fmt);
 
 	return fmt;
+}
+
+void Variant::register_types() {
+	_register_variant_operators();
+	_register_variant_methods();
+	_register_variant_setters_getters();
+	_register_variant_constructors();
+}
+void Variant::unregister_types() {
+	_unregister_variant_operators();
+	_unregister_variant_methods();
+	_unregister_variant_setters_getters();
+	_unregister_variant_constructors();
 }

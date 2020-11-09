@@ -96,12 +96,6 @@ extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
-extern void register_variant_methods();
-extern void unregister_variant_methods();
-extern void register_variant_operators();
-extern void unregister_variant_operators();
-extern void register_variant_setters_getters();
-extern void unregister_variant_setters_getters();
 
 void register_core_types() {
 	//consistency check
@@ -114,9 +108,8 @@ void register_core_types() {
 	ResourceLoader::initialize();
 
 	register_global_constants();
-	register_variant_methods();
-	register_variant_operators();
-	register_variant_setters_getters();
+
+	Variant::register_types();
 
 	CoreStringNames::create();
 
@@ -323,9 +316,8 @@ void unregister_core_types() {
 	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
-	unregister_variant_setters_getters();
-	unregister_variant_operators();
-	unregister_variant_methods();
+	Variant::unregister_types();
+
 	unregister_global_constants();
 
 	ClassDB::cleanup();

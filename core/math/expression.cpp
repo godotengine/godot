@@ -564,7 +564,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 				return;
 
 			} else {
-				*r_return = Variant::construct(Variant::Type(type), p_inputs, 1, r_error);
+				Variant::construct(Variant::Type(type), *r_return, p_inputs, 1, r_error);
 			}
 		} break;
 		case TYPE_OF: {
@@ -2021,7 +2021,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			Callable::CallError ce;
-			r_ret = Variant::construct(constructor->data_type, (const Variant **)argp.ptr(), argp.size(), ce);
+			Variant::construct(constructor->data_type, r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = vformat(RTR("Invalid arguments to construct '%s'"), Variant::get_type_name(constructor->data_type));

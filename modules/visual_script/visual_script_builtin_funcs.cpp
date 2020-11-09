@@ -1027,7 +1027,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				return;
 
 			} else {
-				*r_return = Variant::construct(Variant::Type(type), p_inputs, 1, r_error);
+				Variant::construct(Variant::Type(type), *r_return, p_inputs, 1, r_error);
 			}
 		} break;
 		case VisualScriptBuiltinFunc::TYPE_OF: {

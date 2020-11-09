@@ -331,7 +331,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						return Variant();
 					}
 					if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
-						Variant arg = Variant::construct(argument_types[i].builtin_type, &p_args[i], 1, r_err);
+						Variant arg;
+						Variant::construct(argument_types[i].builtin_type, arg, &p_args[i], 1, r_err);
 						memnew_placement(&stack[i], Variant(arg));
 					} else {
 						memnew_placement(&stack[i], Variant(*p_args[i]));
@@ -755,7 +756,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (Variant::can_convert_strict(src->get_type(), var_type)) {
 #endif // DEBUG_ENABLED
 						Callable::CallError ce;
-						*dst = Variant::construct(var_type, const_cast<const Variant **>(&src), 1, ce);
+						Variant::construct(var_type, *dst, const_cast<const Variant **>(&src), 1, ce);
 					} else {
 #ifdef DEBUG_ENABLED
 						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
@@ -857,7 +858,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(to_type < 0 || to_type >= Variant::VARIANT_MAX);
 
 				Callable::CallError err;
-				*dst = Variant::construct(to_type, (const Variant **)&src, 1, err);
+				Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
@@ -955,7 +956,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GET_VARIANT_PTR(dst, 3 + argc);
 				Callable::CallError err;
-				*dst = Variant::construct(t, (const Variant **)argptrs, argc, err);
+				Variant::construct(t, *dst, (const Variant **)argptrs, argc, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
