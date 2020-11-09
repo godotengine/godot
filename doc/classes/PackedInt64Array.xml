@@ -14,6 +14,22 @@
 		<method name="PackedInt64Array">
 			<return type="PackedInt64Array">
 			</return>
+			<description>
+				Constructs an empty [PackedInt64Array].
+			</description>
+		</method>
+		<method name="PackedInt64Array">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="from" type="PackedInt64Array">
+			</argument>
+			<description>
+				Constructs a [PackedInt64Array] as a copy of the given [PackedInt64Array].
+			</description>
+		</method>
+		<method name="PackedInt64Array">
+			<return type="PackedInt64Array">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

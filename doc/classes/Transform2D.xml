@@ -17,6 +17,22 @@
 		<method name="Transform2D">
 			<return type="Transform2D">
 			</return>
+			<description>
+				Constructs a default-initialized [Transform] set to [constant IDENTITY].
+			</description>
+		</method>
+		<method name="Transform2D">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="from" type="Transform2D">
+			</argument>
+			<description>
+				Constructs a [Transform2D] as a copy of the given [Transform2D].
+			</description>
+		</method>
+		<method name="Transform2D">
+			<return type="Transform2D">
+			</return>
 			<argument index="0" name="rotation" type="float">
 			</argument>
 			<argument index="1" name="position" type="Vector2">
@@ -36,15 +52,6 @@
 			</argument>
 			<description>
 				Constructs the transform from 3 [Vector2] values representing [member x], [member y], and the [member origin] (the three column vectors).
-			</description>
-		</method>
-		<method name="Transform2D">
-			<return type="Transform2D">
-			</return>
-			<argument index="0" name="from" type="Transform">
-			</argument>
-			<description>
-				Constructs the transform from a 3D [Transform].
 			</description>
 		</method>
 		<method name="affine_inverse">

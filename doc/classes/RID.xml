@@ -12,10 +12,17 @@
 		<method name="RID">
 			<return type="RID">
 			</return>
-			<argument index="0" name="from" type="Object">
+			<description>
+				Constructs an empty [RID] with the invalid ID [code]0[/code].
+			</description>
+		</method>
+		<method name="RID">
+			<return type="RID">
+			</return>
+			<argument index="0" name="from" type="RID">
 			</argument>
 			<description>
-				Creates a new RID instance with the ID of a given resource. When not handed a valid resource, silently stores the unused ID 0.
+				Constructs a [RID] as a copy of the given [RID].
 			</description>
 		</method>
 		<method name="get_id">

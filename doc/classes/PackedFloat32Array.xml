@@ -14,6 +14,22 @@
 		<method name="PackedFloat32Array">
 			<return type="PackedFloat32Array">
 			</return>
+			<description>
+				Constructs an empty [PackedFloat32Array].
+			</description>
+		</method>
+		<method name="PackedFloat32Array">
+			<return type="PackedFloat32Array">
+			</return>
+			<argument index="0" name="from" type="PackedFloat32Array">
+			</argument>
+			<description>
+				Constructs a [PackedFloat32Array] as a copy of the given [PackedFloat32Array].
+			</description>
+		</method>
+		<method name="PackedFloat32Array">
+			<return type="PackedFloat32Array">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

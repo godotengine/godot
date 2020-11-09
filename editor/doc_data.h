@@ -43,6 +43,9 @@ public:
 		String enumeration;
 		String default_value;
 		bool operator<(const ArgumentDoc &p_arg) const {
+			if (name == p_arg.name) {
+				return type < p_arg.type;
+			}
 			return name < p_arg.name;
 		}
 	};
@@ -55,6 +58,20 @@ public:
 		String description;
 		Vector<ArgumentDoc> arguments;
 		bool operator<(const MethodDoc &p_method) const {
+			if (name == p_method.name) {
+				// Must be a constructor since there is no overloading.
+				// We want this arbitrary order for a class "Foo":
+				// - 1. Default constructor: Foo()
+				// - 2. Copy constructor: Foo(Foo)
+				// - 3+. Other constructors Foo(Bar, ...) based on first argument's name
+				if (arguments.size() == 0 || p_method.arguments.size() == 0) { // 1.
+					return arguments.size() < p_method.arguments.size();
+				}
+				if (arguments[0].type == return_type || p_method.arguments[0].type == p_method.return_type) { // 2.
+					return (arguments[0].type == return_type) || (p_method.arguments[0].type != p_method.return_type);
+				}
+				return arguments[0] < p_method.arguments[0];
+			}
 			return name < p_method.name;
 		}
 	};

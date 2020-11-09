@@ -19,77 +19,57 @@
 		<method name="Color">
 			<return type="Color">
 			</return>
-			<argument index="0" name="from" type="String">
-			</argument>
 			<description>
-				Constructs a color from an HTML hexadecimal color string in RGB or RGBA format. See also [method @GDScript.ColorN].
-				[codeblocks]
-				[gdscript]
-				# Each of the following creates the same color RGBA(178, 217, 10, 255).
-				var c3 = Color("#b2d90a") # RGB format with "#".
-				var c4 = Color("b2d90a") # RGB format.
-				var c1 = Color("#b2d90aff") # RGBA format with "#".
-				var c2 = Color("b2d90aff") # RGBA format.
-				[/gdscript]
-				[csharp]
-				// Each of the following creates the same color RGBA(178, 217, 10, 255).
-				var c3 = new Color("#b2d90a");
-				var c4 = new Color("b2d90a"); // RGB format.
-				var c1 = new Color("#b2d90aff");
-				var c2 = new Color("b2d90aff"); // RGBA format.
-				[/csharp]
-				[/codeblocks]
-				You can also use the "web color" short-hand form by only using 3 or 4 digits.
-				[codeblocks]
-				[gdscript]
-				# Each of the following creates the same color RGBA(17, 34, 51, 255).
-				var c3 = Color("#123") # RGB format with "#".
-				var c4 = Color("123") # RGB format.
-				var c1 = Color("#123f") # RGBA format with "#".
-				var c2 = Color("123f") # RGBA format.
-				[/gdscript]
-				[csharp]
-				// Each of the following creates the same color RGBA(17, 34, 51, 255).
-				var c3 = new Color("#123");
-				var c4 = new Color("123"); // RGB format.
-				var c1 = new Color("#123f");
-				var c2 = new Color("123f"); // RGBA format.
-				[/csharp]
-				[/codeblocks]
+				Constructs a default-initialized [Color] with all components set to [code]0[/code].
 			</description>
 		</method>
 		<method name="Color">
 			<return type="Color">
 			</return>
-			<argument index="0" name="from" type="int">
+			<argument index="0" name="from" type="Color">
 			</argument>
 			<description>
-				Constructs a color from a 32-bit integer (each byte represents a component of the RGBA profile).
-				[codeblocks]
-				[gdscript]
-				var c = Color(274) # Equivalent to RGBA(0, 0, 1, 18)
-				[/gdscript]
-				[csharp]
-				var c = new Color(274); // Equivalent to RGBA(0, 0, 1, 18)
-				[/csharp]
-				[/codeblocks]
+				Constructs a [Color] as a copy of the given [Color].
 			</description>
 		</method>
 		<method name="Color">
 			<return type="Color">
 			</return>
-			<argument index="0" name="c" type="Color">
+			<argument index="0" name="from" type="Color">
 			</argument>
-			<argument index="1" name="a" type="float">
+			<argument index="1" name="alpha" type="float">
 			</argument>
 			<description>
-				Constructs a color from an existing color, but with a custom alpha value.
+				Constructs a [Color] from an existing color, but with a custom alpha value.
 				[codeblocks]
 				[gdscript]
 				var red = Color(Color.red, 0.5) # 50% transparent red.
 				[/gdscript]
 				[csharp]
 				var red = new Color(Colors.Red, 0.5f); // 50% transparent red.
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="g" type="float">
+			</argument>
+			<argument index="2" name="b" type="float">
+			</argument>
+			<argument index="3" name="a" type="float">
+			</argument>
+			<description>
+				Constructs a [Color] from an RGBA profile using values between 0 and 1.
+				[codeblocks]
+				[gdscript]
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
+				[/gdscript]
+				[csharp]
+				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Equivalent to RGBA(51, 255, 178, 255, 204)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -111,29 +91,6 @@
 				[/gdscript]
 				[csharp]
 				var color = new Color(0.2f, 1.0f, 0.7f); // Equivalent to RGBA(51, 255, 178, 255)
-				[/csharp]
-				[/codeblocks]
-			</description>
-		</method>
-		<method name="Color">
-			<return type="Color">
-			</return>
-			<argument index="0" name="r" type="float">
-			</argument>
-			<argument index="1" name="g" type="float">
-			</argument>
-			<argument index="2" name="b" type="float">
-			</argument>
-			<argument index="3" name="a" type="float">
-			</argument>
-			<description>
-				Constructs a color from an RGBA profile using values between 0 and 1.
-				[codeblocks]
-				[gdscript]
-				var color = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
-				[/gdscript]
-				[csharp]
-				var color = new Color(0.2f, 1.0f, 0.7f, 0.8f); // Equivalent to RGBA(51, 255, 178, 255, 204)
 				[/csharp]
 				[/codeblocks]
 			</description>

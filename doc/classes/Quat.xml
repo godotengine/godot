@@ -16,16 +16,27 @@
 		<method name="Quat">
 			<return type="Quat">
 			</return>
-			<argument index="0" name="x" type="float">
-			</argument>
-			<argument index="1" name="y" type="float">
-			</argument>
-			<argument index="2" name="z" type="float">
-			</argument>
-			<argument index="3" name="w" type="float">
+			<description>
+				Constructs a default-initialized quaternion with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Constructs a quaternion defined by the given values.
+				Constructs a [Quat] as a copy of the given [Quat].
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="arc_from" type="Vector3">
+			</argument>
+			<argument index="1" name="arc_to" type="Vector3">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="Quat">
@@ -55,6 +66,21 @@
 			</argument>
 			<description>
 				Constructs a quaternion from the given [Basis].
+			</description>
+		</method>
+		<method name="Quat">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<argument index="3" name="w" type="float">
+			</argument>
+			<description>
+				Constructs a quaternion defined by the given values.
 			</description>
 		</method>
 		<method name="cubic_slerp">
