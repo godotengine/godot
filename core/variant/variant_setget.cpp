@@ -2576,12 +2576,12 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 	}
 }
 
-void register_variant_setters_getters() {
+void Variant::_register_variant_setters_getters() {
 	register_named_setters_getters();
 	register_indexed_setters_getters();
 	register_keyed_setters_getters();
 }
-void unregister_variant_setters_getters() {
+void Variant::_unregister_variant_setters_getters() {
 	unregister_named_setters_getters();
 	unregister_indexed_setters_getters();
 }
