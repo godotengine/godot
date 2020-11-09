@@ -204,7 +204,7 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_
 			}
 
 			if (CACHED_CLASS(RID) == type_class) {
-				return Variant::_RID;
+				return Variant::RID;
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
@@ -580,7 +580,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 
 			if (CACHED_CLASS(RID) == type_class) {
-				return GDMonoUtils::create_managed_from(p_var->operator RID());
+				return GDMonoUtils::create_managed_from(p_var->operator ::RID());
 			}
 
 			// Godot.Collections.Dictionary or IDictionary
@@ -673,8 +673,8 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 					return GDMonoUtils::create_managed_from(p_var->operator StringName());
 				case Variant::NODE_PATH:
 					return GDMonoUtils::create_managed_from(p_var->operator NodePath());
-				case Variant::_RID:
-					return GDMonoUtils::create_managed_from(p_var->operator RID());
+				case Variant::RID:
+					return GDMonoUtils::create_managed_from(p_var->operator ::RID());
 				case Variant::OBJECT:
 					return GDMonoUtils::unmanaged_get_managed(p_var->operator Object *());
 				case Variant::CALLABLE: {

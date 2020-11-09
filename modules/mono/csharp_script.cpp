@@ -477,7 +477,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::COLOR,
 		Variant::STRING_NAME,
 		Variant::NODE_PATH,
-		Variant::_RID,
+		Variant::RID,
 		Variant::CALLABLE
 	};
 

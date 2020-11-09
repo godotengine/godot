@@ -49,7 +49,7 @@
 		<DisplayString Condition="type == Variant::QUAT">{*(Quat *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
-		<DisplayString Condition="type == Variant::_RID">{*(RID *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::RID">{*(RID *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
 		<DisplayString Condition="type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
@@ -79,7 +79,7 @@
 			<Item Name="[value]" Condition="type == Variant::QUAT">*(Quat *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
-			<Item Name="[value]" Condition="type == Variant::_RID">*(RID *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::RID">*(RID *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Object *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::ARRAY">*(Array *)_data._mem</Item>
