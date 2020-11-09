@@ -44,6 +44,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) + *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -64,6 +65,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) - *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -84,6 +86,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) * *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -104,6 +107,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<A>::get_ptr(left)->xform(*VariantGetInternalPtr<B>::get_ptr(right));
 	}
 #ifdef PTRCALL_ENABLED
@@ -124,6 +128,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = VariantGetInternalPtr<B>::get_ptr(right)->xform_inv(*VariantGetInternalPtr<A>::get_ptr(left));
 	}
 #ifdef PTRCALL_ENABLED
@@ -144,6 +149,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -169,6 +175,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -189,6 +196,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -214,6 +222,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) % *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -233,6 +242,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = -*VariantGetInternalPtr<A>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -252,6 +262,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -272,6 +283,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) << *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -292,6 +304,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >> *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -312,6 +325,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) | *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -352,6 +366,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) ^ *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -371,6 +386,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<R>::change(r_ret);
 		*VariantGetInternalPtr<R>::get_ptr(r_ret) = ~*VariantGetInternalPtr<A>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -391,6 +407,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) == *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -412,6 +429,7 @@ public:
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Object *a = left->get_validated_object();
 		const Object *b = right->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == b;
 	}
 #ifdef PTRCALL_ENABLED
@@ -431,6 +449,7 @@ public:
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Object *a = left->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a == nullptr;
 	}
 #ifdef PTRCALL_ENABLED
@@ -450,6 +469,7 @@ public:
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Object *b = right->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr == b;
 	}
 #ifdef PTRCALL_ENABLED
@@ -470,6 +490,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) != *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -491,6 +512,7 @@ public:
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *a = left->get_validated_object();
 		Object *b = right->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != b;
 	}
 #ifdef PTRCALL_ENABLED
@@ -510,6 +532,7 @@ public:
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *a = left->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = a != nullptr;
 	}
 #ifdef PTRCALL_ENABLED
@@ -529,6 +552,7 @@ public:
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		Object *b = right->get_validated_object();
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = nullptr != b;
 	}
 #ifdef PTRCALL_ENABLED
@@ -549,6 +573,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) < *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -569,6 +594,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) <= *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -589,6 +615,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) > *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -609,6 +636,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) >= *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -629,6 +657,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) && *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -650,6 +679,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) || *VariantGetInternalPtr<B>::get_ptr(right);
 	}
 #ifdef PTRCALL_ENABLED
@@ -675,6 +705,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = xor_op(*VariantGetInternalPtr<A>::get_ptr(left), *VariantGetInternalPtr<B>::get_ptr(right));
 	}
 #ifdef PTRCALL_ENABLED
@@ -695,6 +726,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -729,6 +761,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Array>::change(r_ret);
 		_add_arrays(*VariantGetInternalPtr<Array>::get_ptr(r_ret), *VariantGetInternalPtr<Array>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right));
 	}
 #ifdef PTRCALL_ENABLED
@@ -754,6 +787,7 @@ public:
 		r_valid = true;
 	}
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<Vector<T>>::change(r_ret);
 		*VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret) = *VariantGetInternalPtr<Vector<T>>::get_ptr(left);
 		VariantGetInternalPtr<Vector<T>>::get_ptr(r_ret)->append_array(*VariantGetInternalPtr<Vector<T>>::get_ptr(right));
 	}
@@ -787,6 +821,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<String>::change(r_ret);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), nullptr);
 	}
 #ifdef PTRCALL_ENABLED
@@ -813,6 +848,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<String>::change(r_ret);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<Array>::get_ptr(right), nullptr);
 	}
 #ifdef PTRCALL_ENABLED
@@ -842,6 +878,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<String>::change(r_ret);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), right->get_validated_object(), nullptr);
 	}
 #ifdef PTRCALL_ENABLED
@@ -871,6 +908,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<String>::change(r_ret);
 		*VariantGetInternalPtr<String>::get_ptr(r_ret) = do_mod(*VariantGetInternalPtr<String>::get_ptr(left), *VariantGetInternalPtr<T>::get_ptr(right), nullptr);
 	}
 #ifdef PTRCALL_ENABLED
@@ -890,6 +928,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = true;
 	}
 #ifdef PTRCALL_ENABLED
@@ -909,6 +948,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = false;
 	}
 #ifdef PTRCALL_ENABLED
@@ -962,6 +1002,7 @@ _FORCE_INLINE_ static bool _operate_get_object(const Variant *p_ptr) {
 		}                                                                                                                    \
                                                                                                                              \
 		static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                          \
+			VariantTypeChanger<bool>::change(r_ret);                                                                         \
 			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
 		}                                                                                                                    \
                                                                                                                              \
@@ -1002,6 +1043,7 @@ _FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
 		}                                                                                                                    \
                                                                                                                              \
 		static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                          \
+			VariantTypeChanger<bool>::change(r_ret);                                                                         \
 			*VariantGetInternalPtr<bool>::get_ptr(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
 		}                                                                                                                    \
                                                                                                                              \
@@ -1168,6 +1210,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<bool>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -1187,6 +1230,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<int64_t>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -1206,6 +1250,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<double>::get_ptr(left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -1225,6 +1270,7 @@ public:
 	}
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = left->get_validated_object() == nullptr;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1251,6 +1297,7 @@ public:
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const String &str_a = *VariantGetInternalPtr<String>::get_ptr(left);
 		const String &str_b = *VariantGetInternalPtr<String>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = str_b.find(str_a) != -1;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1275,6 +1322,7 @@ public:
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
 		const B &b = *VariantGetInternalPtr<B>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(a) != -1;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1295,6 +1343,7 @@ public:
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(Variant()) != -1;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1315,6 +1364,7 @@ public:
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Array &b = *VariantGetInternalPtr<Array>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.find(*left) != -1;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1339,6 +1389,7 @@ public:
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(left);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(a);
 	}
 #ifdef PTRCALL_ENABLED
@@ -1360,6 +1411,7 @@ public:
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(Variant());
 	}
 #ifdef PTRCALL_ENABLED
@@ -1381,6 +1433,7 @@ public:
 
 	static void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Dictionary &b = *VariantGetInternalPtr<Dictionary>::get_ptr(right);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = b.has(*left);
 	}
 #ifdef PTRCALL_ENABLED
@@ -1414,6 +1467,7 @@ public:
 
 		bool valid;
 		l->get(a, &valid);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1449,6 +1503,7 @@ public:
 
 		bool valid;
 		l->get(a, &valid);
+		VariantTypeChanger<bool>::change(r_ret);
 		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = valid;
 	}
 #ifdef PTRCALL_ENABLED
@@ -1480,7 +1535,7 @@ void register_op(Variant::Operator p_op, Variant::Type p_type_a, Variant::Type p
 #endif
 }
 
-void register_variant_operators() {
+void Variant::_register_variant_operators() {
 	zeromem(operator_return_type_table, sizeof(operator_return_type_table));
 	zeromem(operator_evaluator_table, sizeof(operator_evaluator_table));
 	zeromem(validated_operator_evaluator_table, sizeof(validated_operator_evaluator_table));
@@ -1568,8 +1623,8 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorMul<Transform, Transform, Transform>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::TRANSFORM);
 	register_op<OperatorEvaluatorXForm<Vector3, Transform, Vector3>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::VECTOR3);
 	register_op<OperatorEvaluatorXFormInv<Vector3, Vector3, Transform>>(Variant::OP_MULTIPLY, Variant::VECTOR3, Variant::TRANSFORM);
-	register_op<OperatorEvaluatorXForm<AABB, Transform, AABB>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::AABB);
-	register_op<OperatorEvaluatorXFormInv<AABB, AABB, Transform>>(Variant::OP_MULTIPLY, Variant::AABB, Variant::TRANSFORM);
+	register_op<OperatorEvaluatorXForm<::AABB, Transform, ::AABB>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::AABB);
+	register_op<OperatorEvaluatorXFormInv<::AABB, ::AABB, Transform>>(Variant::OP_MULTIPLY, Variant::AABB, Variant::TRANSFORM);
 	register_op<OperatorEvaluatorXForm<Vector<Vector3>, Transform, Vector<Vector3>>>(Variant::OP_MULTIPLY, Variant::TRANSFORM, Variant::PACKED_VECTOR3_ARRAY);
 	register_op<OperatorEvaluatorXFormInv<Vector<Vector3>, Vector<Vector3>, Transform>>(Variant::OP_MULTIPLY, Variant::PACKED_VECTOR3_ARRAY, Variant::TRANSFORM);
 
@@ -1645,7 +1700,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorStringModT<Transform2D>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM2D);
 	register_op<OperatorEvaluatorStringModT<Plane>>(Variant::OP_MODULE, Variant::STRING, Variant::PLANE);
 	register_op<OperatorEvaluatorStringModT<Quat>>(Variant::OP_MODULE, Variant::STRING, Variant::QUAT);
-	register_op<OperatorEvaluatorStringModT<AABB>>(Variant::OP_MODULE, Variant::STRING, Variant::AABB);
+	register_op<OperatorEvaluatorStringModT<::AABB>>(Variant::OP_MODULE, Variant::STRING, Variant::AABB);
 	register_op<OperatorEvaluatorStringModT<Basis>>(Variant::OP_MODULE, Variant::STRING, Variant::BASIS);
 	register_op<OperatorEvaluatorStringModT<Transform>>(Variant::OP_MODULE, Variant::STRING, Variant::TRANSFORM);
 
@@ -1713,7 +1768,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorEqual<Transform2D, Transform2D>>(Variant::OP_EQUAL, Variant::TRANSFORM2D, Variant::TRANSFORM2D);
 	register_op<OperatorEvaluatorEqual<Plane, Plane>>(Variant::OP_EQUAL, Variant::PLANE, Variant::PLANE);
 	register_op<OperatorEvaluatorEqual<Quat, Quat>>(Variant::OP_EQUAL, Variant::QUAT, Variant::QUAT);
-	register_op<OperatorEvaluatorEqual<AABB, AABB>>(Variant::OP_EQUAL, Variant::AABB, Variant::AABB);
+	register_op<OperatorEvaluatorEqual<::AABB, ::AABB>>(Variant::OP_EQUAL, Variant::AABB, Variant::AABB);
 	register_op<OperatorEvaluatorEqual<Basis, Basis>>(Variant::OP_EQUAL, Variant::BASIS, Variant::BASIS);
 	register_op<OperatorEvaluatorEqual<Transform, Transform>>(Variant::OP_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
 	register_op<OperatorEvaluatorEqual<Color, Color>>(Variant::OP_EQUAL, Variant::COLOR, Variant::COLOR);
@@ -1759,7 +1814,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorNotEqual<Transform2D, Transform2D>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM2D, Variant::TRANSFORM2D);
 	register_op<OperatorEvaluatorNotEqual<Plane, Plane>>(Variant::OP_NOT_EQUAL, Variant::PLANE, Variant::PLANE);
 	register_op<OperatorEvaluatorNotEqual<Quat, Quat>>(Variant::OP_NOT_EQUAL, Variant::QUAT, Variant::QUAT);
-	register_op<OperatorEvaluatorNotEqual<AABB, AABB>>(Variant::OP_NOT_EQUAL, Variant::AABB, Variant::AABB);
+	register_op<OperatorEvaluatorNotEqual<::AABB, ::AABB>>(Variant::OP_NOT_EQUAL, Variant::AABB, Variant::AABB);
 	register_op<OperatorEvaluatorNotEqual<Basis, Basis>>(Variant::OP_NOT_EQUAL, Variant::BASIS, Variant::BASIS);
 	register_op<OperatorEvaluatorNotEqual<Transform, Transform>>(Variant::OP_NOT_EQUAL, Variant::TRANSFORM, Variant::TRANSFORM);
 	register_op<OperatorEvaluatorNotEqual<Color, Color>>(Variant::OP_NOT_EQUAL, Variant::COLOR, Variant::COLOR);
@@ -1948,7 +2003,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorInDictionaryHas<Transform2D>>(Variant::OP_IN, Variant::TRANSFORM2D, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Plane>>(Variant::OP_IN, Variant::PLANE, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Quat>>(Variant::OP_IN, Variant::QUAT, Variant::DICTIONARY);
-	register_op<OperatorEvaluatorInDictionaryHas<AABB>>(Variant::OP_IN, Variant::AABB, Variant::DICTIONARY);
+	register_op<OperatorEvaluatorInDictionaryHas<::AABB>>(Variant::OP_IN, Variant::AABB, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Basis>>(Variant::OP_IN, Variant::BASIS, Variant::DICTIONARY);
 	register_op<OperatorEvaluatorInDictionaryHas<Transform>>(Variant::OP_IN, Variant::TRANSFORM, Variant::DICTIONARY);
 
@@ -1985,7 +2040,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorInArrayFind<Transform2D, Array>>(Variant::OP_IN, Variant::TRANSFORM2D, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Plane, Array>>(Variant::OP_IN, Variant::PLANE, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Quat, Array>>(Variant::OP_IN, Variant::QUAT, Variant::ARRAY);
-	register_op<OperatorEvaluatorInArrayFind<AABB, Array>>(Variant::OP_IN, Variant::AABB, Variant::ARRAY);
+	register_op<OperatorEvaluatorInArrayFind<::AABB, Array>>(Variant::OP_IN, Variant::AABB, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Basis, Array>>(Variant::OP_IN, Variant::BASIS, Variant::ARRAY);
 	register_op<OperatorEvaluatorInArrayFind<Transform, Array>>(Variant::OP_IN, Variant::TRANSFORM, Variant::ARRAY);
 
@@ -2034,7 +2089,7 @@ void register_variant_operators() {
 	register_op<OperatorEvaluatorObjectHasPropertyStringName>(Variant::OP_IN, Variant::STRING_NAME, Variant::OBJECT);
 }
 
-void unregister_variant_operators() {
+void Variant::_unregister_variant_operators() {
 }
 
 void Variant::evaluate(const Operator &p_op, const Variant &p_a,

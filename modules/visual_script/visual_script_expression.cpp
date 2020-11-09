@@ -1405,7 +1405,7 @@ public:
 					argp.write[i] = &arr[i];
 				}
 
-				r_ret = Variant::construct(constructor->data_type, (const Variant **)argp.ptr(), argp.size(), ce);
+				Variant::construct(constructor->data_type, r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
 					r_error_str = "Invalid arguments to construct '" + Variant::get_type_name(constructor->data_type) + "'.";

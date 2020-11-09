@@ -165,7 +165,7 @@ void Array::_assign(const Array &p_array) {
 				} else if (Variant::can_convert_strict(src_val.get_type(), _p->typed.type)) {
 					Variant *ptr = &src_val;
 					Callable::CallError ce;
-					new_array.write[i] = Variant::construct(_p->typed.type, (const Variant **)&ptr, 1, ce, true);
+					Variant::construct(_p->typed.type, new_array.write[i], (const Variant **)&ptr, 1, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
 						ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
 					}

@@ -2802,7 +2802,9 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 					Callable::CallError error;
 					Vector<Variant> args = varray(string->name);
 					const Variant *name = args.ptr();
-					p_annotation->resolved_arguments.push_back(Variant::construct(parameter.type, &(name), 1, error));
+					Variant r;
+					Variant::construct(parameter.type, r, &(name), 1, error);
+					p_annotation->resolved_arguments.push_back(r);
 					if (error.error != Callable::CallError::CALL_OK) {
 						push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 						p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);
@@ -2824,7 +2826,9 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 				}
 				Callable::CallError error;
 				const Variant *args = &value;
-				p_annotation->resolved_arguments.push_back(Variant::construct(parameter.type, &(args), 1, error));
+				Variant r;
+				Variant::construct(parameter.type, r, &(args), 1, error);
+				p_annotation->resolved_arguments.push_back(r);
 				if (error.error != Callable::CallError::CALL_OK) {
 					push_error(vformat(R"(Expected %s as argument %d of annotation "%s").)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
 					p_annotation->resolved_arguments.remove(p_annotation->resolved_arguments.size() - 1);

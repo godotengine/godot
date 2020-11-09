@@ -98,7 +98,8 @@ void ProjectSettingsEditor::_add_setting() {
 	// Initialize the property with the default value for the given type.
 	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Callable::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), nullptr, 0, ce);
+	Variant value;
+	Variant::construct(Variant::Type(type->get_selected() + 1), value, nullptr, 0, ce);
 
 	undo_redo->create_action(TTR("Add Project Setting"));
 	undo_redo->add_do_property(ps, setting, value);

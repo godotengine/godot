@@ -1431,7 +1431,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 
 	type = p_type;
 	Callable::CallError ce;
-	value = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, value, nullptr, 0, ce);
 	ports_changed_notify();
 	_change_notify();
 }
@@ -3255,7 +3255,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		Callable::CallError ce;
-		*p_outputs[0] = Variant::construct(type, p_inputs, argcount, ce);
+		Variant::construct(type, *p_outputs[0], p_inputs, argcount, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			r_error_str = "Invalid arguments for constructor";
 		}
@@ -3727,7 +3727,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	elements.clear();
 	Variant v;
 	Callable::CallError ce;
-	v = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, v, nullptr, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);

@@ -599,7 +599,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				return;
 
 			} else {
-				r_ret = Variant::construct(Variant::Type(type), p_args, 1, r_error);
+				Variant::construct(Variant::Type(type), r_ret, p_args, 1, r_error);
 			}
 		} break;
 		case TYPE_OF: {

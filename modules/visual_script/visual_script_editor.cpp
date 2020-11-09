@@ -885,7 +885,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							//not the same, reconvert
 							Callable::CallError ce;
 							const Variant *existingp = &value;
-							value = Variant::construct(left_type, &existingp, 1, ce, false);
+							Variant::construct(left_type, value, &existingp, 1, ce);
 						}
 
 						if (left_type == Variant::COLOR) {
@@ -1173,7 +1173,9 @@ String VisualScriptEditor::_sanitized_variant_text(const StringName &property_na
 	if (script->get_variable_info(property_name).type != Variant::NIL) {
 		Callable::CallError ce;
 		const Variant *converted = &var;
-		var = Variant::construct(script->get_variable_info(property_name).type, &converted, 1, ce, false);
+		Variant n;
+		Variant::construct(script->get_variable_info(property_name).type, n, &converted, 1, ce);
+		var = n;
 	}
 
 	return String(var);
@@ -3959,8 +3961,9 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 	Variant existing = vsn->get_default_input_value(p_input_port);
 	if (pinfo.type != Variant::NIL && existing.get_type() != pinfo.type) {
 		Callable::CallError ce;
-		const Variant *existingp = &existing;
-		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
+		Variant e = existing;
+		const Variant *existingp = &e;
+		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
 	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));

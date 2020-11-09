@@ -202,7 +202,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 			Override o;
 			o.in_use = false;
 			Callable::CallError ce;
-			o.override = Variant::construct(pinfo.type, nullptr, 0, ce);
+			Variant::construct(pinfo.type, o.override, nullptr, 0, ce);
 			overrides[variables[i]] = o;
 		}
 

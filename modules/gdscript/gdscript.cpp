@@ -1092,7 +1092,8 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					// Try conversion
 					Callable::CallError ce;
 					const Variant *value = &p_value;
-					Variant converted = Variant::construct(member->data_type.builtin_type, &value, 1, ce);
+					Variant converted;
+					Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
 					if (ce.error == Callable::CallError::CALL_OK) {
 						members.write[member->index] = converted;
 						return true;

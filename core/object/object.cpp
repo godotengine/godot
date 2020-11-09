@@ -1690,7 +1690,8 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 	}
 
 	Callable::CallError ce;
-	Variant check = Variant::construct(t, nullptr, 0, ce);
+	Variant check;
+	Variant::construct(t, check, nullptr, 0, ce);
 
 	for (int i = 1; i < p_path.size(); i++) {
 		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {

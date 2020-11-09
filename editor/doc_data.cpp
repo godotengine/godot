@@ -561,7 +561,8 @@ void DocData::generate(bool p_basic_types) {
 		c.name = cname;
 
 		Callable::CallError cerror;
-		Variant v = Variant::construct(Variant::Type(i), nullptr, 0, cerror);
+		Variant v;
+		Variant::construct(Variant::Type(i), v, nullptr, 0, cerror);
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);

@@ -84,10 +84,10 @@ void VisualScriptNode::validate_input_default_values() {
 			Callable::CallError ce;
 			Variant existing = default_input_values[i];
 			const Variant *existingp = &existing;
-			default_input_values[i] = Variant::construct(expected, &existingp, 1, ce, false);
+			Variant::construct(expected, default_input_values[i], &existingp, 1, ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
 				//could not convert? force..
-				default_input_values[i] = Variant::construct(expected, nullptr, 0, ce, false);
+				Variant::construct(expected, default_input_values[i], nullptr, 0, ce);
 			}
 		}
 	}

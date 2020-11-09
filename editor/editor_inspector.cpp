@@ -2278,7 +2278,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 				if (E->get().name == p_path) {
 					Callable::CallError ce;
-					to_create = Variant::construct(E->get().type, nullptr, 0, ce);
+					Variant::construct(E->get().type, to_create, nullptr, 0, ce);
 					break;
 				}
 			}

@@ -95,7 +95,7 @@ void PropertySelector::_update_search() {
 		} else if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -200,7 +200,7 @@ void PropertySelector::_update_search() {
 		if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, nullptr, 0, ce);
+			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
 			Object *obj = ObjectDB::get_instance(script);
