@@ -892,7 +892,7 @@ void EditorPropertyDictionary::update_property() {
 					prop = memnew(EditorPropertyNodePath);
 
 				} break;
-				case Variant::_RID: {
+				case Variant::RID: {
 					prop = memnew(EditorPropertyRID);
 
 				} break;

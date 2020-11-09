@@ -3645,7 +3645,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			add_property_editor(p_path, editor);
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 			EditorPropertyRID *editor = memnew(EditorPropertyRID);
 			add_property_editor(p_path, editor);
 		} break;

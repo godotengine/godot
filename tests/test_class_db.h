@@ -255,7 +255,7 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
-		case Variant::_RID:
+		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
 		case Variant::PACKED_BYTE_ARRAY:

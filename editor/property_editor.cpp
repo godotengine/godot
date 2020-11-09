@@ -345,7 +345,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		checks20[i]->hide();
 	}
 
-	type = (p_variant.get_type() != Variant::NIL && p_variant.get_type() != Variant::_RID && p_type != Variant::OBJECT) ? p_variant.get_type() : p_type;
+	type = (p_variant.get_type() != Variant::NIL && p_variant.get_type() != Variant::RID && p_type != Variant::OBJECT) ? p_variant.get_type() : p_type;
 
 	switch (type) {
 		case Variant::BOOL: {

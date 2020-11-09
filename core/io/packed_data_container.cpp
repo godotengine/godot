@@ -246,7 +246,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 		} break;
 		// misc types
-		case Variant::_RID:
+		case Variant::RID:
 		case Variant::OBJECT: {
 			return _pack(Variant(), tmpdata, string_cache);
 		} break;

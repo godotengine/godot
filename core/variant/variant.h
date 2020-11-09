@@ -97,7 +97,7 @@ public:
 		COLOR,
 		STRING_NAME,
 		NODE_PATH,
-		_RID,
+		RID,
 		OBJECT,
 		CALLABLE,
 		SIGNAL,
@@ -234,7 +234,7 @@ private:
 			false, //COLOR,
 			true, //STRING_NAME,
 			true, //NODE_PATH,
-			false, //_RID,
+			false, //RID,
 			true, //OBJECT,
 			true, //CALLABLE,
 			true, //SIGNAL,
@@ -325,7 +325,7 @@ public:
 
 	operator Color() const;
 	operator NodePath() const;
-	operator RID() const;
+	operator ::RID() const;
 
 	operator Object *() const;
 	operator Node *() const;
@@ -350,7 +350,7 @@ public:
 
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-	operator Vector<RID>() const;
+	operator Vector<::RID>() const;
 	operator Vector<Vector2>() const;
 
 	// some core type enums to convert to
@@ -397,7 +397,7 @@ public:
 	Variant(const Transform &p_transform);
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
-	Variant(const RID &p_rid);
+	Variant(const ::RID &p_rid);
 	Variant(const Object *p_object);
 	Variant(const Callable &p_callable);
 	Variant(const Signal &p_signal);
@@ -417,7 +417,7 @@ public:
 
 	Variant(const Vector<Variant> &p_array);
 	Variant(const Vector<StringName> &p_array);
-	Variant(const Vector<RID> &p_array); // helper
+	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
 
 	Variant(const IP_Address &p_address);

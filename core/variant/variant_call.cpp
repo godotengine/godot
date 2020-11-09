@@ -1219,7 +1219,7 @@ void Variant::_register_variant_methods() {
 
 	/* RID */
 
-	bind_method(RID, get_id, sarray(), varray());
+	bind_method(::RID, get_id, sarray(), varray());
 
 	/* NodePath */
 
