@@ -159,7 +159,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	a = p_alpha;
 
 	if (p_s == 0) {
-		// acp_hromatic (grey)
+		// Achromatic (grey)
 		r = g = b = p_v;
 		return;
 	}
@@ -489,6 +489,13 @@ Color Color::operator+(const Color &p_color) const {
 			a + p_color.a);
 }
 
+void Color::operator+=(const Color &p_color) {
+	r = r + p_color.r;
+	g = g + p_color.g;
+	b = b + p_color.b;
+	a = a + p_color.a;
+}
+
 Color Color::operator-(const Color &p_color) const {
 	return Color(
 			r - p_color.r,
@@ -512,12 +519,12 @@ Color Color::operator*(const Color &p_color) const {
 			a * p_color.a);
 }
 
-Color Color::operator*(real_t rvalue) const {
+Color Color::operator*(real_t p_rvalue) const {
 	return Color(
-			r * rvalue,
-			g * rvalue,
-			b * rvalue,
-			a * rvalue);
+			r * p_rvalue,
+			g * p_rvalue,
+			b * p_rvalue,
+			a * p_rvalue);
 }
 
 void Color::operator*=(const Color &p_color) {
@@ -527,11 +534,11 @@ void Color::operator*=(const Color &p_color) {
 	a = a * p_color.a;
 }
 
-void Color::operator*=(real_t rvalue) {
-	r = r * rvalue;
-	g = g * rvalue;
-	b = b * rvalue;
-	a = a * rvalue;
+void Color::operator*=(real_t p_rvalue) {
+	r = r * p_rvalue;
+	g = g * p_rvalue;
+	b = b * p_rvalue;
+	a = a * p_rvalue;
 }
 
 Color Color::operator/(const Color &p_color) const {
@@ -542,12 +549,12 @@ Color Color::operator/(const Color &p_color) const {
 			a / p_color.a);
 }
 
-Color Color::operator/(real_t rvalue) const {
+Color Color::operator/(real_t p_rvalue) const {
 	return Color(
-			r / rvalue,
-			g / rvalue,
-			b / rvalue,
-			a / rvalue);
+			r / p_rvalue,
+			g / p_rvalue,
+			b / p_rvalue,
+			a / p_rvalue);
 }
 
 void Color::operator/=(const Color &p_color) {
@@ -557,17 +564,17 @@ void Color::operator/=(const Color &p_color) {
 	a = a / p_color.a;
 }
 
-void Color::operator/=(real_t rvalue) {
-	if (rvalue == 0) {
+void Color::operator/=(real_t p_rvalue) {
+	if (p_rvalue == 0) {
 		r = 1.0;
 		g = 1.0;
 		b = 1.0;
 		a = 1.0;
 	} else {
-		r = r / rvalue;
-		g = g / rvalue;
-		b = b / rvalue;
-		a = a / rvalue;
+		r = r / p_rvalue;
+		g = g / p_rvalue;
+		b = b / p_rvalue;
+		a = a / p_rvalue;
 	}
 }
 
