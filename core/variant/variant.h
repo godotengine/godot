@@ -467,7 +467,7 @@ public:
 		return res;
 	}
 
-	Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
+	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
 	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
 	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 #ifdef PTRCALL_ENABLED

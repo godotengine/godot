@@ -569,11 +569,61 @@ void DocData::generate(bool p_basic_types) {
 		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
+		for (int j = 0; j < Variant::OP_AND; j++) { //showing above 'and' is pretty confusing and there are a lot of variations
+
+			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
+				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
+				if (rt != Variant::NIL) {
+					//has operator
+					MethodInfo mi;
+					mi.name = "operator " + Variant::get_operator_name(Variant::Operator(j));
+					mi.return_val.type = rt;
+					if (k != Variant::NIL) {
+						PropertyInfo arg;
+						arg.name = "right";
+						arg.type = Variant::Type(k);
+						mi.arguments.push_back(arg);
+					}
+					method_list.push_back(mi);
+				}
+			}
+		}
+
+		if (Variant::is_keyed(Variant::Type(i))) {
+			MethodInfo mi;
+			mi.name = "operator []";
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+
+			PropertyInfo arg;
+			arg.name = "key";
+			arg.type = Variant::NIL;
+			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
+		} else if (Variant::has_indexing(Variant::Type(i))) {
+			MethodInfo mi;
+			mi.name = "operator []";
+			mi.return_val.type = Variant::get_indexed_element_type(Variant::Type(i));
+			PropertyInfo arg;
+			arg.name = "index";
+			arg.type = Variant::INT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
+		}
+
 		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
 			MethodInfo &mi = E->get();
 			MethodDoc method;
 
 			method.name = mi.name;
+			if (method.name == cname) {
+				method.qualifiers = "constructor";
+			} else if (method.name.begins_with("operator")) {
+				method.qualifiers = "operator";
+			}
 
 			for (int j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
