@@ -45,9 +45,6 @@ struct Color {
 		float components[4] = { 0, 0, 0, 1.0 };
 	};
 
-	bool operator==(const Color &p_color) const { return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a); }
-	bool operator!=(const Color &p_color) const { return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a); }
-
 	uint32_t to_rgba32() const;
 	uint32_t to_argb32() const;
 	uint32_t to_abgr32() const;
@@ -59,34 +56,36 @@ struct Color {
 	float get_v() const;
 	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
 
-	_FORCE_INLINE_ float &operator[](int idx) {
-		return components[idx];
+	_FORCE_INLINE_ float &operator[](int p_idx) {
+		return components[p_idx];
 	}
-	_FORCE_INLINE_ const float &operator[](int idx) const {
-		return components[idx];
+	_FORCE_INLINE_ const float &operator[](int p_idx) const {
+		return components[p_idx];
+	}
+
+	bool operator==(const Color &p_color) const {
+		return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a);
+	}
+	bool operator!=(const Color &p_color) const {
+		return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a);
 	}
 
 	Color operator+(const Color &p_color) const;
-	_FORCE_INLINE_ void operator+=(const Color &p_color) {
-		r = r + p_color.r;
-		g = g + p_color.g;
-		b = b + p_color.b;
-		a = a + p_color.a;
-	}
+	void operator+=(const Color &p_color);
 
 	Color operator-() const;
 	Color operator-(const Color &p_color) const;
 	void operator-=(const Color &p_color);
 
 	Color operator*(const Color &p_color) const;
-	Color operator*(real_t rvalue) const;
+	Color operator*(real_t p_rvalue) const;
 	void operator*=(const Color &p_color);
-	void operator*=(real_t rvalue);
+	void operator*=(real_t p_rvalue);
 
 	Color operator/(const Color &p_color) const;
-	Color operator/(real_t rvalue) const;
+	Color operator/(real_t p_rvalue) const;
 	void operator/=(const Color &p_color);
-	void operator/=(real_t rvalue);
+	void operator/=(real_t p_rvalue);
 
 	bool is_equal_approx(const Color &p_color) const;
 
@@ -123,18 +122,15 @@ struct Color {
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
-		//const float Emax = 31.0f;
 		const float N = 9.0f;
 
-		float sharedexp = 65408.000f; //(( pow2to9  - 1.0f)/ pow2to9)*powf( 2.0f, 31.0f - 15.0f);
+		float sharedexp = 65408.000f; // Result of: ((pow2to9 - 1.0f) / pow2to9) * powf(2.0f, 31.0f - 15.0f)
 
 		float cRed = MAX(0.0f, MIN(sharedexp, r));
 		float cGreen = MAX(0.0f, MIN(sharedexp, g));
 		float cBlue = MAX(0.0f, MIN(sharedexp, b));
 
 		float cMax = MAX(cRed, MAX(cGreen, cBlue));
-
-		// expp = MAX(-B - 1, log2(maxc)) + 1 + B
 
 		float expp = MAX(-B - 1.0f, floor(Math::log(cMax) / Math_LN2)) + 1.0f + B;
 
@@ -196,19 +192,19 @@ struct Color {
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
 	operator String() const;
 
-	//for binder
+	// For the binder.
 	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_r8() const { return CLAMP(uint32_t(r * 255.0), 0, 255); }
+	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(r * 255.0, 0.0, 255.0)); }
 	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_g8() const { return CLAMP(uint32_t(g * 255.0), 0, 255); }
+	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(g * 255.0, 0.0, 255.0)); }
 	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_b8() const { return CLAMP(uint32_t(b * 255.0), 0, 255); }
+	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(b * 255.0, 0.0, 255.0)); }
 	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0); }
-	_FORCE_INLINE_ int32_t get_a8() const { return CLAMP(uint32_t(a * 255.0), 0, 255); }
+	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(a * 255.0, 0.0, 255.0)); }
 
-	_FORCE_INLINE_ void set_h(float h) { set_hsv(h, get_s(), get_v()); }
-	_FORCE_INLINE_ void set_s(float s) { set_hsv(get_h(), s, get_v()); }
-	_FORCE_INLINE_ void set_v(float v) { set_hsv(get_h(), get_s(), v); }
+	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v()); }
+	_FORCE_INLINE_ void set_s(float p_s) { set_hsv(get_h(), p_s, get_v()); }
+	_FORCE_INLINE_ void set_v(float p_v) { set_hsv(get_h(), get_s(), p_v); }
 
 	_FORCE_INLINE_ Color() {}
 
