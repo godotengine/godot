@@ -594,7 +594,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructorToArray<PackedByteArray>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt32Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedInt64Array>>(sarray("from"));
-	add_constructor<VariantConstructorToArray<PackedFloat64Array>>(sarray("from"));
+	add_constructor<VariantConstructorToArray<PackedFloat32Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedFloat64Array>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedStringArray>>(sarray("from"));
 	add_constructor<VariantConstructorToArray<PackedVector2Array>>(sarray("from"));
