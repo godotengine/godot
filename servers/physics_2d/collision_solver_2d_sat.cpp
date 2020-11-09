@@ -43,10 +43,6 @@ struct _CollectorCallback2D {
 
 	_FORCE_INLINE_ void call(const Vector2 &p_point_A, const Vector2 &p_point_B) {
 
-		/*
-		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-			return;
-		*/
 		if (swap)
 			callback(p_point_B, p_point_A, userdata);
 		else
@@ -119,14 +115,10 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 *p_points_
 		if (dvec[i].a) {
 			Vector2 a = p_points_A[dvec[i].idx];
 			Vector2 b = n.plane_project(dB, a);
-			if (n.dot(a) > n.dot(b) - CMP_EPSILON)
-				continue;
 			p_collector->call(a, b);
 		} else {
 			Vector2 b = p_points_B[dvec[i].idx];
 			Vector2 a = n.plane_project(dA, b);
-			if (n.dot(a) > n.dot(b) - CMP_EPSILON)
-				continue;
 			p_collector->call(a, b);
 		}
 	}
