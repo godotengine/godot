@@ -352,7 +352,6 @@ struct _RestCallbackData2D {
 	Vector2 best_contact;
 	Vector2 best_normal;
 	real_t best_len = 0;
-	real_t min_allowed_depth = 0;
 	Vector2 valid_dir;
 };
 
@@ -363,7 +362,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
 
-	if (len < rd->min_allowed_depth || len <= rd->best_len) {
+	if (len <= rd->best_len) {
 		return;
 	}
 
@@ -394,7 +393,6 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D &p_sh
 	int pair_count = space->broadphase->cull_aabb(aabb, space->intersection_query_results, Space2DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	_RestCallbackData2D rcd;
-	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
 	for (int pair_idx = 0; pair_idx < pair_count; pair_idx++) {
 
@@ -924,7 +922,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_xform, c
 		ugt.elements[2] += p_motion * unsafe;
 
 		_RestCallbackData2D rcd;
-		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
 		const Transform2D body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
 		const Shape2DSW *body_shape = p_body->get_shape(best_shape);
@@ -967,7 +964,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_xform, c
 
 			rcd.object = col_obj;
 			rcd.shape = shape_idx;
-			CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr, p_margin);
+			CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), col_obj->get_shape(shape_idx), col_obj_shape_xform, Vector2(), _rest_cbk_result, &rcd, nullptr);
 		}
 
 		ERR_FAIL_COND_V_MSG(rcd.best_len == 0, true, "Failed to extract collision information");
@@ -1169,7 +1166,6 @@ void Space2DSW::set_param(Physics2DServer::SpaceParameter p_param, real_t p_valu
 		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: body_angular_velocity_sleep_threshold = p_value; break;
 		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep = p_value; break;
 		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias = p_value; break;
-		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: test_motion_min_contact_depth = p_value; break;
 	}
 }
 
@@ -1184,7 +1180,6 @@ real_t Space2DSW::get_param(Physics2DServer::SpaceParameter p_param) const {
 		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: return body_angular_velocity_sleep_threshold;
 		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
 		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
-		case Physics2DServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: return test_motion_min_contact_depth;
 	}
 
 	ERR_FAIL_COND_V_MSG(true, 0, "Unknown space parameter");
