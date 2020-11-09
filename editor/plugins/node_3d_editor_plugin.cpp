@@ -6718,12 +6718,12 @@ void EditorNode3DGizmoPlugin::create_icon_material(const String &p_name, const R
 	materials[p_name] = icons;
 }
 
-void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard) {
+void EditorNode3DGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard, const Ref<Texture2D> &p_icon) {
 	Ref<StandardMaterial3D> handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
 	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
-	Ref<Texture2D> handle_t = Node3DEditor::get_singleton()->get_theme_icon("Editor3DHandle", "EditorIcons");
+	Ref<Texture2D> handle_t = p_icon != nullptr ? p_icon : Node3DEditor::get_singleton()->get_theme_icon("Editor3DHandle", "EditorIcons");
 	handle_material->set_point_size(handle_t->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));
@@ -6807,7 +6807,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_material", "name", "color", "billboard", "on_top", "use_vertex_color"), &EditorNode3DGizmoPlugin::create_material, DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_icon_material", "name", "texture", "on_top", "color"), &EditorNode3DGizmoPlugin::create_icon_material, DEFVAL(false), DEFVAL(Color(1, 1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("create_handle_material", "name", "billboard"), &EditorNode3DGizmoPlugin::create_handle_material, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_handle_material", "name", "billboard", "texture"), &EditorNode3DGizmoPlugin::create_handle_material, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_material", "name", "material"), &EditorNode3DGizmoPlugin::add_material);
 
 	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material); //, DEFVAL(Ref<EditorNode3DGizmo>()));
