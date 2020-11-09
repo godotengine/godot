@@ -39,12 +39,28 @@
 		<method name="Callable">
 			<return type="Callable">
 			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="method_name" type="StringName">
+			<description>
+				Constructs a null [Callable] with no object nor method bound.
+			</description>
+		</method>
+		<method name="Callable">
+			<return type="Callable">
+			</return>
+			<argument index="0" name="from" type="Callable">
 			</argument>
 			<description>
-				Creates a new [Callable] for the method called [code]method_name[/code] in the specified [code]object[/code].
+				Constructs a [Callable] as a copy of the given [Callable].
+			</description>
+		</method>
+		<method name="Callable">
+			<return type="Callable">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="method" type="StringName">
+			</argument>
+			<description>
+				Creates a new [Callable] for the method called [code]method[/code] in the specified [code]object[/code].
 			</description>
 		</method>
 		<method name="bind" qualifiers="vararg">

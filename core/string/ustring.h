@@ -433,10 +433,10 @@ public:
 	/**
 	 * The constructors must not depend on other overloads
 	 */
-	/*	String(char32_t p_char);*/
 
 	_FORCE_INLINE_ String() {}
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
+
 	String &operator=(const String &p_str) {
 		_cowdata._ref(p_str._cowdata);
 		return *this;

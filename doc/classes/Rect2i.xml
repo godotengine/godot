@@ -15,6 +15,31 @@
 		<method name="Rect2i">
 			<return type="Rect2i">
 			</return>
+			<description>
+				Constructs a default-initialized [Rect2i] with default (zero) values of [member position] and [member size].
+			</description>
+		</method>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="from" type="Rect2i">
+			</argument>
+			<description>
+				Constructs a [Rect2i] as a copy of the given [Rect2i].
+			</description>
+		</method>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+		<method name="Rect2i">
+			<return type="Rect2i">
+			</return>
 			<argument index="0" name="position" type="Vector2i">
 			</argument>
 			<argument index="1" name="size" type="Vector2i">
@@ -36,15 +61,6 @@
 			</argument>
 			<description>
 				Constructs a [Rect2i] by x, y, width, and height.
-			</description>
-		</method>
-		<method name="Rect2i">
-			<return type="Rect2i">
-			</return>
-			<argument index="0" name="from" type="Rect2">
-			</argument>
-			<description>
-				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
 			</description>
 		</method>
 		<method name="abs">

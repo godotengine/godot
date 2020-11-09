@@ -19,16 +19,17 @@
 		<method name="Transform">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="x_axis" type="Vector3">
-			</argument>
-			<argument index="1" name="y_axis" type="Vector3">
-			</argument>
-			<argument index="2" name="z_axis" type="Vector3">
-			</argument>
-			<argument index="3" name="origin" type="Vector3">
+			<description>
+				Constructs a default-initialized [Transform] set to [constant IDENTITY].
+			</description>
+		</method>
+		<method name="Transform">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="from" type="Transform">
 			</argument>
 			<description>
-				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs a [Transform] as a copy of the given [Transform].
 			</description>
 		</method>
 		<method name="Transform">
@@ -45,28 +46,16 @@
 		<method name="Transform">
 			<return type="Transform">
 			</return>
-			<argument index="0" name="from" type="Transform2D">
+			<argument index="0" name="x_axis" type="Vector3">
+			</argument>
+			<argument index="1" name="y_axis" type="Vector3">
+			</argument>
+			<argument index="2" name="z_axis" type="Vector3">
+			</argument>
+			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Constructs a Transform from a [Transform2D].
-			</description>
-		</method>
-		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
-			<description>
-				Constructs a Transform from a [Quat]. The origin will be [code]Vector3(0, 0, 0)[/code].
-			</description>
-		</method>
-		<method name="Transform">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
-			<description>
-				Constructs the Transform from a [Basis]. The origin will be Vector3(0, 0, 0).
+				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="affine_inverse">
