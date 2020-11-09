@@ -937,12 +937,194 @@ struct VariantInitializer<PackedColorArray> {
 };
 
 template <class T>
+struct VariantZeroAssigner {
+};
+
+template <>
+struct VariantZeroAssigner<bool> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_bool(v) = false; }
+};
+
+template <>
+struct VariantZeroAssigner<int64_t> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int(v) = 0; }
+};
+
+template <>
+struct VariantZeroAssigner<double> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float(v) = 0.0; }
+};
+
+template <>
+struct VariantZeroAssigner<float> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float(v) = 0.0; }
+};
+
+template <>
+struct VariantZeroAssigner<String> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<Vector2> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector2(v) = Vector2(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector2i> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector2i(v) = Vector2i(); }
+};
+
+template <>
+struct VariantZeroAssigner<Rect2> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_rect2(v) = Rect2(); }
+};
+
+template <>
+struct VariantZeroAssigner<Rect2i> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_rect2i(v) = Rect2i(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector3> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector3(v) = Vector3(); }
+};
+
+template <>
+struct VariantZeroAssigner<Vector3i> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector3i(v) = Vector3i(); }
+};
+
+template <>
+struct VariantZeroAssigner<Transform2D> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform2d(v) = Transform2D(); }
+};
+
+template <>
+struct VariantZeroAssigner<Plane> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_plane(v) = Plane(); }
+};
+
+template <>
+struct VariantZeroAssigner<Quat> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_quat(v) = Quat(); }
+};
+
+template <>
+struct VariantZeroAssigner<AABB> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_aabb(v) = AABB(); }
+};
+
+template <>
+struct VariantZeroAssigner<Basis> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_basis(v) = Basis(); }
+};
+
+template <>
+struct VariantZeroAssigner<Transform> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_transform(v) = Transform(); }
+};
+
+template <>
+struct VariantZeroAssigner<Color> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_color(v) = Color(); }
+};
+
+template <>
+struct VariantZeroAssigner<StringName> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<NodePath> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<::RID> {
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_rid(v) = RID(); }
+};
+
+template <>
+struct VariantZeroAssigner<Callable> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<Signal> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<Dictionary> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedByteArray> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedInt32Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedInt64Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedFloat32Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedFloat64Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedStringArray> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedVector2Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedVector3Array> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <>
+struct VariantZeroAssigner<PackedColorArray> {
+	static _FORCE_INLINE_ void zero(Variant *v) {}
+};
+
+template <class T>
 struct VariantTypeChanger {
 	static _FORCE_INLINE_ void change(Variant *v) {
 		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
 		}
+	}
+	static _FORCE_INLINE_ void change_and_reset(Variant *v) {
+		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
+			VariantInternal::clear(v);
+			VariantInitializer<T>::init(v);
+		}
+
+		VariantZeroAssigner<T>::zero(v);
 	}
 };
 
