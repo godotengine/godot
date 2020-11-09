@@ -109,7 +109,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Color";
 
 		} break;
-		case _RID: {
+		case RID: {
 			return "RID";
 		} break;
 		case OBJECT: {
@@ -342,7 +342,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 		} break;
 
-		case _RID: {
+		case RID: {
 			static const Type valid[] = {
 				OBJECT,
 				NIL
@@ -649,7 +649,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 		} break;
 
-		case _RID: {
+		case RID: {
 			static const Type valid[] = {
 				OBJECT,
 				NIL
@@ -891,8 +891,8 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Color *>(_data._mem) == Color();
 
 		} break;
-		case _RID: {
-			return *reinterpret_cast<const RID *>(_data._mem) == RID();
+		case RID: {
+			return *reinterpret_cast<const ::RID *>(_data._mem) == ::RID();
 		} break;
 		case OBJECT: {
 			return _get_obj().obj == nullptr;
@@ -1109,8 +1109,8 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, Color(*reinterpret_cast<const Color *>(p_variant._data._mem)));
 
 		} break;
-		case _RID: {
-			memnew_placement(_data._mem, RID(*reinterpret_cast<const RID *>(p_variant._data._mem)));
+		case RID: {
+			memnew_placement(_data._mem, ::RID(*reinterpret_cast<const ::RID *>(p_variant._data._mem)));
 		} break;
 		case OBJECT: {
 			memnew_placement(_data._mem, ObjData);
@@ -1311,9 +1311,11 @@ void Variant::_clear_internal() {
 			_get_obj().obj = nullptr;
 			_get_obj().id = ObjectID();
 		} break;
-		case _RID: {
+		case RID: {
 			// not much need probably
-			reinterpret_cast<RID *>(_data._mem)->~RID();
+			// Can't seem to use destructor + scoping operator, so hack.
+			typedef ::RID RID_Class;
+			reinterpret_cast<RID_Class *>(_data._mem)->~RID_Class();
 		} break;
 		case CALLABLE: {
 			reinterpret_cast<Callable *>(_data._mem)->~Callable();
@@ -1847,8 +1849,8 @@ String Variant::stringify(List<const void *> &stack) const {
 			const Signal &s = *reinterpret_cast<const Signal *>(_data._mem);
 			return s;
 		} break;
-		case _RID: {
-			const RID &s = *reinterpret_cast<const RID *>(_data._mem);
+		case RID: {
+			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
 			return "RID(" + itos(s.get_id()) + ")";
 		} break;
 		default: {
@@ -2039,25 +2041,25 @@ Variant::operator NodePath() const {
 	}
 }
 
-Variant::operator RID() const {
-	if (type == _RID) {
-		return *reinterpret_cast<const RID *>(_data._mem);
+Variant::operator ::RID() const {
+	if (type == RID) {
+		return *reinterpret_cast<const ::RID *>(_data._mem);
 	} else if (type == OBJECT && _get_obj().obj == nullptr) {
-		return RID();
+		return ::RID();
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, RID(), "Invalid pointer (object was freed).");
+			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, ::RID(), "Invalid pointer (object was freed).");
 		}
 #endif
 		Callable::CallError ce;
 		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
-		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::_RID) {
+		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::RID) {
 			return ret;
 		}
-		return RID();
+		return ::RID();
 	} else {
-		return RID();
+		return ::RID();
 	}
 }
 
@@ -2261,9 +2263,9 @@ Variant::operator Vector<Color>() const {
 
 /* helpers */
 
-Variant::operator Vector<RID>() const {
+Variant::operator Vector<::RID>() const {
 	Array va = operator Array();
-	Vector<RID> rids;
+	Vector<::RID> rids;
 	rids.resize(va.size());
 	for (int i = 0; i < rids.size(); i++) {
 		rids.write[i] = va[i];
@@ -2518,9 +2520,9 @@ Variant::Variant(const NodePath &p_node_path) {
 	memnew_placement(_data._mem, NodePath(p_node_path));
 }
 
-Variant::Variant(const RID &p_rid) {
-	type = _RID;
-	memnew_placement(_data._mem, RID(p_rid));
+Variant::Variant(const ::RID &p_rid) {
+	type = RID;
+	memnew_placement(_data._mem, ::RID(p_rid));
 }
 
 Variant::Variant(const Object *p_object) {
@@ -2578,7 +2580,7 @@ Variant::Variant(const Vector<Plane> &p_array) {
 	}
 }
 
-Variant::Variant(const Vector<RID> &p_array) {
+Variant::Variant(const Vector<::RID> &p_array) {
 	type = ARRAY;
 
 	Array *rid_array = memnew_placement(_data._mem, Array);
@@ -2751,8 +2753,8 @@ void Variant::operator=(const Variant &p_variant) {
 		case COLOR: {
 			*reinterpret_cast<Color *>(_data._mem) = *reinterpret_cast<const Color *>(p_variant._data._mem);
 		} break;
-		case _RID: {
-			*reinterpret_cast<RID *>(_data._mem) = *reinterpret_cast<const RID *>(p_variant._data._mem);
+		case RID: {
+			*reinterpret_cast<::RID *>(_data._mem) = *reinterpret_cast<const ::RID *>(p_variant._data._mem);
 		} break;
 		case OBJECT: {
 			if (_get_obj().id.is_reference()) {
@@ -2953,8 +2955,8 @@ uint32_t Variant::hash() const {
 			return hash_djb2_one_float(reinterpret_cast<const Color *>(_data._mem)->a, hash);
 
 		} break;
-		case _RID: {
-			return hash_djb2_one_64(reinterpret_cast<const RID *>(_data._mem)->get_id());
+		case RID: {
+			return hash_djb2_one_64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
 		} break;
 		case OBJECT: {
 			return hash_djb2_one_64(make_uint64_t(_get_obj().obj));

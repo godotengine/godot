@@ -83,8 +83,8 @@ public:
 	_FORCE_INLINE_ static const StringName *get_string_name(const Variant *v) { return reinterpret_cast<const StringName *>(v->_data._mem); }
 	_FORCE_INLINE_ static NodePath *get_node_path(Variant *v) { return reinterpret_cast<NodePath *>(v->_data._mem); }
 	_FORCE_INLINE_ static const NodePath *get_node_path(const Variant *v) { return reinterpret_cast<const NodePath *>(v->_data._mem); }
-	_FORCE_INLINE_ static RID *get_rid(Variant *v) { return reinterpret_cast<RID *>(v->_data._mem); }
-	_FORCE_INLINE_ static const RID *get_rid(const Variant *v) { return reinterpret_cast<const RID *>(v->_data._mem); }
+	_FORCE_INLINE_ static ::RID *get_rid(Variant *v) { return reinterpret_cast<::RID *>(v->_data._mem); }
+	_FORCE_INLINE_ static const ::RID *get_rid(const Variant *v) { return reinterpret_cast<const ::RID *>(v->_data._mem); }
 	_FORCE_INLINE_ static Callable *get_callable(Variant *v) { return reinterpret_cast<Callable *>(v->_data._mem); }
 	_FORCE_INLINE_ static const Callable *get_callable(const Variant *v) { return reinterpret_cast<const Callable *>(v->_data._mem); }
 	_FORCE_INLINE_ static Signal *get_signal(Variant *v) { return reinterpret_cast<Signal *>(v->_data._mem); }
@@ -405,9 +405,9 @@ struct VariantGetInternalPtr<NodePath> {
 };
 
 template <>
-struct VariantGetInternalPtr<RID> {
-	static RID *get_ptr(Variant *v) { return VariantInternal::get_rid(v); }
-	static const RID *get_ptr(const Variant *v) { return VariantInternal::get_rid(v); }
+struct VariantGetInternalPtr<::RID> {
+	static ::RID *get_ptr(Variant *v) { return VariantInternal::get_rid(v); }
+	static const ::RID *get_ptr(const Variant *v) { return VariantInternal::get_rid(v); }
 };
 
 template <>
@@ -632,9 +632,9 @@ struct VariantInternalAccessor<NodePath> {
 };
 
 template <>
-struct VariantInternalAccessor<RID> {
-	static _FORCE_INLINE_ const RID &get(const Variant *v) { return *VariantInternal::get_rid(v); }
-	static _FORCE_INLINE_ void set(Variant *v, const RID &p_value) { *VariantInternal::get_rid(v) = p_value; }
+struct VariantInternalAccessor<::RID> {
+	static _FORCE_INLINE_ const ::RID &get(const Variant *v) { return *VariantInternal::get_rid(v); }
+	static _FORCE_INLINE_ void set(Variant *v, const ::RID &p_value) { *VariantInternal::get_rid(v) = p_value; }
 };
 
 template <>
@@ -867,8 +867,8 @@ struct VariantInitializer<NodePath> {
 };
 
 template <>
-struct VariantInitializer<RID> {
-	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<RID>(v); }
+struct VariantInitializer<::RID> {
+	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<::RID>(v); }
 };
 
 template <>

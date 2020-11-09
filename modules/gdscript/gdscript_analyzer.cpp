@@ -2541,7 +2541,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING;
 								break;
 							// Don't support indexing, but we will check it later.
-							case Variant::_RID:
+							case Variant::RID:
 							case Variant::BOOL:
 							case Variant::CALLABLE:
 							case Variant::FLOAT:
@@ -2574,7 +2574,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 				switch (base_type.builtin_type) {
 					// Can't index at all.
-					case Variant::_RID:
+					case Variant::RID:
 					case Variant::BOOL:
 					case Variant::CALLABLE:
 					case Variant::FLOAT:

@@ -577,7 +577,7 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructor<NodePath, NodePath>>(sarray("from"));
 	add_constructor<VariantConstructor<NodePath, String>>(sarray("from"));
 
-	add_constructor<VariantConstructor<RID, RID>>(sarray("from"));
+	add_constructor<VariantConstructor<::RID, ::RID>>(sarray("from"));
 
 	add_constructor<VariantConstructorObject>(sarray("from"));
 	add_constructor<VariantConstructorNilObject>(sarray("from"));
@@ -654,7 +654,7 @@ void Variant::_register_variant_constructors() {
 	initialize_funcs[COLOR] = variant_initialize<Color>;
 	initialize_funcs[STRING_NAME] = variant_initialize<StringName>;
 	initialize_funcs[NODE_PATH] = variant_initialize<NodePath>;
-	initialize_funcs[_RID] = variant_initialize<RID>;
+	initialize_funcs[RID] = variant_initialize<::RID>;
 	initialize_funcs[OBJECT] = variant_initialize_obj;
 	initialize_funcs[CALLABLE] = variant_initialize<Callable>;
 	initialize_funcs[SIGNAL] = variant_initialize<Signal>;

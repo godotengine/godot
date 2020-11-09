@@ -1023,7 +1023,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::_RID)) {
+		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::RID)) {
 			return;
 		}
 	}

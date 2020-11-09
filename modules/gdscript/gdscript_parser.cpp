@@ -65,7 +65,7 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 		builtin_types["Basis"] = Variant::BASIS;
 		builtin_types["Transform"] = Variant::TRANSFORM;
 		builtin_types["Color"] = Variant::COLOR;
-		builtin_types["RID"] = Variant::_RID;
+		builtin_types["RID"] = Variant::RID;
 		builtin_types["Object"] = Variant::OBJECT;
 		builtin_types["StringName"] = Variant::STRING_NAME;
 		builtin_types["NodePath"] = Variant::NODE_PATH;
