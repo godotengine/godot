@@ -2441,6 +2441,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 			t.basis = t.basis * aabb_s;
 
 			VisualServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+			VisualServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
 		}
 
 		if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -4384,8 +4385,12 @@ SpatialEditor *SpatialEditor::singleton = NULL;
 
 SpatialEditorSelectedItem::~SpatialEditorSelectedItem() {
 
-	if (sbox_instance.is_valid())
+	if (sbox_instance.is_valid()) {
 		VisualServer::get_singleton()->free(sbox_instance);
+	}
+	if (sbox_instance_xray.is_valid()) {
+		VisualServer::get_singleton()->free(sbox_instance_xray);
+	}
 }
 
 void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
@@ -4471,44 +4476,74 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	SpatialEditorSelectedItem *si = memnew(SpatialEditorSelectedItem);
 
 	si->sp = sp;
-	si->sbox_instance = VisualServer::get_singleton()->instance_create2(selection_box->get_rid(), sp->get_world()->get_scenario());
-	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(si->sbox_instance, VS::SHADOW_CASTING_SETTING_OFF);
+	si->sbox_instance = VisualServer::get_singleton()->instance_create2(
+			selection_box->get_rid(),
+			sp->get_world()->get_scenario());
+	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance,
+			VS::SHADOW_CASTING_SETTING_OFF);
+	si->sbox_instance_xray = VisualServer::get_singleton()->instance_create2(
+			selection_box_xray->get_rid(),
+			sp->get_world()->get_scenario());
+	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(
+			si->sbox_instance_xray,
+			VS::SHADOW_CASTING_SETTING_OFF);
 
 	return si;
 }
 
-void SpatialEditor::_generate_selection_box() {
-
+void SpatialEditor::_generate_selection_boxes() {
+	// Use two AABBs to create the illusion of a slightly thicker line.
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
-	aabb.grow_by(aabb.get_longest_axis_size() / 20.0);
+	AABB aabb_offset(Vector3(), Vector3(1, 1, 1));
+	// Grow the bounding boxes slightly to avoid Z-fighting with the mesh's edges.
+	aabb.grow_by(0.005);
+	aabb_offset.grow_by(0.01);
 
+	// Create a x-ray (visible through solid surfaces) and standard version of the selection box.
+	// Both will be drawn at the same position, but with different opacity.
+	// This lets the user see where the selection is while still having a sense of depth.
 	Ref<SurfaceTool> st = memnew(SurfaceTool);
+	Ref<SurfaceTool> st_xray = memnew(SurfaceTool);
 
 	st->begin(Mesh::PRIMITIVE_LINES);
+	st_xray->begin(Mesh::PRIMITIVE_LINES);
 	for (int i = 0; i < 12; i++) {
 
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
 
-		st->add_color(Color(1.0, 1.0, 0.8, 0.8));
 		st->add_vertex(a);
-		st->add_color(Color(1.0, 1.0, 0.8, 0.4));
-		st->add_vertex(a.linear_interpolate(b, 0.2));
-
-		st->add_color(Color(1.0, 1.0, 0.8, 0.4));
-		st->add_vertex(a.linear_interpolate(b, 0.8));
-		st->add_color(Color(1.0, 1.0, 0.8, 0.8));
 		st->add_vertex(b);
+		st_xray->add_vertex(a);
+		st_xray->add_vertex(b);
+	}
+
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb_offset.get_edge(i, a, b);
+
+		st->add_vertex(a);
+		st->add_vertex(b);
+		st_xray->add_vertex(a);
+		st_xray->add_vertex(b);
 	}
 
 	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
 	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	mat->set_albedo(Color(1, 1, 1));
+	// Use a similar color to the 2D editor selection.
+	mat->set_albedo(Color(1, 0.5, 0));
 	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	st->set_material(mat);
 	selection_box = st->commit();
+
+	Ref<SpatialMaterial> mat_xray = memnew(SpatialMaterial);
+	mat_xray->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	mat_xray->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, true);
+	mat_xray->set_albedo(Color(1, 0.5, 0, 0.15));
+	mat_xray->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	st_xray->set_material(mat_xray);
+	selection_box_xray = st_xray->commit();
 }
 
 Dictionary SpatialEditor::get_state() const {
@@ -5482,7 +5517,7 @@ void SpatialEditor::_init_indicators() {
 		}
 	}
 
-	_generate_selection_box();
+	_generate_selection_boxes();
 }
 
 void SpatialEditor::_update_gizmos_menu() {
