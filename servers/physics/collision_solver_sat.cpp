@@ -324,7 +324,7 @@ public:
 		min_B -= (min_A + max_A) * 0.5;
 		max_B -= (min_A + max_A) * 0.5;
 
-		if (min_B > 0.0 || max_B < 0.0) {
+		if (min_B >= 0.0 || max_B <= 0.0) {
 			separator_axis = axis;
 			return false; // doesn't contain 0
 		}

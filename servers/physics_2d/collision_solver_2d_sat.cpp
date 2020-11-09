@@ -260,7 +260,7 @@ public:
 		real_t dmin = min_B - (min_A + max_A) * 0.5;
 		real_t dmax = max_B - (min_A + max_A) * 0.5;
 
-		if (dmin > 0.0 || dmax < 0.0) {
+		if (dmin >= 0.0 || dmax <= 0.0) {
 			if (callback && callback->sep_axis)
 				*callback->sep_axis = axis;
 #ifdef DEBUG_ENABLED
