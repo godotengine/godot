@@ -28,6 +28,22 @@
 		<method name="NodePath">
 			<return type="NodePath">
 			</return>
+			<description>
+				Constructs an empty [NodePath].
+			</description>
+		</method>
+		<method name="NodePath">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="from" type="NodePath">
+			</argument>
+			<description>
+				Constructs a [NodePath] as a copy of the given [NodePath].
+			</description>
+		</method>
+		<method name="NodePath">
+			<return type="NodePath">
+			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>

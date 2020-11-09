@@ -171,6 +171,22 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
+		<method name="Dictionary">
+			<return type="Dictionary">
+			</return>
+			<description>
+				Constructs an empty [Dictionary].
+			</description>
+		</method>
+		<method name="Dictionary">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="from" type="Dictionary">
+			</argument>
+			<description>
+				Constructs a [Dictionary] as a copy of the given [Dictionary].
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void">
 			</return>

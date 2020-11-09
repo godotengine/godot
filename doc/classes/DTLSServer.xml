@@ -132,7 +132,7 @@
 		                // Try to contact server
 		                Dtls.PutPacket("The Answer Is..42!".ToUTF8());
 		            }
-		            while (Dtls.GetAvailablePacketCount() > 0)
+		            while (Dtls.GetAvailablePacketCount() &gt; 0)
 		            {
 		                GD.Print("Connected: " + Dtls.GetPacket().GetStringFromUTF8());
 		                Connected = true;

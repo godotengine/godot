@@ -17,12 +17,17 @@
 		<method name="Vector2i">
 			<return type="Vector2i">
 			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
+			<description>
+				Constructs a default-initialized [Vector2i] with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="from" type="Vector2i">
 			</argument>
 			<description>
-				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
+				Constructs a [Vector2i] as a copy of the given [Vector2i].
 			</description>
 		</method>
 		<method name="Vector2i">
@@ -32,6 +37,17 @@
 			</argument>
 			<description>
 				Constructs a new [Vector2i] from [Vector2]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+		<method name="Vector2i">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+				Constructs a new [Vector2i] from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs">

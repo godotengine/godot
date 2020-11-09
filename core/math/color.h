@@ -209,13 +209,24 @@ struct Color {
 	_FORCE_INLINE_ Color() {}
 
 	/**
-	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0
+	 * RGBA construct parameters.
+	 * Alpha is not optional as otherwise we can't bind the RGB version for scripting.
 	 */
-	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a = 1.0) {
+	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b, float p_a) {
 		r = p_r;
 		g = p_g;
 		b = p_b;
 		a = p_a;
+	}
+
+	/**
+	 * RGB construct parameters.
+	 */
+	_FORCE_INLINE_ Color(float p_r, float p_g, float p_b) {
+		r = p_r;
+		g = p_g;
+		b = p_b;
+		a = 1.0;
 	}
 
 	/**

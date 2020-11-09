@@ -12,6 +12,22 @@
 		<method name="StringName">
 			<return type="StringName">
 			</return>
+			<description>
+				Constructs an empty [StringName].
+			</description>
+		</method>
+		<method name="StringName">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="from" type="StringName">
+			</argument>
+			<description>
+				Constructs a [StringName] as a copy of the given [StringName].
+			</description>
+		</method>
+		<method name="StringName">
+			<return type="StringName">
+			</return>
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>

@@ -94,10 +94,17 @@
 		<method name="bool">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="int">
+			<description>
+				Constructs a default-initialized [bool] set to [code]false[/code].
+			</description>
+		</method>
+		<method name="bool">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="bool">
 			</argument>
 			<description>
-				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
+				Constructs a [bool] as a copy of the given [bool].
 			</description>
 		</method>
 		<method name="bool">
@@ -112,11 +119,10 @@
 		<method name="bool">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
-				Cast a [String] value to a boolean value, this method will return [code]false[/code] if [code]""[/code] is passed in, and [code]true[/code] for all non-empty strings.
-				Examples: [code]bool("False")[/code] returns [code]true[/code], [code]bool("")[/code] returns [code]false[/code].
+				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
 			</description>
 		</method>
 	</methods>

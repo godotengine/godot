@@ -166,63 +166,60 @@
 		<constant name="OBJ_WEAKREF" value="50" enum="BuiltinFunc">
 			Create a [WeakRef] from the input.
 		</constant>
-		<constant name="FUNC_FUNCREF" value="51" enum="BuiltinFunc">
-			Create a [FuncRef] from the input.
-		</constant>
-		<constant name="TYPE_CONVERT" value="52" enum="BuiltinFunc">
+		<constant name="TYPE_CONVERT" value="51" enum="BuiltinFunc">
 			Convert between types.
 		</constant>
-		<constant name="TYPE_OF" value="53" enum="BuiltinFunc">
+		<constant name="TYPE_OF" value="52" enum="BuiltinFunc">
 			Return the type of the input as an integer. Check [enum Variant.Type] for the integers that might be returned.
 		</constant>
-		<constant name="TYPE_EXISTS" value="54" enum="BuiltinFunc">
+		<constant name="TYPE_EXISTS" value="53" enum="BuiltinFunc">
 			Checks if a type is registered in the [ClassDB].
 		</constant>
-		<constant name="TEXT_CHAR" value="55" enum="BuiltinFunc">
+		<constant name="TEXT_CHAR" value="54" enum="BuiltinFunc">
 			Return a character with the given ascii value.
 		</constant>
-		<constant name="TEXT_STR" value="56" enum="BuiltinFunc">
+		<constant name="TEXT_STR" value="55" enum="BuiltinFunc">
 			Convert the input to a string.
 		</constant>
-		<constant name="TEXT_PRINT" value="57" enum="BuiltinFunc">
+		<constant name="TEXT_PRINT" value="56" enum="BuiltinFunc">
 			Print the given string to the output window.
 		</constant>
-		<constant name="TEXT_PRINTERR" value="58" enum="BuiltinFunc">
+		<constant name="TEXT_PRINTERR" value="57" enum="BuiltinFunc">
 			Print the given string to the standard error output.
 		</constant>
-		<constant name="TEXT_PRINTRAW" value="59" enum="BuiltinFunc">
+		<constant name="TEXT_PRINTRAW" value="58" enum="BuiltinFunc">
 			Print the given string to the standard output, without adding a newline.
 		</constant>
-		<constant name="VAR_TO_STR" value="60" enum="BuiltinFunc">
+		<constant name="VAR_TO_STR" value="59" enum="BuiltinFunc">
 			Serialize a [Variant] to a string.
 		</constant>
-		<constant name="STR_TO_VAR" value="61" enum="BuiltinFunc">
+		<constant name="STR_TO_VAR" value="60" enum="BuiltinFunc">
 			Deserialize a [Variant] from a string serialized using [constant VAR_TO_STR].
 		</constant>
-		<constant name="VAR_TO_BYTES" value="62" enum="BuiltinFunc">
+		<constant name="VAR_TO_BYTES" value="61" enum="BuiltinFunc">
 			Serialize a [Variant] to a [PackedByteArray].
 		</constant>
-		<constant name="BYTES_TO_VAR" value="63" enum="BuiltinFunc">
+		<constant name="BYTES_TO_VAR" value="62" enum="BuiltinFunc">
 			Deserialize a [Variant] from a [PackedByteArray] serialized using [constant VAR_TO_BYTES].
 		</constant>
-		<constant name="COLORN" value="64" enum="BuiltinFunc">
+		<constant name="COLORN" value="63" enum="BuiltinFunc">
 			Return the [Color] with the given name and alpha ranging from 0 to 1.
 			[b]Note:[/b] Names are defined in [code]color_names.inc[/code].
 		</constant>
-		<constant name="MATH_SMOOTHSTEP" value="65" enum="BuiltinFunc">
+		<constant name="MATH_SMOOTHSTEP" value="64" enum="BuiltinFunc">
 			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [constant MATH_LERP], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
 			[codeblock]
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)
 			[/codeblock]
 		</constant>
-		<constant name="MATH_POSMOD" value="66" enum="BuiltinFunc">
+		<constant name="MATH_POSMOD" value="65" enum="BuiltinFunc">
 		</constant>
-		<constant name="MATH_LERP_ANGLE" value="67" enum="BuiltinFunc">
+		<constant name="MATH_LERP_ANGLE" value="66" enum="BuiltinFunc">
 		</constant>
-		<constant name="TEXT_ORD" value="68" enum="BuiltinFunc">
+		<constant name="TEXT_ORD" value="67" enum="BuiltinFunc">
 		</constant>
-		<constant name="FUNC_MAX" value="69" enum="BuiltinFunc">
+		<constant name="FUNC_MAX" value="68" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>

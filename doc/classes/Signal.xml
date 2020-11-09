@@ -11,12 +11,28 @@
 		<method name="Signal">
 			<return type="Signal">
 			</return>
-			<argument index="0" name="object" type="Object">
-			</argument>
-			<argument index="1" name="signal_name" type="StringName">
+			<description>
+				Constructs a null [Signal] with no object nor signal name bound.
+			</description>
+		</method>
+		<method name="Signal">
+			<return type="Signal">
+			</return>
+			<argument index="0" name="from" type="Signal">
 			</argument>
 			<description>
-				Creates a new signal named [code]signal_name[/code] in the given object.
+				Constructs a [Signal] as a copy of the given [Signal].
+			</description>
+		</method>
+		<method name="Signal">
+			<return type="Signal">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<argument index="1" name="signal" type="StringName">
+			</argument>
+			<description>
+				Creates a new [Signal] with the name [code]signal[/code] in the specified [code]object[/code].
 			</description>
 		</method>
 		<method name="connect">

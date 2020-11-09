@@ -106,9 +106,10 @@ public:
 
 	operator String() const;
 
-	Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz);
-	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
 	Transform() {}
+	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
+	Transform(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin);
+	Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz);
 };
 
 _FORCE_INLINE_ Vector3 Transform::xform(const Vector3 &p_vector) const {

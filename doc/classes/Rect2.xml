@@ -17,6 +17,31 @@
 		<method name="Rect2">
 			<return type="Rect2">
 			</return>
+			<description>
+				Constructs a default-initialized [Rect2] with default (zero) values of [member position] and [member size].
+			</description>
+		</method>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="from" type="Rect2">
+			</argument>
+			<description>
+				Constructs a [Rect2] as a copy of the given [Rect2].
+			</description>
+		</method>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="from" type="Rect2i">
+			</argument>
+			<description>
+				Constructs a [Rect2] from a [Rect2i].
+			</description>
+		</method>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<argument index="1" name="size" type="Vector2">
@@ -38,15 +63,6 @@
 			</argument>
 			<description>
 				Constructs a [Rect2] by x, y, width, and height.
-			</description>
-		</method>
-		<method name="Rect2">
-			<return type="Rect2">
-			</return>
-			<argument index="0" name="from" type="Rect2i">
-			</argument>
-			<description>
-				Constructs a [Rect2] from a [Rect2i].
 			</description>
 		</method>
 		<method name="abs">

@@ -20,6 +20,22 @@
 		<method name="Vector3">
 			<return type="Vector3">
 			</return>
+			<description>
+				Constructs a default-initialized [Vector3] with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Vector3">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<description>
+				Constructs a [Vector3] as a copy of the given [Vector3].
+			</description>
+		</method>
+		<method name="Vector3">
+			<return type="Vector3">
+			</return>
 			<argument index="0" name="from" type="Vector3i">
 			</argument>
 			<description>

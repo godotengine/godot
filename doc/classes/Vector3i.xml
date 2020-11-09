@@ -17,14 +17,17 @@
 		<method name="Vector3i">
 			<return type="Vector3i">
 			</return>
-			<argument index="0" name="x" type="int">
-			</argument>
-			<argument index="1" name="y" type="int">
-			</argument>
-			<argument index="2" name="z" type="int">
+			<description>
+				Constructs a default-initialized [Vector3i] with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Vector3i">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="from" type="Vector3i">
 			</argument>
 			<description>
-				Returns a [Vector3i] with the given components.
+				Constructs a [Vector3i] as a copy of the given [Vector3i].
 			</description>
 		</method>
 		<method name="Vector3i">
@@ -34,6 +37,19 @@
 			</argument>
 			<description>
 				Constructs a new [Vector3i] from [Vector3]. The floating point coordinates will be truncated.
+			</description>
+		</method>
+		<method name="Vector3i">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="z" type="int">
+			</argument>
+			<description>
+				Returns a [Vector3i] with the given components.
 			</description>
 		</method>
 		<method name="abs">
