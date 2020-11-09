@@ -2385,7 +2385,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			r_dst = a;
 		}
 			return;
-		case _RID: {
+		case RID: {
 			r_dst = a;
 		}
 			return;

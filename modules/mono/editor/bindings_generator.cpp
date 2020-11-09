@@ -2426,7 +2426,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
-		case Variant::_RID:
+		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
 		case Variant::PACKED_BYTE_ARRAY:
@@ -2979,7 +2979,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "new %s()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
-		case Variant::_RID:
+		case Variant::RID:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_RID) + "'.");
 

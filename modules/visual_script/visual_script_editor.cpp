@@ -388,7 +388,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::NODE_PATH:
 				color = Color(0.41, 0.58, 0.93);
 				break;
-			case Variant::_RID:
+			case Variant::RID:
 				color = Color(0.41, 0.93, 0.6);
 				break;
 			case Variant::OBJECT:
@@ -494,7 +494,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::NODE_PATH:
 				color = Color(0.41, 0.58, 0.93);
 				break;
-			case Variant::_RID:
+			case Variant::RID:
 				color = Color(0.17, 0.9, 0.45);
 				break;
 			case Variant::OBJECT:
