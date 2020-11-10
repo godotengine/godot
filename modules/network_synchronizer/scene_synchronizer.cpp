@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  scene_synchronizer.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -39,6 +39,14 @@
 #include "scene_diff.h"
 
 void SceneSynchronizer::_bind_methods() {
+	BIND_CONSTANT(CHANGE)
+	BIND_CONSTANT(SYNC_RECOVER)
+	BIND_CONSTANT(SYNC_RESET)
+	BIND_CONSTANT(SYNC_REWIND)
+	BIND_CONSTANT(SYNC_END)
+	BIND_CONSTANT(DEFAULT)
+	BIND_CONSTANT(ALWAYS)
+
 	ClassDB::bind_method(D_METHOD("reset_synchronizer_mode"), &SceneSynchronizer::reset_synchronizer_mode);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneSynchronizer::clear);
 
@@ -48,12 +56,14 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_comparison_float_tolerance", "tolerance"), &SceneSynchronizer::set_comparison_float_tolerance);
 	ClassDB::bind_method(D_METHOD("get_comparison_float_tolerance"), &SceneSynchronizer::get_comparison_float_tolerance);
 
-	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify", "skip_rewinding"), &SceneSynchronizer::register_variable, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify", "flags"), &SceneSynchronizer::register_variable, DEFVAL(StringName()), DEFVAL(NetEventFlag::DEFAULT));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneSynchronizer::unregister_variable);
+
+	ClassDB::bind_method(D_METHOD("set_skip_rewinding", "node", "variable", "skip_rewinding"), &SceneSynchronizer::set_skip_rewinding);
 
 	ClassDB::bind_method(D_METHOD("get_changed_event_name", "variable"), &SceneSynchronizer::get_changed_event_name);
 
-	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "method"), &SceneSynchronizer::track_variable_changes);
+	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "method", "flags"), &SceneSynchronizer::track_variable_changes, DEFVAL(NetEventFlag::DEFAULT));
 	ClassDB::bind_method(D_METHOD("untrack_variable_changes", "node", "variable", "method"), &SceneSynchronizer::untrack_variable_changes);
 
 	ClassDB::bind_method(D_METHOD("set_node_as_controlled_by", "node", "controller"), &SceneSynchronizer::set_node_as_controlled_by);
@@ -161,7 +171,7 @@ real_t SceneSynchronizer::get_comparison_float_tolerance() const {
 	return comparison_float_tolerance;
 }
 
-void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, bool p_skip_rewinding) {
+void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, NetEventFlag p_flags) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
@@ -177,11 +187,10 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 						var_id,
 						p_variable,
 						old_val,
-						p_skip_rewinding,
+						false,
 						true));
 	} else {
 		NetUtility::VarData *ptr = node_data->vars.ptrw();
-		ptr[id].skip_rewinding = p_skip_rewinding;
 		ptr[id].enabled = true;
 	}
 
@@ -191,7 +200,7 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 	}
 
 	if (p_on_change_notify != StringName()) {
-		track_variable_changes(p_node, p_variable, p_on_change_notify);
+		track_variable_changes(p_node, p_variable, p_on_change_notify, p_flags);
 	}
 
 	synchronizer->on_variable_added(node_data, p_variable);
@@ -218,11 +227,24 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 	nd->vars.write[index].enabled = false;
 }
 
+void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding) {
+	ERR_FAIL_COND(p_node == nullptr);
+	ERR_FAIL_COND(p_variable == StringName());
+
+	NetUtility::NodeData *nd = get_node_data(p_node->get_instance_id());
+	ERR_FAIL_COND(nd == nullptr);
+
+	const int64_t index = nd->vars.find(p_variable);
+	ERR_FAIL_COND(index == -1);
+
+	nd->vars.write[index].skip_rewinding = p_skip_rewinding;
+}
+
 String SceneSynchronizer::get_changed_event_name(StringName p_variable) {
 	return "variable_" + p_variable + "_changed";
 }
 
-void SceneSynchronizer::track_variable_changes(Node *p_node, StringName p_variable, StringName p_method) {
+void SceneSynchronizer::track_variable_changes(Node *p_node, StringName p_variable, StringName p_method, NetEventFlag p_flags) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 	ERR_FAIL_COND(p_method == StringName());

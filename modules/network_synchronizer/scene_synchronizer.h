@@ -123,6 +123,32 @@ public:
 		SYNCHRONIZER_TYPE_SERVER
 	};
 
+	/// Flags used to control when an event is executed.
+	enum NetEventFlag {
+		/// Called at the end of the frame, if the value is different.
+		/// It's also called when a variable is modified by the
+		/// `apply_scene_changes` function.
+		CHANGE = 1 << 0,
+
+		/// Called when the variable is modified by the `NetworkSynchronizer`
+		/// because not in sync with the server.
+		SYNC_RECOVER = 1 << 1,
+
+		/// Called when the variable is modified by the `NetworkSynchronizer`
+		/// because it's preparing the node for the rewinding.
+		SYNC_RESET = 1 << 2,
+
+		/// Called when the variable is modified during the rewinding phase.
+		SYNC_REWIND = 1 << 3,
+
+		/// Called at the end of the recovering phase, if the value was modified
+		/// during the rewinding.
+		SYNC_END = 1 << 4,
+
+		DEFAULT = CHANGE | SYNC_END,
+		ALWAYS = CHANGE | SYNC_RECOVER | SYNC_RESET | SYNC_REWIND | SYNC_END
+	};
+
 private:
 	real_t server_notify_state_interval = 1.0;
 	real_t comparison_float_tolerance = 0.001;
@@ -166,12 +192,14 @@ public:
 	void set_comparison_float_tolerance(real_t p_tolerance);
 	real_t get_comparison_float_tolerance() const;
 
-	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), bool p_skip_rewinding = false);
+	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
 	void unregister_variable(Node *p_node, StringName p_variable);
+
+	void set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding);
 
 	String get_changed_event_name(StringName p_variable);
 
-	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method, NetEventFlag p_flags = NetEventFlag::DEFAULT);
 	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 
 	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
@@ -335,5 +363,7 @@ private:
 
 	void notify_server_full_snapshot_is_needed();
 };
+
+VARIANT_ENUM_CAST(SceneSynchronizer::NetEventFlag)
 
 #endif
