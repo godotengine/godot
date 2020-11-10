@@ -1029,8 +1029,9 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 }
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
-	if (p_pos != -1)
+	if (p_pos != -1){
 		timeline_position = p_pos;
+	}
 
 	if (!is_visible_in_tree()) {
 		return;
