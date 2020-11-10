@@ -569,12 +569,15 @@ void DocData::generate(bool p_basic_types) {
 		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
-		for (int j = 0; j < Variant::OP_AND; j++) { //showing above 'and' is pretty confusing and there are a lot of variations
-
+		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
 			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
 				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
-				if (rt != Variant::NIL) {
-					//has operator
+				if (rt != Variant::NIL) { // Has operator.
+					// Skip String % operator as it's registered separately for each Variant arg type,
+					// we'll add it manually below.
+					if (i == Variant::STRING && Variant::Operator(j) == Variant::OP_MODULE) {
+						continue;
+					}
 					MethodInfo mi;
 					mi.name = "operator " + Variant::get_operator_name(Variant::Operator(j));
 					mi.return_val.type = rt;
@@ -587,6 +590,21 @@ void DocData::generate(bool p_basic_types) {
 					method_list.push_back(mi);
 				}
 			}
+		}
+
+		if (i == Variant::STRING) {
+			// We skipped % operator above, and we register it manually once for Variant arg type here.
+			MethodInfo mi;
+			mi.name = "operator %";
+			mi.return_val.type = Variant::STRING;
+
+			PropertyInfo arg;
+			arg.name = "right";
+			arg.type = Variant::NIL;
+			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
 		}
 
 		if (Variant::is_keyed(Variant::Type(i))) {
@@ -1147,7 +1165,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 			}
 
-			_write_string(f, 2, "<method name=\"" + m.name + "\"" + qualifiers + ">");
+			_write_string(f, 2, "<method name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
 
 			if (m.return_type != "") {
 				String enum_text;

@@ -1042,6 +1042,8 @@ def make_footer():  # type: () -> str
         ".. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`\n"
         ".. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`\n"
         ".. |vararg| replace:: :abbr:`vararg (This method accepts any number of arguments after the ones described here.)`\n"
+        ".. |constructor| replace:: :abbr:`constructor (This method is used to construct a type.)`\n"
+        ".. |operator| replace:: :abbr:`operator (This method describes a valid operator to use with this type as left-hand operand.)`\n"
     )
     # fmt: on
 
