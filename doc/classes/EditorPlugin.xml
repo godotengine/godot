@@ -211,7 +211,8 @@
 			</argument>
 			<description>
 				Called by the engine when the 2D editor's viewport is updated. Use the [code]overlay[/code] [Control] for drawing. You can update the viewport manually by calling [method update_overlays].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func forward_canvas_draw_over_viewport(overlay):
 				    # Draw a circle at cursor position.
 				    overlay.draw_circle(overlay.get_local_mouse_position(), 64)
@@ -220,7 +221,27 @@
 				    if event is InputEventMouseMotion:
 				        # Redraw viewport when cursor is moved.
 				        update_overlays()
-				[/codeblock]
+				        return true
+				    return false
+				[/gdscript]
+				[csharp]
+				public override void ForwardCanvasDrawOverViewport(Godot.Control overlay)
+				{
+				    // Draw a circle at cursor position.
+				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
+				}
+
+				public override bool ForwardCanvasGuiInput(InputEvent @event)
+				{
+				    if (@event is InputEventMouseMotion)
+				    {
+				        // Redraw viewport when cursor is moved.
+				        UpdateOverlays();
+				        return true;
+				    }
+				    return false;
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="forward_canvas_force_draw_over_viewport" qualifiers="virtual">
