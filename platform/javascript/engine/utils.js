@@ -4,6 +4,8 @@ var Utils = {
 		function rw(path) {
 			if (path.endsWith('.worker.js')) {
 				return execName + '.worker.js';
+			} else if (path.endsWith('.audio.worklet.js')) {
+				return execName + '.audio.worklet.js';
 			} else if (path.endsWith('.js')) {
 				return execName + '.js';
 			} else if (path.endsWith('.wasm')) {
