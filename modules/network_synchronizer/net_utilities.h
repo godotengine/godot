@@ -56,6 +56,7 @@
 #endif
 
 typedef ObjectID ControllerID;
+typedef uint32_t NetNodeId;
 
 namespace NetUtility {
 

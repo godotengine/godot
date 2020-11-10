@@ -162,14 +162,20 @@ private:
 	bool peer_dirty = false;
 	OAHashMap<int, NetUtility::PeerData> peer_data;
 
-	uint32_t node_counter = 1;
-	bool generate_id = false; // TODO The id generator in this way is bad. Please make sure to regenerate all the ids only on server. Most important, each time a new reset is executed the id must be regenerated so also clients can become servers.
+	bool generate_id = false;
+	
 	// All possible registered nodes.
 	LocalVector<Ref<NetUtility::NodeData>> node_data;
+
+	// All registered nodes, that have the NetworkNodeId assigned, organized per
+	// NetworkNodeId.
+	LocalVector<Ref<NetUtility::NodeData> > organized_node_data;
+
 	// Controller nodes.
-	LocalVector<Ref<NetUtility::NodeData>> controllers_node_data;
-	// Global nodes.
-	LocalVector<Ref<NetUtility::NodeData>> global_nodes_node_data;
+	LocalVector<Ref<NetUtility::NodeData> > node_data_controllers;
+	// Global nodes. TODO can I remove this?
+	LocalVector<Ref<NetUtility::NodeData> > node_data_scene;
+
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
@@ -233,8 +239,15 @@ public:
 	void update_peers();
 
 private:
-	NetUtility::NodeData *get_node_data(ObjectID p_object_id);
-	uint32_t find_global_node(ObjectID p_object_id) const;
+	/// This function is slow, but allow to take the node data even if the
+	/// `NetNodeId` is not yet assigned.
+	NetUtility::NodeData *find_node_data(ObjectID p_object_id);
+
+	/// This function is super fast, but only nodes with a `NetNodeId` assigned
+	/// can be returned.
+	NetUtility::NodeData *get_node_data(NetNodeId p_id);
+
+	// TODO Can I remove this?
 	NetUtility::NodeData *get_controller_node_data(ControllerID p_controller_id);
 
 	void process();
@@ -247,7 +260,11 @@ private:
 	// previous one and emits a signal.
 	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
+	/// Register a new node and returns its `NodeData`.
 	NetUtility::NodeData *register_node(Node *p_node);
+
+	/// Add node data and generates the `NetNodeId` if allowed.
+	void add_node_data(Ref<NetUtility::NodeData> p_node_data);
 
 public:
 	// Returns true when the vectors are the same.
