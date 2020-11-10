@@ -11,14 +11,14 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
-		<method name="PackedStringArray">
+		<method name="PackedStringArray" qualifiers="constructor">
 			<return type="PackedStringArray">
 			</return>
 			<description>
 				Constructs an empty [PackedStringArray].
 			</description>
 		</method>
-		<method name="PackedStringArray">
+		<method name="PackedStringArray" qualifiers="constructor">
 			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="from" type="PackedStringArray">
@@ -27,7 +27,7 @@
 				Constructs a [PackedStringArray] as a copy of the given [PackedStringArray].
 			</description>
 		</method>
-		<method name="PackedStringArray">
+		<method name="PackedStringArray" qualifiers="constructor">
 			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -86,6 +86,38 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedStringArray">
+			</return>
+			<argument index="0" name="right" type="PackedStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedStringArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="String">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

@@ -13,14 +13,14 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<description>
 				Constructs a default-initialized quaternion with all components set to [code]0[/code].
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="from" type="Quat">
@@ -29,7 +29,7 @@
 				Constructs a [Quat] as a copy of the given [Quat].
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="arc_from" type="Vector3">
@@ -39,7 +39,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
@@ -50,7 +50,7 @@
 				Constructs a quaternion that will rotate around the given axis by the specified angle. The axis must be a normalized vector.
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="euler" type="Vector3">
@@ -59,7 +59,7 @@
 				Constructs a quaternion that will perform a rotation specified by Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last), given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="from" type="Basis">
@@ -68,7 +68,7 @@
 				Constructs a quaternion from the given [Basis].
 			</description>
 		</method>
-		<method name="Quat">
+		<method name="Quat" qualifiers="constructor">
 			<return type="Quat">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -156,6 +156,98 @@
 			</return>
 			<description>
 				Returns a copy of the quaternion, normalized to unit length.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="right" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Quat">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Quat">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="slerp">
