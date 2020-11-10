@@ -118,6 +118,12 @@ bool InputMap::has_action(const StringName &p_action) const {
 	return input_map.has(p_action);
 }
 
+float InputMap::action_get_deadzone(const StringName &p_action) {
+	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), 0.0f, "Request for nonexistent InputMap action '" + String(p_action) + "'.");
+
+	return input_map[p_action].deadzone;
+}
+
 void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone) {
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 
