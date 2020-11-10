@@ -13,6 +13,22 @@
 		<method name="PackedByteArray">
 			<return type="PackedByteArray">
 			</return>
+			<description>
+				Constructs an empty [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="from" type="PackedByteArray">
+			</argument>
+			<description>
+				Constructs a [PackedByteArray] as a copy of the given [PackedByteArray].
+			</description>
+		</method>
+		<method name="PackedByteArray">
+			<return type="PackedByteArray">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

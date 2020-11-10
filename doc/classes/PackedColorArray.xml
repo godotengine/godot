@@ -13,6 +13,22 @@
 		<method name="PackedColorArray">
 			<return type="PackedColorArray">
 			</return>
+			<description>
+				Constructs an empty [PackedColorArray].
+			</description>
+		</method>
+		<method name="PackedColorArray">
+			<return type="PackedColorArray">
+			</return>
+			<argument index="0" name="from" type="PackedColorArray">
+			</argument>
+			<description>
+				Constructs a [PackedColorArray] as a copy of the given [PackedColorArray].
+			</description>
+		</method>
+		<method name="PackedColorArray">
+			<return type="PackedColorArray">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

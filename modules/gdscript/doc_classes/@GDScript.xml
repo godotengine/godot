@@ -386,24 +386,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="funcref">
-			<return type="FuncRef">
-			</return>
-			<argument index="0" name="instance" type="Object">
-			</argument>
-			<argument index="1" name="funcname" type="String">
-			</argument>
-			<description>
-				Returns a reference to the specified function [code]funcname[/code] in the [code]instance[/code] node. As functions aren't first-class objects in GDscript, use [code]funcref[/code] to store a [FuncRef] in a variable and call it later.
-				[codeblock]
-				func foo():
-				    return("bar")
-
-				a = funcref(self, "foo")
-				print(a.call_func()) # Prints bar
-				[/codeblock]
-			</description>
-		</method>
 		<method name="get_stack">
 			<return type="Array">
 			</return>
@@ -921,35 +903,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="randf_range">
-			<return type="float">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<argument index="1" name="to" type="float">
-			</argument>
-			<description>
-				Random range, any floating point value between [code]from[/code] and [code]to[/code].
-				[codeblock]
-				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
-				[/codeblock]
-			</description>
-		</method>
-		<method name="randi_range">
-			<return type="int">
-			</return>
-			<argument index="0" name="from" type="int">
-			</argument>
-			<argument index="1" name="to" type="int">
-			</argument>
-			<description>
-				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
-				[codeblock]
-				print(randi_range(0, 1)) # Prints 0 or 1
-				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
-				[/codeblock]
-			</description>
-		</method>
 		<method name="rand_seed">
 			<return type="Array">
 			</return>
@@ -969,6 +922,20 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="randf_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				[codeblock]
+				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
+				[/codeblock]
+			</description>
+		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
@@ -979,6 +946,21 @@
 				randi() % 20      # Returns random integer between 0 and 19
 				randi() % 100     # Returns random integer between 0 and 99
 				randi() % 100 + 1 # Returns random integer between 1 and 100
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
+				[codeblock]
+				print(randi_range(0, 1)) # Prints 0 or 1
+				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
 				[/codeblock]
 			</description>
 		</method>

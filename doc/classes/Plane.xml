@@ -13,6 +13,22 @@
 		<method name="Plane">
 			<return type="Plane">
 			</return>
+			<description>
+				Constructs a default-initialized [Plane] with all components set to [code]0[/code].
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="from" type="Plane">
+			</argument>
+			<description>
+				Constructs a [Plane] as a copy of the given [Plane].
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
 			<argument index="0" name="a" type="float">
 			</argument>
 			<argument index="1" name="b" type="float">
@@ -28,25 +44,36 @@
 		<method name="Plane">
 			<return type="Plane">
 			</return>
-			<argument index="0" name="v1" type="Vector3">
-			</argument>
-			<argument index="1" name="v2" type="Vector3">
-			</argument>
-			<argument index="2" name="v3" type="Vector3">
-			</argument>
-			<description>
-				Creates a plane from the three points, given in clockwise order.
-			</description>
-		</method>
-		<method name="Plane">
-			<return type="Plane">
-			</return>
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<argument index="1" name="d" type="float">
 			</argument>
 			<description>
 				Creates a plane from the normal and the plane's distance to the origin.
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="normal" type="Vector3">
+			</argument>
+			<description>
+				Creates a plane from the given position and a plane normal.
+			</description>
+		</method>
+		<method name="Plane">
+			<return type="Plane">
+			</return>
+			<argument index="0" name="point1" type="Vector3">
+			</argument>
+			<argument index="1" name="point2" type="Vector3">
+			</argument>
+			<argument index="2" name="point3" type="Vector3">
+			</argument>
+			<description>
+				Creates a plane from the three points, given in clockwise order.
 			</description>
 		</method>
 		<method name="center">

@@ -13,6 +13,22 @@
 		<method name="PackedVector3Array">
 			<return type="PackedVector3Array">
 			</return>
+			<description>
+				Constructs an empty [PackedVector3Array].
+			</description>
+		</method>
+		<method name="PackedVector3Array">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="from" type="PackedVector3Array">
+			</argument>
+			<description>
+				Constructs a [PackedVector3Array] as a copy of the given [PackedVector3Array].
+			</description>
+		</method>
+		<method name="PackedVector3Array">
+			<return type="PackedVector3Array">
+			</return>
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>

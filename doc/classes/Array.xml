@@ -46,46 +46,35 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
+			<description>
+				Constructs an empty [Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="Array">
+			</argument>
+			<description>
+				Constructs an [Array] as a copy of the given [Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedByteArray">
+			</argument>
+			<description>
+				Constructs an array from a [PackedByteArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
 			<argument index="0" name="from" type="PackedColorArray">
 			</argument>
 			<description>
 				Constructs an array from a [PackedColorArray].
-			</description>
-		</method>
-		<method name="Array">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedVector3Array">
-			</argument>
-			<description>
-				Constructs an array from a [PackedVector3Array].
-			</description>
-		</method>
-		<method name="Array">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedVector2Array">
-			</argument>
-			<description>
-				Constructs an array from a [PackedVector2Array].
-			</description>
-		</method>
-		<method name="Array">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedStringArray">
-			</argument>
-			<description>
-				Constructs an array from a [PackedStringArray].
-			</description>
-		</method>
-		<method name="Array">
-			<return type="Array">
-			</return>
-			<argument index="0" name="from" type="PackedFloat64Array">
-			</argument>
-			<description>
-				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -100,10 +89,10 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PackedInt64Array">
+			<argument index="0" name="from" type="PackedFloat64Array">
 			</argument>
 			<description>
-				Constructs an array from a [PackedInt64Array].
+				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -118,10 +107,37 @@
 		<method name="Array">
 			<return type="Array">
 			</return>
-			<argument index="0" name="from" type="PackedByteArray">
+			<argument index="0" name="from" type="PackedInt64Array">
 			</argument>
 			<description>
-				Constructs an array from a [PackedByteArray].
+				Constructs an array from a [PackedInt64Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedStringArray">
+			</argument>
+			<description>
+				Constructs an array from a [PackedStringArray].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedVector2Array">
+			</argument>
+			<description>
+				Constructs an array from a [PackedVector2Array].
+			</description>
+		</method>
+		<method name="Array">
+			<return type="Array">
+			</return>
+			<argument index="0" name="from" type="PackedVector3Array">
+			</argument>
+			<description>
+				Constructs an array from a [PackedVector3Array].
 			</description>
 		</method>
 		<method name="append">
