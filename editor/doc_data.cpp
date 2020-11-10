@@ -736,6 +736,43 @@ void DocData::generate(bool p_basic_types) {
 			}
 			c.properties.push_back(pd);
 		}
+
+		List<StringName> builtin_funcs;
+		Variant::get_builtin_function_list(&builtin_funcs);
+		builtin_funcs.sort_custom<StringName::AlphCompare>();
+		for (List<StringName>::Element *E = builtin_funcs.front(); E; E = E->next()) {
+			MethodDoc md;
+			md.name = E->get();
+			//return
+			if (Variant::has_builtin_func_return_value(E->get())) {
+				PropertyInfo pi;
+				pi.type = Variant::get_builtin_func_return_type(E->get());
+				if (pi.type == Variant::NIL) {
+					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+				}
+				DocData::ArgumentDoc ad;
+				argument_doc_from_arginfo(ad, pi);
+				md.return_type = ad.type;
+			}
+
+			if (Variant::is_builtin_func_vararg(E->get())) {
+				md.qualifiers = "vararg";
+			} else {
+				for (int i = 0; i < Variant::get_builtin_func_argument_count(E->get()); i++) {
+					PropertyInfo pi;
+					pi.type = Variant::get_builtin_func_argument_type(E->get(), i);
+					pi.name = Variant::get_builtin_func_argument_name(E->get(), i);
+					if (pi.type == Variant::NIL) {
+						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+					}
+					DocData::ArgumentDoc ad;
+					argument_doc_from_arginfo(ad, pi);
+					md.arguments.push_back(ad);
+				}
+			}
+
+			c.methods.push_back(md);
+		}
 	}
 
 	// Built-in script reference.
