@@ -38,17 +38,23 @@ extern "C" {
 #include "stddef.h"
 
 extern int godot_audio_is_available();
-
-extern int godot_audio_init(int p_mix_rate, int p_latency);
-extern int godot_audio_create_processor(int p_buffer_length, int p_channel_count);
-
-extern void godot_audio_start(float *r_buffer_ptr, void (*p_start)(), void (*p_end)(), void (*p_input)(float p_sample));
+extern int godot_audio_init(int p_mix_rate, int p_latency, void (*_state_cb)(int), void (*_latency_cb)(float));
 extern void godot_audio_resume();
-
-extern float godot_audio_get_latency();
 
 extern void godot_audio_capture_start();
 extern void godot_audio_capture_stop();
+
+// Worklet
+typedef int32_t GodotAudioState[4];
+extern void godot_audio_worklet_create(int p_channels);
+extern void godot_audio_worklet_start(float *p_in_buf, int p_in_size, float *p_out_buf, int p_out_size, GodotAudioState p_state);
+extern void godot_audio_worklet_state_add(GodotAudioState p_state, int p_idx, int p_value);
+extern int godot_audio_worklet_state_get(GodotAudioState p_state, int p_idx);
+extern int godot_audio_worklet_state_wait(int32_t *p_state, int p_idx, int32_t p_expected, int p_timeout);
+
+// Script
+extern int godot_audio_script_create(int p_buffer_size, int p_channels);
+extern void godot_audio_script_start(float *p_in_buf, int p_in_size, float *p_out_buf, int p_out_size, void (*p_cb)());
 
 #ifdef __cplusplus
 }
