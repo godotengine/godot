@@ -73,9 +73,9 @@ public:
 
 	struct CollCbkData {
 
-		int max;
-		int amount;
-		Vector3 *ptr;
+		int max = 0;
+		int amount = 0;
+		Vector3 *ptr = nullptr;
 	};
 
 	static void _shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata);

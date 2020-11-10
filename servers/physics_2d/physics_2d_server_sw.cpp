@@ -173,7 +173,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 		if (cbk->valid_depth < 10e20) {
 			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
 					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
-				cbk->invalid_by_dir++;
+				cbk->invalid_by_dir = true;
 				return;
 			}
 		} else {
@@ -200,14 +200,12 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 			return;
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
-		cbk->passed++;
 
 	} else {
 
 		cbk->ptr[cbk->amount * 2 + 0] = p_point_A;
 		cbk->ptr[cbk->amount * 2 + 1] = p_point_B;
 		cbk->amount++;
-		cbk->passed++;
 	}
 }
 
@@ -226,7 +224,6 @@ bool Physics2DServerSW::shape_collide(RID p_shape_A, const Transform2D &p_xform_
 	CollCbkData cbk;
 	cbk.max = p_result_max;
 	cbk.amount = 0;
-	cbk.passed = 0;
 	cbk.ptr = r_results;
 
 	bool res = CollisionSolver2DSW::solve(shape_A, p_xform_A, p_motion_A, shape_B, p_xform_B, p_motion_B, _shape_col_cbk, &cbk);
