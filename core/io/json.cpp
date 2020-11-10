@@ -455,3 +455,35 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 
 	return err;
 }
+
+Error JSONParser::parse_string(const String &p_json_string) {
+	return JSON::parse(p_json_string, data, err_text, err_line);
+}
+String JSONParser::get_error_text() const {
+	return err_text;
+}
+int JSONParser::get_error_line() const {
+	return err_line;
+}
+Variant JSONParser::get_data() const {
+	return data;
+}
+
+Error JSONParser::decode_data(const Variant &p_data, const String &p_indent, bool p_sort_keys) {
+	string = JSON::print(p_data, p_indent, p_sort_keys);
+	data = p_data;
+	return OK;
+}
+
+String JSONParser::get_string() const {
+	return string;
+}
+
+void JSONParser::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("parse_string", "json_string"), &JSONParser::parse_string);
+	ClassDB::bind_method(D_METHOD("get_error_text"), &JSONParser::get_error_text);
+	ClassDB::bind_method(D_METHOD("get_error_line"), &JSONParser::get_error_line);
+	ClassDB::bind_method(D_METHOD("get_data"), &JSONParser::get_data);
+	ClassDB::bind_method(D_METHOD("decode_data", "data", "indent", "sort_keys"), &JSONParser::decode_data, DEFVAL(""), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_string"), &JSONParser::get_string);
+}

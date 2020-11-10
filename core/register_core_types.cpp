@@ -43,6 +43,7 @@
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
+#include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
@@ -197,6 +198,7 @@ void register_core_types() {
 	ClassDB::register_class<_Semaphore>();
 
 	ClassDB::register_class<XMLParser>();
+	ClassDB::register_class<JSONParser>();
 
 	ClassDB::register_class<ConfigFile>();
 

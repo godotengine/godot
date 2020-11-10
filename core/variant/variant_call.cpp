@@ -38,26 +38,6 @@
 #include "core/os/os.h"
 #include "core/templates/oa_hash_map.h"
 
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
-}
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
-	arr.push_back(p_str);
-}
-
-template <class... P>
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
-	arr.push_back(p_str);
-	sarray_add_str(arr, p_args...);
-}
-
-template <class... P>
-_FORCE_INLINE_ Vector<String> sarray(P... p_args) {
-	Vector<String> arr;
-	sarray_add_str(arr, p_args...);
-	return arr;
-}
-
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
