@@ -47,7 +47,14 @@ for name, path in env.module_list.items():
 
     # Some modules are not linked automatically but can be enabled optionally
     # on iOS, so we handle those specially.
-    if env["platform"] == "iphone" and name in ["arkit", "camera"]:
+    if env["platform"] == "iphone" and name in [
+        "arkit",
+        "camera",
+        "camera_iphone",
+        "gamecenter",
+        "inappstore",
+        "icloud",
+    ]:
         continue
 
     lib = env_modules.add_library("module_%s" % name, env.modules_sources)

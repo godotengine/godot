@@ -35,9 +35,6 @@
 
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "game_center.h"
-#include "icloud.h"
-#include "in_app_store.h"
 #include "ios.h"
 #include "joypad_iphone.h"
 #include "servers/audio_server.h"
@@ -48,6 +45,9 @@
 #include "platform/iphone/vulkan_context_iphone.h"
 #endif
 
+extern void godot_ios_plugins_initialize();
+extern void godot_ios_plugins_deinitialize();
+
 class OSIPhone : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
@@ -55,15 +55,6 @@ private:
 
 	AudioDriverCoreAudio audio_driver;
 
-#ifdef GAME_CENTER_ENABLED
-	GameCenter *game_center;
-#endif
-#ifdef STOREKIT_ENABLED
-	InAppStore *store_kit;
-#endif
-#ifdef ICLOUD_ENABLED
-	ICloud *icloud;
-#endif
 	iOS *ios;
 
 	JoypadIPhone *joypad_iphone;

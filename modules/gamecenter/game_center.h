@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  view_controller.h                                                    */
+/*  game_center.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#ifndef GAME_CENTER_H
+#define GAME_CENTER_H
 
-@class GodotView;
-@class GodotNativeVideoView;
+#include "core/object/class_db.h"
 
-@interface ViewController : UIViewController
+class GameCenter : public Object {
+	GDCLASS(GameCenter, Object);
 
-@property(nonatomic, readonly, strong) GodotView *godotView;
-@property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+	static GameCenter *instance;
+	static void _bind_methods();
 
-// MARK: Native Video Player
+	List<Variant> pending_events;
 
-- (BOOL)playVideoAtPath:(NSString *)filePath volume:(float)videoVolume audio:(NSString *)audioTrack subtitle:(NSString *)subtitleTrack;
+	bool authenticated;
 
-@end
+	void return_connect_error(const char *p_error_description);
+
+public:
+	Error authenticate();
+	bool is_authenticated();
+
+	Error post_score(Dictionary p_score);
+	Error award_achievement(Dictionary p_params);
+	void reset_achievements();
+	void request_achievements();
+	void request_achievement_descriptions();
+	Error show_game_center(Dictionary p_params);
+	Error request_identity_verification_signature();
+
+	void game_center_closed();
+
+	int get_pending_event_count();
+	Variant pop_pending_event();
+
+	static GameCenter *get_singleton();
+
+	GameCenter();
+	~GameCenter();
+};
+
+#endif

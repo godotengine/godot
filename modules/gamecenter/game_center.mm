@@ -28,28 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef GAME_CENTER_ENABLED
-
 #include "game_center.h"
+#import "platform/iphone/app_delegate.h"
 
-#ifdef __IPHONE_9_0
-
+#import "game_center_delegate.h"
+#import "platform/iphone/view_controller.h"
 #import <GameKit/GameKit.h>
-extern "C" {
-
-#else
-
-extern "C" {
-#import <GameKit/GameKit.h>
-
-#endif
-
-#import "app_delegate.h"
-};
-
-#import "view_controller.h"
 
 GameCenter *GameCenter::instance = NULL;
+GodotGameCenterDelegate *gameCenterDelegate = nil;
 
 void GameCenter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("authenticate"), &GameCenter::authenticate);
@@ -76,7 +63,7 @@ Error GameCenter::authenticate() {
 	GKLocalPlayer *player = [GKLocalPlayer localPlayer];
 	ERR_FAIL_COND_V(![player respondsToSelector:@selector(authenticateHandler)], ERR_UNAVAILABLE);
 
-	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
 
 	// This handler is called several times.  First when the view needs to be shown, then again
@@ -305,10 +292,10 @@ Error GameCenter::show_game_center(Dictionary p_params) {
 	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc] init];
 	ERR_FAIL_COND_V(!controller, FAILED);
 
-	ViewController *root_controller = (ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	UIViewController *root_controller = [[UIApplication sharedApplication] delegate].window.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
 
-	controller.gameCenterDelegate = root_controller;
+	controller.gameCenterDelegate = gameCenterDelegate;
 	controller.viewState = view_state;
 	if (view_state == GKGameCenterViewControllerStateLeaderboards) {
 		controller.leaderboardIdentifier = nil;
@@ -382,8 +369,12 @@ GameCenter::GameCenter() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
 	authenticated = false;
+
+	gameCenterDelegate = [[GodotGameCenterDelegate alloc] init];
 };
 
-GameCenter::~GameCenter() {}
-
-#endif
+GameCenter::~GameCenter() {
+	if (gameCenterDelegate) {
+		gameCenterDelegate = nil;
+	}
+}
