@@ -31,8 +31,8 @@
 #ifndef JSON_H
 #define JSON_H
 
+#include "core/object/reference.h"
 #include "core/variant/variant.h"
-
 class JSON {
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
@@ -73,6 +73,27 @@ class JSON {
 public:
 	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
 	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+};
+
+class JSONParser : public Reference {
+	GDCLASS(JSONParser, Reference);
+
+	Variant data;
+	String string;
+	String err_text;
+	int err_line = 0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Error parse_string(const String &p_json_string);
+	String get_error_text() const;
+	int get_error_line() const;
+	Variant get_data() const;
+
+	Error decode_data(const Variant &p_data, const String &p_indent = "", bool p_sort_keys = true);
+	String get_string() const;
 };
 
 #endif // JSON_H

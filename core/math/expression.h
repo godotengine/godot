@@ -36,87 +36,7 @@
 class Expression : public Reference {
 	GDCLASS(Expression, Reference);
 
-public:
-	enum BuiltinFunc {
-		MATH_SIN,
-		MATH_COS,
-		MATH_TAN,
-		MATH_SINH,
-		MATH_COSH,
-		MATH_TANH,
-		MATH_ASIN,
-		MATH_ACOS,
-		MATH_ATAN,
-		MATH_ATAN2,
-		MATH_SQRT,
-		MATH_FMOD,
-		MATH_FPOSMOD,
-		MATH_POSMOD,
-		MATH_FLOOR,
-		MATH_CEIL,
-		MATH_ROUND,
-		MATH_ABS,
-		MATH_SIGN,
-		MATH_POW,
-		MATH_LOG,
-		MATH_EXP,
-		MATH_ISNAN,
-		MATH_ISINF,
-		MATH_EASE,
-		MATH_STEP_DECIMALS,
-		MATH_STEPIFY,
-		MATH_LERP,
-		MATH_LERP_ANGLE,
-		MATH_INVERSE_LERP,
-		MATH_RANGE_LERP,
-		MATH_SMOOTHSTEP,
-		MATH_MOVE_TOWARD,
-		MATH_DECTIME,
-		MATH_RANDOMIZE,
-		MATH_RANDI,
-		MATH_RANDF,
-		MATH_RANDF_RANGE,
-		MATH_RANDI_RANGE,
-		MATH_SEED,
-		MATH_RANDSEED,
-		MATH_DEG2RAD,
-		MATH_RAD2DEG,
-		MATH_LINEAR2DB,
-		MATH_DB2LINEAR,
-		MATH_POLAR2CARTESIAN,
-		MATH_CARTESIAN2POLAR,
-		MATH_WRAP,
-		MATH_WRAPF,
-		LOGIC_MAX,
-		LOGIC_MIN,
-		LOGIC_CLAMP,
-		LOGIC_NEAREST_PO2,
-		OBJ_WEAKREF,
-		TYPE_CONVERT,
-		TYPE_OF,
-		TYPE_EXISTS,
-		TEXT_CHAR,
-		TEXT_ORD,
-		TEXT_STR,
-		TEXT_PRINT,
-		TEXT_PRINTERR,
-		TEXT_PRINTRAW,
-		VAR_TO_STR,
-		STR_TO_VAR,
-		VAR_TO_BYTES,
-		BYTES_TO_VAR,
-		COLORN,
-		FUNC_MAX
-	};
-
-	static int get_func_argument_count(BuiltinFunc p_func);
-	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str);
-	static BuiltinFunc find_function(const String &p_string);
-
 private:
-	static const char *func_name[FUNC_MAX];
-
 	struct Input {
 		Variant::Type type = Variant::NIL;
 		String name;
@@ -315,7 +235,7 @@ private:
 	};
 
 	struct BuiltinFuncNode : public ENode {
-		BuiltinFunc func;
+		StringName func;
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
 			type = TYPE_BUILTIN_FUNC;
