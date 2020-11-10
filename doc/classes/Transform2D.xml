@@ -14,14 +14,14 @@
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
 			<description>
 				Constructs a default-initialized [Transform] set to [constant IDENTITY].
 			</description>
 		</method>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="from" type="Transform2D">
@@ -30,7 +30,7 @@
 				Constructs a [Transform2D] as a copy of the given [Transform2D].
 			</description>
 		</method>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="rotation" type="float">
@@ -41,7 +41,7 @@
 				Constructs the transform from a given angle (in radians) and position.
 			</description>
 		</method>
-		<method name="Transform2D">
+		<method name="Transform2D" qualifiers="constructor">
 			<return type="Transform2D">
 			</return>
 			<argument index="0" name="x_axis" type="Vector2">
@@ -127,6 +127,62 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="right" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="right" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="orthonormalized">

@@ -8,14 +8,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="Signal">
+		<method name="Signal" qualifiers="constructor">
 			<return type="Signal">
 			</return>
 			<description>
 				Constructs a null [Signal] with no object nor signal name bound.
 			</description>
 		</method>
-		<method name="Signal">
+		<method name="Signal" qualifiers="constructor">
 			<return type="Signal">
 			</return>
 			<argument index="0" name="from" type="Signal">
@@ -24,7 +24,7 @@
 				Constructs a [Signal] as a copy of the given [Signal].
 			</description>
 		</method>
-		<method name="Signal">
+		<method name="Signal" qualifiers="constructor">
 			<return type="Signal">
 			</return>
 			<argument index="0" name="object" type="Object">
@@ -104,6 +104,22 @@
 		<method name="is_null">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Signal">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Signal">
+			</argument>
 			<description>
 			</description>
 		</method>
