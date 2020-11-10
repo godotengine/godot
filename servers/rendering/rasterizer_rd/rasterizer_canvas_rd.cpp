@@ -2567,6 +2567,4 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 
 	storage->free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
-
-	RD::get_singleton()->free(state.default_transforms_uniform_set);
 }
