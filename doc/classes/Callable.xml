@@ -36,14 +36,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="Callable">
+		<method name="Callable" qualifiers="constructor">
 			<return type="Callable">
 			</return>
 			<description>
 				Constructs a null [Callable] with no object nor method bound.
 			</description>
 		</method>
-		<method name="Callable">
+		<method name="Callable" qualifiers="constructor">
 			<return type="Callable">
 			</return>
 			<argument index="0" name="from" type="Callable">
@@ -52,7 +52,7 @@
 				Constructs a [Callable] as a copy of the given [Callable].
 			</description>
 		</method>
-		<method name="Callable">
+		<method name="Callable" qualifiers="constructor">
 			<return type="Callable">
 			</return>
 			<argument index="0" name="object" type="Object">
@@ -125,6 +125,22 @@
 		<method name="is_standard">
 			<return type="bool">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Callable">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Callable">
+			</argument>
 			<description>
 			</description>
 		</method>

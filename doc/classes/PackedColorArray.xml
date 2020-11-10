@@ -10,14 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedColorArray">
+		<method name="PackedColorArray" qualifiers="constructor">
 			<return type="PackedColorArray">
 			</return>
 			<description>
 				Constructs an empty [PackedColorArray].
 			</description>
 		</method>
-		<method name="PackedColorArray">
+		<method name="PackedColorArray" qualifiers="constructor">
 			<return type="PackedColorArray">
 			</return>
 			<argument index="0" name="from" type="PackedColorArray">
@@ -26,7 +26,7 @@
 				Constructs a [PackedColorArray] as a copy of the given [PackedColorArray].
 			</description>
 		</method>
-		<method name="PackedColorArray">
+		<method name="PackedColorArray" qualifiers="constructor">
 			<return type="PackedColorArray">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -85,6 +85,38 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedColorArray">
+			</return>
+			<argument index="0" name="right" type="PackedColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

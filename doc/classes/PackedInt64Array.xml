@@ -11,14 +11,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedInt64Array">
+		<method name="PackedInt64Array" qualifiers="constructor">
 			<return type="PackedInt64Array">
 			</return>
 			<description>
 				Constructs an empty [PackedInt64Array].
 			</description>
 		</method>
-		<method name="PackedInt64Array">
+		<method name="PackedInt64Array" qualifiers="constructor">
 			<return type="PackedInt64Array">
 			</return>
 			<argument index="0" name="from" type="PackedInt64Array">
@@ -27,7 +27,7 @@
 				Constructs a [PackedInt64Array] as a copy of the given [PackedInt64Array].
 			</description>
 		</method>
-		<method name="PackedInt64Array">
+		<method name="PackedInt64Array" qualifiers="constructor">
 			<return type="PackedInt64Array">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -86,6 +86,38 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedInt64Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="right" type="PackedInt64Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedInt64Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

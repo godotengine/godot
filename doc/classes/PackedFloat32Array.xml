@@ -11,14 +11,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedFloat32Array">
+		<method name="PackedFloat32Array" qualifiers="constructor">
 			<return type="PackedFloat32Array">
 			</return>
 			<description>
 				Constructs an empty [PackedFloat32Array].
 			</description>
 		</method>
-		<method name="PackedFloat32Array">
+		<method name="PackedFloat32Array" qualifiers="constructor">
 			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="from" type="PackedFloat32Array">
@@ -27,7 +27,7 @@
 				Constructs a [PackedFloat32Array] as a copy of the given [PackedFloat32Array].
 			</description>
 		</method>
-		<method name="PackedFloat32Array">
+		<method name="PackedFloat32Array" qualifiers="constructor">
 			<return type="PackedFloat32Array">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -86,6 +86,30 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedFloat32Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedFloat32Array">
+			</return>
+			<argument index="0" name="right" type="PackedFloat32Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedFloat32Array">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

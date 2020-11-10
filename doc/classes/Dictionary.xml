@@ -171,14 +171,14 @@
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
-		<method name="Dictionary">
+		<method name="Dictionary" qualifiers="constructor">
 			<return type="Dictionary">
 			</return>
 			<description>
 				Constructs an empty [Dictionary].
 			</description>
 		</method>
-		<method name="Dictionary">
+		<method name="Dictionary" qualifiers="constructor">
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="from" type="Dictionary">
@@ -292,6 +292,30 @@
 			</return>
 			<description>
 				Returns the list of keys in the [Dictionary].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="key" type="Variant">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="size">

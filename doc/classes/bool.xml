@@ -91,14 +91,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="bool">
+		<method name="bool" qualifiers="constructor">
 			<return type="bool">
 			</return>
 			<description>
 				Constructs a default-initialized [bool] set to [code]false[/code].
 			</description>
 		</method>
-		<method name="bool">
+		<method name="bool" qualifiers="constructor">
 			<return type="bool">
 			</return>
 			<argument index="0" name="from" type="bool">
@@ -107,7 +107,7 @@
 				Constructs a [bool] as a copy of the given [bool].
 			</description>
 		</method>
-		<method name="bool">
+		<method name="bool" qualifiers="constructor">
 			<return type="bool">
 			</return>
 			<argument index="0" name="from" type="float">
@@ -116,13 +116,45 @@
 				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
 			</description>
 		</method>
-		<method name="bool">
+		<method name="bool" qualifiers="constructor">
 			<return type="bool">
 			</return>
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
 				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

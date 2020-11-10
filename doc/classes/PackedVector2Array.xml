@@ -11,14 +11,14 @@
 		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
 	</tutorials>
 	<methods>
-		<method name="PackedVector2Array">
+		<method name="PackedVector2Array" qualifiers="constructor">
 			<return type="PackedVector2Array">
 			</return>
 			<description>
 				Constructs an empty [PackedVector2Array].
 			</description>
 		</method>
-		<method name="PackedVector2Array">
+		<method name="PackedVector2Array" qualifiers="constructor">
 			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from" type="PackedVector2Array">
@@ -27,7 +27,7 @@
 				Constructs a [PackedVector2Array] as a copy of the given [PackedVector2Array].
 			</description>
 		</method>
-		<method name="PackedVector2Array">
+		<method name="PackedVector2Array" qualifiers="constructor">
 			<return type="PackedVector2Array">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -86,6 +86,46 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedVector2Array">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

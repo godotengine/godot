@@ -14,14 +14,14 @@
 		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
 	</tutorials>
 	<methods>
-		<method name="Vector3i">
+		<method name="Vector3i" qualifiers="constructor">
 			<return type="Vector3i">
 			</return>
 			<description>
 				Constructs a default-initialized [Vector3i] with all components set to [code]0[/code].
 			</description>
 		</method>
-		<method name="Vector3i">
+		<method name="Vector3i" qualifiers="constructor">
 			<return type="Vector3i">
 			</return>
 			<argument index="0" name="from" type="Vector3i">
@@ -30,7 +30,7 @@
 				Constructs a [Vector3i] as a copy of the given [Vector3i].
 			</description>
 		</method>
-		<method name="Vector3i">
+		<method name="Vector3i" qualifiers="constructor">
 			<return type="Vector3i">
 			</return>
 			<argument index="0" name="from" type="Vector3">
@@ -39,7 +39,7 @@
 				Constructs a new [Vector3i] from [Vector3]. The floating point coordinates will be truncated.
 			</description>
 		</method>
-		<method name="Vector3i">
+		<method name="Vector3i" qualifiers="constructor">
 			<return type="Vector3i">
 			</return>
 			<argument index="0" name="x" type="int">
@@ -70,6 +70,154 @@
 			</return>
 			<description>
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Z].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator %" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator %" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Vector3i">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Vector3i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="int">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="sign">

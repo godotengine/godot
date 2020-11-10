@@ -14,14 +14,14 @@
 		<link title="Advanced vector math">https://docs.godotengine.org/en/latest/tutorials/math/vectors_advanced.html</link>
 	</tutorials>
 	<methods>
-		<method name="Rect2">
+		<method name="Rect2" qualifiers="constructor">
 			<return type="Rect2">
 			</return>
 			<description>
 				Constructs a default-initialized [Rect2] with default (zero) values of [member position] and [member size].
 			</description>
 		</method>
-		<method name="Rect2">
+		<method name="Rect2" qualifiers="constructor">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="from" type="Rect2">
@@ -30,7 +30,7 @@
 				Constructs a [Rect2] as a copy of the given [Rect2].
 			</description>
 		</method>
-		<method name="Rect2">
+		<method name="Rect2" qualifiers="constructor">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="from" type="Rect2i">
@@ -39,7 +39,7 @@
 				Constructs a [Rect2] from a [Rect2i].
 			</description>
 		</method>
-		<method name="Rect2">
+		<method name="Rect2" qualifiers="constructor">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="position" type="Vector2">
@@ -50,7 +50,7 @@
 				Constructs a [Rect2] by position and size.
 			</description>
 		</method>
-		<method name="Rect2">
+		<method name="Rect2" qualifiers="constructor">
 			<return type="Rect2">
 			</return>
 			<argument index="0" name="x" type="float">
@@ -185,6 +185,30 @@
 			</argument>
 			<description>
 				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="right" type="Transform2D">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
