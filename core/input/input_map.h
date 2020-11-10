@@ -70,6 +70,7 @@ public:
 	void add_action(const StringName &p_action, float p_deadzone = 0.5);
 	void erase_action(const StringName &p_action);
 
+	float action_get_deadzone(const StringName &p_action);
 	void action_set_deadzone(const StringName &p_action, float p_deadzone);
 	void action_add_event(const StringName &p_action, const Ref<InputEvent> &p_event);
 	bool action_has_event(const StringName &p_action, const Ref<InputEvent> &p_event);
