@@ -25,14 +25,14 @@
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<methods>
-		<method name="NodePath">
+		<method name="NodePath" qualifiers="constructor">
 			<return type="NodePath">
 			</return>
 			<description>
 				Constructs an empty [NodePath].
 			</description>
 		</method>
-		<method name="NodePath">
+		<method name="NodePath" qualifiers="constructor">
 			<return type="NodePath">
 			</return>
 			<argument index="0" name="from" type="NodePath">
@@ -41,7 +41,7 @@
 				Constructs a [NodePath] as a copy of the given [NodePath].
 			</description>
 		</method>
-		<method name="NodePath">
+		<method name="NodePath" qualifiers="constructor">
 			<return type="NodePath">
 			</return>
 			<argument index="0" name="from" type="String">
@@ -148,6 +148,22 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the node path is empty.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="NodePath">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

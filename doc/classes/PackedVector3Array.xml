@@ -10,14 +10,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="PackedVector3Array">
+		<method name="PackedVector3Array" qualifiers="constructor">
 			<return type="PackedVector3Array">
 			</return>
 			<description>
 				Constructs an empty [PackedVector3Array].
 			</description>
 		</method>
-		<method name="PackedVector3Array">
+		<method name="PackedVector3Array" qualifiers="constructor">
 			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="from" type="PackedVector3Array">
@@ -26,7 +26,7 @@
 				Constructs a [PackedVector3Array] as a copy of the given [PackedVector3Array].
 			</description>
 		</method>
-		<method name="PackedVector3Array">
+		<method name="PackedVector3Array" qualifiers="constructor">
 			<return type="PackedVector3Array">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -85,6 +85,46 @@
 			</return>
 			<description>
 				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="right" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="PackedVector3Array">
+			</return>
+			<argument index="0" name="right" type="PackedVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="PackedVector3Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="push_back">

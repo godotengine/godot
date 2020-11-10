@@ -12,14 +12,14 @@
 		<link title="Vector math">https://docs.godotengine.org/en/latest/tutorials/math/vector_math.html</link>
 	</tutorials>
 	<methods>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<description>
 				Constructs a default-initialized [Rect2i] with default (zero) values of [member position] and [member size].
 			</description>
 		</method>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="from" type="Rect2i">
@@ -28,7 +28,7 @@
 				Constructs a [Rect2i] as a copy of the given [Rect2i].
 			</description>
 		</method>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="from" type="Rect2">
@@ -37,7 +37,7 @@
 				Constructs a new [Rect2i] from [Rect2]. The floating point coordinates will be truncated.
 			</description>
 		</method>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="position" type="Vector2i">
@@ -48,7 +48,7 @@
 				Constructs a [Rect2i] by position and size.
 			</description>
 		</method>
-		<method name="Rect2i">
+		<method name="Rect2i" qualifiers="constructor">
 			<return type="Rect2i">
 			</return>
 			<argument index="0" name="x" type="int">
@@ -172,6 +172,22 @@
 			</argument>
 			<description>
 				Returns a larger [Rect2i] that contains this [Rect2i] and [code]b[/code].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Rect2i">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

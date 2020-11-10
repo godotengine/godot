@@ -16,14 +16,14 @@
 		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
 	</tutorials>
 	<methods>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<description>
 				Constructs a default-initialized [Color] with all components set to [code]0[/code].
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="from" type="Color">
@@ -32,7 +32,7 @@
 				Constructs a [Color] as a copy of the given [Color].
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="from" type="Color">
@@ -51,7 +51,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="r" type="float">
@@ -74,7 +74,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="Color">
+		<method name="Color" qualifiers="constructor">
 			<return type="Color">
 			</return>
 			<argument index="0" name="r" type="float">
@@ -201,6 +201,98 @@
 				Color lightgreen = green.Lightened(0.2f); // 20% lighter than regular green
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator *" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator -" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator /" qualifiers="operator">
+			<return type="Color">
+			</return>
+			<argument index="0" name="right" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="float">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="to_abgr32">

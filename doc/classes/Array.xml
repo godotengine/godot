@@ -44,14 +44,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<description>
 				Constructs an empty [Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="Array">
@@ -60,7 +60,7 @@
 				Constructs an [Array] as a copy of the given [Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedByteArray">
@@ -69,7 +69,7 @@
 				Constructs an array from a [PackedByteArray].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedColorArray">
@@ -78,7 +78,7 @@
 				Constructs an array from a [PackedColorArray].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedFloat32Array">
@@ -87,7 +87,7 @@
 				Constructs an array from a [PackedFloat32Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedFloat64Array">
@@ -96,7 +96,7 @@
 				Constructs an array from a [PackedFloat64Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedInt32Array">
@@ -105,7 +105,7 @@
 				Constructs an array from a [PackedInt32Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedInt64Array">
@@ -114,7 +114,7 @@
 				Constructs an array from a [PackedInt64Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedStringArray">
@@ -123,7 +123,7 @@
 				Constructs an array from a [PackedStringArray].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedVector2Array">
@@ -132,7 +132,7 @@
 				Constructs an array from a [PackedVector2Array].
 			</description>
 		</method>
-		<method name="Array">
+		<method name="Array" qualifiers="constructor">
 			<return type="Array">
 			</return>
 			<argument index="0" name="from" type="PackedVector3Array">
@@ -350,6 +350,70 @@
 			</return>
 			<description>
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="Array">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator []" qualifiers="operator">
+			<return type="void">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="pop_back">
