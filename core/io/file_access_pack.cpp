@@ -412,9 +412,15 @@ String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
 
-Error DirAccessPack::change_dir(String p_dir) {
+PackedData::PackedDir *DirAccessPack::_find_dir(String p_dir) {
 
 	String nd = p_dir.replace("\\", "/");
+
+	// Special handling since simplify_path() will forbid it
+	if (p_dir == "..") {
+		return current->parent;
+	}
+
 	bool absolute = false;
 	if (nd.begins_with("res://")) {
 		nd = nd.replace_first("res://", "");
@@ -454,13 +460,22 @@ Error DirAccessPack::change_dir(String p_dir) {
 
 		} else {
 
-			return ERR_INVALID_PARAMETER;
+			return NULL;
 		}
 	}
 
-	current = pd;
+	return pd;
+}
 
-	return OK;
+Error DirAccessPack::change_dir(String p_dir) {
+
+	PackedData::PackedDir *pd = _find_dir(p_dir);
+	if (pd) {
+		current = pd;
+		return OK;
+	} else {
+		return ERR_INVALID_PARAMETER;
+	}
 }
 
 String DirAccessPack::get_current_dir() {
@@ -480,14 +495,18 @@ bool DirAccessPack::file_exists(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	return current->files.has(p_file);
+	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
+	if (!pd) {
+		return false;
+	}
+	return pd->files.has(p_file.get_file());
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-	return current->subdirs.has(p_dir);
+	return _find_dir(p_dir) != NULL;
 }
 
 Error DirAccessPack::make_dir(String p_dir) {
