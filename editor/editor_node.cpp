@@ -2705,10 +2705,14 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot(NodePath p_path) {
-	SubViewport *viewport = Object::cast_to<SubViewport>(EditorInterface::get_singleton()->get_editor_viewport()->get_viewport());
-	viewport->set_clear_mode(SubViewport::CLEAR_MODE_ONLY_NEXT_FRAME);
-	Ref<Image> img = viewport->get_texture()->get_data();
-	viewport->set_clear_mode(SubViewport::CLEAR_MODE_ALWAYS);
+	Control *editor_viewport = EditorInterface::get_singleton()->get_editor_viewport();
+	ERR_FAIL_COND_MSG(!editor_viewport, "Cannot get editor viewport.");
+	Viewport *viewport = editor_viewport->get_viewport();
+	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor viewport.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor viewport texture.");
+	Ref<Image> img = texture->get_data();
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor viewport texture image.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
