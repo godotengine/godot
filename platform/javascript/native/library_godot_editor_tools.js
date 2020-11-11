@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  id_handler.js                                                        */
+/*  library_godot_editor_tools.js                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-var IDHandler = /** @constructor */ function() {
+const GodotEditorTools = {
 
-	var ids = {};
-	var size = 0;
-
-	this.has = function(id) {
-		return ids.hasOwnProperty(id);
-	}
-
-	this.add = function(obj) {
-		size += 1;
-		var id = crypto.getRandomValues(new Int32Array(32))[0];
-		ids[id] = obj;
-		return id;
-	}
-
-	this.get = function(id) {
-		return ids[id];
-	}
-
-	this.remove = function(id) {
-		size -= 1;
-		delete ids[id];
-	}
-
-	this.size = function() {
-		return size;
-	}
-
-	this.ids = ids;
+	godot_js_editor_download_file__deps: ['$FS'],
+	godot_js_editor_download_file: function(p_path, p_name, p_mime) {
+		const path = UTF8ToString(p_path);
+		const name = UTF8ToString(p_name);
+		const mime = UTF8ToString(p_mime);
+		const size = FS.stat(path)['size'];
+		const buf = new Uint8Array(size);
+		const fd = FS.open(path, 'r');
+		FS.read(fd, buf, 0, size);
+		FS.close(fd);
+		FS.unlink(path);
+		const blob = new Blob([buf], { type: mime });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		a.style.display = 'none';
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		window.URL.revokeObjectURL(url);
+	},
 };
 
-Module.IDHandler = new IDHandler;
+mergeInto(LibraryManager.library, GodotEditorTools);
