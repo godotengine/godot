@@ -39,14 +39,6 @@ namespace Godot
             return val * sgn;
         }
 
-        public static FuncRef FuncRef(Object instance, StringName funcName)
-        {
-            var ret = new FuncRef();
-            ret.SetInstance(instance);
-            ret.SetFunction(funcName);
-            return ret;
-        }
-
         public static int Hash(object var)
         {
             return godot_icall_GD_hash(var);
