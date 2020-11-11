@@ -69,6 +69,7 @@ private:
 	void _repaint();
 	void _on_mouse_exited();
 	void _update_current_tab();
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
 
 protected:
 	void _child_renamed_callback();

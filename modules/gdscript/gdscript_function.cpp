@@ -1120,6 +1120,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 								OPCODE_BREAK;
 							}
 						}
+					} else if (methodstr == "call_recursive" && basestr == "TreeItem") {
+						if (argc >= 1) {
+							methodstr = String(*argptrs[0]) + " (via TreeItem.call_recursive)";
+							if (err.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
+								err.argument += 1;
+							}
+						}
 					}
 					err_text = _get_call_error(err, "function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs);
 					OPCODE_BREAK;

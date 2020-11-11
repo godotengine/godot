@@ -1174,10 +1174,10 @@
 			[codeblock]
 			var err = method_that_returns_error()
 			if err != OK:
-			    print("Failure!)
+			    print("Failure!")
 			# Or, equivalent:
 			if err:
-			    print("Still failing!)
+			    print("Still failing!")
 			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">

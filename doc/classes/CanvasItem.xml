@@ -594,7 +594,7 @@
 		</signal>
 		<signal name="item_rect_changed">
 			<description>
-				Emitted when the item rect has changed.
+				Emitted when the item's [Rect2] boundaries (position or size) have changed, or when an action is taking place that may have impacted these boundaries (e.g. changing [member Sprite.texture]).
 			</description>
 		</signal>
 		<signal name="visibility_changed">

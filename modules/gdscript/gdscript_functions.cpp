@@ -293,7 +293,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				r_ret = i < 0 ? -1 : (i > 0 ? +1 : 0);
 			} else if (p_args[0]->get_type() == Variant::REAL) {
 
-				real_t r = *p_args[0];
+				double r = *p_args[0];
 				r_ret = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
 			} else {
 
@@ -520,8 +520,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
+				double a = *p_args[0];
+				double b = *p_args[1];
 
 				r_ret = MAX(a, b);
 			}
@@ -538,8 +538,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
+				double a = *p_args[0];
+				double b = *p_args[1];
 
 				r_ret = MIN(a, b);
 			}
@@ -557,9 +557,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(1);
 				VALIDATE_ARG_NUM(2);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
-				real_t c = *p_args[2];
+				double a = *p_args[0];
+				double b = *p_args[1];
+				double c = *p_args[2];
 
 				r_ret = CLAMP(a, b, c);
 			}

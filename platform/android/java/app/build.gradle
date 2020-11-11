@@ -82,8 +82,8 @@ android {
     buildToolsVersion versions.buildTools
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
     }
 
     defaultConfig {

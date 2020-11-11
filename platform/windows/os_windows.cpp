@@ -2405,7 +2405,7 @@ void OS_Windows::_update_window_style(bool p_repaint, bool p_maximized) {
 
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 
-	String path = p_path;
+	String path = p_path.replace("/", "\\");
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdnative can load .dll files from within the executable path
@@ -2884,9 +2884,10 @@ String OS_Windows::_quote_command_line_argument(const String &p_text) const {
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+	String path = p_path.replace("/", "\\");
 
 	if (p_blocking && r_pipe) {
-		String argss = _quote_command_line_argument(p_path);
+		String argss = _quote_command_line_argument(path);
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 			argss += " " + _quote_command_line_argument(E->get());
 		}
@@ -2920,7 +2921,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		return OK;
 	}
 
-	String cmdline = _quote_command_line_argument(p_path);
+	String cmdline = _quote_command_line_argument(path);
 	const List<String>::Element *I = p_arguments.front();
 	while (I) {
 		cmdline += " " + _quote_command_line_argument(I->get());
@@ -2994,7 +2995,7 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL, bufname, 4096);
 	String s = bufname;
-	return s;
+	return s.replace("\\", "/");
 }
 
 void OS_Windows::set_native_icon(const String &p_filename) {

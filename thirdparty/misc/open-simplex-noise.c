@@ -189,14 +189,15 @@ int open_simplex_noise(int64_t seed, struct osn_context *ctx)
 	permGradIndex3D = ctx->permGradIndex3D;
 // -- GODOT end --
 
+	uint64_t seedU = seed;
 	for (i = 0; i < 256; i++)
 		source[i] = (int16_t) i;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-	seed = seed * 6364136223846793005LL + 1442695040888963407LL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+	seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
 	for (i = 255; i >= 0; i--) {
-		seed = seed * 6364136223846793005LL + 1442695040888963407LL;
-		r = (int)((seed + 31) % (i + 1));
+		seedU = seedU * 6364136223846793005ULL + 1442695040888963407ULL;
+		r = (int)((seedU + 31) % (i + 1));
 		if (r < 0)
 			r += (i + 1);
 		perm[i] = source[r];

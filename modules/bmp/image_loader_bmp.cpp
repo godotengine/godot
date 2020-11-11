@@ -30,6 +30,8 @@
 
 #include "image_loader_bmp.h"
 
+#include "core/io/file_access_memory.h"
+
 Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_buffer,
 		const uint8_t *p_color_buffer,
@@ -294,10 +296,21 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 	return err;
 }
 
-void ImageLoaderBMP::get_recognized_extensions(
-		List<String> *p_extensions) const {
-
+void ImageLoaderBMP::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("bmp");
 }
 
-ImageLoaderBMP::ImageLoaderBMP() {}
+static Ref<Image> _bmp_mem_loader_func(const uint8_t *p_bmp, int p_size) {
+	FileAccessMemory memfile;
+	Error open_memfile_error = memfile.open_custom(p_bmp, p_size);
+	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for BMP image buffer.");
+	Ref<Image> img;
+	img.instance();
+	Error load_error = ImageLoaderBMP().load_image(img, &memfile, false, 1.0f);
+	ERR_FAIL_COND_V_MSG(load_error, Ref<Image>(), "Failed to load BMP image.");
+	return img;
+}
+
+ImageLoaderBMP::ImageLoaderBMP() {
+	Image::_bmp_mem_loader_func = _bmp_mem_loader_func;
+}

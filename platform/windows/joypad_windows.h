@@ -78,7 +78,7 @@ private:
 		DWORD last_pad;
 
 		LPDIRECTINPUTDEVICE8 di_joy;
-		List<DWORD> joy_axis;
+		List<LONG> joy_axis;
 		GUID guid;
 
 		dinput_gamepad() {

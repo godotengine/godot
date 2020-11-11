@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSceneImporterAssimp" inherits="EditorSceneImporter" version="3.2">
+<class name="EditorSceneImporterFBX" inherits="EditorSceneImporter" version="3.2">
 	<brief_description>
-		FBX 3D asset importer based on [url=http://assimp.org/]Assimp[/url].
+		FBX 3D asset importer.
 	</brief_description>
 	<description>
-		This is an FBX 3D asset importer based on [url=http://assimp.org/]Assimp[/url]. It currently has many known limitations and works best with static meshes. Most animated meshes won't import correctly.
+		This is an FBX 3D asset importer with full support for most FBX features.
 		If exporting a FBX scene from Autodesk Maya, use these FBX export settings:
 		[codeblock]
 		- Smoothing Groups

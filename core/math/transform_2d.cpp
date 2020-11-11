@@ -257,7 +257,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, real_t
 
 	real_t dot = v1.dot(v2);
 
-	dot = (dot < -1.0) ? -1.0 : ((dot > 1.0) ? 1.0 : dot); //clamp dot to [-1,1]
+	dot = CLAMP(dot, -1.0, 1.0);
 
 	Vector2 v;
 

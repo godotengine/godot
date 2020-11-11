@@ -299,7 +299,7 @@ private:
 		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
-		Control *tooltip;
+		Control *tooltip_control;
 		Control *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
@@ -360,7 +360,7 @@ private:
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
-	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_which = NULL);
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = NULL);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 

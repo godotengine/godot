@@ -161,6 +161,10 @@ Error godot_icall_Array_Resize(Array *ptr, int new_size) {
 	return ptr->resize(new_size);
 }
 
+void godot_icall_Array_Shuffle(Array *ptr) {
+	ptr->shuffle();
+}
+
 void godot_icall_Array_Generic_GetElementTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class) {
 	MonoType *elem_type = mono_reflection_type_get_type(refltype);
 
@@ -321,6 +325,7 @@ void godot_register_collections_icalls() {
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Remove", (void *)godot_icall_Array_Remove);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_RemoveAt", (void *)godot_icall_Array_RemoveAt);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Resize", (void *)godot_icall_Array_Resize);
+	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Shuffle", (void *)godot_icall_Array_Shuffle);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Generic_GetElementTypeInfo", (void *)godot_icall_Array_Generic_GetElementTypeInfo);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_ToString", (void *)godot_icall_Array_ToString);
 

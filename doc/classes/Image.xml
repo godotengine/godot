@@ -333,6 +333,16 @@
 				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/3.2/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 			</description>
 		</method>
+		<method name="load_bmp_from_buffer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="buffer" type="PoolByteArray">
+			</argument>
+			<description>
+				Loads an image from the binary contents of a BMP file.
+				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
+			</description>
+		</method>
 		<method name="load_jpg_from_buffer">
 			<return type="int" enum="Error">
 			</return>

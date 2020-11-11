@@ -58,25 +58,26 @@
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Object">
+			<return type="Control">
 			</return>
 			<argument index="0" name="for_text" type="String">
 			</argument>
 			<description>
-				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. Use [code]for_text[/code] parameter to determine what text the tooltip should contain (likely the contents of [member hint_tooltip]).
-				The returned node must be of type [Control] or Control-derieved. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance, not e.g. a node from scene. When [code]null[/code] or non-Control node is returned, the default tooltip will be used instead.
+				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
+				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance).When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
+				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
 				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
-				Example of usage with custom-constructed node:
+				Example of usage with a custom-constructed node:
 				[codeblock]
 				func _make_custom_tooltip(for_text):
 				    var label = Label.new()
 				    label.text = for_text
 				    return label
 				[/codeblock]
-				Example of usage with custom scene instance:
+				Example of usage with a custom scene instance:
 				[codeblock]
 				func _make_custom_tooltip(for_text):
-				    var tooltip = preload("SomeTooltipScene.tscn").instance()
+				    var tooltip = preload("res://SomeTooltipScene.tscn").instance()
 				    tooltip.get_node("Label").text = for_text
 				    return tooltip
 				[/codeblock]
@@ -846,6 +847,15 @@
 		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
 			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
+			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
+			[codeblock]
+			var style_box = StyleBoxFlat.new()
+			style_box.set_bg_color(Color(1, 1, 0))
+			style_box.set_border_width_all(2)
+			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
+			theme.set_stylebox("panel", "TooltipPanel", style_box)
+			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
+			[/codeblock]
 		</member>
 		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
