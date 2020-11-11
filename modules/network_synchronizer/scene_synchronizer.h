@@ -320,8 +320,9 @@ class ServerSynchronizer : public Synchronizer {
 		Set<StringName> uknown_vars;
 		Set<StringName> vars;
 	};
-	// TODO use NetNodeId
-	OAHashMap<ObjectID, Change> changes;
+
+	/// The changes; the order matters because the index is the NetNodeId.
+	LocalVector<Change> changes;
 
 public:
 	ServerSynchronizer(SceneSynchronizer *p_node);

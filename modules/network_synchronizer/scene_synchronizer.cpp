@@ -989,47 +989,46 @@ void ServerSynchronizer::on_node_added(NetUtility::NodeData *p_node_data) {
 #ifdef DEBUG_ENABLED
 	// Can't happen on server
 	CRASH_COND(scene_synchronizer->is_recovered());
+	// On server the ID is always known.
+	CRASH_COND(p_node_data->id == UINT32_MAX);
 #endif
-	Change *c = changes.lookup_ptr(p_node_data->instance_id);
-	if (c) {
-		c->not_known_before = true;
-	} else {
-		Change change;
-		change.not_known_before = true;
-		changes.set(p_node_data->instance_id, change);
+
+	if (changes.size() <= p_node_data->id) {
+		changes.resize(p_node_data->id + 1);
 	}
+
+	changes[p_node_data->id].not_known_before = true;
 }
 
 void ServerSynchronizer::on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {
 #ifdef DEBUG_ENABLED
 	// Can't happen on server
 	CRASH_COND(scene_synchronizer->is_recovered());
+	// On server the ID is always known.
+	CRASH_COND(p_node_data->id == UINT32_MAX);
 #endif
-	Change *c = changes.lookup_ptr(p_node_data->instance_id);
-	if (c) {
-		c->vars.insert(p_var_name);
-		c->uknown_vars.insert(p_var_name);
-	} else {
-		Change change;
-		change.vars.insert(p_var_name);
-		change.uknown_vars.insert(p_var_name);
-		changes.set(p_node_data->instance_id, change);
+
+	if (changes.size() <= p_node_data->id) {
+		changes.resize(p_node_data->id + 1);
 	}
+
+	changes[p_node_data->id].vars.insert(p_var_name);
+	changes[p_node_data->id].uknown_vars.insert(p_var_name);
 }
 
 void ServerSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, StringName p_var_name) {
 #ifdef DEBUG_ENABLED
 	// Can't happen on server
 	CRASH_COND(scene_synchronizer->is_recovered());
+	// On server the ID is always known.
+	CRASH_COND(p_node_data->id == UINT32_MAX);
 #endif
-	Change *c = changes.lookup_ptr(p_node_data->instance_id);
-	if (c) {
-		c->vars.insert(p_var_name);
-	} else {
-		Change change;
-		change.vars.insert(p_var_name);
-		changes.set(p_node_data->instance_id, change);
+
+	if (changes.size() <= p_node_data->id) {
+		changes.resize(p_node_data->id + 1);
 	}
+
+	changes[p_node_data->id].vars.insert(p_var_name);
 }
 
 void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
@@ -1153,7 +1152,7 @@ void ServerSynchronizer::generate_snapshot_node_data(
 		return;
 	}
 
-	const Change *change = changes.lookup_ptr(p_node_data->instance_id);
+	const Change *change = p_node_data->id >= changes.size() ? nullptr : changes.ptr() + p_node_data->id;
 
 	// Insert NODE DATA.
 	Variant snap_node_data;
