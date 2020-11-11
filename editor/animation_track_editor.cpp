@@ -105,6 +105,7 @@ public:
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		int key = animation->track_find_key(track, key_ofs, true);
 		ERR_FAIL_COND_V(key == -1, false);
+		float timeline_position = AnimationPlayerEditor::singleton->call("_get_timeline_position");
 
 		String name = p_name;
 		if (name == "time" || name == "frame") {
@@ -155,6 +156,8 @@ public:
 			undo_redo->create_action(TTR("Anim Change Transition"), UndoRedo::MERGE_ENDS);
 			undo_redo->add_do_method(animation.ptr(), "track_set_key_transition", track, key, val);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_key_transition", track, key, prev_val);
+			undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+			undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 			undo_redo->add_do_method(this, "_update_obj", animation);
 			undo_redo->add_undo_method(this, "_update_obj", animation);
 			undo_redo->commit_action();
@@ -172,6 +175,8 @@ public:
 				undo_redo->create_action(TTR("Anim Change Transform"));
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
 				undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, d_old);
+				undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+				undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
 				undo_redo->commit_action();
@@ -192,6 +197,8 @@ public:
 					Variant prev = animation->track_get_key_value(track, key);
 					undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "track_set_key_value", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -275,6 +282,8 @@ public:
 					float prev = animation->bezier_track_get_key_value(track, key);
 					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_value", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_value", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -291,6 +300,8 @@ public:
 					Vector2 prev = animation->bezier_track_get_key_in_handle(track, key);
 					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -307,6 +318,8 @@ public:
 					Vector2 prev = animation->bezier_track_get_key_out_handle(track, key);
 					undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -324,6 +337,8 @@ public:
 					RES prev = animation->audio_track_get_key_stream(track, key);
 					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_stream", track, key, stream);
 					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -340,6 +355,8 @@ public:
 					float prev = animation->audio_track_get_key_start_offset(track, key);
 					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -356,6 +373,8 @@ public:
 					float prev = animation->audio_track_get_key_end_offset(track, key);
 					undo_redo->add_do_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_end_offset", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -373,6 +392,8 @@ public:
 					StringName prev = animation->animation_track_get_key_animation(track, key);
 					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_animation", track, key, anim_name);
 					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_animation", track, key, prev);
+					undo_redo->add_do_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
+					undo_redo->add_undo_method(AnimationPlayerEditor::singleton, "_animation_key_editor_seek", timeline_position, false);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();

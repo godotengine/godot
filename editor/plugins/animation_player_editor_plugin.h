@@ -211,6 +211,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _prepare_onion_layers_2();
 	void _start_onion_skinning();
 	void _stop_onion_skinning();
+	float _get_timeline_position() const { return timeline_position; }
 
 	void _pin_pressed();
 
