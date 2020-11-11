@@ -97,8 +97,6 @@
 			</description>
 		</method>
 		<method name="append_array">
-			<return type="void">
-			</return>
 			<argument index="0" name="array" type="Array">
 			</argument>
 			<description>
