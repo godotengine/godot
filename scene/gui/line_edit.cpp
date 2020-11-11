@@ -679,7 +679,7 @@ void LineEdit::_notification(int p_what) {
 		} break;
 #endif
 		case NOTIFICATION_RESIZED: {
-			window_pos = 0;
+			scroll_offset = 0;
 			set_cursor_position(get_cursor_position());
 
 		} break;
@@ -735,7 +735,7 @@ void LineEdit::_notification(int p_what) {
 					x_ofs = style->get_offset().x;
 				} break;
 				case ALIGN_CENTER: {
-					if (window_pos != 0) {
+					if (scroll_offset != 0) {
 						x_ofs = style->get_offset().x;
 					} else {
 						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - (cached_text_width)) / 2);
@@ -747,7 +747,7 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			int ofs_max = width - style->get_margin(MARGIN_RIGHT);
-			int char_ofs = window_pos;
+			int char_ofs = scroll_offset;
 
 			int y_area = height - style->get_minimum_size().height;
 			int y_ofs = style->get_offset().y + (y_area - font->get_height()) / 2;
@@ -780,7 +780,7 @@ void LineEdit::_notification(int p_what) {
 				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
 
 				if (align == ALIGN_CENTER) {
-					if (window_pos == 0) {
+					if (scroll_offset == 0) {
 						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT) * 2) / 2);
 					}
 				} else {
@@ -1023,7 +1023,7 @@ void LineEdit::undo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	cached_width = op.cached_width;
-	window_pos = op.window_pos;
+	scroll_offset = op.scroll_offset;
 	set_cursor_position(op.cursor_pos);
 
 	if (expand_to_text_length) {
@@ -1044,7 +1044,7 @@ void LineEdit::redo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	cached_width = op.cached_width;
-	window_pos = op.window_pos;
+	scroll_offset = op.scroll_offset;
 	set_cursor_position(op.cursor_pos);
 
 	if (expand_to_text_length) {
@@ -1071,7 +1071,7 @@ void LineEdit::shift_selection_check_post(bool p_shift) {
 
 void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	Ref<Font> font = get_theme_font("font");
-	int ofs = window_pos;
+	int ofs = scroll_offset;
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int pixel_ofs = 0;
 	Size2 size = get_size();
@@ -1084,7 +1084,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 			pixel_ofs = int(style->get_offset().x);
 		} break;
 		case ALIGN_CENTER: {
-			if (window_pos != 0) {
+			if (scroll_offset != 0) {
 				pixel_ofs = int(style->get_offset().x);
 			} else {
 				pixel_ofs = int(size.width - (cached_width)) / 2;
@@ -1122,7 +1122,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 int LineEdit::get_cursor_pixel_pos() {
 	Ref<Font> font = get_theme_font("font");
-	int ofs = window_pos;
+	int ofs = scroll_offset;
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int pixel_ofs = 0;
 	Size2 size = get_size();
@@ -1135,7 +1135,7 @@ int LineEdit::get_cursor_pixel_pos() {
 			pixel_ofs = int(style->get_offset().x);
 		} break;
 		case ALIGN_CENTER: {
-			if (window_pos != 0) {
+			if (scroll_offset != 0) {
 				pixel_ofs = int(style->get_offset().x);
 			} else {
 				pixel_ofs = int(size.width - (cached_width)) / 2;
@@ -1236,7 +1236,7 @@ void LineEdit::delete_char() {
 	set_cursor_position(get_cursor_position() - 1);
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - 1, 0, MAX(text.length() - 1, 0));
+		scroll_offset = CLAMP(scroll_offset - 1, 0, MAX(text.length() - 1, 0));
 	}
 
 	_text_changed();
@@ -1262,12 +1262,12 @@ void LineEdit::delete_text(int p_from_column, int p_to_column) {
 	if (cursor_pos >= text.length()) {
 		cursor_pos = text.length();
 	}
-	if (window_pos > cursor_pos) {
-		window_pos = cursor_pos;
+	if (scroll_offset > cursor_pos) {
+		scroll_offset = cursor_pos;
 	}
 
 	if (align == ALIGN_CENTER || align == ALIGN_RIGHT) {
-		window_pos = CLAMP(window_pos - (p_to_column - p_from_column), 0, MAX(text.length() - 1, 0));
+		scroll_offset = CLAMP(scroll_offset - (p_to_column - p_from_column), 0, MAX(text.length() - 1, 0));
 	}
 
 	if (!text_changed_dirty) {
@@ -1288,7 +1288,7 @@ void LineEdit::set_text(String p_text) {
 
 	update();
 	cursor_pos = 0;
-	window_pos = 0;
+	scroll_offset = 0;
 }
 
 void LineEdit::clear() {
@@ -1332,16 +1332,16 @@ void LineEdit::set_cursor_position(int p_pos) {
 	cursor_pos = p_pos;
 
 	if (!is_inside_tree()) {
-		window_pos = cursor_pos;
+		scroll_offset = cursor_pos;
 		return;
 	}
 
 	Ref<StyleBox> style = get_theme_stylebox("normal");
 	Ref<Font> font = get_theme_font("font");
 
-	if (cursor_pos <= window_pos) {
+	if (cursor_pos <= scroll_offset) {
 		// Adjust window if cursor goes too much to the left.
-		set_window_pos(MAX(0, cursor_pos - 1));
+		set_scroll_offset(MAX(0, cursor_pos - 1));
 	} else {
 		// Adjust window if cursor goes too much to the right.
 		int window_width = get_size().width - style->get_minimum_size().width;
@@ -1354,12 +1354,12 @@ void LineEdit::set_cursor_position(int p_pos) {
 		if (window_width < 0) {
 			return;
 		}
-		int wp = window_pos;
+		int wp = scroll_offset;
 
 		if (font.is_valid()) {
 			int accum_width = 0;
 
-			for (int i = cursor_pos; i >= window_pos; i--) {
+			for (int i = cursor_pos; i >= scroll_offset; i--) {
 				if (i >= text.length()) {
 					// Do not do this, because if the cursor is at the end, its just fine that it takes no space.
 					// accum_width = font->get_char_size(' ').width;
@@ -1378,8 +1378,8 @@ void LineEdit::set_cursor_position(int p_pos) {
 			}
 		}
 
-		if (wp != window_pos) {
-			set_window_pos(wp);
+		if (wp != scroll_offset) {
+			set_scroll_offset(wp);
 		}
 	}
 	update();
@@ -1389,11 +1389,15 @@ int LineEdit::get_cursor_position() const {
 	return cursor_pos;
 }
 
-void LineEdit::set_window_pos(int p_pos) {
-	window_pos = p_pos;
-	if (window_pos < 0) {
-		window_pos = 0;
+void LineEdit::set_scroll_offset(int p_pos) {
+	scroll_offset = p_pos;
+	if (scroll_offset < 0) {
+		scroll_offset = 0;
 	}
+}
+
+int LineEdit::get_scroll_offset() const {
+	return scroll_offset;
 }
 
 void LineEdit::append_at_cursor(String p_text) {
@@ -1413,7 +1417,7 @@ void LineEdit::clear_internal() {
 	_clear_undo_stack();
 	cached_width = 0;
 	cursor_pos = 0;
-	window_pos = 0;
+	scroll_offset = 0;
 	undo_text = "";
 	text = "";
 	update();
@@ -1644,7 +1648,7 @@ void LineEdit::_editor_settings_changed() {
 void LineEdit::set_expand_to_text_length(bool p_enabled) {
 	expand_to_text_length = p_enabled;
 	minimum_size_changed();
-	set_window_pos(0);
+	set_scroll_offset(0);
 }
 
 bool LineEdit::get_expand_to_text_length() const {
@@ -1771,7 +1775,7 @@ void LineEdit::_create_undo_state() {
 	op.text = text;
 	op.cached_width = cached_width;
 	op.cursor_pos = cursor_pos;
-	op.window_pos = window_pos;
+	op.scroll_offset = scroll_offset;
 	undo_stack.push_back(op);
 }
 
@@ -1816,6 +1820,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_placeholder_alpha"), &LineEdit::get_placeholder_alpha);
 	ClassDB::bind_method(D_METHOD("set_cursor_position", "position"), &LineEdit::set_cursor_position);
 	ClassDB::bind_method(D_METHOD("get_cursor_position"), &LineEdit::get_cursor_position);
+	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &LineEdit::get_scroll_offset);
 	ClassDB::bind_method(D_METHOD("set_expand_to_text_length", "enabled"), &LineEdit::set_expand_to_text_length);
 	ClassDB::bind_method(D_METHOD("get_expand_to_text_length"), &LineEdit::get_expand_to_text_length);
 	ClassDB::bind_method(D_METHOD("cursor_set_blink_enabled", "enabled"), &LineEdit::cursor_set_blink_enabled);
@@ -1898,7 +1903,7 @@ LineEdit::LineEdit() {
 	cached_width = 0;
 	cached_placeholder_width = 0;
 	cursor_pos = 0;
-	window_pos = 0;
+	scroll_offset = 0;
 	window_has_focus = true;
 	max_length = 0;
 	pass = false;
