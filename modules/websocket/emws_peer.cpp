@@ -48,7 +48,7 @@ EMWSPeer::WriteMode EMWSPeer::get_write_mode() const {
 	return write_mode;
 }
 
-Error EMWSPeer::read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
+Error EMWSPeer::read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string) {
 
 	uint8_t is_string = p_is_string ? 1 : 0;
 	return _in_buffer.write_packet(p_data, p_size, &is_string);
@@ -57,31 +57,7 @@ Error EMWSPeer::read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
 Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	int is_bin = write_mode == WebSocketPeer::WRITE_MODE_BINARY ? 1 : 0;
-
-	/* clang-format off */
-	EM_ASM({
-		var sock = Module.IDHandler.get($0);
-		var bytes_array = new Uint8Array($2);
-		var i = 0;
-
-		for(i=0; i<$2; i++) {
-			bytes_array[i] = getValue($1+i, 'i8');
-		}
-
-		try {
-			if ($3) {
-				sock.send(bytes_array.buffer);
-			} else {
-				var string = new TextDecoder("utf-8").decode(bytes_array);
-				sock.send(string);
-			}
-		} catch (e) {
-			return 1;
-		}
-		return 0;
-	}, peer_sock, p_buffer, p_buffer_size, is_bin);
-	/* clang-format on */
-
+	godot_js_websocket_send(peer_sock, p_buffer, p_buffer_size, is_bin);
 	return OK;
 };
 
@@ -119,15 +95,7 @@ bool EMWSPeer::is_connected_to_host() const {
 void EMWSPeer::close(int p_code, String p_reason) {
 
 	if (peer_sock != -1) {
-		/* clang-format off */
-		EM_ASM({
-			var sock = Module.IDHandler.get($0);
-			var code = $1;
-			var reason = UTF8ToString($2);
-			sock.close(code, reason);
-			Module.IDHandler.remove($0);
-		}, peer_sock, p_code, p_reason.utf8().get_data());
-		/* clang-format on */
+		godot_js_websocket_close(peer_sock, p_code, p_reason.utf8().get_data());
 	}
 	_is_string = 0;
 	_in_buffer.clear();

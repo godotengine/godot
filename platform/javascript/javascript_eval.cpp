@@ -33,108 +33,41 @@
 #include "api/javascript_eval.h"
 #include "emscripten.h"
 
-extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_poolbytearray_and_open_write(PoolByteArray *p_arr, PoolByteArray::Write *r_write, int p_len) {
+extern "C" {
+union js_eval_ret {
+	uint32_t b;
+	double d;
+	char *s;
+};
 
-	p_arr->resize(p_len);
-	*r_write = p_arr->write();
-	return r_write->ptr();
+extern int godot_js_eval(const char *p_js, int p_use_global_ctx, union js_eval_ret *p_union_ptr, void *p_byte_arr, void *p_byte_arr_write, void *(*p_callback)(void *p_ptr, void *p_ptr2, int p_len));
+}
+
+void *resize_poolbytearray_and_open_write(void *p_arr, void *r_write, int p_len) {
+
+	PoolByteArray *arr = (PoolByteArray *)p_arr;
+	PoolByteArray::Write *write = (PoolByteArray::Write *)r_write;
+	arr->resize(p_len);
+	*write = arr->write();
+	return write->ptr();
 }
 
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 
-	union {
-		bool b;
-		double d;
-		char *s;
-	} js_data;
-
 	PoolByteArray arr;
 	PoolByteArray::Write arr_write;
-
-	/* clang-format off */
-	Variant::Type return_type = static_cast<Variant::Type>(EM_ASM_INT({
-
-		const CODE = $0;
-		const USE_GLOBAL_EXEC_CONTEXT = $1;
-		const PTR = $2;
-		const BYTEARRAY_PTR = $3;
-		const BYTEARRAY_WRITE_PTR = $4;
-		var eval_ret;
-		try {
-			if (USE_GLOBAL_EXEC_CONTEXT) {
-				// indirect eval call grants global execution context
-				var global_eval = eval;
-				eval_ret = global_eval(UTF8ToString(CODE));
-			} else {
-				eval_ret = eval(UTF8ToString(CODE));
-			}
-		} catch (e) {
-			err(e);
-			eval_ret = null;
-		}
-
-		switch (typeof eval_ret) {
-
-			case 'boolean':
-				setValue(PTR, eval_ret, 'i32');
-				return 1; // BOOL
-
-			case 'number':
-				setValue(PTR, eval_ret, 'double');
-				return 3; // REAL
-
-			case 'string':
-				var array_len = lengthBytesUTF8(eval_ret)+1;
-				var array_ptr = _malloc(array_len);
-				try {
-					if (array_ptr===0) {
-						throw new Error('String allocation failed (probably out of memory)');
-					}
-					setValue(PTR, array_ptr , '*');
-					stringToUTF8(eval_ret, array_ptr, array_len);
-					return 4; // STRING
-				} catch (e) {
-					if (array_ptr!==0) {
-						_free(array_ptr)
-					}
-					err(e);
-					// fall through
-				}
-				break;
-
-			case 'object':
-				if (eval_ret === null) {
-					break;
-				}
-
-				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
-					eval_ret = new Uint8Array(eval_ret.buffer);
-				}
-				else if (eval_ret instanceof ArrayBuffer) {
-					eval_ret = new Uint8Array(eval_ret);
-				}
-				if (eval_ret instanceof Uint8Array) {
-					var bytes_ptr = ccall('resize_poolbytearray_and_open_write', 'number', ['number', 'number' ,'number'], [BYTEARRAY_PTR, BYTEARRAY_WRITE_PTR, eval_ret.length]);
-					HEAPU8.set(eval_ret, bytes_ptr);
-					return 20; // POOL_BYTE_ARRAY
-				}
-				break;
-		}
-		return 0; // NIL
-
-	}, p_code.utf8().get_data(), p_use_global_exec_context, &js_data, &arr, &arr_write));
-	/* clang-format on */
+	union js_eval_ret js_data;
+	memset(&js_data, 0, sizeof(js_data));
+	Variant::Type return_type = static_cast<Variant::Type>(godot_js_eval(p_code.utf8().get_data(), p_use_global_exec_context, &js_data, &arr, &arr_write, resize_poolbytearray_and_open_write));
 
 	switch (return_type) {
 		case Variant::BOOL:
-			return js_data.b;
+			return js_data.b == 1;
 		case Variant::REAL:
 			return js_data.d;
 		case Variant::STRING: {
 			String str = String::utf8(js_data.s);
-			/* clang-format off */
-				EM_ASM_({ _free($0); }, js_data.s);
-			/* clang-format on */
+			free(js_data.s); // Must free the string allocated in JS.
 			return str;
 		}
 		case Variant::POOL_BYTE_ARRAY:

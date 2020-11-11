@@ -94,6 +94,9 @@ public:
 		} else if (req[1] == basereq + ".js") {
 			filepath += ".js";
 			ctype = "application/javascript";
+		} else if (req[1] == basereq + ".audio.worklet.js") {
+			filepath += ".audio.worklet.js";
+			ctype = "application/javascript";
 		} else if (req[1] == basereq + ".worker.js") {
 			filepath += ".worker.js";
 			ctype = "application/javascript";
@@ -447,6 +450,10 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 
 			file = p_path.get_file().get_basename() + ".worker.js";
 
+		} else if (file == "godot.audio.worklet.js") {
+
+			file = p_path.get_file().get_basename() + ".audio.worklet.js";
+
 		} else if (file == "godot.wasm") {
 
 			file = p_path.get_file().get_basename() + ".wasm";
@@ -581,6 +588,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		DirAccess::remove_file_or_error(basepath + ".html");
 		DirAccess::remove_file_or_error(basepath + ".js");
 		DirAccess::remove_file_or_error(basepath + ".worker.js");
+		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".pck");
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".wasm");

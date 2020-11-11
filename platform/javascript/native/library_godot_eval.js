@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  webrtc_data_channel_js.h                                             */
+/*  library_godot_eval.js                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,66 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef JAVASCRIPT_ENABLED
+const GodotEval = {
 
-#ifndef WEBRTC_DATA_CHANNEL_JS_H
-#define WEBRTC_DATA_CHANNEL_JS_H
+	godot_js_eval__deps: ['$GodotOS'],
+	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+		const js_code = UTF8ToString(p_js);
+		let eval_ret = null;
+		try {
+			if (p_use_global_ctx) {
+				// indirect eval call grants global execution context
+				const global_eval = eval;
+				eval_ret = global_eval(js_code);
+			} else {
+				eval_ret = eval(js_code);
+			}
+		} catch (e) {
+			err(e);
+		}
 
-#include "webrtc_data_channel.h"
+		switch (typeof eval_ret) {
 
-class WebRTCDataChannelJS : public WebRTCDataChannel {
-	GDCLASS(WebRTCDataChannelJS, WebRTCDataChannel);
+			case 'boolean':
+				setValue(p_union_ptr, eval_ret, 'i32');
+				return 1; // BOOL
 
-private:
-	String _label;
-	String _protocol;
+			case 'number':
+				setValue(p_union_ptr, eval_ret, 'double');
+				return 3; // REAL
 
-	bool _was_string;
-	WriteMode _write_mode;
+			case 'string':
+				let array_ptr = GodotOS.allocString(eval_ret);
+				setValue(p_union_ptr, array_ptr , '*');
+				return 4; // STRING
 
-	enum {
-		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
-	};
+			case 'object':
+				if (eval_ret === null) {
+					break;
+				}
 
-	int _js_id;
-	RingBuffer<uint8_t> in_buffer;
-	int queue_count;
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+					eval_ret = new Uint8Array(eval_ret.buffer);
+				}
+				else if (eval_ret instanceof ArrayBuffer) {
+					eval_ret = new Uint8Array(eval_ret);
+				}
+				if (eval_ret instanceof Uint8Array) {
+					const func = GodotOS.get_func(p_callback);
+					const bytes_ptr = func(p_byte_arr, p_byte_arr_write,  eval_ret.length);
+					HEAPU8.set(eval_ret, bytes_ptr);
+					return 20; // POOL_BYTE_ARRAY
+				}
+				break;
+		}
+		return 0; // NIL
+	},
+}
 
-	static void _on_open(void *p_obj);
-	static void _on_close(void *p_obj);
-	static void _on_error(void *p_obj);
-	static void _on_message(void *p_obj, const uint8_t *p_data, int p_size, int p_is_string);
-
-public:
-	virtual void set_write_mode(WriteMode mode);
-	virtual WriteMode get_write_mode() const;
-	virtual bool was_string_packet() const;
-
-	virtual ChannelState get_ready_state() const;
-	virtual String get_label() const;
-	virtual bool is_ordered() const;
-	virtual int get_id() const;
-	virtual int get_max_packet_life_time() const;
-	virtual int get_max_retransmits() const;
-	virtual String get_protocol() const;
-	virtual bool is_negotiated() const;
-
-	virtual Error poll();
-	virtual void close();
-
-	/** Inherited from PacketPeer: **/
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-
-	virtual int get_max_packet_size() const;
-
-	WebRTCDataChannelJS();
-	WebRTCDataChannelJS(int js_id);
-	~WebRTCDataChannelJS();
-};
-
-#endif // WEBRTC_DATA_CHANNEL_JS_H
-
-#endif // JAVASCRIPT_ENABLED
+mergeInto(LibraryManager.library, GodotEval);
