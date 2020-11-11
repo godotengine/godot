@@ -81,7 +81,7 @@ private:
 	PopupMenu *menu;
 
 	int cursor_pos;
-	int window_pos;
+	int scroll_offset;
 	int max_length; // 0 for no maximum.
 
 	int cached_width;
@@ -108,7 +108,7 @@ private:
 
 	struct TextOperation {
 		int cursor_pos;
-		int window_pos;
+		int scroll_offset;
 		int cached_width;
 		String text;
 	};
@@ -145,7 +145,8 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_cursor();
-	void set_window_pos(int p_pos);
+	void set_scroll_offset(int p_pos);
+	int get_scroll_offset() const;
 
 	void set_cursor_at_pixel_pos(int p_x);
 	int get_cursor_pixel_pos();

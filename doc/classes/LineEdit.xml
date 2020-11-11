@@ -76,6 +76,13 @@
 				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
 			</description>
 		</method>
+		<method name="get_scroll_offset" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the scroll offset due to [member caret_position], as a number of characters.
+			</description>
+		</method>
 		<method name="menu_option">
 			<return type="void">
 			</return>
