@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  variant_builtin_funcs.cpp                                            */
+/*  variant_utility.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -38,7 +38,7 @@
 #include "core/variant/binder_common.h"
 #include "core/variant/variant_parser.h"
 
-struct VariantBuiltinFunctions {
+struct VariantUtilityFunctions {
 	// Math
 	static inline double sin(double arg) {
 		return Math::sin(arg);
@@ -725,7 +725,7 @@ template <class R, class... P, size_t... Is>
 static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALLR;
-	(void)p_args;
+	(void)p_args; // avoid gcc warning
 	(void)r_error;
 }
 
@@ -827,50 +827,50 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
-			call_helperr(VariantBuiltinFunctions::m_func, r_ret, p_args, r_error);                               \
+			call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args, r_error);                               \
 		}                                                                                                        \
                                                                                                                  \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
-			validated_call_helperr(VariantBuiltinFunctions::m_func, r_ret, p_args);                              \
+			validated_call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args);                              \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
-			ptr_call_helperr(VariantBuiltinFunctions::m_func, ret, p_args);                                      \
+			ptr_call_helperr(VariantUtilityFunctions::m_func, ret, p_args);                                      \
 		}                                                                                                        \
                                                                                                                  \
 		static int get_argument_count() {                                                                        \
-			return get_arg_count_helperr(VariantBuiltinFunctions::m_func);                                       \
+			return get_arg_count_helperr(VariantUtilityFunctions::m_func);                                       \
 		}                                                                                                        \
                                                                                                                  \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
-			return get_arg_type_helperr(VariantBuiltinFunctions::m_func, p_arg);                                 \
+			return get_arg_type_helperr(VariantUtilityFunctions::m_func, p_arg);                                 \
 		}                                                                                                        \
                                                                                                                  \
 		static Variant::Type get_return_type() {                                                                 \
-			return get_ret_type_helperr(VariantBuiltinFunctions::m_func);                                        \
+			return get_ret_type_helperr(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
 			return true;                                                                                         \
 		}                                                                                                        \
 		static bool is_vararg() { return false; }                                                                \
-		static Variant::BuiltInFunctionType get_type() { return m_category; }                                    \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                    \
 	};                                                                                                           \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBINDVR(m_func, m_args, m_category)                                                                          \
 	class Func_##m_func {                                                                                               \
 	public:                                                                                                             \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {        \
 			r_error.error = Callable::CallError::CALL_OK;                                                               \
-			*r_ret = VariantBuiltinFunctions::m_func(*p_args[0], r_error);                                              \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], r_error);                                              \
 		}                                                                                                               \
                                                                                                                         \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                            \
 			Callable::CallError ce;                                                                                     \
-			*r_ret = VariantBuiltinFunctions::m_func(*p_args[0], ce);                                                   \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], ce);                                                   \
 		}                                                                                                               \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                           \
 			Callable::CallError ce;                                                                                     \
-			PtrToArg<Variant>::encode(VariantBuiltinFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), ce), ret); \
+			PtrToArg<Variant>::encode(VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), ce), ret); \
 		}                                                                                                               \
                                                                                                                         \
 		static int get_argument_count() {                                                                               \
@@ -888,26 +888,26 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			return true;                                                                                                \
 		}                                                                                                               \
 		static bool is_vararg() { return false; }                                                                       \
-		static Variant::BuiltInFunctionType get_type() { return m_category; }                                           \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                           \
 	};                                                                                                                  \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBINDVR3(m_func, m_args, m_category)                                                                                                                           \
 	class Func_##m_func {                                                                                                                                                 \
 	public:                                                                                                                                                               \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {                                                          \
 			r_error.error = Callable::CallError::CALL_OK;                                                                                                                 \
-			*r_ret = VariantBuiltinFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], r_error);                                                                        \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], r_error);                                                                        \
 		}                                                                                                                                                                 \
                                                                                                                                                                           \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                                                                              \
 			Callable::CallError ce;                                                                                                                                       \
-			*r_ret = VariantBuiltinFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], ce);                                                                             \
+			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], ce);                                                                             \
 		}                                                                                                                                                                 \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                                                                             \
 			Callable::CallError ce;                                                                                                                                       \
 			Variant r;                                                                                                                                                    \
-			r = VariantBuiltinFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), PtrToArg<Variant>::convert(p_args[2]), ce); \
+			r = VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), PtrToArg<Variant>::convert(p_args[2]), ce); \
 			PtrToArg<Variant>::encode(r, ret);                                                                                                                            \
 		}                                                                                                                                                                 \
                                                                                                                                                                           \
@@ -926,21 +926,21 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			return true;                                                                                                                                                  \
 		}                                                                                                                                                                 \
 		static bool is_vararg() { return false; }                                                                                                                         \
-		static Variant::BuiltInFunctionType get_type() { return m_category; }                                                                                             \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                                                                             \
 	};                                                                                                                                                                    \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBINDVARARG(m_func, m_args, m_category)                                                               \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
-			*r_ret = VariantBuiltinFunctions::m_func(p_args, p_argcount, r_error);                               \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                               \
 		}                                                                                                        \
                                                                                                                  \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
-			*r_ret = VariantBuiltinFunctions::m_func(p_args, p_argcount, c);                                     \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                     \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
@@ -973,23 +973,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static bool is_vararg() {                                                                                \
 			return true;                                                                                         \
 		}                                                                                                        \
-		static Variant::BuiltInFunctionType get_type() {                                                         \
+		static Variant::UtilityFunctionType get_type() {                                                         \
 			return m_category;                                                                                   \
 		}                                                                                                        \
 	};                                                                                                           \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBINDVARARGS(m_func, m_args, m_category)                                                              \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
-			*r_ret = VariantBuiltinFunctions::m_func(p_args, p_argcount, r_error);                               \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                               \
 		}                                                                                                        \
                                                                                                                  \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
-			*r_ret = VariantBuiltinFunctions::m_func(p_args, p_argcount, c);                                     \
+			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                     \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
@@ -1022,23 +1022,23 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static bool is_vararg() {                                                                                \
 			return true;                                                                                         \
 		}                                                                                                        \
-		static Variant::BuiltInFunctionType get_type() {                                                         \
+		static Variant::UtilityFunctionType get_type() {                                                         \
 			return m_category;                                                                                   \
 		}                                                                                                        \
 	};                                                                                                           \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBINDVARARGV(m_func, m_args, m_category)                                                              \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
-			VariantBuiltinFunctions::m_func(p_args, p_argcount, r_error);                                        \
+			VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                                        \
 		}                                                                                                        \
                                                                                                                  \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
-			VariantBuiltinFunctions::m_func(p_args, p_argcount, c);                                              \
+			VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                              \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			Vector<Variant> args;                                                                                \
@@ -1070,218 +1070,218 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static bool is_vararg() {                                                                                \
 			return true;                                                                                         \
 		}                                                                                                        \
-		static Variant::BuiltInFunctionType get_type() {                                                         \
+		static Variant::UtilityFunctionType get_type() {                                                         \
 			return m_category;                                                                                   \
 		}                                                                                                        \
 	};                                                                                                           \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
 #define FUNCBIND(m_func, m_args, m_category)                                                                     \
 	class Func_##m_func {                                                                                        \
 	public:                                                                                                      \
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
-			call_helper(VariantBuiltinFunctions::m_func, p_args, r_error);                                       \
+			call_helper(VariantUtilityFunctions::m_func, p_args, r_error);                                       \
 		}                                                                                                        \
                                                                                                                  \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
-			validated_call_helper(VariantBuiltinFunctions::m_func, p_args);                                      \
+			validated_call_helper(VariantUtilityFunctions::m_func, p_args);                                      \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
-			ptr_call_helper(VariantBuiltinFunctions::m_func, p_args);                                            \
+			ptr_call_helper(VariantUtilityFunctions::m_func, p_args);                                            \
 		}                                                                                                        \
                                                                                                                  \
 		static int get_argument_count() {                                                                        \
-			return get_arg_count_helper(VariantBuiltinFunctions::m_func);                                        \
+			return get_arg_count_helper(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
                                                                                                                  \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
-			return get_arg_type_helper(VariantBuiltinFunctions::m_func, p_arg);                                  \
+			return get_arg_type_helper(VariantUtilityFunctions::m_func, p_arg);                                  \
 		}                                                                                                        \
                                                                                                                  \
 		static Variant::Type get_return_type() {                                                                 \
-			return get_ret_type_helper(VariantBuiltinFunctions::m_func);                                         \
+			return get_ret_type_helper(VariantUtilityFunctions::m_func);                                         \
 		}                                                                                                        \
 		static bool has_return_type() {                                                                          \
 			return false;                                                                                        \
 		}                                                                                                        \
 		static bool is_vararg() { return false; }                                                                \
-		static Variant::BuiltInFunctionType get_type() { return m_category; }                                    \
+		static Variant::UtilityFunctionType get_type() { return m_category; }                                    \
 	};                                                                                                           \
-	register_builtin_function<Func_##m_func>(#m_func, m_args)
+	register_utility_function<Func_##m_func>(#m_func, m_args)
 
-struct VariantBuiltinFunctionInfo {
-	void (*call_builtin)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant::BuiltinFunctionValidatedCall validated_call_builtin;
-	Variant::BuiltinFunctionPTRCall ptr_call_builtin;
+struct VariantUtilityFunctionInfo {
+	void (*call_utility)(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant::ValidatedUtilityFunction validated_call_utility;
+	Variant::PTRUtilityFunction ptr_call_utility;
 	Vector<String> argnames;
 	bool is_vararg;
 	bool returns_value;
 	int argcount;
 	Variant::Type (*get_arg_type)(int);
 	Variant::Type return_type;
-	Variant::BuiltInFunctionType type;
+	Variant::UtilityFunctionType type;
 };
 
-static OAHashMap<StringName, VariantBuiltinFunctionInfo> builtin_function_table;
-static List<StringName> builtin_function_name_table;
+static OAHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
+static List<StringName> utility_function_name_table;
 
 template <class T>
-static void register_builtin_function(const String &p_name, const Vector<String> &argnames) {
+static void register_utility_function(const String &p_name, const Vector<String> &argnames) {
 	String name = p_name;
 	if (name.begins_with("_")) {
 		name = name.substr(1, name.length() - 1);
 	}
 	StringName sname = name;
-	ERR_FAIL_COND(builtin_function_table.has(sname));
+	ERR_FAIL_COND(utility_function_table.has(sname));
 
-	VariantBuiltinFunctionInfo bfi;
-	bfi.call_builtin = T::call;
-	bfi.validated_call_builtin = T::validated_call;
-	bfi.ptr_call_builtin = T::ptrcall;
+	VariantUtilityFunctionInfo bfi;
+	bfi.call_utility = T::call;
+	bfi.validated_call_utility = T::validated_call;
+	bfi.ptr_call_utility = T::ptrcall;
 	bfi.is_vararg = T::is_vararg();
 	bfi.argnames = argnames;
 	bfi.argcount = T::get_argument_count();
 	if (!bfi.is_vararg) {
-		ERR_FAIL_COND_MSG(argnames.size() != bfi.argcount, "wrong number of arguments binding builtin function: " + name);
+		ERR_FAIL_COND_MSG(argnames.size() != bfi.argcount, "wrong number of arguments binding utility function: " + name);
 	}
 	bfi.get_arg_type = T::get_argument_type;
 	bfi.return_type = T::get_return_type();
 	bfi.type = T::get_type();
 	bfi.returns_value = T::has_return_type();
 
-	builtin_function_table.insert(sname, bfi);
-	builtin_function_name_table.push_back(sname);
+	utility_function_table.insert(sname, bfi);
+	utility_function_name_table.push_back(sname);
 }
 
-void Variant::_register_variant_builtin_funcs() {
+void Variant::_register_variant_utility_functions() {
 	// Math
 
-	FUNCBINDR(sin, sarray("angle_rad"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(cos, sarray("angle_rad"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(tan, sarray("angle_rad"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(sin, sarray("angle_rad"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cos, sarray("angle_rad"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(tan, sarray("angle_rad"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(sinh, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(cosh, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(tanh, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(sinh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cosh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(tanh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(asin, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(acos, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(atan, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(asin, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(acos, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(atan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(atan2, sarray("y", "x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(atan2, sarray("y", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(sqrt, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(fmod, sarray("x", "y"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(fposmod, sarray("x", "y"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(floor, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(ceil, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(round, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(sqrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(fposmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(floor, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(ceil, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(round, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDVR(abs, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDVR(abs, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(absf, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(absi, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(absf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(absi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDVR(sign, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDVR(sign, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(signf, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(signi, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(signf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(signi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(pow, sarray("x", "y"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(log, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(exp, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(pow, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(log, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(exp, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(is_nan, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(is_inf, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(is_nan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_inf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(is_zero_approx, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(ease, sarray("x", "c"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(step_decimals, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(range_step_decimals, sarray("x"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(stepify, sarray("x", "y"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(ease, sarray("x", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(stepify, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(lerp, sarray("from", "to", "c"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(lerp_angle, sarray("from", "to", "c"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(inverse_lerp, sarray("from", "to", "c"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(lerp, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(lerp_angle, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(inverse_lerp, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(smoothstep, sarray("from", "to", "c"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(dectime, sarray("value", "amount", "step"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(smoothstep, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(dectime, sarray("value", "amount", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(deg2rad, sarray("deg"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(rad2deg, sarray("rad"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(linear2db, sarray("lin"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(db2linear, sarray("db"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(deg2rad, sarray("deg"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(rad2deg, sarray("rad"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(linear2db, sarray("lin"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(db2linear, sarray("db"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(polar2cartesian, sarray("r", "th"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(cartesian2polar, sarray("x", "y"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(polar2cartesian, sarray("r", "th"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(cartesian2polar, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(wrapi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(wrapf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDVARARG(max, sarray(), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDVARARG(max, sarray(), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(maxi, sarray("a", "b"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(maxf, sarray("a", "b"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(maxi, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(maxf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDVARARG(min, sarray(), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDVARARG(min, sarray(), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(mini, sarray("a", "b"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(minf, sarray("a", "b"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(mini, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(minf, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDVR3(clamp, sarray("value", "min", "max"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(clampi, sarray("value", "min", "max"), Variant::BUILTIN_FUNC_TYPE_MATH);
-	FUNCBINDR(clampf, sarray("value", "min", "max"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDVR3(clamp, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(clampi, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(clampf, sarray("value", "min", "max"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(nearest_po2, sarray("value"), Variant::BUILTIN_FUNC_TYPE_MATH);
+	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	//Random
 
-	FUNCBIND(randomize, sarray(), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBINDR(randi, sarray(), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBINDR(randf, sarray(), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBINDR(randi_range, sarray("from", "to"), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBINDR(randf_range, sarray("from", "to"), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBIND(seed, sarray("base"), Variant::BUILTIN_FUNC_TYPE_RANDOM);
-	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::BUILTIN_FUNC_TYPE_RANDOM);
+	FUNCBIND(randomize, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randi, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randf, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 
 	// Utility
-	FUNCBINDVR(weakref, sarray("from"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(_typeof, sarray("variable"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGS(str, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(print, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(printerr, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(printt, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(prints, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(printraw, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(push_error, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDVARARGV(push_warning, sarray(), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDVR(weakref, sarray("from"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(printerr, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(printt, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(prints, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(printraw, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(push_error, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDVARARGV(push_warning, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2str, sarray("variable"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(str2var, sarray("string"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDR(var2str, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(str2var, sarray("string"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2bytes, sarray("variable"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(bytes2var, sarray("bytes"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDR(var2bytes, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(bytes2var, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(var2bytes_with_objects, sarray("variable"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(bytes2var_with_objects, sarray("bytes"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDR(var2bytes_with_objects, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(bytes2var_with_objects, sarray("bytes"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(hash, sarray("variable"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDR(hash, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(instance_from_id, sarray("id"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(is_instance_id_valid, sarray("id"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
-	FUNCBINDR(is_instance_valid, sarray("instance"), Variant::BUILTIN_FUNC_TYPE_UTILITY);
+	FUNCBINDR(instance_from_id, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(is_instance_id_valid, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(is_instance_valid, sarray("instance"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
-void Variant::_unregister_variant_builtin_funcs() {
-	builtin_function_table.clear();
-	builtin_function_name_table.clear();
+void Variant::_unregister_variant_utility_functions() {
+	utility_function_table.clear();
+	utility_function_name_table.clear();
 }
 
-void Variant::call_builtin_func(const StringName &p_name, Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+void Variant::call_utility_function(const StringName &p_name, Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		r_error.argument = 0;
@@ -1303,57 +1303,57 @@ void Variant::call_builtin_func(const StringName &p_name, Variant *r_ret, const 
 		return;
 	}
 
-	bfi->call_builtin(r_ret, p_args, p_argcount, r_error);
+	bfi->call_utility(r_ret, p_args, p_argcount, r_error);
 }
 
-bool Variant::has_builtin_func(const StringName &p_name) {
-	return builtin_function_table.has(p_name);
+bool Variant::has_utility_function(const StringName &p_name) {
+	return utility_function_table.has(p_name);
 }
 
-Variant::BuiltinFunctionValidatedCall Variant::get_builtin_validated_caller(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+Variant::ValidatedUtilityFunction Variant::get_validated_utility_function(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return nullptr;
 	}
 
-	return bfi->validated_call_builtin;
+	return bfi->validated_call_utility;
 }
-Variant::BuiltinFunctionPTRCall Variant::get_builtin_ptr_caller(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+Variant::PTRUtilityFunction Variant::get_ptr_utility_function(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return nullptr;
 	}
 
-	return bfi->ptr_call_builtin;
+	return bfi->ptr_call_utility;
 }
 
-Variant::BuiltInFunctionType Variant::get_builtin_func_type(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+Variant::UtilityFunctionType Variant::get_utility_function_type(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
-		return Variant::BUILTIN_FUNC_TYPE_MATH;
+		return Variant::UTILITY_FUNC_TYPE_MATH;
 	}
 
 	return bfi->type;
 }
 
-int Variant::get_builtin_func_argument_count(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+int Variant::get_utility_function_argument_count(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return 0;
 	}
 
 	return bfi->argcount;
 }
-Variant::Type Variant::get_builtin_func_argument_type(const StringName &p_name, int p_arg) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+Variant::Type Variant::get_utility_function_argument_type(const StringName &p_name, int p_arg) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return Variant::NIL;
 	}
 
 	return bfi->get_arg_type(p_arg);
 }
-String Variant::get_builtin_func_argument_name(const StringName &p_name, int p_arg) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+String Variant::get_utility_function_argument_name(const StringName &p_name, int p_arg) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return String();
 	}
@@ -1361,23 +1361,23 @@ String Variant::get_builtin_func_argument_name(const StringName &p_name, int p_a
 	ERR_FAIL_INDEX_V(p_arg, bfi->argnames.size(), String());
 	return bfi->argnames[p_arg];
 }
-bool Variant::has_builtin_func_return_value(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+bool Variant::has_utility_function_return_value(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return false;
 	}
 	return bfi->returns_value;
 }
-Variant::Type Variant::get_builtin_func_return_type(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+Variant::Type Variant::get_utility_function_return_type(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return Variant::NIL;
 	}
 
 	return bfi->return_type;
 }
-bool Variant::is_builtin_func_vararg(const StringName &p_name) {
-	const VariantBuiltinFunctionInfo *bfi = builtin_function_table.lookup_ptr(p_name);
+bool Variant::is_utility_function_vararg(const StringName &p_name) {
+	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
 		return false;
 	}
@@ -1385,8 +1385,8 @@ bool Variant::is_builtin_func_vararg(const StringName &p_name) {
 	return bfi->is_vararg;
 }
 
-void Variant::get_builtin_function_list(List<StringName> *r_functions) {
-	for (List<StringName>::Element *E = builtin_function_name_table.front(); E; E = E->next()) {
+void Variant::get_utility_function_list(List<StringName> *r_functions) {
+	for (List<StringName>::Element *E = utility_function_name_table.front(); E; E = E->next()) {
 		r_functions->push_back(E->get());
 	}
 }
