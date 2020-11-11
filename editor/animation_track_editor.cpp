@@ -163,7 +163,6 @@ public:
 			undo_redo->commit_action();
 
 			setting = false;
-			
 			AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 			return true;
 		}
@@ -184,7 +183,6 @@ public:
 				undo_redo->commit_action();
 
 				setting = false;
-				
 				AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 				return true;
 			} break;
