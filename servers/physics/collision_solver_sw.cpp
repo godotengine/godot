@@ -33,9 +33,6 @@
 
 #include "gjk_epa.h"
 
-#define collision_solver sat_calculate_penetration
-//#define collision_solver gjk_epa_calculate_penetration
-
 bool CollisionSolverSW::solve_static_plane(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
 
 	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW *>(p_shape_A);
@@ -125,7 +122,7 @@ void CollisionSolverSW::concave_callback(void *p_userdata, ShapeSW *p_convex) {
 	_ConcaveCollisionInfo &cinfo = *(_ConcaveCollisionInfo *)(p_userdata);
 	cinfo.aabb_tests++;
 
-	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, NULL, cinfo.margin_A, cinfo.margin_B);
+	bool collided = sat_calculate_penetration(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, NULL, cinfo.margin_A, cinfo.margin_B);
 	if (!collided)
 		return;
 
@@ -231,7 +228,7 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 
 	} else {
 
-		return collision_solver(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
+		return sat_calculate_penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
 	}
 }
 
@@ -242,15 +239,17 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 	if (cinfo.collided)
 		return;
 
-	Vector3 close_A, close_B;
-	cinfo.collided = !gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, close_A, close_B);
-
-	if (cinfo.collided)
+	GjkEpaResult result;
+	if (!gjk_epa_calculate_distance(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, result)) {
+		cinfo.collided = true;
+		ERR_FAIL_COND_MSG(result.status != GjkEpaResult::Penetrating, "GJK EPA Algorithm failed.");
 		return;
-	if (!cinfo.tested || close_A.distance_squared_to(close_B) < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
+	}
 
-		cinfo.close_A = close_A;
-		cinfo.close_B = close_B;
+	if (!cinfo.tested || result.distance < cinfo.close_A.distance_squared_to(cinfo.close_B)) {
+
+		cinfo.close_A = result.witnesses[0];
+		cinfo.close_B = result.witnesses[1];
 		cinfo.tested = true;
 	}
 
@@ -367,6 +366,14 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 		return !cinfo.collided;
 	} else {
 
-		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
+		GjkEpaResult result;
+		if (gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, result)) {
+			r_point_A = result.witnesses[0];
+			r_point_B = result.witnesses[1];
+			return true;
+		} else {
+			ERR_FAIL_COND_V_MSG(result.status != GjkEpaResult::Penetrating, false, "GJK EPA Algorithm failed.");
+			return false;
+		}
 	}
 }
