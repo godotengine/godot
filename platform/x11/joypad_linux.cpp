@@ -493,24 +493,28 @@ void JoypadLinux::process_joypads() {
 						switch (ev.code) {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
-									if (ev.value < 0)
-										joy->dpad |= InputDefault::HAT_MASK_LEFT;
-									else
-										joy->dpad |= InputDefault::HAT_MASK_RIGHT;
-								} else
+									if (ev.value < 0) {
+										joy->dpad = (joy->dpad | InputDefault::HAT_MASK_LEFT) & ~InputDefault::HAT_MASK_RIGHT;
+									} else {
+										joy->dpad = (joy->dpad | InputDefault::HAT_MASK_RIGHT) & ~InputDefault::HAT_MASK_LEFT;
+									}
+								} else {
 									joy->dpad &= ~(InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_RIGHT);
+								}
 
 								input->joy_hat(i, joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
-									if (ev.value < 0)
-										joy->dpad |= InputDefault::HAT_MASK_UP;
-									else
-										joy->dpad |= InputDefault::HAT_MASK_DOWN;
-								} else
+									if (ev.value < 0) {
+										joy->dpad = (joy->dpad | InputDefault::HAT_MASK_UP) & ~InputDefault::HAT_MASK_DOWN;
+									} else {
+										joy->dpad = (joy->dpad | InputDefault::HAT_MASK_DOWN) & ~InputDefault::HAT_MASK_UP;
+									}
+								} else {
 									joy->dpad &= ~(InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_DOWN);
+								}
 
 								input->joy_hat(i, joy->dpad);
 								break;
