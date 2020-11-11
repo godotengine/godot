@@ -208,7 +208,6 @@ public:
 					undo_redo->commit_action();
 
 					setting = false;
-					
 					AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 					return true;
 				}
@@ -300,7 +299,6 @@ public:
 					undo_redo->commit_action();
 
 					setting = false;
-					
 					AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 					return true;
 				}
@@ -319,7 +317,6 @@ public:
 					undo_redo->commit_action();
 
 					setting = false;
-					
 					AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 					return true;
 				}
@@ -338,7 +335,6 @@ public:
 					undo_redo->commit_action();
 
 					setting = false;
-					
 					AnimationPlayerEditor::singleton->_animation_key_editor_seek(-1, false);
 					return true;
 				}
@@ -357,7 +353,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
-
+					
 					setting = false;
 					return true;
 				}
