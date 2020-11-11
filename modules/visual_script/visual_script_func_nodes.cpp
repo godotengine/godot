@@ -42,7 +42,7 @@
 //////////////////////////////////////////
 
 int VisualScriptFunctionCall::get_output_sequence_port_count() const {
-	if ((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function))) {
+	if ((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_builtin_method_const(basic_type, function))) {
 		return 0;
 	} else {
 		return 1;
@@ -50,7 +50,7 @@ int VisualScriptFunctionCall::get_output_sequence_port_count() const {
 }
 
 bool VisualScriptFunctionCall::has_input_sequence_port() const {
-	return !((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_method_const(basic_type, function)));
+	return !((method_cache.flags & METHOD_FLAG_CONST && call_mode != CALL_MODE_INSTANCE) || (call_mode == CALL_MODE_BASIC_TYPE && Variant::is_builtin_method_const(basic_type, function)));
 }
 #ifdef TOOLS_ENABLED
 
@@ -130,7 +130,11 @@ StringName VisualScriptFunctionCall::_get_base_type() const {
 
 int VisualScriptFunctionCall::get_input_value_port_count() const {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		Vector<Variant::Type> types = Variant::get_method_argument_types(basic_type, function);
+		Vector<Variant::Type> types;
+		int argc = Variant::get_builtin_method_argument_count(basic_type, function);
+		for (int i = 0; i < argc; i++) {
+			types.push_back(Variant::get_builtin_method_argument_type(basic_type, function, i));
+		}
 		return types.size() + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) + 1;
 
 	} else {
@@ -147,8 +151,7 @@ int VisualScriptFunctionCall::get_input_value_port_count() const {
 
 int VisualScriptFunctionCall::get_output_value_port_count() const {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		bool returns = false;
-		Variant::get_method_return_type(basic_type, function, &returns);
+		bool returns = Variant::has_builtin_method_return_value(basic_type, function);
 		return returns ? 1 : 0;
 
 	} else {
@@ -195,10 +198,7 @@ PropertyInfo VisualScriptFunctionCall::get_input_value_port_info(int p_idx) cons
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		Vector<StringName> names = Variant::get_method_argument_names(basic_type, function);
-		Vector<Variant::Type> types = Variant::get_method_argument_types(basic_type, function);
-		return PropertyInfo(types[p_idx], names[p_idx]);
-
+		return PropertyInfo(Variant::get_builtin_method_argument_type(basic_type, function, p_idx), Variant::get_builtin_method_argument_name(basic_type, function, p_idx));
 	} else {
 		MethodBind *mb = ClassDB::get_method(_get_base_type(), function);
 		if (mb) {
@@ -220,7 +220,7 @@ PropertyInfo VisualScriptFunctionCall::get_output_value_port_info(int p_idx) con
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		return PropertyInfo(Variant::get_method_return_type(basic_type, function), "");
+		return PropertyInfo(Variant::get_builtin_method_return_type(basic_type, function), "");
 	} else {
 		if (call_mode == CALL_MODE_INSTANCE) {
 			if (p_idx == 0) {
@@ -419,7 +419,7 @@ void VisualScriptFunctionCall::set_function(const StringName &p_type) {
 	function = p_type;
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-		use_default_args = Variant::get_method_default_arguments(basic_type, function).size();
+		use_default_args = Variant::get_builtin_method_default_arguments(basic_type, function).size();
 	} else {
 		//update all caches
 
@@ -606,7 +606,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		int mc = 0;
 
 		if (call_mode == CALL_MODE_BASIC_TYPE) {
-			mc = Variant::get_method_default_arguments(basic_type, function).size();
+			mc = Variant::get_builtin_method_default_arguments(basic_type, function).size();
 		} else {
 			MethodBind *mb = ClassDB::get_method(_get_base_type(), function);
 			if (mb) {
@@ -805,19 +805,21 @@ public:
 				} else if (returns) {
 					if (call_mode == VisualScriptFunctionCall::CALL_MODE_INSTANCE) {
 						if (returns >= 2) {
-							*p_outputs[1] = v.call(function, p_inputs + 1, input_args, r_error);
+							v.call(function, p_inputs + 1, input_args, *p_outputs[1], r_error);
 						} else if (returns == 1) {
-							v.call(function, p_inputs + 1, input_args, r_error);
+							Variant ret;
+							v.call(function, p_inputs + 1, input_args, ret, r_error);
 						} else {
 							r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 							r_error_str = "Invalid returns count for call_mode == CALL_MODE_INSTANCE";
 							return 0;
 						}
 					} else {
-						*p_outputs[0] = v.call(function, p_inputs + 1, input_args, r_error);
+						v.call(function, p_inputs + 1, input_args, *p_outputs[0], r_error);
 					}
 				} else {
-					v.call(function, p_inputs + 1, input_args, r_error);
+					Variant ret;
+					v.call(function, p_inputs + 1, input_args, ret, r_error);
 				}
 
 				if (call_mode == VisualScriptFunctionCall::CALL_MODE_INSTANCE) {

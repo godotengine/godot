@@ -650,6 +650,39 @@ void call_with_variant_args_retc_static_helper(T *p_instance, R (*p_method)(T *,
 	(void)p_args;
 }
 
+template <class T, class R, class... P>
+void call_with_variant_args_retc_static_helper_dv(T *p_instance, R (*p_method)(T *, P...), const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &default_values, Callable::CallError &r_error) {
+#ifdef DEBUG_ENABLED
+	if ((size_t)p_argcount > sizeof...(P)) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	int32_t missing = (int32_t)sizeof...(P) - (int32_t)p_argcount;
+
+	int32_t dvs = default_values.size();
+#ifdef DEBUG_ENABLED
+	if (missing > dvs) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = sizeof...(P);
+		return;
+	}
+#endif
+
+	const Variant *args[sizeof...(P) == 0 ? 1 : sizeof...(P)]; //avoid zero sized array
+	for (int32_t i = 0; i < (int32_t)sizeof...(P); i++) {
+		if (i < p_argcount) {
+			args[i] = p_args[i];
+		} else {
+			args[i] = &default_values[i - p_argcount + (dvs - missing)];
+		}
+	}
+
+	call_with_variant_args_retc_static_helper(p_instance, p_method, args, r_ret, r_error, BuildIndexSequence<sizeof...(P)>{});
+}
+
 #if defined(DEBUG_METHODS_ENABLED) && defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif

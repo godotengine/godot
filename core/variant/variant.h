@@ -267,8 +267,8 @@ private:
 	static void _unregister_variant_setters_getters();
 	static void _register_variant_constructors();
 	static void _unregister_variant_constructors();
-	static void _register_variant_builtin_funcs();
-	static void _unregister_variant_builtin_funcs();
+	static void _register_variant_utility_functions();
+	static void _unregister_variant_utility_functions();
 
 public:
 	_FORCE_INLINE_ Type get_type() const {
@@ -482,54 +482,39 @@ public:
 	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
 	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
-	class InternalMethod {
-#ifdef DEBUG_ENABLED
-	protected:
-		StringName method_name;
-		Variant::Type base_type;
-#endif
-	public:
-		enum Flags {
-			FLAG_IS_CONST = 1,
-			FLAG_RETURNS_VARIANT = 2,
-			FLAG_NO_PTRCALL = 4,
-			FLAG_VARARGS = 8
-		};
+	/* Built-In Methods */
 
-		virtual int get_argument_count() const = 0;
-		virtual Type get_argument_type(int p_arg) const = 0;
-		virtual Type get_return_type() const = 0;
-		virtual uint32_t get_flags() const = 0;
+	typedef void (*ValidatedBuiltInMethod)(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret);
+	typedef void (*PTRBuiltInMethod)(void *p_base, const void **p_args, void *r_ret, int p_argcount);
 
-#ifdef DEBUG_ENABLED
-		virtual String get_argument_name(int p_arg) const = 0;
-		StringName get_name() const {
-			return method_name;
-		}
-		Variant::Type get_base_type() const {
-			return base_type;
-		}
-#endif
-		virtual Vector<Variant> get_default_arguments() const = 0;
-		virtual void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) = 0;
-		virtual void validated_call(Variant *base, const Variant **p_args, Variant *r_ret) = 0;
-#ifdef PTRCALL_ENABLED
-		virtual void ptrcall(void *p_base, const void **p_args, void *r_ret) = 0;
-#endif
-		virtual ~InternalMethod() {}
-	};
+	static bool has_builtin_method(Variant::Type p_type, const StringName &p_method);
 
-	static InternalMethod *get_internal_method(Type p_type, const StringName &p_method_name);
+	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
 
-	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error);
-	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
+	static Variant::Type get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument);
+	static String get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument);
+	static Vector<Variant> get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method);
+	static bool has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method);
+	static Variant::Type get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_const(Variant::Type p_type, const StringName &p_method);
+	static bool is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method);
+	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
+
+	void call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
 
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
 
-	// constructor
+	//dynamic (includes Object)
+	void get_method_list(List<MethodInfo> *p_list) const;
+	bool has_method(const StringName &p_method) const;
+
+	/* Constructors */
+
 	typedef void (*ValidatedConstructor)(Variant &r_base, const Variant **p_args);
 	typedef void (*PTRConstructor)(void *base, const void **p_args);
 
@@ -543,13 +528,7 @@ public:
 
 	static void get_constructor_list(Type p_type, List<MethodInfo> *r_list); //convenience
 
-	void get_method_list(List<MethodInfo> *p_list) const;
-	bool has_method(const StringName &p_method) const;
-	static Vector<Variant::Type> get_method_argument_types(Variant::Type p_type, const StringName &p_method);
-	static Vector<Variant> get_method_default_arguments(Variant::Type p_type, const StringName &p_method);
-	static Variant::Type get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return = nullptr);
-	static Vector<StringName> get_method_argument_names(Variant::Type p_type, const StringName &p_method);
-	static bool is_method_const(Variant::Type p_type, const StringName &p_method);
+	/* Properties */
 
 	void set_named(const StringName &p_member, const Variant &p_value, bool &r_valid);
 	Variant get_named(const StringName &p_member, bool &r_valid) const;
@@ -570,6 +549,8 @@ public:
 	static PTRSetter get_member_ptr_setter(Variant::Type p_type, const StringName &p_member);
 	static PTRGetter get_member_ptr_getter(Variant::Type p_type, const StringName &p_member);
 
+	/* Indexing */
+
 	static bool has_indexing(Variant::Type p_type);
 	static Variant::Type get_indexed_element_type(Variant::Type p_type);
 
@@ -589,6 +570,8 @@ public:
 	Variant get_indexed(int64_t p_index, bool &r_valid, bool &r_oob) const;
 
 	uint64_t get_indexed_size() const;
+
+	/* Keying */
 
 	static bool is_keyed(Variant::Type p_type);
 
@@ -612,6 +595,8 @@ public:
 	Variant get_keyed(const Variant &p_key, bool &r_valid) const;
 	bool has_key(const Variant &p_key, bool &r_valid) const;
 
+	/* Generic */
+
 	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const Variant &p_index, bool *r_valid = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
@@ -622,31 +607,31 @@ public:
 
 	void get_property_list(List<PropertyInfo> *p_list) const;
 
-	static void call_builtin_func(const StringName &p_name, Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	static bool has_builtin_func(const StringName &p_name);
+	static void call_utility_function(const StringName &p_name, Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	static bool has_utility_function(const StringName &p_name);
 
-	typedef void (*BuiltinFunctionValidatedCall)(Variant *r_ret, const Variant **p_args, int p_argcount);
-	typedef void (*BuiltinFunctionPTRCall)(void *r_ret, const void **p_args, int p_argcount);
+	typedef void (*ValidatedUtilityFunction)(Variant *r_ret, const Variant **p_args, int p_argcount);
+	typedef void (*PTRUtilityFunction)(void *r_ret, const void **p_args, int p_argcount);
 
-	static BuiltinFunctionValidatedCall get_builtin_validated_caller(const StringName &p_name);
-	static BuiltinFunctionPTRCall get_builtin_ptr_caller(const StringName &p_name);
+	static ValidatedUtilityFunction get_validated_utility_function(const StringName &p_name);
+	static PTRUtilityFunction get_ptr_utility_function(const StringName &p_name);
 
-	enum BuiltInFunctionType {
-		BUILTIN_FUNC_TYPE_MATH,
-		BUILTIN_FUNC_TYPE_RANDOM,
-		BUILTIN_FUNC_TYPE_UTILITY,
+	enum UtilityFunctionType {
+		UTILITY_FUNC_TYPE_MATH,
+		UTILITY_FUNC_TYPE_RANDOM,
+		UTILITY_FUNC_TYPE_GENERAL,
 	};
 
-	static BuiltInFunctionType get_builtin_func_type(const StringName &p_name);
+	static UtilityFunctionType get_utility_function_type(const StringName &p_name);
 
-	static int get_builtin_func_argument_count(const StringName &p_name);
-	static Variant::Type get_builtin_func_argument_type(const StringName &p_name, int p_arg);
-	static String get_builtin_func_argument_name(const StringName &p_name, int p_arg);
-	static bool has_builtin_func_return_value(const StringName &p_name);
-	static Variant::Type get_builtin_func_return_type(const StringName &p_name);
-	static bool is_builtin_func_vararg(const StringName &p_name);
+	static int get_utility_function_argument_count(const StringName &p_name);
+	static Variant::Type get_utility_function_argument_type(const StringName &p_name, int p_arg);
+	static String get_utility_function_argument_name(const StringName &p_name, int p_arg);
+	static bool has_utility_function_return_value(const StringName &p_name);
+	static Variant::Type get_utility_function_return_type(const StringName &p_name);
+	static bool is_utility_function_vararg(const StringName &p_name);
 
-	static void get_builtin_function_list(List<StringName> *r_functions);
+	static void get_utility_function_list(List<StringName> *r_functions);
 
 	//argsVariant call()
 

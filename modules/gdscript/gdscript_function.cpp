@@ -1048,7 +1048,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_VARIANT_PTR(ret, argc);
-					base->call_ptr(*methodname, (const Variant **)argptrs, argc, ret, err);
+					base->call(*methodname, (const Variant **)argptrs, argc, *ret, err);
 #ifdef DEBUG_ENABLED
 					if (!call_async && ret->get_type() == Variant::OBJECT) {
 						// Check if getting a function state without await.
@@ -1066,7 +1066,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 				} else {
-					base->call_ptr(*methodname, (const Variant **)argptrs, argc, nullptr, err);
+					Variant ret;
+					base->call(*methodname, (const Variant **)argptrs, argc, ret, err);
 				}
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {

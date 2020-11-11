@@ -3401,7 +3401,8 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 
 	Callable::CallError error;
 
-	Variant ret = call(p_method, argptr, argc, error);
+	Variant ret;
+	call(p_method, argptr, argc, ret, error);
 
 	switch (error.error) {
 		case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
@@ -3549,12 +3550,12 @@ void Variant::register_types() {
 	_register_variant_methods();
 	_register_variant_setters_getters();
 	_register_variant_constructors();
-	_register_variant_builtin_funcs();
+	_register_variant_utility_functions();
 }
 void Variant::unregister_types() {
 	_unregister_variant_operators();
 	_unregister_variant_methods();
 	_unregister_variant_setters_getters();
 	_unregister_variant_constructors();
-	_unregister_variant_builtin_funcs();
+	_unregister_variant_utility_functions();
 }

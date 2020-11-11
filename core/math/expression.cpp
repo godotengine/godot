@@ -410,7 +410,7 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (id == "self") {
 						r_token.type = TK_SELF;
 					} else {
-						if (Variant::has_builtin_func(id)) {
+						if (Variant::has_utility_function(id)) {
 							r_token.type = TK_BUILTIN_FUNC;
 							r_token.value = id;
 							return OK;
@@ -747,8 +747,8 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 				}
 
-				if (!Variant::is_builtin_func_vararg(bifunc->func)) {
-					int expected_args = Variant::get_builtin_func_argument_count(bifunc->func);
+				if (!Variant::is_utility_function_vararg(bifunc->func)) {
+					int expected_args = Variant::get_utility_function_argument_count(bifunc->func);
 					if (expected_args != bifunc->arguments.size()) {
 						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " arguments.");
 					}
@@ -1362,7 +1362,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			r_ret = Variant(); //may not return anything
 			Callable::CallError ce;
-			Variant::call_builtin_func(bifunc->func, &r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
+			Variant::call_utility_function(bifunc->func, &r_ret, (const Variant **)argp.ptr(), argp.size(), ce);
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = "Builtin Call Failed. " + Variant::get_call_error_text(bifunc->func, (const Variant **)argp.ptr(), argp.size(), ce);
 				return true;
@@ -1396,7 +1396,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			}
 
 			Callable::CallError ce;
-			r_ret = base.call(call->method, (const Variant **)argp.ptr(), argp.size(), ce);
+			base.call(call->method, (const Variant **)argp.ptr(), argp.size(), r_ret, ce);
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 				r_error_str = vformat(RTR("On call to '%s':"), String(call->method));
