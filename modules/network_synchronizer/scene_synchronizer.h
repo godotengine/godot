@@ -241,11 +241,11 @@ public:
 private:
 	/// This function is slow, but allow to take the node data even if the
 	/// `NetNodeId` is not yet assigned.
-	NetUtility::NodeData *find_node_data(ObjectID p_object_id);
+	Ref<NetUtility::NodeData> find_node_data(ObjectID p_object_id);
 
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.
-	NetUtility::NodeData *get_node_data(NetNodeId p_id);
+	Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id);
 
 	// TODO Can I remove this?
 	NetUtility::NodeData *get_controller_node_data(ControllerID p_controller_id);
@@ -261,10 +261,13 @@ private:
 	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
 	/// Register a new node and returns its `NodeData`.
-	NetUtility::NodeData *register_node(Node *p_node);
+	Ref<NetUtility::NodeData> register_node(Node *p_node);
 
 	/// Add node data and generates the `NetNodeId` if allowed.
 	void add_node_data(Ref<NetUtility::NodeData> p_node_data);
+
+	/// Set the node data net id.
+	void set_node_data_id(Ref<NetUtility::NodeData> p_node_data, NetNodeId p_id);
 
 public:
 	// Returns true when the vectors are the same.
@@ -339,8 +342,7 @@ class ClientSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
 	NetUtility::NodeData *player_controller_node_data = nullptr;
-	OAHashMap<uint32_t, ObjectID> node_id_map;
-	OAHashMap<uint32_t, NodePath> node_paths;
+	OAHashMap<NetNodeId, NodePath> node_paths;
 
 	NetUtility::Snapshot last_received_snapshot;
 	std::deque<NetUtility::Snapshot> client_snapshots;

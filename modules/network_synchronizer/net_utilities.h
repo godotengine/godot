@@ -229,10 +229,10 @@ public:
 	bool valid = true;
 	uint32_t id = 0;
 	ObjectID instance_id = ObjectID();
-	NodeData *controlled_by = nullptr;
+	NodeData *controlled_by = nullptr; // TODO consider use Ref.
 
 	bool is_controller = false;
-	LocalVector<NodeData *> controlled_nodes;
+	LocalVector<NodeData *> controlled_nodes; // TODO consider use a Ref
 
 	Vector<VarData> vars;
 	LocalVector<StringName> functions;
