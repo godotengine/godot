@@ -14,6 +14,7 @@ iphone_lib = [
     "joypad_iphone.mm",
     "godot_view.mm",
     "display_layer.mm",
+    "godot_app_delegate.m",
     "godot_view_renderer.mm",
     "godot_view_gesture_recognizer.mm",
     "device_metrics.m",

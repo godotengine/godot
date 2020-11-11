@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  main.m                                                               */
+/*  godot_app_delegate.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import "godot_app_delegate.h"
-
 #import <UIKit/UIKit.h>
-#include <stdio.h>
-#include <vulkan/vulkan.h>
 
-int gargc;
-char **gargv;
+typedef NSObject<UIApplicationDelegate> ApplicationDelegateService;
 
-int main(int argc, char *argv[]) {
-#if defined(VULKAN_ENABLED)
-	//MoltenVK - enable full component swizzling support
-	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
-#endif
+@interface GodotApplicalitionDelegate : NSObject <UIApplicationDelegate>
 
-	printf("*********** main.m\n");
-	gargc = argc;
-	gargv = argv;
+@property(class, readonly, strong) NSArray<ApplicationDelegateService *> *services;
 
-	printf("running app main\n");
-	@autoreleasepool {
-		NSString *className = NSStringFromClass([GodotApplicalitionDelegate class]);
-		UIApplicationMain(argc, argv, nil, className);
-	}
-	printf("main done\n");
-	return 0;
-}
++ (void)addService:(ApplicationDelegateService *)service;
+
+@end
