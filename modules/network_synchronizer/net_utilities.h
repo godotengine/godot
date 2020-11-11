@@ -248,6 +248,7 @@ public:
 };
 
 struct PeerData {
+	// TODO use NetNodeId
 	ControllerID controller_id = ControllerID();
 	// For new peers notify the state as soon as possible.
 	bool force_notify_snapshot = true;
@@ -257,7 +258,9 @@ struct PeerData {
 
 struct Snapshot {
 	uint32_t input_id;
-	OAHashMap<ObjectID, Vector<VarData>> node_vars;
+	/// The Node variables in a particular frame. The order of this vector
+	/// matters because the index is the `NetNodeId`.
+	LocalVector<Vector<VarData> > node_vars;
 
 	operator String() const;
 };

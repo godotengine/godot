@@ -84,20 +84,13 @@ NetUtility::Snapshot::operator String() const {
 	String s;
 	s += "Snapshot input ID: " + itos(input_id);
 
-	for (
-			OAHashMap<ObjectID, Vector<NetUtility::VarData>>::Iterator it = node_vars.iter();
-			it.valid;
-			it = node_vars.next_iter(it)) {
-		s += "\nNode Data: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
+	for (uint32_t net_node_id = 0; net_node_id < node_vars.size(); net_node_id += 1) {
+		s += "\nNode Data: " + itos(net_node_id);
 		for (int i = 0; i < it.value->size(); i += 1) {
 			s += "\n|- Variable: ";
-			s += (*it.value)[i].var.name;
+			s += node_vars[net_node_id][i].var.name;
 			s += " = ";
-			s += String((*it.value)[i].var.value);
+			s += String(node_vars[net_node_id][i].var.value);
 		}
 	}
 	return s;
