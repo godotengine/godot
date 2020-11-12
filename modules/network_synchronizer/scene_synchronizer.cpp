@@ -574,7 +574,7 @@ void SceneSynchronizer::update_peers() {
 	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
 		NetUtility::PeerData *pd = peer_data.lookup_ptr(node_data_controllers[i]->node->get_network_master());
 		if (pd) {
-			pd->controller_id = node_data_controllers[i]->instance_id;
+			pd->controller_id = node_data_controllers[i]->id;
 		}
 	}
 }
@@ -867,21 +867,12 @@ Ref<NetUtility::NodeData> SceneSynchronizer::find_node_data(Node *p_node) {
 			return node_data[i];
 		}
 	}
-	return nullptr;
+	return Ref<NetUtility::NodeData>();
 }
 
 Ref<NetUtility::NodeData> SceneSynchronizer::get_node_data(NetNodeId p_id) {
-	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), Ref<NetUtility::NodeData>());
 	return organized_node_data[p_id];
-}
-
-NetUtility::NodeData *SceneSynchronizer::get_controller_node_data(ControllerID p_controller_id) {
-	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
-		if (node_data_controllers[i]->instance_id == p_controller_id) {
-			return node_data_controllers[i].ptr();
-		}
-	}
-	return nullptr;
 }
 
 void SceneSynchronizer::process() {
@@ -1059,12 +1050,12 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 
 		peer_it.value->force_notify_snapshot = false;
 
-		// TODO improve the controller lookup.
-		NetUtility::NodeData *nd = scene_synchronizer->get_controller_node_data(peer_it.value->controller_id);
+		Ref<NetUtility::NodeData> nd = scene_synchronizer->get_node_data(peer_it.value->controller_id);
 		// TODO well that's not really true.. I may have peers that doesn't have controllers_node_data in a
 		// certain moment. Please improve this mechanism trying to just use the
 		// node->get_network_master() to get the peer.
-		ERR_CONTINUE_MSG(nd == nullptr, "This should never happen. Likely there is a bug.");
+		ERR_CONTINUE_MSG(nd.is_null(), "This should never happen. Likely there is a bug, NedNodeId: " + itos(peer_it.value->controller_id));
+		ERR_CONTINUE_MSG(nd->is_controller == false, "[BUG] A controller il expected, The node " + nd->node->get_path() + " is submitted instead.");
 
 		NetworkedController *controller = static_cast<NetworkedController *>(nd->node);
 		if (unlikely(controller->is_enabled() == false)) {
@@ -1078,13 +1069,13 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 				full_global_nodes_snapshot = global_nodes_generate_snapshot(true);
 			}
 			snap = full_global_nodes_snapshot;
-			controller_generate_snapshot(nd, true, snap);
+			controller_generate_snapshot(nd.ptr(), true, snap);
 		} else {
 			if (delta_global_nodes_snapshot.size() == 0) {
 				delta_global_nodes_snapshot = global_nodes_generate_snapshot(false);
 			}
 			snap = delta_global_nodes_snapshot;
-			controller_generate_snapshot(nd, false, snap);
+			controller_generate_snapshot(nd.ptr(), false, snap);
 		}
 
 		controller->get_server_controller()->notify_send_state();

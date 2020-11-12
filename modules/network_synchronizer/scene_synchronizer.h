@@ -247,9 +247,6 @@ private:
 	/// can be returned.
 	Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id);
 
-	// TODO Can I remove this?
-	NetUtility::NodeData *get_controller_node_data(ControllerID p_controller_id);
-
 	void process();
 
 	void validate_nodes();

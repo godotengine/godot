@@ -55,7 +55,6 @@
 #define NET_DEBUG_ERR(msg)
 #endif
 
-typedef ObjectID ControllerID;
 typedef uint32_t NetNodeId;
 
 namespace NetUtility {
@@ -248,8 +247,7 @@ public:
 };
 
 struct PeerData {
-	// TODO use NetNodeId
-	ControllerID controller_id = ControllerID();
+	NetNodeId controller_id = UINT32_MAX;
 	// For new peers notify the state as soon as possible.
 	bool force_notify_snapshot = true;
 	// For new peers a full snapshot is needed.
