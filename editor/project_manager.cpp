@@ -2348,12 +2348,24 @@ ProjectManager::ProjectManager() {
 
 		switch (display_scale) {
 			case 0: {
-				// Try applying a suitable display scale automatically
+				// Try applying a suitable display scale automatically.
 #ifdef OSX_ENABLED
 				editor_set_scale(DisplayServer::get_singleton()->screen_get_max_scale());
 #else
 				const int screen = DisplayServer::get_singleton()->window_get_current_screen();
-				editor_set_scale(DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).x > 2000 ? 2.0 : 1.0);
+				float scale;
+				if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && DisplayServer::get_singleton()->screen_get_size(screen).y >= 1400) {
+					// hiDPI display.
+					scale = 2.0;
+				} else if (DisplayServer::get_singleton()->screen_get_size(screen).y <= 800) {
+					// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+					// Icons won't look great, but this is better than having editor elements overflow from its window.
+					scale = 0.75;
+				} else {
+					scale = 1.0;
+				}
+
+				editor_set_scale(scale);
 #endif
 			} break;
 
@@ -2375,9 +2387,9 @@ ProjectManager::ProjectManager() {
 			case 6:
 				editor_set_scale(2.0);
 				break;
-			default: {
+			default:
 				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
-			} break;
+				break;
 		}
 
 		// Define a minimum window size to prevent UI elements from overlapping or being cut off
