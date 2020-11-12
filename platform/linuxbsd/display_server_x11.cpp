@@ -1184,6 +1184,10 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 	unsigned char *data = nullptr;
 	bool retval = false;
 
+	if (property == None) {
+		return false;
+	}
+
 	int result = XGetWindowProperty(
 			x11_display,
 			wd.x11_window,
@@ -1448,6 +1452,10 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	{ // Test minimized.
 		// Using ICCCM -- Inter-Client Communication Conventions Manual
 		Atom property = XInternAtom(x11_display, "WM_STATE", True);
+		if (property == None) {
+			return WINDOW_MODE_WINDOWED;
+		}
+
 		Atom type;
 		int format;
 		unsigned long len;
@@ -1943,28 +1951,29 @@ String DisplayServerX11::keyboard_get_layout_name(int p_index) const {
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
-	Atom actual_type;
-	int actual_format;
-	unsigned long nitems;
-	unsigned long bytes_after;
+	Atom actual_type = None;
+	int actual_format = 0;
+	unsigned long nitems = 0;
+	unsigned long bytes_after = 0;
 	unsigned char *ret = nullptr;
 
 	int read_bytes = 1024;
 
-	//Keep trying to read the property until there are no
-	//bytes unread.
-	do {
-		if (ret != nullptr) {
-			XFree(ret);
-		}
+	// Keep trying to read the property until there are no bytes unread.
+	if (p_property != None) {
+		do {
+			if (ret != nullptr) {
+				XFree(ret);
+			}
 
-		XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
-				&actual_type, &actual_format, &nitems, &bytes_after,
-				&ret);
+			XGetWindowProperty(p_display, p_window, p_property, 0, read_bytes, False, AnyPropertyType,
+					&actual_type, &actual_format, &nitems, &bytes_after,
+					&ret);
 
-		read_bytes *= 2;
+			read_bytes *= 2;
 
-	} while (bytes_after != 0);
+		} while (bytes_after != 0);
+	}
 
 	Property p = { ret, actual_format, (int)nitems, actual_type };
 
