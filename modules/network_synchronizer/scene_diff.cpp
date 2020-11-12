@@ -55,7 +55,14 @@ void SceneDiff::start_tracking_scene_changes(
 	tracking.resize(p_nodes.size());
 
 	for (uint32_t i = 0; i < p_nodes.size(); i += 1) {
-		if (p_nodes[i]->node && p_nodes[i]->id > 0 && p_nodes[i]->valid) {
+		if (p_nodes[i].is_null()) {
+			continue;
+		}
+		if (p_nodes[i]->is_controller || p_nodes[i]->controlled_by != nullptr) {
+			// This is a controller, Skip.
+			continue;
+		}
+		if (p_nodes[i]->node && p_nodes[i]->id != UINT32_MAX && p_nodes[i]->valid) {
 			tracking[i].node_data = p_nodes[i];
 			tracking[i].variables.resize(p_nodes[i]->vars.size());
 			const NetUtility::VarData *vars = p_nodes[i]->vars.ptr();

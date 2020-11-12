@@ -173,9 +173,6 @@ private:
 
 	// Controller nodes.
 	LocalVector<Ref<NetUtility::NodeData> > node_data_controllers;
-	// Global nodes. TODO can I remove this?
-	LocalVector<Ref<NetUtility::NodeData> > node_data_scene;
-
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
@@ -340,7 +337,7 @@ public:
 class ClientSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
-	NetUtility::NodeData *player_controller_node_data = nullptr;
+	NetUtility::NodeData *player_controller_node_data = nullptr; //TODO use a Ref?
 	OAHashMap<NetNodeId, NodePath> node_paths;
 
 	NetUtility::Snapshot last_received_snapshot;

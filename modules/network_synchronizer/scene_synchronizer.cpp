@@ -286,11 +286,7 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 	ERR_FAIL_COND_MSG(nd->is_controller, "A controller can't be controlled by another controller.");
 
 	if (nd->controlled_by) {
-#ifdef DEBUG_ENABLED
-		CRASH_COND_MSG(node_data_scene.find(nd) != -1, "There is a bug the same node is added twice into the global_nodes_node_data.");
-#endif
 		// Put the node back into global.
-		node_data_scene.push_back(nd);
 		nd->controlled_by->controlled_nodes.erase(nd.ptr());
 		nd->controlled_by = nullptr;
 	}
@@ -307,19 +303,11 @@ void SceneSynchronizer::set_node_as_controlled_by(Node *p_node, Node *p_controll
 		CRASH_COND_MSG(controller_node_data->controlled_nodes.find(nd.ptr()) != -1, "There is a bug the same node is added twice into the controlled_nodes.");
 #endif
 		controller_node_data->controlled_nodes.push_back(nd.ptr());
-		node_data_scene.erase(nd);
 		nd->controlled_by = controller_node_data.ptr();
 	}
 
 #ifdef DEBUG_ENABLED
-	// The controller is always registered before a node is marked to be
-	// controlled by.
-	// So assert that no controlled nodes are into globals.
-	for (uint32_t i = 0; i < node_data_scene.size(); i += 1) {
-		CRASH_COND(node_data_scene[i]->controlled_by != nullptr);
-	}
-
-	// And now make sure that all controlled nodes are into the proper controller.
+	// Make sure that all controlled nodes are into the proper controller.
 	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
 		for (uint32_t y = 0; y < node_data_controllers[i]->controlled_nodes.size(); y += 1) {
 			CRASH_COND(node_data_controllers[i]->controlled_nodes[y]->controlled_by != node_data_controllers[i].ptr());
@@ -352,7 +340,7 @@ void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) cons
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
-	diff->start_tracking_scene_changes(node_data_scene);
+	diff->start_tracking_scene_changes(node_data);
 }
 
 void SceneSynchronizer::stop_tracking_scene_changes(Object *p_diff_handle) const {
@@ -544,7 +532,6 @@ void SceneSynchronizer::__clear() {
 	node_data.clear();
 	organized_node_data.clear();
 	node_data_controllers.clear();
-	node_data_scene.clear();
 
 	if (synchronizer) {
 		synchronizer->clear();
@@ -653,8 +640,6 @@ void SceneSynchronizer::add_node_data(Ref<NetUtility::NodeData> p_node_data) {
 
 	if (p_node_data->is_controller) {
 		node_data_controllers.push_back(p_node_data);
-	} else {
-		node_data_scene.push_back(p_node_data);
 	}
 
 	synchronizer->on_node_added(p_node_data.ptr());
@@ -850,7 +835,6 @@ void SceneSynchronizer::validate_nodes() {
 
 		node_data.erase(null_objects[i]);
 		node_data_controllers.erase(null_objects[i]);
-		node_data_scene.erase(null_objects[i]);
 		if (null_objects[i]->id < organized_node_data.size()) {
 			// Never resize this vector to keep it sort.
 			organized_node_data[null_objects[i]->id].unref();
@@ -1092,9 +1076,16 @@ void ServerSynchronizer::process_snapshot_notificator(real_t p_delta) {
 Vector<Variant> ServerSynchronizer::global_nodes_generate_snapshot(bool p_force_full_snapshot) const {
 	Vector<Variant> snapshot_data;
 
-	for (uint32_t i = 0; i < scene_synchronizer->node_data_scene.size(); i += 1) {
-		const NetUtility::NodeData *node_data = scene_synchronizer->node_data_scene[i].ptr();
-		generate_snapshot_node_data(node_data, p_force_full_snapshot, snapshot_data);
+	for (uint32_t i = 0; i < scene_synchronizer->node_data.size(); i += 1) {
+		const Ref<NetUtility::NodeData> node_data = scene_synchronizer->node_data[i];
+		if (node_data.is_null()) {
+			continue;
+		}
+		if (node_data->is_controller || node_data->controlled_by != nullptr) {
+			// Skip the controllers.
+			continue;
+		}
+		generate_snapshot_node_data(node_data.ptr(), p_force_full_snapshot, snapshot_data);
 	}
 
 	return snapshot_data;
@@ -1342,36 +1333,28 @@ void ClientSynchronizer::store_snapshot() {
 
 	snap.node_vars.resize(scene_synchronizer->node_data.size());
 
-	// TODO can I just iterate over the `node_data`, instead to iterate each
-	//      type of node separately?
+	// Store the nodes state and skip anything is related to the other
+	// controllers.
+	for (uint32_t i = 0; i < scene_synchronizer->node_data.size(); i += 1) {
+		const Ref<NetUtility::NodeData> node_data = scene_synchronizer->node_data[i];
 
-	// Store the state of all the global nodes.
-	for (uint32_t i = 0; i < scene_synchronizer->node_data_scene.size(); i += 1) {
-		const NetUtility::NodeData *node_data = scene_synchronizer->node_data_scene[i].ptr();
+		if (node_data.is_null()) {
+			// Nothing to do.
+			continue;
+		}
+
+		if ((node_data->is_controller || node_data->controlled_by != nullptr) &&
+				(node_data != player_controller_node_data && node_data->controlled_by != player_controller_node_data)) {
+			// Ignore this controller.
+			continue;
+		}
+
 		if (node_data->id >= snap.node_vars.size()) {
 			// Skip this node, it doesn't have a valid ID.
 			ERR_FAIL_COND_MSG(node_data->id != UINT32_MAX, "[BUG], because it's not expected that the client has a node with the NetNodeId bigger than the registered node count.");
 			continue;
 		}
-		snap.node_vars[node_data->id] = node_data->vars;
-	}
 
-	if (player_controller_node_data->id >= snap.node_vars.size()) {
-		ERR_FAIL_COND_MSG(player_controller_node_data->id != UINT32_MAX, "[BUG], because it's not expected that the client has a node [controller] with the NetNodeId bigger than the registered node count.");
-		NET_DEBUG_PRINT("The controller node doesn't have a NetNodeId yet.");
-	} else {
-		// Store the controller state.
-		snap.node_vars[player_controller_node_data->id] = player_controller_node_data->vars;
-	}
-
-	// Store the controlled node state.
-	for (uint32_t i = 0; i < player_controller_node_data->controlled_nodes.size(); i += 1) {
-		const NetUtility::NodeData *node_data = player_controller_node_data->controlled_nodes[i];
-		if (node_data->id >= snap.node_vars.size()) {
-			// Skip this node, it doesn't have a valid ID.
-			ERR_FAIL_COND_MSG(node_data->id != UINT32_MAX, "[BUG], because it's not expected that the client has a node [controller node] with the NetNodeId bigger than the registered node count.");
-			continue;
-		}
 		snap.node_vars[node_data->id] = node_data->vars;
 	}
 }
