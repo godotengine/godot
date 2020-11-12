@@ -609,7 +609,7 @@ bool Control::clips_input() const {
 	if (get_script_instance()) {
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_clips_input);
 	}
-	return false;
+	return data.clip_contents;
 }
 
 bool Control::has_point(const Point2 &p_point) const {

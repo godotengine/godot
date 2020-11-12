@@ -26,7 +26,7 @@
 			</return>
 			<description>
 				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
-				If not overridden, defaults to [code]false[/code].
+				If not overridden, defaults to the value of [member rect_clip_content].
 			</description>
 		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
@@ -1040,6 +1040,7 @@
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
 			Enables whether rendering of [CanvasItem] based children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
+			Unless [method _clips_input] is overriden, input will also be clipped.
 		</member>
 		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
