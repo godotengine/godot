@@ -479,13 +479,13 @@ FRAGMENT_SHADER_CODE
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);
 #endif
 	}
+
+#ifdef USE_ATTRIB_MODULATE
+	color *= modulate_interp;
+#else
 #if !defined(MODULATE_USED)
 	color *= final_modulate;
 #endif
-
-#ifdef USE_ATTRIB_MODULATE
-	// todo .. this won't be used at the same time as MODULATE_USED
-	color *= modulate_interp;
 #endif
 
 #ifdef USE_LIGHTING

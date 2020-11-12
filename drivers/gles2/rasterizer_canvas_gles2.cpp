@@ -135,60 +135,13 @@ void RasterizerCanvasGLES2::_batch_render_lines(const Batch &p_batch, Rasterizer
 #endif
 }
 
-void RasterizerCanvasGLES2::_batch_render_polys(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material) {
-
-	_set_texture_rect_mode(false);
-
-	if (state.canvas_shader.bind()) {
-		_set_uniforms();
-		state.canvas_shader.use_material((void *)p_material);
-	}
-
-	// batch tex
-	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
-	_bind_canvas_texture(tex.RID_texture, tex.RID_normal);
-
-	//	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, Transform());
-
-	int sizeof_vert = sizeof(BatchVertexColored);
-
-	// bind the index and vertex buffer
-	glBindBuffer(GL_ARRAY_BUFFER, bdata.gl_vertex_buffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bdata.gl_index_buffer);
-
-	uint64_t pointer = 0;
-	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof_vert, (const void *)pointer);
-
-	glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
-	glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof_vert, CAST_INT_TO_UCHAR_PTR(pointer + (2 * 4)));
-
-	glEnableVertexAttribArray(VS::ARRAY_COLOR);
-	glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof_vert, CAST_INT_TO_UCHAR_PTR(pointer + (4 * 4)));
-
-	int64_t offset = p_batch.first_vert; // 6 inds per quad at 2 bytes each
-
-	int num_elements = p_batch.num_commands;
-	glDrawArrays(GL_TRIANGLES, offset, num_elements);
-
-	storage->info.render._2d_draw_call_count++;
-
-	// could these have ifs?
-	glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
-	glDisableVertexAttribArray(VS::ARRAY_COLOR);
-
-	// may not be necessary .. state change optimization still TODO
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material) {
-
+void RasterizerCanvasGLES2::_batch_render_generic(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material) {
 	ERR_FAIL_COND(p_batch.num_commands <= 0);
 
-	const bool &colored_verts = bdata.use_colored_vertices;
 	const bool &use_light_angles = bdata.use_light_angles;
 	const bool &use_modulate = bdata.use_modulate;
 	const bool &use_large_verts = bdata.use_large_verts;
+	const bool &colored_verts = bdata.use_colored_vertices | use_light_angles | use_modulate | use_large_verts;
 
 	int sizeof_vert;
 
@@ -196,9 +149,10 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 		default:
 			sizeof_vert = 0; // prevent compiler warning - this should never happen
 			break;
-		case RasterizerStorageCommon::FVF_UNBATCHED: // should not happen
+		case RasterizerStorageCommon::FVF_UNBATCHED: {
+			sizeof_vert = 0; // prevent compiler warning - this should never happen
 			return;
-			break;
+		} break;
 		case RasterizerStorageCommon::FVF_REGULAR: // no change
 			sizeof_vert = sizeof(BatchVertex);
 			break;
@@ -216,13 +170,11 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 			break;
 	}
 
-	// batch tex
-	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
-
 	// make sure to set all conditionals BEFORE binding the shader
-	//state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 	_set_texture_rect_mode(false, use_light_angles, use_modulate, use_large_verts);
 
+	// batch tex
+	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
 	//VSG::rasterizer->gl_check_for_error();
 
 	// force repeat is set if non power of 2 texture, and repeat is needed if hardware doesn't support npot
@@ -234,9 +186,6 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 		_set_uniforms();
 		state.canvas_shader.use_material((void *)p_material);
 	}
-
-	// batch tex
-	//const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
 
 	_bind_canvas_texture(tex.RID_texture, tex.RID_normal);
 
@@ -297,10 +246,23 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 	tex.tex_pixel_size.to(tps);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, tps);
 
-	int64_t offset = p_batch.first_vert * 3;
+	switch (p_batch.type) {
+		default: {
+			// prevent compiler warning
+		} break;
+		case RasterizerStorageCommon::BT_RECT: {
+			int64_t offset = p_batch.first_vert * 3;
 
-	int num_elements = p_batch.num_commands * 6;
-	glDrawElements(GL_TRIANGLES, num_elements, GL_UNSIGNED_SHORT, (void *)offset);
+			int num_elements = p_batch.num_commands * 6;
+			glDrawElements(GL_TRIANGLES, num_elements, GL_UNSIGNED_SHORT, (void *)offset);
+		} break;
+		case RasterizerStorageCommon::BT_POLY: {
+			int64_t offset = p_batch.first_vert;
+
+			int num_elements = p_batch.num_commands;
+			glDrawArrays(GL_TRIANGLES, offset, num_elements);
+		} break;
+	}
 
 	storage->info.render._2d_draw_call_count++;
 
@@ -341,10 +303,10 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 
 		switch (batch.type) {
 			case RasterizerStorageCommon::BT_RECT: {
-				_batch_render_rects(batch, p_material);
+				_batch_render_generic(batch, p_material);
 			} break;
 			case RasterizerStorageCommon::BT_POLY: {
-				_batch_render_polys(batch, p_material);
+				_batch_render_generic(batch, p_material);
 			} break;
 			case RasterizerStorageCommon::BT_LINE: {
 				_batch_render_lines(batch, p_material, false);

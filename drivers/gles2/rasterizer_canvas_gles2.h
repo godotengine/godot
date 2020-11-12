@@ -59,8 +59,7 @@ private:
 
 	// low level batch funcs
 	void _batch_upload_buffers();
-	void _batch_render_rects(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material);
-	void _batch_render_polys(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material);
+	void _batch_render_generic(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material);
 	void _batch_render_lines(const Batch &p_batch, RasterizerStorageGLES2::Material *p_material, bool p_anti_alias);
 
 	// funcs used from rasterizer_canvas_batcher template
