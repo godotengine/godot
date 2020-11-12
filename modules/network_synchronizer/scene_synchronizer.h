@@ -241,7 +241,7 @@ public:
 private:
 	/// This function is slow, but allow to take the node data even if the
 	/// `NetNodeId` is not yet assigned.
-	Ref<NetUtility::NodeData> find_node_data(ObjectID p_object_id);
+	Ref<NetUtility::NodeData> find_node_data(Node *p_node);
 
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.

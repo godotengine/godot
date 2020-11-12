@@ -210,7 +210,7 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
-	Ref<NetUtility::NodeData> nd = find_node_data(p_node->get_instance_id());
+	Ref<NetUtility::NodeData> nd = find_node_data(p_node);
 	ERR_FAIL_COND(nd.is_null());
 
 	const int64_t index = nd->vars.find(p_variable);
@@ -231,7 +231,7 @@ void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, 
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
 
-	Ref<NetUtility::NodeData> nd = find_node_data(p_node->get_instance_id());
+	Ref<NetUtility::NodeData> nd = find_node_data(p_node);
 	ERR_FAIL_COND(nd.is_null());
 
 	const int64_t index = nd->vars.find(p_variable);
@@ -249,7 +249,7 @@ void SceneSynchronizer::track_variable_changes(Node *p_node, StringName p_variab
 	ERR_FAIL_COND(p_variable == StringName());
 	ERR_FAIL_COND(p_method == StringName());
 
-	Ref<NetUtility::NodeData> nd = find_node_data(p_node->get_instance_id());
+	Ref<NetUtility::NodeData> nd = find_node_data(p_node);
 	ERR_FAIL_COND_MSG(nd.is_null(), "You need to register the variable to track its changes.");
 	ERR_FAIL_COND_MSG(nd->vars.find(p_variable) == -1, "You need to register the variable to track its changes.");
 
@@ -267,7 +267,7 @@ void SceneSynchronizer::untrack_variable_changes(Node *p_node, StringName p_vari
 	ERR_FAIL_COND(p_variable == StringName());
 	ERR_FAIL_COND(p_method == StringName());
 
-	Ref<NetUtility::NodeData> nd = find_node_data(p_node->get_instance_id());
+	Ref<NetUtility::NodeData> nd = find_node_data(p_node);
 	ERR_FAIL_COND(nd.is_null());
 	ERR_FAIL_COND(nd->vars.find(p_variable) == -1);
 
@@ -582,7 +582,7 @@ void SceneSynchronizer::update_peers() {
 Ref<NetUtility::NodeData> SceneSynchronizer::register_node(Node *p_node) {
 	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
 
-	Ref<NetUtility::NodeData> nd = find_node_data(p_node->get_instance_id());
+	Ref<NetUtility::NodeData> nd = find_node_data(p_node);
 	if (unlikely(nd.is_null())) {
 		nd.instance();
 		nd->id = UINT32_MAX;
@@ -858,12 +858,12 @@ void SceneSynchronizer::validate_nodes() {
 	}
 }
 
-Ref<NetUtility::NodeData> SceneSynchronizer::find_node_data(ObjectID p_object_id) {
+Ref<NetUtility::NodeData> SceneSynchronizer::find_node_data(Node *p_node) {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (node_data[i].is_null()) {
 			continue;
 		}
-		if (node_data[i]->instance_id == p_object_id) {
+		if (node_data[i]->instance_id == p_node->get_instance_id()) {
 			return node_data[i];
 		}
 	}
