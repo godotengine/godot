@@ -220,7 +220,6 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 	AABB aabb = p_shape_xform.xform(shape->get_aabb());
 	aabb = aabb.merge(AABB(aabb.position + p_motion, aabb.size));
 	aabb = aabb.grow(p_margin);
-	Vector3 motion_normal = p_motion.normalized();
 
 	int pair_count = space->broadphase->cull_aabb(aabb, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
@@ -247,14 +246,12 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 
 		// Does it collide if going all the way?
 		Vector3 point_A, point_B;
-		Vector3 sep_axis = motion_normal;
-		if (CollisionSolverSW::solve_distance(&mshape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb, &sep_axis)) {
+		if (CollisionSolverSW::solve_distance(&mshape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb) >= 0) {
 			continue;
 		}
 
 		// Ignore objects it's inside of.
-		sep_axis = motion_normal;
-		if (!CollisionSolverSW::solve_distance(shape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb, &sep_axis)) {
+		if (CollisionSolverSW::solve_distance(shape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb) < 0) {
 			continue;
 		}
 
@@ -267,9 +264,8 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 
 			real_t ofs = (low + hi) * 0.5;
 
-			sep_axis = motion_normal; // Important optimization for this to work fast enough.
 			mshape.motion = xform_inv.basis.xform(p_motion * ofs);
-			if (CollisionSolverSW::solve_distance(&mshape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb, &sep_axis)) {
+			if (CollisionSolverSW::solve_distance(&mshape, p_shape_xform, col_shape, col_shape_xform, point_A, point_B, aabb) >= 0) {
 				low = ofs;
 				closest_A = point_A;
 				closest_B = point_B;
@@ -755,7 +751,6 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_xform, const V
 	AABB motion_aabb = body_aabb;
 	motion_aabb.position += p_motion;
 	motion_aabb = motion_aabb.merge(body_aabb);
-	Vector3 motion_normal = p_motion.normalized();
 	Vector3 point_A, point_B;
 
 	int pair_count = _cull_aabb_for_body(p_body, motion_aabb);
@@ -791,14 +786,12 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_xform, const V
 			const Transform col_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(col_shape_idx);
 
 			// Does it collide if going all the way?
-			Vector3 sep_axis = motion_normal;
-			if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb, &sep_axis)) {
+			if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb) >= 0) {
 				continue;
 			}
 
 			// Is it stuck?
-			sep_axis = motion_normal;
-			if (!CollisionSolverSW::solve_distance(body_shape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb, &sep_axis)) {
+			if (CollisionSolverSW::solve_distance(body_shape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb) < 0) {
 				stuck = true;
 				break;
 			}
@@ -811,9 +804,8 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_xform, const V
 
 				real_t ofs = (low + hi) * 0.5;
 
-				sep_axis = motion_normal; // Important optimization for this to work fast enough.
 				mshape.motion = body_shape_xform_inv.basis.xform(p_motion * ofs);
-				if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb, &sep_axis)) {
+				if (CollisionSolverSW::solve_distance(&mshape, body_shape_xform, col_shape, col_shape_xform, point_A, point_B, motion_aabb) >= 0) {
 					low = ofs;
 				} else {
 					hi = ofs;
