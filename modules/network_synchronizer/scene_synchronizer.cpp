@@ -178,10 +178,11 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 	Ref<NetUtility::NodeData> node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data.is_null());
 
-	const int id = node_data->vars.find(p_variable);
-	if (id == -1) {
+	const int index = node_data->vars.find(p_variable);
+	if (index == -1) {
+		// The variable is not yet registered.
 		const Variant old_val = p_node->get(p_variable);
-		const int var_id = generate_id ? node_data->vars.size() + 1 : 0;
+		const int var_id = generate_id ? node_data->vars.size() : UINT32_MAX;
 		node_data->vars.push_back(
 				NetUtility::VarData(
 						var_id,
@@ -190,9 +191,16 @@ void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, S
 						false,
 						true));
 	} else {
-		NetUtility::VarData *ptr = node_data->vars.ptrw();
-		ptr[id].enabled = true;
+		// Make sure the var is active.
+		node_data->vars[index].enabled = true;
 	}
+
+#ifdef DEBUG_ENABLED
+	for (uint32_t v = 0; v < node_data->vars.size(); v += 1) {
+		// This can't happen, because the ID is always consecutive, or UINT32_MAX.
+		CRASH_COND(node_data->vars[v].id != v && node_data->vars[v].id != UINT32_MAX);
+	}
+#endif
 
 	if (p_node->has_signal(get_changed_event_name(p_variable)) == false) {
 		p_node->add_user_signal(MethodInfo(
@@ -224,7 +232,9 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 		p_node->disconnect(get_changed_event_name(p_variable), e->get().callable);
 	}
 
-	nd->vars.write[index].enabled = false;
+	// Never remove the variable values, because the order of the vars matters.
+	nd->vars[index].enabled = false;
+
 }
 
 void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding) {
@@ -237,7 +247,7 @@ void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, 
 	const int64_t index = nd->vars.find(p_variable);
 	ERR_FAIL_COND(index == -1);
 
-	nd->vars.write[index].skip_rewinding = p_skip_rewinding;
+	nd->vars[index].skip_rewinding = p_skip_rewinding;
 }
 
 String SceneSynchronizer::get_changed_event_name(StringName p_variable) {
@@ -413,13 +423,15 @@ void SceneSynchronizer::apply_scene_changes(Variant p_sync_data) {
 			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id) {},
 
 			// Parse variable:
-			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, StringName p_variable_name, const Variant &p_value) {
+			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value) {
 				SceneSynchronizer *scene_sync = static_cast<SceneSynchronizer *>(p_user_pointer);
 
-				p_node_data->node->set(p_variable_name, p_value);
+				p_node_data->node->set(
+						p_node_data->vars[p_var_id].var.name,
+						p_value);
 
-				p_node_data->node->emit_signal(scene_sync->get_changed_event_name(p_variable_name));
-				scene_sync->synchronizer->on_variable_changed(p_node_data, p_variable_name);
+				p_node_data->node->emit_signal(scene_sync->get_changed_event_name(p_node_data->vars[p_var_id].var.name));
+				scene_sync->synchronizer->on_variable_changed(p_node_data, p_node_data->vars[p_var_id].var.name);
 			});
 }
 
@@ -486,12 +498,26 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 	if (was_generating_ids != generate_id) {
 		organized_node_data.resize(node_data.size());
 		for (uint32_t i = 0; i < node_data.size(); i += 1) {
+			if (node_data[i].is_null()) {
+				continue;
+			}
+
+			// Handle the node ID.
 			if (generate_id) {
 				node_data[i]->id = i;
 				organized_node_data[i] = node_data[i];
 			} else {
 				node_data[i]->id = UINT32_MAX;
 				organized_node_data[i] = Ref<NetUtility::NodeData>();
+			}
+
+			// Handle the variables ID.
+			for (uint32_t v = 0; v < node_data[i]->vars.size(); v += 1) {
+				if (generate_id) {
+					node_data[i]->vars[v].id = v;
+				} else {
+					node_data[i]->vars[v].id = UINT32_MAX;
+				}
 			}
 		}
 	}
@@ -500,7 +526,7 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 		// Notify the presence all available nodes and its variables to the synchronizer.
 		for (uint32_t i = 0; i < node_data.size(); i += 1) {
 			synchronizer->on_node_added(node_data[i].ptr());
-			for (int y = 0; y < node_data[i]->vars.size(); y += 1) {
+			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
 				synchronizer->on_variable_added(node_data[i].ptr(), node_data[i]->vars[y].var.name);
 			}
 		}
@@ -521,7 +547,7 @@ void SceneSynchronizer::__clear() {
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		Node *node = static_cast<Node *>(ObjectDB::get_instance(node_data[i]->instance_id));
 		if (node != nullptr) {
-			for (int y = 0; y < node_data[i]->vars.size(); y += 1) {
+			for (uint32_t y = 0; y < node_data[i]->vars.size(); y += 1) {
 				// Unregister the variable so the connected variables are
 				// correctly removed
 				unregister_variable(node, node_data[i]->vars[y].var.name);
@@ -866,21 +892,19 @@ void SceneSynchronizer::process() {
 
 void SceneSynchronizer::pull_node_changes(NetUtility::NodeData *p_node_data) {
 	Node *node = p_node_data->node;
-	const int var_count = p_node_data->vars.size();
-	NetUtility::VarData *object_vars = p_node_data->vars.ptrw();
 
-	for (int i = 0; i < var_count; i += 1) {
-		if (object_vars[i].enabled == false) {
+	for (uint32_t i = 0; i < p_node_data->vars.size(); i += 1) {
+		if (p_node_data->vars[i].enabled == false) {
 			continue;
 		}
 
-		const Variant old_val = object_vars[i].var.value;
-		const Variant new_val = node->get(object_vars[i].var.name);
+		const Variant old_val = p_node_data->vars[i].var.value;
+		const Variant new_val = node->get(p_node_data->vars[i].var.name);
 
 		if (!synchronizer_variant_evaluation(old_val, new_val)) {
-			object_vars[i].var.value = new_val.duplicate(true);
-			node->emit_signal(get_changed_event_name(object_vars[i].var.name));
-			synchronizer->on_variable_changed(p_node_data, object_vars[i].var.name);
+			p_node_data->vars[i].var.value = new_val.duplicate(true);
+			node->emit_signal(get_changed_event_name(p_node_data->vars[i].var.name));
+			synchronizer->on_variable_changed(p_node_data, p_node_data->vars[i].var.name);
 		}
 	}
 }
@@ -1355,7 +1379,14 @@ void ClientSynchronizer::store_snapshot() {
 			continue;
 		}
 
-		snap.node_vars[node_data->id] = node_data->vars;
+		snap.node_vars[node_data->id].resize(node_data->vars.size());
+		for (uint32_t v = 0; v < node_data->vars.size(); v += 1) {
+			if (node_data->vars[v].enabled) {
+				snap.node_vars[node_data->id].write[v] = node_data->vars[v].var;
+			} else {
+				snap.node_vars[node_data->id].write[v].name = StringName();
+			}
+		}
 	}
 }
 
@@ -1553,30 +1584,31 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				continue;
 			}
 
+#ifdef DEBUG_ENABLED
+			// The parser make sure to properly initialize the snapshot variable
+			// array size. So the following condition is always `false`.
+			CRASH_COND(uint32_t(server_snapshots.front().node_vars[nodes_to_recover[i]->id].size()) != nodes_to_recover[i]->vars.size());
+#endif
+
 			Node *node = nodes_to_recover[i]->node;
-			const Vector<NetUtility::VarData> s_vars = server_snapshots.front().node_vars[nodes_to_recover[i]->id];
-			const NetUtility::VarData *s_vars_ptr = s_vars.ptr();
-			NetUtility::VarData *nodes_to_recover_vars_ptr = nodes_to_recover[i]->vars.ptrw();
+			const Vector<NetUtility::Var> s_vars = server_snapshots.front().node_vars[nodes_to_recover[i]->id];
+			const NetUtility::Var *s_vars_ptr = s_vars.ptr();
 
 			NET_DEBUG_PRINT("Full reset node: " + node->get_path());
 
 			for (int v = 0; v < s_vars.size(); v += 1) {
-				node->set(s_vars_ptr[v].var.name, s_vars_ptr[v].var.value);
+				if (s_vars_ptr[v].name == StringName()) {
+					// This variable was not set, skip it.
+					continue;
+				}
 
-				// Set the value on the synchronizer too.
-				const int rew_var_index = nodes_to_recover[i]->vars.find(s_vars_ptr[v].var.name);
-				// Unreachable, because when the snapshot is received the
-				// algorithm make sure the `scene_synchronizer` is traking the
-				// variable.
-				CRASH_COND(rew_var_index <= -1);
-
-				NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[v].var.name + " New value: " + s_vars_ptr[v].var.value);
-
-				nodes_to_recover_vars_ptr[rew_var_index].var.value = s_vars_ptr[v].var.value.duplicate(true);
+				node->set(s_vars_ptr[v].name, s_vars_ptr[v].value);
+				nodes_to_recover[i]->vars[v].var.value = s_vars_ptr[v].value.duplicate(true);
+				NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[v].name + " New value: " + s_vars_ptr[v].value);
 
 				node->emit_signal(
 						scene_synchronizer->get_changed_event_name(
-								s_vars_ptr[v].var.name));
+								s_vars_ptr[v].name));
 			}
 		}
 		scene_synchronizer->reset_in_progress = false;
@@ -1593,12 +1625,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 		bool has_next = false;
 		for (int i = 0; i < remaining_inputs; i += 1) {
-			// Step 1 -- Process the nodes into the scene that need to be
-			// processed.
-			for (
-					uint32_t r = 0;
-					r < nodes_to_recover.size();
-					r += 1) {
+			// Step 1 -- Process the scene nodes.
+			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
 				nodes_to_recover[r]->process(p_delta);
 #ifdef DEBUG_ENABLED
 				if (nodes_to_recover[r]->functions.size()) {
@@ -1607,24 +1635,27 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 #endif
 			}
 
+			// Step 2 -- Process the controller.
 			if (recover_controller) {
-				// Step 2 -- Process the controller.
 				has_next = controller->process_instant(i, p_delta);
 				NET_DEBUG_PRINT("Rewind, processed controller: " + controller->get_path());
 			}
 
 			// Step 3 -- Pull node changes and Update snapshots.
-			for (
-					uint32_t r = 0;
-					r < nodes_to_recover.size();
-					r += 1) {
+			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
+				// Pull changes
 				scene_synchronizer->pull_node_changes(nodes_to_recover[r]);
 
 				// Update client snapshot.
 				if (client_snapshots[i].node_vars.size() <= nodes_to_recover[r]->id) {
 					client_snapshots[i].node_vars.resize(nodes_to_recover[r]->id + 1);
 				}
-				client_snapshots[i].node_vars[nodes_to_recover[r]->id] = nodes_to_recover[r]->vars;
+
+				client_snapshots[i].node_vars[nodes_to_recover[r]->id].resize(nodes_to_recover[r]->vars.size());
+
+				for (uint32_t v = 0; v < nodes_to_recover[r]->vars.size(); v += 1) {
+					client_snapshots[i].node_vars[nodes_to_recover[r]->id].write[v] = nodes_to_recover[r]->vars[v].var;
+				}
 			}
 		}
 
@@ -1644,23 +1675,24 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 			NET_DEBUG_PRINT("[Snapshot partial reset] Node: " + node->get_path());
 
-			{
-				NetUtility::VarData *rew_node_data_vars_ptr = rew_node_data->vars.ptrw();
-				for (int v = 0; v < postponed_recover[i].vars.size(); v += 1) {
-					node->set(vars[v].name, vars[v].value);
+			// Set the value on the synchronizer too.
+			for (int v = 0; v < postponed_recover[i].vars.size(); v += 1) {
+				node->set(vars[v].name, vars[v].value);
 
-					// Set the value on the synchronizer too.
-					const int rew_var_index = rew_node_data->vars.find(vars[v].name);
-					// Unreachable, because when the snapshot is received the
-					// algorithm make sure the `scene_synchronizer` is traking the
-					// variable.
-					CRASH_COND(rew_var_index <= -1);
+				// We need to search it because the postponed recovered is not
+				// aligned.
+				// TODO This array is generated few lines above.
+				// Can we store the ID too, so to avoid this search????
+				const int rew_var_index = rew_node_data->vars.find(vars[v].name);
+				// Unreachable, because when the snapshot is received the
+				// algorithm make sure the `scene_synchronizer` is traking the
+				// variable.
+				CRASH_COND(rew_var_index <= -1);
 
-					rew_node_data_vars_ptr[rew_var_index].var.value = vars[v].value.duplicate(true);
+				rew_node_data->vars[rew_var_index].var.value = vars[v].value.duplicate(true);
 
-					NET_DEBUG_PRINT(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
-					node->emit_signal(scene_synchronizer->get_changed_event_name(vars[v].name));
-				}
+				NET_DEBUG_PRINT(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
+				node->emit_signal(scene_synchronizer->get_changed_event_name(vars[v].name));
 			}
 
 			// Update the last client snapshot.
@@ -1668,7 +1700,12 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				if (client_snapshots.back().node_vars.size() <= rew_node_data->id) {
 					client_snapshots.back().node_vars.resize(rew_node_data->id + 1);
 				}
-				client_snapshots.back().node_vars[rew_node_data->id] = rew_node_data->vars;
+
+				client_snapshots.back().node_vars[rew_node_data->id].resize(rew_node_data->vars.size());
+
+				for (uint32_t v = 0; v < rew_node_data->vars.size(); v += 1) {
+					client_snapshots.back().node_vars[rew_node_data->id].write[v] = rew_node_data->vars[v].var;
+				}
 			}
 		}
 		scene_synchronizer->reset_in_progress = false;
@@ -1703,16 +1740,16 @@ void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
 
 		Node *node = rew_node_data->node;
 
-		const NetUtility::VarData *vars_ptr = server_snapshots.front().node_vars[net_node_id].ptr();
+		const NetUtility::Var *vars_ptr = server_snapshots.front().node_vars[net_node_id].ptr();
 		for (int v = 0; v < server_snapshots.front().node_vars[net_node_id].size(); v += 1) {
 			if (!scene_synchronizer->synchronizer_variant_evaluation(
-						node->get(vars_ptr[v].var.name),
-						vars_ptr[v].var.value)) {
+						node->get(vars_ptr[v].name),
+						vars_ptr[v].value)) {
 				// Different
-				node->set(vars_ptr[v].var.name, vars_ptr[v].var.value);
+				node->set(vars_ptr[v].name, vars_ptr[v].value);
 				NET_DEBUG_PRINT("[Snapshot paused controller] Node: " + node->get_path());
-				NET_DEBUG_PRINT(" |- Variable: " + vars_ptr[v].var.name + "; value: " + vars_ptr[v].var.value);
-				node->emit_signal(scene_synchronizer->get_changed_event_name(vars_ptr[v].var.name));
+				NET_DEBUG_PRINT(" |- Variable: " + vars_ptr[v].name + "; value: " + vars_ptr[v].value);
+				node->emit_signal(scene_synchronizer->get_changed_event_name(vars_ptr[v].name));
 			}
 		}
 	}
@@ -1725,7 +1762,7 @@ bool ClientSynchronizer::parse_sync_data(
 		void *p_user_pointer,
 		void (*p_node_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data),
 		void (*p_controller_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id),
-		void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, StringName p_variable_name, const Variant &p_value)) {
+		void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value)) {
 	// The sync data is an array that contains the scene informations.
 	// It's used for several things, for this reason this function allows to
 	// customize the parsing.
@@ -1754,8 +1791,7 @@ bool ClientSynchronizer::parse_sync_data(
 	const Variant *raw_snapshot_ptr = raw_snapshot.ptr();
 
 	NetUtility::NodeData *synchronizer_node_data = nullptr;
-	uint32_t var_id = 0;
-	StringName variable_name;
+	uint32_t var_id = UINT32_MAX;
 
 	for (int snap_data_index = 0; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 		const Variant v = raw_snapshot_ptr[snap_data_index];
@@ -1857,8 +1893,8 @@ bool ClientSynchronizer::parse_sync_data(
 				p_controller_parse(p_user_pointer, synchronizer_node_data, input_id);
 			}
 
-		} else if (variable_name == StringName()) {
-			// When the node is known and the `variable_name` not, we expect a
+		} else if (var_id == UINT32_MAX) {
+			// When the node is known and the `var_id` not, we expect a
 			// new variable or the end pf this node data.
 
 			if (v.get_type() == Variant::NIL) {
@@ -1878,46 +1914,62 @@ bool ClientSynchronizer::parse_sync_data(
 				ERR_FAIL_COND_V(var_data[1].get_type() != Variant::STRING_NAME, false);
 
 				var_id = var_data[0];
-				variable_name = var_data[1];
+				StringName variable_name = var_data[1];
 
-				const int64_t index = synchronizer_node_data->vars.find(variable_name);
+				{
+					int64_t index = synchronizer_node_data->vars.find(variable_name);
+					if (index == -1) {
+						// The variable is not known locally, so just add it so
+						// to store the variable ID.
+						index = synchronizer_node_data->vars.size();
 
-				if (index == -1) {
-					// The variable is not known locally, so just add it so
-					// to store the variable ID.
-					const bool skip_rewinding = false;
-					const bool enabled = false;
-					synchronizer_node_data->vars
-							.push_back(
-									NetUtility::VarData(
-											var_id,
-											variable_name,
-											Variant(),
-											skip_rewinding,
-											enabled));
-				} else {
-					// The variable is known, just make sure that it has the
-					// same server ID.
-					synchronizer_node_data->vars.write[index].id = var_id;
+						const bool skip_rewinding = false;
+						const bool enabled = false;
+						synchronizer_node_data->vars
+								.push_back(
+										NetUtility::VarData(
+												var_id,
+												variable_name,
+												Variant(),
+												skip_rewinding,
+												enabled));
+						NET_DEBUG_ERR("The variable " + variable_name + " for the node " + synchronizer_node_data->node->get_path() + " was not known on this client. This should never happen, make sure to register the same nodes on the client and server.");
+					}
+
+					if (index != var_id) {
+						if (synchronizer_node_data[var_id].id != UINT32_MAX) {
+							// It's not expected because if index is different to
+							// var_id, var_id should have a not yet initialized
+							// variable.
+							NET_DEBUG_ERR("This snapshot is corrupted. The var_id, at this point, must have a not yet init variable.");
+							notify_server_full_snapshot_is_needed();
+							return false;
+						}
+
+						// Make sure the variable is at the right index.
+						SWAP(synchronizer_node_data->vars[index], synchronizer_node_data->vars[var_id]);
+					}
 				}
+
+				// Make sure the ID is properly assigned.
+				synchronizer_node_data->vars[var_id].id = var_id;
+
 			} else if (v.get_type() == Variant::INT) {
 				// The variable is stored in the compact form.
 
 				var_id = v;
 
-				const int64_t index = synchronizer_node_data->find_var_by_id(var_id);
-				if (index == -1) {
+				if (var_id >= synchronizer_node_data->vars.size() ||
+						synchronizer_node_data->vars[var_id].id == UINT32_MAX) {
+
 					NET_DEBUG_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
 
 					notify_server_full_snapshot_is_needed();
 
-					// Skip the next data since it should be the value, but we
-					// can't store it.
+					// Skip the next data since it's the value of this variable.
 					snap_data_index += 1;
+					var_id = UINT32_MAX;
 					continue;
-				} else {
-					variable_name = synchronizer_node_data->vars[index].var.name;
-					synchronizer_node_data->vars.write[index].id = var_id;
 				}
 
 			} else {
@@ -1932,12 +1984,10 @@ bool ClientSynchronizer::parse_sync_data(
 					p_user_pointer,
 					synchronizer_node_data,
 					var_id,
-					variable_name,
 					v);
 
 			// Just reset the variable name so we can continue iterate.
-			variable_name = StringName();
-			var_id = 0;
+			var_id = UINT32_MAX;
 		}
 	}
 
@@ -1975,6 +2025,9 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				if (pd->snapshot.node_vars.size() <= p_node_data->id) {
 					pd->snapshot.node_vars.resize(p_node_data->id + 1);
 				}
+
+				// Make sure this snapshot has all the variables.
+				pd->snapshot.node_vars[p_node_data->id].resize(p_node_data->vars.size());
 			},
 
 			// Parse controller:
@@ -1987,32 +2040,11 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 			},
 
 			// Parse variable:
-			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, StringName p_variable_name, const Variant &p_value) {
+			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value) {
 				ParseData *pd = static_cast<ParseData *>(p_user_pointer);
 
-				int server_snap_variable_index = pd->snapshot.node_vars[p_node_data->id].find(p_variable_name);
-
-				if (server_snap_variable_index == -1) {
-					// The server snapshot seems not contains this yet.
-					server_snap_variable_index = pd->snapshot.node_vars[p_node_data->id].size();
-
-					const bool skip_rewinding = false;
-					const bool enabled = true;
-					pd->snapshot.node_vars[p_node_data->id].push_back(
-							NetUtility::VarData(
-									p_var_id,
-									p_variable_name,
-									Variant(),
-									skip_rewinding,
-									enabled));
-
-				} else {
-					pd->snapshot.node_vars[p_node_data->id].write[server_snap_variable_index].id =
-							p_var_id;
-				}
-
-				pd->snapshot.node_vars[p_node_data->id].write[server_snap_variable_index].var.value =
-						p_value.duplicate(true);
+				pd->snapshot.node_vars[p_node_data->id].write[p_var_id].name = p_node_data->vars[p_var_id].var.name;
+				pd->snapshot.node_vars[p_node_data->id].write[p_var_id].value = p_value.duplicate(true);
 			});
 
 	if (success == false) {
@@ -2032,45 +2064,54 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 
 bool ClientSynchronizer::compare_vars(
 		const NetUtility::NodeData *p_synchronizer_node_data,
-		const Vector<NetUtility::VarData> &p_server_vars,
-		const Vector<NetUtility::VarData> &p_client_vars,
+		const Vector<NetUtility::Var> &p_server_vars,
+		const Vector<NetUtility::Var> &p_client_vars,
 		Vector<NetUtility::Var> &r_postponed_recover) {
-	const NetUtility::VarData *s_vars = p_server_vars.ptr();
-	const NetUtility::VarData *c_vars = p_client_vars.ptr();
+	const NetUtility::Var *s_vars = p_server_vars.ptr();
+	const NetUtility::Var *c_vars = p_client_vars.ptr();
 
 #ifdef DEBUG_ENABLED
 	bool diff = false;
 #endif
 
-	for (int s_var_index = 0; s_var_index < p_server_vars.size(); s_var_index += 1) {
-		const int c_var_index = p_client_vars.find(s_vars[s_var_index].var.name);
-		if (c_var_index == -1) {
-			// Variable not found, this is considered a difference.
-			NET_DEBUG_PRINT("Difference found on the var name `" + s_vars[s_var_index].var.name + "`, it was not found on client snapshot. Server value: `" + s_vars[s_var_index].var.value + "`.");
-#ifdef DEBUG_ENABLED
-			diff = true;
-#else
-			return true;
-#endif
-		} else {
-			// Variable found compare.
-			const bool different = !scene_synchronizer->synchronizer_variant_evaluation(s_vars[s_var_index].var.value, c_vars[c_var_index].var.value);
+	if (p_server_vars.size() != p_client_vars.size() ||
+			uint32_t(p_server_vars.size()) > p_synchronizer_node_data->vars.size()) {
+		NET_DEBUG_PRINT("Difference found: The server has a different variables count compared to the client.");
+		return true;
+	}
 
-			if (different) {
-				const int index = p_synchronizer_node_data->vars.find(s_vars[s_var_index].var.name);
-				if (index < 0 || p_synchronizer_node_data->vars[index].skip_rewinding == false) {
-					// The vars are different.
-					NET_DEBUG_PRINT("Difference found on var name `" + s_vars[s_var_index].var.name + "` Server value: `" + s_vars[s_var_index].var.value + "` Client value: `" + c_vars[c_var_index].var.value + "`.");
+	for (uint32_t var_index = 0; var_index < uint32_t(p_server_vars.size()); var_index += 1) {
+		if (s_vars[var_index].name == StringName()) {
+			// This variable was not set, skip the check.
+			continue;
+		}
+
+		// Compare.
+		const bool different =
+				// Make sure this variable is set.
+				c_vars[var_index].name == StringName() ||
+				// Check if the value is different.
+				!scene_synchronizer->synchronizer_variant_evaluation(
+						s_vars[var_index].value,
+						c_vars[var_index].value);
+
+		if (different) {
+			if (p_synchronizer_node_data->vars[var_index].skip_rewinding) {
+				// The vars are different, but this variable don't what to
+				// trigger a rewind.
+				r_postponed_recover.push_back(s_vars[var_index]);
+			} else {
+				// The vars are different.
+				NET_DEBUG_PRINT("Difference found on var #" + itos(var_index) + " " + p_synchronizer_node_data->vars[var_index].var.name + " " +
+								"Server value: `" + s_vars[var_index].value + "` " +
+								"Client value: `" + c_vars[var_index].value + "`.    " +
+								"[Server name: `" + s_vars[var_index].name + "` " +
+								"Client name: `" + c_vars[var_index].name + "`].");
 #ifdef DEBUG_ENABLED
-					diff = true;
+				diff = true;
 #else
-					return true;
+				return true;
 #endif
-				} else {
-					// The vars are different, but this variable don't what to
-					// trigger a rewind.
-					r_postponed_recover.push_back(s_vars[s_var_index].var);
-				}
 			}
 		}
 	}
@@ -2078,6 +2119,7 @@ bool ClientSynchronizer::compare_vars(
 #ifdef DEBUG_ENABLED
 	return diff;
 #else
+
 	// The vars are not different.
 	return false;
 #endif

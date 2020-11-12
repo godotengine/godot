@@ -56,6 +56,7 @@
 #endif
 
 typedef uint32_t NetNodeId;
+typedef uint32_t NetVarId;
 
 namespace NetUtility {
 
@@ -208,16 +209,17 @@ struct Var {
 };
 
 struct VarData {
-	uint32_t id = 0;
+	NetVarId id = UINT32_MAX;
 	Var var;
 	bool skip_rewinding = false;
 	bool enabled = false;
 
 	VarData();
 	VarData(StringName p_name);
-	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
+	VarData(NetVarId p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
 
 	bool operator==(const VarData &p_other) const;
+	bool operator<(const VarData &p_other) const;
 };
 
 struct NodeData : public Reference {
@@ -233,7 +235,9 @@ public:
 	bool is_controller = false;
 	LocalVector<NodeData *> controlled_nodes; // TODO consider use a Ref
 
-	Vector<VarData> vars;
+	/// The sync variables of this node. The order of this vector matters
+	/// because the index is the `NetVarId`.
+	LocalVector<VarData> vars;
 	LocalVector<StringName> functions;
 
 	// This is valid to use only inside the process function.
@@ -241,8 +245,6 @@ public:
 
 	NodeData();
 
-	// Returns the index to access the variable.
-	int64_t find_var_by_id(uint32_t p_id) const;
 	void process(const real_t p_delta) const;
 };
 
@@ -258,14 +260,14 @@ struct Snapshot {
 	uint32_t input_id;
 	/// The Node variables in a particular frame. The order of this vector
 	/// matters because the index is the `NetNodeId`.
-	LocalVector<Vector<VarData> > node_vars;
+	LocalVector<Vector<Var> > node_vars; // TODO use Vector instead of LocalVector.
 
 	operator String() const;
 };
 
 struct PostponedRecover {
 	NodeData *node_data = nullptr;
-	Vector<Var> vars;
+	Vector<Var> vars; // TODO use a LocalVector?
 };
 
 struct NodeTrackingData {

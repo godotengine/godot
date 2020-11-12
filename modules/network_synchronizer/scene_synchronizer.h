@@ -361,7 +361,7 @@ public:
 			void *p_user_pointer,
 			void (*p_node_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data),
 			void (*p_controller_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_input_id),
-			void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, StringName p_variable_name, const Variant &p_value));
+			void (*p_variable_parse)(void *p_user_pointer, NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_value));
 
 private:
 	/// Store node data organized per controller.
@@ -374,7 +374,11 @@ private:
 	void process_controllers_recovery(real_t p_delta);
 	void process_paused_controller_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
-	bool compare_vars(const NetUtility::NodeData *p_synchronizer_node_data, const Vector<NetUtility::VarData> &p_server_vars, const Vector<NetUtility::VarData> &p_client_vars, Vector<NetUtility::Var> &r_postponed_recover);
+	bool compare_vars(
+			const NetUtility::NodeData *p_synchronizer_node_data,
+			const Vector<NetUtility::Var> &p_server_vars,
+			const Vector<NetUtility::Var> &p_client_vars,
+			Vector<NetUtility::Var> &r_postponed_recover);
 
 	void notify_server_full_snapshot_is_needed();
 };

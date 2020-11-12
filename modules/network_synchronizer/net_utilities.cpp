@@ -43,7 +43,7 @@ NetUtility::VarData::VarData(StringName p_name) {
 	var.name = p_name;
 }
 
-NetUtility::VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
+NetUtility::VarData::VarData(NetVarId p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
 		id(p_id),
 		skip_rewinding(p_skip_rewinding),
 		enabled(p_enabled) {
@@ -55,20 +55,11 @@ bool NetUtility::VarData::operator==(const NetUtility::VarData &p_other) const {
 	return var.name == p_other.var.name;
 }
 
-NetUtility::NodeData::NodeData() {}
-
-int64_t NetUtility::NodeData::find_var_by_id(uint32_t p_id) const {
-	if (p_id == 0) {
-		return -1;
-	}
-	const NetUtility::VarData *ptr = vars.ptr();
-	for (int i = 0; i < vars.size(); i += 1) {
-		if (ptr[i].id == p_id) {
-			return i;
-		}
-	}
-	return -1;
+bool NetUtility::VarData::operator<(const VarData &p_other) const {
+	return id < p_other.id;
 }
+
+NetUtility::NodeData::NodeData() {}
 
 void NetUtility::NodeData::process(const real_t p_delta) const {
 	const Variant var_delta = p_delta;
@@ -88,9 +79,9 @@ NetUtility::Snapshot::operator String() const {
 		s += "\nNode Data: " + itos(net_node_id);
 		for (int i = 0; i < it.value->size(); i += 1) {
 			s += "\n|- Variable: ";
-			s += node_vars[net_node_id][i].var.name;
+			s += node_vars[net_node_id][i].name;
 			s += " = ";
-			s += String(node_vars[net_node_id][i].var.value);
+			s += String(node_vars[net_node_id][i].value);
 		}
 	}
 	return s;
