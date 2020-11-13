@@ -97,7 +97,14 @@ private:
 
 	int video_driver_index;
 
+	bool alt_mem = false;
+	bool shift_mem = false;
+	bool control_mem = false;
+	bool meta_mem = false;
+
 	int buttons_state;
+
+	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev) const;
 
 	static int _button_index_from_mask(int button_mask);
 
@@ -201,6 +208,7 @@ public:
 	void process_double_tap(int event_android_button_mask, Point2 p_pos);
 	void process_scroll(Point2 p_pos);
 	void process_joy_event(JoypadEvent p_event);
+	void process_key_event(int p_scancode, int p_unicode_char, bool p_pressed);
 	void process_event(Ref<InputEvent> p_event);
 	void init_video_mode(int p_video_width, int p_video_height);
 

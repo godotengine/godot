@@ -179,6 +179,10 @@ public class GodotView extends GLSurfaceView {
 		godot.onBackPressed();
 	}
 
+	public GodotInputHandler getInputHandler() {
+		return inputHandler;
+	}
+
 	@Override
 	public void onResume() {
 		super.onResume();

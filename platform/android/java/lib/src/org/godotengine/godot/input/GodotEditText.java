@@ -167,14 +167,31 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
-		super.onKeyDown(keyCode, keyEvent);
-
-		/* Let GlSurfaceView get focus if back key is input. */
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			this.mView.requestFocus();
+		/* Let SurfaceView get focus if back key is input. */
+		// pass event to godot in special cases
+		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
+			return true;
+		} else {
+			return super.onKeyDown(keyCode, keyEvent);
 		}
+	}
 
-		return true;
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
+		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyUp(keyCode, keyEvent)) {
+			return true;
+		} else {
+			return super.onKeyUp(keyCode, keyEvent);
+		}
+	}
+
+	private boolean needHandlingInGodot(int keyCode, KeyEvent keyEvent) {
+		boolean isArrowKey = keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+							 keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT;
+		boolean isModifiedKey = keyEvent.isAltPressed() || keyEvent.isCtrlPressed() || keyEvent.isSymPressed() ||
+								keyEvent.isFunctionPressed() || keyEvent.isMetaPressed();
+		return isArrowKey || keyCode == KeyEvent.KEYCODE_TAB || KeyEvent.isModifierKey(keyCode) ||
+				isModifiedKey;
 	}
 
 	// ===========================================================
