@@ -2204,7 +2204,8 @@ void RendererSceneCull::_prepare_scene(const Transform p_cam_transform, const Ca
 				RSG::storage->mesh_instance_check_for_update(ins->mesh_instance);
 			}
 
-			ins->depth = near_plane.distance_to(ins->transform.origin);
+			Vector3 aabb_center = ins->transformed_aabb.position + (ins->transformed_aabb.size * 0.5);
+			ins->depth = near_plane.distance_to(aabb_center);
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 		}
 
