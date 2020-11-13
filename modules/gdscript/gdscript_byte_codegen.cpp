@@ -158,6 +158,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_default_arg_ptr = nullptr;
 	}
 
+	if (operator_func_map.size()) {
+		function->operator_funcs.resize(operator_func_map.size());
+		function->_operator_funcs_count = function->operator_funcs.size();
+		function->_operator_funcs_ptr = function->operator_funcs.ptr();
+		for (const Map<Variant::ValidatedOperatorEvaluator, int>::Element *E = operator_func_map.front(); E; E = E->next()) {
+			function->operator_funcs.write[E->get()] = E->key();
+		}
+	} else {
+		function->_operator_funcs_count = 0;
+		function->_operator_funcs_ptr = nullptr;
+	}
+
 	if (debug_stack) {
 		function->stack_debug = stack_debug;
 	}
@@ -178,7 +190,23 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 	function->_initial_line = p_line;
 }
 
+#define HAS_BUILTIN_TYPE(m_var) \
+	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN)
+
 void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
+	if (HAS_BUILTIN_TYPE(p_left_operand) && HAS_BUILTIN_TYPE(p_right_operand)) {
+		// Gather specific operator.
+		Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(p_operator, p_left_operand.type.builtin_type, p_right_operand.type.builtin_type);
+
+		append(GDScriptFunction::OPCODE_OPERATOR_VALIDATED, 3);
+		append(p_left_operand);
+		append(p_right_operand);
+		append(p_target);
+		append(op_func);
+		return;
+	}
+
+	// No specific types, perform variant evaluation.
 	append(GDScriptFunction::OPCODE_OPERATOR, 3);
 	append(p_left_operand);
 	append(p_right_operand);

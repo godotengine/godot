@@ -51,15 +51,16 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	int current_stack_size = 0;
 	int current_temporaries = 0;
+	int current_line = 0;
+	int stack_max = 0;
+	int instr_args_max = 0;
 
 	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 	Map<StringName, int> name_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;
 #endif
-	int current_line = 0;
-	int stack_max = 0;
-	int instr_args_max = 0;
+	Map<Variant::ValidatedOperatorEvaluator, int> operator_func_map;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
 	List<int> for_jmp_addrs;
@@ -136,6 +137,14 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_operation_pos(const Variant::ValidatedOperatorEvaluator p_operation) {
+		if (operator_func_map.has(p_operation))
+			return operator_func_map[p_operation];
+		int pos = operator_func_map.size();
+		operator_func_map[p_operation] = pos;
+		return pos;
+	}
+
 	void alloc_stack(int p_level) {
 		if (p_level >= stack_max)
 			stack_max = p_level + 1;
@@ -189,6 +198,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	void append(const StringName &p_name) {
 		opcodes.push_back(get_name_map_pos(p_name));
+	}
+
+	void append(const Variant::ValidatedOperatorEvaluator p_operation) {
+		opcodes.push_back(get_operation_pos(p_operation));
 	}
 
 	void patch_jump(int p_address) {

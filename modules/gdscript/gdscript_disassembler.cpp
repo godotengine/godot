@@ -136,6 +136,17 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
+			case OPCODE_OPERATOR_VALIDATED: {
+				text += "validated operator ";
+
+				text += DADDR(3);
+				text += " = ";
+				text += DADDR(1);
+				text += " <operator function> ";
+				text += DADDR(2);
+
+				incr += 5;
+			} break;
 			case OPCODE_EXTENDS_TEST: {
 				text += "is object ";
 				text += DADDR(3);
