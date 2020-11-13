@@ -2157,14 +2157,16 @@ public:
 		}
 	}
 
-	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String apk_path, EditorProgress ep) {
+	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String export_path, EditorProgress ep) {
+		int export_format = int(p_preset->get("custom_template/export_format"));
+		String export_label = export_format == 1 ? "AAB" : "APK";
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
 
 		String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
 		if (!FileAccess::exists(jarsigner)) {
-			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
+			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting " + export_label + " is unsigned.");
 			return OK;
 		}
 
@@ -2182,7 +2184,7 @@ public:
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 			}
 
-			if (ep.step("Signing debug APK...", 103)) {
+			if (ep.step("Signing debug " + export_label + "...", 103)) {
 				return ERR_SKIP;
 			}
 
@@ -2191,7 +2193,7 @@ public:
 			password = release_password;
 			user = release_username;
 
-			if (ep.step("Signing release APK...", 103)) {
+			if (ep.step("Signing release " + export_label + "...", 103)) {
 				return ERR_SKIP;
 			}
 		}
@@ -2216,7 +2218,7 @@ public:
 		args.push_back(keystore);
 		args.push_back("-storepass");
 		args.push_back(password);
-		args.push_back(apk_path);
+		args.push_back(export_path);
 		args.push_back(user);
 		int retval;
 		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
@@ -2225,7 +2227,7 @@ public:
 			return ERR_CANT_CREATE;
 		}
 
-		if (ep.step("Verifying APK...", 104)) {
+		if (ep.step("Verifying " + export_label + "...", 104)) {
 			return ERR_SKIP;
 		}
 
@@ -2233,15 +2235,24 @@ public:
 		args.push_back("-verify");
 		args.push_back("-keystore");
 		args.push_back(keystore);
-		args.push_back(apk_path);
+		args.push_back(export_path);
 		args.push_back("-verbose");
 
 		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
+			EditorNode::add_io_error("'jarsigner' verification of " + export_label + " failed. Make sure to use a jarsigner from OpenJDK 8.");
 			return ERR_CANT_CREATE;
 		}
 		return OK;
+	}
+
+	void _clear_assets_directory() {
+		DirAccessRef da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da_res->dir_exists("res://android/build/assets")) {
+			DirAccessRef da_assets = DirAccess::open("res://android/build/assets");
+			da_assets->erase_contents_recursive();
+			da_res->remove("res://android/build/assets");
+		}
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
@@ -2323,13 +2334,8 @@ public:
 			_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 
 			//stores all the project files inside the Gradle project directory. Also includes all ABIs
+			_clear_assets_directory();
 			if (!apk_expansion) {
-				DirAccess *da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-				if (da_res->dir_exists("res://android/build/assets")) {
-					DirAccess *da_assets = DirAccess::open("res://android/build/assets");
-					da_assets->erase_contents_recursive();
-					da_res->remove("res://android/build/assets");
-				}
 				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, NULL, ignore_so_file);
 				if (err != OK) {
 					EditorNode::add_io_error("Could not export project files to gradle project\n");
