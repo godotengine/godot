@@ -44,6 +44,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/check_box.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
@@ -321,6 +322,10 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 		memdelete(instances[i]);
 	}
 	return result;
+}
+
+void SceneTreeDock::set_editor_setting(const Variant &p_value, const String &p_setting) {
+	EditorSettings::get_singleton()->set_setting(p_setting, p_value);
 }
 
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
@@ -739,6 +744,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign()) {
 				break;
 			}
+			// TODO: Ideally we could check here whether there are any animations
+			// in the scene using this node, and only if so, add a checkbox to the
+			// dialog to choose if the animations should be kept or deleted.
+			//
+			// When confirm override is set, there are two options:
+			// either still show the dialog if there are animations linked
+			// or default to one of the two options delete/no-delete?
+
+			// For now just add a checkbox that directly reflects the editor setting
+			// "editors/animation/autorename_animation_tracks"
+			// as this currently influences renaming and removing (as well as
+			// renaming exported properties in scripts)
 
 			if (p_confirm_override) {
 				_delete_confirm();
@@ -765,7 +782,44 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				delete_dialog->set_text(msg);
+				// add a checkbox to set/unset
+				// "editors/animation/autorename_animation_tracks"
+				// as this currently decides if animation tracks will be deleted
+				// but check if we did it previously:
+				// TODO: if we keep it like this, move this to the constructor...
+				Node *child_node = nullptr;
+				int cc = delete_dialog->get_child_count();
+				for (int i = 0; i < cc; i++) {
+					Node *cd = delete_dialog->get_child(i);
+					if (cd->get_name() == "DeleteAnimationsCheckBox") {
+						child_node = cd;
+						break;
+					}
+				}
+				CheckBox *checkbox = nullptr;
+				if (child_node) {
+					checkbox = (CheckBox *)child_node;
+				} else {
+					// This shouldn't leak memory because add_child takes ownership (?)
+					checkbox = memnew(CheckBox);
+					checkbox->set_name("DeleteAnimationsCheckBox");
+					checkbox->set_text(TTR("Also delete animation tracks?"));
+					checkbox->set_tooltip(TTR("Explain that this directly sets the editor setting"));
+					delete_dialog->add_child(checkbox);
+					delete_dialog->set_min_size(Size2(200, 120) * EDSCALE);
+					// TODO: resize this properly, or rather add it with a vbox?
 
+					// connect signal to actually set the editor setting:
+					// This here doesn't work, as the binds can only be set for trailing arguments in the target callable:
+					//checkbox->connect("toggled", callable_mp(EditorSettings::get_singleton(), &EditorSettings::set_setting), make_binds("editors/animation/autorename_animation_tracks"));
+					// This here, using a lambda to make a partial function, does not work as the callable_mp helper insists that the function passed in is actually a method of the instance, even though that seems to not be required for it to work AFAICT
+					//checkbox->connect("toggled", callable_mp(EditorSettings::get_singleton(), [](bool button_pressed) {EditorSettings::get_singleton()->set_setting("editors/animation/autorename_animation_tracks", button_pressed); } );
+					// So let's resort for now to making a local method in this class:
+					checkbox->connect("toggled", callable_mp(this, &SceneTreeDock::set_editor_setting), make_binds("editors/animation/autorename_animation_tracks"));
+				}
+				// set checkbox state based on editor setting:
+				bool auto_rename = bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true));
+				checkbox->set_pressed(auto_rename);
 				// Resize the dialog to its minimum size.
 				// This prevents the dialog from being too wide after displaying
 				// a deletion confirmation for a node with a long name.
@@ -1270,6 +1324,12 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 }
 
 void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath>> *p_renames) {
+	// TODO: I don't think this should be checked here, as this method is called
+	// by both _do_reparent and _delete_confirm (where it's about removing,
+	// i.e. setting to null, rather than actual renaming) AND the same rename
+	// info is also used to rename node paths in exported script properties, so having
+	// this set to true implies "autoremoving" animation tracks in addition to
+	// renaming, and having it false also disables autorenaming script properties!
 	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true))) {
 		return;
 	}
@@ -1837,6 +1897,11 @@ void SceneTreeDock::_delete_confirm() {
 		remove_list.sort_custom<Node::Comparator>(); //sort nodes to keep positions
 		List<Pair<NodePath, NodePath>> path_renames;
 
+		// TODO: The following uses the ..._renames functions to remove animation
+		// tracks, rather than rename them. And as a side effect remove references
+		// in exported script properties.
+		// Would probably be good to refactor to make this clear.
+
 		//delete from animation
 		for (List<Node *>::Element *E = remove_list.front(); E; E = E->next()) {
 			Node *n = E->get();
@@ -1865,6 +1930,14 @@ void SceneTreeDock::_delete_confirm() {
 			editor_data->get_undo_redo().add_do_method(n->get_parent(), "remove_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "add_child", n);
 			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "move_child", n, n->get_index());
+			// TODO: the following seemed wrong but on closer reading,
+			// this only removes the root in the currently open AnimationTrackEditor,
+			// if it happens to show an AnimationPlayer that was affected.
+			// The root is a property of the AnimationPlayers and there can
+			// be more than one BUT any of those that had their root deleted
+			// should already have been dealt with in the "_renames" code above.
+			// Still unclear if this is still needed if the player root was already
+			// removed - plus could be clearer.
 			if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == n) {
 				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", n);
 			}
