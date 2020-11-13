@@ -188,6 +188,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 #define OPCODES_TABLE                         \
 	static const void *switch_table_ops[] = { \
 		&&OPCODE_OPERATOR,                    \
+		&&OPCODE_OPERATOR_VALIDATED,          \
 		&&OPCODE_EXTENDS_TEST,                \
 		&&OPCODE_IS_BUILTIN,                  \
 		&&OPCODE_SET,                         \
@@ -464,6 +465,23 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 				*dst = ret;
 #endif
+				ip += 5;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_OPERATOR_VALIDATED) {
+				CHECK_SPACE(5);
+
+				int operator_idx = _code_ptr[ip + 4];
+				GD_ERR_BREAK(operator_idx < 0 || operator_idx >= _operator_funcs_count);
+				Variant::ValidatedOperatorEvaluator operator_func = _operator_funcs_ptr[operator_idx];
+
+				GET_INSTRUCTION_ARG(a, 0);
+				GET_INSTRUCTION_ARG(b, 1);
+				GET_INSTRUCTION_ARG(dst, 2);
+
+				operator_func(a, b, dst);
+
 				ip += 5;
 			}
 			DISPATCH_OPCODE;

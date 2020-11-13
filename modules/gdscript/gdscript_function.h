@@ -159,6 +159,7 @@ class GDScriptFunction {
 public:
 	enum Opcode {
 		OPCODE_OPERATOR,
+		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_EXTENDS_TEST,
 		OPCODE_IS_BUILTIN,
 		OPCODE_SET,
@@ -241,6 +242,8 @@ private:
 	int _global_names_count = 0;
 	const int *_default_arg_ptr = nullptr;
 	int _default_arg_count = 0;
+	int _operator_funcs_count = 0;
+	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
 	const int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
@@ -256,6 +259,7 @@ private:
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
+	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
