@@ -498,7 +498,7 @@ Error StreamTexture2D::_load_data(const String &p_path, int &tw, int &th, int &t
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
@@ -893,7 +893,7 @@ Image::Format StreamTexture3D::get_format() const {
 
 Error StreamTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps) {
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
@@ -2325,7 +2325,7 @@ Error StreamTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> 
 	ERR_FAIL_COND_V(images.size() != 0, ERR_INVALID_PARAMETER);
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Unable to open file: %s.", p_path));
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
