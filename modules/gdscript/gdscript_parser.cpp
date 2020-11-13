@@ -6089,6 +6089,24 @@ GDScriptParser::DataType GDScriptParser::_get_operation_type(const Variant::Oper
 	if (b_type == Variant::INT || b_type == Variant::REAL) {
 		Variant::evaluate(Variant::OP_ADD, b, 1, b, r_valid);
 	}
+	if (a_type == Variant::VECTOR2) {
+		Variant::evaluate(Variant::OP_ADD, a, Vector2(1, 1), a, r_valid);
+	}
+	if (b_type == Variant::VECTOR2) {
+		Variant::evaluate(Variant::OP_ADD, b, Vector2(1, 1), b, r_valid);
+	}
+	if (a_type == Variant::VECTOR3) {
+		Variant::evaluate(Variant::OP_ADD, a, Vector3(1, 1, 1), a, r_valid);
+	}
+	if (b_type == Variant::VECTOR3) {
+		Variant::evaluate(Variant::OP_ADD, b, Vector3(1, 1, 1), b, r_valid);
+	}
+	if (a_type == Variant::COLOR) {
+		Variant::evaluate(Variant::OP_ADD, a, Color(1, 1, 1, 1), a, r_valid);
+	}
+	if (b_type == Variant::COLOR) {
+		Variant::evaluate(Variant::OP_ADD, b, Color(1, 1, 1, 1), b, r_valid);
+	}
 	if (a_type == Variant::STRING && b_type != Variant::ARRAY) {
 		a = "%s"; // Work around for formatting operator (%)
 	}
