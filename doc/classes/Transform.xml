@@ -168,7 +168,18 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				Rotates the transform about the origin around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+			</description>
+		</method>
+		<method name="rotated_local">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Rotates the transform in-place around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">

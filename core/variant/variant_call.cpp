@@ -1245,6 +1245,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform, affine_inverse, sarray(), varray());
 	bind_method(Transform, orthonormalized, sarray(), varray());
 	bind_method(Transform, rotated, sarray("axis", "phi"), varray());
+	bind_method(Transform, rotated_local, sarray("axis", "phi"), varray());
 	bind_method(Transform, scaled, sarray("scale"), varray());
 	bind_method(Transform, translated, sarray("offset"), varray());
 	bind_method(Transform, looking_at, sarray("target", "up"), varray());

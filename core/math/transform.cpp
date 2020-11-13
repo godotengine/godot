@@ -66,6 +66,10 @@ Transform Transform::rotated(const Vector3 &p_axis, real_t p_phi) const {
 	return Transform(Basis(p_axis, p_phi), Vector3()) * (*this);
 }
 
+Transform Transform::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
+	return Transform(Basis(p_axis, p_phi) * this->basis, this->origin);
+}
+
 void Transform::rotate_basis(const Vector3 &p_axis, real_t p_phi) {
 	basis.rotate(p_axis, p_phi);
 }
