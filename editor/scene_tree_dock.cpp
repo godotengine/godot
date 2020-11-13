@@ -1279,10 +1279,6 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 }
 
 void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, List<Pair<NodePath, NodePath> > *p_renames) {
-
-	if (!bool(EDITOR_DEF("editors/animation/autorename_animation_tracks", true)))
-		return;
-
 	Vector<StringName> base_path;
 	Node *n = p_node->get_parent();
 	while (n) {
