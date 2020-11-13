@@ -223,7 +223,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns a [String] text with the word under the mouse cursor location.
+				Returns a [String] text with the word under the caret (text cursor) location.
 			</description>
 		</method>
 		<method name="has_keyword_color" qualifiers="const">
