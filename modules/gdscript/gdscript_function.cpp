@@ -139,31 +139,13 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	}
 }
 
-GDScriptFunction::GDScriptFunction() :
-		function_list(this) {
-	_stack_size = 0;
-	_call_size = 0;
-	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+GDScriptFunction::GDScriptFunction() {
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED
-	_func_cname = nullptr;
-
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
-
 		GDScriptLanguage::get_singleton()->function_list.add(&function_list);
 	}
-
-	profile.call_count = 0;
-	profile.self_time = 0;
-	profile.total_time = 0;
-	profile.frame_call_count = 0;
-	profile.frame_self_time = 0;
-	profile.frame_total_time = 0;
-	profile.last_frame_call_count = 0;
-	profile.last_frame_self_time = 0;
-	profile.last_frame_total_time = 0;
-
 #endif
 }
 

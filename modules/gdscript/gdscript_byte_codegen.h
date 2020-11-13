@@ -33,6 +33,8 @@
 
 #include "gdscript_codegen.h"
 
+#include "gdscript_function.h"
+
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
@@ -57,7 +59,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 #endif
 	int current_line = 0;
 	int stack_max = 0;
-	int call_max = 0;
+	int instr_args_max = 0;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
 	List<int> for_jmp_addrs;
@@ -139,11 +141,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			stack_max = p_level + 1;
 	}
 
-	void alloc_call(int p_params) {
-		if (p_params >= call_max)
-			call_max = p_params;
-	}
-
 	int increase_stack() {
 		int top = current_stack_size++;
 		alloc_stack(current_stack_size);
@@ -177,8 +174,13 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return -1; // Unreachable.
 	}
 
-	void append(int code) {
-		opcodes.push_back(code);
+	void append(GDScriptFunction::Opcode p_code, int p_argument_count) {
+		opcodes.push_back((p_code & GDScriptFunction::INSTR_MASK) | (p_argument_count << GDScriptFunction::INSTR_BITS));
+		instr_args_max = MAX(instr_args_max, p_argument_count);
+	}
+
+	void append(int p_code) {
+		opcodes.push_back(p_code);
 	}
 
 	void append(const Address &p_address) {

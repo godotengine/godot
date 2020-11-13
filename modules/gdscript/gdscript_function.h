@@ -215,6 +215,12 @@ public:
 		ADDR_TYPE_NIL = 9
 	};
 
+	enum Instruction {
+		INSTR_BITS = 20,
+		INSTR_MASK = ((1 << INSTR_BITS) - 1),
+		INSTR_ARGS_MASK = ~INSTR_MASK,
+	};
+
 	struct StackDebug {
 		int line;
 		int pos;
@@ -229,22 +235,22 @@ private:
 	StringName source;
 
 	mutable Variant nil;
-	mutable Variant *_constants_ptr;
-	int _constant_count;
-	const StringName *_global_names_ptr;
-	int _global_names_count;
-	const int *_default_arg_ptr;
-	int _default_arg_count;
-	const int *_code_ptr;
-	int _code_size;
-	int _argument_count;
-	int _stack_size;
-	int _call_size;
-	int _initial_line;
-	bool _static;
-	MultiplayerAPI::RPCMode rpc_mode;
+	mutable Variant *_constants_ptr = nullptr;
+	int _constant_count = 0;
+	const StringName *_global_names_ptr = nullptr;
+	int _global_names_count = 0;
+	const int *_default_arg_ptr = nullptr;
+	int _default_arg_count = 0;
+	const int *_code_ptr = nullptr;
+	int _code_size = 0;
+	int _argument_count = 0;
+	int _stack_size = 0;
+	int _instruction_args_size = 0;
+	int _initial_line = 0;
+	bool _static = false;
+	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 
-	GDScript *_script;
+	GDScript *_script = nullptr;
 
 	StringName name;
 	Vector<Variant> constants;
@@ -265,22 +271,22 @@ private:
 
 	friend class GDScriptLanguage;
 
-	SelfList<GDScriptFunction> function_list;
+	SelfList<GDScriptFunction> function_list{ this };
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
-	const char *_func_cname;
+	const char *_func_cname = nullptr;
 
 	struct Profile {
 		StringName signature;
-		uint64_t call_count;
-		uint64_t self_time;
-		uint64_t total_time;
-		uint64_t frame_call_count;
-		uint64_t frame_self_time;
-		uint64_t frame_total_time;
-		uint64_t last_frame_call_count;
-		uint64_t last_frame_self_time;
-		uint64_t last_frame_total_time;
+		uint64_t call_count = 0;
+		uint64_t self_time = 0;
+		uint64_t total_time = 0;
+		uint64_t frame_call_count = 0;
+		uint64_t frame_self_time = 0;
+		uint64_t frame_total_time = 0;
+		uint64_t last_frame_call_count = 0;
+		uint64_t last_frame_self_time = 0;
+		uint64_t last_frame_total_time = 0;
 	} profile;
 
 #endif
