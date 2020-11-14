@@ -38,9 +38,9 @@
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
-				Constructs a color from a 32-bit integer (each byte represents a component of the RGBA profile).
+				Constructs a color from a 32-bit integer in RGBA format (each byte represents a color channel).
 				[codeblock]
-				var c = Color(274) # Equivalent to RGBA(0, 0, 1, 18)
+				var c = Color(274) # Similar to Color(0.0, 0.0, 0.004, 0.07)
 				[/codeblock]
 			</description>
 		</method>
@@ -54,9 +54,9 @@
 			<argument index="2" name="b" type="float">
 			</argument>
 			<description>
-				Constructs a color from an RGB profile using values between 0 and 1. Alpha will always be 1.
+				Constructs a color from RGB values, typically between 0 and 1. Alpha will be 1.
 				[codeblock]
-				var c = Color(0.2, 1.0, 0.7) # Equivalent to RGBA(51, 255, 178, 255)
+				var color = Color(0.2, 1.0, 0.7) # Similar to Color8(51, 255, 178, 255)
 				[/codeblock]
 			</description>
 		</method>
@@ -72,9 +72,9 @@
 			<argument index="3" name="a" type="float">
 			</argument>
 			<description>
-				Constructs a color from an RGBA profile using values between 0 and 1.
+				Constructs a color from RGBA values, typically between 0 and 1.
 				[codeblock]
-				var c = Color(0.2, 1.0, 0.7, 0.8) # Equivalent to RGBA(51, 255, 178, 204)
+				var color = Color(0.2, 1.0, 0.7, 0.8) # Similar to Color8(51, 255, 178, 204)
 				[/codeblock]
 			</description>
 		</method>
@@ -152,8 +152,8 @@
 			<description>
 				Returns the inverted color [code](1 - r, 1 - g, 1 - b, a)[/code].
 				[codeblock]
-				var c = Color(0.3, 0.4, 0.9)
-				var inverted_color = c.inverted() # A color of an RGBA(178, 153, 26, 255)
+				var color = Color(0.3, 0.4, 0.9)
+				var inverted_color = color.inverted() # Equivalent to Color(0.7, 0.6, 0.1)
 				[/codeblock]
 			</description>
 		</method>
@@ -191,7 +191,7 @@
 				[codeblock]
 				var c1 = Color(1.0, 0.0, 0.0)
 				var c2 = Color(0.0, 1.0, 0.0)
-				var li_c = c1.linear_interpolate(c2, 0.5) # A color of an RGBA(128, 128, 0, 255)
+				var li_c = c1.linear_interpolate(c2, 0.5) # Equivalent to Color(0.5, 0.5, 0.0)
 				[/codeblock]
 			</description>
 		</method>
@@ -199,10 +199,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ABGR format (each byte represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				Returns the color converted to a 32-bit integer in ABGR format (each byte represents a color channel). ABGR is the reversed version of the default format.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_abgr32()) # Prints 4281565439
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr32()) # Prints 4281565439
 				[/codeblock]
 			</description>
 		</method>
@@ -210,10 +210,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ABGR format (each word represents a component of the ABGR profile). ABGR is the reversed version of the default format.
+				Returns the color converted to a 64-bit integer in ABGR format (each word represents a color channel). ABGR is the reversed version of the default format.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_abgr64()) # Prints -225178692812801
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_abgr64()) # Prints -225178692812801
 				[/codeblock]
 			</description>
 		</method>
@@ -221,10 +221,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in ARGB format (each byte represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				Returns the color converted to a 32-bit integer in ARGB format (each byte represents a color channel). ARGB is more compatible with DirectX.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_argb32()) # Prints 4294934323
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb32()) # Prints 4294934323
 				[/codeblock]
 			</description>
 		</method>
@@ -232,10 +232,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in ARGB format (each word represents a component of the ARGB profile). ARGB is more compatible with DirectX.
+				Returns the color converted to a 64-bit integer in ARGB format (each word represents a color channel). ARGB is more compatible with DirectX.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_argb64()) # Prints -2147470541
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_argb64()) # Prints -2147470541
 				[/codeblock]
 			</description>
 		</method>
@@ -258,10 +258,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 32-bit integer in RGBA format (each byte represents a component of the RGBA profile). RGBA is Godot's default format.
+				Returns the color converted to a 32-bit integer in RGBA format (each byte represents a color channel). RGBA is Godot's default format.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_rgba32()) # Prints 4286526463
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba32()) # Prints 4286526463
 				[/codeblock]
 			</description>
 		</method>
@@ -269,10 +269,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the color's 64-bit integer in RGBA format (each word represents a component of the RGBA profile). RGBA is Godot's default format.
+				Returns the color converted to a 64-bit integer in RGBA format (each word represents a color channel). RGBA is Godot's default format.
 				[codeblock]
-				var c = Color(1, 0.5, 0.2)
-				print(c.to_rgba64()) # Prints -140736629309441
+				var color = Color(1, 0.5, 0.2)
+				print(color.to_rgba64()) # Prints -140736629309441
 				[/codeblock]
 			</description>
 		</method>
