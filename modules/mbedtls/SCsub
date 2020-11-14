@@ -100,3 +100,7 @@ if env["builtin_mbedtls"]:
 
 # Module sources
 env_mbed_tls.add_source_files(env.modules_sources, "*.cpp")
+
+if env["tests"]:
+    env_mbed_tls.Append(CPPDEFINES=["TESTS_ENABLED"])
+    env_mbed_tls.add_source_files(env.modules_sources, "./tests/*.cpp")

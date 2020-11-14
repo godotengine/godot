@@ -101,12 +101,31 @@ public:
 	friend class SSLContextMbedTLS;
 };
 
+class HMACContextMbedTLS : public HMACContext {
+private:
+	HashingContext::HashType hash_type;
+	int hash_len = 0;
+	void *ctx = nullptr;
+
+public:
+	static HMACContext *create();
+	static void make_default() { HMACContext::_create = create; }
+	static void finalize() { HMACContext::_create = nullptr; }
+
+	static bool is_md_type_allowed(mbedtls_md_type_t p_md_type);
+
+	virtual Error start(HashingContext::HashType p_hash_type, PackedByteArray p_key);
+	virtual Error update(PackedByteArray p_data);
+	virtual PackedByteArray finish();
+
+	HMACContextMbedTLS() {}
+};
+
 class CryptoMbedTLS : public Crypto {
 private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	static X509CertificateMbedTLS *default_certs;
-	mbedtls_md_type_t _md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 public:
 	static Crypto *create();
@@ -114,6 +133,7 @@ public:
 	static void finalize_crypto();
 	static X509CertificateMbedTLS *get_default_certificates();
 	static void load_default_certificates(String p_path);
+	static mbedtls_md_type_t md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
 	virtual PackedByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
