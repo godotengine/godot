@@ -44,6 +44,7 @@
 #define PEM_END_CRT "-----END CERTIFICATE-----\n"
 
 #include <mbedtls/debug.h>
+#include <mbedtls/md.h>
 #include <mbedtls/pem.h>
 
 CryptoKey *CryptoKeyMbedTLS::create() {
@@ -186,6 +187,68 @@ Error X509CertificateMbedTLS::save(String p_path) {
 	return OK;
 }
 
+bool HMACContextMbedTLS::is_md_type_allowed(mbedtls_md_type_t p_md_type) {
+	switch (p_md_type) {
+		case MBEDTLS_MD_SHA1:
+		case MBEDTLS_MD_SHA256:
+			return true;
+		default:
+			return false;
+	}
+}
+
+HMACContext *HMACContextMbedTLS::create() {
+	return memnew(HMACContextMbedTLS);
+}
+
+Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByteArray p_key) {
+	ERR_FAIL_COND_V_MSG(ctx != nullptr, ERR_FILE_ALREADY_IN_USE, "HMACContext already started.");
+
+	// HMAC keys can be any size.
+	ERR_FAIL_COND_V_MSG(p_key.empty(), ERR_INVALID_PARAMETER, "Key must not be empty.");
+
+	hash_type = p_hash_type;
+	mbedtls_md_type_t ht = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, hash_len);
+
+	bool allowed = HMACContextMbedTLS::is_md_type_allowed(ht);
+	ERR_FAIL_COND_V_MSG(!allowed, ERR_INVALID_PARAMETER, "Unsupported hash type.");
+
+	ctx = memalloc(sizeof(mbedtls_md_context_t));
+	mbedtls_md_init((mbedtls_md_context_t *)ctx);
+
+	mbedtls_md_setup((mbedtls_md_context_t *)ctx, mbedtls_md_info_from_type((mbedtls_md_type_t)ht), 1);
+	int ret = mbedtls_md_hmac_starts((mbedtls_md_context_t *)ctx, (const uint8_t *)p_key.ptr(), (size_t)p_key.size());
+	return ret ? FAILED : OK;
+}
+
+Error HMACContextMbedTLS::update(PackedByteArray p_data) {
+	ERR_FAIL_COND_V_MSG(ctx == nullptr, ERR_INVALID_DATA, "Start must be called before update.");
+
+	ERR_FAIL_COND_V_MSG(p_data.empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
+
+	int ret = mbedtls_md_hmac_update((mbedtls_md_context_t *)ctx, (const uint8_t *)p_data.ptr(), (size_t)p_data.size());
+	return ret ? FAILED : OK;
+}
+
+PackedByteArray HMACContextMbedTLS::finish() {
+	ERR_FAIL_COND_V_MSG(ctx == nullptr, PackedByteArray(), "Start must be called before finish.");
+	ERR_FAIL_COND_V_MSG(hash_len == 0, PackedByteArray(), "Unsupported hash type.");
+
+	PackedByteArray out;
+	out.resize(hash_len);
+
+	unsigned char *out_ptr = (unsigned char *)out.ptrw();
+	int ret = mbedtls_md_hmac_finish((mbedtls_md_context_t *)ctx, out_ptr);
+
+	mbedtls_md_free((mbedtls_md_context_t *)ctx);
+	memfree((mbedtls_md_context_t *)ctx);
+	ctx = nullptr;
+	hash_len = 0;
+
+	ERR_FAIL_COND_V_MSG(ret, PackedByteArray(), "Error received while finishing HMAC");
+	return out;
+}
+
 Crypto *CryptoMbedTLS::create() {
 	return memnew(CryptoMbedTLS);
 }
@@ -199,6 +262,7 @@ void CryptoMbedTLS::initialize_crypto() {
 	Crypto::_load_default_certificates = load_default_certificates;
 	X509CertificateMbedTLS::make_default();
 	CryptoKeyMbedTLS::make_default();
+	HMACContextMbedTLS::make_default();
 }
 
 void CryptoMbedTLS::finalize_crypto() {
@@ -210,6 +274,7 @@ void CryptoMbedTLS::finalize_crypto() {
 	}
 	X509CertificateMbedTLS::finalize();
 	CryptoKeyMbedTLS::finalize();
+	HMACContextMbedTLS::finalize();
 }
 
 CryptoMbedTLS::CryptoMbedTLS() {
@@ -313,7 +378,7 @@ PackedByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
 	return out;
 }
 
-mbedtls_md_type_t CryptoMbedTLS::_md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size) {
+mbedtls_md_type_t CryptoMbedTLS::md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size) {
 	switch (p_hash_type) {
 		case HashingContext::HASH_MD5:
 			r_size = 16;
@@ -332,7 +397,7 @@ mbedtls_md_type_t CryptoMbedTLS::_md_type_from_hashtype(HashingContext::HashType
 
 Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key) {
 	int size;
-	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
+	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, Vector<uint8_t>(), "Invalid hash type.");
 	ERR_FAIL_COND_V_MSG(p_hash.size() != size, Vector<uint8_t>(), "Invalid hash provided. Size must be " + itos(size));
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
@@ -350,7 +415,7 @@ Vector<uint8_t> CryptoMbedTLS::sign(HashingContext::HashType p_hash_type, Vector
 
 bool CryptoMbedTLS::verify(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Vector<uint8_t> p_signature, Ref<CryptoKey> p_key) {
 	int size;
-	mbedtls_md_type_t type = _md_type_from_hashtype(p_hash_type, size);
+	mbedtls_md_type_t type = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, size);
 	ERR_FAIL_COND_V_MSG(type == MBEDTLS_MD_NONE, false, "Invalid hash type.");
 	ERR_FAIL_COND_V_MSG(p_hash.size() != size, false, "Invalid hash provided. Size must be " + itos(size));
 	Ref<CryptoKeyMbedTLS> key = static_cast<Ref<CryptoKeyMbedTLS>>(p_key);
