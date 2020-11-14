@@ -106,14 +106,21 @@
 			<return type="TreeItem">
 			</return>
 			<description>
-				Returns the currently edited item. This is only available for custom cell mode.
+				Returns the currently edited item. Can be used with [signal item_edited] to get the item that was modified.
+				[codeblock]
+				func _ready():
+				    $Tree.item_edited.connect(on_Tree_item_edited)
+
+				func on_Tree_item_edited():
+				    print($Tree.get_edited()) # This item just got edited (e.g. checked).
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_edited_column" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the column for the currently edited item. This is only available for custom cell mode.
+				Returns the column for the currently edited item.
 			</description>
 		</method>
 		<method name="get_item_area_rect" qualifiers="const">
