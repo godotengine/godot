@@ -1625,13 +1625,16 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 
 	if (num_verts && (p_poly->bones.size() == num_verts * 4) && (p_poly->weights.size() == p_poly->bones.size())) {
 
+		const Transform2D &item_transform = p_item->xform;
+		Transform2D item_transform_inv = item_transform.affine_inverse();
+
 		for (int n = 0; n < num_verts; n++) {
 			const Vector2 &src_pos = p_poly->points[n];
 			Vector2 &dst_pos = pTemps[n];
 
 			// there can be an offset on the polygon at rigging time, this has to be accounted for
 			// note it may be possible that this could be concatenated with the bone transforms to save extra transforms - not sure yet
-			Vector2 src_pos_back_transformed = p_item->xform.xform(src_pos);
+			Vector2 src_pos_back_transformed = item_transform.xform(src_pos);
 
 			float total_weight = 0.0f;
 
@@ -1661,7 +1664,7 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 				dst_pos /= total_weight;
 
 				// retransform back from the poly offset space
-				dst_pos = p_item->xform.xform_inv(dst_pos);
+				dst_pos = item_transform_inv.xform(dst_pos);
 			}
 		}
 
