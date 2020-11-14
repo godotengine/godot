@@ -22,8 +22,6 @@ allprojects {
 }
 
 ext {
-    sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
-
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
     supportedTargets = ["release", "debug"]
 
