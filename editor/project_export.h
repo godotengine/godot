@@ -123,6 +123,8 @@ private:
 	void _fill_resource_tree();
 	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes);
 	void _tree_changed();
+	void _check_dir_recursive(TreeItem *p_dir, bool p_checked);
+	void _refresh_parent_checks(TreeItem *p_item);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
