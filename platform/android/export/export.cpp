@@ -1966,9 +1966,21 @@ public:
 				valid = false;
 			} else {
 				Error errn;
+				// Check for the platform-tools directory.
 				DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
 				if (errn != OK) {
-					err += TTR("Invalid Android SDK path for custom build in Editor Settings.") + "\n";
+					err += TTR("Invalid Android SDK path for custom build in Editor Settings.");
+					err += TTR("Missing 'platform-tools' directory!");
+					err += "\n";
+					valid = false;
+				}
+
+				// Check for the build-tools directory.
+				DirAccessRef build_tools_da = DirAccess::open(sdk_path.plus_file("build-tools"), &errn);
+				if (errn != OK) {
+					err += TTR("Invalid Android SDK path for custom build in Editor Settings.");
+					err += TTR("Missing 'build-tools' directory!");
+					err += "\n";
 					valid = false;
 				}
 			}
@@ -2157,14 +2169,16 @@ public:
 		}
 	}
 
-	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String apk_path, EditorProgress ep) {
+	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, String export_path, EditorProgress ep) {
+		int export_format = int(p_preset->get("custom_template/export_format"));
+		String export_label = export_format == 1 ? "AAB" : "APK";
 		String release_keystore = p_preset->get("keystore/release");
 		String release_username = p_preset->get("keystore/release_user");
 		String release_password = p_preset->get("keystore/release_password");
 
 		String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
 		if (!FileAccess::exists(jarsigner)) {
-			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
+			EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting " + export_label + " is unsigned.");
 			return OK;
 		}
 
@@ -2182,7 +2196,7 @@ public:
 				user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
 			}
 
-			if (ep.step("Signing debug APK...", 103)) {
+			if (ep.step("Signing debug " + export_label + "...", 103)) {
 				return ERR_SKIP;
 			}
 
@@ -2191,7 +2205,7 @@ public:
 			password = release_password;
 			user = release_username;
 
-			if (ep.step("Signing release APK...", 103)) {
+			if (ep.step("Signing release " + export_label + "...", 103)) {
 				return ERR_SKIP;
 			}
 		}
@@ -2216,7 +2230,7 @@ public:
 		args.push_back(keystore);
 		args.push_back("-storepass");
 		args.push_back(password);
-		args.push_back(apk_path);
+		args.push_back(export_path);
 		args.push_back(user);
 		int retval;
 		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
@@ -2225,7 +2239,7 @@ public:
 			return ERR_CANT_CREATE;
 		}
 
-		if (ep.step("Verifying APK...", 104)) {
+		if (ep.step("Verifying " + export_label + "...", 104)) {
 			return ERR_SKIP;
 		}
 
@@ -2233,13 +2247,74 @@ public:
 		args.push_back("-verify");
 		args.push_back("-keystore");
 		args.push_back(keystore);
-		args.push_back(apk_path);
+		args.push_back(export_path);
 		args.push_back("-verbose");
 
 		OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
 		if (retval) {
-			EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
+			EditorNode::add_io_error("'jarsigner' verification of " + export_label + " failed. Make sure to use a jarsigner from OpenJDK 8.");
 			return ERR_CANT_CREATE;
+		}
+		return OK;
+	}
+
+	void _clear_assets_directory() {
+		DirAccessRef da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		if (da_res->dir_exists("res://android/build/assets")) {
+			DirAccessRef da_assets = DirAccess::open("res://android/build/assets");
+			da_assets->erase_contents_recursive();
+			da_res->remove("res://android/build/assets");
+		}
+	}
+
+	Error _zip_align_project(const String &sdk_path, const String &unaligned_file_path, const String &aligned_file_path) {
+		// Look for the zipalign tool.
+		String zipalign_command;
+		Error errn;
+		String build_tools_dir = sdk_path.plus_file("build-tools");
+		DirAccessRef da = DirAccess::open(build_tools_dir, &errn);
+		if (errn != OK) {
+			return errn;
+		}
+
+		// There are additional versions directories we need to go through.
+		da->list_dir_begin();
+		String sub_dir = da->get_next();
+		while (!sub_dir.empty()) {
+			if (!sub_dir.begins_with(".") && da->current_is_dir()) {
+				// Check if the tool is here.
+				String tool_path = build_tools_dir.plus_file(sub_dir).plus_file("zipalign");
+				if (FileAccess::exists(tool_path)) {
+					zipalign_command = tool_path;
+					break;
+				}
+			}
+			sub_dir = da->get_next();
+		}
+		da->list_dir_end();
+
+		if (zipalign_command.empty()) {
+			EditorNode::get_singleton()->show_warning(TTR("Unable to find the zipalign tool."));
+			return ERR_CANT_CREATE;
+		}
+
+		List<String> zipalign_args;
+		zipalign_args.push_back("-f");
+		zipalign_args.push_back("-v");
+		zipalign_args.push_back("4");
+		zipalign_args.push_back(unaligned_file_path); // source file
+		zipalign_args.push_back(aligned_file_path); // destination file
+
+		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Aligning APK..."), zipalign_command, zipalign_args);
+		if (result != 0) {
+			EditorNode::get_singleton()->show_warning(TTR("Unable to complete APK alignment."));
+			return ERR_CANT_CREATE;
+		}
+
+		// Delete the unaligned path.
+		errn = da->remove(unaligned_file_path);
+		if (errn != OK) {
+			EditorNode::get_singleton()->show_warning(TTR("Unable to delete unaligned APK."));
 		}
 		return OK;
 	}
@@ -2323,13 +2398,8 @@ public:
 			_write_tmp_manifest(p_preset, p_give_internet, p_debug);
 
 			//stores all the project files inside the Gradle project directory. Also includes all ABIs
+			_clear_assets_directory();
 			if (!apk_expansion) {
-				DirAccess *da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-				if (da_res->dir_exists("res://android/build/assets")) {
-					DirAccess *da_assets = DirAccess::open("res://android/build/assets");
-					da_assets->erase_contents_recursive();
-					da_res->remove("res://android/build/assets");
-				}
 				err = export_project_files(p_preset, rename_and_store_file_in_gradle_project, NULL, ignore_so_file);
 				if (err != OK) {
 					EditorNode::add_io_error("Could not export project files to gradle project\n");
@@ -2417,7 +2487,16 @@ public:
 			copy_args.push_back(build_path); // start directory.
 
 			String export_filename = p_path.get_file();
+			if (export_format == 0) {
+				// By default, generated apk are not aligned.
+				export_filename += ".unaligned";
+			}
 			String export_path = p_path.get_base_dir();
+			if (export_path.is_rel_path()) {
+				export_path = OS::get_singleton()->get_resource_dir().plus_file(export_path);
+			}
+			export_path = ProjectSettings::get_singleton()->globalize_path(export_path).simplify_path();
+			String export_file_path = export_path.plus_file(export_filename);
 
 			copy_args.push_back("-Pexport_path=file:" + export_path);
 			copy_args.push_back("-Pexport_filename=" + export_filename);
@@ -2428,11 +2507,20 @@ public:
 				return ERR_CANT_CREATE;
 			}
 			if (_signed) {
-				err = sign_apk(p_preset, p_debug, p_path, ep);
+				err = sign_apk(p_preset, p_debug, export_file_path, ep);
 				if (err != OK) {
 					return err;
 				}
 			}
+
+			if (export_format == 0) {
+				// Perform zip alignment
+				err = _zip_align_project(sdk_path, export_file_path, export_path.plus_file(p_path.get_file()));
+				if (err != OK) {
+					return err;
+				}
+			}
+
 			return OK;
 		}
 		// This is the start of the Legacy build system
