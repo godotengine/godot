@@ -3852,6 +3852,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
 	WindowID main_window = _create_window(p_mode, p_flags, Rect2i(window_position, p_resolution));
+	if (main_window == INVALID_WINDOW_ID) {
+		r_error = ERR_CANT_CREATE;
+		return;
+	}
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);

@@ -707,7 +707,8 @@ Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, VkSurfa
 		// We use a single GPU, but we need a surface to initialize the
 		// queues, so this process must be deferred until a surface
 		// is created.
-		_initialize_queues(p_surface);
+		Error err = _initialize_queues(p_surface);
+		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 	}
 
 	Window window;
