@@ -20,8 +20,9 @@
 		var array2 = [3, "Four"]
 		print(array1 + array2) # ["One", 2, 3, "Four"]
 		[/codeblock]
-		Note that concatenating with [code]+=[/code] operator will create a new array. If you want to append another array to an existing array, [method append_array] is more efficient.
+		[b]Note:[/b] Concatenating with the [code]+=[/code] operator will create a new array, which has a cost. If you want to append another array to an existing array, [method append_array] is more efficient.
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] When declaring an array with [code]const[/code], the array itself can still be mutated by defining the values at individual indices or pushing/removing elements. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
 	</tutorials>
