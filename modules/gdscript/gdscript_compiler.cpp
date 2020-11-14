@@ -104,7 +104,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		case GDScriptParser::DataType::CLASS: {
 			// Locate class by constructing the path to it and following that path
 			GDScriptParser::ClassNode *class_type = p_datatype.class_type;
-			if (class_type) {
+			if (class_type && class_type->base_type.kind != GDScriptParser::DataType::UNRESOLVED) {
 				if (class_type->fqcn.begins_with(main_script->path) || (!main_script->name.empty() && class_type->fqcn.begins_with(main_script->name))) {
 					// Local class.
 					List<StringName> names;
