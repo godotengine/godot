@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_view.h                                                         */
+/*  keyboard_input_view.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,25 +30,8 @@
 
 #import <UIKit/UIKit.h>
 
-class String;
+@interface GodotKeyboardInputView : UITextView
 
-@protocol DisplayLayer;
-@protocol GodotViewRendererProtocol;
-
-@interface GodotView : UIView
-
-@property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) NSTimeInterval renderingInterval;
-
-- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-- (void)stopRendering;
-- (void)startRendering;
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString multiline:(BOOL)flag cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
 
 @end
