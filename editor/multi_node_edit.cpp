@@ -167,6 +167,12 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (List<PLData *>::Element *E = data_list.front(); E; E = E->next()) {
 		if (nc == E->get()->uses) {
 			p_list->push_back(E->get()->info);
+		} else if (E->get()->info.name.begins_with("blend_shapes/")) {
+			// Workaround for the following issue:
+			// If one of the selected MeshInstance nodes is missing a single blend shape,
+			// all the blend shape sliders will disappear in the Inspector because
+			// MultiNodeEdit expects a perfect meta info match.
+			p_list->push_back(E->get()->info);
 		}
 	}
 
