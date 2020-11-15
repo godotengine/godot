@@ -45,6 +45,7 @@
 #include "test_method_bind.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
+#include "test_pck_packer.h"
 #include "test_physics_2d.h"
 #include "test_physics_3d.h"
 #include "test_render.h"
