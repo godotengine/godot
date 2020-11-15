@@ -357,7 +357,6 @@ struct _RestCallbackData {
 	Vector3 best_contact;
 	Vector3 best_normal;
 	real_t best_len = 0;
-	real_t min_allowed_depth = 0;
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
@@ -366,7 +365,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 	Vector3 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
 
-	if (len < rd->min_allowed_depth || len <= rd->best_len) {
+	if (len == 0 || len <= rd->best_len) {
 		return;
 	}
 
@@ -390,7 +389,6 @@ bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shap
 	int pair_count = space->broadphase->cull_aabb(aabb, space->intersection_query_results, Space3DSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
 	_RestCallbackData rcd;
-	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
 	for (int pair_idx = 0; pair_idx < pair_count; pair_idx++) {
 		const CollisionObject3DSW *col_obj = space->intersection_query_results[pair_idx];
@@ -846,7 +844,6 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_xform, con
 		ugt.origin += p_motion * unsafe;
 
 		_RestCallbackData rcd;
-		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
 		const Transform body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
 		const Shape3DSW *body_shape = p_body->get_shape(best_shape);
@@ -863,7 +860,7 @@ bool Space3DSW::test_body_motion(Body3DSW *p_body, const Transform &p_xform, con
 
 			rcd.object = col_obj;
 			rcd.shape = col_shape_idx;
-			CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_shape, col_shape_xform, _rest_cbk_result, &rcd, nullptr, p_margin);
+			CollisionSolver3DSW::solve_static(body_shape, body_shape_xform, col_shape, col_shape_xform, _rest_cbk_result, &rcd, nullptr);
 		}
 
 		ERR_FAIL_COND_V_MSG(rcd.best_len == 0, false, "Failed to extract collision information");
@@ -1049,9 +1046,6 @@ void Space3DSW::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_valu
 		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 			constraint_bias = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
-			test_motion_min_contact_depth = p_value;
-			break;
 	}
 }
 
@@ -1073,8 +1067,6 @@ real_t Space3DSW::get_param(PhysicsServer3D::SpaceParameter p_param) const {
 			return body_angular_velocity_damp_ratio;
 		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 			return constraint_bias;
-		case PhysicsServer3D::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH:
-			return test_motion_min_contact_depth;
 	}
 
 	ERR_FAIL_COND_V_MSG(true, 0, "Unknown space parameter");
