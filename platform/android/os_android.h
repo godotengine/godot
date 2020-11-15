@@ -184,6 +184,7 @@ public:
 	void set_context_is_16_bits(bool p_is_16);
 
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
+	virtual ScreenOrientation get_screen_orientation() const;
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_user_data_dir() const;
