@@ -50,6 +50,7 @@
 #import "app_delegate.h"
 #import "device_metrics.h"
 #import "godot_view.h"
+#import "keyboard_input_view.h"
 #import "native_video_view.h"
 #import "view_controller.h"
 
@@ -453,11 +454,17 @@ bool OSIPhone::has_virtual_keyboard() const {
 };
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
-	[AppDelegate.viewController.godotView becomeFirstResponderWithString:p_existing_text];
+	NSString *existingString = [[NSString alloc] initWithUTF8String:p_existing_text.utf8().get_data()];
+
+	[AppDelegate.viewController.keyboardView
+			becomeFirstResponderWithString:existingString
+								 multiline:p_multiline
+							   cursorStart:p_cursor_start
+								 cursorEnd:p_cursor_end];
 };
 
 void OSIPhone::hide_virtual_keyboard() {
-	[AppDelegate.viewController.godotView resignFirstResponder];
+	[AppDelegate.viewController.keyboardView resignFirstResponder];
 }
 
 void OSIPhone::set_virtual_keyboard_height(int p_height) {

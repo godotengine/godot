@@ -40,7 +40,7 @@ class String;
 @protocol DisplayLayer;
 @protocol GodotViewRendererProtocol;
 
-@interface GodotView : UIView <UIKeyInput>
+@interface GodotView : UIView
 
 @property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
 
@@ -54,8 +54,6 @@ class String;
 - (CALayer<DisplayLayer> *)initializeRendering;
 - (void)stopRendering;
 - (void)startRendering;
-
-- (BOOL)becomeFirstResponderWithString:(String)p_existing;
 
 @property(nonatomic, assign) BOOL useCADisplayLink;
 
