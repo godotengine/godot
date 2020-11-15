@@ -95,7 +95,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
+				Returns the position of the control point leading to the vertex [code]idx[/code]. The returned position is relative to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_out" qualifiers="const">
@@ -104,7 +104,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Returns the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
+				Returns the position of the control point leading out of the vertex [code]idx[/code]. The returned position is relative to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -189,7 +189,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
-				Sets the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
+				Sets the position of the control point leading to the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console. The position is relative to the vertex.
 			</description>
 		</method>
 		<method name="set_point_out">
@@ -200,7 +200,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
-				Sets the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
+				Sets the position of the control point leading out of the vertex [code]idx[/code]. If the index is out of bounds, the function sends an error to the console. The position is relative to the vertex.
 			</description>
 		</method>
 		<method name="set_point_position">
