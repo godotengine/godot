@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectHighShelfFilter" inherits="AudioEffectFilter" version="4.0">
 	<brief_description>
+		Reduces all frequencies above the [member AudioEffectFilter.cutoff_hz].
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 	</methods>

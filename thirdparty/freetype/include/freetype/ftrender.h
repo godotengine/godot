@@ -20,9 +20,8 @@
 #define FTRENDER_H_
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
-#include FT_GLYPH_H
+#include <freetype/ftmodapi.h>
+#include <freetype/ftglyph.h>
 
 
 FT_BEGIN_HEADER

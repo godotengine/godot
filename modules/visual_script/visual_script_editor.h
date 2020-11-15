@@ -146,6 +146,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	bool updating_members;
 
 	void _update_members();
+	String _sanitized_variant_text(const StringName &property_name);
 
 	StringName selected;
 
@@ -312,7 +313,7 @@ public:
 	virtual void ensure_focus() override;
 	virtual void tag_saved_version() override;
 	virtual void reload(bool p_soft) override;
-	virtual void get_breakpoints(List<int> *p_breakpoints) override;
+	virtual Array get_breakpoints() override;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) override;
 	virtual void update_settings() override;
 	virtual bool show_members_overview() override;

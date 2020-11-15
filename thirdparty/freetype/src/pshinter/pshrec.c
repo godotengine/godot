@@ -16,11 +16,10 @@
  */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
+#include <freetype/freetype.h>
+#include <freetype/internal/ftobjs.h>
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/ftcalc.h>
 
 #include "pshrec.h"
 #include "pshalgo.h"
@@ -875,7 +874,7 @@
       if ( error )
       {
         FT_ERROR(( "ps_hints_stem: could not add stem"
-                   " (%d,%d) to hints table\n", stems[0], stems[1] ));
+                   " (%ld,%ld) to hints table\n", stems[0], stems[1] ));
 
         hints->error = error;
         return;

@@ -437,8 +437,11 @@ namespace Godot
         /// <returns>The rotated vector.</returns>
         public Vector2 Rotated(real_t phi)
         {
-            real_t rads = Angle() + phi;
-            return new Vector2(Mathf.Cos(rads), Mathf.Sin(rads)) * Length();
+            real_t sine = Mathf.Sin(phi);
+            real_t cosi = Mathf.Cos(phi);
+            return new Vector2(
+                x * cosi - y * sine,
+                x * sine + y * cosi);
         }
 
         /// <summary>
@@ -670,41 +673,37 @@ namespace Godot
 
         public static bool operator <(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y < right.y;
             }
-
             return left.x < right.x;
         }
 
         public static bool operator >(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y > right.y;
             }
-
             return left.x > right.x;
         }
 
         public static bool operator <=(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y <= right.y;
             }
-
             return left.x <= right.x;
         }
 
         public static bool operator >=(Vector2 left, Vector2 right)
         {
-            if (Mathf.IsEqualApprox(left.x, right.x))
+            if (left.x == right.x)
             {
                 return left.y >= right.y;
             }
-
             return left.x >= right.x;
         }
 
@@ -714,7 +713,6 @@ namespace Godot
             {
                 return Equals((Vector2)obj);
             }
-
             return false;
         }
 

@@ -30,8 +30,8 @@
 
 #include "gdnative/variant.h"
 
-#include "core/reference.h"
-#include "core/variant.h"
+#include "core/object/reference.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -576,7 +576,9 @@ godot_variant GDAPI godot_variant_call(godot_variant *p_self, const godot_string
 	godot_variant raw_dest;
 	Variant *dest = (Variant *)&raw_dest;
 	Callable::CallError error;
-	memnew_placement_custom(dest, Variant, Variant(self->call(*method, args, p_argcount, error)));
+	Variant ret;
+	self->call(*method, args, p_argcount, ret, error);
+	memnew_placement_custom(dest, Variant, Variant(ret));
 	if (r_error) {
 		r_error->error = (godot_variant_call_error_error)error.error;
 		r_error->argument = error.argument;

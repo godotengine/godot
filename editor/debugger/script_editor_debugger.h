@@ -54,6 +54,7 @@ class EditorVisualProfiler;
 class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
+class EditorDebuggerPlugin;
 
 class ScriptEditorDebugger : public MarginContainer {
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
@@ -145,6 +146,10 @@ private:
 	bool live_debug;
 
 	EditorDebuggerNode::CameraOverride camera_override;
+
+	Map<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
+
+	Map<StringName, Callable> captures;
 
 	void _stack_dump_frame_selected();
 
@@ -253,6 +258,16 @@ public:
 	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const override;
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
+
+	void send_message(const String &p_message, const Array &p_args);
+
+	void register_message_capture(const StringName &p_name, const Callable &p_callable);
+	void unregister_message_capture(const StringName &p_name);
+	bool has_capture(const StringName &p_name);
+
 	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };

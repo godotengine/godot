@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 
-#include "core/error_macros.h"
+#include "core/error/error_macros.h"
 
 #include "core/crypto/crypto_core.h"
 

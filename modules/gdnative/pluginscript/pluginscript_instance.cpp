@@ -32,7 +32,7 @@
 
 // Godot imports
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 // PluginScript imports
 #include "pluginscript_language.h"

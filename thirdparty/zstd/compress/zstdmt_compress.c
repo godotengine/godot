@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016-2020, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -22,9 +22,9 @@
 /* ======   Dependencies   ====== */
 #include <string.h>      /* memcpy, memset */
 #include <limits.h>      /* INT_MAX, UINT_MAX */
-#include "mem.h"         /* MEM_STATIC */
-#include "pool.h"        /* threadpool */
-#include "threading.h"   /* mutex */
+#include "../common/mem.h"         /* MEM_STATIC */
+#include "../common/pool.h"        /* threadpool */
+#include "../common/threading.h"   /* mutex */
 #include "zstd_compress_internal.h"  /* MIN, ERROR, ZSTD_*, ZSTD_highbit32 */
 #include "zstd_ldm.h"
 #include "zstdmt_compress.h"
@@ -461,7 +461,13 @@ typedef struct {
     ZSTD_window_t ldmWindow;  /* A thread-safe copy of ldmState.window */
 } serialState_t;
 
-static int ZSTDMT_serialState_reset(serialState_t* serialState, ZSTDMT_seqPool* seqPool, ZSTD_CCtx_params params, size_t jobSize)
+static int
+ZSTDMT_serialState_reset(serialState_t* serialState,
+                         ZSTDMT_seqPool* seqPool,
+                         ZSTD_CCtx_params params,
+                         size_t jobSize,
+                         const void* dict, size_t const dictSize,
+                         ZSTD_dictContentType_e dictContentType)
 {
     /* Adjust parameters */
     if (params.ldmParams.enableLdm) {
@@ -490,8 +496,7 @@ static int ZSTDMT_serialState_reset(serialState_t* serialState, ZSTDMT_seqPool* 
         /* Size the seq pool tables */
         ZSTDMT_setNbSeq(seqPool, ZSTD_ldm_getMaxNbSeq(params.ldmParams, jobSize));
         /* Reset the window */
-        ZSTD_window_clear(&serialState->ldmState.window);
-        serialState->ldmWindow = serialState->ldmState.window;
+        ZSTD_window_init(&serialState->ldmState.window);
         /* Resize tables and output space if necessary. */
         if (serialState->ldmState.hashTable == NULL || serialState->params.ldmParams.hashLog < hashLog) {
             ZSTD_free(serialState->ldmState.hashTable, cMem);
@@ -506,7 +511,24 @@ static int ZSTDMT_serialState_reset(serialState_t* serialState, ZSTDMT_seqPool* 
         /* Zero the tables */
         memset(serialState->ldmState.hashTable, 0, hashSize);
         memset(serialState->ldmState.bucketOffsets, 0, bucketSize);
+
+        /* Update window state and fill hash table with dict */
+        serialState->ldmState.loadedDictEnd = 0;
+        if (dictSize > 0) {
+            if (dictContentType == ZSTD_dct_rawContent) {
+                BYTE const* const dictEnd = (const BYTE*)dict + dictSize;
+                ZSTD_window_update(&serialState->ldmState.window, dict, dictSize);
+                ZSTD_ldm_fillHashTable(&serialState->ldmState, (const BYTE*)dict, dictEnd, &params.ldmParams);
+                serialState->ldmState.loadedDictEnd = params.forceWindow ? 0 : (U32)(dictEnd - serialState->ldmState.window.base);
+            } else {
+                /* don't even load anything */
+            }
+        }
+
+        /* Initialize serialState's copy of ldmWindow. */
+        serialState->ldmWindow = serialState->ldmState.window;
     }
+
     serialState->params = params;
     serialState->params.jobSize = (U32)jobSize;
     return 0;
@@ -1054,7 +1076,7 @@ static ZSTD_CCtx_params ZSTDMT_initJobCCtxParams(const ZSTD_CCtx_params* params)
 static size_t ZSTDMT_resize(ZSTDMT_CCtx* mtctx, unsigned nbWorkers)
 {
     if (POOL_resize(mtctx->factory, nbWorkers)) return ERROR(memory_allocation);
-    FORWARD_IF_ERROR( ZSTDMT_expandJobsTable(mtctx, nbWorkers) );
+    FORWARD_IF_ERROR( ZSTDMT_expandJobsTable(mtctx, nbWorkers) , "");
     mtctx->bufPool = ZSTDMT_expandBufferPool(mtctx->bufPool, nbWorkers);
     if (mtctx->bufPool == NULL) return ERROR(memory_allocation);
     mtctx->cctxPool = ZSTDMT_expandCCtxPool(mtctx->cctxPool, nbWorkers);
@@ -1076,7 +1098,7 @@ void ZSTDMT_updateCParams_whileCompressing(ZSTDMT_CCtx* mtctx, const ZSTD_CCtx_p
     DEBUGLOG(5, "ZSTDMT_updateCParams_whileCompressing (level:%i)",
                 compressionLevel);
     mtctx->params.compressionLevel = compressionLevel;
-    {   ZSTD_compressionParameters cParams = ZSTD_getCParamsFromCCtxParams(cctxParams, 0, 0);
+    {   ZSTD_compressionParameters cParams = ZSTD_getCParamsFromCCtxParams(cctxParams, ZSTD_CONTENTSIZE_UNKNOWN, 0);
         cParams.windowLog = saved_wlog;
         mtctx->params.cParams = cParams;
     }
@@ -1235,7 +1257,8 @@ ZSTDMT_computeNbJobs(const ZSTD_CCtx_params* params, size_t srcSize, unsigned nb
 /* ZSTDMT_compress_advanced_internal() :
  * This is a blocking function : it will only give back control to caller after finishing its compression job.
  */
-static size_t ZSTDMT_compress_advanced_internal(
+static size_t
+ZSTDMT_compress_advanced_internal(
                 ZSTDMT_CCtx* mtctx,
                 void* dst, size_t dstCapacity,
           const void* src, size_t srcSize,
@@ -1267,10 +1290,11 @@ static size_t ZSTDMT_compress_advanced_internal(
 
     assert(avgJobSize >= 256 KB);  /* condition for ZSTD_compressBound(A) + ZSTD_compressBound(B) <= ZSTD_compressBound(A+B), required to compress directly into Dst (no additional buffer) */
     ZSTDMT_setBufferSize(mtctx->bufPool, ZSTD_compressBound(avgJobSize) );
-    if (ZSTDMT_serialState_reset(&mtctx->serial, mtctx->seqPool, params, avgJobSize))
+    /* LDM doesn't even try to load the dictionary in single-ingestion mode */
+    if (ZSTDMT_serialState_reset(&mtctx->serial, mtctx->seqPool, params, avgJobSize, NULL, 0, ZSTD_dct_auto))
         return ERROR(memory_allocation);
 
-    FORWARD_IF_ERROR( ZSTDMT_expandJobsTable(mtctx, nbJobs) );  /* only expands if necessary */
+    FORWARD_IF_ERROR( ZSTDMT_expandJobsTable(mtctx, nbJobs) , "");  /* only expands if necessary */
 
     {   unsigned u;
         for (u=0; u<nbJobs; u++) {
@@ -1403,7 +1427,7 @@ size_t ZSTDMT_initCStream_internal(
 
     /* init */
     if (params.nbWorkers != mtctx->params.nbWorkers)
-        FORWARD_IF_ERROR( ZSTDMT_resize(mtctx, params.nbWorkers) );
+        FORWARD_IF_ERROR( ZSTDMT_resize(mtctx, params.nbWorkers) , "");
 
     if (params.jobSize != 0 && params.jobSize < ZSTDMT_JOBSIZE_MIN) params.jobSize = ZSTDMT_JOBSIZE_MIN;
     if (params.jobSize > (size_t)ZSTDMT_JOBSIZE_MAX) params.jobSize = (size_t)ZSTDMT_JOBSIZE_MAX;
@@ -1500,7 +1524,8 @@ size_t ZSTDMT_initCStream_internal(
     mtctx->allJobsCompleted = 0;
     mtctx->consumed = 0;
     mtctx->produced = 0;
-    if (ZSTDMT_serialState_reset(&mtctx->serial, mtctx->seqPool, params, mtctx->targetSectionSize))
+    if (ZSTDMT_serialState_reset(&mtctx->serial, mtctx->seqPool, params, mtctx->targetSectionSize,
+                                 dict, dictSize, dictContentType))
         return ERROR(memory_allocation);
     return 0;
 }
@@ -1714,9 +1739,11 @@ static size_t ZSTDMT_flushProduced(ZSTDMT_CCtx* mtctx, ZSTD_outBuffer* output, u
             assert(mtctx->doneJobID < mtctx->nextJobID);
             assert(cSize >= mtctx->jobs[wJobID].dstFlushed);
             assert(mtctx->jobs[wJobID].dstBuff.start != NULL);
-            memcpy((char*)output->dst + output->pos,
-                   (const char*)mtctx->jobs[wJobID].dstBuff.start + mtctx->jobs[wJobID].dstFlushed,
-                   toFlush);
+            if (toFlush > 0) {
+                memcpy((char*)output->dst + output->pos,
+                    (const char*)mtctx->jobs[wJobID].dstBuff.start + mtctx->jobs[wJobID].dstFlushed,
+                    toFlush);
+            }
             output->pos += toFlush;
             mtctx->jobs[wJobID].dstFlushed += toFlush;  /* can write : this value is only used by mtctx */
 
@@ -1786,7 +1813,7 @@ static int ZSTDMT_isOverlapped(buffer_t buffer, range_t range)
     BYTE const* const bufferStart = (BYTE const*)buffer.start;
     BYTE const* const bufferEnd = bufferStart + buffer.capacity;
     BYTE const* const rangeStart = (BYTE const*)range.start;
-    BYTE const* const rangeEnd = rangeStart + range.size;
+    BYTE const* const rangeEnd = range.size != 0 ? rangeStart + range.size : rangeStart;
 
     if (rangeStart == NULL || bufferStart == NULL)
         return 0;
@@ -2060,7 +2087,7 @@ size_t ZSTDMT_compressStream_generic(ZSTDMT_CCtx* mtctx,
       || ((endOp == ZSTD_e_end) && (!mtctx->frameEnded)) ) {   /* must finish the frame with a zero-size block */
         size_t const jobSize = mtctx->inBuff.filled;
         assert(mtctx->inBuff.filled <= mtctx->targetSectionSize);
-        FORWARD_IF_ERROR( ZSTDMT_createCompressionJob(mtctx, jobSize, endOp) );
+        FORWARD_IF_ERROR( ZSTDMT_createCompressionJob(mtctx, jobSize, endOp) , "");
     }
 
     /* check for potential compressed data ready to be flushed */
@@ -2074,7 +2101,7 @@ size_t ZSTDMT_compressStream_generic(ZSTDMT_CCtx* mtctx,
 
 size_t ZSTDMT_compressStream(ZSTDMT_CCtx* mtctx, ZSTD_outBuffer* output, ZSTD_inBuffer* input)
 {
-    FORWARD_IF_ERROR( ZSTDMT_compressStream_generic(mtctx, output, input, ZSTD_e_continue) );
+    FORWARD_IF_ERROR( ZSTDMT_compressStream_generic(mtctx, output, input, ZSTD_e_continue) , "");
 
     /* recommended next input size : fill current input buffer */
     return mtctx->targetSectionSize - mtctx->inBuff.filled;   /* note : could be zero when input buffer is fully filled and no more availability to create new job */
@@ -2091,7 +2118,7 @@ static size_t ZSTDMT_flushStream_internal(ZSTDMT_CCtx* mtctx, ZSTD_outBuffer* ou
       || ((endFrame==ZSTD_e_end) && !mtctx->frameEnded)) {  /* need a last 0-size block to end frame */
            DEBUGLOG(5, "ZSTDMT_flushStream_internal : create a new job (%u bytes, end:%u)",
                         (U32)srcSize, (U32)endFrame);
-        FORWARD_IF_ERROR( ZSTDMT_createCompressionJob(mtctx, srcSize, endFrame) );
+        FORWARD_IF_ERROR( ZSTDMT_createCompressionJob(mtctx, srcSize, endFrame) , "");
     }
 
     /* check if there is any data available to flush */

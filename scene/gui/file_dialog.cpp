@@ -31,7 +31,7 @@
 #include "file_dialog.h"
 
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/gui/label.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
@@ -936,7 +936,7 @@ FileDialog::FileDialog() {
 	filter->connect("item_selected", callable_mp(this, &FileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//	confirm_save->set_as_toplevel(true);
+	//	confirm_save->set_as_top_level(true);
 	add_child(confirm_save);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));

@@ -13,10 +13,12 @@
 		Only one [Control] node can be in keyboard focus. Only the node in focus will receive keyboard events. To get the focus, call [method grab_focus]. [Control] nodes lose focus when another node grabs it, or if you hide the node in focus.
 		Sets [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] to tell a [Control] node to ignore mouse or touch events. You'll need it if you place an icon on top of a button.
 		[Theme] resources change the Control's appearance. If you change the [Theme] on a [Control] node, it affects all of its children. To override some of the theme's parameters, call one of the [code]add_theme_*_override[/code] methods, like [method add_theme_font_override]. You can override the theme with the inspector.
+		[b]Note:[/b] Theme items are [i]not[/i] [Object] properties. This means you can't access their values using [method Object.get] and [method Object.set]. Instead, use the [code]get_theme_*[/code] and [code]add_theme_*_override[/code] methods provided by this class.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="GUI tutorial index">https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
+		<link title="Custom drawing in 2D">https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
+		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
 		<method name="_clips_input" qualifiers="virtual">
@@ -43,12 +45,27 @@
 			<description>
 				Virtual method to be implemented by the user. Use this method to process and accept inputs on UI elements. See [method accept_event].
 				Example: clicking a control.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _gui_input(event):
 				    if event is InputEventMouseButton:
 				        if event.button_index == BUTTON_LEFT and event.pressed:
 				            print("I've been clicked D:")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _GuiInput(InputEvent @event)
+				{
+				    if (@event is InputEventMouseButton)
+				    {
+				        var mb = @event as InputEventMouseButton;
+				        if (mb.ButtonIndex == (int)ButtonList.Left &amp;&amp; mb.Pressed)
+				        {
+				            GD.Print("I've been clicked D:");
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 				The event won't trigger if:
 				* clicking outside the control (see [method has_point]);
 				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
@@ -58,28 +75,50 @@
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
-			<return type="Object">
+			<return type="Control">
 			</return>
 			<argument index="0" name="for_text" type="String">
 			</argument>
 			<description>
-				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. Use [code]for_text[/code] parameter to determine what text the tooltip should contain (likely the contents of [member hint_tooltip]).
-				The returned node must be of type [Control] or Control-derieved. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance, not e.g. a node from scene. When [code]null[/code] or non-Control node is returned, the default tooltip will be used instead.
+				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. The [code]for_text[/code] includes the contents of the [member hint_tooltip] property.
+				The returned node must be of type [Control] or Control-derived. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance (if you want to use a pre-existing node from your scene tree, you can duplicate it and pass the duplicated instance).When [code]null[/code] or a non-Control node is returned, the default tooltip will be used instead.
+				The returned node will be added as child to a [PopupPanel], so you should only provide the contents of that panel. That [PopupPanel] can be themed using [method Theme.set_stylebox] for the type [code]"TooltipPanel"[/code] (see [member hint_tooltip] for an example).
 				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
-				Example of usage with custom-constructed node:
-				[codeblock]
+				[b]Note:[/b] The node (and any relevant children) should be [member CanvasItem.visible] when returned, otherwise the viewport that instantiates it will not be able to calculate its minimum size reliably.
+				Example of usage with a custom-constructed node:
+				[codeblocks]
+				[gdscript]
 				func _make_custom_tooltip(for_text):
 				    var label = Label.new()
 				    label.text = for_text
 				    return label
-				[/codeblock]
-				Example of usage with custom scene instance:
-				[codeblock]
+				[/gdscript]
+				[csharp]
+				public override Godot.Control _MakeCustomTooltip(String forText)
+				{
+				    var label = new Label();
+				    label.Text = forText;
+				    return label;
+				}
+				[/csharp]
+				[/codeblocks]
+				Example of usage with a custom scene instance:
+				[codeblocks]
+				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var tooltip = preload("SomeTooltipScene.tscn").instance()
+				    var tooltip = preload("res://SomeTooltipScene.tscn").instance()
 				    tooltip.get_node("Label").text = for_text
 				    return tooltip
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override Godot.Control _MakeCustomTooltip(String forText)
+				{
+				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://SomeTooltipScene.tscn").Instance();
+				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
+				    return tooltip;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="accept_event">
@@ -97,7 +136,25 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses. If the [code]color[/code] is empty or invalid, the override is cleared and the color from assigned [Theme] is used.
+				Overrides the [Color] with given [code]name[/code] in the [member theme] resource the control uses.
+				[b]Note:[/b] Unlike other theme overrides, there is no way to undo a color override without manually assigning the previous color.
+				[b]Example of overriding a label's color and resetting it later:[/b]
+				[codeblocks]
+				[gdscript]
+				# Override the child node "MyLabel"'s font color to orange.
+				$MyLabel.add_theme_color_override("font_color", Color(1, 0.5, 0))
+				# Reset the color by creating a new node to get the default value:
+				var default_label_color = Label.new().get_theme_color("font_color")
+				$MyLabel.add_theme_color_override("font_color", default_label_color)
+				[/gdscript]
+				[csharp]
+				// Override the child node "MyLabel"'s font color to orange.
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
+				// Reset the color by creating a new node to get the default value:
+				var defaultLabelColor = new Label().GetThemeColor("font_color");
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", defaultLabelColor);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="add_theme_constant_override">
@@ -108,7 +165,7 @@
 			<argument index="1" name="constant" type="int">
 			</argument>
 			<description>
-				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is empty or invalid, the override is cleared and the constant from assigned [Theme] is used.
+				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is [code]0[/code], the override is cleared and the constant from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_font_override">
@@ -119,7 +176,7 @@
 			<argument index="1" name="font" type="Font">
 			</argument>
 			<description>
-				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is empty or invalid, the override is cleared and the font from assigned [Theme] is used.
+				Overrides the font with given [code]name[/code] in the [member theme] resource the control uses. If [code]font[/code] is [code]null[/code] or invalid, the override is cleared and the font from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_icon_override">
@@ -130,7 +187,7 @@
 			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is empty or invalid, the override is cleared and the icon from assigned [Theme] is used.
+				Overrides the icon with given [code]name[/code] in the [member theme] resource the control uses. If [code]icon[/code] is [code]null[/code] or invalid, the override is cleared and the icon from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_shader_override">
@@ -141,7 +198,7 @@
 			<argument index="1" name="shader" type="Shader">
 			</argument>
 			<description>
-				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is empty or invalid, the override is cleared and the shader from assigned [Theme] is used.
+				Overrides the [Shader] with given [code]name[/code] in the [member theme] resource the control uses. If [code]shader[/code] is [code]null[/code] or invalid, the override is cleared and the shader from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
@@ -153,6 +210,31 @@
 			</argument>
 			<description>
 				Overrides the [StyleBox] with given [code]name[/code] in the [member theme] resource the control uses. If [code]stylebox[/code] is empty or invalid, the override is cleared and the [StyleBox] from assigned [Theme] is used.
+				[b]Example of modifying a property in a StyleBox by duplicating it:[/b]
+				[codeblocks]
+				[gdscript]
+				# The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
+				# Resources are shared across instances, so we need to duplicate it
+				# to avoid modifying the appearance of all other buttons.
+				var new_stylebox_normal = $MyButton.get_theme_stylebox("normal").duplicate()
+				new_stylebox_normal.border_width_top = 3
+				new_stylebox_normal.border_color = Color(0, 1, 0.5)
+				$MyButton.add_theme_stylebox_override("normal", new_stylebox_normal)
+				# Remove the stylebox override:
+				$MyButton.add_theme_stylebox_override("normal", null)
+				[/gdscript]
+				[csharp]
+				// The snippet below assumes the child node MyButton has a StyleBoxFlat assigned.
+				// Resources are shared across instances, so we need to duplicate it
+				// to avoid modifying the appearance of all other buttons.
+				StyleBoxFlat newStyleboxNormal = GetNode&lt;Button&gt;("MyButton").GetThemeStylebox("normal").Duplicate() as StyleBoxFlat;
+				newStyleboxNormal.BorderWidthTop = 3;
+				newStyleboxNormal.BorderColor = new Color(0, 1, 0.5f);
+				GetNode&lt;Button&gt;("MyButton").AddThemeStyleboxOverride("normal", newStyleboxNormal);
+				// Remove the stylebox override:
+				GetNode&lt;Button&gt;("MyButton").AddThemeStyleboxOverride("normal", null);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">
@@ -165,12 +247,22 @@
 			<description>
 				Godot calls this method to test if [code]data[/code] from a control's [method get_drag_data] can be dropped at [code]position[/code]. [code]position[/code] is local to this control.
 				This method should only be used to test the data. Process the data in [method drop_data].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func can_drop_data(position, data):
 				    # Check position if it is relevant to you
 				    # Otherwise, just check data
 				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override bool CanDropData(Vector2 position, object data)
+				{
+				    // Check position if it is relevant to you
+				    // Otherwise, just check data
+				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("expected");
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="drop_data" qualifiers="virtual">
@@ -182,13 +274,24 @@
 			</argument>
 			<description>
 				Godot calls this method to pass you the [code]data[/code] from a control's [method get_drag_data] result. Godot first calls [method can_drop_data] to test if [code]data[/code] is allowed to drop at [code]position[/code] where [code]position[/code] is local to this control.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func can_drop_data(position, data):
 				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
-
 				func drop_data(position, data):
-				    color = data["color"]
-				[/codeblock]
+				    var color = data["color"]
+				[/gdscript]
+				[csharp]
+				public override bool CanDropData(Vector2 position, object data)
+				{
+				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("color");
+				}
+				public override void DropData(Vector2 position, object data)
+				{
+				    Color color = (Color)(data as Godot.Collections.Dictionary)["color"];
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="force_drag">
@@ -243,12 +346,22 @@
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method can_drop_data] and [method drop_data]. [code]position[/code] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func get_drag_data(position):
-				    var mydata = make_data()
-				    set_drag_preview(make_preview(mydata))
+				    var mydata = make_data() # This is your custom method generating the drag data.
+				    set_drag_preview(make_preview(mydata)) # This is your custom method generating the preview of the drag data.
 				    return mydata
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override object GetDragData(Vector2 position)
+				{
+				    object mydata = MakeData(); // This is your custom method generating the drag data.
+				    SetDragPreview(MakePreview(mydata)); // This is your custom method generating the preview of the drag data.
+				    return mydata;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -334,10 +447,18 @@
 			</argument>
 			<description>
 				Returns a color from assigned [Theme] with given [code]name[/code] and associated with [Control] of given [code]type[/code].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    modulate = get_theme_color("font_color", "Button") #get the color defined for button fonts
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Ready()
+				{
+				    Modulate = GetThemeColor("font_color", "Button"); //get the color defined for button fonts
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
@@ -398,10 +519,18 @@
 			</return>
 			<description>
 				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control acquires focus.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _process(delta):
 				    grab_click_focus() #when clicking another Control node, this node will be clicked instead
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Process(float delta)
+				{
+				    GrabClickFocus(); //when clicking another Control node, this node will be clicked instead
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="grab_focus">
@@ -542,7 +671,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Invalidates the size cache in this node and in parent nodes up to toplevel. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
+				Invalidates the size cache in this node and in parent nodes up to top_level. Intended to be used with [method get_minimum_size] when the return value is changed. Setting [member rect_min_size] directly calls this method automatically.
 			</description>
 		</method>
 		<method name="release_focus">
@@ -628,24 +757,61 @@
 				Forwarding can be implemented in the target control similar to the methods [method get_drag_data], [method can_drop_data], and [method drop_data] but with two differences:
 				1. The function name must be suffixed with [b]_fw[/b]
 				2. The function must take an extra argument that is the control doing the forwarding
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				# ThisControl.gd
 				extends Control
+				export(Control) var target_control
+
 				func _ready():
 				    set_drag_forwarding(target_control)
 
 				# TargetControl.gd
 				extends Control
+
 				func can_drop_data_fw(position, data, from_control):
 				    return true
 
 				func drop_data_fw(position, data, from_control):
-				    my_handle_data(data)
+				    my_handle_data(data) # Your handler method.
 
 				func get_drag_data_fw(position, from_control):
 				    set_drag_preview(my_preview)
 				    return my_data()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				// ThisControl.cs
+				public class ThisControl : Control
+				{
+				    [Export]
+				    public Control TargetControl { get; set; }
+				    public override void _Ready()
+				    {
+				        SetDragForwarding(TargetControl);
+				    }
+				}
+
+				// TargetControl.cs
+				public class TargetControl : Control
+				{
+				    public void CanDropDataFw(Vector2 position, object data, Control fromControl)
+				    {
+				        return true;
+				    }
+
+				    public void DropDataFw(Vector2 position, object data, Control fromControl)
+				    {
+				        MyHandleData(data); // Your handler method.
+				    }
+
+				    public void GetDragDataFw(Vector2 position, Control fromControl)
+				    {
+				        SetDragPreview(MyPreview);
+				        return MyData();
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_drag_preview">
@@ -655,7 +821,8 @@
 			</argument>
 			<description>
 				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				export (Color, RGBA) var color = Color(1, 0, 0, 1)
 
 				func get_drag_data(position):
@@ -665,7 +832,22 @@
 				    cpb.rect_size = Vector2(50, 50)
 				    set_drag_preview(cpb)
 				    return color
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				[Export]
+				public Color Color = new Color(1, 0, 0, 1);
+
+				public override object GetDragData(Vector2 position)
+				{
+				    // Use a control that is not in the tree
+				    var cpb = new ColorPickerButton();
+				    cpb.Color = Color;
+				    cpb.RectSize = new Vector2(50, 50);
+				    SetDragPreview(cpb);
+				    return Color;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_end">
@@ -813,6 +995,25 @@
 		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip" default="&quot;&quot;">
 			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments, provided that the [member mouse_filter] property is not [constant MOUSE_FILTER_IGNORE]. You can change the time required for the tooltip to appear with [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings.
+			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
+			[codeblocks]
+			[gdscript]
+			var style_box = StyleBoxFlat.new()
+			style_box.set_bg_color(Color(1, 1, 0))
+			style_box.set_border_width_all(2)
+			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
+			theme.set_stylebox("panel", "TooltipPanel", style_box)
+			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
+			[/gdscript]
+			[csharp]
+			var styleBox = new StyleBoxFlat();
+			styleBox.SetBgColor(new Color(1, 1, 0));
+			styleBox.SetBorderWidthAll(2);
+			// We assume here that the `Theme` property has been assigned a custom Theme beforehand.
+			Theme.SetStyleBox("panel", "TooltipPanel", styleBox);
+			Theme.SetColor("font_color", "TooltipLabel", new Color(0, 1, 1));
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].

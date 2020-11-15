@@ -32,9 +32,9 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include "core/list.h"
 #include "core/os/memory.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
+#include "core/templates/list.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -152,7 +152,7 @@ String DirAccessUnix::get_next() {
 		_cisdir = (entry->d_type == DT_DIR);
 	}
 
-	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
+	_cishidden = is_hidden(fname);
 
 	return fname;
 }
@@ -398,6 +398,10 @@ size_t DirAccessUnix::get_space_left() {
 
 String DirAccessUnix::get_filesystem_type() const {
 	return ""; //TODO this should be implemented
+}
+
+bool DirAccessUnix::is_hidden(const String &p_name) {
+	return p_name != "." && p_name != ".." && p_name.begins_with(".");
 }
 
 DirAccessUnix::DirAccessUnix() {

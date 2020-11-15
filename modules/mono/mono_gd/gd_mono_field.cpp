@@ -355,7 +355,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 			}
 
 			if (CACHED_CLASS(RID) == type_class) {
-				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator RID());
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator ::RID());
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
@@ -450,8 +450,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator NodePath());
 					mono_field_set_value(p_object, mono_field, managed);
 				} break;
-				case Variant::_RID: {
-					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator RID());
+				case Variant::RID: {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator ::RID());
 					mono_field_set_value(p_object, mono_field, managed);
 				} break;
 				case Variant::OBJECT: {

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRID_THEME_H
-#define GRID_THEME_H
+#ifndef MESH_LIBRARY_H
+#define MESH_LIBRARY_H
 
-#include "core/map.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/templates/map.h"
 #include "mesh.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "shape_3d.h"
@@ -96,4 +96,4 @@ public:
 	~MeshLibrary();
 };
 
-#endif // CUBE_GRID_THEME_H
+#endif // MESH_LIBRARY_H

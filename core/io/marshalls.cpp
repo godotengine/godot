@@ -30,9 +30,9 @@
 
 #include "marshalls.h"
 
+#include "core/object/reference.h"
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
-#include "core/reference.h"
+#include "core/string/print_string.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -420,7 +420,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 			r_variant = RID();
 		} break;
 		case Variant::OBJECT: {
@@ -1172,7 +1172,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += 4 * 4;
 
 		} break;
-		case Variant::_RID: {
+		case Variant::RID: {
 		} break;
 		case Variant::CALLABLE: {
 		} break;

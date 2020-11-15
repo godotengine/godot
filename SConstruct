@@ -12,9 +12,7 @@ from collections import OrderedDict
 
 # Local
 import methods
-import gles_builders
-import version
-from platform_methods import run_in_subprocess
+import glsl_builders
 
 # Scan possible build platforms
 
@@ -310,9 +308,10 @@ if selected_platform in platform_list:
     from SCons import __version__ as scons_raw_version
 
     scons_ver = env._get_major_minor_revision(scons_raw_version)
-    if scons_ver >= (3, 1, 1):
-        env.Tool("compilation_db", toolpath=["misc/scons"])
-        env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+
+    if scons_ver >= (4, 0, 0):
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     if env["dev"]:
         env["verbose"] = True
@@ -320,31 +319,6 @@ if selected_platform in platform_list:
         env["werror"] = True
         if env["tools"]:
             env["tests"] = True
-
-    if env["vsproj"]:
-        env.vs_incs = []
-        env.vs_srcs = []
-
-        def AddToVSProject(sources):
-            for x in sources:
-                if type(x) == type(""):
-                    fname = env.File(x).path
-                else:
-                    fname = env.File(x)[0].path
-                pieces = fname.split(".")
-                if len(pieces) > 0:
-                    basename = pieces[0]
-                    basename = basename.replace("\\\\", "/")
-                    if os.path.isfile(basename + ".h"):
-                        env.vs_incs = env.vs_incs + [basename + ".h"]
-                    elif os.path.isfile(basename + ".hpp"):
-                        env.vs_incs = env.vs_incs + [basename + ".hpp"]
-                    if os.path.isfile(basename + ".c"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".c"]
-                    elif os.path.isfile(basename + ".cpp"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-
-        env.AddToVSProject = AddToVSProject
 
     env.extra_suffix = ""
 
@@ -440,7 +414,7 @@ if selected_platform in platform_list:
             Exit(255)
 
     # Configure compiler warnings
-    if env.msvc:
+    if env.msvc:  # MSVC
         # Truncations, narrowing conversions, signed/unsigned comparisons...
         disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
         if env["warnings"] == "extra":
@@ -453,21 +427,17 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/w"])
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=["/EHsc"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["/WX"])
-        # Force to use Unicode encoding
-        env.Append(MSVC_FLAGS=["/utf8"])
-    else:  # Rest of the world
-        shadow_local_warning = []
-        all_plus_warnings = ["-Wwrite-strings"]
+    else:  # GCC, Clang
+        gcc_common_warnings = []
 
         if methods.using_gcc(env):
-            env.Append(CCFLAGS=["-Wno-misleading-indentation"])
-            if cc_version_major >= 7:
-                shadow_local_warning = ["-Wshadow-local"]
+            gcc_common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
 
         if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wno-unused-parameter"] + all_plus_warnings + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + gcc_common_warnings)
             env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
             if methods.using_gcc(env):
                 env.Append(
@@ -483,14 +453,15 @@ if selected_platform in platform_list:
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
                 if cc_version_major >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
-            if methods.using_clang(env):
+            elif methods.using_clang(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
         elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["-Wall"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall"] + gcc_common_warnings)
         elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + shadow_local_warning)
+            env.Append(CCFLAGS=["-Wall", "-Wno-unused"] + gcc_common_warnings)
         else:  # 'no'
             env.Append(CCFLAGS=["-w"])
+
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
             # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
@@ -629,18 +600,13 @@ if selected_platform in platform_list:
 
     if not env["platform"] == "server":
         GLSL_BUILDERS = {
-            "GLES2_GLSL": env.Builder(
-                action=env.Run(gles_builders.build_gles2_headers, 'Building GLES2_GLSL header: "$TARGET"'),
-                suffix="glsl.gen.h",
-                src_suffix=".glsl",
-            ),
             "RD_GLSL": env.Builder(
-                action=env.Run(gles_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
+                action=env.Run(glsl_builders.build_rd_headers, 'Building RD_GLSL header: "$TARGET"'),
                 suffix="glsl.gen.h",
                 src_suffix=".glsl",
             ),
             "GLSL_HEADER": env.Builder(
-                action=env.Run(gles_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
+                action=env.Run(glsl_builders.build_raw_headers, 'Building GLSL header: "$TARGET"'),
                 suffix="glsl.gen.h",
                 src_suffix=".glsl",
             ),
@@ -651,6 +617,10 @@ if selected_platform in platform_list:
     if scons_cache_path != None:
         CacheDir(scons_cache_path)
         print("Scons cache enabled... (path: '" + scons_cache_path + "')")
+
+    if env["vsproj"]:
+        env.vs_incs = []
+        env.vs_srcs = []
 
     Export("env")
 

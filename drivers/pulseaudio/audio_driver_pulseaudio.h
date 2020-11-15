@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef PULSEAUDIO_ENABLED
-
 #ifndef AUDIO_DRIVER_PULSEAUDIO_H
 #define AUDIO_DRIVER_PULSEAUDIO_H
+
+#ifdef PULSEAUDIO_ENABLED
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -124,6 +124,6 @@ public:
 	~AudioDriverPulseAudio() {}
 };
 
-#endif // AUDIO_DRIVER_PULSEAUDIO_H
-
 #endif // PULSEAUDIO_ENABLED
+
+#endif // AUDIO_DRIVER_PULSEAUDIO_H

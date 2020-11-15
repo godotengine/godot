@@ -30,8 +30,8 @@
 
 #include "gdnative/color.h"
 
-#include "core/color.h"
-#include "core/variant.h"
+#include "core/math/color.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,13 +145,6 @@ godot_color GDAPI godot_color_inverted(const godot_color *p_self) {
 	godot_color dest;
 	const Color *self = (const Color *)p_self;
 	*((Color *)&dest) = self->inverted();
-	return dest;
-}
-
-godot_color GDAPI godot_color_contrasted(const godot_color *p_self) {
-	godot_color dest;
-	const Color *self = (const Color *)p_self;
-	*((Color *)&dest) = self->contrasted();
 	return dest;
 }
 

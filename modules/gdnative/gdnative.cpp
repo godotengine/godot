@@ -30,11 +30,11 @@
 
 #include "gdnative.h"
 
-#include "core/global_constants.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #include "scene/main/scene_tree.h"
 

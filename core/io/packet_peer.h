@@ -32,8 +32,8 @@
 #define PACKET_PEER_H
 
 #include "core/io/stream_peer.h"
-#include "core/object.h"
-#include "core/ring_buffer.h"
+#include "core/object/class_db.h"
+#include "core/templates/ring_buffer.h"
 
 class PacketPeer : public Reference {
 	GDCLASS(PacketPeer, Reference);

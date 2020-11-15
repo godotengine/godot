@@ -30,7 +30,7 @@
 
 #include "path_2d.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "scene/scene_string_names.h"
 
@@ -254,11 +254,16 @@ String PathFollow2D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node2D::get_configuration_warning();
+
 	if (!Object::cast_to<Path2D>(get_parent())) {
-		return TTR("PathFollow2D only works when set as a child of a Path2D node.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PathFollow2D only works when set as a child of a Path2D node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void PathFollow2D::_bind_methods() {

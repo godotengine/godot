@@ -32,13 +32,13 @@
 
 #include <stdint.h>
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
-#include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
@@ -596,6 +596,19 @@ Error GDScript::reload(bool p_keep_state) {
 		return OK;
 	}
 
+	{
+		String source_path = path;
+		if (source_path.empty()) {
+			source_path = get_path();
+		}
+		if (!source_path.empty()) {
+			MutexLock lock(GDScriptCache::singleton->lock);
+			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
+				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;
+			}
+		}
+	}
+
 	valid = false;
 	GDScriptParser parser;
 	Error err = parser.parse(source, path, false);
@@ -1031,8 +1044,10 @@ GDScript::~GDScript() {
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-			E->self()->_clear_stack();
+			// Order matters since clearing the stack may already cause
+			// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 			pending_func_states.remove(E);
+			E->self()->_clear_stack();
 		}
 	}
 
@@ -1040,7 +1055,9 @@ GDScript::~GDScript() {
 		memdelete(E->get());
 	}
 
-	GDScriptCache::remove_script(get_path());
+	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
+		GDScriptCache::remove_script(get_path());
+	}
 
 	_save_orphaned_subclasses();
 
@@ -1075,7 +1092,8 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					// Try conversion
 					Callable::CallError ce;
 					const Variant *value = &p_value;
-					Variant converted = Variant::construct(member->data_type.builtin_type, &value, 1, ce);
+					Variant converted;
+					Variant::construct(member->data_type.builtin_type, converted, &value, 1, ce);
 					if (ce.error == Callable::CallError::CALL_OK) {
 						members.write[member->index] = converted;
 						return true;
@@ -1436,8 +1454,10 @@ GDScriptInstance::~GDScriptInstance() {
 	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		E->self()->_clear_stack();
+		// Order matters since clearing the stack may already cause
+		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
 		pending_func_states.remove(E);
+		E->self()->_clear_stack();
 	}
 
 	if (script.is_valid() && owner) {
@@ -1481,9 +1501,9 @@ void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 
 void GDScriptLanguage::init() {
 	//populate global constants
-	int gcc = GlobalConstants::get_global_constant_count();
+	int gcc = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {
-		_add_global(StaticCString::create(GlobalConstants::get_global_constant_name(i)), GlobalConstants::get_global_constant_value(i));
+		_add_global(StaticCString::create(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
 	}
 
 	_add_global(StaticCString::create("PI"), Math_PI);
@@ -2022,7 +2042,33 @@ GDScriptLanguage::~GDScriptLanguage() {
 	if (_call_stack) {
 		memdelete_arr(_call_stack);
 	}
-	singleton = nullptr;
+
+	// Clear dependencies between scripts, to ensure cyclic references are broken (to avoid leaks at exit).
+	SelfList<GDScript> *s = script_list.first();
+	while (s) {
+		GDScript *script = s->self();
+		// This ensures the current script is not released before we can check what's the next one
+		// in the list (we can't get the next upfront because we don't know if the reference breaking
+		// will cause it -or any other after it, for that matter- to be released so the next one
+		// is not the same as before).
+		script->reference();
+
+		for (Map<StringName, GDScriptFunction *>::Element *E = script->member_functions.front(); E; E = E->next()) {
+			GDScriptFunction *func = E->get();
+			for (int i = 0; i < func->argument_types.size(); i++) {
+				func->argument_types.write[i].script_type_ref = Ref<Script>();
+			}
+			func->return_type.script_type_ref = Ref<Script>();
+		}
+		for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
+			E->get().data_type.script_type_ref = Ref<Script>();
+		}
+
+		s = s->next();
+		script->unreference();
+	}
+
+	singleton = NULL;
 }
 
 void GDScriptLanguage::add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass) {

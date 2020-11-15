@@ -20,9 +20,9 @@
 #define FTDRV_H_
 
 
-#include <ft2build.h>
-#include FT_MODULE_H
+#include <freetype/ftmodapi.h>
 
+#include "compiler-macros.h"
 
 FT_BEGIN_HEADER
 

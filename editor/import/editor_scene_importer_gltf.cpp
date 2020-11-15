@@ -184,8 +184,11 @@ String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String 
 String EditorSceneImporterGLTF::_sanitize_bone_name(const String &name) {
 	String p_name = name.camelcase_to_underscore(true);
 
-	RegEx pattern_del("([^a-zA-Z0-9_ ])+");
-	p_name = pattern_del.sub(p_name, "", true);
+	RegEx pattern_nocolon(":");
+	p_name = pattern_nocolon.sub(p_name, "_", true);
+
+	RegEx pattern_noslash("/");
+	p_name = pattern_noslash.sub(p_name, "_", true);
 
 	RegEx pattern_nospace(" +");
 	p_name = pattern_nospace.sub(p_name, "_", true);
@@ -200,8 +203,10 @@ String EditorSceneImporterGLTF::_sanitize_bone_name(const String &name) {
 }
 
 String EditorSceneImporterGLTF::_gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name) {
-	const String s_name = _sanitize_bone_name(p_name);
-
+	String s_name = _sanitize_bone_name(p_name);
+	if (s_name.empty()) {
+		s_name = "bone";
+	}
 	String name;
 	int index = 1;
 	while (true) {
@@ -379,13 +384,17 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 				Vector<uint8_t> buffer_data;
 				String uri = buffer["uri"];
 
-				if (uri.findn("data:application/octet-stream;base64") == 0) {
-					//embedded data
+				if (uri.begins_with("data:")) { // Embedded data using base64.
+					// Validate data MIME types and throw an error if it's one we don't know/support.
+					if (!uri.begins_with("data:application/octet-stream;base64") &&
+							!uri.begins_with("data:application/gltf-buffer;base64")) {
+						ERR_PRINT("glTF: Got buffer with an unknown URI data type: " + uri);
+					}
 					buffer_data = _parse_base64_uri(uri);
-				} else {
-					uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+				} else { // Relative path to an external image file.
+					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
-					ERR_FAIL_COND_V(buffer.size() == 0, ERR_PARSE_ERROR);
+					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 				}
 
 				ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
@@ -1226,6 +1235,12 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				const Ref<Material> &mat = state.materials[material];
 
 				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
+			} else {
+				Ref<StandardMaterial3D> mat;
+				mat.instance();
+				mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+				mesh.mesh->surface_set_material(mesh.mesh->get_surface_count() - 1, mat);
 			}
 		}
 
@@ -1255,12 +1270,28 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		return OK;
 	}
 
+	// Ref: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#images
+
 	const Array &images = state.json["images"];
 	for (int i = 0; i < images.size(); i++) {
 		const Dictionary &d = images[i];
 
+		// glTF 2.0 supports PNG and JPEG types, which can be specified as (from spec):
+		// "- a URI to an external file in one of the supported images formats, or
+		//  - a URI with embedded base64-encoded data, or
+		//  - a reference to a bufferView; in that case mimeType must be defined."
+		// Since mimeType is optional for external files and base64 data, we'll have to
+		// fall back on letting Godot parse the data to figure out if it's PNG or JPEG.
+
+		// We'll assume that we use either URI or bufferView, so let's warn the user
+		// if their image somehow uses both. And fail if it has neither.
+		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specific an 'uri' or 'bufferView'.");
+		if (d.has("uri") && d.has("bufferView")) {
+			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'bufferView' will take precedence.");
+		}
+
 		String mimetype;
-		if (d.has("mimeType")) {
+		if (d.has("mimeType")) { // Should be "image/png" or "image/jpeg".
 			mimetype = d["mimeType"];
 		}
 
@@ -1269,23 +1300,52 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		int data_size = 0;
 
 		if (d.has("uri")) {
+			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = d["uri"];
 
-			if (uri.findn("data:application/octet-stream;base64") == 0 ||
-					uri.findn("data:" + mimetype + ";base64") == 0) {
-				//embedded data
+			if (uri.begins_with("data:")) { // Embedded data using base64.
+				// Validate data MIME types and throw an error if it's one we don't know/support.
+				if (!uri.begins_with("data:application/octet-stream;base64") &&
+						!uri.begins_with("data:application/gltf-buffer;base64") &&
+						!uri.begins_with("data:image/png;base64") &&
+						!uri.begins_with("data:image/jpeg;base64")) {
+					ERR_PRINT("glTF: Got image data with an unknown URI data type: " + uri);
+				}
 				data = _parse_base64_uri(uri);
 				data_ptr = data.ptr();
 				data_size = data.size();
-			} else {
-				uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
-				Ref<Texture2D> texture = ResourceLoader::load(uri);
-				state.images.push_back(texture);
-				continue;
+				// mimeType is optional, but if we have it defined in the URI, let's use it.
+				if (mimetype.empty()) {
+					if (uri.begins_with("data:image/png;base64")) {
+						mimetype = "image/png";
+					} else if (uri.begins_with("data:image/jpeg;base64")) {
+						mimetype = "image/jpeg";
+					}
+				}
+			} else { // Relative path to an external image file.
+				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
+				// The spec says that if mimeType is defined, we should enforce it.
+				// So we should only rely on ResourceLoader::load if mimeType is not defined,
+				// otherwise we should use the same logic as for buffers.
+				if (mimetype == "image/png" || mimetype == "image/jpeg") {
+					// Load data buffer and rely on PNG and JPEG-specific logic below to load the image.
+					// This makes it possible to load a file with a wrong extension but correct MIME type,
+					// e.g. "foo.jpg" containing PNG data and with MIME type "image/png". ResourceLoader would fail.
+					data = FileAccess::get_file_as_array(uri);
+					ERR_FAIL_COND_V_MSG(data.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load image file as an array: " + uri);
+					data_ptr = data.ptr();
+					data_size = data.size();
+				} else {
+					// Good old ResourceLoader will rely on file extension.
+					Ref<Texture2D> texture = ResourceLoader::load(uri);
+					state.images.push_back(texture);
+					continue;
+				}
 			}
-		}
+		} else if (d.has("bufferView")) {
+			// Handles the third bullet point from the spec (bufferView).
+			ERR_FAIL_COND_V_MSG(mimetype.empty(), ERR_FILE_CORRUPT, "glTF: Image specifies 'bufferView' but no 'mimeType', which is invalid.");
 
-		if (d.has("bufferView")) {
 			const GLTFBufferViewIndex bvi = d["bufferView"];
 
 			ERR_FAIL_INDEX_V(bvi, state.buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
@@ -1301,45 +1361,36 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			data_size = bv.byte_length;
 		}
 
-		ERR_FAIL_COND_V(mimetype == "", ERR_FILE_CORRUPT);
+		Ref<Image> img;
 
-		if (mimetype.findn("png") != -1) {
-			//is a png
+		if (mimetype == "image/png") { // Load buffer as PNG.
 			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-
-			const Ref<Image> img = Image::_png_mem_loader_func(data_ptr, data_size);
-
-			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);
-
-			Ref<ImageTexture> t;
-			t.instance();
-			t->create_from_image(img);
-
-			state.images.push_back(t);
-			continue;
-		}
-
-		if (mimetype.findn("jpeg") != -1) {
-			//is a jpg
+			img = Image::_png_mem_loader_func(data_ptr, data_size);
+		} else if (mimetype == "image/jpeg") { // Loader buffer as JPEG.
 			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-
-			const Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
-
-			ERR_FAIL_COND_V(img.is_null(), ERR_FILE_CORRUPT);
-
-			Ref<ImageTexture> t;
-			t.instance();
-			t->create_from_image(img);
-
-			state.images.push_back(t);
-
-			continue;
+			img = Image::_jpg_mem_loader_func(data_ptr, data_size);
+		} else {
+			// We can land here if we got an URI with base64-encoded data with application/* MIME type,
+			// and the optional mimeType property was not defined to tell us how to handle this data (or was invalid).
+			// So let's try PNG first, then JPEG.
+			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
+			img = Image::_png_mem_loader_func(data_ptr, data_size);
+			if (img.is_null()) {
+				ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
+				img = Image::_jpg_mem_loader_func(data_ptr, data_size);
+			}
 		}
 
-		ERR_FAIL_V(ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V_MSG(img.is_null(), ERR_FILE_CORRUPT, "glTF: Couldn't load image with its given mimetype: " + mimetype);
+
+		Ref<ImageTexture> t;
+		t.instance();
+		t->create_from_image(img);
+
+		state.images.push_back(t);
 	}
 
-	print_verbose("Total images: " + itos(state.images.size()));
+	print_verbose("glTF: Total images: " + itos(state.images.size()));
 
 	return OK;
 }
@@ -1386,6 +1437,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		if (d.has("name")) {
 			material->set_name(d["name"]);
 		}
+		material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		if (d.has("pbrMetallicRoughness")) {
 			const Dictionary &mr = d["pbrMetallicRoughness"];
@@ -1498,7 +1550,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 		state.materials.push_back(material);
 	}
 
-	print_verbose("Total materials: " + itos(state.materials.size()));
+	print_verbose("glTF: Total materials: " + itos(state.materials.size()));
 
 	return OK;
 }
@@ -3049,6 +3101,8 @@ Node3D *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, const int p_b
 }
 
 Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
+	print_verbose(vformat("glTF: Importing file %s as scene.", p_path));
+
 	GLTFState state;
 
 	if (p_path.to_lower().ends_with("glb")) {

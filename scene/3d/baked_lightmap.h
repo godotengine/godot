@@ -31,7 +31,7 @@
 #ifndef BAKED_LIGHTMAP_H
 #define BAKED_LIGHTMAP_H
 
-#include "core/local_vector.h"
+#include "core/templates/local_vector.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/3d/mesh_instance_3d.h"

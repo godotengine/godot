@@ -30,7 +30,7 @@
 
 #include "stream_peer_tcp.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 Error StreamPeerTCP::_poll_connection() {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTING || !_sock.is_valid() || !_sock->is_open(), FAILED);

@@ -29,13 +29,14 @@
 /*************************************************************************/
 
 #import "app_delegate.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "godot_view.h"
 #include "main/main.h"
 #include "os_iphone.h"
 #import "view_controller.h"
 
+#import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioServices.h>
 
 #define kRenderingFrequency 60
@@ -62,7 +63,7 @@ static ViewController *mainViewController = nil;
 	CGRect windowBounds = [[UIScreen mainScreen] bounds];
 
 	// Create a full-screen window
-	self.window = [[[UIWindow alloc] initWithFrame:windowBounds] autorelease];
+	self.window = [[UIWindow alloc] initWithFrame:windowBounds];
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -140,7 +141,6 @@ static ViewController *mainViewController = nil;
 
 - (void)dealloc {
 	self.window = nil;
-	[super dealloc];
 }
 
 @end

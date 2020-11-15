@@ -64,25 +64,32 @@ static int get_log_level_id(const char *p_log_level) {
 	return -1;
 }
 
+static String make_text(const char *log_domain, const char *log_level, const char *message) {
+	String text(message);
+	text += " (in domain ";
+	text += log_domain;
+	if (log_level) {
+		text += ", ";
+		text += log_level;
+	}
+	text += ")";
+	return text;
+}
+
 void GDMonoLog::mono_log_callback(const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *) {
 	FileAccess *f = GDMonoLog::get_singleton()->log_file;
 
 	if (GDMonoLog::get_singleton()->log_level_id >= get_log_level_id(log_level)) {
-		String text(message);
-		text += " (in domain ";
-		text += log_domain;
-		if (log_level) {
-			text += ", ";
-			text += log_level;
-		}
-		text += ")\n";
+		String text = make_text(log_domain, log_level, message);
+		text += "\n";
 
 		f->seek_end();
 		f->store_string(text);
 	}
 
 	if (fatal) {
-		ERR_PRINT("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
+		String text = make_text(log_domain, log_level, message);
+		ERR_PRINT("Mono: FATAL ERROR '" + text + "', ABORTING! Logfile: '" + GDMonoLog::get_singleton()->log_file_path + "'.");
 		// Make sure to flush before aborting
 		f->flush();
 		f->close();

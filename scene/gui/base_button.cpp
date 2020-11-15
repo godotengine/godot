@@ -60,7 +60,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept") && !p_event->is_echo();
 
-	bool button_masked = mouse_button.is_valid() && ((1 << (mouse_button->get_button_index() - 1)) & button_mask) > 0;
+	bool button_masked = mouse_button.is_valid() && ((1 << (mouse_button->get_button_index() - 1)) & button_mask) != 0;
 	if (button_masked || ui_accept) {
 		on_action_event(p_event);
 		return;
@@ -307,17 +307,6 @@ int BaseButton::get_button_mask() const {
 	return button_mask;
 }
 
-void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
-	enabled_focus_mode = p_mode;
-	if (!status.disabled) {
-		set_focus_mode(p_mode);
-	}
-}
-
-Control::FocusMode BaseButton::get_enabled_focus_mode() const {
-	return enabled_focus_mode;
-}
-
 void BaseButton::set_keep_pressed_outside(bool p_on) {
 	keep_pressed_outside = p_on;
 }
@@ -326,12 +315,12 @@ bool BaseButton::is_keep_pressed_outside() const {
 	return keep_pressed_outside;
 }
 
-void BaseButton::set_shortcut(const Ref<ShortCut> &p_shortcut) {
+void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	shortcut = p_shortcut;
 	set_process_unhandled_input(shortcut.is_valid());
 }
 
-Ref<ShortCut> BaseButton::get_shortcut() const {
+Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
@@ -345,7 +334,7 @@ String BaseButton::get_tooltip(const Point2 &p_pos) const {
 	String tooltip = Control::get_tooltip(p_pos);
 	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->is_valid()) {
 		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (shortcut->get_name().nocasecmp_to(tooltip) != 0) {
+		if (tooltip != String() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
 			text += "\n" + tooltip;
 		}
 		tooltip = text;
@@ -388,8 +377,6 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
-	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
-	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
 
@@ -412,10 +399,9 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_shortcut", "get_shortcut");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
@@ -437,7 +423,6 @@ BaseButton::BaseButton() {
 	status.pressing_inside = false;
 	status.disabled = false;
 	set_focus_mode(FOCUS_ALL);
-	enabled_focus_mode = FOCUS_ALL;
 	action_mode = ACTION_MODE_BUTTON_RELEASE;
 	button_mask = BUTTON_MASK_LEFT;
 }

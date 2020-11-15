@@ -33,7 +33,7 @@
 
 #include "core/math/vector2.h"
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "scene/resources/bit_map.h"
 
 class EditorAtlasPacker {

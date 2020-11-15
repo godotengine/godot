@@ -356,7 +356,12 @@ String EditorSpinSlider::get_label() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
-	String text = value_input->get_text();
+	// Replace comma with dot to support it as decimal separator (GH-6028).
+	// This prevents using functions like `pow()`, but using functions
+	// in EditorSpinSlider is a barely known (and barely used) feature.
+	// Instead, we'd rather support German/French keyboard layouts out of the box.
+	const String text = value_input->get_text().replace(",", ".");
+
 	Ref<Expression> expr;
 	expr.instance();
 	Error err = expr->parse(text);
@@ -478,7 +483,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
-	grabber->set_as_toplevel(true);
+	grabber->set_as_top_level(true);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
 	grabber->connect("mouse_entered", callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect("mouse_exited", callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));

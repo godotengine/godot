@@ -197,6 +197,10 @@ struct Rect2 {
 		return g;
 	}
 
+	inline Rect2 grow_margin_bind(uint32_t p_margin, real_t p_amount) const {
+		return grow_margin(Margin(p_margin), p_amount);
+	}
+
 	inline Rect2 grow_individual(real_t p_left, real_t p_top, real_t p_right, real_t p_bottom) const {
 		Rect2 g = *this;
 		g.position.x -= p_left;
@@ -238,6 +242,77 @@ struct Rect2 {
 
 	_FORCE_INLINE_ Rect2 abs() const {
 		return Rect2(Point2(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
+	}
+
+	Vector2 get_support(const Vector2 &p_normal) const {
+		Vector2 half_extents = size * 0.5;
+		Vector2 ofs = position + half_extents;
+		return Vector2(
+					   (p_normal.x > 0) ? -half_extents.x : half_extents.x,
+					   (p_normal.y > 0) ? -half_extents.y : half_extents.y) +
+			   ofs;
+	}
+
+	_FORCE_INLINE_ bool intersects_filled_polygon(const Vector2 *p_points, int p_point_count) const {
+		Vector2 center = position + size * 0.5;
+		int side_plus = 0;
+		int side_minus = 0;
+		Vector2 end = position + size;
+
+		int i_f = p_point_count - 1;
+		for (int i = 0; i < p_point_count; i++) {
+			const Vector2 &a = p_points[i_f];
+			const Vector2 &b = p_points[i];
+			i_f = i;
+
+			Vector2 r = (b - a);
+			float l = r.length();
+			if (l == 0.0) {
+				continue;
+			}
+
+			//check inside
+			Vector2 tg = r.tangent();
+			float s = tg.dot(center) - tg.dot(a);
+			if (s < 0.0) {
+				side_plus++;
+			} else {
+				side_minus++;
+			}
+
+			//check ray box
+			r /= l;
+			Vector2 ir(1.0 / r.x, 1.0 / r.y);
+
+			// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+			// r.org is origin of ray
+			Vector2 t13 = (position - a) * ir;
+			Vector2 t24 = (end - a) * ir;
+
+			float tmin = MAX(MIN(t13.x, t24.x), MIN(t13.y, t24.y));
+			float tmax = MIN(MAX(t13.x, t24.x), MAX(t13.y, t24.y));
+
+			// if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+			if (tmax < 0 || tmin > tmax || tmin >= l) {
+				continue;
+			}
+
+			return true;
+		}
+
+		if (side_plus * side_minus == 0) {
+			return true; //all inside
+		} else {
+			return false;
+		}
+	}
+
+	_FORCE_INLINE_ void set_end(const Vector2 &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector2 get_end() const {
+		return position + size;
 	}
 
 	operator String() const { return String(position) + ", " + String(size); }
@@ -301,8 +376,8 @@ struct Rect2i {
 		new_rect.position.x = MAX(p_rect.position.x, position.x);
 		new_rect.position.y = MAX(p_rect.position.y, position.y);
 
-		Point2 p_rect_end = p_rect.position + p_rect.size;
-		Point2 end = position + size;
+		Point2i p_rect_end = p_rect.position + p_rect.size;
+		Point2i end = position + size;
 
 		new_rect.size.x = (int)(MIN(p_rect_end.x, end.x) - new_rect.position.x);
 		new_rect.size.y = (int)(MIN(p_rect_end.y, end.y) - new_rect.position.y);
@@ -324,7 +399,7 @@ struct Rect2i {
 
 		return new_rect;
 	}
-	bool has_point(const Point2 &p_point) const {
+	bool has_point(const Point2i &p_point) const {
 		if (p_point.x < position.x) {
 			return false;
 		}
@@ -361,6 +436,10 @@ struct Rect2i {
 				(MARGIN_RIGHT == p_margin) ? p_amount : 0,
 				(MARGIN_BOTTOM == p_margin) ? p_amount : 0);
 		return g;
+	}
+
+	inline Rect2i grow_margin_bind(uint32_t p_margin, int p_amount) const {
+		return grow_margin(Margin(p_margin), p_amount);
 	}
 
 	inline Rect2i grow_individual(int p_left, int p_top, int p_right, int p_bottom) const {
@@ -405,6 +484,14 @@ struct Rect2i {
 		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}
 
+	_FORCE_INLINE_ void set_end(const Vector2i &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector2i get_end() const {
+		return position + size;
+	}
+
 	operator String() const { return String(position) + ", " + String(size); }
 
 	operator Rect2() const { return Rect2(position, size); }
@@ -415,10 +502,10 @@ struct Rect2i {
 			size(p_r2.size) {
 	}
 	Rect2i(int p_x, int p_y, int p_width, int p_height) :
-			position(Point2(p_x, p_y)),
-			size(Size2(p_width, p_height)) {
+			position(Point2i(p_x, p_y)),
+			size(Size2i(p_width, p_height)) {
 	}
-	Rect2i(const Point2 &p_pos, const Size2 &p_size) :
+	Rect2i(const Point2i &p_pos, const Size2i &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}

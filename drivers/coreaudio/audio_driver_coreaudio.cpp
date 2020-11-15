@@ -32,8 +32,8 @@
 
 #include "audio_driver_coreaudio.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #define kOutputBus 0
 #define kInputBus 1

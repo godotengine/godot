@@ -361,6 +361,65 @@ layout(location = 0) out vec4 frag_color;
 
 #endif // RENDER DEPTH
 
+#ifdef ALPHA_HASH_USED
+
+float hash_2d(vec2 p) {
+	return fract(1.0e4 * sin(17.0 * p.x + 0.1 * p.y) *
+				 (0.1 + abs(sin(13.0 * p.y + p.x))));
+}
+
+float hash_3d(vec3 p) {
+	return hash_2d(vec2(hash_2d(p.xy), p.z));
+}
+
+float compute_alpha_hash_threshold(vec3 pos, float hash_scale) {
+	vec3 dx = dFdx(pos);
+	vec3 dy = dFdx(pos);
+	float delta_max_sqr = max(length(dx), length(dy));
+	float pix_scale = 1.0 / (hash_scale * delta_max_sqr);
+
+	vec2 pix_scales =
+			vec2(exp2(floor(log2(pix_scale))), exp2(ceil(log2(pix_scale))));
+
+	vec2 a_thresh = vec2(hash_3d(floor(pix_scales.x * pos.xyz)),
+			hash_3d(floor(pix_scales.y * pos.xyz)));
+
+	float lerp_factor = fract(log2(pix_scale));
+
+	float a_interp = (1.0 - lerp_factor) * a_thresh.x + lerp_factor * a_thresh.y;
+
+	float min_lerp = min(lerp_factor, 1.0 - lerp_factor);
+
+	vec3 cases = vec3(a_interp * a_interp / (2.0 * min_lerp * (1.0 - min_lerp)),
+			(a_interp - 0.5 * min_lerp) / (1.0 - min_lerp),
+			1.0 - ((1.0 - a_interp) * (1.0 - a_interp) /
+						  (2.0 * min_lerp * (1.0 - min_lerp))));
+
+	float alpha_hash_threshold =
+			(lerp_factor < (1.0 - min_lerp)) ? ((lerp_factor < min_lerp) ? cases.x : cases.y) : cases.z;
+
+	return clamp(alpha_hash_threshold, 0.0, 1.0);
+}
+
+#endif // ALPHA_HASH_USED
+
+#ifdef ALPHA_ANTIALIASING_EDGE_USED
+
+float calc_mip_level(vec2 texture_coord) {
+	vec2 dx = dFdx(texture_coord);
+	vec2 dy = dFdy(texture_coord);
+	float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
+	return max(0.0, 0.5 * log2(delta_max_sqr));
+}
+
+float compute_alpha_antialiasing_edge(float input_alpha, vec2 texture_coord, float alpha_edge) {
+	input_alpha *= 1.0 + max(0, calc_mip_level(texture_coord)) * 0.25; // 0.25 mip scale, magic number
+	input_alpha = (input_alpha - alpha_edge) / max(fwidth(input_alpha), 0.0001) + 0.5;
+	return clamp(input_alpha, 0.0, 1.0);
+}
+
+#endif // ALPHA_ANTIALIASING_USED
+
 // This returns the G_GGX function divided by 2 cos_theta_m, where in practice cos_theta_m is either N.L or N.V.
 // We're dividing this factor off because the overall term we'll end up looks like
 // (see, for example, the first unnumbered equation in B. Burley, "Physically Based Shading at Disney", SIGGRAPH 2012):
@@ -681,9 +740,13 @@ LIGHT_SHADER_CODE
 
 #ifndef USE_NO_SHADOWS
 
-// Produces cheap but low-quality white noise, nothing special
+// Produces cheap white noise, optimized for window-space
+// Comes from: https://www.shadertoy.com/view/4djSRW
+// Copyright: Dave Hoskins, MIT License
 float quick_hash(vec2 pos) {
-	return fract(sin(dot(pos * 19.19, vec2(49.5791, 97.413))) * 49831.189237);
+	vec3 p3 = fract(vec3(pos.xyx) * .1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
 }
 
 float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
@@ -1237,7 +1300,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 			float shadow_z = textureLod(sampler2D(shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), splane.xy, 0.0).r;
 			//reconstruct depth
-			shadow_z / lights.data[idx].inv_radius;
+			shadow_z /= lights.data[idx].inv_radius;
 			//distance to light plane
 			float z = dot(spot_dir, -light_rel_vec);
 			transmittance_z = z - shadow_z;
@@ -1601,6 +1664,67 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
+#ifndef MODE_RENDER_DEPTH
+
+vec4 volumetric_fog_process(vec2 screen_uv, float z) {
+	vec3 fog_pos = vec3(screen_uv, z * scene_data.volumetric_fog_inv_length);
+	if (fog_pos.z < 0.0) {
+		return vec4(0.0);
+	} else if (fog_pos.z < 1.0) {
+		fog_pos.z = pow(fog_pos.z, scene_data.volumetric_fog_detail_spread);
+	}
+
+	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
+}
+
+vec4 fog_process(vec3 vertex) {
+	vec3 fog_color = scene_data.fog_light_color;
+
+	if (scene_data.fog_aerial_perspective > 0.0) {
+		vec3 sky_fog_color = vec3(0.0);
+		vec3 cube_view = scene_data.radiance_inverse_xform * vertex;
+		// mip_level always reads from the second mipmap and higher so the fog is always slightly blurred
+		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near));
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+		float lod, blend;
+		blend = modf(mip_level * MAX_ROUGHNESS_LOD, lod);
+		sky_fog_color = texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(cube_view, lod)).rgb;
+		sky_fog_color = mix(sky_fog_color, texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(cube_view, lod + 1)).rgb, blend);
+#else
+		sky_fog_color = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_view, mip_level * MAX_ROUGHNESS_LOD).rgb;
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		fog_color = mix(fog_color, sky_fog_color, scene_data.fog_aerial_perspective);
+	}
+
+	if (scene_data.fog_sun_scatter > 0.001) {
+		vec4 sun_scatter = vec4(0.0);
+		float sun_total = 0.0;
+		vec3 view = normalize(vertex);
+
+		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+			vec3 light_color = directional_lights.data[i].color * directional_lights.data[i].energy;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction), 0.0), 8.0);
+			fog_color += light_color * light_amount * scene_data.fog_sun_scatter;
+		}
+	}
+
+	float fog_amount = 1.0 - exp(vertex.z * scene_data.fog_density);
+
+	if (abs(scene_data.fog_height_density) > 0.001) {
+		float y = (scene_data.camera_matrix * vec4(vertex, 1.0)).y;
+
+		float y_dist = scene_data.fog_height - y;
+
+		float vfog_amount = clamp(exp(y_dist * scene_data.fog_height_density), 0.0, 1.0);
+
+		fog_amount = max(vfog_amount, fog_amount);
+	}
+
+	return vec4(fog_color, fog_amount);
+}
+
+#endif
+
 void main() {
 #ifdef MODE_DUAL_PARABOLOID
 
@@ -1627,6 +1751,15 @@ void main() {
 	float clearcoat_gloss = 0.0;
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
+#if defined(CUSTOM_FOG_USED)
+	vec4 custom_fog = vec4(0.0);
+#endif
+#if defined(CUSTOM_RADIANCE_USED)
+	vec4 custom_radiance = vec4(0.0);
+#endif
+#if defined(CUSTOM_IRRADIANCE_USED)
+	vec4 custom_irradiance = vec4(0.0);
+#endif
 
 #if defined(AO_USED)
 	float ao = 1.0;
@@ -1634,10 +1767,6 @@ void main() {
 #endif
 
 	float alpha = 1.0;
-
-#if defined(ALPHA_SCISSOR_USED)
-	float alpha_scissor = 0.5;
-#endif
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 binormal = normalize(binormal_interp);
@@ -1675,6 +1804,19 @@ void main() {
 
 	float sss_strength = 0.0;
 
+#ifdef ALPHA_SCISSOR_USED
+	float alpha_scissor_threshold = 1.0;
+#endif // ALPHA_SCISSOR_USED
+
+#ifdef ALPHA_HASH_USED
+	float alpha_hash_scale = 1.0;
+#endif // ALPHA_HASH_USED
+
+#ifdef ALPHA_ANTIALIASING_EDGE_USED
+	float alpha_antialiasing_edge = 0.0;
+	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
+#endif // ALPHA_ANTIALIASING_EDGE_USED
+
 	{
 		/* clang-format off */
 
@@ -1683,7 +1825,7 @@ FRAGMENT_SHADER_CODE
 		/* clang-format on */
 	}
 
-#if defined(LIGHT_TRANSMITTANCE_USED)
+#ifdef LIGHT_TRANSMITTANCE_USED
 #ifdef SSS_MODE_SKIN
 	transmittance_color.a = sss_strength;
 #else
@@ -1691,25 +1833,43 @@ FRAGMENT_SHADER_CODE
 #endif
 #endif
 
-#if !defined(USE_SHADOW_TO_OPACITY)
+#ifndef USE_SHADOW_TO_OPACITY
 
-#if defined(ALPHA_SCISSOR_USED)
-	if (alpha < alpha_scissor) {
+#ifdef ALPHA_SCISSOR_USED
+	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
 #endif // ALPHA_SCISSOR_USED
 
-#ifdef USE_OPAQUE_PREPASS
+// alpha hash can be used in unison with alpha antialiasing
+#ifdef ALPHA_HASH_USED
+	if (alpha < compute_alpha_hash_threshold(vertex, alpha_hash_scale)) {
+		discard;
+	}
+#endif // ALPHA_HASH_USED
 
+// If we are not edge antialiasing, we need to remove the output alpha channel from scissor and hash
+#if (defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED)) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+	alpha = 1.0;
+#endif
+
+#ifdef ALPHA_ANTIALIASING_EDGE_USED
+// If alpha scissor is used, we must further the edge threshold, otherwise we wont get any edge feather
+#ifdef ALPHA_SCISSOR_USED
+	alpha_antialiasing_edge = clamp(alpha_scissor_threshold + alpha_antialiasing_edge, 0.0, 1.0);
+#endif
+	alpha = compute_alpha_antialiasing_edge(alpha, alpha_texture_coordinate, alpha_antialiasing_edge);
+#endif // ALPHA_ANTIALIASING_EDGE_USED
+
+#ifdef USE_OPAQUE_PREPASS
 	if (alpha < opaque_prepass_threshold) {
 		discard;
 	}
-
 #endif // USE_OPAQUE_PREPASS
 
 #endif // !USE_SHADOW_TO_OPACITY
 
-#if defined(NORMALMAP_USED)
+#ifdef NORMALMAP_USED
 
 	normalmap.xy = normalmap.xy * 2.0 - 1.0;
 	normalmap.z = sqrt(max(0.0, 1.0 - dot(normalmap.xy, normalmap.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
@@ -1718,7 +1878,7 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-#if defined(LIGHT_ANISOTROPY_USED)
+#ifdef LIGHT_ANISOTROPY_USED
 
 	if (anisotropy > 0.01) {
 		//rotation matrix
@@ -1844,6 +2004,10 @@ FRAGMENT_SHADER_CODE
 		specular_light *= scene_data.ambient_light_color_energy.a;
 	}
 
+#if defined(CUSTOM_RADIANCE_USED)
+	specular_light = mix(specular_light, custom_radiance.rgb, custom_radiance.a);
+#endif
+
 #ifndef USE_LIGHTMAP
 	//lightmap overrides everything
 	if (scene_data.use_ambient_light) {
@@ -1861,7 +2025,9 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif // USE_LIGHTMAP
-
+#if defined(CUSTOM_IRRADIANCE_USED)
+	ambient_light = mix(specular_light, custom_irradiance.rgb, custom_irradiance.a);
+#endif
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 	//radiance
@@ -2187,8 +2353,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.x;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.x;
+						shadow_z *= directional_lights.data[i].shadow_z_range.x;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.x;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2219,8 +2385,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.y;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.y;
+						shadow_z *= directional_lights.data[i].shadow_z_range.y;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.y;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2251,8 +2417,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.z;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.z;
+						shadow_z *= directional_lights.data[i].shadow_z_range.z;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.z;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2285,8 +2451,8 @@ FRAGMENT_SHADER_CODE
 						trans_coord /= trans_coord.w;
 
 						float shadow_z = textureLod(sampler2D(directional_shadow_atlas, material_samplers[SAMPLER_LINEAR_CLAMP]), trans_coord.xy, 0.0).r;
-						shadow_z *= directional_lights.data[i].shadow_transmittance_z_scale.w;
-						float z = trans_coord.z * directional_lights.data[i].shadow_transmittance_z_scale.w;
+						shadow_z *= directional_lights.data[i].shadow_z_range.w;
+						float z = trans_coord.z * directional_lights.data[i].shadow_z_range.w;
 
 						transmittance_z = z - shadow_z;
 					}
@@ -2662,8 +2828,6 @@ FRAGMENT_SHADER_CODE
 	diffuse_light *= 1.0 - metallic; // TODO: avoid all diffuse and ambient light calculations when metallic == 1 up to this point
 	ambient_light *= 1.0 - metallic;
 
-	//fog
-
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
@@ -2679,15 +2843,47 @@ FRAGMENT_SHADER_CODE
 	specular_buffer = vec4(specular_light, metallic);
 #endif
 
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
+		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
+		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	}
+
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+		diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
+		specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	}
+
+#if defined(CUSTOM_FOG_USED)
+	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, custom_fog.rgb, custom_fog.a);
+	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), custom_fog.a);
+#endif //CUSTOM_FOG_USED
+
 #else //MODE_MULTIPLE_RENDER_TARGETS
 
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	//frag_color = vec4(1.0);;;
-
+	//frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
+
+	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
+	if (scene_data.fog_enabled) {
+		vec4 fog = fog_process(vertex);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+	if (scene_data.volumetric_fog_enabled) {
+		vec4 fog = volumetric_fog_process(screen_uv, -vertex.z);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+	}
+
+#if defined(CUSTOM_FOG_USED)
+	frag_color.rgb = mix(frag_color.rgb, custom_fog.rgb, custom_fog.a);
+#endif //CUSTOM_FOG_USED
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 

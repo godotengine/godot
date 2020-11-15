@@ -93,7 +93,7 @@ class GridMapEditor : public VBoxContainer {
 
 	List<SetItem> set_items;
 
-	GridMap *node;
+	GridMap *node = nullptr;
 	MeshLibrary *last_mesh_library;
 	ClipMode clip_mode;
 

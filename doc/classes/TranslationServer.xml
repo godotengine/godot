@@ -7,8 +7,8 @@
 		Server that manages all translations. Translations can be set to it and removed from it.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
+		<link title="Internationalizing games">https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_translation">
@@ -50,6 +50,16 @@
 				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
 			</description>
 		</method>
+		<method name="get_translation_object">
+			<return type="Translation">
+			</return>
+			<argument index="0" name="locale" type="String">
+			</argument>
+			<description>
+				Returns the [Translation] instance based on the [code]locale[/code] passed in.
+				It will return a [code]nullptr[/code] if there is no [Translation] instance that matches the [code]locale[/code].
+			</description>
+		</method>
 		<method name="remove_translation">
 			<return type="void">
 			</return>
@@ -73,8 +83,26 @@
 			</return>
 			<argument index="0" name="message" type="StringName">
 			</argument>
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
 			<description>
-				Returns the current locale's translation for the given message (key).
+				Returns the current locale's translation for the given message (key) and context.
+			</description>
+		</method>
+		<method name="translate_plural" qualifiers="const">
+			<return type="StringName">
+			</return>
+			<argument index="0" name="message" type="StringName">
+			</argument>
+			<argument index="1" name="plural_message" type="StringName">
+			</argument>
+			<argument index="2" name="n" type="int">
+			</argument>
+			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Returns the current locale's translation for the given message (key), plural_message and context.
+				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 			</description>
 		</method>
 	</methods>

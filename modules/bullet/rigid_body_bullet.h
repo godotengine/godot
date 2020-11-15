@@ -171,7 +171,7 @@ public:
 	struct KinematicUtilities {
 		RigidBodyBullet *owner;
 		btScalar safe_margin;
-		LocalVector<KinematicShape> shapes;
+		Vector<KinematicShape> shapes;
 
 		KinematicUtilities(RigidBodyBullet *p_owner);
 		~KinematicUtilities();
@@ -193,7 +193,6 @@ private:
 	PhysicsServer3D::BodyMode mode;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
-	Vector3 total_gravity;
 	uint16_t locked_axis = 0;
 	real_t mass = 1;
 	real_t gravity_scale = 1;
@@ -203,18 +202,18 @@ private:
 	bool omit_forces_integration = false;
 	bool can_integrate_forces = false;
 
-	LocalVector<CollisionData> collisions;
-	LocalVector<RigidBodyBullet *> collision_traces_1;
-	LocalVector<RigidBodyBullet *> collision_traces_2;
-	LocalVector<RigidBodyBullet *> *prev_collision_traces;
-	LocalVector<RigidBodyBullet *> *curr_collision_traces;
+	Vector<CollisionData> collisions;
+	Vector<RigidBodyBullet *> collision_traces_1;
+	Vector<RigidBodyBullet *> collision_traces_2;
+	Vector<RigidBodyBullet *> *prev_collision_traces;
+	Vector<RigidBodyBullet *> *curr_collision_traces;
 
 	// these parameters are used to avoid vector resize
-	uint32_t maxCollisionsDetection = 0;
-	uint32_t collisionsCount = 0;
-	uint32_t prev_collision_count = 0;
+	int maxCollisionsDetection = 0;
+	int collisionsCount = 0;
+	int prev_collision_count = 0;
 
-	LocalVector<AreaBullet *> areasWhereIam;
+	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
 	int maxAreasWhereIam = 10;
 	int areaWhereIamCount = 0;
@@ -236,20 +235,21 @@ public:
 
 	_FORCE_INLINE_ btRigidBody *get_bt_rigid_body() { return btBody; }
 
-	virtual void main_shape_changed() override;
-	virtual void do_reload_body() override;
-	virtual void set_space(SpaceBullet *p_space) override;
+	virtual void main_shape_changed();
+	virtual void reload_body();
+	virtual void set_space(SpaceBullet *p_space);
 
-	virtual void dispatch_callbacks() override;
-	virtual void pre_process() override;
+	virtual void dispatch_callbacks();
 	void set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata = Variant());
 	void scratch_space_override_modificator();
 
-	virtual void do_reload_collision_filters() override;
-	virtual void on_collision_checker_start() override;
-	virtual void on_collision_checker_end() override;
+	virtual void on_collision_filters_change();
+	virtual void on_collision_checker_start();
+	virtual void on_collision_checker_end();
 
-	void set_max_collisions_detection(uint32_t p_maxCollisionsDetection) {
+	void set_max_collisions_detection(int p_maxCollisionsDetection) {
+		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
+
 		maxCollisionsDetection = p_maxCollisionsDetection;
 
 		collisions.resize(p_maxCollisionsDetection);
@@ -312,19 +312,19 @@ public:
 	void set_angular_velocity(const Vector3 &p_velocity);
 	Vector3 get_angular_velocity() const;
 
-	virtual void set_transform__bullet(const btTransform &p_global_transform) override;
-	virtual const btTransform &get_transform__bullet() const override;
+	virtual void set_transform__bullet(const btTransform &p_global_transform);
+	virtual const btTransform &get_transform__bullet() const;
 
-	virtual void do_reload_shapes() override;
+	virtual void reload_shapes();
 
-	virtual void on_enter_area(AreaBullet *p_area) override;
-	virtual void on_exit_area(AreaBullet *p_area) override;
+	virtual void on_enter_area(AreaBullet *p_area);
+	virtual void on_exit_area(AreaBullet *p_area);
 	void reload_space_override_modificator();
 
 	/// Kinematic
 	void reload_kinematic_shapes();
 
-	virtual void notify_transform_changed() override;
+	virtual void notify_transform_changed();
 
 private:
 	void _internal_set_mass(real_t p_mass);

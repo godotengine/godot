@@ -32,7 +32,7 @@
 #define CONTROL_H
 
 #include "core/math/transform_2d.h"
-#include "core/rid.h"
+#include "core/templates/rid.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/node.h"
@@ -464,7 +464,7 @@ public:
 
 	virtual Transform2D get_transform() const override;
 
-	bool is_toplevel_control() const;
+	bool is_top_level_control() const;
 
 	Size2 get_parent_area_size() const;
 	Rect2 get_parent_anchorable_rect() const;

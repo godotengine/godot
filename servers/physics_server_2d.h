@@ -31,9 +31,9 @@
 #ifndef PHYSICS_2D_SERVER_H
 #define PHYSICS_2D_SERVER_H
 
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 
 class PhysicsDirectSpaceState2D;
 
@@ -644,7 +644,7 @@ class PhysicsServer2DManager {
 				name(p_ci.name),
 				create_callback(p_ci.create_callback) {}
 
-		ClassInfo operator=(const ClassInfo &p_ci) {
+		ClassInfo &operator=(const ClassInfo &p_ci) {
 			name = p_ci.name;
 			create_callback = p_ci.create_callback;
 			return *this;

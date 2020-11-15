@@ -43,7 +43,7 @@ Size2 MarginContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -80,7 +80,7 @@ void MarginContainer::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_toplevel()) {
+				if (c->is_set_as_top_level()) {
 					continue;
 				}
 

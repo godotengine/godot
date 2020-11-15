@@ -31,8 +31,8 @@
 #ifndef VISUALSERVERVIEWPORT_H
 #define VISUALSERVERVIEWPORT_H
 
-#include "core/rid_owner.h"
-#include "core/self_list.h"
+#include "core/templates/rid_owner.h"
+#include "core/templates/self_list.h"
 #include "rasterizer.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
@@ -59,6 +59,7 @@ public:
 
 		RS::ViewportMSAA msaa;
 		RS::ViewportScreenSpaceAA screen_space_aa;
+		bool use_debanding;
 
 		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
@@ -68,6 +69,9 @@ public:
 		bool hide_canvas;
 		bool disable_environment;
 		bool measure_render_time;
+
+		bool snap_2d_transforms_to_pixel;
+		bool snap_2d_vertices_to_pixel;
 
 		uint64_t time_cpu_begin;
 		uint64_t time_cpu_end;
@@ -84,6 +88,9 @@ public:
 		RS::ViewportDebugDraw debug_draw;
 
 		RS::ViewportClearMode clear_mode;
+
+		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 
 		bool transparent_bg;
 
@@ -130,6 +137,10 @@ public:
 			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 			msaa = RS::VIEWPORT_MSAA_DISABLED;
 			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+			use_debanding = false;
+
+			snap_2d_transforms_to_pixel = false;
+			snap_2d_vertices_to_pixel = false;
 
 			for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
@@ -206,6 +217,7 @@ public:
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
+	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);
@@ -213,6 +225,12 @@ public:
 	void viewport_set_measure_render_time(RID p_viewport, bool p_enable);
 	float viewport_get_measured_render_time_cpu(RID p_viewport) const;
 	float viewport_get_measured_render_time_gpu(RID p_viewport) const;
+
+	void viewport_set_snap_2d_transforms_to_pixel(RID p_viewport, bool p_enabled);
+	void viewport_set_snap_2d_vertices_to_pixel(RID p_viewport, bool p_enabled);
+
+	void viewport_set_default_canvas_item_texture_filter(RID p_viewport, RS::CanvasItemTextureFilter p_filter);
+	void viewport_set_default_canvas_item_texture_repeat(RID p_viewport, RS::CanvasItemTextureRepeat p_repeat);
 
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 

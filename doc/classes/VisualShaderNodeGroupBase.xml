@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNode" version="4.0">
+<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNodeResizableBase" version="4.0">
 	<brief_description>
 		Base class for a family of nodes with variable amount of input and output ports within the visual shader graph.
 	</brief_description>
@@ -199,11 +199,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
-			The size of the node in the visual shader graph.
-		</member>
-	</members>
 	<constants>
 	</constants>
 </class>

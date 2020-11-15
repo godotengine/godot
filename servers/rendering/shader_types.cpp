@@ -129,7 +129,15 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["INV_PROJECTION_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["VIEWPORT_SIZE"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["FOG"] = ShaderLanguage::TYPE_VEC4; // TODO consider adding to light shader
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["RADIANCE"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["IRRADIANCE"] = ShaderLanguage::TYPE_VEC4;
 	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].can_discard = true;
+
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_SCISSOR_THRESHOLD"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_HASH_SCALE"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_ANTIALIASING_EDGE"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_TEXTURE_COORDINATE"] = ShaderLanguage::TYPE_VEC2;
 
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["WORLD_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["INV_CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
@@ -145,9 +153,11 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEW"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
-	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ATTENUATION"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ATTENUATION"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SHADOW_ATTENUATION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ALBEDO"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["BACKLIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["METALLIC"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["ROUGHNESS"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["DIFFUSE_LIGHT"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SPECULAR_LIGHT"] = ShaderLanguage::TYPE_VEC3;
@@ -200,6 +210,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("shadow_to_opacity");
 
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("vertex_lighting");
+
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("alpha_to_coverage");
+	shader_modes[RS::SHADER_SPATIAL].modes.push_back("alpha_to_coverage_and_one");
 
 	/************ CANVAS ITEM **************************/
 
@@ -270,21 +283,47 @@ ShaderTypes::ShaderTypes() {
 	/************ PARTICLES **************************/
 
 	shader_modes[RS::SHADER_PARTICLES].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["VELOCITY"] = ShaderLanguage::TYPE_VEC3;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["MASS"] = ShaderLanguage::TYPE_FLOAT;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["RESTART"] = constt(ShaderLanguage::TYPE_BOOL);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["NUMBER"] = constt(ShaderLanguage::TYPE_UINT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_INT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
-	shader_modes[RS::SHADER_PARTICLES].functions["vertex"].can_discard = false;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["VELOCITY"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["MASS"] = ShaderLanguage::TYPE_FLOAT;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["ACTIVE"] = ShaderLanguage::TYPE_BOOL;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["CUSTOM"] = ShaderLanguage::TYPE_VEC4;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["LIFETIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["DELTA"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["NUMBER"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["INDEX"] = constt(ShaderLanguage::TYPE_INT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["EMISSION_TRANSFORM"] = constt(ShaderLanguage::TYPE_MAT4);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RANDOM_SEED"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["FLAG_EMIT_POSITION"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["FLAG_EMIT_ROT_SCALE"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["FLAG_EMIT_VELOCITY"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["FLAG_EMIT_COLOR"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["FLAG_EMIT_CUSTOM"] = constt(ShaderLanguage::TYPE_UINT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_POSITION"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_ROT_SCALE"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_VELOCITY"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_COLOR"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["RESTART_CUSTOM"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLIDED"] = constt(ShaderLanguage::TYPE_BOOL);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLISION_NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["COLLISION_DEPTH"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].built_ins["ATTRACTOR_FORCE"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_PARTICLES].functions["compute"].can_discard = false;
 
+	{
+		ShaderLanguage::StageFunctionInfo emit_vertex_func;
+		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("xform", ShaderLanguage::TYPE_MAT4));
+		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("velocity", ShaderLanguage::TYPE_VEC3));
+		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("color", ShaderLanguage::TYPE_VEC4));
+		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("custom", ShaderLanguage::TYPE_VEC4));
+		emit_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("flags", ShaderLanguage::TYPE_UINT));
+		emit_vertex_func.return_type = ShaderLanguage::TYPE_BOOL; //whether it could emit
+		shader_modes[RS::SHADER_PARTICLES].functions["compute"].stage_functions["emit_particle"] = emit_vertex_func;
+	}
+
+	shader_modes[RS::SHADER_PARTICLES].modes.push_back("collision_use_scale");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("disable_force");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("disable_velocity");
 	shader_modes[RS::SHADER_PARTICLES].modes.push_back("keep_data");
@@ -325,9 +364,11 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["SKY_COORDS"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["HALF_RES_COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["QUARTER_RES_COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["FOG"] = ShaderLanguage::TYPE_VEC4;
 
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_half_res_pass");
 	shader_modes[RS::SHADER_SKY].modes.push_back("use_quarter_res_pass");
+	shader_modes[RS::SHADER_SKY].modes.push_back("disable_fog");
 
 	shader_types.insert("spatial");
 	shader_types.insert("canvas_item");

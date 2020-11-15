@@ -9,8 +9,11 @@
 		[b]Note:[/b] You should not change a RigidBody2D's [code]position[/code] or [code]linear_velocity[/code] every frame or even very often. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		Please also keep in mind that physics bodies manage their own transform which overwrites the ones you set. So any direct or indirect transformation (including scaling of the node or its parent) will be visible in the editor only, and immediately reset at runtime.
 		If you need to override the default physics behavior or add a transformation at runtime, you can write a custom force integration. See [member custom_integrator].
+		The center of mass is always located at the node's origin without taking into account the [CollisionShape2D] centroid offsets.
 	</description>
 	<tutorials>
+		<link title="2D Physics Platformer Demo">https://godotengine.org/asset-library/asset/119</link>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
@@ -116,6 +119,7 @@
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="-1.0">
 			Damps the body's [member angular_velocity]. If [code]-1[/code], the body will use the [b]Default Angular Damp[/b] defined in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
+			See [member ProjectSettings.physics/2d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_velocity" type="float" setter="set_angular_velocity" getter="get_angular_velocity" default="0.0">
 			The body's rotational velocity.
@@ -128,13 +132,14 @@
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
+			[b]Note:[/b] A RigidBody2D will never enter sleep mode automatically if its [member mode] is [constant MODE_CHARACTER]. It can still be put to sleep manually by setting its [member sleeping] property to [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
 			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported].
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported" default="0">
 			The maximum number of contacts that will be recorded. Requires [member contact_monitor] to be set to [code]true[/code].
-			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end), and collisions between parallel faces will result in four contacts (one at each corner).
+			[b]Note:[/b] The number of contacts is different from the number of collisions. Collisions between parallel edges will result in two contacts (one at each end).
 		</member>
 		<member name="continuous_cd" type="int" setter="set_continuous_collision_detection_mode" getter="get_continuous_collision_detection_mode" enum="RigidBody2D.CCDMode" default="0">
 			Continuous collision detection mode.
@@ -151,6 +156,7 @@
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
 			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].
+			See [member ProjectSettings.physics/2d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
 			The body's linear velocity.

@@ -98,6 +98,7 @@ private:
 
 	bool dragging;
 	bool just_selected;
+	bool moving_selection;
 	Vector2 drag_accum;
 
 	float zoom;

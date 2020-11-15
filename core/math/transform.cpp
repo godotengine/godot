@@ -32,7 +32,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/os/copymem.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 void Transform::affine_invert() {
 	basis.invert();
@@ -198,6 +198,13 @@ Transform::operator String() const {
 Transform::Transform(const Basis &p_basis, const Vector3 &p_origin) :
 		basis(p_basis),
 		origin(p_origin) {
+}
+
+Transform::Transform(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z, const Vector3 &p_origin) :
+		origin(p_origin) {
+	basis.set_axis(0, p_x);
+	basis.set_axis(1, p_y);
+	basis.set_axis(2, p_z);
 }
 
 Transform::Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz) {

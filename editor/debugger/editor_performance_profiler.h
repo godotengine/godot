@@ -31,8 +31,8 @@
 #ifndef EDITOR_PERFORMANCE_PROFILER_H
 #define EDITOR_PERFORMANCE_PROFILER_H
 
-#include "core/map.h"
-#include "core/ordered_hash_map.h"
+#include "core/templates/map.h"
+#include "core/templates/ordered_hash_map.h"
 #include "main/performance.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"

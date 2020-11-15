@@ -85,7 +85,8 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
+#ifdef MODULE_SVG_ENABLED
+static Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float p_scale = EDSCALE, bool p_force_filter = false) {
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
@@ -99,6 +100,7 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 
 	return icon;
 }
+#endif
 
 #ifndef ADD_CONVERT_COLOR
 #define ADD_CONVERT_COLOR(dictionary, old_color, new_color) dictionary[Color::html(old_color)] = Color::html(new_color)
@@ -216,8 +218,15 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	// Generate icons.
 	if (!p_only_thumbs) {
 		for (int i = 0; i < editor_icons_count; i++) {
+			float icon_scale = EDSCALE;
+
+			// Always keep the DefaultProjectIcon at the default size
+			if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0) {
+				icon_scale = 1.0f;
+			}
+
 			const int is_exception = exceptions.has(editor_icons_names[i]);
-			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception);
+			const Ref<ImageTexture> icon = editor_generate_icon(i, !is_exception, icon_scale);
 
 			p_theme->set_icon(editor_icons_names[i], "EditorIcons", icon);
 		}
@@ -866,11 +875,23 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "TextEdit", theme->get_icon("GuiTab", "EditorIcons"));
 	theme->set_icon("space", "TextEdit", theme->get_icon("GuiSpace", "EditorIcons"));
-	theme->set_icon("folded", "TextEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
-	theme->set_icon("fold", "TextEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_color("font_color", "TextEdit", font_color);
 	theme->set_color("caret_color", "TextEdit", font_color);
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
+
+	// CodeEdit
+	theme->set_stylebox("normal", "CodeEdit", style_widget);
+	theme->set_stylebox("focus", "CodeEdit", style_widget_hover);
+	theme->set_stylebox("read_only", "CodeEdit", style_widget_disabled);
+	theme->set_constant("side_margin", "TabContainer", 0);
+	theme->set_icon("tab", "CodeEdit", theme->get_icon("GuiTab", "EditorIcons"));
+	theme->set_icon("space", "CodeEdit", theme->get_icon("GuiSpace", "EditorIcons"));
+	theme->set_icon("folded", "CodeEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
+	theme->set_icon("can_fold", "CodeEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
+	theme->set_icon("executing_line", "CodeEdit", theme->get_icon("MainPlay", "EditorIcons"));
+	theme->set_color("font_color", "CodeEdit", font_color);
+	theme->set_color("caret_color", "CodeEdit", font_color);
+	theme->set_color("selection_color", "CodeEdit", font_color_selection);
 
 	// H/VSplitContainer
 	theme->set_stylebox("bg", "VSplitContainer", make_stylebox(theme->get_icon("GuiVsplitBg", "EditorIcons"), 1, 1, 1, 1));
@@ -1177,7 +1198,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color bookmark_color = Color(0.08, 0.49, 0.98);
 	const Color breakpoint_color = error_color;
-	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);
+	const Color executing_line_color = Color(0.98, 0.89, 0.27);
 	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = Color(0.41, 0.61, 0.91, 0.38);

@@ -30,12 +30,12 @@
 
 #include "control.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/string/print_string.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/main/canvas_layer.h"
@@ -493,7 +493,7 @@ void Control::_notification(int p_notification) {
 				}
 
 				CanvasItem *ci = Object::cast_to<CanvasItem>(parent);
-				if (ci && ci->is_set_as_toplevel()) {
+				if (ci && ci->is_set_as_top_level()) {
 					subwindow = true;
 					break;
 				}
@@ -509,13 +509,13 @@ void Control::_notification(int p_notification) {
 			}
 
 			if (parent_control && !subwindow) {
-				//do nothing, has a parent control and not toplevel
+				//do nothing, has a parent control and not top_level
 				if (data.theme.is_null() && parent_control->data.theme_owner) {
 					data.theme_owner = parent_control->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
 				}
 			} else {
-				//is a regular root control or toplevel
+				//is a regular root control or top_level
 				data.RI = get_viewport()->_gui_add_root_control(this);
 			}
 
@@ -532,7 +532,7 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
-			} else if (!is_set_as_toplevel()) {
+			} else if (!is_set_as_top_level()) {
 				//disconnect viewport
 				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
@@ -591,7 +591,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible_in_tree()) {
 				if (get_viewport() != nullptr) {
-					get_viewport()->_gui_hid_control(this);
+					get_viewport()->_gui_hide_control(this);
 				}
 
 				//remove key focus
@@ -1816,7 +1816,7 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 }
 
 static Control *_next_control(Control *p_from) {
-	if (p_from->is_set_as_toplevel()) {
+	if (p_from->is_set_as_top_level()) {
 		return nullptr; // can't go above
 	}
 
@@ -1830,7 +1830,7 @@ static Control *_next_control(Control *p_from) {
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -1867,7 +1867,7 @@ Control *Control::find_next_valid_focus() const {
 
 		for (int i = 0; i < from->get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(from->get_child(i));
-			if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+			if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 				continue;
 			}
 
@@ -1879,7 +1879,7 @@ Control *Control::find_next_valid_focus() const {
 			next_child = _next_control(from);
 			if (!next_child) { //nothing else.. go up and find either window or subwindow
 				next_child = const_cast<Control *>(this);
-				while (next_child && !next_child->is_set_as_toplevel()) {
+				while (next_child && !next_child->is_set_as_top_level()) {
 					next_child = cast_to<Control>(next_child->get_parent());
 				}
 
@@ -1915,7 +1915,7 @@ static Control *_prev_control(Control *p_from) {
 	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -1955,7 +1955,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		Control *prev_child = nullptr;
 
-		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
+		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
 			//find last of the children
 
 			prev_child = _prev_control(from);
@@ -1964,7 +1964,7 @@ Control *Control::find_prev_valid_focus() const {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
 
-				if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
+				if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 					continue;
 				}
 
@@ -2023,8 +2023,8 @@ void Control::release_focus() {
 	update();
 }
 
-bool Control::is_toplevel_control() const {
-	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_toplevel());
+bool Control::is_top_level_control() const {
+	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_top_level());
 }
 
 void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
@@ -2374,7 +2374,7 @@ void Control::minimum_size_changed() {
 	//invalidate cache upwards
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
-		if (invalidate->is_set_as_toplevel()) {
+		if (invalidate->is_set_as_top_level()) {
 			break; // do not go further up
 		}
 		if (!invalidate->data.parent && get_parent()) {
@@ -2499,7 +2499,7 @@ Control *Control::get_root_parent_control() const {
 		if (c) {
 			root = c;
 
-			if (c->data.RI || c->is_toplevel_control()) {
+			if (c->data.RI || c->is_top_level_control()) {
 				break;
 			}
 		}
@@ -2560,7 +2560,7 @@ String Control::get_configuration_warning() const {
 	String warning = CanvasItem::get_configuration_warning();
 
 	if (data.mouse_filter == MOUSE_FILTER_IGNORE && data.tooltip != "") {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("The Hint Tooltip won't be displayed as the control's Mouse Filter is set to \"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\".");
@@ -2738,7 +2738,9 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "can_drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
 	BIND_VMETHOD(MethodInfo("drop_data", PropertyInfo(Variant::VECTOR2, "position"), PropertyInfo(Variant::NIL, "data")));
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
+	BIND_VMETHOD(MethodInfo(
+			PropertyInfo(Variant::OBJECT, "control", PROPERTY_HINT_RESOURCE_TYPE, "Control"),
+			"_make_custom_tooltip", PropertyInfo(Variant::STRING, "for_text")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_clips_input"));
 
 	ADD_GROUP("Anchor", "anchor_");

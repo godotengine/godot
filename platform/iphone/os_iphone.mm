@@ -32,10 +32,10 @@
 
 #include "os_iphone.h"
 #import "app_delegate.h"
+#include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "display_server_iphone.h"
 #include "drivers/unix/syslog_logger.h"
 #import "godot_view.h"
@@ -45,10 +45,6 @@
 #import <AudioToolbox/AudioServices.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
-
-#if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
-#endif
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
@@ -129,22 +125,6 @@ void OSIPhone::initialize() {
 }
 
 void OSIPhone::initialize_modules() {
-#ifdef GAME_CENTER_ENABLED
-	game_center = memnew(GameCenter);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("GameCenter", game_center));
-	game_center->connect();
-#endif
-
-#ifdef STOREKIT_ENABLED
-	store_kit = memnew(InAppStore);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("InAppStore", store_kit));
-#endif
-
-#ifdef ICLOUD_ENABLED
-	icloud = memnew(ICloud);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-#endif
-
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
@@ -160,26 +140,12 @@ void OSIPhone::deinitialize_modules() {
 		memdelete(ios);
 	}
 
-#ifdef GAME_CENTER_ENABLED
-	if (game_center) {
-		memdelete(game_center);
-	}
-#endif
-
-#ifdef STOREKIT_ENABLED
-	if (store_kit) {
-		memdelete(store_kit);
-	}
-#endif
-
-#ifdef ICLOUD_ENABLED
-	if (icloud) {
-		memdelete(icloud);
-	}
-#endif
+	godot_ios_plugins_deinitialize();
 }
 
 void OSIPhone::set_main_loop(MainLoop *p_main_loop) {
+	godot_ios_plugins_initialize();
+
 	main_loop = p_main_loop;
 
 	if (main_loop) {
@@ -276,19 +242,14 @@ String OSIPhone::get_model_name() const {
 Error OSIPhone::shell_open(String p_uri) {
 	NSString *urlPath = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 	NSURL *url = [NSURL URLWithString:urlPath];
-	[urlPath release];
 
 	if (![[UIApplication sharedApplication] canOpenURL:url]) {
 		return ERR_CANT_OPEN;
 	}
 
-	printf("opening url %ls\n", p_uri.c_str());
+	printf("opening url %s\n", p_uri.utf8().get_data());
 
-	//    if (@available(iOS 10, *)) {
 	[[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
-	//    } else {
-	//        [[UIApplication sharedApplication] openURL:url];
-	//    }
 
 	return OK;
 };
@@ -297,7 +258,7 @@ void OSIPhone::set_user_data_dir(String p_dir) {
 	DirAccess *da = DirAccess::open(p_dir);
 
 	user_data_dir = da->get_current_dir();
-	printf("setting data dir to %ls from %ls\n", user_data_dir.c_str(), p_dir.c_str());
+	printf("setting data dir to %s from %s\n", user_data_dir.utf8().get_data(), p_dir.utf8().get_data());
 	memdelete(da);
 }
 
@@ -305,20 +266,20 @@ String OSIPhone::get_user_data_dir() const {
 	return user_data_dir;
 }
 
-void OSIPhone::set_locale(String p_locale) {
-	locale_code = p_locale;
-}
-
 String OSIPhone::get_locale() const {
-	return locale_code;
-}
+	NSString *preferedLanguage = [NSLocale preferredLanguages].firstObject;
 
-void OSIPhone::set_unique_id(String p_id) {
-	unique_id = p_id;
+	if (preferedLanguage) {
+		return String::utf8([preferedLanguage UTF8String]).replace("-", "_");
+	}
+
+	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+	return String::utf8([localeIdentifier UTF8String]).replace("-", "_");
 }
 
 String OSIPhone::get_unique_id() const {
-	return unique_id;
+	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
+	return String::utf8([uuid UTF8String]);
 }
 
 void OSIPhone::vibrate_handheld(int p_duration_ms) {

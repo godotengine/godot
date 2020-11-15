@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "rendering_server_wrap_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "servers/display_server.h"
 
 void RenderingServerWrapMT::thread_exit() {
@@ -124,6 +124,7 @@ void RenderingServerWrapMT::finish() {
 	gi_probe_free_cached_ids();
 	lightmap_free_cached_ids();
 	particles_free_cached_ids();
+	particles_collision_free_cached_ids();
 	camera_free_cached_ids();
 	viewport_free_cached_ids();
 	environment_free_cached_ids();

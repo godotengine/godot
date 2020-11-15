@@ -30,9 +30,10 @@
 
 #include "rasterizer_storage_rd.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
+#include "rasterizer_rd.h"
 #include "servers/rendering/shader_language.h"
 
 Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
@@ -714,8 +715,120 @@ RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_l
 	return texture_owner.make_rid(texture);
 }
 
-RID RasterizerStorageRD::texture_3d_create(const Vector<Ref<Image>> &p_slices) {
-	return RID();
+RID RasterizerStorageRD::texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
+	ERR_FAIL_COND_V(p_data.size() == 0, RID());
+	Image::Image3DValidateError verr = Image::validate_3d_image(p_format, p_width, p_height, p_depth, p_mipmaps, p_data);
+	if (verr != Image::VALIDATE_3D_OK) {
+		ERR_FAIL_V_MSG(RID(), Image::get_3d_image_validation_error_text(verr));
+	}
+
+	TextureToRDFormat ret_format;
+	Image::Format validated_format = Image::FORMAT_MAX;
+	Vector<uint8_t> all_data;
+	uint32_t mipmap_count = 0;
+	Vector<Texture::BufferSlice3D> slices;
+	{
+		Vector<Ref<Image>> images;
+		uint32_t all_data_size = 0;
+		images.resize(p_data.size());
+		for (int i = 0; i < p_data.size(); i++) {
+			TextureToRDFormat f;
+			images.write[i] = _validate_texture_format(p_data[i], f);
+			if (i == 0) {
+				ret_format = f;
+				validated_format = images[0]->get_format();
+			}
+
+			all_data_size += images[i]->get_data().size();
+		}
+
+		all_data.resize(all_data_size); //consolidate all data here
+		uint32_t offset = 0;
+		Size2i prev_size;
+		for (int i = 0; i < p_data.size(); i++) {
+			uint32_t s = images[i]->get_data().size();
+
+			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			{
+				Texture::BufferSlice3D slice;
+				slice.size.width = images[i]->get_width();
+				slice.size.height = images[i]->get_height();
+				slice.offset = offset;
+				slice.buffer_size = s;
+				slices.push_back(slice);
+			}
+			offset += s;
+
+			Size2i img_size(images[i]->get_width(), images[i]->get_height());
+			if (img_size != prev_size) {
+				mipmap_count++;
+			}
+			prev_size = img_size;
+		}
+	}
+
+	Texture texture;
+
+	texture.type = Texture::TYPE_3D;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.depth = p_depth;
+	texture.mipmaps = mipmap_count;
+	texture.format = p_data[0]->get_format();
+	texture.validated_format = validated_format;
+
+	texture.buffer_size_3d = all_data.size();
+	texture.buffer_slices_3d = slices;
+
+	texture.rd_type = RD::TEXTURE_TYPE_3D;
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = texture.depth;
+		rd_format.array_layers = 1;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+	Vector<Vector<uint8_t>> data_slices;
+	data_slices.push_back(all_data); //one slice
+
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND_V(texture.rd_texture.is_null(), RID());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free(texture.rd_texture);
+			ERR_FAIL_COND_V(texture.rd_texture_srgb.is_null(), RID());
+		}
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	return texture_owner.make_rid(texture);
 }
 
 RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
@@ -771,7 +884,41 @@ void RasterizerStorageRD::texture_2d_update(RID p_texture, const Ref<Image> &p_i
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
 
-void RasterizerStorageRD::texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) {
+void RasterizerStorageRD::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	ERR_FAIL_COND(tex->type != Texture::TYPE_3D);
+	Image::Image3DValidateError verr = Image::validate_3d_image(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps > 1, p_data);
+	if (verr != Image::VALIDATE_3D_OK) {
+		ERR_FAIL_MSG(Image::get_3d_image_validation_error_text(verr));
+	}
+
+	Vector<uint8_t> all_data;
+	{
+		Vector<Ref<Image>> images;
+		uint32_t all_data_size = 0;
+		images.resize(p_data.size());
+		for (int i = 0; i < p_data.size(); i++) {
+			Ref<Image> image = p_data[i];
+			if (image->get_format() != tex->validated_format) {
+				image = image->duplicate();
+				image->convert(tex->validated_format);
+			}
+			all_data_size += images[i]->get_data().size();
+			images.push_back(image);
+		}
+
+		all_data.resize(all_data_size); //consolidate all data here
+		uint32_t offset = 0;
+
+		for (int i = 0; i < p_data.size(); i++) {
+			uint32_t s = images[i]->get_data().size();
+			copymem(&all_data.write[offset], images[i]->get_data().ptr(), s);
+			offset += s;
+		}
+	}
+
+	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data, true);
 }
 
 void RasterizerStorageRD::texture_proxy_update(RID p_texture, RID p_proxy_to) {
@@ -857,7 +1004,25 @@ RID RasterizerStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayere
 }
 
 RID RasterizerStorageRD::texture_3d_placeholder_create() {
-	return RID();
+	//this could be better optimized to reuse an existing image , done this way
+	//for now to get it working
+	Ref<Image> image;
+	image.instance();
+	image->create(4, 4, false, Image::FORMAT_RGBA8);
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			image->set_pixel(i, j, Color(1, 0, 1, 1));
+		}
+	}
+
+	Vector<Ref<Image>> images;
+	//cube
+	for (int i = 0; i < 4; i++) {
+		images.push_back(image);
+	}
+
+	return texture_3d_create(Image::FORMAT_RGBA8, 4, 4, 4, false, images);
 }
 
 Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
@@ -889,11 +1054,51 @@ Ref<Image> RasterizerStorageRD::texture_2d_get(RID p_texture) const {
 }
 
 Ref<Image> RasterizerStorageRD::texture_2d_layer_get(RID p_texture, int p_layer) const {
-	return Ref<Image>();
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Ref<Image>());
+
+	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
+	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
+	Ref<Image> image;
+	image.instance();
+	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	ERR_FAIL_COND_V(image->empty(), Ref<Image>());
+	if (tex->format != tex->validated_format) {
+		image->convert(tex->format);
+	}
+
+	return image;
 }
 
-Ref<Image> RasterizerStorageRD::texture_3d_slice_get(RID p_texture, int p_depth, int p_mipmap) const {
-	return Ref<Image>();
+Vector<Ref<Image>> RasterizerStorageRD::texture_3d_get(RID p_texture) const {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!tex, Vector<Ref<Image>>());
+	ERR_FAIL_COND_V(tex->type != Texture::TYPE_3D, Vector<Ref<Image>>());
+
+	Vector<uint8_t> all_data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+
+	ERR_FAIL_COND_V(all_data.size() != (int)tex->buffer_size_3d, Vector<Ref<Image>>());
+
+	Vector<Ref<Image>> ret;
+
+	for (int i = 0; i < tex->buffer_slices_3d.size(); i++) {
+		const Texture::BufferSlice3D &bs = tex->buffer_slices_3d[i];
+		ERR_FAIL_COND_V(bs.offset >= (uint32_t)all_data.size(), Vector<Ref<Image>>());
+		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
+		Vector<uint8_t> sub_region = all_data.subarray(bs.offset, bs.offset + bs.buffer_size - 1);
+
+		Ref<Image> img;
+		img.instance();
+		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
+		ERR_FAIL_COND_V(img->empty(), Vector<Ref<Image>>());
+		if (tex->format != tex->validated_format) {
+			img->convert(tex->format);
+		}
+
+		ret.push_back(img);
+	}
+
+	return ret;
 }
 
 void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
@@ -913,12 +1118,21 @@ void RasterizerStorageRD::texture_replace(RID p_texture, RID p_by_texture) {
 	}
 	RD::get_singleton()->free(tex->rd_texture);
 
+	if (tex->canvas_texture) {
+		memdelete(tex->canvas_texture);
+		tex->canvas_texture = nullptr;
+	}
+
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
 	*tex = *by_tex;
 
 	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
+
+	if (tex->canvas_texture) {
+		tex->canvas_texture->diffuse = p_texture; //update
+	}
 
 	for (int i = 0; i < proxies_to_update.size(); i++) {
 		texture_proxy_update(proxies_to_update[i], p_texture);
@@ -988,6 +1202,167 @@ Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
+/* CANVAS TEXTURE */
+
+void RasterizerStorageRD::CanvasTexture::clear_sets() {
+	if (cleared_cache) {
+		return;
+	}
+	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			if (RD::get_singleton()->uniform_set_is_valid(uniform_sets[i][j])) {
+				RD::get_singleton()->free(uniform_sets[i][j]);
+				uniform_sets[i][j] = RID();
+			}
+		}
+	}
+	cleared_cache = true;
+}
+
+RasterizerStorageRD::CanvasTexture::~CanvasTexture() {
+	clear_sets();
+}
+
+RID RasterizerStorageRD::canvas_texture_create() {
+	return canvas_texture_owner.make_rid(memnew(CanvasTexture));
+}
+
+void RasterizerStorageRD::canvas_texture_set_channel(RID p_canvas_texture, RS::CanvasTextureChannel p_channel, RID p_texture) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	switch (p_channel) {
+		case RS::CANVAS_TEXTURE_CHANNEL_DIFFUSE: {
+			ct->diffuse = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_NORMAL: {
+			ct->normalmap = p_texture;
+		} break;
+		case RS::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
+			ct->specular = p_texture;
+		} break;
+	}
+
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_shading_parameters(RID p_canvas_texture, const Color &p_specular_color, float p_shininess) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->specular_color.r = p_specular_color.r;
+	ct->specular_color.g = p_specular_color.g;
+	ct->specular_color.b = p_specular_color.b;
+	ct->specular_color.a = p_shininess;
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_texture_filter(RID p_canvas_texture, RS::CanvasItemTextureFilter p_filter) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->texture_filter = p_filter;
+	ct->clear_sets();
+}
+
+void RasterizerStorageRD::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
+	CanvasTexture *ct = canvas_texture_owner.getornull(p_canvas_texture);
+	ct->texture_repeat = p_repeat;
+	ct->clear_sets();
+}
+
+bool RasterizerStorageRD::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, RID p_base_shader, int p_base_set, RID &r_uniform_set, Size2i &r_size, Color &r_specular_shininess, bool &r_use_normal, bool &r_use_specular) {
+	CanvasTexture *ct = nullptr;
+
+	Texture *t = texture_owner.getornull(p_texture);
+
+	if (t) {
+		//regular texture
+		if (!t->canvas_texture) {
+			t->canvas_texture = memnew(CanvasTexture);
+			t->canvas_texture->diffuse = p_texture;
+		}
+
+		ct = t->canvas_texture;
+	} else {
+		ct = canvas_texture_owner.getornull(p_texture);
+	}
+
+	if (!ct) {
+		return false; //invalid texture RID
+	}
+
+	RS::CanvasItemTextureFilter filter = ct->texture_filter != RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT ? ct->texture_filter : p_base_filter;
+	ERR_FAIL_COND_V(filter == RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, false);
+
+	RS::CanvasItemTextureRepeat repeat = ct->texture_repeat != RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
+	ERR_FAIL_COND_V(repeat == RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT, false);
+
+	RID uniform_set = ct->uniform_sets[filter][repeat];
+	if (!RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//create and update
+		Vector<RD::Uniform> uniforms;
+		{ //diffuse
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 0;
+
+			t = texture_owner.getornull(ct->diffuse);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->size_cache = Size2i(1, 1);
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+			}
+			uniforms.push_back(u);
+		}
+		{ //normal
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1;
+
+			t = texture_owner.getornull(ct->normalmap);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL));
+				ct->use_normal_cache = false;
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->use_normal_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //specular
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 2;
+
+			t = texture_owner.getornull(ct->specular);
+			if (!t) {
+				u.ids.push_back(texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE));
+				ct->use_specular_cache = false;
+			} else {
+				u.ids.push_back(t->rd_texture);
+				ct->use_specular_cache = true;
+			}
+			uniforms.push_back(u);
+		}
+		{ //sampler
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 3;
+			u.ids.push_back(sampler_rd_get_default(filter, repeat));
+			uniforms.push_back(u);
+		}
+
+		uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, p_base_set);
+		ct->uniform_sets[filter][repeat] = uniform_set;
+		ct->cleared_cache = false;
+	}
+
+	r_uniform_set = uniform_set;
+	r_size = ct->size_cache;
+	r_specular_shininess = ct->specular_color;
+	r_use_normal = ct->use_normal_cache;
+	r_use_specular = ct->use_specular_cache;
+
+	return true;
+}
+
 /* SHADER API */
 
 RID RasterizerStorageRD::shader_create() {
@@ -1051,6 +1426,10 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			}
 			material->shader_type = new_type;
 		}
+
+		for (Map<StringName, RID>::Element *E = shader->default_texture_parameter.front(); E; E = E->next()) {
+			shader->data->set_default_texture_param(E->key(), E->get());
+		}
 	}
 
 	if (shader->data) {
@@ -1087,7 +1466,9 @@ void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const S
 	} else {
 		shader->default_texture_parameter.erase(p_name);
 	}
-
+	if (shader->data) {
+		shader->data->set_default_texture_param(p_name, p_texture);
+	}
 	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
 		Material *material = E->get();
 		_material_queue_update(material, false, true);
@@ -3003,9 +3384,9 @@ Vector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
 
 		Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 		Vector<float> ret;
-		ret.resize(multimesh->instances);
+		ret.resize(multimesh->instances * multimesh->stride_cache);
 		{
-			float *w = multimesh->data_cache.ptrw();
+			float *w = ret.ptrw();
 			const uint8_t *r = buffer.ptr();
 			copymem(w, r, buffer.size());
 		}
@@ -3098,7 +3479,1296 @@ void RasterizerStorageRD::_update_dirty_multimeshes() {
 	multimesh_dirty_list = nullptr;
 }
 
-/* SKELETON */
+/* PARTICLES */
+
+RID RasterizerStorageRD::particles_create() {
+	return particles_owner.make_rid(Particles());
+}
+
+void RasterizerStorageRD::particles_set_emitting(RID p_particles, bool p_emitting) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emitting = p_emitting;
+}
+
+bool RasterizerStorageRD::particles_get_emitting(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+
+	return particles->emitting;
+}
+
+void RasterizerStorageRD::_particles_free_data(Particles *particles) {
+	if (!particles->particle_buffer.is_valid()) {
+		return;
+	}
+	RD::get_singleton()->free(particles->particle_buffer);
+	RD::get_singleton()->free(particles->frame_params_buffer);
+	RD::get_singleton()->free(particles->particle_instance_buffer);
+	particles->particles_transforms_buffer_uniform_set = RID();
+	particles->particle_buffer = RID();
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->collision_textures_uniform_set)) {
+		RD::get_singleton()->free(particles->collision_textures_uniform_set);
+	}
+
+	if (particles->particles_sort_buffer.is_valid()) {
+		RD::get_singleton()->free(particles->particles_sort_buffer);
+		particles->particles_sort_buffer = RID();
+	}
+
+	if (particles->emission_buffer != nullptr) {
+		particles->emission_buffer = nullptr;
+		particles->emission_buffer_data.clear();
+		RD::get_singleton()->free(particles->emission_storage_buffer);
+		particles->emission_storage_buffer = RID();
+	}
+}
+
+void RasterizerStorageRD::particles_set_amount(RID p_particles, int p_amount) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	if (particles->amount == p_amount) {
+		return;
+	}
+
+	_particles_free_data(particles);
+
+	particles->amount = p_amount;
+
+	if (particles->amount > 0) {
+		particles->particle_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticleData) * p_amount);
+		particles->frame_params_buffer = RD::get_singleton()->storage_buffer_create(sizeof(ParticlesFrameParams) * 1);
+		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (3 + 1 + 1) * p_amount);
+		//needs to clear it
+
+		{
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.ids.push_back(particles->particle_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 2;
+				u.ids.push_back(particles->particle_instance_buffer);
+				uniforms.push_back(u);
+			}
+
+			particles->particles_copy_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, 0), 0);
+		}
+	}
+
+	particles->prev_ticks = 0;
+	particles->phase = 0;
+	particles->prev_phase = 0;
+	particles->clear = true;
+}
+
+void RasterizerStorageRD::particles_set_lifetime(RID p_particles, float p_lifetime) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->lifetime = p_lifetime;
+}
+
+void RasterizerStorageRD::particles_set_one_shot(RID p_particles, bool p_one_shot) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->one_shot = p_one_shot;
+}
+
+void RasterizerStorageRD::particles_set_pre_process_time(RID p_particles, float p_time) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->pre_process_time = p_time;
+}
+void RasterizerStorageRD::particles_set_explosiveness_ratio(RID p_particles, float p_ratio) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->explosiveness = p_ratio;
+}
+void RasterizerStorageRD::particles_set_randomness_ratio(RID p_particles, float p_ratio) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->randomness = p_ratio;
+}
+
+void RasterizerStorageRD::particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	particles->custom_aabb = p_aabb;
+	particles->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_set_speed_scale(RID p_particles, float p_scale) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->speed_scale = p_scale;
+}
+void RasterizerStorageRD::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->use_local_coords = p_enable;
+}
+
+void RasterizerStorageRD::particles_set_fixed_fps(RID p_particles, int p_fps) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->fixed_fps = p_fps;
+}
+
+void RasterizerStorageRD::particles_set_fractional_delta(RID p_particles, bool p_enable) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->fractional_delta = p_enable;
+}
+
+void RasterizerStorageRD::particles_set_collision_base_size(RID p_particles, float p_size) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->collision_base_size = p_size;
+}
+
+void RasterizerStorageRD::particles_set_process_material(RID p_particles, RID p_material) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->process_material = p_material;
+}
+
+void RasterizerStorageRD::particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->draw_order = p_order;
+}
+
+void RasterizerStorageRD::particles_set_draw_passes(RID p_particles, int p_passes) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->draw_passes.resize(p_passes);
+}
+
+void RasterizerStorageRD::particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_INDEX(p_pass, particles->draw_passes.size());
+	particles->draw_passes.write[p_pass] = p_mesh;
+}
+
+void RasterizerStorageRD::particles_restart(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->restart_request = true;
+}
+
+void RasterizerStorageRD::_particles_allocate_emission_buffer(Particles *particles) {
+	ERR_FAIL_COND(particles->emission_buffer != nullptr);
+
+	particles->emission_buffer_data.resize(sizeof(ParticleEmissionBuffer::Data) * particles->amount + sizeof(uint32_t) * 4);
+	zeromem(particles->emission_buffer_data.ptrw(), particles->emission_buffer_data.size());
+	particles->emission_buffer = (ParticleEmissionBuffer *)particles->emission_buffer_data.ptrw();
+	particles->emission_buffer->particle_max = particles->amount;
+
+	particles->emission_storage_buffer = RD::get_singleton()->storage_buffer_create(particles->emission_buffer_data.size(), particles->emission_buffer_data);
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free(particles->particles_material_uniform_set);
+		particles->particles_material_uniform_set = RID();
+	}
+}
+
+void RasterizerStorageRD::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND(p_particles == p_subemitter_particles);
+
+	particles->sub_emitter = p_subemitter_particles;
+
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		RD::get_singleton()->free(particles->particles_material_uniform_set);
+		particles->particles_material_uniform_set = RID(); //clear and force to re create sub emitting
+	}
+}
+
+void RasterizerStorageRD::particles_emit(RID p_particles, const Transform &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND(particles->amount == 0);
+
+	if (particles->emitting) {
+		particles->clear = true;
+		particles->emitting = false;
+	}
+
+	if (particles->emission_buffer == nullptr) {
+		_particles_allocate_emission_buffer(particles);
+	}
+
+	if (particles->inactive) {
+		//in case it was inactive, make active again
+		particles->inactive = false;
+		particles->inactive_time = 0;
+	}
+
+	int32_t idx = particles->emission_buffer->particle_count;
+	if (idx < particles->emission_buffer->particle_max) {
+		store_transform(p_transform, particles->emission_buffer->data[idx].xform);
+
+		particles->emission_buffer->data[idx].velocity[0] = p_velocity.x;
+		particles->emission_buffer->data[idx].velocity[1] = p_velocity.y;
+		particles->emission_buffer->data[idx].velocity[2] = p_velocity.z;
+
+		particles->emission_buffer->data[idx].custom[0] = p_custom.r;
+		particles->emission_buffer->data[idx].custom[1] = p_custom.g;
+		particles->emission_buffer->data[idx].custom[2] = p_custom.b;
+		particles->emission_buffer->data[idx].custom[3] = p_custom.a;
+
+		particles->emission_buffer->data[idx].color[0] = p_color.r;
+		particles->emission_buffer->data[idx].color[1] = p_color.g;
+		particles->emission_buffer->data[idx].color[2] = p_color.b;
+		particles->emission_buffer->data[idx].color[3] = p_color.a;
+
+		particles->emission_buffer->data[idx].flags = p_emit_flags;
+		particles->emission_buffer->particle_count++;
+	}
+}
+
+void RasterizerStorageRD::particles_request_process(RID p_particles) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	if (!particles->dirty) {
+		particles->dirty = true;
+		particles->update_list = particle_update_list;
+		particle_update_list = particles;
+	}
+}
+
+AABB RasterizerStorageRD::particles_get_current_aabb(RID p_particles) {
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, AABB());
+
+	Vector<ParticleData> data;
+	data.resize(particles->amount);
+
+	Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(particles->particle_buffer);
+
+	Transform inv = particles->emission_transform.affine_inverse();
+
+	AABB aabb;
+	if (buffer.size()) {
+		bool first = true;
+		const ParticleData *particle_data = (const ParticleData *)data.ptr();
+		for (int i = 0; i < particles->amount; i++) {
+			if (particle_data[i].active) {
+				Vector3 pos = Vector3(particle_data[i].xform[12], particle_data[i].xform[13], particle_data[i].xform[14]);
+				if (!particles->use_local_coords) {
+					pos = inv.xform(pos);
+				}
+				if (first) {
+					aabb.position = pos;
+					first = false;
+				} else {
+					aabb.expand_to(pos);
+				}
+			}
+		}
+	}
+
+	float longest_axis_size = 0;
+	for (int i = 0; i < particles->draw_passes.size(); i++) {
+		if (particles->draw_passes[i].is_valid()) {
+			AABB maabb = mesh_get_aabb(particles->draw_passes[i], RID());
+			longest_axis_size = MAX(maabb.get_longest_axis_size(), longest_axis_size);
+		}
+	}
+
+	aabb.grow_by(longest_axis_size);
+
+	return aabb;
+}
+
+AABB RasterizerStorageRD::particles_get_aabb(RID p_particles) const {
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, AABB());
+
+	return particles->custom_aabb;
+}
+
+void RasterizerStorageRD::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->emission_transform = p_transform;
+}
+
+int RasterizerStorageRD::particles_get_draw_passes(RID p_particles) const {
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, 0);
+
+	return particles->draw_passes.size();
+}
+
+RID RasterizerStorageRD::particles_get_draw_pass_mesh(RID p_particles, int p_pass) const {
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, RID());
+	ERR_FAIL_INDEX_V(p_pass, particles->draw_passes.size(), RID());
+
+	return particles->draw_passes[p_pass];
+}
+
+void RasterizerStorageRD::particles_add_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	ERR_FAIL_COND(p_instance->base_type != RS::INSTANCE_PARTICLES_COLLISION);
+
+	particles->collisions.insert(p_instance);
+}
+
+void RasterizerStorageRD::particles_remove_collision(RID p_particles, RasterizerScene::InstanceBase *p_instance) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->collisions.erase(p_instance);
+}
+
+void RasterizerStorageRD::_particles_process(Particles *p_particles, float p_delta) {
+	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(p_particles->frame_params_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 1;
+			u.ids.push_back(p_particles->particle_buffer);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 2;
+			if (p_particles->emission_storage_buffer.is_valid()) {
+				u.ids.push_back(p_particles->emission_storage_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 3;
+			Particles *sub_emitter = particles_owner.getornull(p_particles->sub_emitter);
+			if (sub_emitter) {
+				if (sub_emitter->emission_buffer == nullptr) { //no emission buffer, allocate emission buffer
+					_particles_allocate_emission_buffer(sub_emitter);
+				}
+				u.ids.push_back(sub_emitter->emission_storage_buffer);
+			} else {
+				u.ids.push_back(default_rd_storage_buffer);
+			}
+			uniforms.push_back(u);
+		}
+
+		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
+	}
+
+	float new_phase = Math::fmod((float)p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, (float)1.0);
+
+	ParticlesFrameParams &frame_params = p_particles->frame_params;
+
+	if (p_particles->clear) {
+		p_particles->cycle_number = 0;
+		p_particles->random_seed = Math::rand();
+	} else if (new_phase < p_particles->phase) {
+		if (p_particles->one_shot) {
+			p_particles->emitting = false;
+		}
+		p_particles->cycle_number++;
+	}
+
+	frame_params.emitting = p_particles->emitting;
+	frame_params.system_phase = new_phase;
+	frame_params.prev_system_phase = p_particles->phase;
+
+	p_particles->phase = new_phase;
+
+	frame_params.time = RasterizerRD::singleton->get_total_time();
+	frame_params.delta = p_delta * p_particles->speed_scale;
+	frame_params.random_seed = p_particles->random_seed;
+	frame_params.explosiveness = p_particles->explosiveness;
+	frame_params.randomness = p_particles->randomness;
+
+	if (p_particles->use_local_coords) {
+		store_transform(Transform(), frame_params.emission_transform);
+	} else {
+		store_transform(p_particles->emission_transform, frame_params.emission_transform);
+	}
+
+	frame_params.cycle = p_particles->cycle_number;
+
+	{ //collision and attractors
+
+		frame_params.collider_count = 0;
+		frame_params.attractor_count = 0;
+		frame_params.particle_size = p_particles->collision_base_size;
+
+		RID collision_3d_textures[ParticlesFrameParams::MAX_3D_TEXTURES];
+		RID collision_heightmap_texture;
+
+		Transform to_particles;
+		if (p_particles->use_local_coords) {
+			to_particles = p_particles->emission_transform.affine_inverse();
+		}
+		uint32_t collision_3d_textures_used = 0;
+		for (const Set<RasterizerScene::InstanceBase *>::Element *E = p_particles->collisions.front(); E; E = E->next()) {
+			ParticlesCollision *pc = particles_collision_owner.getornull(E->get()->base);
+			Transform to_collider = E->get()->transform;
+			if (p_particles->use_local_coords) {
+				to_collider = to_particles * to_collider;
+			}
+			Vector3 scale = to_collider.basis.get_scale();
+			to_collider.basis.orthonormalize();
+
+			if (pc->type <= RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
+				//attractor
+				if (frame_params.attractor_count >= ParticlesFrameParams::MAX_ATTRACTORS) {
+					continue;
+				}
+
+				ParticlesFrameParams::Attractor &attr = frame_params.attractors[frame_params.attractor_count];
+
+				store_transform(to_collider, attr.transform);
+				attr.strength = pc->attractor_strength;
+				attr.attenuation = pc->attractor_attenuation;
+				attr.directionality = pc->attractor_directionality;
+
+				switch (pc->type) {
+					case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT: {
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_SPHERE;
+						float radius = pc->radius;
+						radius *= (scale.x + scale.y + scale.z) / 3.0;
+						attr.extents[0] = radius;
+						attr.extents[1] = radius;
+						attr.extents[2] = radius;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_BOX_ATTRACT: {
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_BOX;
+						Vector3 extents = pc->extents * scale;
+						attr.extents[0] = extents.x;
+						attr.extents[1] = extents.y;
+						attr.extents[2] = extents.z;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
+						if (collision_3d_textures_used >= ParticlesFrameParams::MAX_3D_TEXTURES) {
+							continue;
+						}
+						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_VECTOR_FIELD;
+						Vector3 extents = pc->extents * scale;
+						attr.extents[0] = extents.x;
+						attr.extents[1] = extents.y;
+						attr.extents[2] = extents.z;
+						attr.texture_index = collision_3d_textures_used;
+
+						collision_3d_textures[collision_3d_textures_used] = pc->field_texture;
+						collision_3d_textures_used++;
+					} break;
+					default: {
+					}
+				}
+
+				frame_params.attractor_count++;
+			} else {
+				//collider
+				if (frame_params.collider_count >= ParticlesFrameParams::MAX_COLLIDERS) {
+					continue;
+				}
+
+				ParticlesFrameParams::Collider &col = frame_params.colliders[frame_params.collider_count];
+
+				store_transform(to_collider, col.transform);
+				switch (pc->type) {
+					case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+						col.type = ParticlesFrameParams::COLLISION_TYPE_SPHERE;
+						float radius = pc->radius;
+						radius *= (scale.x + scale.y + scale.z) / 3.0;
+						col.extents[0] = radius;
+						col.extents[1] = radius;
+						col.extents[2] = radius;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_BOX_COLLIDE: {
+						col.type = ParticlesFrameParams::COLLISION_TYPE_BOX;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
+						if (collision_3d_textures_used >= ParticlesFrameParams::MAX_3D_TEXTURES) {
+							continue;
+						}
+						col.type = ParticlesFrameParams::COLLISION_TYPE_SDF;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+						col.texture_index = collision_3d_textures_used;
+						col.scale = (scale.x + scale.y + scale.z) * 0.333333333333; //non uniform scale non supported
+
+						collision_3d_textures[collision_3d_textures_used] = pc->field_texture;
+						collision_3d_textures_used++;
+					} break;
+					case RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
+						if (collision_heightmap_texture != RID()) { //already taken
+							continue;
+						}
+
+						col.type = ParticlesFrameParams::COLLISION_TYPE_HEIGHT_FIELD;
+						Vector3 extents = pc->extents * scale;
+						col.extents[0] = extents.x;
+						col.extents[1] = extents.y;
+						col.extents[2] = extents.z;
+						collision_heightmap_texture = pc->heightfield_texture;
+					} break;
+					default: {
+					}
+				}
+
+				frame_params.collider_count++;
+			}
+		}
+
+		bool different = false;
+		if (collision_3d_textures_used == p_particles->collision_3d_textures_used) {
+			for (int i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+				if (p_particles->collision_3d_textures[i] != collision_3d_textures[i]) {
+					different = true;
+					break;
+				}
+			}
+		}
+
+		if (collision_heightmap_texture != p_particles->collision_heightmap_texture) {
+			different = true;
+		}
+
+		bool uniform_set_valid = RD::get_singleton()->uniform_set_is_valid(p_particles->collision_textures_uniform_set);
+
+		if (different || !uniform_set_valid) {
+			if (uniform_set_valid) {
+				RD::get_singleton()->free(p_particles->collision_textures_uniform_set);
+			}
+
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 0;
+				for (uint32_t i = 0; i < ParticlesFrameParams::MAX_3D_TEXTURES; i++) {
+					RID rd_tex;
+					if (i < collision_3d_textures_used) {
+						Texture *t = texture_owner.getornull(collision_3d_textures[i]);
+						if (t && t->type == Texture::TYPE_3D) {
+							rd_tex = t->rd_texture;
+						}
+					}
+
+					if (rd_tex == RID()) {
+						rd_tex = default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE];
+					}
+					u.ids.push_back(rd_tex);
+				}
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_TEXTURE;
+				u.binding = 1;
+				if (collision_heightmap_texture.is_valid()) {
+					u.ids.push_back(collision_heightmap_texture);
+				} else {
+					u.ids.push_back(default_rd_textures[DEFAULT_RD_TEXTURE_BLACK]);
+				}
+				uniforms.push_back(u);
+			}
+			p_particles->collision_textures_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 2);
+		}
+	}
+
+	ParticlesShader::PushConstant push_constant;
+
+	push_constant.clear = p_particles->clear;
+	push_constant.total_particles = p_particles->amount;
+	push_constant.lifetime = p_particles->lifetime;
+	push_constant.trail_size = 1;
+	push_constant.use_fractional_delta = p_particles->fractional_delta;
+	push_constant.sub_emitter_mode = !p_particles->emitting && p_particles->emission_buffer && (p_particles->emission_buffer->particle_count > 0 || p_particles->force_sub_emit);
+
+	p_particles->force_sub_emit = false; //reset
+
+	Particles *sub_emitter = particles_owner.getornull(p_particles->sub_emitter);
+
+	if (sub_emitter && sub_emitter->emission_storage_buffer.is_valid()) {
+		//	print_line("updating subemitter buffer");
+		int32_t zero[4] = { 0, sub_emitter->amount, 0, 0 };
+		RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero, true);
+		push_constant.can_emit = true;
+
+		if (sub_emitter->emitting) {
+			sub_emitter->emitting = false;
+			sub_emitter->clear = true; //will need to clear if it was emitting, sorry
+		}
+		//make sure the sub emitter processes particles too
+		sub_emitter->inactive = false;
+		sub_emitter->inactive_time = 0;
+
+		sub_emitter->force_sub_emit = true;
+
+	} else {
+		push_constant.can_emit = false;
+	}
+
+	if (p_particles->emission_buffer && p_particles->emission_buffer->particle_count) {
+		RD::get_singleton()->buffer_update(p_particles->emission_storage_buffer, 0, sizeof(uint32_t) * 4 + sizeof(ParticleEmissionBuffer::Data) * p_particles->emission_buffer->particle_count, p_particles->emission_buffer, true);
+		p_particles->emission_buffer->particle_count = 0;
+	}
+
+	p_particles->clear = false;
+
+	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams), &frame_params, true);
+
+	ParticlesMaterialData *m = (ParticlesMaterialData *)material_get_data(p_particles->process_material, SHADER_TYPE_PARTICLES);
+	if (!m) {
+		m = (ParticlesMaterialData *)material_get_data(particles_shader.default_material, SHADER_TYPE_PARTICLES);
+	}
+
+	ERR_FAIL_COND(!m);
+
+	//todo should maybe compute all particle systems together?
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, m->shader_data->pipeline);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles_shader.base_uniform_set, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->particles_material_uniform_set, 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_particles->collision_textures_uniform_set, 2);
+
+	if (m->uniform_set.is_valid()) {
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, m->uniform_set, 3);
+	}
+
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_particles->amount, 1, 1, 64, 1, 1);
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerStorageRD::particles_set_view_axis(RID p_particles, const Vector3 &p_axis) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH) {
+		return; //uninteresting for other modes
+	}
+
+	//copy to sort buffer
+	if (particles->particles_sort_buffer == RID()) {
+		uint32_t size = particles->amount;
+		if (size & 1) {
+			size++; //make multiple of 16
+		}
+		size *= sizeof(float) * 2;
+		particles->particles_sort_buffer = RD::get_singleton()->storage_buffer_create(size);
+		{
+			Vector<RD::Uniform> uniforms;
+
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.ids.push_back(particles->particles_sort_buffer);
+				uniforms.push_back(u);
+			}
+
+			particles->particles_sort_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, ParticlesShader::COPY_MODE_FILL_SORT_BUFFER), 1);
+		}
+	}
+
+	Vector3 axis = -p_axis; // cameras look to z negative
+
+	if (particles->use_local_coords) {
+		axis = particles->emission_transform.basis.xform_inv(axis).normalized();
+	}
+
+	ParticlesShader::CopyPushConstant copy_push_constant;
+	copy_push_constant.total_particles = particles->amount;
+	copy_push_constant.sort_direction[0] = axis.x;
+	copy_push_constant.sort_direction[1] = axis.y;
+	copy_push_constant.sort_direction[2] = axis.z;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_SORT_BUFFER]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+
+	RD::get_singleton()->compute_list_end();
+
+	effects.sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+
+	compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_INSTANCES_WITH_SORT_BUFFER]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_sort_uniform_set, 1);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerStorageRD::update_particles() {
+	while (particle_update_list) {
+		//use transform feedback to process particles
+
+		Particles *particles = particle_update_list;
+
+		//take and remove
+		particle_update_list = particles->update_list;
+		particles->update_list = nullptr;
+		particles->dirty = false;
+
+		if (particles->restart_request) {
+			particles->prev_ticks = 0;
+			particles->phase = 0;
+			particles->prev_phase = 0;
+			particles->clear = true;
+			particles->restart_request = false;
+		}
+
+		if (particles->inactive && !particles->emitting) {
+			//go next
+			continue;
+		}
+
+		if (particles->emitting) {
+			if (particles->inactive) {
+				//restart system from scratch
+				particles->prev_ticks = 0;
+				particles->phase = 0;
+				particles->prev_phase = 0;
+				particles->clear = true;
+			}
+			particles->inactive = false;
+			particles->inactive_time = 0;
+		} else {
+			particles->inactive_time += particles->speed_scale * RasterizerRD::singleton->get_frame_delta_time();
+			if (particles->inactive_time > particles->lifetime * 1.2) {
+				particles->inactive = true;
+				continue;
+			}
+		}
+
+		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
+
+		if (particles->clear && particles->pre_process_time > 0.0) {
+			float frame_time;
+			if (particles->fixed_fps > 0)
+				frame_time = 1.0 / particles->fixed_fps;
+			else
+				frame_time = 1.0 / 30.0;
+
+			float todo = particles->pre_process_time;
+
+			while (todo >= 0) {
+				_particles_process(particles, frame_time);
+				todo -= frame_time;
+			}
+		}
+
+		if (particles->fixed_fps > 0) {
+			float frame_time;
+			float decr;
+			if (zero_time_scale) {
+				frame_time = 0.0;
+				decr = 1.0 / particles->fixed_fps;
+			} else {
+				frame_time = 1.0 / particles->fixed_fps;
+				decr = frame_time;
+			}
+			float delta = RasterizerRD::singleton->get_frame_delta_time();
+			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
+				delta = 0.1;
+			} else if (delta <= 0.0) { //unlikely but..
+				delta = 0.001;
+			}
+			float todo = particles->frame_remainder + delta;
+
+			while (todo >= frame_time) {
+				_particles_process(particles, frame_time);
+				todo -= decr;
+			}
+
+			particles->frame_remainder = todo;
+
+		} else {
+			if (zero_time_scale)
+				_particles_process(particles, 0.0);
+			else
+				_particles_process(particles, RasterizerRD::singleton->get_frame_delta_time());
+		}
+
+		//copy particles to instance buffer
+
+		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH) {
+			ParticlesShader::CopyPushConstant copy_push_constant;
+			copy_push_constant.total_particles = particles->amount;
+
+			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, particles_shader.copy_pipelines[ParticlesShader::COPY_MODE_FILL_INSTANCES]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, particles->particles_copy_uniform_set, 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy_push_constant, sizeof(ParticlesShader::CopyPushConstant));
+
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1, 64, 1, 1);
+
+			RD::get_singleton()->compute_list_end();
+		}
+
+		particles->instance_dependency.instance_notify_changed(true, false); //make sure shadows are updated
+	}
+}
+
+bool RasterizerStorageRD::particles_is_inactive(RID p_particles) const {
+	const Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND_V(!particles, false);
+	return !particles->emitting && particles->inactive;
+}
+
+/* SKY SHADER */
+
+void RasterizerStorageRD::ParticlesShaderData::set_code(const String &p_code) {
+	//compile
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+
+	if (code == String()) {
+		return; //just invalid, but no error
+	}
+
+	ShaderCompilerRD::GeneratedCode gen_code;
+	ShaderCompilerRD::IdentifierActions actions;
+
+	/*
+	uses_time = false;
+
+	actions.render_mode_flags["use_half_res_pass"] = &uses_half_res;
+	actions.render_mode_flags["use_quarter_res_pass"] = &uses_quarter_res;
+
+	actions.usage_flag_pointers["TIME"] = &uses_time;
+*/
+
+	actions.uniforms = &uniforms;
+
+	Error err = base_singleton->particles_shader.compiler.compile(RS::SHADER_PARTICLES, code, &actions, path, gen_code);
+
+	ERR_FAIL_COND(err != OK);
+
+	if (version.is_null()) {
+		version = base_singleton->particles_shader.shader.version_create();
+	}
+
+	base_singleton->particles_shader.shader.version_set_compute_code(version, gen_code.uniforms, gen_code.compute_global, gen_code.compute, gen_code.defines);
+	ERR_FAIL_COND(!base_singleton->particles_shader.shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	//update pipelines
+
+	pipeline = RD::get_singleton()->compute_pipeline_create(base_singleton->particles_shader.shader.version_get_shader(version, 0));
+
+	valid = true;
+}
+
+void RasterizerStorageRD::ParticlesShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+	if (!p_texture.is_valid()) {
+		default_texture_params.erase(p_name);
+	} else {
+		default_texture_params[p_name] = p_texture;
+	}
+}
+
+void RasterizerStorageRD::ParticlesShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+	Map<int, StringName> order;
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		if (E->get().texture_order >= 0) {
+			order[E->get().texture_order + 100000] = E->key();
+		} else {
+			order[E->get().order] = E->key();
+		}
+	}
+
+	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
+		pi.name = E->get();
+		p_param_list->push_back(pi);
+	}
+}
+
+void RasterizerStorageRD::ParticlesShaderData::get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const {
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RasterizerStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E->get());
+		p.info.name = E->key(); //supply name
+		p.index = E->get().instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
+		p_param_list->push_back(p);
+	}
+}
+
+bool RasterizerStorageRD::ParticlesShaderData::is_param_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+bool RasterizerStorageRD::ParticlesShaderData::is_animated() const {
+	return false;
+}
+
+bool RasterizerStorageRD::ParticlesShaderData::casts_shadows() const {
+	return false;
+}
+
+Variant RasterizerStorageRD::ParticlesShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
+	}
+	return Variant();
+}
+
+RasterizerStorageRD::ParticlesShaderData::ParticlesShaderData() {
+	valid = false;
+}
+
+RasterizerStorageRD::ParticlesShaderData::~ParticlesShaderData() {
+	//pipeline variants will clear themselves if shader is gone
+	if (version.is_valid()) {
+		base_singleton->particles_shader.shader.version_free(version);
+	}
+}
+
+RasterizerStorageRD::ShaderData *RasterizerStorageRD::_create_particles_shader_func() {
+	ParticlesShaderData *shader_data = memnew(ParticlesShaderData);
+	return shader_data;
+}
+
+void RasterizerStorageRD::ParticlesMaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	uniform_set_updated = true;
+
+	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
+		p_uniform_dirty = true;
+		if (uniform_buffer.is_valid()) {
+			RD::get_singleton()->free(uniform_buffer);
+			uniform_buffer = RID();
+		}
+
+		ubo_data.resize(shader_data->ubo_size);
+		if (ubo_data.size()) {
+			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
+			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+		}
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	//check whether buffer changed
+	if (p_uniform_dirty && ubo_data.size()) {
+		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
+		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw());
+	}
+
+	uint32_t tex_uniform_count = shader_data->texture_uniforms.size();
+
+	if ((uint32_t)texture_cache.size() != tex_uniform_count) {
+		texture_cache.resize(tex_uniform_count);
+		p_textures_dirty = true;
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	if (p_textures_dirty && tex_uniform_count) {
+		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), true);
+	}
+
+	if (shader_data->ubo_size == 0 && shader_data->texture_uniforms.size() == 0) {
+		// This material does not require an uniform set, so don't create it.
+		return;
+	}
+
+	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//no reason to update uniform set, only UBO (or nothing) was needed to update
+		return;
+	}
+
+	Vector<RD::Uniform> uniforms;
+
+	{
+		if (shader_data->ubo_size) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(uniform_buffer);
+			uniforms.push_back(u);
+		}
+
+		const RID *textures = texture_cache.ptrw();
+		for (uint32_t i = 0; i < tex_uniform_count; i++) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 1 + i;
+			u.ids.push_back(textures[i]);
+			uniforms.push_back(u);
+		}
+	}
+
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, base_singleton->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
+}
+
+RasterizerStorageRD::ParticlesMaterialData::~ParticlesMaterialData() {
+	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		RD::get_singleton()->free(uniform_set);
+	}
+
+	if (uniform_buffer.is_valid()) {
+		RD::get_singleton()->free(uniform_buffer);
+	}
+}
+
+RasterizerStorageRD::MaterialData *RasterizerStorageRD::_create_particles_material_func(ParticlesShaderData *p_shader) {
+	ParticlesMaterialData *material_data = memnew(ParticlesMaterialData);
+	material_data->shader_data = p_shader;
+	material_data->last_frame = false;
+	//update will happen later anyway so do nothing.
+	return material_data;
+}
+////////
+
+/* PARTICLES COLLISION API */
+
+RID RasterizerStorageRD::particles_collision_create() {
+	return particles_collision_owner.make_rid(ParticlesCollision());
+}
+
+RID RasterizerStorageRD::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, RID());
+	ERR_FAIL_COND_V(particles_collision->type != RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, RID());
+
+	if (particles_collision->heightfield_texture == RID()) {
+		//create
+		int resolutions[RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
+		Size2i size;
+		if (particles_collision->extents.x > particles_collision->extents.z) {
+			size.x = resolutions[particles_collision->heightfield_resolution];
+			size.y = int32_t(particles_collision->extents.z / particles_collision->extents.x * size.x);
+		} else {
+			size.y = resolutions[particles_collision->heightfield_resolution];
+			size.x = int32_t(particles_collision->extents.x / particles_collision->extents.z * size.y);
+		}
+
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_D32_SFLOAT;
+		tf.width = size.x;
+		tf.height = size.y;
+		tf.type = RD::TEXTURE_TYPE_2D;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+		particles_collision->heightfield_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+		Vector<RID> fb_tex;
+		fb_tex.push_back(particles_collision->heightfield_texture);
+		particles_collision->heightfield_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+		particles_collision->heightfield_fb_size = size;
+	}
+
+	return particles_collision->heightfield_fb;
+}
+
+void RasterizerStorageRD::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	if (p_type == particles_collision->type) {
+		return;
+	}
+
+	if (particles_collision->heightfield_texture.is_valid()) {
+		RD::get_singleton()->free(particles_collision->heightfield_texture);
+		particles_collision->heightfield_texture = RID();
+	}
+	particles_collision->type = p_type;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_cull_mask(RID p_particles_collision, uint32_t p_cull_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+	particles_collision->cull_mask = p_cull_mask;
+}
+
+void RasterizerStorageRD::particles_collision_set_sphere_radius(RID p_particles_collision, float p_radius) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->radius = p_radius;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_box_extents(RID p_particles_collision, const Vector3 &p_extents) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->extents = p_extents;
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_strength(RID p_particles_collision, float p_strength) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_strength = p_strength;
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_directionality(RID p_particles_collision, float p_directionality) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_directionality = p_directionality;
+}
+
+void RasterizerStorageRD::particles_collision_set_attractor_attenuation(RID p_particles_collision, float p_curve) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->attractor_attenuation = p_curve;
+}
+
+void RasterizerStorageRD::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	particles_collision->field_texture = p_texture;
+}
+
+void RasterizerStorageRD::particles_collision_height_field_update(RID p_particles_collision) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+	particles_collision->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND(!particles_collision);
+
+	if (particles_collision->heightfield_resolution == p_resolution) {
+		return;
+	}
+
+	particles_collision->heightfield_resolution = p_resolution;
+
+	if (particles_collision->heightfield_texture.is_valid()) {
+		RD::get_singleton()->free(particles_collision->heightfield_texture);
+		particles_collision->heightfield_texture = RID();
+	}
+}
+
+AABB RasterizerStorageRD::particles_collision_get_aabb(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, AABB());
+
+	switch (particles_collision->type) {
+		case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT:
+		case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+			AABB aabb;
+			aabb.position = -Vector3(1, 1, 1) * particles_collision->radius;
+			aabb.size = Vector3(2, 2, 2) * particles_collision->radius;
+			return aabb;
+		}
+		default: {
+			AABB aabb;
+			aabb.position = -particles_collision->extents;
+			aabb.size = particles_collision->extents * 2;
+			return aabb;
+		}
+	}
+
+	return AABB();
+}
+
+Vector3 RasterizerStorageRD::particles_collision_get_extents(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, Vector3());
+	return particles_collision->extents;
+}
+
+bool RasterizerStorageRD::particles_collision_is_heightfield(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_particles_collision);
+	ERR_FAIL_COND_V(!particles_collision, false);
+	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
 
 /* SKELETON API */
 
@@ -3290,6 +4960,7 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
+	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 1.0;
 
 	return light_owner.make_rid(light);
 }
@@ -3568,6 +5239,9 @@ void RasterizerStorageRD::reflection_probe_set_extents(RID p_probe, const Vector
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
+	if (reflection_probe->extents == p_extents) {
+		return;
+	}
 	reflection_probe->extents = p_extents;
 	reflection_probe->instance_dependency.instance_notify_changed(true, false);
 }
@@ -4338,6 +6012,7 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 	//free in reverse dependency order
 	if (rt->framebuffer.is_valid()) {
 		RD::get_singleton()->free(rt->framebuffer);
+		rt->framebuffer_uniform_set = RID(); //chain deleted
 	}
 
 	if (rt->color.is_valid()) {
@@ -4352,10 +6027,7 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 			RD::get_singleton()->free(rt->backbuffer_mipmaps[i].mipmap_copy);
 		}
 		rt->backbuffer_mipmaps.clear();
-		if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
-			RD::get_singleton()->free(rt->backbuffer_uniform_set);
-		}
-		rt->backbuffer_uniform_set = RID();
+		rt->backbuffer_uniform_set = RID(); //chain deleted
 	}
 
 	rt->framebuffer = RID();
@@ -4459,12 +6131,23 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	tf.width = rt->size.width;
 	tf.height = rt->size.height;
 	tf.type = RD::TEXTURE_TYPE_2D;
-	tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
 	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	rt->backbuffer_mipmap0 = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
 
+	{
+		Vector<RID> fb_tex;
+		fb_tex.push_back(rt->backbuffer_mipmap0);
+		rt->backbuffer_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+	}
+
+	if (rt->framebuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->framebuffer_uniform_set)) {
+		//the new one will require the backbuffer.
+		RD::get_singleton()->free(rt->framebuffer_uniform_set);
+		rt->framebuffer_uniform_set = RID();
+	}
 	//create mipmaps
 	for (uint32_t i = 1; i < mipmaps_required; i++) {
 		RenderTarget::BackbufferMipmap mm;
@@ -4562,6 +6245,23 @@ RID RasterizerStorageRD::render_target_get_rd_texture(RID p_render_target) {
 	return rt->color;
 }
 
+RID RasterizerStorageRD::render_target_get_rd_backbuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->backbuffer;
+}
+
+RID RasterizerStorageRD::render_target_get_rd_backbuffer_framebuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	return rt->backbuffer_fb;
+}
+
 void RasterizerStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -4600,21 +6300,30 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	rt->clear_requested = false;
 }
 
-void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region) {
+void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 	if (!rt->backbuffer.is_valid()) {
 		_create_render_target_backbuffer(rt);
 	}
 
-	Rect2i region = p_region;
-	if (region == Rect2i()) {
+	Rect2i region;
+	if (p_region == Rect2i()) {
 		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
 	}
 
 	//single texture copy for backbuffer
-	RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	//effects.copy(rt->color, rt->backbuffer_fb, blur_region);
+	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
+	effects.copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+
+	if (!p_gen_mipmaps) {
+		return;
+	}
 
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
@@ -4631,30 +6340,79 @@ void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target,
 	}
 }
 
-RID RasterizerStorageRD::render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader) {
+void RasterizerStorageRD::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
-	ERR_FAIL_COND_V(!rt, RID());
-
+	ERR_FAIL_COND(!rt);
 	if (!rt->backbuffer.is_valid()) {
 		_create_render_target_backbuffer(rt);
 	}
 
-	if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
-		return rt->backbuffer_uniform_set; //if still valid, return/reuse it.
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
 	}
 
-	//create otherwise
-	Vector<RD::Uniform> uniforms;
-	RD::Uniform u;
-	u.type = RD::UNIFORM_TYPE_TEXTURE;
-	u.binding = 0;
-	u.ids.push_back(rt->backbuffer);
-	uniforms.push_back(u);
+	//single texture copy for backbuffer
+	effects.set_color(rt->backbuffer_mipmap0, p_color, region, true);
+}
 
-	rt->backbuffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, 3);
-	ERR_FAIL_COND_V(!rt->backbuffer_uniform_set.is_valid(), RID());
+void RasterizerStorageRD::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
 
+	Rect2i region;
+	if (p_region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		region = Rect2i(Size2i(), rt->size).clip(p_region);
+		if (region.size == Size2i()) {
+			return; //nothing to do
+		}
+	}
+
+	//then mipmap blur
+	RID prev_texture = rt->backbuffer_mipmap0;
+
+	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+		region.position.x >>= 1;
+		region.position.y >>= 1;
+		region.size.x = MAX(1, region.size.x >> 1);
+		region.size.y = MAX(1, region.size.y >> 1);
+
+		const RenderTarget::BackbufferMipmap &mm = rt->backbuffer_mipmaps[i];
+		effects.gaussian_blur(prev_texture, mm.mipmap, mm.mipmap_copy, region, true);
+		prev_texture = mm.mipmap;
+	}
+}
+
+RID RasterizerStorageRD::render_target_get_framebuffer_uniform_set(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	return rt->framebuffer_uniform_set;
+}
+RID RasterizerStorageRD::render_target_get_backbuffer_uniform_set(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
 	return rt->backbuffer_uniform_set;
+}
+
+void RasterizerStorageRD::render_target_set_framebuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->framebuffer_uniform_set = p_uniform_set;
+}
+void RasterizerStorageRD::render_target_set_backbuffer_uniform_set(RID p_render_target, RID p_uniform_set) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	rt->backbuffer_uniform_set = p_uniform_set;
 }
 
 void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
@@ -4682,6 +6440,12 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	} else if (light_owner.owns(p_base)) {
 		Light *l = light_owner.getornull(p_base);
 		p_instance->update_dependency(&l->instance_dependency);
+	} else if (particles_owner.owns(p_base)) {
+		Particles *p = particles_owner.getornull(p_base);
+		p_instance->update_dependency(&p->instance_dependency);
+	} else if (particles_collision_owner.owns(p_base)) {
+		ParticlesCollision *pc = particles_collision_owner.getornull(p_base);
+		p_instance->update_dependency(&pc->instance_dependency);
 	}
 }
 
@@ -4713,6 +6477,12 @@ RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (lightmap_owner.owns(p_rid)) {
 		return RS::INSTANCE_LIGHTMAP;
+	}
+	if (particles_owner.owns(p_rid)) {
+		return RS::INSTANCE_PARTICLES;
+	}
+	if (particles_collision_owner.owns(p_rid)) {
+		return RS::INSTANCE_PARTICLES_COLLISION;
 	}
 
 	return RS::INSTANCE_NONE;
@@ -4753,7 +6523,7 @@ RID RasterizerStorageRD::decal_atlas_get_texture() const {
 }
 
 RID RasterizerStorageRD::decal_atlas_get_texture_srgb() const {
-	return decal_atlas.texture;
+	return decal_atlas.texture_srgb;
 }
 
 void RasterizerStorageRD::_update_decal_atlas() {
@@ -5676,8 +7446,16 @@ bool RasterizerStorageRD::free(RID p_rid) {
 			p->rd_texture = RID();
 			p->rd_texture_srgb = RID();
 		}
+
+		if (t->canvas_texture) {
+			memdelete(t->canvas_texture);
+		}
 		texture_owner.free(p_rid);
 
+	} else if (canvas_texture_owner.owns(p_rid)) {
+		CanvasTexture *ct = canvas_texture_owner.getornull(p_rid);
+		memdelete(ct);
+		canvas_texture_owner.free(p_rid);
 	} else if (shader_owner.owns(p_rid)) {
 		Shader *shader = shader_owner.getornull(p_rid);
 		//make material unreference this
@@ -5746,6 +7524,19 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		light->instance_dependency.instance_notify_deleted(p_rid);
 		light_owner.free(p_rid);
 
+	} else if (particles_owner.owns(p_rid)) {
+		Particles *particles = particles_owner.getornull(p_rid);
+		_particles_free_data(particles);
+		particles->instance_dependency.instance_notify_deleted(p_rid);
+		particles_owner.free(p_rid);
+	} else if (particles_collision_owner.owns(p_rid)) {
+		ParticlesCollision *particles_collision = particles_collision_owner.getornull(p_rid);
+
+		if (particles_collision->heightfield_texture.is_valid()) {
+			RD::get_singleton()->free(particles_collision->heightfield_texture);
+		}
+		particles_collision->instance_dependency.instance_notify_deleted(p_rid);
+		particles_collision_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -6065,15 +7856,18 @@ RasterizerStorageRD::RasterizerStorageRD() {
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_REPEAT;
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
 					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_w = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
 				} break;
 				default: {
 				}
@@ -6210,6 +8004,130 @@ RasterizerStorageRD::RasterizerStorageRD() {
 	}
 
 	lightmap_probe_capture_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
+
+	/* Particles */
+
+	{
+		// Initialize particles
+		Vector<String> particles_modes;
+		particles_modes.push_back("");
+		particles_shader.shader.initialize(particles_modes, String());
+	}
+	shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_PARTICLES, _create_particles_shader_funcs);
+	material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_PARTICLES, _create_particles_material_funcs);
+
+	{
+		ShaderCompilerRD::DefaultIdentifierActions actions;
+
+		actions.renames["COLOR"] = "PARTICLE.color";
+		actions.renames["VELOCITY"] = "PARTICLE.velocity";
+		//actions.renames["MASS"] = "mass"; ?
+		actions.renames["ACTIVE"] = "PARTICLE.is_active";
+		actions.renames["RESTART"] = "restart";
+		actions.renames["CUSTOM"] = "PARTICLE.custom";
+		actions.renames["TRANSFORM"] = "PARTICLE.xform";
+		actions.renames["TIME"] = "FRAME.time";
+		actions.renames["LIFETIME"] = "params.lifetime";
+		actions.renames["DELTA"] = "local_delta";
+		actions.renames["NUMBER"] = "particle";
+		actions.renames["INDEX"] = "index";
+		//actions.renames["GRAVITY"] = "current_gravity";
+		actions.renames["EMISSION_TRANSFORM"] = "FRAME.emission_transform";
+		actions.renames["RANDOM_SEED"] = "FRAME.random_seed";
+		actions.renames["FLAG_EMIT_POSITION"] = "EMISSION_FLAG_HAS_POSITION";
+		actions.renames["FLAG_EMIT_ROT_SCALE"] = "EMISSION_FLAG_HAS_ROTATION_SCALE";
+		actions.renames["FLAG_EMIT_VELOCITY"] = "EMISSION_FLAG_HAS_VELOCITY";
+		actions.renames["FLAG_EMIT_COLOR"] = "EMISSION_FLAG_HAS_COLOR";
+		actions.renames["FLAG_EMIT_CUSTOM"] = "EMISSION_FLAG_HAS_CUSTOM";
+		actions.renames["RESTART_POSITION"] = "restart_position";
+		actions.renames["RESTART_ROT_SCALE"] = "restart_rotation_scale";
+		actions.renames["RESTART_VELOCITY"] = "restart_velocity";
+		actions.renames["RESTART_COLOR"] = "restart_color";
+		actions.renames["RESTART_CUSTOM"] = "restart_custom";
+		actions.renames["emit_particle"] = "emit_particle";
+		actions.renames["COLLIDED"] = "collided";
+		actions.renames["COLLISION_NORMAL"] = "collision_normal";
+		actions.renames["COLLISION_DEPTH"] = "collision_depth";
+		actions.renames["ATTRACTOR_FORCE"] = "attractor_force";
+
+		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
+		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
+		actions.render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+		actions.render_mode_defines["collision_use_scale"] = "#define USE_COLLISON_SCALE\n";
+
+		actions.sampler_array_name = "material_samplers";
+		actions.base_texture_binding_index = 1;
+		actions.texture_layout_set = 3;
+		actions.base_uniform_string = "material.";
+		actions.base_varying_index = 10;
+
+		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
+		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+		actions.global_buffer_array_variable = "global_variables.data";
+
+		particles_shader.compiler.initialize(actions);
+	}
+
+	{
+		// default material and shader for particles shader
+		particles_shader.default_shader = shader_create();
+		shader_set_code(particles_shader.default_shader, "shader_type particles; void compute() { COLOR = vec4(1.0); } \n");
+		particles_shader.default_material = material_create();
+		material_set_shader(particles_shader.default_material, particles_shader.default_shader);
+
+		ParticlesMaterialData *md = (ParticlesMaterialData *)material_get_data(particles_shader.default_material, RasterizerStorageRD::SHADER_TYPE_PARTICLES);
+		particles_shader.default_shader_rd = particles_shader.shader.version_get_shader(md->shader_data->version, 0);
+
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 1;
+			u.ids.resize(12);
+			RID *ids_ptr = u.ids.ptrw();
+			ids_ptr[0] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[1] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[2] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[3] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[4] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[5] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[6] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[7] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[8] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[9] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[10] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[11] = sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 2;
+			u.ids.push_back(global_variables_get_storage_buffer());
+			uniforms.push_back(u);
+		}
+
+		particles_shader.base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 0);
+	}
+
+	default_rd_storage_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 4);
+
+	{
+		Vector<String> copy_modes;
+		copy_modes.push_back("\n#define MODE_FILL_INSTANCES\n");
+		copy_modes.push_back("\n#define MODE_FILL_SORT_BUFFER\n#define USE_SORT_BUFFER\n");
+		copy_modes.push_back("\n#define MODE_FILL_INSTANCES\n#define USE_SORT_BUFFER\n");
+
+		particles_shader.copy_shader.initialize(copy_modes);
+
+		particles_shader.copy_shader_version = particles_shader.copy_shader.version_create();
+
+		for (int i = 0; i < ParticlesShader::COPY_MODE_MAX; i++) {
+			particles_shader.copy_pipelines[i] = RD::get_singleton()->compute_pipeline_create(particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, i));
+		}
+	}
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {
@@ -6234,7 +8152,14 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
 		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
+
 	giprobe_sdf_shader.version_free(giprobe_sdf_shader_version);
+	particles_shader.copy_shader.version_free(particles_shader.copy_shader_version);
+
+	RenderingServer::get_singleton()->free(particles_shader.default_material);
+	RenderingServer::get_singleton()->free(particles_shader.default_shader);
+
+	RD::get_singleton()->free(default_rd_storage_buffer);
 
 	if (decal_atlas.textures.size()) {
 		ERR_PRINT("Decal Atlas: " + itos(decal_atlas.textures.size()) + " textures were not removed from the atlas.");

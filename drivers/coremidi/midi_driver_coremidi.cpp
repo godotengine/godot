@@ -32,7 +32,7 @@
 
 #include "midi_driver_coremidi.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <CoreAudio/HostTime.h>
 #include <CoreServices/CoreServices.h>

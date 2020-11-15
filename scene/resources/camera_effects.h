@@ -31,8 +31,8 @@
 #ifndef CAMERA_EFFECTS_H
 #define CAMERA_EFFECTS_H
 
-#include "core/resource.h"
-#include "core/rid.h"
+#include "core/io/resource.h"
+#include "core/templates/rid.h"
 
 class CameraEffects : public Resource {
 	GDCLASS(CameraEffects, Resource);

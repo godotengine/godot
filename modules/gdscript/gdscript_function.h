@@ -31,13 +31,13 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
+#include "core/object/reference.h"
+#include "core/object/script_language.h"
 #include "core/os/thread.h"
-#include "core/pair.h"
-#include "core/reference.h"
-#include "core/script_language.h"
-#include "core/self_list.h"
-#include "core/string_name.h"
-#include "core/variant.h"
+#include "core/string/string_name.h"
+#include "core/templates/pair.h"
+#include "core/templates/self_list.h"
+#include "core/variant/variant.h"
 
 class GDScriptInstance;
 class GDScript;
@@ -56,7 +56,8 @@ struct GDScriptDataType {
 	bool has_type = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
-	Ref<Script> script_type;
+	Script *script_type = nullptr;
+	Ref<Script> script_type_ref;
 
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) {
@@ -182,7 +183,6 @@ public:
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
-		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
@@ -224,6 +224,7 @@ public:
 
 private:
 	friend class GDScriptCompiler;
+	friend class GDScriptByteCodeGenerator;
 
 	StringName source;
 
@@ -232,10 +233,6 @@ private:
 	int _constant_count;
 	const StringName *_global_names_ptr;
 	int _global_names_count;
-#ifdef TOOLS_ENABLED
-	const StringName *_named_globals_ptr;
-	int _named_globals_count;
-#endif
 	const int *_default_arg_ptr;
 	int _default_arg_count;
 	const int *_code_ptr;
@@ -252,9 +249,6 @@ private:
 	StringName name;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
-#ifdef TOOLS_ENABLED
-	Vector<StringName> named_globals;
-#endif
 	Vector<int> default_arguments;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
@@ -343,6 +337,10 @@ public:
 	}
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
+
+#ifdef DEBUG_ENABLED
+	void disassemble(const Vector<String> &p_code_lines) const;
+#endif
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();

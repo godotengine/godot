@@ -356,9 +356,6 @@ struct loader_icd_term_dispatch {
     PFN_vkCreateViSurfaceNN CreateViSurfaceNN;
 #endif // VK_USE_PLATFORM_VI_NN
 
-    // ---- VK_NVX_device_generated_commands extension commands
-    PFN_vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX GetPhysicalDeviceGeneratedCommandsPropertiesNVX;
-
     // ---- VK_EXT_direct_mode_display extension commands
     PFN_vkReleaseDisplayEXT ReleaseDisplayEXT;
 
@@ -431,6 +428,14 @@ struct loader_icd_term_dispatch {
 
     // ---- VK_EXT_headless_surface extension commands
     PFN_vkCreateHeadlessSurfaceEXT CreateHeadlessSurfaceEXT;
+
+    // ---- VK_EXT_directfb_surface extension commands
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    PFN_vkCreateDirectFBSurfaceEXT CreateDirectFBSurfaceEXT;
+#endif // VK_USE_PLATFORM_DIRECTFB_EXT
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT GetPhysicalDeviceDirectFBPresentationSupportEXT;
+#endif // VK_USE_PLATFORM_DIRECTFB_EXT
 };
 
 union loader_instance_extension_enables {
@@ -440,7 +445,6 @@ union loader_instance_extension_enables {
         uint8_t khr_external_memory_capabilities : 1;
         uint8_t khr_external_semaphore_capabilities : 1;
         uint8_t khr_external_fence_capabilities : 1;
-        uint8_t khr_get_surface_capabilities2 : 1;
         uint8_t ext_debug_report : 1;
         uint8_t ggp_stream_descriptor_surface : 1;
         uint8_t nv_external_memory_capabilities : 1;

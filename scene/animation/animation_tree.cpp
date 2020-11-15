@@ -31,8 +31,7 @@
 #include "animation_tree.h"
 
 #include "animation_blend_tree.h"
-#include "core/engine.h"
-#include "core/method_bind_ext.gen.inc"
+#include "core/config/engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
@@ -1288,39 +1287,31 @@ String AnimationTree::get_configuration_warning() const {
 	String warning = Node::get_configuration_warning();
 
 	if (!root.is_valid()) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("No root AnimationNode for the graph is set.");
 	}
 
 	if (!has_node(animation_player)) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
-
 		warning += TTR("Path to an AnimationPlayer node containing animations is not set.");
-		return warning;
-	}
+	} else {
+		AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
 
-	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
-
-	if (!player) {
-		if (warning != String()) {
-			warning += "\n\n";
+		if (!player) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
+		} else if (!player->has_node(player->get_root())) {
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("The AnimationPlayer root node is not a valid node.");
 		}
-
-		warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
-		return warning;
-	}
-
-	if (!player->has_node(player->get_root())) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-
-		warning += TTR("The AnimationPlayer root node is not a valid node.");
-		return warning;
 	}
 
 	return warning;

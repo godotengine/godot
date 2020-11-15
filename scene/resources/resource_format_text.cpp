@@ -30,9 +30,9 @@
 
 #include "resource_format_text.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_format_binary.h"
 #include "core/os/dir_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 
 //version 2: changed names for basis, aabb, Vectors, etc.
@@ -572,7 +572,7 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
-		if (progress) {
+		if (progress && resources_total > 0) {
 			*progress = resource_current / float(resources_total);
 		}
 	}
@@ -640,7 +640,7 @@ Error ResourceLoaderText::load() {
 				return error;
 			} else {
 				error = OK;
-				if (progress) {
+				if (progress && resources_total > 0) {
 					*progress = resource_current / float(resources_total);
 				}
 
@@ -674,7 +674,7 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
-		if (progress) {
+		if (progress && resources_total > 0) {
 			*progress = resource_current / float(resources_total);
 		}
 
@@ -1763,6 +1763,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 
 		for (int i = 0; i < state->get_connection_count(); i++) {
+			if (i == 0) {
+				f->store_line("");
+			}
+
 			String connstr = "[connection";
 			connstr += " signal=\"" + String(state->get_connection_signal(i)) + "\"";
 			connstr += " from=\"" + String(state->get_connection_source(i).simplified()) + "\"";
@@ -1786,7 +1790,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 		Vector<NodePath> editable_instances = state->get_editable_instances();
 		for (int i = 0; i < editable_instances.size(); i++) {
-			f->store_line("\n[editable path=\"" + editable_instances[i].operator String() + "\"]");
+			if (i == 0) {
+				f->store_line("");
+			}
+			f->store_line("[editable path=\"" + editable_instances[i].operator String() + "\"]");
 		}
 	}
 

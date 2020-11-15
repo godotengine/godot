@@ -31,7 +31,7 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "core/color.h"
+#include "core/math/color.h"
 #include "core/math/vector2.h"
 #include "line_2d.h"
 #include "scene/resources/gradient.h"

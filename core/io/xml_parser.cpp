@@ -30,13 +30,13 @@
 
 #include "xml_parser.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 //#define DEBUG_XML
 
 VARIANT_ENUM_CAST(XMLParser::NodeType);
 
-static bool _equalsn(const CharType *str1, const CharType *str2, int len) {
+static bool _equalsn(const char32_t *str1, const char32_t *str2, int len) {
 	int i;
 	for (i = 0; i < len && str1[i] && str2[i]; ++i) {
 		if (str1[i] != str2[i]) {
@@ -64,7 +64,7 @@ String XMLParser::_replace_special_characters(const String &origstr) {
 
 		int specialChar = -1;
 		for (int i = 0; i < (int)special_characters.size(); ++i) {
-			const CharType *p = &origstr[pos] + 1;
+			const char32_t *p = &origstr[pos] + 1;
 
 			if (_equalsn(&special_characters[i][1], p, special_characters[i].length() - 1)) {
 				specialChar = i;

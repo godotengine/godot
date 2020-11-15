@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 from methods import detect_darwin_sdk_path
 
 
@@ -32,7 +31,7 @@ def get_opts():
             " validation layers)",
             False,
         ),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN))", False),
@@ -58,8 +57,6 @@ def configure(env):
             env.Prepend(CCFLAGS=["-msse2"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -69,13 +66,12 @@ def configure(env):
             env.Prepend(CCFLAGS=["-Os"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
         env.Prepend(CCFLAGS=["-g3"])
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
+        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
 
     ## Architecture
 
@@ -139,7 +135,8 @@ def configure(env):
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if env["CXX"] == "clang++":
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
+        # This should now work with clang++, re-enable if there are issues
+        # env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         env["CC"] = "clang"
         env["LINK"] = "clang++"
 

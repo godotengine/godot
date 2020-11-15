@@ -30,7 +30,7 @@
 
 #include "rich_text_effect.h"
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 
 void RichTextEffect::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_process_custom_fx", PropertyInfo(Variant::OBJECT, "char_fx", PROPERTY_HINT_RESOURCE_TYPE, "CharFXTransform")));

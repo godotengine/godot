@@ -189,19 +189,28 @@ String NavigationRegion3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node3D::get_configuration_warning();
+
 	if (!navmesh.is_valid()) {
-		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
+
 	const Node3D *c = this;
 	while (c) {
 		if (Object::cast_to<Navigation3D>(c)) {
-			return String();
+			return warning;
 		}
 
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
 
-	return TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
+	if (!warning.empty()) {
+		warning += "\n\n";
+	}
+	return warning + TTR("NavigationRegion3D must be a child or grandchild to a Navigation3D node. It only provides navigation data.");
 }
 
 void NavigationRegion3D::_bind_methods() {

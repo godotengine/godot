@@ -31,7 +31,7 @@
 #include "grid_map.h"
 
 #include "core/io/marshalls.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/3d/light_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"
@@ -706,7 +706,7 @@ void GridMap::_update_visibility() {
 		Octant *octant = e->value();
 		for (int i = 0; i < octant->multimesh_instances.size(); i++) {
 			const Octant::MultimeshInstance &mi = octant->multimesh_instances[i];
-			RS::get_singleton()->instance_set_visible(mi.instance, is_visible());
+			RS::get_singleton()->instance_set_visible(mi.instance, is_visible_in_tree());
 		}
 	}
 }

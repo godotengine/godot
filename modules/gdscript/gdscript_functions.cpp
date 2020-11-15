@@ -30,14 +30,13 @@
 
 #include "gdscript_functions.h"
 
-#include "core/class_db.h"
-#include "core/func_ref.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
+#include "core/object/reference.h"
 #include "core/os/os.h"
-#include "core/reference.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 #include "gdscript.h"
 
 const char *GDScriptFunctions::get_func_name(Function p_func) {
@@ -83,7 +82,8 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"randomize",
 		"randi",
 		"randf",
-		"rand_range",
+		"randf_range",
+		"randi_range",
 		"seed",
 		"rand_seed",
 		"deg2rad",
@@ -99,7 +99,6 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"clamp",
 		"nearest_po2",
 		"weakref",
-		"funcref",
 		"convert",
 		"typeof",
 		"type_exists",
@@ -286,7 +285,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t i = *p_args[0];
 				r_ret = i < 0 ? -1 : (i > 0 ? +1 : 0);
 			} else if (p_args[0]->get_type() == Variant::FLOAT) {
-				real_t r = *p_args[0];
+				double r = *p_args[0];
 				r_ret = r < 0.0 ? -1.0 : (r > 0.0 ? +1.0 : 0.0);
 			} else {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -419,7 +418,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			Math::randomize();
 			r_ret = Variant();
 		} break;
-		case MATH_RAND: {
+		case MATH_RANDI: {
 			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::rand();
 		} break;
@@ -427,11 +426,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_COUNT(0);
 			r_ret = Math::randf();
 		} break;
-		case MATH_RANDOM: {
+		case MATH_RANDF_RANGE: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			r_ret = Math::random((double)*p_args[0], (double)*p_args[1]);
+		} break;
+		case MATH_RANDI_RANGE: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::random((int)*p_args[0], (int)*p_args[1]);
 		} break;
 		case MATH_SEED: {
 			VALIDATE_ARG_COUNT(1);
@@ -505,8 +510,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
+				double a = *p_args[0];
+				double b = *p_args[1];
 
 				r_ret = MAX(a, b);
 			}
@@ -522,8 +527,8 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
+				double a = *p_args[0];
+				double b = *p_args[1];
 
 				r_ret = MIN(a, b);
 			}
@@ -540,9 +545,9 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				VALIDATE_ARG_NUM(1);
 				VALIDATE_ARG_NUM(2);
 
-				real_t a = *p_args[0];
-				real_t b = *p_args[1];
-				real_t c = *p_args[2];
+				double a = *p_args[0];
+				double b = *p_args[1];
+				double c = *p_args[2];
 
 				r_ret = CLAMP(a, b, c);
 			}
@@ -582,31 +587,6 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				return;
 			}
 		} break;
-		case FUNC_FUNCREF: {
-			VALIDATE_ARG_COUNT(2);
-			if (p_args[0]->get_type() != Variant::OBJECT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 0;
-				r_error.expected = Variant::OBJECT;
-				r_ret = Variant();
-				return;
-			}
-			if (p_args[1]->get_type() != Variant::STRING && p_args[1]->get_type() != Variant::NODE_PATH) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.argument = 1;
-				r_error.expected = Variant::STRING;
-				r_ret = Variant();
-				return;
-			}
-
-			Ref<FuncRef> fr = memnew(FuncRef);
-
-			fr->set_instance(*p_args[0]);
-			fr->set_function(*p_args[1]);
-
-			r_ret = fr;
-
-		} break;
 		case TYPE_CONVERT: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(1);
@@ -619,7 +599,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				return;
 
 			} else {
-				r_ret = Variant::construct(Variant::Type(type), p_args, 1, r_error);
+				Variant::construct(Variant::Type(type), r_ret, p_args, 1, r_error);
 			}
 		} break;
 		case TYPE_OF: {
@@ -635,7 +615,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 		case TEXT_CHAR: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			CharType result[2] = { *p_args[0], 0 };
+			char32_t result[2] = { *p_args[0], 0 };
 			r_ret = String(result);
 		} break;
 		case TEXT_ORD: {
@@ -1655,7 +1635,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::NIL;
 			return mi;
 		} break;
-		case MATH_RAND: {
+		case MATH_RANDI: {
 			MethodInfo mi("randi");
 			mi.return_val.type = Variant::INT;
 			return mi;
@@ -1665,9 +1645,14 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::FLOAT;
 			return mi;
 		} break;
-		case MATH_RANDOM: {
-			MethodInfo mi("rand_range", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"));
+		case MATH_RANDF_RANGE: {
+			MethodInfo mi("randf_range", PropertyInfo(Variant::FLOAT, "from"), PropertyInfo(Variant::FLOAT, "to"));
 			mi.return_val.type = Variant::FLOAT;
+			return mi;
+		} break;
+		case MATH_RANDI_RANGE: {
+			MethodInfo mi("randi_range", PropertyInfo(Variant::INT, "from"), PropertyInfo(Variant::INT, "to"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_SEED: {
@@ -1746,13 +1731,6 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			mi.return_val.type = Variant::OBJECT;
 			mi.return_val.class_name = "WeakRef";
 
-			return mi;
-
-		} break;
-		case FUNC_FUNCREF: {
-			MethodInfo mi("funcref", PropertyInfo(Variant::OBJECT, "instance"), PropertyInfo(Variant::STRING, "funcname"));
-			mi.return_val.type = Variant::OBJECT;
-			mi.return_val.class_name = "FuncRef";
 			return mi;
 
 		} break;

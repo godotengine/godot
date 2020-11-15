@@ -33,6 +33,7 @@ Function('return this')()['Engine'] = (function() {
 		this.resizeCanvasOnStart = false;
 		this.onExecute = null;
 		this.onExit = null;
+		this.persistentPaths = ['/userfs'];
 	};
 
 	Engine.prototype.init = /** @param {string=} basePath */ function(basePath) {
@@ -56,12 +57,14 @@ Function('return this')()['Engine'] = (function() {
 			config['locateFile'] = Utils.createLocateRewrite(loadPath);
 			config['instantiateWasm'] = Utils.createInstantiatePromise(loadPromise);
 			Godot(config).then(function(module) {
-				me.rtenv = module;
-				if (unloadAfterInit) {
-					unload();
-				}
-				resolve();
-				config = null;
+				module['initFS'](me.persistentPaths).then(function(fs_err) {
+					me.rtenv = module;
+					if (unloadAfterInit) {
+						unload();
+					}
+					resolve();
+					config = null;
+				});
 			});
 		});
 		return initPromise;
@@ -111,17 +114,30 @@ Function('return this')()['Engine'] = (function() {
 				locale = navigator.languages ? navigator.languages[0] : navigator.language;
 				locale = locale.split('.')[0];
 			}
-			me.rtenv['locale'] = locale;
-			me.rtenv['canvas'] = me.canvas;
+			// Emscripten configuration.
 			me.rtenv['thisProgram'] = me.executableName;
-			me.rtenv['resizeCanvasOnStart'] = me.resizeCanvasOnStart;
 			me.rtenv['noExitRuntime'] = true;
-			me.rtenv['onExecute'] = me.onExecute;
-			me.rtenv['onExit'] = function(code) {
-				if (me.onExit)
-					me.onExit(code);
-				me.rtenv = null;
-			}
+			// Godot configuration.
+			me.rtenv['initConfig']({
+				'resizeCanvasOnStart': me.resizeCanvasOnStart,
+				'canvas': me.canvas,
+				'locale': locale,
+				'onExecute': function(p_args) {
+					if (me.onExecute) {
+						me.onExecute(p_args);
+						return 0;
+					}
+					return 1;
+				},
+				'onExit': function(p_code) {
+					me.rtenv['deinitFS']();
+					if (me.onExit) {
+						me.onExit(p_code);
+					}
+					me.rtenv = null;
+				},
+			});
+
 			return new Promise(function(resolve, reject) {
 				preloader.preloadedFiles.forEach(function(file) {
 					me.rtenv['copyToFS'](file.path, file.buffer);
@@ -204,21 +220,29 @@ Function('return this')()['Engine'] = (function() {
 	};
 
 	Engine.prototype.setOnExecute = function(onExecute) {
-		if (this.rtenv)
-			this.rtenv.onExecute = onExecute;
 		this.onExecute = onExecute;
-	}
+	};
 
 	Engine.prototype.setOnExit = function(onExit) {
 		this.onExit = onExit;
-	}
+	};
 
 	Engine.prototype.copyToFS = function(path, buffer) {
 		if (this.rtenv == null) {
 			throw new Error("Engine must be inited before copying files");
 		}
 		this.rtenv['copyToFS'](path, buffer);
-	}
+	};
+
+	Engine.prototype.setPersistentPaths = function(persistentPaths) {
+		this.persistentPaths = persistentPaths;
+	};
+
+	Engine.prototype.requestQuit = function() {
+		if (this.rtenv) {
+			this.rtenv['request_quit']();
+		}
+	};
 
 	// Closure compiler exported engine methods.
 	/** @export */
@@ -241,5 +265,7 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['setOnExecute'] = Engine.prototype.setOnExecute;
 	Engine.prototype['setOnExit'] = Engine.prototype.setOnExit;
 	Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
+	Engine.prototype['setPersistentPaths'] = Engine.prototype.setPersistentPaths;
+	Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 	return Engine;
 })();

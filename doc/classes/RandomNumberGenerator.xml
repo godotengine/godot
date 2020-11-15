@@ -15,6 +15,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="Random number generation">https://docs.godotengine.org/en/latest/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
 		<method name="randf">
@@ -73,9 +74,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="-6398989897141750821">
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
 			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
 			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
+			[b]Note:[/b] The default value of this property is pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 		</member>
 	</members>
 	<constants>

@@ -30,7 +30,7 @@
 
 #include "rasterizer_rd.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 void RasterizerRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();
@@ -90,7 +90,7 @@ void RasterizerRD::begin_frame(double frame_step) {
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
 #ifndef _MSC_VER
-#warning TODO: likely passa bool to swap buffers to avoid display?
+#warning TODO: likely pass a bool to swap buffers to avoid display?
 #endif
 	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
 }

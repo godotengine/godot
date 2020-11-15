@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "shader.h"
+
 #include "core/os/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering/shader_language.h"
@@ -80,7 +81,7 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 		params_cache[pi.name] = E->get().name;
 		if (p_params) {
 			//small little hack
-			if (pi.type == Variant::_RID) {
+			if (pi.type == Variant::RID) {
 				pi.type = Variant::OBJECT;
 			}
 			p_params->push_back(pi);
@@ -141,8 +142,6 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param"), &Shader::get_default_texture_param);
 
 	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
-
-	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
 

@@ -31,7 +31,7 @@
 #ifndef PHYSICS_BODY_2D_H
 #define PHYSICS_BODY_2D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_2d.h"
@@ -43,9 +43,6 @@ class PhysicsBody2D : public CollisionObject2D {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-
-	void _set_layers(uint32_t p_mask);
-	uint32_t _get_layers() const;
 
 protected:
 	void _notification(int p_what);

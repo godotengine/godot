@@ -31,9 +31,9 @@
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
-#include "core/command_queue_mt.h"
+#include "core/config/project_settings.h"
 #include "core/os/thread.h"
-#include "core/project_settings.h"
+#include "core/templates/command_queue_mt.h"
 #include "servers/physics_server_2d.h"
 
 #ifdef DEBUG_SYNC
@@ -317,6 +317,9 @@ public:
 
 	template <class T>
 	static PhysicsServer2D *init_server() {
+#ifdef NO_THREADS
+		return memnew(T); // Always single unsafe when no threads are available.
+#else
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
 		if (tm == 0) { // single unsafe
 			return memnew(T);
@@ -325,6 +328,7 @@ public:
 		} else { // multi threaded
 			return memnew(PhysicsServer2DWrapMT(memnew(T), true));
 		}
+#endif
 	}
 
 #undef ServerNameWrapMT

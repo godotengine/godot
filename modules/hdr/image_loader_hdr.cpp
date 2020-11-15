@@ -31,7 +31,7 @@
 #include "image_loader_hdr.h"
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 	String header = f->get_token();

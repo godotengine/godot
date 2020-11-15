@@ -35,7 +35,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 

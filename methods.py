@@ -7,6 +7,8 @@ from collections import OrderedDict
 # We need to define our own `Action` method to control the verbosity of output
 # and whenever we need to run those commands in a subprocess on some platforms.
 from SCons.Script import Action
+from SCons import Node
+from SCons.Script import Glob
 from platform_methods import run_in_subprocess
 
 
@@ -185,7 +187,7 @@ def write_modules(module_list):
                 unregister_cpp += "#ifdef MODULE_" + name.upper() + "_ENABLED\n"
                 unregister_cpp += "\tunregister_" + name + "_types();\n"
                 unregister_cpp += "#endif\n"
-        except IOError:
+        except OSError:
             pass
 
     modules_cpp = """// register_module_types.gen.cpp
@@ -522,8 +524,37 @@ def generate_cpp_hint_file(filename):
         try:
             with open(filename, "w") as fd:
                 fd.write("#define GDCLASS(m_class, m_inherits)\n")
-        except IOError:
+        except OSError:
             print("Could not write cpp.hint file.")
+
+
+def glob_recursive(pattern, node="."):
+    results = []
+    for f in Glob(str(node) + "/*", source=True):
+        if type(f) is Node.FS.Dir:
+            results += glob_recursive(pattern, f)
+    results += Glob(str(node) + "/" + pattern, source=True)
+    return results
+
+
+def add_to_vs_project(env, sources):
+    for x in sources:
+        if type(x) == type(""):
+            fname = env.File(x).path
+        else:
+            fname = env.File(x)[0].path
+        pieces = fname.split(".")
+        if len(pieces) > 0:
+            basename = pieces[0]
+            basename = basename.replace("\\\\", "/")
+            if os.path.isfile(basename + ".h"):
+                env.vs_incs += [basename + ".h"]
+            elif os.path.isfile(basename + ".hpp"):
+                env.vs_incs += [basename + ".hpp"]
+            if os.path.isfile(basename + ".c"):
+                env.vs_srcs += [basename + ".c"]
+            elif os.path.isfile(basename + ".cpp"):
+                env.vs_srcs += [basename + ".cpp"]
 
 
 def generate_vs_project(env, num_jobs):
@@ -534,40 +565,44 @@ def generate_vs_project(env, num_jobs):
             common_build_prefix = [
                 'cmd /V /C set "plat=$(PlatformTarget)"',
                 '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                'set "tools=yes"',
+                'set "tools=%s"' % env["tools"],
                 '(if "$(Configuration)"=="release" (set "tools=no"))',
                 'call "' + batch_file + '" !plat!',
             ]
 
-            result = " ^& ".join(common_build_prefix + [commands])
+            # windows allows us to have spaces in paths, so we need
+            # to double quote off the directory. However, the path ends
+            # in a backslash, so we need to remove this, lest it escape the
+            # last double quote off, confusing MSBuild
+            common_build_postfix = [
+                "--directory=\"$(ProjectDir.TrimEnd('\\'))\"",
+                "platform=windows",
+                "target=$(Configuration)",
+                "progress=no",
+                "tools=!tools!",
+                "-j%s" % num_jobs,
+            ]
+
+            if env["custom_modules"]:
+                common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+            result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
             return result
 
-        env.AddToVSProject(env.core_sources)
-        env.AddToVSProject(env.main_sources)
-        env.AddToVSProject(env.modules_sources)
-        env.AddToVSProject(env.scene_sources)
-        env.AddToVSProject(env.servers_sources)
-        env.AddToVSProject(env.editor_sources)
+        add_to_vs_project(env, env.core_sources)
+        add_to_vs_project(env, env.drivers_sources)
+        add_to_vs_project(env, env.main_sources)
+        add_to_vs_project(env, env.modules_sources)
+        add_to_vs_project(env, env.scene_sources)
+        add_to_vs_project(env, env.servers_sources)
+        add_to_vs_project(env, env.editor_sources)
 
-        # windows allows us to have spaces in paths, so we need
-        # to double quote off the directory. However, the path ends
-        # in a backslash, so we need to remove this, lest it escape the
-        # last double quote off, confusing MSBuild
-        env["MSVSBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! -j"
-            + str(num_jobs)
-        )
-        env["MSVSREBUILDCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" platform=windows progress=no target=$(Configuration)"
-            " tools=!tools! vsproj=yes -j"
-            + str(num_jobs)
-        )
-        env["MSVSCLEANCOM"] = build_commandline(
-            "scons --directory=\"$(ProjectDir.TrimEnd('\\'))\" --clean platform=windows progress=no"
-            " target=$(Configuration) tools=!tools! -j"
-            + str(num_jobs)
-        )
+        for header in glob_recursive("**/*.h"):
+            env.vs_incs.append(str(header))
+
+        env["MSVSBUILDCOM"] = build_commandline("scons")
+        env["MSVSREBUILDCOM"] = build_commandline("scons vsproj=yes")
+        env["MSVSCLEANCOM"] = build_commandline("scons --clean")
 
         # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
         # required for Visual Studio to understand that it needs to generate an NMAKE

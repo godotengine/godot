@@ -35,8 +35,14 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "gdscript.h"
+#include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
+
+#ifdef TESTS_ENABLED
+#include "tests/test_gdscript.h"
+#include "tests/test_macros.h"
+#endif
 
 GDScriptLanguage *script_language_gd = nullptr;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
@@ -53,7 +59,7 @@ GDScriptCache *gdscript_cache = nullptr;
 #include "editor/gdscript_translation_parser_plugin.h"
 
 #ifndef GDSCRIPT_NO_LSP
-#include "core/engine.h"
+#include "core/config/engine.h"
 #include "language_server/gdscript_language_server.h"
 #endif // !GDSCRIPT_NO_LSP
 
@@ -78,7 +84,7 @@ public:
 			return;
 		}
 
-		// TODO: Readd compiled/encrypted GDScript on export.
+		// TODO: Readd compiled GDScript on export.
 		return;
 	}
 };
@@ -148,4 +154,30 @@ void unregister_gdscript_types() {
 	EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 	gdscript_translation_parser_plugin.unref();
 #endif // TOOLS_ENABLED
+
+	GDScriptParser::cleanup();
+	GDScriptAnalyzer::cleanup();
 }
+
+#ifdef TESTS_ENABLED
+void test_tokenizer() {
+	TestGDScript::test(TestGDScript::TestType::TEST_TOKENIZER);
+}
+
+void test_parser() {
+	TestGDScript::test(TestGDScript::TestType::TEST_PARSER);
+}
+
+void test_compiler() {
+	TestGDScript::test(TestGDScript::TestType::TEST_COMPILER);
+}
+
+void test_bytecode() {
+	TestGDScript::test(TestGDScript::TestType::TEST_BYTECODE);
+}
+
+REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
+REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
+REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
+REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);
+#endif

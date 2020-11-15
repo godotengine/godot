@@ -22,9 +22,26 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<methods>
-		<method name="NodePath">
+		<method name="NodePath" qualifiers="constructor">
+			<return type="NodePath">
+			</return>
+			<description>
+				Constructs an empty [NodePath].
+			</description>
+		</method>
+		<method name="NodePath" qualifiers="constructor">
+			<return type="NodePath">
+			</return>
+			<argument index="0" name="from" type="NodePath">
+			</argument>
+			<description>
+				Constructs a [NodePath] as a copy of the given [NodePath].
+			</description>
+		</method>
+		<method name="NodePath" qualifiers="constructor">
 			<return type="NodePath">
 			</return>
 			<argument index="0" name="from" type="String">
@@ -64,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_concatenated_subnames">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
@@ -75,7 +92,7 @@
 			</description>
 		</method>
 		<method name="get_name">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -98,7 +115,7 @@
 			</description>
 		</method>
 		<method name="get_subname">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -131,6 +148,22 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the node path is empty.
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="NodePath">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

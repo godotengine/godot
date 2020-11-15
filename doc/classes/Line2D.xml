@@ -7,6 +7,8 @@
 		A line through several points in 2D space.
 	</description>
 	<tutorials>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
 		<method name="add_point">
@@ -85,7 +87,7 @@
 			The style for the points between the start and the end.
 		</member>
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array(  )">
-			The points that form the lines. The line is drawn between every point set in this array.
+			The points that form the lines. The line is drawn between every point set in this array. Points are interpreted as local vectors.
 		</member>
 		<member name="round_precision" type="int" setter="set_round_precision" getter="get_round_precision" default="8">
 			The smoothness of the rounded joints and caps. This is only used if a cap or joint is set as round.

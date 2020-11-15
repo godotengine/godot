@@ -64,7 +64,8 @@ def get_opts():
         # XP support dropped after EOL due to missing API for IPv6 and other issues
         # Vista support dropped after EOL due to GH-10243
         ("target_win_version", "Targeted Windows version, >= 0x0601 (Windows 7)", "0x0601"),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
+        EnumVariable("windows_subsystem", "Windows subsystem", "default", ("default", "console", "gui")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         ("msvc_version", "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.", None),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed. Only used on Windows.", False),
@@ -178,12 +179,20 @@ def configure_msvc(env, manual_msvc_config):
 
     # Build type
 
+    if env["tests"]:
+        env["windows_subsystem"] = "console"
+    elif env["windows_subsystem"] == "default":
+        # Default means we use console for debug, gui for release.
+        if "debug" in env["target"]:
+            env["windows_subsystem"] = "console"
+        else:
+            env["windows_subsystem"] = "gui"
+
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["/O2"])
         else:  # optimize for size
             env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
@@ -193,24 +202,28 @@ def configure_msvc(env, manual_msvc_config):
         else:  # optimize for size
             env.Append(CCFLAGS=["/O1"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/OPT:REF"])
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Z7", "/Od", "/EHsc"])
         env.AppendUnique(CPPDEFINES=["DEBUG_ENABLED"])
-        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
-    if env["debug_symbols"] == "full" or env["debug_symbols"] == "yes":
+    if env["debug_symbols"] == "yes":
         env.AppendUnique(CCFLAGS=["/Z7"])
         env.AppendUnique(LINKFLAGS=["/DEBUG"])
+
+    if env["windows_subsystem"] == "gui":
+        env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
+    else:
+        env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compile/link flags
 
     env.AppendUnique(CCFLAGS=["/MT", "/Gd", "/GR", "/nologo"])
-    if int(env["MSVC_VERSION"].split(".")[0]) >= 14:  # vs2015 and later
-        env.AppendUnique(CCFLAGS=["/utf-8"])
+    # Force to use Unicode encoding
+    env.AppendUnique(CCFLAGS=["/utf-8"])
     env.AppendUnique(CXXFLAGS=["/TP"])  # assume all sources are C++
     if manual_msvc_config:  # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
@@ -303,6 +316,15 @@ def configure_mingw(env):
 
     ## Build type
 
+    if env["tests"]:
+        env["windows_subsystem"] = "console"
+    elif env["windows_subsystem"] == "default":
+        # Default means we use console for debug, gui for release.
+        if "debug" in env["target"]:
+            env["windows_subsystem"] = "console"
+        else:
+            env["windows_subsystem"] = "gui"
+
     if env["target"] == "release":
         env.Append(CCFLAGS=["-msse2"])
 
@@ -314,19 +336,13 @@ def configure_mingw(env):
         else:  # optimize for size
             env.Prepend(CCFLAGS=["-Os"])
 
-        env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
-
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["-O2"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
         if env["optimize"] == "speed":  # optimize for speed (default)
             env.Append(CCFLAGS=["-O2"])
@@ -336,6 +352,12 @@ def configure_mingw(env):
     elif env["target"] == "debug":
         env.Append(CCFLAGS=["-g3"])
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
+
+    if env["windows_subsystem"] == "gui":
+        env.Append(LINKFLAGS=["-Wl,--subsystem,windows"])
+    else:
+        env.Append(LINKFLAGS=["-Wl,--subsystem,console"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
 
     ## Compiler configuration
 
@@ -426,7 +448,7 @@ def configure_mingw(env):
     else:
         env.Append(LIBS=["cfgmgr32"])
 
-    ## TODO !!! Reenable when OpenGLES Rendering Device is implemented !!!
+    ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
     # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
     env.Append(LIBS=["opengl32"])
 

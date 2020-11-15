@@ -30,6 +30,7 @@
 
 #include "editor_settings.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
 #include "core/io/config_file.h"
@@ -42,7 +43,6 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/doc_translations.gen.h"
 #include "editor/editor_node.h"
@@ -77,7 +77,7 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 			String name = arr[i];
 			Ref<InputEvent> shortcut = arr[i + 1];
 
-			Ref<ShortCut> sc;
+			Ref<Shortcut> sc;
 			sc.instance();
 			sc->set_shortcut(shortcut);
 			add_shortcut(name, sc);
@@ -120,8 +120,8 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name.operator String() == "shortcuts") {
 		Array arr;
-		for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
-			Ref<ShortCut> sc = E->get();
+		for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
+			Ref<Shortcut> sc = E->get();
 
 			if (optimize_save) {
 				if (!sc->has_meta("original")) {
@@ -445,7 +445,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/show_line_numbers", true);
 	_initial_set("text_editor/appearance/line_numbers_zero_padded", false);
 	_initial_set("text_editor/appearance/show_bookmark_gutter", true);
-	_initial_set("text_editor/appearance/show_breakpoint_gutter", true);
 	_initial_set("text_editor/appearance/show_info_gutter", true);
 	_initial_set("text_editor/appearance/code_folding", true);
 	_initial_set("text_editor/appearance/word_wrap", false);
@@ -544,6 +543,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/navigation_scheme", 0);
 	_initial_set("editors/3d/navigation/invert_y_axis", false);
+	_initial_set("editors/3d/navigation/invert_x_axis", false);
 	hints["editors/3d/navigation/navigation_scheme"] = PropertyInfo(Variant::INT, "editors/3d/navigation/navigation_scheme", PROPERTY_HINT_ENUM, "Godot,Maya,Modo");
 	_initial_set("editors/3d/navigation/zoom_style", 0);
 	hints["editors/3d/navigation/zoom_style"] = PropertyInfo(Variant::INT, "editors/3d/navigation/zoom_style", PROPERTY_HINT_ENUM, "Vertical, Horizontal");
@@ -706,8 +706,8 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/member_variable_color", Color(0.9, 0.31, 0.35));
 	_initial_set("text_editor/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4));
 	_initial_set("text_editor/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
-	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.8, 0.8, 0.4, 0.2));
-	_initial_set("text_editor/highlighting/executing_line_color", Color(0.2, 0.8, 0.2, 0.4));
+	_initial_set("text_editor/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
+	_initial_set("text_editor/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
 	_initial_set("text_editor/highlighting/code_folding_color", Color(0.8, 0.8, 0.8, 0.8));
 	_initial_set("text_editor/highlighting/search_result_color", Color(0.05, 0.25, 0.05, 1));
 	_initial_set("text_editor/highlighting/search_result_border_color", Color(0.41, 0.61, 0.91, 0.38));
@@ -935,6 +935,7 @@ void EditorSettings::create() {
 		String config_file_name = "editor_settings-" + itos(VERSION_MAJOR) + ".tres";
 		config_file_path = config_dir.plus_file(config_file_name);
 		if (!dir->file_exists(config_file_name)) {
+			memdelete(dir);
 			goto fail;
 		}
 
@@ -1479,50 +1480,50 @@ String EditorSettings::get_editor_layouts_config() const {
 
 // Shortcuts
 
-void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut) {
+void EditorSettings::add_shortcut(const String &p_name, Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
 }
 
-Ref<ShortCut> EditorSettings::get_shortcut(const String &p_name) const {
-	const Map<String, Ref<ShortCut>>::Element *E = shortcuts.find(p_name);
+Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
+	const Map<String, Ref<Shortcut>>::Element *E = shortcuts.find(p_name);
 	if (!E) {
-		return Ref<ShortCut>();
+		return Ref<Shortcut>();
 	}
 
 	return E->get();
 }
 
 void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
-	for (const Map<String, Ref<ShortCut>>::Element *E = shortcuts.front(); E; E = E->next()) {
+	for (const Map<String, Ref<Shortcut>>::Element *E = shortcuts.front(); E; E = E->next()) {
 		r_shortcuts->push_back(E->key());
 	}
 }
 
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	if (!EditorSettings::get_singleton()) {
 		return nullptr;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
 	ERR_FAIL_COND_V_MSG(!sc.is_valid(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path + ".");
 
 	return sc;
 }
 
-struct ShortCutMapping {
+struct ShortcutMapping {
 	const char *path;
 	uint32_t keycode;
 };
 
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 #ifdef OSX_ENABLED
 	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
@@ -1543,7 +1544,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	}
 
 	if (!EditorSettings::get_singleton()) {
-		Ref<ShortCut> sc;
+		Ref<Shortcut> sc;
 		sc.instance();
 		sc->set_name(p_name);
 		sc->set_shortcut(ie);
@@ -1551,7 +1552,7 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 		return sc;
 	}
 
-	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
 		sc->set_meta("original", ie); //to compare against changes

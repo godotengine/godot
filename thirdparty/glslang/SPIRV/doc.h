@@ -125,6 +125,7 @@ enum OperandClass {
     OperandVariableLiteralId,
     OperandLiteralNumber,
     OperandLiteralString,
+    OperandVariableLiteralStrings,
     OperandSource,
     OperandExecutionModel,
     OperandAddressing,

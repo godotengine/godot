@@ -7,6 +7,7 @@
 		A node that displays a 2D texture. The texture displayed can be a region from a larger atlas texture, or a frame from a sprite sheet animation.
 	</description>
 	<tutorials>
+		<link title="Instancing Demo">https://godotengine.org/asset-library/asset/148</link>
 	</tutorials>
 	<methods>
 		<method name="get_rect" qualifiers="const">
@@ -44,17 +45,13 @@
 			If [code]true[/code], texture is flipped vertically.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
-			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
+			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="frame_coords" type="Vector2" setter="set_frame_coords" getter="get_frame_coords" default="Vector2( 0, 0 )">
-			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member vframes] or [member hframes] must be greater than 1.
+			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member hframes] or [member vframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.
-		</member>
-		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
-			The normal map gives depth to the Sprite2D.
-			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
@@ -67,15 +64,6 @@
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
-		</member>
-		<member name="shininess" type="float" setter="set_shininess" getter="get_shininess" default="1.0">
-			Strength of the specular light effect of this [Sprite2D].
-		</member>
-		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
-			The color of the specular light effect.
-		</member>
-		<member name="specular_map" type="Texture2D" setter="set_specular_map" getter="get_specular_map">
-			The specular map is used for more control on the shininess effect.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] object to draw.

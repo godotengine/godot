@@ -31,9 +31,9 @@
 #ifndef RENDERING_DEVICE_VULKAN_H
 #define RENDERING_DEVICE_VULKAN_H
 
-#include "core/oa_hash_map.h"
 #include "core/os/thread_safe.h"
-#include "core/rid_owner.h"
+#include "core/templates/oa_hash_map.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/rendering_device.h"
 
 #ifdef DEBUG_ENABLED
@@ -793,6 +793,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass);
 	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
+	Buffer *_get_buffer_from_owner(RID p_buffer, VkPipelineStageFlags &dst_stage_mask, VkAccessFlags &dst_access);
 
 	/**********************/
 	/**** COMPUTE LIST ****/

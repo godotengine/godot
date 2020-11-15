@@ -31,8 +31,8 @@
 #include "dialogs.h"
 
 #include "core/os/keyboard.h"
-#include "core/print_string.h"
-#include "core/translation.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
 #include "line_edit.h"
 
 #ifdef TOOLS_ENABLED
@@ -181,7 +181,7 @@ void AcceptDialog::_update_child_rects() {
 			continue;
 		}
 
-		if (c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c == bg || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -209,7 +209,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 			continue;
 		}
 
-		if (c == hbc || c == label || c->is_set_as_toplevel()) {
+		if (c == hbc || c == label || c->is_set_as_top_level()) {
 			continue;
 		}
 

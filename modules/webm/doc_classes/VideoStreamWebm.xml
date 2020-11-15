@@ -4,7 +4,8 @@
 		[VideoStream] resource for WebM videos.
 	</brief_description>
 	<description>
-		[VideoStream] resource handling the [url=https://www.webmproject.org/]WebM[/url] video format with [code].webm[/code] extension.
+		[VideoStream] resource handling the [url=https://www.webmproject.org/]WebM[/url] video format with [code].webm[/code] extension. Both the VP8 and VP9 codecs are supported. The VP8 and VP9 codecs are more efficient than [VideoStreamTheora], but they require more CPU resources to decode (especially VP9). Both the VP8 and VP9 codecs are decoded on the CPU.
+		[b]Note:[/b] There are known bugs and performance issues with WebM video playback in Godot. If you run into problems, try using the Ogg Theora format instead: [VideoStreamTheora]
 	</description>
 	<tutorials>
 	</tutorials>

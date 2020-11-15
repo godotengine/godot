@@ -536,6 +536,7 @@ msgid "Seconds"
 msgstr "Segons"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -714,7 +715,7 @@ msgstr "Distingeix entre majúscules i minúscules"
 msgid "Whole Words"
 msgstr "Paraules senceres"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 #, fuzzy
 msgid "Replace"
 msgstr "Reemplaçar"
@@ -910,6 +911,11 @@ msgid "Signals"
 msgstr "Senyals"
 
 #: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Filter signals"
+msgstr "Filtrat de Fitxers"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Esteu segur que voleu eliminar totes les connexions d'aquest senyal?"
 
@@ -947,7 +953,7 @@ msgid "Recent:"
 msgstr "Recents:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Cerca:"
@@ -1127,6 +1133,9 @@ msgstr "Fundadors del Projecte"
 msgid "Lead Developer"
 msgstr "Desenvolupador Principal"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Gestor del Projecte "
@@ -1146,6 +1155,16 @@ msgstr "Patrocinadors Platinum"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Patrocinadors Gold"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Silver Sponsors"
+msgstr "Donants Silver"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donants Bronze"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1588,6 +1607,37 @@ msgstr ""
 "Activeu \"Import Etc\" a Configuració del Projecte o desactiveu la opció "
 "'Driver Fallback Enabled''."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"La plataforma de destí requereix compressió de textures 'ETC' per a GLES2. "
+"Activa 'Import Etc' en la Configuració del Projecte."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"La plataforma de destí requereix compressió de textures 'ETC' per a GLES2. "
+"Activa 'Import Etc 2' en la Configuració del Projecte."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"La plataforma de destinació requereix una compressió de textura 'ETC' per a "
+"utilitzar GLES2 com a controlador alternatiu.\n"
+"Activeu \"Import Etc\" a Configuració del Projecte o desactiveu la opció "
+"'Driver Fallback Enabled''."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1626,16 +1676,17 @@ msgid "Scene Tree Editing"
 msgstr "Edició de l'arbre d'escenes"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Importació"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Nodes"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Importació i sistema de fitxers"
+#, fuzzy
+msgid "FileSystem Dock"
+msgstr "Sistema de Fitxers"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Importació"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1899,7 +1950,7 @@ msgstr "Directoris i Fitxers:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Vista prèvia:"
 
@@ -2787,24 +2838,28 @@ msgstr "Desplegar amb Depuració Remota"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"En ser exportat o desplegat, l'executable resultant intenta connectar-se a "
-"l'IP d'aquest equip per iniciar-ne la depuració."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Desplegament Reduït amb Sistema de Fitxers en Xarxa"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Amb aquesta opció activada, 'Exportar' o 'Desplegar' generen un executable "
 "reduït.\n"
@@ -2818,9 +2873,10 @@ msgid "Visible Collision Shapes"
 msgstr "Formes de Col·lisió Visibles"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Les formes de col·lisió i nodes de difusió de raigs (raycast) (per a 2D i "
 "3D), son visibles durant l'execució del joc quan s'activa aquesta opció."
@@ -2830,23 +2886,26 @@ msgid "Visible Navigation"
 msgstr "Navegació Visible"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Aquesta opció fa visibles les malles i polígons de Navegació durant "
 "l'execució del joc."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sincronitzar Canvis en Escena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "En activar aquesta opció, els canvis fets en l'Editor es repliquen en el joc "
 "en execució.\n"
@@ -2854,15 +2913,17 @@ msgstr ""
 "millora el rendiment."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Sincronitzar Canvis en Scripts"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "En activar aquesta opció, els Scripts, en ser desats, es recarreguen en el "
 "joc en execució.\n"
@@ -2923,12 +2984,11 @@ msgstr "Administrar Plantilles d'Exportació..."
 msgid "Help"
 msgstr "Ajuda"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Cerca"
 
@@ -3355,9 +3415,11 @@ msgid "Add Key/Value Pair"
 msgstr "Afegeix una Parella de Clau/Valor"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "No s'ha trobat cap patró d'exportació executable per aquesta plataforma. \n"
 "Afegiu un patró predeterminat en el menú d'exportació."
@@ -4374,7 +4436,6 @@ msgid "Add Node to BlendTree"
 msgstr "Afegeix Nodes des d'Arbre"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Node mogut"
 
@@ -5157,7 +5218,7 @@ msgid "Bake Lightmaps"
 msgstr "Precalcular Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Previsualització"
 
@@ -5225,31 +5286,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Crea guies horitzontal i vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Moure pivot"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Rotate CanvasItem"
-msgstr "Modifica el elementCanvas"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Moure àncora"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Resize CanvasItem"
+msgid "Rotate %d CanvasItems"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Scale CanvasItem"
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Move CanvasItem"
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Modifica el elementCanvas"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Modifica el elementCanvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6568,12 +6648,22 @@ msgid "Move Points"
 msgstr "Moure Punts"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Gira"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Arrossega: gira"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Maj.: Mou'ho tot"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Maj.+Ctrl: Escala"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Gira"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6621,12 +6711,14 @@ msgid "Radius:"
 msgstr "Radi:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Polígon -> UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Crear Polígon i UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Polígon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Convertir a Polígon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -7083,17 +7175,17 @@ msgstr "Ressaltador de sintaxi"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Anar a"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Marcadors"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Punts d’interrupció"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Anar a"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7893,7 +7985,8 @@ msgid "New Animation"
 msgstr "Nova Animació"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Velocitat (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8226,6 +8319,15 @@ msgstr "Assigna un recurs TileSet a aquest TileMap per a usar-ne les peces."
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "Pinta Rajola"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Maj + RMB: dibuixar una línia\n"
+"Maj + Ctrl + RMB: pintar rectangle"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -8815,6 +8917,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Afegir node al VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node mogut"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Duplicar Nodes"
 
@@ -8831,6 +8938,11 @@ msgstr "Eliminar Nodes"
 #, fuzzy
 msgid "Visual Shader Input Type Changed"
 msgstr "El tipus d'entrada VisualShader ha canviat"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Definir nom uniforme"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9583,6 +9695,10 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
@@ -9641,19 +9757,6 @@ msgstr "El mode Visual Shader ha canviat"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Executable"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Add initial export..."
-msgstr "Afegeix una Entrada"
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr ""
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Eliminar el Pedaç '%s' de la llista?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9750,19 +9853,6 @@ msgid ""
 msgstr ""
 "Filtres per excloure fitxers/carpetes del projecte\n"
 "(separats per comes, ex:*.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Pedaços"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Crea un Pedaç"
-
-#: editor/project_export.cpp
-#, fuzzy
-msgid "Pack File"
-msgstr "Fitxers"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -10136,6 +10226,7 @@ msgstr ""
 "existents?\n"
 "Això pot trigar una estona."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Gestor del Projecte"
@@ -10581,11 +10672,18 @@ msgid "Batch Rename"
 msgstr "Reanomena"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Reemplaça: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Prefix"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Sufix"
 
 #: editor/rename_dialog.cpp
@@ -10635,7 +10733,8 @@ msgid "Per-level Counter"
 msgstr "Comptador per nivell"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Si s'estableix el comptador es reinicia per a cada grup de nodes fills"
 
 #: editor/rename_dialog.cpp
@@ -10697,7 +10796,7 @@ msgstr "Resetejar"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
-msgid "Regular Expression Error"
+msgid "Regular Expression Error:"
 msgstr "Expressions Regulars"
 
 #: editor/rename_dialog.cpp
@@ -12366,6 +12465,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 #, fuzzy
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
@@ -12405,9 +12520,14 @@ msgstr ""
 "compilació d'Android."
 
 #: platform/android/export/export.cpp
-#, fuzzy
-msgid "No build apk generated at: "
-msgstr "No s'ha generat cap compilació apk a: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12860,6 +12980,11 @@ msgstr ""
 "Les GIProbes no estan suportades pel controlador de vídeo GLES2.\n"
 "Utilitzeu un BakedLightmap en el seu lloc."
 
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
+
 #: scene/3d/light.cpp
 #, fuzzy
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -13166,6 +13291,53 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Move pivot"
+#~ msgstr "Moure pivot"
+
+#~ msgid "Move anchor"
+#~ msgstr "Moure àncora"
+
+#, fuzzy
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Modifica el elementCanvas"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Polígon -> UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Polígon"
+
+#, fuzzy
+#~ msgid "Add initial export..."
+#~ msgstr "Afegeix una Entrada"
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Eliminar el Pedaç '%s' de la llista?"
+
+#~ msgid "Patches"
+#~ msgstr "Pedaços"
+
+#~ msgid "Make Patch"
+#~ msgstr "Crea un Pedaç"
+
+#, fuzzy
+#~ msgid "Pack File"
+#~ msgstr "Fitxers"
+
+#, fuzzy
+#~ msgid "No build apk generated at: "
+#~ msgstr "No s'ha generat cap compilació apk a: "
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Importació i sistema de fitxers"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "En ser exportat o desplegat, l'executable resultant intenta connectar-se "
+#~ "a l'IP d'aquest equip per iniciar-ne la depuració."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

@@ -262,6 +262,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	if (gn) {
 		gn->disconnect("offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
+		gn->disconnect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::update));
 	}
 }
 
@@ -546,7 +547,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 }
 
 bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos) {
-	if (p_control->is_set_as_toplevel() || !p_control->is_visible()) {
+	if (p_control->is_set_as_top_level() || !p_control->is_visible()) {
 		return false;
 	}
 
@@ -774,6 +775,11 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (mm.is_valid() && dragging) {
+		if (!moving_selection) {
+			emit_signal("begin_node_move");
+			moving_selection = true;
+		}
+
 		just_selected = true;
 		drag_accum += mm->get_relative();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -880,16 +886,17 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			if (drag_accum != Vector2()) {
-				emit_signal("_begin_node_move");
-
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 					if (gn && gn->is_selected()) {
 						gn->set_drag(false);
 					}
 				}
+			}
 
-				emit_signal("_end_node_move");
+			if (moving_selection) {
+				emit_signal("end_node_move");
+				moving_selection = false;
 			}
 
 			dragging = false;
@@ -1280,8 +1287,8 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
-	ADD_SIGNAL(MethodInfo("_begin_node_move"));
-	ADD_SIGNAL(MethodInfo("_end_node_move"));
+	ADD_SIGNAL(MethodInfo("begin_node_move"));
+	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "ofs")));
 }
 

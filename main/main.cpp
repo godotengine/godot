@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
@@ -41,12 +42,11 @@
 #include "core/io/image_loader.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/register_core_types.h"
-#include "core/translation.h"
+#include "core/string/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
@@ -334,7 +334,10 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -d, --debug                      Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("  -b, --breakpoints                Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                      Enable profiling in the script debugger.\n");
+#if DEBUG_ENABLED
+	OS::get_singleton()->print("  --vk-layers                      Enable Vulkan Validation layers for debugging.\n");
 	OS::get_singleton()->print("  --gpu-abort                      Abort on GPU errors (usually validation layer errors), may help see the problem if your system freezes.\n");
+#endif
 	OS::get_singleton()->print("  --remote-debug <uri>             Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions               Show collision shapes when running the scene.\n");
@@ -369,16 +372,94 @@ void Main::print_help(const char *p_binary) {
 #endif
 }
 
+#ifdef TESTS_ENABLED
+// The order is the same as in `Main::setup()`, only core and some editor types
+// are initialized here. This also combines `Main::setup2()` initialization.
+Error Main::test_setup() {
+	OS::get_singleton()->initialize();
+
+	engine = memnew(Engine);
+
+	ClassDB::init();
+
+	register_core_types();
+	register_core_driver_types();
+
+	globals = memnew(ProjectSettings);
+
+	GLOBAL_DEF("debug/settings/crash_handler/message",
+			String("Please include this when reporting the bug on https://github.com/godotengine/godot/issues"));
+
+	// From `Main::setup2()`.
+	preregister_module_types();
+	preregister_server_types();
+
+	register_core_singletons();
+
+	register_server_types();
+	register_scene_types();
+
+#ifdef TOOLS_ENABLED
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	EditorNode::register_editor_types();
+
+	ClassDB::set_current_api(ClassDB::API_CORE);
+#endif
+	register_platform_apis();
+
+	register_module_types();
+	register_driver_types();
+
+	ClassDB::set_current_api(ClassDB::API_NONE);
+
+	_start_success = true;
+
+	return OK;
+}
+// The order is the same as in `Main::cleanup()`.
+void Main::test_cleanup() {
+	ERR_FAIL_COND(!_start_success);
+
+	EngineDebugger::deinitialize();
+
+	ResourceLoader::remove_custom_loaders();
+	ResourceSaver::remove_custom_savers();
+
+#ifdef TOOLS_ENABLED
+	EditorNode::unregister_editor_types();
+#endif
+	unregister_driver_types();
+	unregister_module_types();
+	unregister_platform_apis();
+	unregister_scene_types();
+	unregister_server_types();
+
+	OS::get_singleton()->finalize();
+
+	if (globals) {
+		memdelete(globals);
+	}
+	if (engine) {
+		memdelete(engine);
+	}
+
+	unregister_core_driver_types();
+	unregister_core_types();
+
+	OS::get_singleton()->finalize_core();
+}
+#endif
+
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 #ifdef TESTS_ENABLED
 	for (int x = 0; x < argc; x++) {
-		if (strncmp(argv[x], "--test", 6) == 0) {
+		if ((strncmp(argv[x], "--test", 6) == 0) && (strlen(argv[x]) == 6)) {
 			tests_need_run = true;
-			OS::get_singleton()->initialize();
-			StringName::setup();
+			// TODO: need to come up with different test contexts.
+			// Not every test requires high-level functionality like `ClassDB`.
+			test_setup();
 			int status = test_main(argc, argv);
-			StringName::cleanup();
-			// TODO: fix OS::singleton cleanup
+			test_cleanup();
 			return status;
 		}
 	}
@@ -617,9 +698,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-w" || I->get() == "--windowed") { // force windowed window
 
 			init_windowed = true;
-		} else if (I->get() == "--gpu-abort") { // force windowed window
-
+#ifdef DEBUG_ENABLED
+		} else if (I->get() == "--vk-layers") {
+			Engine::singleton->use_validation_layers = true;
+		} else if (I->get() == "--gpu-abort") {
 			Engine::singleton->abort_on_gpu_errors = true;
+#endif
 		} else if (I->get() == "--tablet-driver") {
 			if (I->next()) {
 				tablet_driver = I->next()->get();
@@ -1079,13 +1163,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/quality/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan,GLES2"));
+					PROPERTY_HINT_ENUM, "Vulkan"));
 	if (display_driver == "") {
 		display_driver = GLOBAL_GET("rendering/quality/driver/driver_name");
 	}
-
-	// Assigning here even though it's GLES2-specific, to be sure that it appears in docs
-	GLOBAL_DEF("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround", false);
 
 	GLOBAL_DEF("display/window/size/width", 1024);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width",
@@ -1143,7 +1224,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		if (bool(GLOBAL_GET("display/window/size/always_on_top"))) {
-			window_flags |= DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP;
+			window_flags |= DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
 		}
 	}
 
@@ -1192,16 +1273,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_layered = false;
 	}
 
-	Engine::get_singleton()->_pixel_snap = GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false);
 	OS::get_singleton()->_keep_screen_on = GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/threads/thread_model", OS::RENDER_THREAD_SAFE);
 	}
 
 	if (rtm >= 0 && rtm < 3) {
+#ifdef NO_THREADS
+		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
+#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
+#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -1290,6 +1374,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"0,33200,1,or_greater")); // No negative numbers
 
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
+	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.150);
 
 	Engine::get_singleton()->set_frame_delay(frame_delay);
 
@@ -1490,7 +1575,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
 		if (boot_logo.is_valid()) {
-			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
 			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale,
 					boot_logo_filter);
 
@@ -1524,7 +1608,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
 			PropertyInfo(Variant::STRING, "application/config/icon",
-					PROPERTY_HINT_FILE, "*.png,*.webp"));
+					PROPERTY_HINT_FILE, "*.png,*.webp,*.svg,*.svgz"));
 
 	GLOBAL_DEF("application/config/macos_native_icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon",
@@ -1730,7 +1814,6 @@ bool Main::start() {
 		}
 	}
 
-	String main_loop_type;
 #ifdef TOOLS_ENABLED
 	if (doc_tool != "") {
 		Engine::get_singleton()->set_editor_hint(
@@ -1825,6 +1908,7 @@ bool Main::start() {
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	};
+	String main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 
 	if (script != "") {
 		Ref<Script> script_res = ResourceLoader::load(script);
@@ -1855,9 +1939,23 @@ bool Main::start() {
 		} else {
 			return false;
 		}
-
-	} else {
-		main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "");
+	} else { // Not based on script path.
+		if (!editor && !ClassDB::class_exists(main_loop_type) && ScriptServer::is_global_class(main_loop_type)) {
+			String script_path = ScriptServer::get_global_class_path(main_loop_type);
+			Ref<Script> script_res = ResourceLoader::load(script_path);
+			StringName script_base = ScriptServer::get_global_class_native_base(main_loop_type);
+			Object *obj = ClassDB::instance(script_base);
+			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
+			if (!script_loop) {
+				if (obj) {
+					memdelete(obj);
+				}
+				DisplayServer::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
+				ERR_FAIL_V_MSG(false, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
+			}
+			script_loop->set_init_script(script_res);
+			main_loop = script_loop;
+		}
 	}
 
 	if (!main_loop && main_loop_type == "") {
@@ -2134,7 +2232,7 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
-				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
+				if (game_path != String(GLOBAL_GET("application/run/main_scene")) || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK) {
 						ERR_PRINT("Failed to load scene");

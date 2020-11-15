@@ -18,6 +18,11 @@ android {
         targetSdkVersion versions.targetSdk
     }
 
+    compileOptions {
+        sourceCompatibility versions.javaVersion
+        targetCompatibility versions.javaVersion
+    }
+
     lintOptions {
         abortOnError false
         disable 'MissingTranslation', 'UnusedResources'
@@ -50,15 +55,6 @@ android {
 
         def buildType = variant.buildType.name.capitalize()
 
-        def taskPrefix = ""
-        if (project.path != ":") {
-            taskPrefix = project.path + ":"
-        }
-
-        // Disable the externalNativeBuild* task as it would cause build failures since the cmake build
-        // files is only setup for editing support.
-        gradle.startParameter.excludedTaskNames += taskPrefix + "externalNativeBuild" + buildType
-
         def releaseTarget = buildType.toLowerCase()
         if (releaseTarget == null || releaseTarget == "") {
             throw new GradleException("Invalid build type: " + buildType)
@@ -77,11 +73,5 @@ android {
 
         // Schedule the tasks so the generated libs are present before the aar file is packaged.
         tasks["merge${buildType}JniLibFolders"].dependsOn taskName
-    }
-
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
     }
 }

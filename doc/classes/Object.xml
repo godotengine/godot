@@ -395,7 +395,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Removes a given entry from the object's metadata.
+				Removes a given entry from the object's metadata. See also [method set_meta].
 			</description>
 		</method>
 		<method name="set">
@@ -464,7 +464,8 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Adds or changes a given entry in the object's metadata. Metadata are serialized, and can take any [Variant] value.
+				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
+				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code].
 			</description>
 		</method>
 		<method name="set_script">
@@ -486,13 +487,35 @@
 			</description>
 		</method>
 		<method name="tr" qualifiers="const">
-			<return type="StringName">
+			<return type="String">
 			</return>
 			<argument index="0" name="message" type="StringName">
 			</argument>
+			<argument index="1" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
 			<description>
-				Translates a message using translation catalogs configured in the Project Settings.
+				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
 				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
+				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
+			</description>
+		</method>
+		<method name="tr_n" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="message" type="StringName">
+			</argument>
+			<argument index="1" name="plural_message" type="StringName">
+			</argument>
+			<argument index="2" name="n" type="int">
+			</argument>
+			<argument index="3" name="context" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
+				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
+				See [url=https://docs.godotengine.org/en/latest/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
 			</description>
 		</method>
 	</methods>

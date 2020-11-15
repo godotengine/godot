@@ -30,13 +30,13 @@
 
 #include "doc_data.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/object/script_language.h"
 #include "core/os/dir_access.h"
-#include "core/project_settings.h"
-#include "core/script_language.h"
 #include "core/version.h"
 #include "scene/resources/theme.h"
 
@@ -316,8 +316,7 @@ void DocData::generate(bool p_basic_types) {
 
 			if (name == "ProjectSettings") {
 				// Special case for project settings, so that settings are not taken from the current project's settings
-				if (E->get().name == "script" ||
-						ProjectSettings::get_singleton()->get_order(E->get().name) >= ProjectSettings::NO_BUILTIN_ORDER_BASE) {
+				if (E->get().name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E->get().name)) {
 					continue;
 				}
 				if (E->get().usage & PROPERTY_USAGE_EDITOR) {
@@ -562,18 +561,87 @@ void DocData::generate(bool p_basic_types) {
 		c.name = cname;
 
 		Callable::CallError cerror;
-		Variant v = Variant::construct(Variant::Type(i), nullptr, 0, cerror);
+		Variant v;
+		Variant::construct(Variant::Type(i), v, nullptr, 0, cerror);
 
 		List<MethodInfo> method_list;
 		v.get_method_list(&method_list);
 		method_list.sort();
 		Variant::get_constructor_list(Variant::Type(i), &method_list);
 
+		for (int j = 0; j < Variant::OP_AND; j++) { // Showing above 'and' is pretty confusing and there are a lot of variations.
+			for (int k = 0; k < Variant::VARIANT_MAX; k++) {
+				Variant::Type rt = Variant::get_operator_return_type(Variant::Operator(j), Variant::Type(i), Variant::Type(k));
+				if (rt != Variant::NIL) { // Has operator.
+					// Skip String % operator as it's registered separately for each Variant arg type,
+					// we'll add it manually below.
+					if (i == Variant::STRING && Variant::Operator(j) == Variant::OP_MODULE) {
+						continue;
+					}
+					MethodInfo mi;
+					mi.name = "operator " + Variant::get_operator_name(Variant::Operator(j));
+					mi.return_val.type = rt;
+					if (k != Variant::NIL) {
+						PropertyInfo arg;
+						arg.name = "right";
+						arg.type = Variant::Type(k);
+						mi.arguments.push_back(arg);
+					}
+					method_list.push_back(mi);
+				}
+			}
+		}
+
+		if (i == Variant::STRING) {
+			// We skipped % operator above, and we register it manually once for Variant arg type here.
+			MethodInfo mi;
+			mi.name = "operator %";
+			mi.return_val.type = Variant::STRING;
+
+			PropertyInfo arg;
+			arg.name = "right";
+			arg.type = Variant::NIL;
+			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
+		}
+
+		if (Variant::is_keyed(Variant::Type(i))) {
+			MethodInfo mi;
+			mi.name = "operator []";
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+
+			PropertyInfo arg;
+			arg.name = "key";
+			arg.type = Variant::NIL;
+			arg.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
+		} else if (Variant::has_indexing(Variant::Type(i))) {
+			MethodInfo mi;
+			mi.name = "operator []";
+			mi.return_val.type = Variant::get_indexed_element_type(Variant::Type(i));
+			PropertyInfo arg;
+			arg.name = "index";
+			arg.type = Variant::INT;
+			mi.arguments.push_back(arg);
+
+			method_list.push_back(mi);
+		}
+
 		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
 			MethodInfo &mi = E->get();
 			MethodDoc method;
 
 			method.name = mi.name;
+			if (method.name == cname) {
+				method.qualifiers = "constructor";
+			} else if (method.name.begins_with("operator")) {
+				method.qualifiers = "operator";
+			}
 
 			for (int j = 0; j < mi.arguments.size(); j++) {
 				PropertyInfo arginfo = mi.arguments[j];
@@ -635,16 +703,16 @@ void DocData::generate(bool p_basic_types) {
 		ClassDoc &c = class_list[cname];
 		c.name = cname;
 
-		for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			ConstantDoc cd;
-			cd.name = GlobalConstants::get_global_constant_name(i);
-			if (!GlobalConstants::get_ignore_value_in_docs(i)) {
-				cd.value = itos(GlobalConstants::get_global_constant_value(i));
+			cd.name = CoreConstants::get_global_constant_name(i);
+			if (!CoreConstants::get_ignore_value_in_docs(i)) {
+				cd.value = itos(CoreConstants::get_global_constant_value(i));
 				cd.is_value_valid = true;
 			} else {
 				cd.is_value_valid = false;
 			}
-			cd.enumeration = GlobalConstants::get_global_constant_enum(i);
+			cd.enumeration = CoreConstants::get_global_constant_enum(i);
 			c.constants.push_back(cd);
 		}
 
@@ -667,6 +735,43 @@ void DocData::generate(bool p_basic_types) {
 				pd.type = pd.type.substr(1, pd.type.length());
 			}
 			c.properties.push_back(pd);
+		}
+
+		List<StringName> utility_functions;
+		Variant::get_utility_function_list(&utility_functions);
+		utility_functions.sort_custom<StringName::AlphCompare>();
+		for (List<StringName>::Element *E = utility_functions.front(); E; E = E->next()) {
+			MethodDoc md;
+			md.name = E->get();
+			//return
+			if (Variant::has_utility_function_return_value(E->get())) {
+				PropertyInfo pi;
+				pi.type = Variant::get_utility_function_return_type(E->get());
+				if (pi.type == Variant::NIL) {
+					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+				}
+				DocData::ArgumentDoc ad;
+				argument_doc_from_arginfo(ad, pi);
+				md.return_type = ad.type;
+			}
+
+			if (Variant::is_utility_function_vararg(E->get())) {
+				md.qualifiers = "vararg";
+			} else {
+				for (int i = 0; i < Variant::get_utility_function_argument_count(E->get()); i++) {
+					PropertyInfo pi;
+					pi.type = Variant::get_utility_function_argument_type(E->get(), i);
+					pi.name = Variant::get_utility_function_argument_name(E->get(), i);
+					if (pi.type == Variant::NIL) {
+						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+					}
+					DocData::ArgumentDoc ad;
+					argument_doc_from_arginfo(ad, pi);
+					md.arguments.push_back(ad);
+				}
+			}
+
+			c.methods.push_back(md);
 		}
 	}
 
@@ -1097,7 +1202,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 			}
 
-			_write_string(f, 2, "<method name=\"" + m.name + "\"" + qualifiers + ">");
+			_write_string(f, 2, "<method name=\"" + m.name.xml_escape() + "\"" + qualifiers + ">");
 
 			if (m.return_type != "") {
 				String enum_text;

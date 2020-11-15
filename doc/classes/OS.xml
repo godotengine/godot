@@ -7,6 +7,7 @@
 		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
+		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
 	</tutorials>
 	<methods>
 		<method name="can_use_threads" qualifiers="const">
@@ -232,13 +233,6 @@
 			</return>
 			<description>
 				Returns the number of threads available on the host machine.
-			</description>
-		</method>
-		<method name="get_splash_tick_msec" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Returns the amount of time in milliseconds it took for the boot logo to appear.
 			</description>
 		</method>
 		<method name="get_static_memory_peak_usage" qualifiers="const">

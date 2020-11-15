@@ -144,7 +144,10 @@ EditorAbout::EditorAbout() {
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
-	dev_sections.push_back(TTR("Project Manager ")); // " " appended to distinguish between 'project supervisor' and 'project list'
+	// TRANSLATORS: This refers to a job title.
+	// The trailing space is used to distinguish with the project list application,
+	// you do not have to keep it in your translation.
+	dev_sections.push_back(TTR("Project Manager "));
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
 		AUTHORS_PROJECT_MANAGERS, AUTHORS_DEVELOPERS };
@@ -155,12 +158,15 @@ EditorAbout::EditorAbout() {
 	List<String> donor_sections;
 	donor_sections.push_back(TTR("Platinum Sponsors"));
 	donor_sections.push_back(TTR("Gold Sponsors"));
+	donor_sections.push_back(TTR("Silver Sponsors"));
+	donor_sections.push_back(TTR("Bronze Sponsors"));
 	donor_sections.push_back(TTR("Mini Sponsors"));
 	donor_sections.push_back(TTR("Gold Donors"));
 	donor_sections.push_back(TTR("Silver Donors"));
 	donor_sections.push_back(TTR("Bronze Donors"));
-	const char *const *donor_src[] = { DONORS_SPONSOR_PLAT, DONORS_SPONSOR_GOLD,
-		DONORS_SPONSOR_MINI, DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
+	const char *const *donor_src[] = { DONORS_SPONSOR_PLATINUM, DONORS_SPONSOR_GOLD,
+		DONORS_SPONSOR_SILVER, DONORS_SPONSOR_BRONZE, DONORS_SPONSOR_MINI,
+		DONORS_GOLD, DONORS_SILVER, DONORS_BRONZE };
 	tc->add_child(_populate_list(TTR("Donors"), donor_sections, donor_src, 3));
 
 	// License

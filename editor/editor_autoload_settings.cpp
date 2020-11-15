@@ -30,8 +30,8 @@
 
 #include "editor_autoload_settings.h"
 
-#include "core/global_constants.h"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "editor_node.h"
 #include "editor_scale.h"
 #include "project_settings_editor.h"
@@ -89,8 +89,8 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		}
 	}
 
-	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
-		if (GlobalConstants::get_global_constant_name(i) == p_name) {
+	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
+		if (CoreConstants::get_global_constant_name(i) == p_name) {
 			if (r_error) {
 				*r_error = TTR("Invalid name.") + "\n" + TTR("Must not collide with an existing global constant name.");
 			}

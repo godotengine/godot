@@ -79,8 +79,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			uv_button[UV_MODE_SCALE]->set_icon(get_theme_icon("ToolScale", "EditorIcons"));
 			uv_button[UV_MODE_ADD_POLYGON]->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			uv_button[UV_MODE_REMOVE_POLYGON]->set_icon(get_theme_icon("Close", "EditorIcons"));
-			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_theme_icon("PaintVertex", "EditorIcons"));
-			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_theme_icon("UnpaintVertex", "EditorIcons"));
+			uv_button[UV_MODE_PAINT_WEIGHT]->set_icon(get_theme_icon("Bucket", "EditorIcons"));
+			uv_button[UV_MODE_CLEAR_WEIGHT]->set_icon(get_theme_icon("Clear", "EditorIcons"));
 
 			b_snap_grid->set_icon(get_theme_icon("Grid", "EditorIcons"));
 			b_snap_enable->set_icon(get_theme_icon("SnapGrid", "EditorIcons"));
@@ -199,7 +199,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		uv_button[UV_MODE_CREATE]->hide();
 		uv_button[UV_MODE_CREATE_INTERNAL]->hide();
 		uv_button[UV_MODE_REMOVE_INTERNAL]->hide();
-		for (int i = UV_MODE_MOVE; i <= UV_MODE_SCALE; i++) {
+		for (int i = UV_MODE_EDIT_POINT; i <= UV_MODE_SCALE; i++) {
 			uv_button[i]->show();
 		}
 		uv_button[UV_MODE_ADD_POLYGON]->hide();
@@ -1269,6 +1269,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_main_vb->add_child(uv_mode_hb);
 	for (int i = 0; i < UV_MODE_MAX; i++) {
 		uv_button[i] = memnew(Button);
+		uv_button[i]->set_flat(true);
 		uv_button[i]->set_toggle_mode(true);
 		uv_mode_hb->add_child(uv_button[i]);
 		uv_button[i]->connect("pressed", callable_mp(this, &Polygon2DEditor::_uv_mode), varray(i));
@@ -1325,11 +1326,16 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 	uv_main_hsc->add_child(uv_edit_draw);
 	uv_edit_draw->set_h_size_flags(SIZE_EXPAND_FILL);
 	uv_edit_draw->set_custom_minimum_size(Size2(200, 200) * EDSCALE);
+
+	Control *space = memnew(Control);
+	uv_mode_hb->add_child(space);
+	space->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	uv_menu = memnew(MenuButton);
 	uv_mode_hb->add_child(uv_menu);
 	uv_menu->set_text(TTR("Edit"));
-	uv_menu->get_popup()->add_item(TTR("Polygon->UV"), UVEDIT_POLYGON_TO_UV);
-	uv_menu->get_popup()->add_item(TTR("UV->Polygon"), UVEDIT_UV_TO_POLYGON);
+	uv_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), UVEDIT_POLYGON_TO_UV);
+	uv_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), UVEDIT_UV_TO_POLYGON);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Clear UV"), UVEDIT_UV_CLEAR);
 	uv_menu->get_popup()->add_separator();

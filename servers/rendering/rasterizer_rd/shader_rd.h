@@ -31,11 +31,11 @@
 #ifndef SHADER_RD_H
 #define SHADER_RD_H
 
-#include "core/hash_map.h"
-#include "core/map.h"
 #include "core/os/mutex.h"
-#include "core/rid_owner.h"
-#include "core/variant.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/map.h"
+#include "core/templates/rid_owner.h"
+#include "core/variant/variant.h"
 
 #include <stdio.h>
 /**

@@ -33,7 +33,7 @@
 
 #include <mono/jit/jit.h>
 
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 namespace gdmono {
 

@@ -12,8 +12,14 @@
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="Viewport and canvas transforms">https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
+		<link title="Viewports tutorial index">https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
+		<link title="GUI in 3D Demo">https://godotengine.org/asset-library/asset/127</link>
+		<link title="3D in 2D Demo">https://godotengine.org/asset-library/asset/128</link>
+		<link title="2D in 3D Demo">https://godotengine.org/asset-library/asset/129</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/130</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/541</link>
+		<link title="3D Viewport Scaling Demo">https://godotengine.org/asset-library/asset/586</link>
 	</tutorials>
 	<methods>
 		<method name="find_world_2d" qualifiers="const">
@@ -244,8 +250,14 @@
 			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
 		</member>
+		<member name="snap_2d_transforms_to_pixel" type="bool" setter="set_snap_2d_transforms_to_pixel" getter="is_snap_2d_transforms_to_pixel_enabled" default="false">
+		</member>
+		<member name="snap_2d_vertices_to_pixel" type="bool" setter="set_snap_2d_vertices_to_pixel" getter="is_snap_2d_vertices_to_pixel_enabled" default="false">
+		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
+		</member>
+		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.

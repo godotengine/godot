@@ -32,8 +32,8 @@
 
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
-#include "core/message_queue.h"
-#include "core/print_string.h"
+#include "core/object/message_queue.h"
+#include "core/string/print_string.h"
 #include "instance_placeholder.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
@@ -1094,7 +1094,7 @@ String increase_numeric_string(const String &s) {
 		if (!carry) {
 			break;
 		}
-		CharType n = s[i];
+		char32_t n = s[i];
 		if (n == '9') { // keep carry as true: 9 + 1
 			res[i] = '0';
 		} else {
@@ -1155,7 +1155,7 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	String name_string = name;
 	String nums;
 	for (int i = name_string.length() - 1; i >= 0; i--) {
-		CharType n = name_string[i];
+		char32_t n = name_string[i];
 		if (n >= '0' && n <= '9') {
 			nums = String::chr(name_string[i]) + nums;
 		} else {
@@ -1327,6 +1327,9 @@ int Node::get_child_count() const {
 }
 
 Node *Node::get_child(int p_index) const {
+	if (p_index < 0) {
+		p_index += data.children.size();
+	}
 	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
 
 	return data.children[p_index];
@@ -2852,6 +2855,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_PATH_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PROCESS);
 	BIND_CONSTANT(NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	BIND_CONSTANT(NOTIFICATION_POST_ENTER_TREE);
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_EXIT);

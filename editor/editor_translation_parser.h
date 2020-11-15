@@ -31,8 +31,8 @@
 #ifndef EDITOR_TRANSLATION_PARSER_H
 #define EDITOR_TRANSLATION_PARSER_H
 
-#include "core/error_list.h"
-#include "core/reference.h"
+#include "core/error/error_list.h"
+#include "core/object/reference.h"
 
 class EditorTranslationParserPlugin : public Reference {
 	GDCLASS(EditorTranslationParserPlugin, Reference);
@@ -41,7 +41,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_extracted_strings);
+	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 };
 

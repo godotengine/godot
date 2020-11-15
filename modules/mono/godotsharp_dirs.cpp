@@ -30,9 +30,9 @@
 
 #include "godotsharp_dirs.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
@@ -122,7 +122,7 @@ public:
 
 private:
 	_GodotSharpDirs() {
-		res_data_dir = "res://.mono";
+		res_data_dir = "res://.godot/mono";
 		res_metadata_dir = res_data_dir.plus_file("metadata");
 		res_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 		res_assemblies_dir = res_assemblies_base_dir.plus_file(GDMono::get_expected_api_build_config());

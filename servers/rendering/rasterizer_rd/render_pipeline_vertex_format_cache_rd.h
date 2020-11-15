@@ -31,7 +31,7 @@
 #ifndef RENDER_PIPELINE_CACHE_RD_H
 #define RENDER_PIPELINE_CACHE_RD_H
 
-#include "core/spin_lock.h"
+#include "core/os/spin_lock.h"
 #include "servers/rendering/rendering_device.h"
 
 class RenderPipelineVertexFormatCacheRD {

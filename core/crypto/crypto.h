@@ -32,10 +32,10 @@
 #define CRYPTO_H
 
 #include "core/crypto/hashing_context.h"
+#include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/reference.h"
-#include "core/resource.h"
+#include "core/object/reference.h"
 
 class CryptoKey : public Resource {
 	GDCLASS(CryptoKey, Resource);

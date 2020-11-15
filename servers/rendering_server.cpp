@@ -30,8 +30,7 @@
 
 #include "rendering_server.h"
 
-#include "core/method_bind_ext.gen.inc"
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
@@ -1505,9 +1504,14 @@ ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_dataty
 	}
 }
 
+RenderingDevice *RenderingServer::create_local_rendering_device() const {
+	return RenderingDevice::get_singleton()->create_local_device();
+}
+
 void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_sync"), &RenderingServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &RenderingServer::draw, DEFVAL(true), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 
 #ifndef _MSC_VER
 #warning TODO all texture methods need re-binding
@@ -1730,6 +1734,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &RenderingServer::viewport_set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &RenderingServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &RenderingServer::viewport_set_msaa);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "enable"), &RenderingServer::viewport_set_use_debanding);
+
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &RenderingServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &RenderingServer::viewport_set_debug_draw);
 
@@ -1742,16 +1748,12 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source", "ao_color"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG), DEFVAL(Color()));
-	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap"), &RenderingServer::environment_set_glow);
+	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "levels", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &RenderingServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "bias", "light_affect", "ao_channel_affect", "blur", "bilateral_sharpness"), &RenderingServer::environment_set_ssao);
-	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &RenderingServer::environment_set_fog);
-
-	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_end", "depth_curve", "transmit", "transmit_curve"), &RenderingServer::environment_set_fog_depth);
-
-	ClassDB::bind_method(D_METHOD("environment_set_fog_height", "env", "enable", "min_height", "max_height", "height_curve"), &RenderingServer::environment_set_fog_height);
+	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective"), &RenderingServer::environment_set_fog);
 
 	ClassDB::bind_method(D_METHOD("scenario_create"), &RenderingServer::scenario_create);
 	ClassDB::bind_method(D_METHOD("scenario_set_debug", "scenario", "debug_mode"), &RenderingServer::scenario_set_debug);
@@ -1831,7 +1833,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_create"), &RenderingServer::canvas_light_create);
 	ClassDB::bind_method(D_METHOD("canvas_light_attach_to_canvas", "light", "canvas"), &RenderingServer::canvas_light_attach_to_canvas);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_enabled", "light", "enabled"), &RenderingServer::canvas_light_set_enabled);
-	ClassDB::bind_method(D_METHOD("canvas_light_set_scale", "light", "scale"), &RenderingServer::canvas_light_set_scale);
+	ClassDB::bind_method(D_METHOD("canvas_light_set_texture_scale", "light", "scale"), &RenderingServer::canvas_light_set_texture_scale);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_transform", "light", "transform"), &RenderingServer::canvas_light_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_texture", "light", "texture"), &RenderingServer::canvas_light_set_texture);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_texture_offset", "light", "offset"), &RenderingServer::canvas_light_set_texture_offset);
@@ -1844,7 +1846,6 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_set_item_shadow_cull_mask", "light", "mask"), &RenderingServer::canvas_light_set_item_shadow_cull_mask);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_mode", "light", "mode"), &RenderingServer::canvas_light_set_mode);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_enabled", "light", "enabled"), &RenderingServer::canvas_light_set_shadow_enabled);
-	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_buffer_size", "light", "size"), &RenderingServer::canvas_light_set_shadow_buffer_size);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_filter", "light", "filter"), &RenderingServer::canvas_light_set_shadow_filter);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_color", "light", "color"), &RenderingServer::canvas_light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_smooth", "light", "smooth"), &RenderingServer::canvas_light_set_shadow_smooth);
@@ -2151,6 +2152,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(INSTANCE_MULTIMESH);
 	BIND_ENUM_CONSTANT(INSTANCE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES);
+	BIND_ENUM_CONSTANT(INSTANCE_PARTICLES_COLLISION);
 	BIND_ENUM_CONSTANT(INSTANCE_LIGHT);
 	BIND_ENUM_CONSTANT(INSTANCE_REFLECTION_PROBE);
 	BIND_ENUM_CONSTANT(INSTANCE_DECAL);
@@ -2188,10 +2190,16 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
 	BIND_ENUM_CONSTANT(CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_ADD);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_SUB);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_MIX);
-	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_MASK);
+	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_OPAQUE);
+	BIND_ENUM_CONSTANT(CANVAS_GROUP_MODE_TRANSPARENT);
+
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_POINT);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_MODE_DIRECTIONAL);
+
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(CANVAS_LIGHT_BLEND_MODE_MIX);
 
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_NONE);
 	BIND_ENUM_CONSTANT(CANVAS_LIGHT_FILTER_PCF5);
@@ -2326,11 +2334,13 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/size", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/size", PROPERTY_HINT_RANGE, "256,16384"));
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/directional_shadow/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard(Fastest), Soft Low (Fast), Soft Medium (Average), Soft High (Slow), Soft Ultra (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/directional_shadow/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/directional_shadow/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
 
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality", 2);
 	GLOBAL_DEF("rendering/quality/shadows/soft_shadow_quality.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard(Fastest), Soft Low (Fast), Soft Medium (Average), Soft High (Slow), Soft Ultra (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/soft_shadow_quality", PropertyInfo(Variant::INT, "rendering/quality/shadows/soft_shadow_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"));
+
+	GLOBAL_DEF("rendering/quality/2d_shadow_atlas/size", 2048);
 
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size", 4096);
 	GLOBAL_DEF("rendering/quality/shadow_atlas/size.mobile", 2048);
@@ -2391,6 +2401,7 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
 	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
+	GLOBAL_DEF("rendering/quality/glow/use_high_quality", false);
 
 	GLOBAL_DEF("rendering/quality/screen_space_reflection/roughness_quality", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
@@ -2411,6 +2422,17 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/probe_ray_count", PropertyInfo(Variant::INT, "rendering/sdfgi/probe_ray_count", PROPERTY_HINT_ENUM, "8 (Fastest),16,32,64,96,128 (Slowest)"));
 	GLOBAL_DEF("rendering/sdfgi/frames_to_converge", 1);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/sdfgi/frames_to_converge", PropertyInfo(Variant::INT, "rendering/sdfgi/frames_to_converge", PROPERTY_HINT_ENUM, "5 (Less Latency but Lower Quality),10,15,20,25,30 (More Latency but Higher Quality)"));
+
+	GLOBAL_DEF("rendering/volumetric_fog/volume_size", 64);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_size", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_size", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/volume_depth", 128);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/volume_depth", PropertyInfo(Variant::INT, "rendering/volumetric_fog/volume_depth", PROPERTY_HINT_RANGE, "16,512,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/use_filter", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/use_filter", PropertyInfo(Variant::INT, "rendering/volumetric_fog/use_filter", PROPERTY_HINT_ENUM, "No (Faster),Yes (Higher Quality)"));
+	GLOBAL_DEF("rendering/volumetric_fog/directional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/directional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/directional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
+	GLOBAL_DEF("rendering/volumetric_fog/positional_shadow_shrink", 512);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/volumetric_fog/positional_shadow_shrink", PropertyInfo(Variant::INT, "rendering/volumetric_fog/positional_shadow_shrink", PROPERTY_HINT_RANGE, "32,2048,1"));
 }
 
 RenderingServer::~RenderingServer() {

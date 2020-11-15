@@ -9,8 +9,9 @@
 		Updating the target properties of animations occurs at process time.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
-		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="2D Sprite animation">https://docs.godotengine.org/en/latest/tutorials/2d/2d_sprite_animation.html</link>
+		<link title="Animation tutorial index">https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="add_animation">
@@ -235,7 +236,8 @@
 			The name of the animation to play when the scene loads.
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
-			The name of the current animation, "" if not playing anything. When being set, does not restart the animation. See also [method play].
+			The name of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
+			[b]Note[/b]: while this property appears in the inspector, it's not meant to be edited and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
 			The length (in seconds) of the currently being played animation.

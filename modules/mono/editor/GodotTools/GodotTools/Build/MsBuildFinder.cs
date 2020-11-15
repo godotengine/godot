@@ -31,7 +31,7 @@ namespace GodotTools.Build
                         string dotnetCliPath = OS.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Visual Studio.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Visual Studio.");
                         goto case BuildTool.MsBuildVs;
                     }
                     case BuildTool.MsBuildVs:
@@ -89,7 +89,7 @@ namespace GodotTools.Build
                         string dotnetCliPath = OS.PathWhich("dotnet");
                         if (!string.IsNullOrEmpty(dotnetCliPath))
                             return (dotnetCliPath, BuildTool.DotnetCli);
-                        GD.PushError("Cannot find dotnet CLI executable. Fallback to MSBuild from Mono.");
+                        GD.PushError($"Cannot find executable for '{BuildManager.PropNameDotnetCli}'. Fallback to MSBuild from Mono.");
                         goto case BuildTool.MsBuildMono;
                     }
                     case BuildTool.MsBuildMono:
@@ -119,7 +119,7 @@ namespace GodotTools.Build
             {
                 var result = new List<string>();
 
-                if (OS.IsOSX)
+                if (OS.IsMacOS)
                 {
                     result.Add("/Library/Frameworks/Mono.framework/Versions/Current/bin/");
                     result.Add("/usr/local/var/homebrew/linked/mono/bin/");
@@ -161,8 +161,21 @@ namespace GodotTools.Build
 
             // Try to find 15.0 with vswhere
 
-            string vsWherePath = Environment.GetEnvironmentVariable(Internal.GodotIs32Bits() ? "ProgramFiles" : "ProgramFiles(x86)");
-            vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+            var envNames = Internal.GodotIs32Bits() ? new[] {"ProgramFiles", "ProgramW6432"} : new[] {"ProgramFiles(x86)", "ProgramFiles"};
+
+            string vsWherePath = null;
+            foreach (var envName in envNames)
+            {
+                vsWherePath = Environment.GetEnvironmentVariable(envName);
+                if (!string.IsNullOrEmpty(vsWherePath))
+                {
+                    vsWherePath += "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+                    if (File.Exists(vsWherePath))
+                        break;
+                }
+
+                vsWherePath = null;
+            }
 
             var vsWhereArgs = new[] {"-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"};
 

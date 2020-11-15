@@ -37,16 +37,18 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	uvec2 glow_texture_size;
 
 	float glow_intensity;
-	uint glow_level_flags;
+	uint pad3;
 	uint glow_mode;
+	float glow_levels[7];
 
 	float exposure;
 	float white;
 	float auto_exposure_grey;
+	uint pad2;
 
 	vec2 pixel_size;
 	bool use_fxaa;
-	uint pad;
+	bool use_debanding;
 }
 params;
 
@@ -155,6 +157,10 @@ vec3 tonemap_aces(vec3 color, float white) {
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {
+	// Ensure color values are positive.
+	// They can be negative in the case of negative lights, which leads to undesired behavior.
+	color = max(vec3(0.0), color);
+
 	return (white * color + color) / (color * white + white);
 }
 
@@ -186,32 +192,32 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 	vec3 glow = vec3(0.0f);
 
-	if (bool(params.glow_level_flags & (1 << 0))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb;
+	if (params.glow_levels[0] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 0).rgb * params.glow_levels[0];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 1))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
+	if (params.glow_levels[1] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb * params.glow_levels[1];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 2))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
+	if (params.glow_levels[2] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb * params.glow_levels[2];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 3))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
+	if (params.glow_levels[3] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb * params.glow_levels[3];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 4))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
+	if (params.glow_levels[4] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb * params.glow_levels[4];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 5))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
+	if (params.glow_levels[5] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb * params.glow_levels[5];
 	}
 
-	if (bool(params.glow_level_flags & (1 << 6))) {
-		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
+	if (params.glow_levels[6] > 0.0001) {
+		glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb * params.glow_levels[6];
 	}
 
 	return glow;
@@ -287,9 +293,8 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 						  dir * rcpDirMin)) *
 		  params.pixel_size;
 
-	vec3 rgbA = 0.5 * (textureLod(source_color, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz * exposure + textureLod(source_color, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz) * exposure;
-	vec3 rgbB = rgbA * 0.5 + 0.25 * (textureLod(source_color, uv_interp + dir * -0.5, 0.0).xyz * exposure +
-											textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz * exposure);
+	vec3 rgbA = 0.5 * exposure * (textureLod(source_color, uv_interp + dir * (1.0 / 3.0 - 0.5), 0.0).xyz + textureLod(source_color, uv_interp + dir * (2.0 / 3.0 - 0.5), 0.0).xyz);
+	vec3 rgbB = rgbA * 0.5 + 0.25 * exposure * (textureLod(source_color, uv_interp + dir * -0.5, 0.0).xyz + textureLod(source_color, uv_interp + dir * 0.5, 0.0).xyz);
 
 	float lumaB = dot(rgbB, luma);
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) {
@@ -297,6 +302,18 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	} else {
 		return rgbB;
 	}
+}
+
+// From http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+vec3 screen_space_dither(vec2 frag_coord) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	return (dither.rgb - 0.5) / 255.0;
 }
 
 void main() {
@@ -321,6 +338,11 @@ void main() {
 
 	if (params.use_fxaa) {
 		color = do_fxaa(color, exposure, uv_interp);
+	}
+	if (params.use_debanding) {
+		// For best results, debanding should be done before tonemapping.
+		// Otherwise, we're adding noise to an already-quantized image.
+		color += screen_space_dither(gl_FragCoord.xy);
 	}
 	color = apply_tonemapping(color, params.white);
 

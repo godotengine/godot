@@ -83,6 +83,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			BLEND_MODE_ADD,
 			BLEND_MODE_SUB,
 			BLEND_MODE_MUL,
+			BLEND_MODE_ALPHA_TO_COVERAGE
 		};
 
 		enum DepthDraw {
@@ -110,6 +111,12 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 		};
 
+		enum AlphaAntiAliasing {
+			ALPHA_ANTIALIASING_OFF,
+			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
+			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
 		bool valid;
 		RID version;
 		uint32_t vertex_input_mask;
@@ -132,6 +139,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		bool uses_point_size;
 		bool uses_alpha;
 		bool uses_blend_alpha;
+		bool uses_alpha_clip;
 		bool uses_depth_pre_pass;
 		bool uses_discard;
 		bool uses_roughness;
@@ -308,12 +316,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float viewport_size[2];
 			float screen_pixel_size[2];
 
-			float time;
-			float reflection_multiplier;
-
-			uint32_t pancake_shadows;
-			uint32_t pad;
-
 			float directional_penumbra_shadow_kernel[128]; //32 vec4s
 			float directional_soft_shadow_kernel[128];
 			float penumbra_shadow_kernel[128];
@@ -359,6 +361,27 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 			int32_t sdf_size[3];
 			uint32_t gi_upscale_for_msaa;
+
+			uint32_t volumetric_fog_enabled;
+			float volumetric_fog_inv_length;
+			float volumetric_fog_detail_spread;
+			uint32_t volumetric_fog_pad;
+
+			// Fog
+			uint32_t fog_enabled;
+			float fog_density;
+			float fog_height;
+			float fog_height_density;
+
+			float fog_light_color[3];
+			float fog_sun_scatter;
+
+			float fog_aerial_perspective;
+
+			float time;
+			float reflection_multiplier;
+
+			uint32_t pancake_shadows;
 		};
 
 		UBO ubo;
@@ -566,6 +589,7 @@ protected:
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 	virtual void _render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, InstanceBase **p_cull_result, int p_cull_count, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture);
+	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, InstanceBase **p_cull_result, int p_cull_count);
 
 public:
 	virtual void set_time(double p_time, double p_step);

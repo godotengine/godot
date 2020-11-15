@@ -8,6 +8,13 @@
 		Tiles are referenced by a unique integer ID.
 	</description>
 	<tutorials>
+		<link title="Using Tilemaps">https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
+		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/120</link>
+		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/112</link>
+		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/111</link>
+		<link title="2D Navigation Astar Demo">https://godotengine.org/asset-library/asset/519</link>
+		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/113</link>
 	</tutorials>
 	<methods>
 		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">
@@ -382,15 +389,6 @@
 				Returns the offset of the tile's navigation polygon.
 			</description>
 		</method>
-		<method name="tile_get_normal_map" qualifiers="const">
-			<return type="Texture2D">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the tile's normal map texture.
-			</description>
-		</method>
 		<method name="tile_get_occluder_offset" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -591,18 +589,6 @@
 			</argument>
 			<description>
 				Sets an offset for the tile's navigation polygon.
-			</description>
-		</method>
-		<method name="tile_set_normal_map">
-			<return type="void">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="normal_map" type="Texture2D">
-			</argument>
-			<description>
-				Sets the tile's normal map texture.
-				[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">

@@ -7,7 +7,7 @@
 		Direct access object to a space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+		<link title="Ray-Casting">https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<methods>
 		<method name="cast_motion">
@@ -64,13 +64,14 @@
 			<argument index="5" name="collide_with_areas" type="bool" default="false">
 			</argument>
 			<description>
-				Checks whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
+				Checks whether a point is inside any solid shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
 				[code]collider[/code]: The colliding object.
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
 				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+				[b]Note:[/b] [ConcavePolygonShape2D]s and [CollisionPolygon2D]s in [code]Segments[/code] build mode are not solid shapes. Therefore, they will not be detected.
 			</description>
 		</method>
 		<method name="intersect_point_on_canvas">

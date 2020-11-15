@@ -31,13 +31,13 @@
 #ifndef OS_H
 #define OS_H
 
-#include "core/engine.h"
-#include "core/image.h"
+#include "core/config/engine.h"
+#include "core/io/image.h"
 #include "core/io/logger.h"
-#include "core/list.h"
 #include "core/os/main_loop.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/templates/vector.h"
 
 #include <stdarg.h>
 
@@ -52,7 +52,6 @@ class OS {
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
-	uint64_t _msec_splash;
 	bool _no_window = false;
 	int _exit_code = 0;
 	int _orientation;
@@ -86,11 +85,13 @@ public:
 
 protected:
 	friend class Main;
+	// Needed by tests to setup command-line args.
+	friend int test_main(int argc, char *argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
 
-	// functions used by main to initialize/deinitialize the OS
+	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
@@ -218,7 +219,6 @@ public:
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint32_t get_ticks_msec() const;
-	uint64_t get_splash_tick_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
 

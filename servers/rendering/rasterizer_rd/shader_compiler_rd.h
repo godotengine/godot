@@ -31,7 +31,7 @@
 #ifndef SHADER_COMPILER_RD_H
 #define SHADER_COMPILER_RD_H
 
-#include "core/pair.h"
+#include "core/templates/pair.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_types.h"
 #include "servers/rendering_server.h"
@@ -68,6 +68,8 @@ public:
 		String fragment_global;
 		String fragment;
 		String light;
+		String compute_global;
+		String compute;
 
 		bool uses_global_textures;
 		bool uses_fragment_time;
@@ -104,6 +106,7 @@ private:
 	StringName vertex_name;
 	StringName fragment_name;
 	StringName light_name;
+	StringName compute_name;
 	StringName time_name;
 	Set<StringName> texture_functions;
 

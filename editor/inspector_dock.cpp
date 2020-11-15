@@ -164,7 +164,7 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	editor->push_item(res.operator->());
 }
 
-void InspectorDock::_save_resource(bool save_as) const {
+void InspectorDock::_save_resource(bool save_as) {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -179,7 +179,7 @@ void InspectorDock::_save_resource(bool save_as) const {
 	}
 }
 
-void InspectorDock::_unref_resource() const {
+void InspectorDock::_unref_resource() {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -190,7 +190,7 @@ void InspectorDock::_unref_resource() const {
 	editor->edit_current();
 }
 
-void InspectorDock::_copy_resource() const {
+void InspectorDock::_copy_resource() {
 	ObjectID current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
 
@@ -201,7 +201,7 @@ void InspectorDock::_copy_resource() const {
 	EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 }
 
-void InspectorDock::_paste_resource() const {
+void InspectorDock::_paste_resource() {
 	RES r = EditorSettings::get_singleton()->get_resource_clipboard();
 	if (r.is_valid()) {
 		editor->push_item(EditorSettings::get_singleton()->get_resource_clipboard().ptr(), String());

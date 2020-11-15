@@ -4,7 +4,7 @@
 		Tabs control.
 	</brief_description>
 	<description>
-		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interact with children.
+		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -34,6 +34,13 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the offset buttons (the ones that appear when there's not enough space for all tabs) are visible.
+			</description>
+		</method>
+		<method name="get_previous_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the previously active tab index.
 			</description>
 		</method>
 		<method name="get_select_with_rmb" qualifiers="const">
