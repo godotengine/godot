@@ -42,7 +42,6 @@ static const int max_touches = 8;
 
 @interface GodotView () {
 	UITouch *godot_touches[max_touches];
-	String keyboard_text;
 }
 
 @property(assign, nonatomic) BOOL isActive;
@@ -277,40 +276,6 @@ static const int max_touches = 8;
 }
 
 // MARK: - Input
-
-// MARK: Keyboard
-
-- (BOOL)canBecomeFirstResponder {
-	return YES;
-}
-
-- (BOOL)becomeFirstResponderWithString:(String)p_existing {
-	keyboard_text = p_existing;
-	return [self becomeFirstResponder];
-}
-
-- (BOOL)resignFirstResponder {
-	keyboard_text = String();
-	return [super resignFirstResponder];
-}
-
-- (void)deleteBackward {
-	if (keyboard_text.length()) {
-		keyboard_text.erase(keyboard_text.length() - 1, 1);
-	}
-	DisplayServerIPhone::get_singleton()->key(KEY_BACKSPACE, true);
-}
-
-- (BOOL)hasText {
-	return keyboard_text.length() > 0;
-}
-
-- (void)insertText:(NSString *)p_text {
-	String character;
-	character.parse_utf8([p_text UTF8String]);
-	keyboard_text = keyboard_text + character;
-	DisplayServerIPhone::get_singleton()->key(character[0] == 10 ? KEY_ENTER : character[0], true);
-}
 
 // MARK: Touches
 

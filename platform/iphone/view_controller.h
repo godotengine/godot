@@ -32,11 +32,13 @@
 
 @class GodotView;
 @class GodotNativeVideoView;
+@class GodotKeyboardInputView;
 
 @interface ViewController : UIViewController
 
 @property(nonatomic, readonly, strong) GodotView *godotView;
 @property(nonatomic, readonly, strong) GodotNativeVideoView *videoView;
+@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
 
 // MARK: Native Video Player
 
