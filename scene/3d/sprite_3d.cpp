@@ -1037,7 +1037,7 @@ void AnimatedSprite3D::stop() {
 }
 
 bool AnimatedSprite3D::is_playing() const {
-	return is_processing();
+	return playing;
 }
 
 void AnimatedSprite3D::_reset_timeout() {
