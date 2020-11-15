@@ -158,6 +158,7 @@ public:
 	RID_Owner<RasterizerCanvas::Light> canvas_light_owner;
 
 	bool disable_scale;
+	bool snap_2d_transforms;
 
 private:
 	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
