@@ -799,8 +799,8 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 
 IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, IP_Address(), "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), IP_Address(), vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, IP_Address(), vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 
 	IP_Address out;
@@ -815,14 +815,22 @@ IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 
 int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 
-	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the address of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
 	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
 #ifdef GODOT_ENET
 	return peer_map[p_peer_id]->address.port;
 #else
 	return peer_map[p_peer_id]->address.port;
 #endif
+}
+
+int NetworkedMultiplayerENet::get_peer_ping(int p_peer_id) const {
+
+	ERR_FAIL_COND_V_MSG(!is_server() && p_peer_id != 1, 0, "Can't get the ping of peers other than the server (ID -1) when acting as a client.");
+	ERR_FAIL_COND_V_MSG(!peer_map.has(p_peer_id), 0, vformat("Peer ID %d not found in the list of peers.", p_peer_id));
+	ERR_FAIL_COND_V_MSG(peer_map[p_peer_id] == NULL, 0, vformat("Peer ID %d found in the list of peers, but is null.", p_peer_id));
+	return peer_map[p_peer_id]->lowestRoundTripTime;
 }
 
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
@@ -882,6 +890,7 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_dtls_verify_enabled"), &NetworkedMultiplayerENet::is_dtls_verify_enabled);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
+	ClassDB::bind_method(D_METHOD("get_peer_ping", "id"), &NetworkedMultiplayerENet::get_peer_ping);
 
 	ClassDB::bind_method(D_METHOD("get_packet_channel"), &NetworkedMultiplayerENet::get_packet_channel);
 	ClassDB::bind_method(D_METHOD("get_last_packet_channel"), &NetworkedMultiplayerENet::get_last_packet_channel);
