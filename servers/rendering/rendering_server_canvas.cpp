@@ -115,7 +115,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	Rect2 rect = ci->get_rect();
 	Transform2D xform = ci->xform;
 	if (snapping_2d_transforms_to_pixel) {
-		xform.elements[2].floor();
+		xform.elements[2] = xform.elements[2].floor();
 	}
 	xform = p_transform * xform;
 
