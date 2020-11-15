@@ -364,7 +364,6 @@ Color Color::named(const String &p_name) {
 	name = name.replace("_", "");
 	name = name.replace("'", "");
 	name = name.replace(".", "");
-	name = name.to_lower();
 	name = _to_uppercase_color_name(name);
 
 	int idx = 0;
