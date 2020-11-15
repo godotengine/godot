@@ -1,0 +1,39 @@
+This is the App Engine app that serves https://crashpad.chromium.org/.
+
+To work on this app, obtain the App Engine SDK for Go from
+https://cloud.google.com/appengine/docs/go/download. Unpacking it produces a
+go_appengine directory. This may be added to your $PATH for convenience,
+although it is not necessary.
+
+The commands in this README are expected to be run from the directory containing
+app.yaml.
+
+The App Engine SDK for Go provides App Engine packages at the “appengine” import
+path, but not the newer “google.golang.org/appengine” path. The Crashpad app
+uses the newer paths. See
+https://github.com/golang/appengine#2-update-import-paths and
+https://code.google.com/p/googleappengine/issues/detail?id=11670.  To make these
+available, obtain a Go release from https://golang.org/dl/, and run:
+
+$ GOROOT=…/go_appengine/goroot GOPATH=…/go_appengine/gopath go get -d
+
+To test locally:
+
+$ …/go_appengine/goapp serve
+
+Look for the “Starting module "default" running at: http://localhost:8080” line,
+which tells you the URL of the local running instance of the app.
+
+To deploy:
+
+$ version=$(git rev-parse --short=12 HEAD)
+$ [[ -n "$(git status --porcelain)" ]] && version+=-dirty
+$ …/go_appengine/goapp deploy -version "${version}"
+
+Note that app.yaml does not name a “version” to encourage you to use a git hash
+as the version, as above.
+
+Activate a newly-deployed version by visiting the App Engine console at
+https://appengine.google.com/deployment?&app_id=s~crashpad-home, selecting it,
+and choosing “Make Default”. It is also possible to delete old versions from
+this page when they are no longer needed.

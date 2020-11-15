@@ -1,0 +1,537 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+################################################################################
+# DEFAULT BUILD CONFIGURATION
+################################################################################
+
+import("compiler.gni")
+import("platform.gni")
+import("sysroot.gni")
+
+if (mini_chromium_is_mac) {
+  declare_args() {
+    # The minimum runtime macOS version that built products are expected to run
+    # on. If empty, the toolchain will choose its own default, typically the
+    # older of the SDK version and the build host’s OS version.
+    mac_deployment_target = "10.9"
+  }
+} else if (mini_chromium_is_linux) {
+  declare_args() {
+    # Path to the Clang toolchain. If unset, uses the system-installed Clang.
+    clang_path = ""
+
+    # If set, link against libstdc++ statically.
+    link_libstdcpp_statically = false
+  }
+} else if (mini_chromium_is_fuchsia) {
+  declare_args() {
+    # Path to the Fuchsia Clang toolchain.
+    clang_path = "//third_party/fuchsia/clang/" + host_os + "-amd64"
+  }
+} else if (mini_chromium_is_win) {
+  declare_args() {
+    # Path to the Windows toolchain. If "<autodetect>", discovery of the
+    # system-installed toolchain will be attempted. Otherwise,
+    # win_sdk\bin\SetEnv.cmd inside this path will be used to configure the
+    # Windows toolchain.
+    win_toolchain_path = "<autodetect>"
+  }
+}
+
+config("debug") {
+}
+
+config("release") {
+  defines = [ "NDEBUG" ]
+
+  if (mini_chromium_is_posix || mini_chromium_is_fuchsia) {
+    cflags = [ "-O3" ]
+    if (mini_chromium_is_mac) {
+      ldflags = [ "-Wl,-dead_strip" ]
+    } else {
+      cflags += [
+        "-fdata-sections",
+        "-ffunction-sections",
+      ]
+      ldflags = [
+        "-Wl,-O1",
+        "-Wl,--gc-sections",
+      ]
+    }
+  } else if (mini_chromium_is_win) {
+    cflags = [
+      "/GL",  # LTCG.
+      "/O2",
+      "/Ob2",  # Both explicit and auto inlining.
+      "/Oy-",  # Disable omitting frame pointers, must be after /O2.
+      "/Zc:inline",  # Remove unreferenced COMDAT (faster links).
+      "/d2Zi+",  # Improve debugging of optimized code.
+    ]
+    ldflags = [
+      "/OPT:ICF",
+      "/OPT:REF",
+      "/LTCG",
+    ]
+    arflags = [ "/LTCG" ]
+  }
+}
+
+config("default") {
+  common_flags = []
+
+  asmflags = []
+  ldflags = []
+  if (mini_chromium_is_posix || mini_chromium_is_fuchsia) {
+    cflags = [
+      "-Wall",
+      "-Wendif-labels",
+      "-Werror",
+      "-Wextra",
+      "-Wno-missing-field-initializers",
+      "-Wno-unused-parameter",
+      "-Wsign-compare",
+      "-fno-exceptions",
+      "-fno-rtti",
+      "-fno-strict-aliasing",  # See https://crbug.com/32204
+      "-fobjc-call-cxx-cdtors",
+      "-fstack-protector-all",  # Implies -fstack-protector
+      "-fvisibility-inlines-hidden",
+      "-fvisibility=hidden",
+    ]
+
+    cflags_c = [ "-std=c99" ]
+    cflags_cc = [ "-std=c++14" ]
+    cflags_objc = cflags_c
+    cflags_objcc = cflags_cc
+
+    cflags += [
+      "-Wheader-hygiene",
+      "-Wnewline-eof",
+      "-Wstring-conversion",
+    ]
+
+    if (sysroot != "") {
+      if (sysroot == rebase_path(sysroot)) {
+        # If it’s already system-absolute, leave it alone.
+        sysroot_path = sysroot
+      } else {
+        sysroot_path = rebase_path(sysroot, root_build_dir)
+      }
+      if (mini_chromium_is_mac) {
+        common_flags += [
+          "-isysroot",
+          sysroot_path,
+        ]
+      } else {
+        common_flags += [ "--sysroot=" + sysroot_path ]
+      }
+    }
+
+    if (mini_chromium_is_fuchsia) {
+      common_flags += [
+        # The Fuchsia SDK no longer dumps everything in the sysroot, preferring
+        # the layout described in
+        # https://fuchsia.googlesource.com/docs/+/master/development/sdk/layout.md.
+        # Eventually /sysroot will be replaced by /pkg/system, but this work is
+        # not yet complete.
+        "-isystem",
+        rebase_path(fuchsia_sdk + "/pkg/crypto/include", root_build_dir),
+        "-isystem",
+        rebase_path(fuchsia_sdk + "/pkg/fdio/include", root_build_dir),
+        "-isystem",
+        rebase_path(fuchsia_sdk + "/pkg/ssl/include", root_build_dir),
+      ]
+
+      lib_dirs = [ fuchsia_sdk + "/arch/$target_cpu/lib" ]
+    }
+  }
+
+  if (mini_chromium_is_mac) {
+    if (mac_deployment_target != "") {
+      common_flags += [ "-mmacosx-version-min=" + mac_deployment_target ]
+    }
+  }
+
+  if (mini_chromium_is_win) {
+    cflags = [
+      "/DNOMINMAX",
+      "/DUNICODE",
+      "/DWIN32_LEAN_AND_MEAN",
+      "/D_CRT_SECURE_NO_WARNINGS",
+      "/D_HAS_EXCEPTIONS=0",
+      "/D_UNICODE",
+      "/FS",
+      "/W4",
+      "/WX",
+      "/Zi",
+      "/bigobj",  # Support larger number of sections in obj file.
+      "/wd4100",  # Unreferenced formal parameter.
+      "/wd4127",  # Conditional expression is constant.
+      "/wd4324",  # Structure was padded due to alignment specifier.
+      "/wd4351",  # New behavior: elements of array will be default initialized.
+      "/wd4577",  # 'noexcept' used with no exception handling mode specified.
+      "/wd4996",  # 'X' was declared deprecated.
+    ]
+
+    ldflags += [ "/DEBUG" ]
+
+    libs = [ "kernel32.lib" ]
+  }
+
+  if (mini_chromium_is_linux) {
+    defines = [ "_FILE_OFFSET_BITS=64" ]
+    common_flags += [ "-pthread" ]
+    # This is currently required by the clang toolchain build that DEPS uses
+    # from the Fuchsia team. Only a static libc++ is provided, and it requires
+    # both -ldl and -pthread. (-pthread was already needed by mini_chromium and
+    # Crashpad). Eventually, the clang build should automatically add these
+    # when needed, but it does not do that yet, so manually add libdl here for
+    # now.
+    libs = [ "dl" ]
+
+    if (link_libstdcpp_statically) {
+      # The sysroot being built against is based on Stretch, which is newer than
+      # the libstdc++ that's on Trusty (14.04) which is the Chromium minspec.
+      # This minspec determines what the available buildbots are. Chromium
+      # doesn't have a problem with libstdc++ despite this, because it links
+      # against a local copy of libc++ instead. As this build file only affects
+      # the standalone Crashpad build, when this flag is set link libstdc++
+      # statically to avoid the problem on the bots.
+      cflags += [ "-stdlib=libstdc++" ]
+      ldflags += [
+        "-rtlib=libgcc",
+        "-static-libstdc++",
+        "-stdlib=libstdc++",
+      ]
+    }
+  }
+
+  if (mini_chromium_is_fuchsia) {
+    if (target_cpu == "arm64") {
+      common_flags += [ "--target=aarch64-fuchsia" ]
+    } else if (target_cpu == "x64") {
+      common_flags += [ "--target=x86_64-fuchsia" ]
+    } else {
+      assert(false, "Unsupported architecture")
+    }
+
+    # fdio is listed in ldflags instead of libs because it’s important for it to
+    # be loaded in Fuchsia processes that expect POSIX-like file descriptor
+    # semantics, even if they don’t explicitly reference anything in the fdio
+    # library. To avoid inadvertently losing the runtime dependency, it must
+    # come before -Wl,--as-needed below. fdio needs zircon (and zircon needs to
+    # be in every process anyway).
+    ldflags += [
+      "-lfdio",
+      "-lzircon",
+    ]
+  }
+
+  if ((mini_chromium_is_posix && !mini_chromium_is_mac) ||
+      mini_chromium_is_fuchsia) {
+    cflags += [ "-fPIC" ]
+    ldflags += [
+      # This must follow Fuchsia’s fdio library above.
+      "-Wl,--as-needed",
+
+      "-Wl,-z,noexecstack",
+    ]
+  }
+
+  if (mini_chromium_is_clang) {
+    cflags += [ "-Wimplicit-fallthrough" ]
+  }
+
+  cflags += common_flags
+  asmflags += common_flags
+  ldflags += common_flags
+
+  if (is_debug) {
+    configs = [ ":debug" ]
+  } else {
+    configs = [ ":release" ]
+  }
+}
+
+config("executable") {
+  if (mini_chromium_is_linux) {
+    ldflags = [ "-pie" ]
+  }
+}
+
+config("Wexit_time_destructors") {
+  if (mini_chromium_is_clang) {
+    cflags = [ "-Wexit-time-destructors" ]
+  }
+}
+
+config("win_console") {
+  if (mini_chromium_is_win) {
+    ldflags = [ "/SUBSYSTEM:CONSOLE" ]
+  }
+}
+
+config("win_windowed") {
+  if (mini_chromium_is_win) {
+    ldflags = [ "/SUBSYSTEM:WINDOWS" ]
+  }
+}
+
+################################################################################
+# TOOLCHAIN DEFINITIONS
+################################################################################
+
+toolchain("gcc_like_toolchain") {
+  lib_switch = "-l"
+  lib_dir_switch = "-L"
+
+  if ((mini_chromium_is_linux || mini_chromium_is_fuchsia) && clang_path != "") {
+    cc = rebase_path(clang_path, root_build_dir) + "/bin/clang"
+    cxx = rebase_path(clang_path, root_build_dir) + "/bin/clang++"
+    asm = cxx
+    ar = rebase_path(clang_path, root_build_dir) + "/bin/llvm-ar"
+    ld = cxx
+  } else {
+    cc = "clang"
+    cxx = "clang++"
+    asm = cxx
+    ld = cxx
+
+    if (!mini_chromium_is_mac) {
+      # macOS uses libtool instead of ar.
+      ar = "ar"
+    }
+  }
+
+  tool("cc") {
+    depfile = "{{output}}.d"
+    command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+    depsformat = "gcc"
+    description = "CC {{output}}"
+    outputs = [
+      "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.o",
+    ]
+  }
+
+  tool("cxx") {
+    depfile = "{{output}}.d"
+    command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    depsformat = "gcc"
+    description = "CXX {{output}}"
+    outputs = [
+      "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.o",
+    ]
+  }
+
+  if (mini_chromium_is_mac) {
+    tool("objc") {
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "OBJC {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.o",
+      ]
+    }
+
+    tool("objcxx") {
+      depfile = "{{output}}.d"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "OBJCXX {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.o",
+      ]
+    }
+  }
+
+  tool("asm") {
+    depfile = "{{output}}.d"
+    command = "$asm -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+    depsformat = "gcc"
+    description = "ASM {{output}}"
+    outputs = [
+      "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.o",
+    ]
+  }
+
+  tool("alink") {
+    if (mini_chromium_is_mac) {
+      command = "libtool -static -no_warning_for_no_symbols {{arflags}} -o {{output}} {{inputs}}"
+    } else {
+      command = "rm -f {{output}}; $ar rcsD {{arflags}} {{output}} {{inputs}}"
+    }
+    description = "AR {{output}}"
+    default_output_dir = "{{target_out_dir}}"
+    default_output_extension = ".a"
+    output_prefix = "lib"
+    outputs = [
+      "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+    ]
+  }
+
+  tool("solink_module") {
+    # TODO(scottmg): This will need to do -framework, etc. for macOS.
+    soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
+    sofile = "{{output_dir}}/$soname"
+
+    soname_flag = ""
+    start_whole_flag = ""
+    end_whole_flag = ""
+    if (mini_chromium_is_mac) {
+      soname_flag = "-Wl,-install_name,\"$soname\""
+    } else {
+      soname_flag = "-Wl,-soname=\"$soname\""
+      start_whole_flag = "-Wl,--whole-archive"
+      end_whole_flag = "-Wl,--no-whole-archive "
+    }
+    command = "$ld -shared {{ldflags}} -o \"$sofile\" $soname_flag $start_whole_flag {{inputs}} {{solibs}} $end_whole_flag {{libs}}"
+    description = "SOLINK_MODULE $sofile"
+
+    default_output_dir = "{{root_out_dir}}"
+    default_output_extension = ".so"
+
+    outputs = [
+      sofile,
+    ]
+  }
+
+  tool("link") {
+    exename = "{{target_output_name}}{{output_extension}}"
+    outfile = "{{output_dir}}/$exename"
+
+    start_group_flag = ""
+    end_group_flag = ""
+    if (!mini_chromium_is_mac) {
+      start_group_flag = "-Wl,--start-group"
+      end_group_flag = "-Wl,--end-group"
+    }
+    command = "$ld {{ldflags}} -o \"$outfile\" $start_group_flag {{inputs}} {{solibs}} $end_group_flag {{libs}}"
+    description = "LINK $outfile"
+
+    default_output_dir = "{{root_out_dir}}"
+    default_output_extension = ""
+    outputs = [
+      outfile,
+    ]
+  }
+
+  tool("stamp") {
+    command = "touch {{output}}"
+    description = "STAMP {{output}}"
+  }
+}
+
+if (mini_chromium_is_win) {
+  helper_path = rebase_path("win_helper.py")
+  toolchain_data = exec_script(helper_path,
+                               [
+                                 "get-visual-studio-data",
+                                 rebase_path(root_build_dir),
+                                 rebase_path(win_toolchain_path),
+                               ],
+                               "scope")
+
+  # Required arguments:
+  # - environment_file: Path to saved environment file (see win_helper.py).
+  # - current_cpu: The cpu to target with this toolchain.
+  template("msvc_toolchain") {
+    toolchain("msvc_toolchain_$target_name") {
+      # @rsp files are not used for simplicity, and because mini_chromium and
+      # Crashpad shouldn't require them in any configurations.
+      cc = "cl.exe"
+      cxx = "cl.exe"
+      ar = "lib.exe"
+      ld = "link.exe"
+      env = invoker.environment_file
+
+      tool("cc") {
+        depfile = "{{output}}.d"
+        pdbname = "{{target_out_dir}}/{{label_name}}_c.pdb"
+        command = "ninja -t msvc -e $env -- $cc /nologo /showIncludes {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+        depsformat = "msvc"
+        description = "CC {{output}}"
+        outputs = [
+          "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.obj",
+        ]
+      }
+
+      tool("cxx") {
+        depfile = "{{output}}.d"
+        pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
+        command = "ninja -t msvc -e $env -- $cxx /nologo /showIncludes {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+        depsformat = "msvc"
+        description = "CXX {{output}}"
+        outputs = [
+          "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.obj",
+        ]
+      }
+
+      tool("alink") {
+        command = "$python_path $helper_path link-wrapper $env $ar /nologo /out:{{output}} {{arflags}} {{inputs}}"
+        description = "AR {{output}}"
+        outputs = [
+          "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+        ]
+        default_output_dir = "{{target_out_dir}}"
+        default_output_extension = ".lib"
+        output_prefix = ""
+      }
+
+      tool("solink_module") {
+        outputs = [
+          "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+        ]
+        command = "$python_path $helper_path link-wrapper $env $ld /nologo /DLL /OUT:{{output}} {{ldflags}} {{inputs}} {{solibs}} {{libs}}"
+        description = "SOLINK_MODULE {{output}}"
+        default_output_dir = "{{root_out_dir}}"
+        default_output_extension = ".dll"
+      }
+
+      tool("link") {
+        outputs = [
+          "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+        ]
+        command = "$python_path $helper_path link-wrapper $env $ld /nologo /OUT:{{output}} {{ldflags}} {{inputs}} {{solibs}} {{libs}}"
+        description = "LINK {{output}}"
+        default_output_dir = "{{root_out_dir}}"
+        default_output_extension = ".exe"
+      }
+
+      tool("asm") {
+        if (invoker.current_cpu == "x64") {
+          ml = "ml64.exe"
+        } else {
+          ml = "ml.exe"
+        }
+        command = "$python_path $helper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} /c /Fo{{output}} {{source}}"
+        description = "ASM {{output}}"
+        outputs = [
+          "{{source_out_dir}}/{{label_name}}.{{source_name_part}}.obj",
+        ]
+      }
+
+      tool("stamp") {
+        command = "$python_path $helper_path stamp {{output}}"
+        description = "STAMP {{output}}"
+      }
+
+      tool("copy") {
+        command = "cmd /c copy /y {{source}} {{output}} >nul"
+        description = "COPY {{source}} {{output}}"
+      }
+    }
+  }
+
+  msvc_toolchain("x64") {
+    environment_file = toolchain_data.x64_environment_file
+    current_cpu = "x64"
+  }
+
+  msvc_toolchain("x86") {
+    environment_file = toolchain_data.x86_environment_file
+    current_cpu = "x86"
+  }
+}

@@ -1,0 +1,24 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mini_chromium_is_mac = false
+mini_chromium_is_win = false
+mini_chromium_is_linux = false
+mini_chromium_is_android = false
+mini_chromium_is_fuchsia = false
+
+if (current_os == "mac") {
+  mini_chromium_is_mac = true
+} else if (current_os == "win") {
+  mini_chromium_is_win = true
+} else if (current_os == "android") {
+  mini_chromium_is_android = true
+} else if (current_os == "linux") {
+  mini_chromium_is_linux = true
+} else if (current_os == "fuchsia") {
+  mini_chromium_is_fuchsia = true
+}
+
+mini_chromium_is_posix = mini_chromium_is_mac || mini_chromium_is_linux ||
+                         mini_chromium_is_android

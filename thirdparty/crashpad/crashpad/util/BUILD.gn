@@ -1,0 +1,706 @@
+# Copyright 2015 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../build/crashpad_buildconfig.gni")
+import("net/tls.gni")
+
+if (crashpad_is_in_chromium) {
+  import("//build/config/sanitizers/sanitizers.gni")
+}
+
+if (crashpad_is_mac) {
+  if (crashpad_is_in_chromium) {
+    import("//build/config/sysroot.gni")
+  } else {
+    import("//third_party/mini_chromium/mini_chromium/build/sysroot.gni")
+  }
+
+  action_foreach("mig") {
+    script = "mach/mig.py"
+
+    sources = [
+      "$sysroot/usr/include/mach/exc.defs",
+      "$sysroot/usr/include/mach/mach_exc.defs",
+      "$sysroot/usr/include/mach/notify.defs",
+      "mach/child_port.defs",
+    ]
+
+    outputs = [
+      "$target_gen_dir/mach/{{source_name_part}}User.c",
+      "$target_gen_dir/mach/{{source_name_part}}Server.c",
+      "$target_gen_dir/mach/{{source_name_part}}.h",
+      "$target_gen_dir/mach/{{source_name_part}}Server.h",
+    ]
+
+    args = [ "{{source}}" ]
+    args += rebase_path(outputs, root_build_dir)
+    if (crashpad_is_in_chromium) {
+      if (!use_system_xcode) {
+        args += [
+          "--developer-dir",
+          hermetic_xcode_path,
+        ]
+      }
+    }
+    if (sysroot != "") {
+      args += [
+        "--sdk",
+        sysroot,
+      ]
+    }
+    args += [
+      "--include",
+      rebase_path("../compat/mac", root_build_dir),
+    ]
+  }
+}
+
+static_library("util") {
+  sources = [
+    "file/delimited_file_reader.cc",
+    "file/delimited_file_reader.h",
+    "file/directory_reader.h",
+    "file/file_io.cc",
+    "file/file_io.h",
+    "file/file_reader.cc",
+    "file/file_reader.h",
+    "file/file_seeker.cc",
+    "file/file_seeker.h",
+    "file/file_writer.cc",
+    "file/file_writer.h",
+    "file/filesystem.h",
+    "file/scoped_remove_file.cc",
+    "file/scoped_remove_file.h",
+    "file/string_file.cc",
+    "file/string_file.h",
+    "misc/address_sanitizer.h",
+    "misc/address_types.h",
+    "misc/arraysize_unsafe.h",
+    "misc/as_underlying_type.h",
+    "misc/capture_context.h",
+    "misc/clock.h",
+    "misc/elf_note_types.h",
+    "misc/from_pointer_cast.h",
+    "misc/implicit_cast.h",
+    "misc/initialization_state.h",
+    "misc/initialization_state_dcheck.cc",
+    "misc/initialization_state_dcheck.h",
+    "misc/lexing.cc",
+    "misc/lexing.h",
+    "misc/metrics.cc",
+    "misc/metrics.h",
+    "misc/paths.h",
+    "misc/pdb_structures.cc",
+    "misc/pdb_structures.h",
+    "misc/random_string.cc",
+    "misc/random_string.h",
+    "misc/range_set.cc",
+    "misc/range_set.h",
+    "misc/reinterpret_bytes.cc",
+    "misc/reinterpret_bytes.h",
+    "misc/scoped_forbid_return.cc",
+    "misc/scoped_forbid_return.h",
+    "misc/symbolic_constants_common.h",
+    "misc/time.cc",
+    "misc/time.h",
+    "misc/tri_state.h",
+    "misc/uuid.cc",
+    "misc/uuid.h",
+    "misc/zlib.cc",
+    "misc/zlib.h",
+    "net/http_body.cc",
+    "net/http_body.h",
+    "net/http_body_gzip.cc",
+    "net/http_body_gzip.h",
+    "net/http_headers.h",
+    "net/http_multipart_builder.cc",
+    "net/http_multipart_builder.h",
+    "net/http_transport.cc",
+    "net/http_transport.h",
+    "net/url.cc",
+    "net/url.h",
+    "numeric/checked_address_range.cc",
+    "numeric/checked_address_range.h",
+    "numeric/checked_range.h",
+    "numeric/checked_vm_address_range.h",
+    "numeric/in_range_cast.h",
+    "numeric/int128.h",
+    "numeric/safe_assignment.h",
+    "stdlib/aligned_allocator.cc",
+    "stdlib/aligned_allocator.h",
+    "stdlib/map_insert.h",
+    "stdlib/objc.h",
+    "stdlib/string_number_conversion.cc",
+    "stdlib/string_number_conversion.h",
+    "stdlib/strlcpy.cc",
+    "stdlib/strlcpy.h",
+    "stdlib/strnlen.cc",
+    "stdlib/strnlen.h",
+    "stdlib/thread_safe_vector.h",
+    "string/split_string.cc",
+    "string/split_string.h",
+    "synchronization/semaphore.h",
+    "thread/stoppable.h",
+    "thread/thread.cc",
+    "thread/thread.h",
+    "thread/thread_log_messages.cc",
+    "thread/thread_log_messages.h",
+    "thread/worker_thread.cc",
+    "thread/worker_thread.h",
+  ]
+
+  if (crashpad_is_posix || crashpad_is_fuchsia) {
+    sources += [
+      "file/directory_reader_posix.cc",
+      "file/file_io_posix.cc",
+      "file/filesystem_posix.cc",
+      "misc/clock_posix.cc",
+      "posix/close_stdio.cc",
+      "posix/close_stdio.h",
+      "posix/scoped_dir.cc",
+      "posix/scoped_dir.h",
+      "posix/scoped_mmap.cc",
+      "posix/scoped_mmap.h",
+      "posix/signals.cc",
+      "posix/signals.h",
+      "synchronization/semaphore_posix.cc",
+      "thread/thread_posix.cc",
+    ]
+
+    if (!crashpad_is_fuchsia) {
+      sources += [
+        "posix/close_multiple.cc",
+        "posix/close_multiple.h",
+        "posix/double_fork_and_exec.cc",
+        "posix/double_fork_and_exec.h",
+        "posix/drop_privileges.cc",
+        "posix/drop_privileges.h",
+        "posix/process_info.h",
+
+        # These map signals to and from strings. While Fuchsia defines some of
+        # the common SIGx defines, signals are never raised on Fuchsia, so
+        # there's need to include this mapping code.
+        "posix/symbolic_constants_posix.cc",
+        "posix/symbolic_constants_posix.h",
+      ]
+    }
+  }
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/checked_mach_address_range.h",
+      "mac/launchd.h",
+      "mac/launchd.mm",
+      "mac/mac_util.cc",
+      "mac/mac_util.h",
+      "mac/service_management.cc",
+      "mac/service_management.h",
+      "mac/xattr.cc",
+      "mac/xattr.h",
+      "mach/child_port_handshake.cc",
+      "mach/child_port_handshake.h",
+      "mach/child_port_server.cc",
+      "mach/child_port_server.h",
+      "mach/child_port_types.h",
+      "mach/composite_mach_message_server.cc",
+      "mach/composite_mach_message_server.h",
+      "mach/exc_client_variants.cc",
+      "mach/exc_client_variants.h",
+      "mach/exc_server_variants.cc",
+      "mach/exc_server_variants.h",
+      "mach/exception_behaviors.cc",
+      "mach/exception_behaviors.h",
+      "mach/exception_ports.cc",
+      "mach/exception_ports.h",
+      "mach/exception_types.cc",
+      "mach/exception_types.h",
+      "mach/mach_extensions.cc",
+      "mach/mach_extensions.h",
+      "mach/mach_message.cc",
+      "mach/mach_message.h",
+      "mach/mach_message_server.cc",
+      "mach/mach_message_server.h",
+      "mach/notify_server.cc",
+      "mach/notify_server.h",
+      "mach/scoped_task_suspend.cc",
+      "mach/scoped_task_suspend.h",
+      "mach/symbolic_constants_mach.cc",
+      "mach/symbolic_constants_mach.h",
+      "mach/task_for_pid.cc",
+      "mach/task_for_pid.h",
+      "mach/task_memory.cc",
+      "mach/task_memory.h",
+      "misc/capture_context_mac.S",
+      "misc/clock_mac.cc",
+      "misc/paths_mac.cc",
+      "net/http_transport_mac.mm",
+      "posix/process_info_mac.cc",
+      "synchronization/semaphore_mac.cc",
+    ]
+    sources += get_target_outputs(":mig")
+  }
+
+  deps = []
+
+  if (crashpad_is_linux || crashpad_is_fuchsia) {
+    sources += [ "net/http_transport_socket.cc" ]
+    if (crashpad_use_boringssl_for_http_transport_socket) {
+      defines = [ "CRASHPAD_USE_BORINGSSL" ]
+
+      if (crashpad_is_in_fuchsia) {
+        deps += [ "//third_party/boringssl" ]
+      } else {
+        libs = [
+          "crypto",
+          "ssl",
+        ]
+      }
+    }
+  } else if (crashpad_is_android) {
+    sources += [ "net/http_transport_none.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "linux/address_types.h",
+      "linux/auxiliary_vector.cc",
+      "linux/auxiliary_vector.h",
+      "linux/checked_linux_address_range.h",
+      "linux/direct_ptrace_connection.cc",
+      "linux/direct_ptrace_connection.h",
+      "linux/exception_handler_client.cc",
+      "linux/exception_handler_client.h",
+      "linux/exception_handler_protocol.cc",
+      "linux/exception_handler_protocol.h",
+      "linux/exception_information.h",
+      "linux/memory_map.cc",
+      "linux/memory_map.h",
+      "linux/proc_stat_reader.cc",
+      "linux/proc_stat_reader.h",
+      "linux/ptrace_broker.cc",
+      "linux/ptrace_broker.h",
+      "linux/ptrace_client.cc",
+      "linux/ptrace_client.h",
+      "linux/ptrace_connection.h",
+      "linux/ptracer.cc",
+      "linux/ptracer.h",
+      "linux/scoped_pr_set_ptracer.cc",
+      "linux/scoped_pr_set_ptracer.h",
+      "linux/scoped_ptrace_attach.cc",
+      "linux/scoped_ptrace_attach.h",
+      "linux/thread_info.cc",
+      "linux/thread_info.h",
+      "linux/traits.h",
+      "misc/capture_context_linux.S",
+      "misc/paths_linux.cc",
+      "posix/process_info_linux.cc",
+      "process/process_memory_linux.cc",
+      "process/process_memory_linux.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "process/process_memory.cc",
+      "process/process_memory.h",
+      "process/process_memory_native.h",
+
+      # TODO: Port to all platforms.
+      "process/process_memory_range.cc",
+      "process/process_memory_range.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "file/directory_reader_win.cc",
+      "file/file_io_win.cc",
+      "file/filesystem_win.cc",
+      "misc/clock_win.cc",
+      "misc/paths_win.cc",
+      "misc/time_win.cc",
+      "net/http_transport_win.cc",
+      "synchronization/semaphore_win.cc",
+      "thread/thread_win.cc",
+      "win/address_types.h",
+      "win/checked_win_address_range.h",
+      "win/command_line.cc",
+      "win/command_line.h",
+      "win/critical_section_with_debug_info.cc",
+      "win/critical_section_with_debug_info.h",
+      "win/exception_handler_server.cc",
+      "win/exception_handler_server.h",
+      "win/get_function.cc",
+      "win/get_function.h",
+      "win/get_module_information.cc",
+      "win/get_module_information.h",
+      "win/handle.cc",
+      "win/handle.h",
+      "win/initial_client_data.cc",
+      "win/initial_client_data.h",
+      "win/module_version.cc",
+      "win/module_version.h",
+      "win/nt_internals.cc",
+      "win/nt_internals.h",
+      "win/ntstatus_logging.cc",
+      "win/ntstatus_logging.h",
+      "win/process_info.cc",
+      "win/process_info.h",
+      "win/process_structs.h",
+      "win/registration_protocol_win.cc",
+      "win/registration_protocol_win.h",
+      "win/safe_terminate_process.h",
+      "win/scoped_handle.cc",
+      "win/scoped_handle.h",
+      "win/scoped_local_alloc.cc",
+      "win/scoped_local_alloc.h",
+      "win/scoped_process_suspend.cc",
+      "win/scoped_process_suspend.h",
+      "win/scoped_set_event.cc",
+      "win/scoped_set_event.h",
+      "win/session_end_watcher.cc",
+      "win/session_end_watcher.h",
+      "win/termination_codes.h",
+      "win/xp_compat.h",
+    ]
+
+    # There's no ml.exe yet in cross builds, so provide broken-but-not-asm
+    # versions of the functions defined in .asm files.
+    #
+    # CaptureContext() in capture_context_broken.cc just calls CHECK(false).
+    # SafeTerminateProcess() in safe_terminate_process.cc just calls regular
+    # TerminateProcess() without the protection against broken third-party
+    # patching of TerminateProcess().
+    #
+    # TODO(thakis): Use the .asm file in cross builds somehow,
+    # https://crbug.com/762167.
+    if (host_os == "win") {
+      sources += [
+        "misc/capture_context_win.asm",
+        "win/safe_terminate_process.asm",
+      ]
+    } else {
+      sources += [
+        "misc/capture_context_broken.cc",
+        "win/safe_terminate_process_broken.cc",
+      ]
+    }
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [
+      "fuchsia/koid_utilities.cc",
+      "fuchsia/koid_utilities.h",
+      "fuchsia/scoped_task_suspend.cc",
+      "fuchsia/scoped_task_suspend.h",
+      "fuchsia/system_exception_port_key.h",
+      "misc/capture_context_fuchsia.S",
+      "misc/paths_fuchsia.cc",
+      "process/process_memory_fuchsia.cc",
+      "process/process_memory_fuchsia.h",
+    ]
+  }
+
+  public_configs = [ "..:crashpad_config" ]
+
+  # Include generated files starting with "util".
+  include_dirs = [ "$root_gen_dir/third_party/crashpad/crashpad" ]
+
+  public_deps = [
+    "../compat",
+  ]
+
+  deps += [
+    "../third_party/mini_chromium:base",
+    "../third_party/zlib",
+  ]
+
+  if (crashpad_is_mac) {
+    libs = [
+      "bsm",
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+    ]
+    deps += [ ":mig" ]
+    include_dirs += [ "$root_build_dir/gen" ]
+  }
+
+  if (crashpad_is_win) {
+    libs = [
+      "user32.lib",
+
+      # TODO(jperaza): version.lib is needed for Windows 7 compatibility.
+      # mincore.lib may be linked against instead when targeting Windows 8+.
+      "version.lib",
+
+      "winhttp.lib",
+    ]
+
+    cflags = [ "/wd4201" ]  # nonstandard extension used: nameless struct/union.
+
+    if (current_cpu == "x86") {
+      asmflags = [ "/safeseh" ]
+    }
+  }
+
+  if (crashpad_is_fuchsia) {
+    public_deps += [ "../third_party/fuchsia:zx" ]
+  }
+}
+
+if (crashpad_use_boringssl_for_http_transport_socket) {
+  action("generate_test_server_key") {
+    script = "net/generate_test_server_key.py"
+    outputs = [
+      "$root_out_dir/crashpad_util_test_cert.pem",
+      "$root_out_dir/crashpad_util_test_key.pem",
+    ]
+    data = outputs
+  }
+}
+
+if (!crashpad_is_android) {
+  crashpad_executable("http_transport_test_server") {
+    testonly = true
+    sources = [
+      "net/http_transport_test_server.cc",
+    ]
+
+    deps = [
+      ":util",
+      "../third_party/cpp-httplib",
+      "../third_party/mini_chromium:base",
+      "../third_party/zlib",
+      "../tools:tool_support",
+    ]
+
+    if (crashpad_is_standalone) {
+      remove_configs = [ "//third_party/mini_chromium/mini_chromium/build:Wexit_time_destructors" ]
+    }
+
+    if (crashpad_is_win) {
+      libs = [ "ws2_32.lib" ]
+    }
+
+    if (crashpad_use_boringssl_for_http_transport_socket) {
+      data_deps = [
+        ":generate_test_server_key",
+      ]
+      defines = [ "CRASHPAD_USE_BORINGSSL" ]
+
+      if (crashpad_is_in_fuchsia) {
+        deps += [ "//third_party/boringssl" ]
+      } else {
+        libs = [
+          "crypto",
+          "ssl",
+        ]
+      }
+    }
+  }
+}
+
+source_set("util_test") {
+  testonly = true
+
+  sources = [
+    "file/delimited_file_reader_test.cc",
+    "file/directory_reader_test.cc",
+    "file/file_io_test.cc",
+    "file/file_reader_test.cc",
+    "file/filesystem_test.cc",
+    "file/string_file_test.cc",
+    "misc/arraysize_unsafe_test.cc",
+    "misc/capture_context_test.cc",
+    "misc/capture_context_test_util.h",
+    "misc/clock_test.cc",
+    "misc/from_pointer_cast_test.cc",
+    "misc/initialization_state_dcheck_test.cc",
+    "misc/initialization_state_test.cc",
+    "misc/paths_test.cc",
+    "misc/random_string_test.cc",
+    "misc/range_set_test.cc",
+    "misc/reinterpret_bytes_test.cc",
+    "misc/scoped_forbid_return_test.cc",
+    "misc/time_test.cc",
+    "misc/uuid_test.cc",
+    "net/http_body_gzip_test.cc",
+    "net/http_body_test.cc",
+    "net/http_body_test_util.cc",
+    "net/http_body_test_util.h",
+    "net/http_multipart_builder_test.cc",
+    "net/url_test.cc",
+    "numeric/checked_address_range_test.cc",
+    "numeric/checked_range_test.cc",
+    "numeric/in_range_cast_test.cc",
+    "numeric/int128_test.cc",
+    "stdlib/aligned_allocator_test.cc",
+    "stdlib/map_insert_test.cc",
+    "stdlib/string_number_conversion_test.cc",
+    "stdlib/strlcpy_test.cc",
+    "stdlib/strnlen_test.cc",
+    "stdlib/thread_safe_vector_test.cc",
+    "string/split_string_test.cc",
+    "synchronization/semaphore_test.cc",
+    "thread/thread_log_messages_test.cc",
+    "thread/thread_test.cc",
+    "thread/worker_thread_test.cc",
+  ]
+
+  if (!crashpad_is_android) {
+    # Android requires an HTTPTransport implementation.
+    sources += [ "net/http_transport_test.cc" ]
+  }
+
+  if (crashpad_is_posix || crashpad_is_fuchsia) {
+    if (!crashpad_is_fuchsia) {
+      sources += [
+        "posix/process_info_test.cc",
+        "posix/signals_test.cc",
+        "posix/symbolic_constants_posix_test.cc",
+      ]
+    }
+    sources += [ "posix/scoped_mmap_test.cc" ]
+  }
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/launchd_test.mm",
+      "mac/mac_util_test.mm",
+      "mac/service_management_test.mm",
+      "mac/xattr_test.cc",
+      "mach/child_port_handshake_test.cc",
+      "mach/child_port_server_test.cc",
+      "mach/composite_mach_message_server_test.cc",
+      "mach/exc_client_variants_test.cc",
+      "mach/exc_server_variants_test.cc",
+      "mach/exception_behaviors_test.cc",
+      "mach/exception_ports_test.cc",
+      "mach/exception_types_test.cc",
+      "mach/mach_extensions_test.cc",
+      "mach/mach_message_server_test.cc",
+      "mach/mach_message_test.cc",
+      "mach/notify_server_test.cc",
+      "mach/scoped_task_suspend_test.cc",
+      "mach/symbolic_constants_mach_test.cc",
+      "mach/task_memory_test.cc",
+      "misc/capture_context_test_util_mac.cc",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "linux/auxiliary_vector_test.cc",
+      "linux/memory_map_test.cc",
+      "linux/proc_stat_reader_test.cc",
+      "linux/ptrace_broker_test.cc",
+      "linux/ptracer_test.cc",
+      "linux/scoped_ptrace_attach_test.cc",
+      "misc/capture_context_test_util_linux.cc",
+    ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [ "misc/capture_context_test_util_fuchsia.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      # TODO: Port to all platforms.
+      "process/process_memory_range_test.cc",
+      "process/process_memory_test.cc",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "misc/capture_context_test_util_win.cc",
+      "win/command_line_test.cc",
+      "win/critical_section_with_debug_info_test.cc",
+      "win/exception_handler_server_test.cc",
+      "win/get_function_test.cc",
+      "win/handle_test.cc",
+      "win/initial_client_data_test.cc",
+      "win/process_info_test.cc",
+      "win/registration_protocol_win_test.cc",
+      "win/safe_terminate_process_test.cc",
+      "win/scoped_process_suspend_test.cc",
+      "win/session_end_watcher_test.cc",
+    ]
+
+    if (crashpad_is_in_chromium && is_asan && is_component_build) {
+      # TODO(crbug.com/856174): Re-enable these once Windows ASan is fixed.
+      sources -= [ "stdlib/string_number_conversion_test.cc" ]
+    }
+  }
+
+  data = [
+    "net/testdata/",
+  ]
+
+  deps = [
+    ":util",
+    "../client",
+    "../compat",
+    "../test",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../third_party/zlib",
+  ]
+
+  if (!crashpad_is_android) {
+    data_deps = [
+      ":http_transport_test_server",
+    ]
+
+    if (crashpad_use_boringssl_for_http_transport_socket) {
+      defines = [ "CRASHPAD_USE_BORINGSSL" ]
+    }
+  }
+
+  if (crashpad_is_mac) {
+    libs = [ "Foundation.framework" ]
+  }
+
+  if (crashpad_is_win) {
+    libs = [
+      "rpcrt4.lib",
+      "dbghelp.lib",
+    ]
+    data_deps += [
+      ":crashpad_util_test_process_info_test_child",
+      ":crashpad_util_test_safe_terminate_process_test_child",
+    ]
+  }
+}
+
+if (crashpad_is_win) {
+  crashpad_executable("crashpad_util_test_process_info_test_child") {
+    testonly = true
+    sources = [
+      "win/process_info_test_child.cc",
+    ]
+  }
+
+  crashpad_executable("crashpad_util_test_safe_terminate_process_test_child") {
+    testonly = true
+    sources = [
+      "win/safe_terminate_process_test_child.cc",
+    ]
+  }
+}

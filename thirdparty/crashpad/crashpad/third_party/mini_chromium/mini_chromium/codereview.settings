@@ -1,0 +1,9 @@
+# Copyright 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+GERRIT_HOST: True
+GERRIT_SQUASH_UPLOADS: True
+CODE_REVIEW_SERVER: https://canary-chromium-review.googlesource.com/
+VIEW_VC: https://chromium.googlesource.com/chromium/mini_chromium/+/
+PROJECT: mini_chromium

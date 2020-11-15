@@ -116,7 +116,11 @@ opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size"
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
-opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False,))
+opts.Add("crashpad_url", "Set crashpad crash reporter url", "")
+opts.Add(
+    "crashpad_handler_path", "Set crashpad crash reporter handler path", "res://crashpad_handler.com",
+)
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable deprecated features", True))
@@ -130,13 +134,17 @@ opts.Add(BoolVariable("progress", "Show a progress indicator during compilation"
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
 opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", False))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
-opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
+opts.Add(
+    "extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "",
+)
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")))
+opts.Add(EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel"),))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", False))
-opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
+opts.Add(
+    "system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "",
+)
 
 # Thirdparty libraries
 # opts.Add(BoolVariable('builtin_assimp', "Use the built-in Assimp library", True))
@@ -416,7 +424,13 @@ if selected_platform in platform_list:
     # Configure compiler warnings
     if env.msvc:  # MSVC
         # Truncations, narrowing conversions, signed/unsigned comparisons...
-        disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
+        disable_nonessential_warnings = [
+            "/wd4267",
+            "/wd4244",
+            "/wd4305",
+            "/wd4018",
+            "/wd4800",
+        ]
         if env["warnings"] == "extra":
             env.Append(CCFLAGS=["/Wall"])  # Implies /W4
         elif env["warnings"] == "all":
@@ -561,6 +575,19 @@ if selected_platform in platform_list:
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
+    if env["crashpad_url"]:
+        env.Append(CPPDEFINES=['DEFAULT_CRASHPAD_SERVER_URL="' + env["crashpad_url"] + '"'])
+    if env["crashpad_handler_path"]:
+        env.Append(CPPDEFINES=['DEFAULT_CRASHPAD_HANDLER_PATH="' + env["crashpad_handler_path"] + '"'])
+    if env.use_ptrcall:
+        env.Append(CPPDEFINES=["PTRCALL_ENABLED"])
+    if env["tools"]:
+        env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+    if env["disable_3d"]:
+        if env["tools"]:
+            print(
+                "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
+            )
     if env.use_ptrcall:
         env.Append(CPPDEFINES=["PTRCALL_ENABLED"])
     if env["tools"]:

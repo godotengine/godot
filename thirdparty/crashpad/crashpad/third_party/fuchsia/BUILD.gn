@@ -1,0 +1,82 @@
+# Copyright 2018 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../../build/crashpad_buildconfig.gni")
+
+if (crashpad_is_in_fuchsia) {
+  group("zx") {
+    public_deps = [
+      "//zircon/public/lib/zx",
+    ]
+  }
+} else if (crashpad_is_in_chromium) {
+  group("zx") {
+    public_deps = [
+      "//third_party/fuchsia-sdk:zx",
+    ]
+  }
+} else {
+  sdk_pkg_path = "sdk/linux-amd64/pkg"
+
+  config("zx_config") {
+    visibility = [ ":zx" ]
+    include_dirs = [ "$sdk_pkg_path/zx/include" ]
+  }
+
+  static_library("zx") {
+    sources = [
+      "$sdk_pkg_path/zx/channel.cpp",
+      "$sdk_pkg_path/zx/event.cpp",
+      "$sdk_pkg_path/zx/eventpair.cpp",
+      "$sdk_pkg_path/zx/fifo.cpp",
+      "$sdk_pkg_path/zx/guest.cpp",
+      "$sdk_pkg_path/zx/include/lib/zx/bti.h",
+      "$sdk_pkg_path/zx/include/lib/zx/channel.h",
+      "$sdk_pkg_path/zx/include/lib/zx/event.h",
+      "$sdk_pkg_path/zx/include/lib/zx/eventpair.h",
+      "$sdk_pkg_path/zx/include/lib/zx/fifo.h",
+      "$sdk_pkg_path/zx/include/lib/zx/guest.h",
+      "$sdk_pkg_path/zx/include/lib/zx/handle.h",
+      "$sdk_pkg_path/zx/include/lib/zx/interrupt.h",
+      "$sdk_pkg_path/zx/include/lib/zx/job.h",
+      "$sdk_pkg_path/zx/include/lib/zx/log.h",
+      "$sdk_pkg_path/zx/include/lib/zx/object.h",
+      "$sdk_pkg_path/zx/include/lib/zx/object_traits.h",
+      "$sdk_pkg_path/zx/include/lib/zx/pmt.h",
+      "$sdk_pkg_path/zx/include/lib/zx/port.h",
+      "$sdk_pkg_path/zx/include/lib/zx/process.h",
+      "$sdk_pkg_path/zx/include/lib/zx/resource.h",
+      "$sdk_pkg_path/zx/include/lib/zx/socket.h",
+      "$sdk_pkg_path/zx/include/lib/zx/task.h",
+      "$sdk_pkg_path/zx/include/lib/zx/thread.h",
+      "$sdk_pkg_path/zx/include/lib/zx/time.h",
+      "$sdk_pkg_path/zx/include/lib/zx/timer.h",
+      "$sdk_pkg_path/zx/include/lib/zx/vmar.h",
+      "$sdk_pkg_path/zx/include/lib/zx/vmo.h",
+      "$sdk_pkg_path/zx/interrupt.cpp",
+      "$sdk_pkg_path/zx/job.cpp",
+      "$sdk_pkg_path/zx/log.cpp",
+      "$sdk_pkg_path/zx/port.cpp",
+      "$sdk_pkg_path/zx/process.cpp",
+      "$sdk_pkg_path/zx/resource.cpp",
+      "$sdk_pkg_path/zx/socket.cpp",
+      "$sdk_pkg_path/zx/thread.cpp",
+      "$sdk_pkg_path/zx/timer.cpp",
+      "$sdk_pkg_path/zx/vmar.cpp",
+      "$sdk_pkg_path/zx/vmo.cpp",
+    ]
+
+    public_configs = [ ":zx_config" ]
+  }
+}

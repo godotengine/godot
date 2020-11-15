@@ -1,0 +1,338 @@
+# Copyright 2015 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../build/crashpad_buildconfig.gni")
+
+static_library("handler") {
+  sources = [
+    "crash_report_upload_thread.cc",
+    "crash_report_upload_thread.h",
+    "handler_main.cc",
+    "handler_main.h",
+    "minidump_to_upload_parameters.cc",
+    "minidump_to_upload_parameters.h",
+    "prune_crash_reports_thread.cc",
+    "prune_crash_reports_thread.h",
+    "user_stream_data_source.cc",
+    "user_stream_data_source.h",
+  ]
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/crash_report_exception_handler.cc",
+      "mac/crash_report_exception_handler.h",
+      "mac/exception_handler_server.cc",
+      "mac/exception_handler_server.h",
+      "mac/file_limit_annotation.cc",
+      "mac/file_limit_annotation.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "linux/crash_report_exception_handler.cc",
+      "linux/crash_report_exception_handler.h",
+      "linux/exception_handler_server.cc",
+      "linux/exception_handler_server.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "win/crash_report_exception_handler.cc",
+      "win/crash_report_exception_handler.h",
+    ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [
+      "fuchsia/crash_report_exception_handler.cc",
+      "fuchsia/crash_report_exception_handler.h",
+      "fuchsia/exception_handler_server.cc",
+      "fuchsia/exception_handler_server.h",
+    ]
+  }
+
+  public_configs = [ "..:crashpad_config" ]
+
+  deps = [
+    "../client",
+    "../compat",
+    "../minidump",
+    "../snapshot",
+    "../third_party/mini_chromium:base",
+    "../tools:tool_support",
+    "../util",
+  ]
+
+  if (crashpad_is_win) {
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
+  }
+
+  if (crashpad_is_fuchsia) {
+    deps += [ "../third_party/fuchsia:zx" ]
+  }
+}
+
+source_set("handler_test") {
+  testonly = true
+
+  sources = [
+    "minidump_to_upload_parameters_test.cc",
+  ]
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    sources += [ "linux/exception_handler_server_test.cc" ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [ "crashpad_handler_test.cc" ]
+  }
+
+  deps = [
+    ":handler",
+    "../client",
+    "../compat",
+    "../snapshot",
+    "../snapshot:test_support",
+    "../test",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  if (crashpad_is_win) {
+    data_deps = [
+      ":crashpad_handler_test_extended_handler",
+      ":fake_handler_that_crashes_at_startup",
+    ]
+  }
+}
+
+crashpad_executable("crashpad_handler") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":handler",
+    "../build:default_exe_manifest_win",
+    "../compat",
+    "../third_party/mini_chromium:base",
+  ]
+
+  if (crashpad_is_mac && crashpad_is_in_chromium) {
+    if (is_component_build) {
+      ldflags = [
+        # The handler is in
+        # Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
+        # so set rpath up to the base.
+        "-rpath",
+        "@loader_path/../../../../../../../..",
+
+        # The handler is also in
+        # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Helpers/
+        # so set the rpath for that too.
+        "-rpath",
+        "@loader_path/../../../../..",
+      ]
+    }
+  }
+
+  if (crashpad_is_win) {
+    if (crashpad_is_in_chromium) {
+      remove_configs = [ "//build/config/win:console" ]
+      configs = [ "//build/config/win:windowed" ]
+    } else {
+      remove_configs =
+          [ "//third_party/mini_chromium/mini_chromium/build:win_console" ]
+      configs =
+          [ "//third_party/mini_chromium/mini_chromium/build:win_windowed" ]
+    }
+  }
+}
+
+# There is not any normal way to package native executables in an Android APK.
+# It is normal to package native code as a loadable module but Android's APK
+# installer will ignore files not named like a shared object, so give the
+# handler executable an acceptable name.
+if (crashpad_is_android) {
+  copy("crashpad_handler_named_as_so") {
+    deps = [
+      ":crashpad_handler",
+    ]
+
+    sources = [
+      "$root_out_dir/crashpad_handler",
+    ]
+
+    outputs = [
+      "$root_out_dir/libcrashpad_handler.so",
+    ]
+  }
+}
+
+crashpad_executable("crashpad_handler_test_extended_handler") {
+  testonly = true
+
+  sources = [
+    "crashpad_handler_test_extended_handler.cc",
+  ]
+
+  deps = [
+    ":handler",
+    "../build:default_exe_manifest_win",
+    "../compat",
+    "../minidump:test_support",
+    "../third_party/mini_chromium:base",
+    "../tools:tool_support",
+  ]
+}
+
+if (crashpad_is_win) {
+  crashpad_executable("crashpad_handler_com") {
+    sources = [
+      "main.cc",
+    ]
+
+    # Avoid .exp, .ilk, and .lib file collisions with crashpad_handler.exe by
+    # having this target produce crashpad_handler_com.com. Don’t use this target
+    # directly. Instead, use crashpad_handler_console.
+    output_extension = "com"
+
+    deps = [
+      ":handler",
+      "../build:default_exe_manifest_win",
+      "../compat",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  copy("crashpad_handler_console") {
+    deps = [
+      ":crashpad_handler_com",
+    ]
+    sources = [
+      "$root_out_dir/crashpad_handler_com.com",
+    ]
+    outputs = [
+      "$root_out_dir/crashpad_handler.com",
+    ]
+  }
+
+  crashpad_executable("crash_other_program") {
+    testonly = true
+
+    sources = [
+      "win/crash_other_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../test",
+      "../third_party/gtest:gtest",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_executable("crashy_program") {
+    testonly = true
+
+    sources = [
+      "win/crashy_test_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_executable("crashy_signal") {
+    testonly = true
+
+    sources = [
+      "win/crashy_signal.cc",
+    ]
+
+    cflags = [ "/wd4702" ]  # Unreachable code.
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_executable("fake_handler_that_crashes_at_startup") {
+    testonly = true
+
+    sources = [
+      "win/fake_handler_that_crashes_at_startup.cc",
+    ]
+  }
+
+  crashpad_executable("hanging_program") {
+    testonly = true
+
+    sources = [
+      "win/hanging_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_loadable_module("loader_lock_dll") {
+    testonly = true
+
+    sources = [
+      "win/loader_lock_dll.cc",
+    ]
+  }
+
+  crashpad_executable("self_destroying_program") {
+    testonly = true
+
+    sources = [
+      "win/self_destroying_test_program.cc",
+    ]
+
+    deps = [
+      "../client",
+      "../compat",
+      "../snapshot",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  if (current_cpu == "x86") {
+    # Cannot create an x64 DLL with embedded debug info.
+    crashpad_executable("crashy_z7_loader") {
+      testonly = true
+
+      sources = [
+        "win/crashy_test_z7_loader.cc",
+      ]
+
+      deps = [
+        "../client",
+        "../test",
+        "../third_party/mini_chromium:base",
+      ]
+    }
+  }
+}

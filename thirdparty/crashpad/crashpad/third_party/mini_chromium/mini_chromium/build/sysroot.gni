@@ -1,0 +1,70 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("platform.gni")
+
+if (mini_chromium_is_posix || mini_chromium_is_fuchsia) {
+  declare_args() {
+    # A directory containing the system’s header files and libraries. If empty,
+    # a suitable default will be chosen.
+    target_sysroot = ""
+  }
+}
+
+if (mini_chromium_is_mac) {
+  declare_args() {
+    # The version of the macOS SDK to use. If |target_sysroot| is empty, this
+    # will inform which SDK version will be chosen. If |mac_sdk| is also empty,
+    # a suitable default will be chosen. See also |mac_sdk_min|.
+    mac_sdk = ""
+
+    # The minimum version of the macOS system SDK to use. SDK versions older
+    # than this will be rejected. If |target_sysroot| and |mac_sdk| are both
+    # empty, the oldest SDK that’s at least this version will be chosen. If
+    # empty, the system’s default SDK will be chosen.
+    mac_sdk_min = ""
+  }
+
+  find_mac_sdk_args = []
+  if (mac_sdk != "") {
+    find_mac_sdk_args += [
+      "--exact",
+      mac_sdk,
+    ]
+  }
+  if (mac_sdk_min != "") {
+    find_mac_sdk_args += [
+      "--minimum",
+      mac_sdk_min,
+    ]
+  }
+  if (target_sysroot != "") {
+    find_mac_sdk_args += [
+      "--path",
+      target_sysroot,
+    ]
+  }
+
+  find_mac_sdk_output =
+      exec_script("find_mac_sdk.py", find_mac_sdk_args, "list lines")
+
+  mac_sdk = find_mac_sdk_output[0]
+  target_sysroot = find_mac_sdk_output[1]
+} else if (mini_chromium_is_fuchsia) {
+  declare_args() {
+    # Path to the Fuchsia SDK.
+    fuchsia_sdk = "//third_party/fuchsia/sdk/linux-amd64"
+  }
+
+  if (target_sysroot == "") {
+    target_sysroot = fuchsia_sdk + "/arch/$target_cpu/sysroot"
+  }
+}
+
+if ((mini_chromium_is_posix || mini_chromium_is_fuchsia) &&
+    (current_os == target_os && current_cpu == target_cpu)) {
+  sysroot = target_sysroot
+} else {
+  sysroot = ""
+}

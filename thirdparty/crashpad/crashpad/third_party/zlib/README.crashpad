@@ -1,0 +1,18 @@
+Name: zlib
+Short Name: zlib
+URL: https://zlib.net/
+Revision: See zlib/README.chromium
+License: zlib
+License File: zlib/LICENSE
+Security Critical: yes
+
+Description:
+“A massively spiffy yet delicately unobtrusive compression library.”
+
+zlib is a free, general-purpose, legally unencumbered lossless data-compression
+library. zlib implements the “deflate” compression algorithm described by RFC
+1951, which combines the LZ77 (Lempel-Ziv) algorithm with Huffman coding. zlib
+also implements the zlib (RFC 1950) and gzip (RFC 1952) wrapper formats.
+
+Local Modifications:
+See zlib/README.chromium.

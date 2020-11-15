@@ -1,0 +1,221 @@
+# Copyright 2017 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../build/crashpad_buildconfig.gni")
+
+static_library("test") {
+  testonly = true
+
+  sources = [
+    "errors.cc",
+    "errors.h",
+    "file.cc",
+    "file.h",
+    "filesystem.cc",
+    "filesystem.h",
+    "gtest_death.h",
+    "gtest_disabled.cc",
+    "gtest_disabled.h",
+    "hex_string.cc",
+    "hex_string.h",
+    "main_arguments.cc",
+    "main_arguments.h",
+    "multiprocess.h",
+    "multiprocess_exec.cc",
+    "multiprocess_exec.h",
+    "process_type.cc",
+    "process_type.h",
+    "scoped_module_handle.cc",
+    "scoped_module_handle.h",
+    "scoped_temp_dir.cc",
+    "scoped_temp_dir.h",
+    "test_paths.cc",
+    "test_paths.h",
+  ]
+
+  if (crashpad_is_posix || crashpad_is_fuchsia) {
+    sources += [ "scoped_temp_dir_posix.cc" ]
+
+    if (!crashpad_is_fuchsia) {
+      sources += [
+        "multiprocess_exec_posix.cc",
+        "multiprocess_posix.cc",
+      ]
+    }
+  }
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/dyld.cc",
+      "mac/dyld.h",
+      "mac/exception_swallower.cc",
+      "mac/exception_swallower.h",
+      "mac/mach_errors.cc",
+      "mac/mach_errors.h",
+      "mac/mach_multiprocess.cc",
+      "mac/mach_multiprocess.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "linux/fake_ptrace_connection.cc",
+      "linux/fake_ptrace_connection.h",
+      "linux/get_tls.cc",
+      "linux/get_tls.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "multiprocess_exec_win.cc",
+      "scoped_temp_dir_win.cc",
+      "win/child_launcher.cc",
+      "win/child_launcher.h",
+      "win/win_child_process.cc",
+      "win/win_child_process.h",
+      "win/win_multiprocess.cc",
+      "win/win_multiprocess.h",
+      "win/win_multiprocess_with_temp_dir.cc",
+      "win/win_multiprocess_with_temp_dir.h",
+    ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [ "multiprocess_exec_fuchsia.cc" ]
+  }
+
+  public_configs = [ "..:crashpad_config" ]
+
+  configs += [
+    "../build:crashpad_is_in_chromium",
+    "../build:crashpad_is_in_fuchsia",
+  ]
+
+  data = [
+    "test_paths_test_data_root.txt",
+  ]
+
+  deps = [
+    "../compat",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  if (crashpad_is_mac) {
+    libs = [ "bsm" ]
+    deps += [
+      "../handler",
+      "../snapshot",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    libs = [ "shell32.lib" ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    public_deps = [
+      "../third_party/fuchsia:zx",
+    ]
+    if (crashpad_is_in_fuchsia) {
+      deps += [ "//zircon/public/lib/fdio" ]
+    }
+  }
+}
+
+source_set("test_test") {
+  testonly = true
+
+  sources = [
+    "hex_string_test.cc",
+    "main_arguments_test.cc",
+    "multiprocess_exec_test.cc",
+    "scoped_temp_dir_test.cc",
+    "test_paths_test.cc",
+  ]
+
+  # TODO(crbug.com/812974): Remove !crashpad_is_fuchsia when Fuchsia is no
+  # longer treated as a posix platform.
+  if (crashpad_is_posix && !crashpad_is_fuchsia) {
+    sources += [ "multiprocess_posix_test.cc" ]
+  }
+
+  if (crashpad_is_mac) {
+    sources += [ "mac/mach_multiprocess_test.cc" ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "win/win_child_process_test.cc",
+      "win/win_multiprocess_test.cc",
+    ]
+  }
+
+  deps = [
+    ":test",
+    "../compat",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  data_deps = [
+    ":crashpad_test_test_multiprocess_exec_test_child",
+  ]
+}
+
+crashpad_executable("crashpad_test_test_multiprocess_exec_test_child") {
+  sources = [
+    "multiprocess_exec_test_child.cc",
+  ]
+
+  deps = [
+    "../third_party/mini_chromium:base",
+  ]
+}
+
+static_library("gmock_main") {
+  testonly = true
+  sources = [
+    "gtest_main.cc",
+  ]
+  configs += [ "../build:crashpad_is_in_chromium" ]
+  defines = [ "CRASHPAD_TEST_LAUNCHER_GMOCK" ]
+  deps = [
+    ":test",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../third_party/mini_chromium:base_test_support",
+  ]
+}
+
+static_library("gtest_main") {
+  testonly = true
+  sources = [
+    "gtest_main.cc",
+  ]
+  configs += [ "../build:crashpad_is_in_chromium" ]
+  defines = [ "CRASHPAD_TEST_LAUNCHER_GTEST" ]
+  deps = [
+    ":test",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../third_party/mini_chromium:base_test_support",
+  ]
+}

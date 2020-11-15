@@ -144,6 +144,7 @@ public:
 		MONTH_NOVEMBER,
 		MONTH_DECEMBER
 	};
+	void debug_crash() const;
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();

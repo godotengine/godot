@@ -1,0 +1,15 @@
+Name: Apple CF-Lite
+Short Name: CF
+URL: https://opensource.apple.com/source/CF/
+URL: https://opensource.apple.com/tarballs/CF/
+Version: 550.43 (from Mac OS X 10.6.8)
+License: APSL 2.0
+License File: APPLE_LICENSE
+Security Critical: no
+
+Description:
+CF-Lite is an open-source version of the CoreFoundation framework. This
+contains non-public but stable header files.
+
+Local Modifications:
+ - Only CFStreamAbstract.h is included.

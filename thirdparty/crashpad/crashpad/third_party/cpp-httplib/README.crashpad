@@ -1,0 +1,15 @@
+Name: cpp-httplib
+Short Name: cpp-httplib
+URL: https://github.com/yhirose/cpp-httplib
+Revision: 5b3187e2f9e77c672063d49a1167bbb563da023e
+License: MIT
+License File: cpp-httplib/LICENSE
+Security Critical: no (test only)
+
+Description:
+A C++11 header-only HTTP library.
+
+Local Modifications:
+- Exclude test/ and example/ subdirs.
+- Patch httplib.h to use #include "third_party/zlib/zlib_crashpad.h" instead of
+  <zlib.h>.

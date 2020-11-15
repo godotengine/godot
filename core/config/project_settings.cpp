@@ -1083,6 +1083,25 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
 
+	GLOBAL_DEF("application/crashpad/disable_editor_crashpad", false);
+	GLOBAL_DEF("application/crashpad/disable_project_crashpad", false);
+#define STR_EXPAND(tok) #tok
+#define STR(tok) STR_EXPAND(tok)
+#ifndef DEFAULT_CRASHPAD_SERVER_URL
+	GLOBAL_DEF("application/crashpad/editor_crashpad_server", "");
+#else
+	GLOBAL_DEF("application/crashpad/editor_crashpad_server", STR(DEFAULT_CRASHPAD_SERVER_URL));
+#endif
+	GLOBAL_DEF("application/crashpad/project_crashpad_server", "");
+#ifndef DEFAULT_CRASHPAD_HANDLER_PATH
+	GLOBAL_DEF("application/crashpad/editor_crashpad_handler", "");
+#else
+	GLOBAL_DEF("application/crashpad/editor_crashpad_handler", STR(DEFAULT_CRASHPAD_HANDLER_PATH));
+#endif
+	custom_prop_info["application/crashpad/editor_crashpad_handler"] = PropertyInfo(Variant::STRING, "application/crashpad/editor_crashpad_handler", PROPERTY_HINT_FILE, "*");
+	GLOBAL_DEF("application/crashpad/project_crashpad_handler", "");
+	custom_prop_info["application/crashpad/project_crashpad_handler"] = PropertyInfo(Variant::STRING, "application/crashpad/project_crashpad_handler", PROPERTY_HINT_FILE, "*");
+
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();

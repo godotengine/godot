@@ -28,6 +28,10 @@ if env["platform"] != "server" and env["platform"] != "javascript":
 else:
     SConscript("dummy/SCsub")
 
+# Crash reporter
+if env["platform"] == "windows":
+    SConscript("crashpad/SCsub")
+
 # Core dependencies
 SConscript("png/SCsub")
 SConscript("spirv-reflect/SCsub")

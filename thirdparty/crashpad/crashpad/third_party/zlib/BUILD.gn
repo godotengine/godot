@@ -1,0 +1,121 @@
+# Copyright 2017 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../../build/crashpad_buildconfig.gni")
+
+if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
+  zlib_source = "external"
+} else if (!crashpad_is_win && !crashpad_is_fuchsia) {
+  zlib_source = "system"
+} else {
+  zlib_source = "embedded"
+}
+
+config("zlib_config") {
+  if (zlib_source == "external") {
+    defines = [ "CRASHPAD_ZLIB_SOURCE_EXTERNAL" ]
+  } else if (zlib_source == "system") {
+    defines = [ "CRASHPAD_ZLIB_SOURCE_SYSTEM" ]
+  } else if (zlib_source == "embedded") {
+    defines = [ "CRASHPAD_ZLIB_SOURCE_EMBEDDED" ]
+    include_dirs = [ "zlib" ]
+  }
+}
+
+if (zlib_source == "external") {
+  group("zlib") {
+    public_configs = [ ":zlib_config" ]
+    public_deps = [
+      "//third_party/zlib",
+    ]
+  }
+} else if (zlib_source == "system") {
+  source_set("zlib") {
+    public_configs = [ ":zlib_config" ]
+    libs = [ "z" ]
+  }
+} else if (zlib_source == "embedded") {
+  static_library("zlib") {
+    sources = [
+      "zlib/adler32.c",
+      "zlib/compress.c",
+      "zlib/crc32.c",
+      "zlib/crc32.h",
+      "zlib/deflate.c",
+      "zlib/deflate.h",
+      "zlib/gzclose.c",
+      "zlib/gzguts.h",
+      "zlib/gzlib.c",
+      "zlib/gzread.c",
+      "zlib/gzwrite.c",
+      "zlib/infback.c",
+      "zlib/inffast.c",
+      "zlib/inffast.h",
+      "zlib/inffixed.h",
+      "zlib/inflate.c",
+      "zlib/inflate.h",
+      "zlib/inftrees.c",
+      "zlib/inftrees.h",
+      "zlib/names.h",
+      "zlib/trees.c",
+      "zlib/trees.h",
+      "zlib/uncompr.c",
+      "zlib/zconf.h",
+      "zlib/zlib.h",
+      "zlib/zlib_crashpad.h",
+      "zlib/zutil.c",
+      "zlib/zutil.h",
+    ]
+
+    cflags = []
+    defines = [ "HAVE_STDARG_H" ]
+    public_configs = [ ":zlib_config" ]
+
+    if (crashpad_is_win) {
+      cflags += [
+        "/wd4131",  # uses old-style declarator
+        "/wd4244",  # conversion from 't1' to 't2', possible loss of data
+        "/wd4245",  # conversion from 't1' to 't2', signed/unsigned mismatch
+        "/wd4267",  # conversion from 'size_t' to 't', possible loss of data
+        "/wd4324",  # structure was padded due to alignment specifier
+        "/wd4702",  # unreachable code
+      ]
+    } else {
+      defines += [
+        "HAVE_HIDDEN",
+        "HAVE_UNISTD_H",
+      ]
+    }
+
+    if (current_cpu == "x86" || current_cpu == "x64") {
+      sources += [
+        "zlib/crc_folding.c",
+        "zlib/fill_window_sse.c",
+        "zlib/x86.c",
+        "zlib/x86.h",
+      ]
+      if (!crashpad_is_win || crashpad_is_clang) {
+        cflags += [
+          "-msse4.2",
+          "-mpclmul",
+        ]
+      }
+      if (crashpad_is_clang) {
+        cflags += [ "-Wno-incompatible-pointer-types" ]
+      }
+    } else {
+      sources += [ "zlib/simd_stub.c" ]
+    }
+  }
+}

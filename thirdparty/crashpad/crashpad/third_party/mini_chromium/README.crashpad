@@ -1,0 +1,17 @@
+Name: mini_chromium
+Short Name: mini_chromium
+URL: https://chromium.googlesource.com/chromium/mini_chromium/
+Revision: See DEPS
+License: BSD 3-clause
+License File: mini_chromium/LICENSE
+Security Critical: yes
+
+Description:
+mini_chromium is a small collection of useful low-level (“base”) routines from
+the Chromium open-source project at https://www.chromium.org/Home. Chromium is
+large, sprawling, full of dependencies, and a web browser. mini_chromium is
+small, self-contained, and a library. mini_chromium is especially useful as a
+dependency of other code that wishes to use Chromium’s base routines.
+
+Local Modifications:
+None

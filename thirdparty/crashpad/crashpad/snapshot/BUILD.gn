@@ -1,0 +1,599 @@
+# Copyright 2015 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../build/crashpad_buildconfig.gni")
+import("../build/crashpad_fuzzer_test.gni")
+
+if (crashpad_is_in_chromium) {
+  import("//build/config/compiler/compiler.gni")
+}
+
+static_library("snapshot") {
+  sources = [
+    "annotation_snapshot.cc",
+    "annotation_snapshot.h",
+    "capture_memory.cc",
+    "capture_memory.h",
+    "cpu_architecture.h",
+    "cpu_context.cc",
+    "cpu_context.h",
+    "crashpad_info_client_options.cc",
+    "crashpad_info_client_options.h",
+    "exception_snapshot.h",
+    "handle_snapshot.cc",
+    "handle_snapshot.h",
+    "memory_snapshot.cc",
+    "memory_snapshot.h",
+    "memory_snapshot_generic.h",
+    "minidump/minidump_annotation_reader.cc",
+    "minidump/minidump_annotation_reader.h",
+    "minidump/minidump_simple_string_dictionary_reader.cc",
+    "minidump/minidump_simple_string_dictionary_reader.h",
+    "minidump/minidump_string_list_reader.cc",
+    "minidump/minidump_string_list_reader.h",
+    "minidump/minidump_string_reader.cc",
+    "minidump/minidump_string_reader.h",
+    "minidump/module_snapshot_minidump.cc",
+    "minidump/module_snapshot_minidump.h",
+    "minidump/process_snapshot_minidump.cc",
+    "minidump/process_snapshot_minidump.h",
+    "module_snapshot.h",
+    "process_snapshot.h",
+    "snapshot_constants.h",
+    "system_snapshot.h",
+    "thread_snapshot.h",
+    "unloaded_module_snapshot.cc",
+    "unloaded_module_snapshot.h",
+  ]
+
+  if (crashpad_is_posix || crashpad_is_fuchsia) {
+    sources += [
+      "posix/timezone.cc",
+      "posix/timezone.h",
+    ]
+  }
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/cpu_context_mac.cc",
+      "mac/cpu_context_mac.h",
+      "mac/exception_snapshot_mac.cc",
+      "mac/exception_snapshot_mac.h",
+      "mac/mach_o_image_annotations_reader.cc",
+      "mac/mach_o_image_annotations_reader.h",
+      "mac/mach_o_image_reader.cc",
+      "mac/mach_o_image_reader.h",
+      "mac/mach_o_image_segment_reader.cc",
+      "mac/mach_o_image_segment_reader.h",
+      "mac/mach_o_image_symbol_table_reader.cc",
+      "mac/mach_o_image_symbol_table_reader.h",
+      "mac/module_snapshot_mac.cc",
+      "mac/module_snapshot_mac.h",
+      "mac/process_reader_mac.cc",
+      "mac/process_reader_mac.h",
+      "mac/process_snapshot_mac.cc",
+      "mac/process_snapshot_mac.h",
+      "mac/process_types.cc",
+      "mac/process_types.h",
+      "mac/process_types/all.proctype",
+      "mac/process_types/annotation.proctype",
+      "mac/process_types/crashpad_info.proctype",
+      "mac/process_types/crashreporterclient.proctype",
+      "mac/process_types/custom.cc",
+      "mac/process_types/dyld_images.proctype",
+      "mac/process_types/flavors.h",
+      "mac/process_types/internal.h",
+      "mac/process_types/loader.proctype",
+      "mac/process_types/nlist.proctype",
+      "mac/process_types/traits.h",
+      "mac/system_snapshot_mac.cc",
+      "mac/system_snapshot_mac.h",
+      "mac/thread_snapshot_mac.cc",
+      "mac/thread_snapshot_mac.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "linux/cpu_context_linux.cc",
+      "linux/cpu_context_linux.h",
+      "linux/debug_rendezvous.cc",
+      "linux/debug_rendezvous.h",
+      "linux/exception_snapshot_linux.cc",
+      "linux/exception_snapshot_linux.h",
+      "linux/process_reader_linux.cc",
+      "linux/process_reader_linux.h",
+      "linux/process_snapshot_linux.cc",
+      "linux/process_snapshot_linux.h",
+      "linux/signal_context.h",
+      "linux/system_snapshot_linux.cc",
+      "linux/system_snapshot_linux.h",
+      "linux/thread_snapshot_linux.cc",
+      "linux/thread_snapshot_linux.h",
+      "sanitized/memory_snapshot_sanitized.cc",
+      "sanitized/memory_snapshot_sanitized.h",
+      "sanitized/module_snapshot_sanitized.cc",
+      "sanitized/module_snapshot_sanitized.h",
+      "sanitized/process_snapshot_sanitized.cc",
+      "sanitized/process_snapshot_sanitized.h",
+      "sanitized/sanitization_information.cc",
+      "sanitized/sanitization_information.h",
+      "sanitized/thread_snapshot_sanitized.cc",
+      "sanitized/thread_snapshot_sanitized.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "crashpad_types/crashpad_info_reader.cc",
+      "crashpad_types/crashpad_info_reader.h",
+      "crashpad_types/image_annotation_reader.cc",
+      "crashpad_types/image_annotation_reader.h",
+      "elf/elf_dynamic_array_reader.cc",
+      "elf/elf_dynamic_array_reader.h",
+      "elf/elf_image_reader.cc",
+      "elf/elf_image_reader.h",
+      "elf/elf_symbol_table_reader.cc",
+      "elf/elf_symbol_table_reader.h",
+      "elf/module_snapshot_elf.cc",
+      "elf/module_snapshot_elf.h",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "win/capture_memory_delegate_win.cc",
+      "win/capture_memory_delegate_win.h",
+      "win/cpu_context_win.cc",
+      "win/cpu_context_win.h",
+      "win/exception_snapshot_win.cc",
+      "win/exception_snapshot_win.h",
+      "win/memory_map_region_snapshot_win.cc",
+      "win/memory_map_region_snapshot_win.h",
+      "win/memory_snapshot_win.cc",
+      "win/memory_snapshot_win.h",
+      "win/module_snapshot_win.cc",
+      "win/module_snapshot_win.h",
+      "win/pe_image_annotations_reader.cc",
+      "win/pe_image_annotations_reader.h",
+      "win/pe_image_reader.cc",
+      "win/pe_image_reader.h",
+      "win/pe_image_resource_reader.cc",
+      "win/pe_image_resource_reader.h",
+      "win/process_reader_win.cc",
+      "win/process_reader_win.h",
+      "win/process_snapshot_win.cc",
+      "win/process_snapshot_win.h",
+      "win/process_subrange_reader.cc",
+      "win/process_subrange_reader.h",
+      "win/system_snapshot_win.cc",
+      "win/system_snapshot_win.h",
+      "win/thread_snapshot_win.cc",
+      "win/thread_snapshot_win.h",
+    ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [
+      "fuchsia/cpu_context_fuchsia.cc",
+      "fuchsia/cpu_context_fuchsia.h",
+      "fuchsia/exception_snapshot_fuchsia.cc",
+      "fuchsia/exception_snapshot_fuchsia.h",
+      "fuchsia/memory_map_fuchsia.cc",
+      "fuchsia/memory_map_fuchsia.h",
+      "fuchsia/process_reader_fuchsia.cc",
+      "fuchsia/process_reader_fuchsia.h",
+      "fuchsia/process_snapshot_fuchsia.cc",
+      "fuchsia/process_snapshot_fuchsia.h",
+      "fuchsia/system_snapshot_fuchsia.cc",
+      "fuchsia/system_snapshot_fuchsia.h",
+      "fuchsia/thread_snapshot_fuchsia.cc",
+      "fuchsia/thread_snapshot_fuchsia.h",
+    ]
+  }
+
+  if (target_cpu == "x86" || target_cpu == "x64") {
+    sources += [
+      "x86/cpuid_reader.cc",
+      "x86/cpuid_reader.h",
+    ]
+  }
+
+  public_configs = [ "..:crashpad_config" ]
+
+  deps = [
+    "../client",
+    "../compat",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  if (crashpad_is_win) {
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
+    libs = [ "powrprof.lib" ]
+  }
+}
+
+if (crashpad_is_win) {
+  static_library("snapshot_api") {
+    sources = [
+      "api/module_annotations_win.cc",
+      "api/module_annotations_win.h",
+    ]
+
+    public_configs = [ "..:crashpad_config" ]
+
+    cflags = [ "/wd4201" ]
+
+    deps = [
+      ":snapshot",
+      "../compat",
+      "../third_party/mini_chromium:base",
+      "../util",
+    ]
+  }
+} else {
+  group("snapshot_api") {
+  }
+}
+
+fuzzer_test("elf_image_reader_fuzzer") {
+  sources = [
+    "elf/elf_image_reader_fuzzer.cc",
+  ]
+
+  deps = [
+    ":snapshot",
+    "../third_party/mini_chromium:base",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "test/test_cpu_context.cc",
+    "test/test_cpu_context.h",
+    "test/test_exception_snapshot.cc",
+    "test/test_exception_snapshot.h",
+    "test/test_memory_map_region_snapshot.cc",
+    "test/test_memory_map_region_snapshot.h",
+    "test/test_memory_snapshot.cc",
+    "test/test_memory_snapshot.h",
+    "test/test_module_snapshot.cc",
+    "test/test_module_snapshot.h",
+    "test/test_process_snapshot.cc",
+    "test/test_process_snapshot.h",
+    "test/test_system_snapshot.cc",
+    "test/test_system_snapshot.h",
+    "test/test_thread_snapshot.cc",
+    "test/test_thread_snapshot.h",
+  ]
+
+  public_configs = [ "..:crashpad_config" ]
+
+  public_deps = [
+    ":snapshot",
+  ]
+
+  deps = [
+    "../compat",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  if (crashpad_is_win) {
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
+  }
+}
+
+config("snapshot_test_link") {
+  visibility = [ ":*" ]
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    # There’s no way to make the link depend on this file. “inputs” doesn’t have
+    # the intended effect in a config. https://crbug.com/781858,
+    # https://crbug.com/796187.
+    inputs = [
+      "elf/test_exported_symbols.sym",
+    ]
+    ldflags = [ "-Wl,--dynamic-list," + rebase_path(inputs[0], root_build_dir) ]
+  }
+}
+
+source_set("snapshot_test") {
+  testonly = true
+
+  sources = [
+    "cpu_context_test.cc",
+    "memory_snapshot_test.cc",
+    "minidump/process_snapshot_minidump_test.cc",
+  ]
+
+  if (crashpad_is_mac) {
+    sources += [
+      "mac/cpu_context_mac_test.cc",
+      "mac/mach_o_image_annotations_reader_test.cc",
+      "mac/mach_o_image_reader_test.cc",
+      "mac/mach_o_image_segment_reader_test.cc",
+      "mac/process_reader_mac_test.cc",
+      "mac/process_types_test.cc",
+      "mac/system_snapshot_mac_test.cc",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    sources += [
+      "linux/debug_rendezvous_test.cc",
+      "linux/exception_snapshot_linux_test.cc",
+      "linux/process_reader_linux_test.cc",
+      "linux/system_snapshot_linux_test.cc",
+      "sanitized/process_snapshot_sanitized_test.cc",
+      "sanitized/sanitization_information_test.cc",
+    ]
+  } else {
+    sources += [ "crashpad_info_client_options_test.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "crashpad_types/crashpad_info_reader_test.cc",
+      "crashpad_types/image_annotation_reader_test.cc",
+      "elf/elf_image_reader_test.cc",
+      "elf/elf_image_reader_test_note.S",
+      "elf/test_exported_symbols.sym",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "api/module_annotations_win_test.cc",
+      "win/cpu_context_win_test.cc",
+      "win/exception_snapshot_win_test.cc",
+      "win/extra_memory_ranges_test.cc",
+      "win/pe_image_annotations_reader_test.cc",
+      "win/pe_image_reader_test.cc",
+      "win/process_reader_win_test.cc",
+      "win/process_snapshot_win_test.cc",
+      "win/system_snapshot_win_test.cc",
+    ]
+  } else if (!crashpad_is_fuchsia) {
+    # Timezones are currently non-functional on Fuchsia:
+    # https://fuchsia.googlesource.com/zircon/+/master/third_party/ulib/musl/src/time/__tz.c#9
+    # https://crashpad.chromium.org/bug/196. Relevant upstream bugs are ZX-337
+    # and ZX-1731.
+    sources += [ "posix/timezone_test.cc" ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [ "fuchsia/process_reader_fuchsia_test.cc" ]
+  }
+
+  # public_configs isn’t quite right. snapshot_test_link sets ldflags, and
+  # what’s really needed is a way to push ldflags to dependent targets that
+  # produce linker output. Luckily in this case, all dependents do produce
+  # linker output. https://crbug.com/796183.
+  public_configs = [ ":snapshot_test_link" ]
+
+  deps = [
+    ":snapshot_api",
+    ":test_support",
+    "../client",
+    "../compat",
+    "../test",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  data_deps = [
+    ":crashpad_snapshot_test_module",
+    ":crashpad_snapshot_test_module_large",
+    ":crashpad_snapshot_test_module_small",
+  ]
+
+  if (crashpad_is_mac) {
+    libs = [ "OpenCL.framework" ]
+
+    data_deps += [
+      ":crashpad_snapshot_test_module_crashy_initializer",
+      ":crashpad_snapshot_test_no_op",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    libs = [ "dl" ]
+  }
+
+  if ((crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) &&
+      target_cpu != "mipsel" && target_cpu != "mips64el") {
+    data_deps += [ ":crashpad_snapshot_test_both_dt_hash_styles" ]
+  }
+
+  if (crashpad_is_win) {
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
+
+    data_deps += [
+      ":crashpad_snapshot_test_annotations",
+      ":crashpad_snapshot_test_crashing_child",
+      ":crashpad_snapshot_test_dump_without_crashing",
+      ":crashpad_snapshot_test_extra_memory_ranges",
+      ":crashpad_snapshot_test_image_reader",
+      ":crashpad_snapshot_test_image_reader_module",
+    ]
+  }
+}
+
+crashpad_loadable_module("crashpad_snapshot_test_module") {
+  testonly = true
+  sources = [
+    "crashpad_info_client_options_test_module.cc",
+  ]
+  deps = [
+    "../client",
+    "../third_party/mini_chromium:base",
+  ]
+}
+
+crashpad_loadable_module("crashpad_snapshot_test_module_large") {
+  testonly = true
+  sources = [
+    "crashpad_info_size_test_module.cc",
+  ]
+
+  deps = []
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [ "crashpad_info_size_test_note.S" ]
+    deps += [ "../util" ]
+  }
+
+  defines = [ "CRASHPAD_INFO_SIZE_TEST_MODULE_LARGE" ]
+  deps += [ "../third_party/mini_chromium:base" ]
+}
+
+crashpad_loadable_module("crashpad_snapshot_test_module_small") {
+  testonly = true
+  sources = [
+    "crashpad_info_size_test_module.cc",
+  ]
+
+  deps = []
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [ "crashpad_info_size_test_note.S" ]
+    deps += [ "../util" ]
+  }
+
+  defines = [ "CRASHPAD_INFO_SIZE_TEST_MODULE_SMALL" ]
+  deps += [ "../third_party/mini_chromium:base" ]
+}
+
+if ((crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) &&
+    target_cpu != "mipsel" && target_cpu != "mips64el") {
+  crashpad_loadable_module("crashpad_snapshot_test_both_dt_hash_styles") {
+    testonly = true
+    sources = [
+      "hash_types_test.cc",
+    ]
+
+    # This makes `ld` emit both .hash and .gnu.hash sections.
+    ldflags = [ "-Wl,--hash-style=both" ]
+  }
+}
+
+if (crashpad_is_mac) {
+  crashpad_loadable_module("crashpad_snapshot_test_module_crashy_initializer") {
+    testonly = true
+    sources = [
+      "mac/mach_o_image_annotations_reader_test_module_crashy_initializer.cc",
+    ]
+  }
+
+  crashpad_executable("crashpad_snapshot_test_no_op") {
+    testonly = true
+    sources = [
+      "mac/mach_o_image_annotations_reader_test_no_op.cc",
+    ]
+  }
+}
+
+if (crashpad_is_win) {
+  crashpad_executable("crashpad_snapshot_test_annotations") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_annotations.cc",
+    ]
+    deps = [
+      "../client",
+      "../compat",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_executable("crashpad_snapshot_test_crashing_child") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_crashing_child.cc",
+    ]
+    deps = [
+      "../client",
+      "../compat",
+      "../third_party/mini_chromium:base",
+      "../util",
+    ]
+  }
+
+  crashpad_executable("crashpad_snapshot_test_dump_without_crashing") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_dump_without_crashing.cc",
+    ]
+    deps = [
+      "../client",
+      "../compat",
+      "../third_party/mini_chromium:base",
+      "../util",
+    ]
+  }
+
+  crashpad_executable("crashpad_snapshot_test_extra_memory_ranges") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_extra_memory_ranges.cc",
+    ]
+    deps = [
+      "../client",
+      "../compat",
+      "../third_party/mini_chromium:base",
+    ]
+  }
+
+  crashpad_executable("crashpad_snapshot_test_image_reader") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_image_reader.cc",
+    ]
+    deps = [
+      "../client",
+      "../compat",
+      "../third_party/mini_chromium:base",
+      "../util",
+    ]
+    if (crashpad_is_in_chromium) {
+      if (symbol_level == 0) {
+        # The tests that use this executable rely on at least minimal debug
+        # info.
+        remove_configs = [ "//build/config/compiler:default_symbols" ]
+        configs = [ "//build/config/compiler:minimal_symbols" ]
+      }
+    }
+  }
+
+  crashpad_loadable_module("crashpad_snapshot_test_image_reader_module") {
+    testonly = true
+    sources = [
+      "win/crashpad_snapshot_test_image_reader_module.cc",
+    ]
+    deps = [
+      "../client",
+      "../third_party/mini_chromium:base",
+    ]
+    if (crashpad_is_in_chromium) {
+      if (symbol_level == 0) {
+        # The tests that use this module rely on at least minimal debug info.
+        remove_configs = [ "//build/config/compiler:default_symbols" ]
+        configs = [ "//build/config/compiler:minimal_symbols" ]
+      }
+    }
+  }
+}

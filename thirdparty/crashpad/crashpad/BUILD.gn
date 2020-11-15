@@ -1,0 +1,191 @@
+# Copyright 2017 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("build/crashpad_buildconfig.gni")
+import("build/test.gni")
+import("util/net/tls.gni")
+
+config("crashpad_config") {
+  include_dirs = [ "." ]
+}
+
+if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
+  test("crashpad_tests") {
+    deps = [
+      "client:client_test",
+      "handler:handler_test",
+      "minidump:minidump_test",
+      "snapshot:snapshot_test",
+      "test:gmock_main",
+      "test:test_test",
+      "util:util_test",
+    ]
+  }
+
+  if (crashpad_is_in_fuchsia) {
+    import("//build/package.gni")
+    package("crashpad_test") {
+      testonly = true
+      deprecated_system_image = true
+
+      deps = [
+        ":crashpad_tests",
+        "snapshot:crashpad_snapshot_test_both_dt_hash_styles",
+        "snapshot:crashpad_snapshot_test_module",
+        "snapshot:crashpad_snapshot_test_module_large",
+        "snapshot:crashpad_snapshot_test_module_small",
+        "test:crashpad_test_test_multiprocess_exec_test_child",
+        "util:http_transport_test_server",
+      ]
+
+      tests = [
+        {
+          name = "crashpad_tests"
+        },
+      ]
+
+      # Note that the infix of "crashpad_tests" below in
+      # binary/resource entries should be removed once
+      # crashpad_tests is moved out of the system image;
+      # until then, it is used to disambiguate the crashpad
+      # binaries and data from others within /system/(bin|data).
+      binaries = [
+        {
+          name = "crashpad_test_test_multiprocess_exec_test_child"
+          dest = "crashpad_tests/crashpad_test_test_multiprocess_exec_test_child"
+        },
+        {
+          name = "http_transport_test_server"
+          dest = "crashpad_tests/http_transport_test_server"
+        },
+      ]
+
+      loadable_modules = [
+        {
+          name = "crashpad_snapshot_test_both_dt_hash_styles.so"
+        },
+        {
+          name = "crashpad_snapshot_test_module.so"
+        },
+        {
+          name = "crashpad_snapshot_test_module_large.so"
+        },
+        {
+          name = "crashpad_snapshot_test_module_small.so"
+        },
+      ]
+
+      resources = [
+        {
+          path = "util/net/testdata/ascii_http_body.txt"
+          dest = "crashpad_tests/util/net/testdata/ascii_http_body.txt"
+        },
+        {
+          path = "util/net/testdata/binary_http_body.dat"
+          dest = "crashpad_tests/util/net/testdata/binary_http_body.dat"
+        },
+        {
+          path = "test/test_paths_test_data_root.txt"
+          dest = "crashpad_tests/test/test_paths_test_data_root.txt"
+        },
+      ]
+
+      if (crashpad_use_boringssl_for_http_transport_socket) {
+        deps += [
+          "util:generate_test_server_key",
+        ]
+        resources += [
+          {
+            path = "$root_out_dir/crashpad_util_test_cert.pem"
+            dest = "crashpad_tests/crashpad_util_test_cert.pem"
+          },
+          {
+            path = "$root_out_dir/crashpad_util_test_key.pem"
+            dest = "crashpad_tests/crashpad_util_test_key.pem"
+          },
+        ]
+      }
+    }
+
+    package("crashpad_handler") {
+      deprecated_system_image = true
+
+      deps = [
+        "handler:crashpad_handler",
+      ]
+
+      binaries = [
+        {
+          name = "crashpad_handler"
+        },
+      ]
+    }
+
+    package("crashpad_database_util") {
+      deprecated_system_image = true
+
+      deps = [
+        "tools:crashpad_database_util",
+      ]
+
+      binaries = [
+        {
+          name = "crashpad_database_util"
+        },
+      ]
+    }
+  }
+} else if (crashpad_is_standalone) {
+  test("crashpad_client_test") {
+    deps = [
+      "client:client_test",
+      "test:gmock_main",
+    ]
+  }
+
+  test("crashpad_handler_test") {
+    deps = [
+      "handler:handler_test",
+      "test:gtest_main",
+    ]
+  }
+
+  test("crashpad_minidump_test") {
+    deps = [
+      "minidump:minidump_test",
+      "test:gtest_main",
+    ]
+  }
+
+  test("crashpad_snapshot_test") {
+    deps = [
+      "snapshot:snapshot_test",
+      "test:gtest_main",
+    ]
+  }
+
+  test("crashpad_test_test") {
+    deps = [
+      "test:gmock_main",
+      "test:test_test",
+    ]
+  }
+
+  test("crashpad_util_test") {
+    deps = [
+      "test:gmock_main",
+      "util:util_test",
+    ]
+  }
+}

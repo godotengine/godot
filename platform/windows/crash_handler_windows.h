@@ -31,26 +31,39 @@
 #ifndef CRASH_HANDLER_WINDOWS_H
 #define CRASH_HANDLER_WINDOWS_H
 
+#include "thirdparty/crashpad/crashpad/client/crashpad_client.h"
+#include "thirdparty/crashpad/crashpad/client/settings.h"
+#include "thirdparty/crashpad/crashpad/third_party/mini_chromium/mini_chromium/base/files/file_path.h"
+
 #include <windows.h>
 
 // Crash handler exception only enabled with MSVC
 #if defined(DEBUG_ENABLED) && defined(MSVC)
 #define CRASH_HANDLER_EXCEPTION 1
-
 extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
 #endif
 
+static crashpad::CrashpadClient client;
+static bool disable_crash_reporter;
+
+class String;
+
 class CrashHandler {
-	bool disabled;
+	bool disabled = false;
+
+	base::FilePath database;
+	// Path to the out-of-process handler executable
+	base::FilePath handler;
 
 public:
 	void initialize();
+	void initialize_crashpad(String p_crashpad_handler_path, String p_crashpad_server);
 
 	void disable();
 	bool is_disabled() const { return disabled; };
 
-	CrashHandler();
-	~CrashHandler();
+	CrashHandler() {}
+	~CrashHandler() {}
 };
 
 #endif // CRASH_HANDLER_WINDOWS_H

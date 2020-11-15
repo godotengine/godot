@@ -1,0 +1,20 @@
+Name: Gregory Pietsch getopt
+Short Name: getopt
+URL: https://sourceware.org/ml/newlib/2005/msg00758.html
+License: Public domain
+License File: LICENSE
+Security Critical: no
+
+Description:
+A public domain implementation of getopt.
+
+Local Modifications:
+ - Minor compilation fixes applied for Windows.
+ - NO_ARG, REQUIRED_ARG, and OPTIONAL_ARG were renamed to the more traditional
+   no_argument, required_argument, and optional_argument for source
+   compatibility with BSD and glibc getopt_long().
+ - Add copy of copyright (Public domain) to the top of both files for Chromium's
+   checklicenses step.
+ - Compiled as .cc, and wrapped in namespace crashpad.
+ - memcmp() -> strncmp() in getopt.cc to make ASan happier about some string
+   manipulation.

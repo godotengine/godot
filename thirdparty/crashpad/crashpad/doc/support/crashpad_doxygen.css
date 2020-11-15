@@ -1,0 +1,60 @@
+/* Copyright 2016 The Crashpad Authors. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
+
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,400,700&subset=latin,cyrillic-ext,greek-ext,cyrillic,greek,vietnamese,latin-ext";
+@import "https://fonts.googleapis.com/css?family=Source+Code+Pro";
+
+body,
+table,
+div,
+p,
+dl,
+.title,
+.icon,
+table.directory,
+.navpath li.navelem a,
+#projectname,
+#projectbrief,
+#projectnumber,
+div.toc li,
+div.toc h3,
+#powerTip div,
+.sm-dox a,
+.sm-dox a:focus,
+.sm-dox a:hover,
+.sm-dox a:active {
+  font-family: 'Open Sans',
+               'Lucida Grande',
+               'Lucida Sans Unicode',
+               Helvetica,
+               Arial,
+               sans-serif;
+}
+
+code,
+tt,
+pre.fragment,
+div.line,
+.overload,
+.params .paramdir,
+.sm-dox a span.sub-arrow {
+  font-family: 'Source Code Pro',
+               Monaco,
+               'Lucida Console',
+               monospace;
+}
+
+.icon {
+  height: auto;
+}

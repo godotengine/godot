@@ -1,0 +1,142 @@
+# Copyright 2015 The Crashpad Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("../build/crashpad_buildconfig.gni")
+
+static_library("client") {
+  sources = [
+    "annotation.cc",
+    "annotation.h",
+    "annotation_list.cc",
+    "annotation_list.h",
+    "crash_report_database.cc",
+    "crash_report_database.h",
+    "crashpad_client.h",
+    "crashpad_info.cc",
+    "crashpad_info.h",
+    "prune_crash_reports.cc",
+    "prune_crash_reports.h",
+    "settings.cc",
+    "settings.h",
+    "simple_address_range_bag.h",
+    "simple_string_dictionary.h",
+    "simulate_crash.h",
+  ]
+
+  if (crashpad_is_mac) {
+    sources += [
+      "crash_report_database_mac.mm",
+      "crashpad_client_mac.cc",
+      "simulate_crash_mac.cc",
+      "simulate_crash_mac.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
+    sources += [
+      "crashpad_client_linux.cc",
+      "simulate_crash_linux.h",
+    ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [
+      "client_argv_handling.cc",
+      "client_argv_handling.h",
+      "crashpad_info_note.S",
+    ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [
+      "crash_report_database_win.cc",
+      "crashpad_client_win.cc",
+      "simulate_crash_win.h",
+    ]
+  }
+
+  if (crashpad_is_fuchsia) {
+    sources += [ "crashpad_client_fuchsia.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia) {
+    sources += [ "crash_report_database_generic.cc" ]
+  }
+
+  public_configs = [ "..:crashpad_config" ]
+
+  deps = [
+    "../compat",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  if (crashpad_is_win) {
+    libs = [ "rpcrt4.lib" ]
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
+  }
+
+  if (crashpad_is_fuchsia) {
+    deps += [ "../third_party/fuchsia:zx" ]
+    if (crashpad_is_in_fuchsia) {
+      deps += [ "//zircon/public/lib/fdio" ]
+    }
+  }
+}
+
+source_set("client_test") {
+  testonly = true
+
+  sources = [
+    "annotation_list_test.cc",
+    "annotation_test.cc",
+    "crash_report_database_test.cc",
+    "prune_crash_reports_test.cc",
+    "settings_test.cc",
+    "simple_address_range_bag_test.cc",
+    "simple_string_dictionary_test.cc",
+  ]
+
+  if (crashpad_is_mac) {
+    sources += [ "simulate_crash_mac_test.cc" ]
+  }
+
+  if (crashpad_is_win) {
+    sources += [ "crashpad_client_win_test.cc" ]
+  }
+
+  if (crashpad_is_linux || crashpad_is_android) {
+    sources += [ "crashpad_client_linux_test.cc" ]
+  }
+
+  deps = [
+    ":client",
+    "../compat",
+    "../snapshot",
+    "../test",
+    "../third_party/gtest:gmock",
+    "../third_party/gtest:gtest",
+    "../third_party/mini_chromium:base",
+    "../util",
+  ]
+
+  data_deps = [
+    "../handler:crashpad_handler",
+  ]
+
+  if (crashpad_is_win) {
+    data_deps += [ "../handler:crashpad_handler_console" ]
+  }
+}

@@ -1,0 +1,13 @@
+*.Makefile
+*.ninja
+*.pyc
+*.target.mk
+*.xcodeproj
+*~
+.*.sw?
+.DS_Store
+.gdb_history
+.gdbinit
+/Makefile
+/out
+/xcodebuild
