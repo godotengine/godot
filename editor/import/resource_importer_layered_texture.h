@@ -61,7 +61,7 @@
 #ifndef RESOURCE_IMPORTER_LAYERED_TEXTURE_H
 #define RESOURCE_IMPORTER_LAYERED_TEXTURE_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
 
 class StreamTexture2D;
@@ -93,10 +93,6 @@ private:
 	static const char *compression_formats[];
 
 protected:
-	static void _texture_reimport_srgb(const Ref<StreamTexture2D> &p_tex);
-	static void _texture_reimport_3d(const Ref<StreamTexture2D> &p_tex);
-	static void _texture_reimport_normal(const Ref<StreamTexture2D> &p_tex);
-
 	static ResourceImporterLayeredTexture *singleton;
 
 public:

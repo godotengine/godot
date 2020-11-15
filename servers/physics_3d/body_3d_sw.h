@@ -33,7 +33,7 @@
 
 #include "area_3d_sw.h"
 #include "collision_object_3d_sw.h"
-#include "core/vset.h"
+#include "core/templates/vset.h"
 
 class Constraint3DSW;
 

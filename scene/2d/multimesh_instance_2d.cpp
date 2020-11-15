@@ -33,7 +33,7 @@
 void MultiMeshInstance2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		if (multimesh.is_valid()) {
-			draw_multimesh(multimesh, texture, normal_map);
+			draw_multimesh(multimesh, texture);
 		}
 	}
 }

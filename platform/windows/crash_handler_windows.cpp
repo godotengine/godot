@@ -30,8 +30,8 @@
 
 #include "crash_handler_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
@@ -175,7 +175,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		msg = proj_settings->get("debug/settings/crash_handler/message");
 	}
 
-	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
+	fprintf(stderr, "Dumping the backtrace. %s\n", msg.utf8().get_data());
 
 	int n = 0;
 	do {

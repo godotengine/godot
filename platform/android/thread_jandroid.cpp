@@ -30,9 +30,9 @@
 
 #include "thread_jandroid.h"
 
+#include "core/object/script_language.h"
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
-#include "core/script_language.h"
+#include "core/templates/safe_refcount.h"
 
 static void _thread_id_key_destr_callback(void *p_value) {
 	memdelete(static_cast<Thread::ID *>(p_value));

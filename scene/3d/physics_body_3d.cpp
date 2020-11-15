@@ -30,12 +30,11 @@
 
 #include "physics_body_3d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
-#include "core/list.h"
-#include "core/method_bind_ext.gen.inc"
-#include "core/object.h"
-#include "core/rid.h"
+#include "core/object/class_db.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
@@ -130,15 +129,6 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::_set_layers(uint32_t p_mask) {
-	set_collision_layer(p_mask);
-	set_collision_mask(p_mask);
-}
-
-uint32_t PhysicsBody3D::_get_layers() const {
-	return get_collision_layer();
-}
-
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer", "layer"), &PhysicsBody3D::set_collision_layer);
 	ClassDB::bind_method(D_METHOD("get_collision_layer"), &PhysicsBody3D::get_collision_layer);
@@ -151,9 +141,6 @@ void PhysicsBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collision_layer_bit", "bit", "value"), &PhysicsBody3D::set_collision_layer_bit);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_bit", "bit"), &PhysicsBody3D::get_collision_layer_bit);
-
-	ClassDB::bind_method(D_METHOD("_set_layers", "mask"), &PhysicsBody3D::_set_layers);
-	ClassDB::bind_method(D_METHOD("_get_layers"), &PhysicsBody3D::_get_layers);
 
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -737,7 +724,7 @@ String RigidBody3D::get_configuration_warning() const {
 	String warning = CollisionObject3D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
@@ -2606,7 +2593,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
-	set_as_toplevel(true);
+	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }
 
@@ -2626,7 +2613,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 	if (_internal_simulate_physics) {
 		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
-		set_as_toplevel(false);
+		set_as_top_level(false);
 		_internal_simulate_physics = false;
 	}
 }

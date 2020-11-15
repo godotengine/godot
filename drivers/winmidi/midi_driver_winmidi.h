@@ -34,7 +34,7 @@
 #define MIDI_DRIVER_WINMIDI_H
 
 #include "core/os/midi_driver.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #include <stdio.h>
 #include <windows.h>

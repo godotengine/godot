@@ -30,11 +30,11 @@
 
 #include "os.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/midi_driver.h"
-#include "core/project_settings.h"
 #include "core/version_generated.gen.h"
 #include "servers/audio_server.h"
 
@@ -78,10 +78,6 @@ String OS::get_iso_date_time(bool local) const {
 		   ":" +
 		   itos(time.sec).pad_zeros(2) +
 		   timezone;
-}
-
-uint64_t OS::get_splash_tick_msec() const {
-	return _msec_splash;
 }
 
 double OS::get_unix_time() const {

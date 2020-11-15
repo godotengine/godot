@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GPUParticlesAttractor3D" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" default="1.0">
+		</member>
+		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
+		</member>
+		<member name="directionality" type="float" setter="set_directionality" getter="get_directionality" default="0.0">
+		</member>
+		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

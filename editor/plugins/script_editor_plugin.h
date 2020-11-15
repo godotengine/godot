@@ -31,7 +31,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
-#include "core/script_language.h"
+#include "core/object/script_language.h"
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_help_search.h"
@@ -151,7 +151,7 @@ public:
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}
-	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
+	virtual Array get_breakpoints() = 0;
 	virtual void add_callback(const String &p_function, PackedStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;

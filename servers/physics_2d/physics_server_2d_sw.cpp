@@ -33,9 +33,9 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -821,6 +821,7 @@ void PhysicsServer2DSW::body_apply_torque_impulse(RID p_body, real_t p_torque) {
 	_update_shapes();
 
 	body->apply_torque_impulse(p_torque);
+	body->wakeup();
 }
 
 void PhysicsServer2DSW::body_apply_impulse(RID p_body, const Vector2 &p_impulse, const Vector2 &p_position) {
@@ -1341,6 +1342,10 @@ PhysicsServer2DSW::PhysicsServer2DSW() {
 	island_count = 0;
 	active_objects = 0;
 	collision_pairs = 0;
+#ifdef NO_THREADS
+	using_threads = false;
+#else
 	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
+#endif
 	flushing_queries = false;
 };

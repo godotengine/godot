@@ -31,7 +31,7 @@
 #include "box_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> BoxShape3D::get_debug_mesh_lines() {
+Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> lines;
 	AABB aabb;
 	aabb.position = -get_extents();

@@ -30,7 +30,7 @@
 
 #include "register_types.h"
 #ifndef _3D_DISABLED
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 #include "grid_map.h"
 #include "grid_map_editor_plugin.h"
 #endif

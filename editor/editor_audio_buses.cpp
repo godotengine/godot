@@ -846,7 +846,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audioprev_hbc->add_child(audio_value_preview_label);
 
 	slider->add_child(audio_value_preview_box);
-	audio_value_preview_box->set_as_toplevel(true);
+	audio_value_preview_box->set_as_top_level(true);
 	Ref<StyleBoxFlat> panel_style = memnew(StyleBoxFlat);
 	panel_style->set_bg_color(Color(0.0f, 0.0f, 0.0f, 0.8f));
 	audio_value_preview_box->add_theme_style_override("panel", panel_style);

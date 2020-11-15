@@ -30,10 +30,10 @@
 
 #include "soft_body_3d.h"
 
-#include "core/list.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/rid.h"
+#include "core/templates/list.h"
+#include "core/templates/rid.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -106,7 +106,7 @@ SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
-SoftBody3D::PinnedPoint SoftBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
+SoftBody3D::PinnedPoint &SoftBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
 	point_index = obj.point_index;
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
@@ -282,7 +282,7 @@ void SoftBody3D::_notification(int p_what) {
 
 			set_notify_transform(false);
 			// Required to be top level with Transform at center of world in order to modify RenderingServer only to support custom Transform
-			set_as_toplevel(true);
+			set_as_top_level(true);
 			set_transform(Transform());
 			set_notify_transform(true);
 
@@ -425,7 +425,7 @@ void SoftBody3D::_draw_soft_mesh() {
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
-		call_deferred("set_as_toplevel", true);
+		call_deferred("set_as_top_level", true);
 		call_deferred("set_transform", Transform());
 	}
 

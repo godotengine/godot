@@ -22,16 +22,6 @@
 			</argument>
 			<argument index="3" name="transpose" type="bool" default="false">
 			</argument>
-			<argument index="4" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="5" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="7" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
-			</argument>
-			<argument index="8" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
-			</argument>
 			<description>
 				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [code]position[/code].
 			</description>
@@ -48,16 +38,6 @@
 			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
-			</argument>
-			<argument index="5" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="7" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
-			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
 			</argument>
 			<description>
 				Draws the texture using a [CanvasItem] with the [RenderingServer] API.
@@ -76,17 +56,7 @@
 			</argument>
 			<argument index="4" name="transpose" type="bool" default="false">
 			</argument>
-			<argument index="5" name="normal_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="6" name="specular_map" type="Texture2D" default="null">
-			</argument>
-			<argument index="7" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
-			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
-			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
-			</argument>
-			<argument index="10" name="clip_uv" type="bool" default="true">
+			<argument index="5" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
 				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
@@ -96,7 +66,7 @@
 			<return type="Image">
 			</return>
 			<description>
-				Returns an [Image] with the data from this [Texture2D]. [Image]s can be accessed and manipulated directly.
+				Returns an [Image] that is a copy of data from this [Texture2D]. [Image]s can be accessed and manipulated directly.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">

@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.Build.NoTargets/2.0.1">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 
     <Description>MSBuild .NET Sdk for Godot projects.</Description>
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>Godot.NET.Sdk</PackageId>
     <Version>4.0.0</Version>
-    <PackageVersion>4.0.0-dev2</PackageVersion>
     <PackageProjectUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk</PackageProjectUrl>
     <PackageType>MSBuildSdk</PackageType>
     <PackageTags>MSBuildSdk</PackageTags>
@@ -19,7 +19,13 @@
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
 
-  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
+  <Target Name="ReadGodotNETSdkVersion" BeforeTargets="BeforeBuild;BeforeRebuild;CoreCompile">
+    <PropertyGroup>
+      <PackageVersion>$([System.IO.File]::ReadAllText('$(ProjectDir)Godot.NET.Sdk_PackageVersion.txt').Trim())</PackageVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') " DependsOnTargets="ReadGodotNETSdkVersion">
     <PropertyGroup>
       <NuspecProperties>
         id=$(PackageId);
@@ -31,5 +37,14 @@
         projecturl=$(PackageProjectUrl)
       </NuspecProperties>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack">
+    <PropertyGroup>
+      <GodotSourceRootPath>$(SolutionDir)\..\..\..\..\</GodotSourceRootPath>
+      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg"
+          DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
   </Target>
 </Project>

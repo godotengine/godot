@@ -31,7 +31,7 @@
 #include "camera_matrix.h"
 
 #include "core/math/math_funcs.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 float CameraMatrix::determinant() const {
 	return matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
@@ -278,7 +278,7 @@ Vector2 CameraMatrix::get_viewport_half_extents() const {
 	return Vector2(res.x, res.y);
 }
 
-void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
+Vector2 CameraMatrix::get_far_plane_half_extents() const {
 	const real_t *matrix = (const real_t *)this->matrix;
 	///////--- Far Plane ---///////
 	Plane far_plane = Plane(matrix[3] - matrix[2],
@@ -303,8 +303,7 @@ void CameraMatrix::get_far_plane_size(real_t &r_width, real_t &r_height) const {
 	Vector3 res;
 	far_plane.intersect_3(right_plane, top_plane, &res);
 
-	r_width = res.x;
-	r_height = res.y;
+	return Vector2(res.x, res.y);
 }
 
 bool CameraMatrix::get_endpoints(const Transform &p_transform, Vector3 *p_8points) const {

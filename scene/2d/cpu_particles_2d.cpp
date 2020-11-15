@@ -228,15 +228,6 @@ Ref<Texture2D> CPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void CPUParticles2D::set_normalmap(const Ref<Texture2D> &p_normalmap) {
-	normalmap = p_normalmap;
-	update();
-}
-
-Ref<Texture2D> CPUParticles2D::get_normalmap() const {
-	return normalmap;
-}
-
 void CPUParticles2D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;
 }
@@ -254,7 +245,7 @@ bool CPUParticles2D::get_fractional_delta() const {
 }
 
 String CPUParticles2D::get_configuration_warning() const {
-	String warnings;
+	String warnings = Node2D::get_configuration_warning();
 
 	CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
@@ -749,7 +740,11 @@ void CPUParticles2D::_particles_process(float p_delta) {
 					p.transform[2] = emission_points.get(random_idx);
 
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
-						p.velocity = emission_normals.get(random_idx);
+						Vector2 normal = emission_normals.get(random_idx);
+						Transform2D m2;
+						m2.set_axis(0, normal);
+						m2.set_axis(1, normal.tangent());
+						p.velocity = m2.basis_xform(p.velocity);
 					}
 
 					if (emission_colors.size() == pc) {
@@ -1056,12 +1051,7 @@ void CPUParticles2D::_notification(int p_what) {
 			texrid = texture->get_rid();
 		}
 
-		RID normrid;
-		if (normalmap.is_valid()) {
-			normrid = normalmap->get_rid();
-		}
-
-		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid, normrid);
+		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid);
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1210,9 +1200,6 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &CPUParticles2D::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &CPUParticles2D::get_texture);
 
-	ClassDB::bind_method(D_METHOD("set_normalmap", "normalmap"), &CPUParticles2D::set_normalmap);
-	ClassDB::bind_method(D_METHOD("get_normalmap"), &CPUParticles2D::get_normalmap);
-
 	ClassDB::bind_method(D_METHOD("restart"), &CPUParticles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
@@ -1232,7 +1219,6 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime"), "set_draw_order", "get_draw_order");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normalmap", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normalmap", "get_normalmap");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
@@ -1287,7 +1273,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles2D::convert_from_particles);
 
 	ADD_GROUP("Emission Shape", "emission_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points"), "set_emission_shape", "get_emission_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Box,Points,Directed Points", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents"), "set_emission_rect_extents", "get_emission_rect_extents");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");

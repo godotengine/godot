@@ -90,7 +90,7 @@
 			If [code]true[/code], the camera stops on contact with [PhysicsBody3D]s.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected.
+			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected. See [url=https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The camera's collision margin. The camera can't get closer than this distance to a colliding object.

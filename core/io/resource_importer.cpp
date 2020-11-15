@@ -30,8 +30,9 @@
 
 #include "resource_importer.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/variant_parser.h"
+#include "core/variant/variant_parser.h"
 
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
@@ -374,7 +375,7 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 }
 
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
-	return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+	return ProjectSettings::IMPORTED_FILES_PATH.plus_file(p_for_file.get_file() + "-" + p_for_file.md5_text());
 }
 
 bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {

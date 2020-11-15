@@ -37,8 +37,8 @@
 
 
 #include "psft.h"
-#include FT_INTERNAL_DEBUG_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
+#include <freetype/internal/ftdebug.h>
+#include <freetype/internal/services/svcfftl.h>
 
 #include "psglue.h"
 #include "psfont.h"

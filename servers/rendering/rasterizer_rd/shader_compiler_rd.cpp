@@ -30,8 +30,8 @@
 
 #include "shader_compiler_rd.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "rasterizer_storage_rd.h"
 #include "servers/rendering_server.h"
 
@@ -423,13 +423,13 @@ static String _get_global_variable_from_type_and_index(const String &p_buffer, c
 			return "(" + p_buffer + "[" + p_index + "].x != 0.0)";
 		}
 		case ShaderLanguage::TYPE_BVEC2: {
-			return "(" + p_buffer + "[" + p_index + "].xy != vec2(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xy, vec2(0.0)))";
 		}
 		case ShaderLanguage::TYPE_BVEC3: {
-			return "(" + p_buffer + "[" + p_index + "].xyz != vec3(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xyz, vec3(0.0)))";
 		}
 		case ShaderLanguage::TYPE_BVEC4: {
-			return "(" + p_buffer + "[" + p_index + "].xyzw != vec4(0.0))";
+			return "(notEqual(" + p_buffer + "[" + p_index + "].xyzw, vec4(0.0)))";
 		}
 		case ShaderLanguage::TYPE_INT: {
 			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].x)";
@@ -444,16 +444,16 @@ static String _get_global_variable_from_type_and_index(const String &p_buffer, c
 			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyzw)";
 		}
 		case ShaderLanguage::TYPE_UINT: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].x)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].x)";
 		}
 		case ShaderLanguage::TYPE_UVEC2: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xy)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xy)";
 		}
 		case ShaderLanguage::TYPE_UVEC3: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyz)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyz)";
 		}
 		case ShaderLanguage::TYPE_UVEC4: {
-			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyzw)";
+			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyzw)";
 		}
 		case ShaderLanguage::TYPE_FLOAT: {
 			return "(" + p_buffer + "[" + p_index + "].x)";
@@ -537,6 +537,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 				r_gen_code.vertex_global += struct_code;
 				r_gen_code.fragment_global += struct_code;
+				r_gen_code.compute_global += struct_code;
 			}
 
 			int max_texture_uniforms = 0;
@@ -591,6 +592,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.vertex_global += ucode;
 					r_gen_code.fragment_global += ucode;
+					r_gen_code.compute_global += ucode;
 
 					GeneratedCode::Texture texture;
 					texture.name = E->key();
@@ -700,6 +702,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				vcode += ";\n";
 				r_gen_code.vertex_global += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
 				r_gen_code.fragment_global += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
+				r_gen_code.compute_global += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
 				index++;
 			}
 
@@ -724,6 +727,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				gcode += ";\n";
 				r_gen_code.vertex_global += gcode;
 				r_gen_code.fragment_global += gcode;
+				r_gen_code.compute_global += gcode;
 			}
 
 			Map<StringName, String> function_code;
@@ -741,6 +745,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			Set<StringName> added_vtx;
 			Set<StringName> added_fragment; //share for light
+			Set<StringName> added_compute; //share for light
 
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
@@ -763,6 +768,12 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.fragment_global, added_fragment);
 					r_gen_code.light = function_code[light_name];
 				}
+
+				if (fnode->name == compute_name) {
+					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.compute_global, added_compute);
+					r_gen_code.compute = function_code[compute_name];
+				}
+
 				function = nullptr;
 			}
 
@@ -1245,6 +1256,8 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 	r_gen_code.vertex_global = String();
 	r_gen_code.fragment = String();
 	r_gen_code.fragment_global = String();
+	r_gen_code.compute = String();
+	r_gen_code.compute_global = String();
 	r_gen_code.light = String();
 	r_gen_code.uses_fragment_time = false;
 	r_gen_code.uses_vertex_time = false;
@@ -1266,6 +1279,7 @@ void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";
+	compute_name = "compute";
 	light_name = "light";
 	time_name = "TIME";
 
@@ -1281,6 +1295,8 @@ void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("textureLod");
 	texture_functions.insert("textureProjLod");
 	texture_functions.insert("textureGrad");
+	texture_functions.insert("textureSize");
+	texture_functions.insert("texelFetch");
 }
 
 ShaderCompilerRD::ShaderCompilerRD() {

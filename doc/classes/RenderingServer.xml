@@ -15,7 +15,7 @@
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
+		<link title="Optimization using Servers">https://docs.godotengine.org/en/latest/tutorials/optimization/using_servers.html</link>
 	</tutorials>
 	<methods>
 		<method name="black_bars_set_images">
@@ -404,28 +404,6 @@
 				The mode of the light, see [enum CanvasLightMode] constants.
 			</description>
 		</method>
-		<method name="canvas_light_set_scale">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="scale" type="float">
-			</argument>
-			<description>
-				Sets the texture's scale factor of the light. Equivalent to [member Light2D.texture_scale].
-			</description>
-		</method>
-		<method name="canvas_light_set_shadow_buffer_size">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="size" type="int">
-			</argument>
-			<description>
-				Sets the width of the shadow buffer, size gets scaled to the next power of two for this.
-			</description>
-		</method>
 		<method name="canvas_light_set_shadow_color">
 			<return type="void">
 			</return>
@@ -478,7 +456,7 @@
 			<argument index="1" name="texture" type="RID">
 			</argument>
 			<description>
-				Sets texture to be used by light. Equivalent to [member Light2D.texture].
+				Sets the texture to be used by a [PointLight2D]. Equivalent to [member PointLight2D.texture].
 			</description>
 		</method>
 		<method name="canvas_light_set_texture_offset">
@@ -489,7 +467,18 @@
 			<argument index="1" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Sets the offset of the light's texture. Equivalent to [member Light2D.offset].
+				Sets the offset of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.offset].
+			</description>
+		</method>
+		<method name="canvas_light_set_texture_scale">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+				Sets the scale factor of a [PointLight2D]'s texture. Equivalent to [member PointLight2D.texture_scale].
 			</description>
 		</method>
 		<method name="canvas_light_set_transform">
@@ -581,6 +570,12 @@
 			</argument>
 			<description>
 				Modulates all colors in the given canvas.
+			</description>
+		</method>
+		<method name="create_local_rendering_device" qualifiers="const">
+			<return type="RenderingDevice">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="directional_light_create">
@@ -690,52 +685,21 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="color" type="Color">
+			<argument index="2" name="light_color" type="Color">
 			</argument>
-			<argument index="3" name="sun_color" type="Color">
+			<argument index="3" name="light_energy" type="float">
 			</argument>
-			<argument index="4" name="sun_amount" type="float">
+			<argument index="4" name="sun_scatter" type="float">
 			</argument>
-			<description>
-				Sets the variables to be used with the scene fog. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_depth">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
+			<argument index="5" name="density" type="float">
 			</argument>
-			<argument index="1" name="enable" type="bool">
+			<argument index="6" name="height" type="float">
 			</argument>
-			<argument index="2" name="depth_begin" type="float">
+			<argument index="7" name="height_density" type="float">
 			</argument>
-			<argument index="3" name="depth_end" type="float">
-			</argument>
-			<argument index="4" name="depth_curve" type="float">
-			</argument>
-			<argument index="5" name="transmit" type="bool">
-			</argument>
-			<argument index="6" name="transmit_curve" type="float">
+			<argument index="8" name="aerial_perspective" type="float">
 			</argument>
 			<description>
-				Sets the variables to be used with the fog depth effect. See [Environment] for more details.
-			</description>
-		</method>
-		<method name="environment_set_fog_height">
-			<return type="void">
-			</return>
-			<argument index="0" name="env" type="RID">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<argument index="2" name="min_height" type="float">
-			</argument>
-			<argument index="3" name="max_height" type="float">
-			</argument>
-			<argument index="4" name="height_curve" type="float">
-			</argument>
-			<description>
-				Sets the variables to be used with the fog height effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -745,7 +709,7 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="level_flags" type="int">
+			<argument index="2" name="levels" type="PackedFloat32Array">
 			</argument>
 			<argument index="3" name="intensity" type="float">
 			</argument>
@@ -1660,7 +1624,6 @@
 			<argument index="3" name="blend_shapes" type="Array" default="[  ]">
 			</argument>
 			<argument index="4" name="lods" type="Dictionary" default="{
-
 }">
 			</argument>
 			<argument index="5" name="compress_format" type="int" default="31744">
@@ -2993,6 +2956,16 @@
 				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
 			</description>
 		</method>
+		<method name="viewport_set_use_debanding">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="viewport_set_use_xr">
 			<return type="void">
 			</return>
@@ -3252,9 +3225,9 @@
 		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
-		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="18" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="18" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="19" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
@@ -3607,22 +3580,24 @@
 		<constant name="INSTANCE_PARTICLES" value="4" enum="InstanceType">
 			The instance is a particle emitter.
 		</constant>
-		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
+		<constant name="INSTANCE_PARTICLES_COLLISION" value="5" enum="InstanceType">
+		</constant>
+		<constant name="INSTANCE_LIGHT" value="6" enum="InstanceType">
 			The instance is a light.
 		</constant>
-		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
+		<constant name="INSTANCE_REFLECTION_PROBE" value="7" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
+		<constant name="INSTANCE_DECAL" value="8" enum="InstanceType">
 			The instance is a decal.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
+		<constant name="INSTANCE_GI_PROBE" value="9" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP" value="10" enum="InstanceType">
 			The instance is a lightmap.
 		</constant>
-		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="11" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
@@ -3700,17 +3675,24 @@
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="CanvasItemTextureRepeat">
 			Max value for [enum CanvasItemTextureRepeat] enum.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
+		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_OPAQUE" value="1" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_MODE_DIRECTIONAL" value="1" enum="CanvasLightMode">
+		</constant>
+		<constant name="CANVAS_LIGHT_BLEND_MODE_ADD" value="0" enum="CanvasLightBlendMode">
 			Adds light color additive to the canvas.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_SUB" value="1" enum="CanvasLightMode">
+		<constant name="CANVAS_LIGHT_BLEND_MODE_SUB" value="1" enum="CanvasLightBlendMode">
 			Adds light color subtractive to the canvas.
 		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MIX" value="2" enum="CanvasLightMode">
+		<constant name="CANVAS_LIGHT_BLEND_MODE_MIX" value="2" enum="CanvasLightBlendMode">
 			The light adds color depending on transparency.
-		</constant>
-		<constant name="CANVAS_LIGHT_MODE_MASK" value="3" enum="CanvasLightMode">
-			The light adds color depending on mask.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_NONE" value="0" enum="CanvasLightShadowFilter">
 			Do not apply a filter to canvas light shadows.

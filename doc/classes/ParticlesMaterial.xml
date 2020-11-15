@@ -131,6 +131,16 @@
 		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Animation speed randomness ratio.
 		</member>
+		<member name="attractor_interaction_enabled" type="bool" setter="set_attractor_interaction_enabled" getter="is_attractor_interaction_enabled" default="true">
+		</member>
+		<member name="collision_bounce" type="float" setter="set_collision_bounce" getter="get_collision_bounce" default="0.0">
+		</member>
+		<member name="collision_enabled" type="bool" setter="set_collision_enabled" getter="is_collision_enabled" default="true">
+		</member>
+		<member name="collision_friction" type="float" setter="set_collision_friction" getter="get_collision_friction" default="0.0">
+		</member>
+		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
+		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
 			Each particle's initial color. If the [GPUParticles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
@@ -243,6 +253,14 @@
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Applied to X/Z plane and Y/Z planes.
 		</member>
+		<member name="sub_emitter_amount_at_end" type="int" setter="set_sub_emitter_amount_at_end" getter="get_sub_emitter_amount_at_end">
+		</member>
+		<member name="sub_emitter_frequency" type="float" setter="set_sub_emitter_frequency" getter="get_sub_emitter_frequency">
+		</member>
+		<member name="sub_emitter_keep_velocity" type="bool" setter="set_sub_emitter_keep_velocity" getter="get_sub_emitter_keep_velocity" default="false">
+		</member>
+		<member name="sub_emitter_mode" type="int" setter="set_sub_emitter_mode" getter="get_sub_emitter_mode" enum="ParticlesMaterial.SubEmitterMode" default="0">
+		</member>
 		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" default="0.0">
 			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
 		</member>
@@ -251,15 +269,6 @@
 		</member>
 		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Tangential acceleration randomness ratio.
-		</member>
-		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier">
-			Trail particles' color will vary along this [GradientTexture].
-		</member>
-		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor" default="1">
-			Emitter will emit [code]amount[/code] divided by [code]trail_divisor[/code] particles. The remaining particles will be used as trail(s).
-		</member>
-		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier">
-			Trail particles' size will vary along this [CurveTexture].
 		</member>
 	</members>
 	<constants>
@@ -331,6 +340,16 @@
 		</constant>
 		<constant name="EMISSION_SHAPE_MAX" value="5" enum="EmissionShape">
 			Represents the size of the [enum EmissionShape] enum.
+		</constant>
+		<constant name="SUB_EMITTER_DISABLED" value="0" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_CONSTANT" value="1" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_AT_END" value="2" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
+		</constant>
+		<constant name="SUB_EMITTER_MAX" value="4" enum="SubEmitterMode">
 		</constant>
 	</constants>
 </class>

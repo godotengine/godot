@@ -39,6 +39,7 @@
  * AABB / AABB (Axis Aligned Bounding Box)
  * This is implemented by a point (position) and the box size
  */
+class Variant;
 
 class AABB {
 public:
@@ -101,6 +102,17 @@ public:
 
 	_FORCE_INLINE_ AABB abs() const {
 		return AABB(Vector3(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0), position.z + MIN(size.z, 0)), size.abs());
+	}
+
+	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
+	Variant intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const;
+
+	_FORCE_INLINE_ void set_end(const Vector3 &p_end) {
+		size = p_end - position;
+	}
+
+	_FORCE_INLINE_ Vector3 get_end() const {
+		return position + size;
 	}
 
 	operator String() const;

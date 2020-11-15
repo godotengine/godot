@@ -31,7 +31,7 @@
 #include "cylinder_shape_3d.h"
 #include "servers/physics_server_3d.h"
 
-Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() {
+Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 	float radius = get_radius();
 	float height = get_height();
 

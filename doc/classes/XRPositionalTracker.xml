@@ -9,7 +9,7 @@
 		The [XRController3D] and [XRAnchor3D] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDNative-based interfaces can interact with them.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_hand" qualifiers="const">

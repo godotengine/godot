@@ -49,8 +49,7 @@ private:
 	bool toggle_mode;
 	bool shortcut_in_tooltip;
 	bool keep_pressed_outside;
-	FocusMode enabled_focus_mode;
-	Ref<ShortCut> shortcut;
+	Ref<Shortcut> shortcut;
 
 	ActionMode action_mode;
 	struct Status {
@@ -115,11 +114,8 @@ public:
 	void set_button_mask(int p_mask);
 	int get_button_mask() const;
 
-	void set_enabled_focus_mode(FocusMode p_mode);
-	FocusMode get_enabled_focus_mode() const;
-
-	void set_shortcut(const Ref<ShortCut> &p_shortcut);
-	Ref<ShortCut> get_shortcut() const;
+	void set_shortcut(const Ref<Shortcut> &p_shortcut);
+	Ref<Shortcut> get_shortcut() const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 

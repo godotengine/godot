@@ -31,10 +31,10 @@
 #include "visual_script_editor.h"
 
 #include "core/input/input.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
-#include "core/script_language.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
@@ -388,7 +388,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::NODE_PATH:
 				color = Color(0.41, 0.58, 0.93);
 				break;
-			case Variant::_RID:
+			case Variant::RID:
 				color = Color(0.41, 0.93, 0.6);
 				break;
 			case Variant::OBJECT:
@@ -494,7 +494,7 @@ static Color _color_from_type(Variant::Type p_type, bool dark_theme = true) {
 			case Variant::NODE_PATH:
 				color = Color(0.41, 0.58, 0.93);
 				break;
-			case Variant::_RID:
+			case Variant::RID:
 				color = Color(0.17, 0.9, 0.45);
 				break;
 			case Variant::OBJECT:
@@ -885,7 +885,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 							//not the same, reconvert
 							Callable::CallError ce;
 							const Variant *existingp = &value;
-							value = Variant::construct(left_type, &existingp, 1, ce, false);
+							Variant::construct(left_type, value, &existingp, 1, ce);
 						}
 
 						if (left_type == Variant::COLOR) {
@@ -1124,8 +1124,8 @@ void VisualScriptEditor::_update_members() {
 		TreeItem *ti = members->create_item(variables);
 
 		ti->set_text(0, E->get());
-		Variant var = script->get_variable_default_value(E->get());
-		ti->set_suffix(0, "= " + String(var));
+
+		ti->set_suffix(0, "= " + _sanitized_variant_text(E->get()));
 		ti->set_icon(0, type_icons[script->get_variable_info(E->get()).type]);
 
 		ti->set_selectable(0, true);
@@ -1165,6 +1165,20 @@ void VisualScriptEditor::_update_members() {
 	base_type_select->set_icon(Control::get_theme_icon(icon_type, "EditorIcons"));
 
 	updating_members = false;
+}
+
+String VisualScriptEditor::_sanitized_variant_text(const StringName &property_name) {
+	Variant var = script->get_variable_default_value(property_name);
+
+	if (script->get_variable_info(property_name).type != Variant::NIL) {
+		Callable::CallError ce;
+		const Variant *converted = &var;
+		Variant n;
+		Variant::construct(script->get_variable_info(property_name).type, n, &converted, 1, ce);
+		var = n;
+	}
+
+	return String(var);
 }
 
 void VisualScriptEditor::_member_selected() {
@@ -2682,7 +2696,8 @@ void VisualScriptEditor::reload(bool p_soft) {
 	_update_graph();
 }
 
-void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
+Array VisualScriptEditor::get_breakpoints() {
+	Array breakpoints;
 	List<StringName> functions;
 	script->get_function_list(&functions);
 	for (List<StringName>::Element *E = functions.front(); E; E = E->next()) {
@@ -2691,10 +2706,11 @@ void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
 		for (List<int>::Element *F = nodes.front(); F; F = F->next()) {
 			Ref<VisualScriptNode> vsn = script->get_node(E->get(), F->get());
 			if (vsn->is_breakpoint()) {
-				p_breakpoints->push_back(F->get() - 1); //subtract 1 because breakpoints in text start from zero
+				breakpoints.push_back(F->get() - 1); //subtract 1 because breakpoints in text start from zero
 			}
 		}
 	}
+	return breakpoints;
 }
 
 void VisualScriptEditor::add_callback(const String &p_function, PackedStringArray p_args) {
@@ -3945,8 +3961,9 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 	Variant existing = vsn->get_default_input_value(p_input_port);
 	if (pinfo.type != Variant::NIL && existing.get_type() != pinfo.type) {
 		Callable::CallError ce;
-		const Variant *existingp = &existing;
-		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
+		Variant e = existing;
+		const Variant *existingp = &e;
+		Variant::construct(pinfo.type, existing, &existingp, 1, ce);
 	}
 
 	default_value_edit->set_position(Object::cast_to<Control>(p_button)->get_global_position() + Vector2(0, Object::cast_to<Control>(p_button)->get_size().y));
@@ -4769,8 +4786,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	graph->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	graph->connect("node_selected", callable_mp(this, &VisualScriptEditor::_node_selected));
-	graph->connect("_begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
-	graph->connect("_end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));
+	graph->connect("begin_node_move", callable_mp(this, &VisualScriptEditor::_begin_node_move));
+	graph->connect("end_node_move", callable_mp(this, &VisualScriptEditor::_end_node_move));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_delete));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualScriptEditor::_on_nodes_duplicate));
 	graph->connect("gui_input", callable_mp(this, &VisualScriptEditor::_graph_gui_input));

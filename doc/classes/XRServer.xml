@@ -7,7 +7,7 @@
 		The AR/VR server is the heart of our Advanced and Virtual Reality solution and handles all the processing.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
+		<link title="VR tutorial index">https://docs.godotengine.org/en/latest/tutorials/vr/index.html</link>
 	</tutorials>
 	<methods>
 		<method name="center_on_hmd">

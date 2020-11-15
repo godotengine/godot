@@ -35,6 +35,11 @@ def can_build():
         print("xinerama not found.. x11 disabled.")
         return False
 
+    x11_error = os.system("pkg-config xext --modversion > /dev/null ")
+    if x11_error:
+        print("xext not found.. x11 disabled.")
+        return False
+
     x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
     if x11_error:
         print("xrandr not found.. x11 disabled.")
@@ -68,7 +73,7 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN))", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", False),
-        EnumVariable("debug_symbols", "Add debugging symbols to release builds", "yes", ("yes", "no", "full")),
+        EnumVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", "yes", ("yes", "no")),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
@@ -91,8 +96,6 @@ def configure(env):
             env.Prepend(CCFLAGS=["-Os"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "release_debug":
@@ -103,8 +106,6 @@ def configure(env):
         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
 
         if env["debug_symbols"] == "yes":
-            env.Prepend(CCFLAGS=["-g1"])
-        if env["debug_symbols"] == "full":
             env.Prepend(CCFLAGS=["-g2"])
 
     elif env["target"] == "debug":
@@ -194,6 +195,7 @@ def configure(env):
     env.ParseConfig("pkg-config x11 --cflags --libs")
     env.ParseConfig("pkg-config xcursor --cflags --libs")
     env.ParseConfig("pkg-config xinerama --cflags --libs")
+    env.ParseConfig("pkg-config xext --cflags --libs")
     env.ParseConfig("pkg-config xrandr --cflags --libs")
     env.ParseConfig("pkg-config xrender --cflags --libs")
     env.ParseConfig("pkg-config xi --cflags --libs")

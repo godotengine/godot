@@ -2,13 +2,14 @@
 <class name="AudioEffectDistortion" inherits="AudioEffect" version="4.0">
 	<brief_description>
 		Adds a distortion audio effect to an Audio bus.
-		Modify the sound to make it dirty.
+		Modify the sound to make it distorted.
 	</brief_description>
 	<description>
-		Modify the sound and make it dirty. Different types are available: clip, tan, lo-fi (bit crushing), overdrive, or waveshape.
+		Different types are available: clip, tan, lo-fi (bit crushing), overdrive, or waveshape.
 		By distorting the waveform the frequency content change, which will often make the sound "crunchy" or "abrasive". For games, it can simulate sound coming from some saturated device or speaker very efficiently.
 	</description>
 	<tutorials>
+		<link title="Audio buses">https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
 	</methods>

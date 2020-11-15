@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 #ifndef OSX_UTILS_H
 #define OSX_UTILS_H

@@ -30,13 +30,13 @@
 
 #include "resource_loader.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
-#include "core/translation.h"
-#include "core/variant_parser.h"
+#include "core/string/print_string.h"
+#include "core/string/translation.h"
+#include "core/variant/variant_parser.h"
 
 #ifdef DEBUG_LOAD_THREADED
 #define print_lt(m_text) print_line(m_text)
@@ -195,7 +195,8 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 		return res;
 	}
 
-	ERR_FAIL_COND_V_MSG(found, RES(), "Failed loading resource: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(found, RES(),
+			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
 
 #ifdef TOOLS_ENABLED
 	FileAccessRef file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
@@ -999,6 +1000,9 @@ void ResourceLoader::load_translation_remaps() {
 
 void ResourceLoader::clear_translation_remaps() {
 	translation_remaps.clear();
+	while (remapped_list.first() != nullptr) {
+		remapped_list.remove(remapped_list.first());
+	}
 }
 
 void ResourceLoader::load_path_remaps() {

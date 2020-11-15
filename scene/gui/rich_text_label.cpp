@@ -188,7 +188,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		wofs += line_ofs;
 	}
 
-	int begin = wofs;
+	int begin = margin;
 
 	Ref<Font> cfont = _find_font(it);
 	if (cfont.is_null()) {
@@ -256,7 +256,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			lh = line < l.height_caches.size() ? l.height_caches[line] : 1;                                                                                     \
 			line_ascent = line < l.ascent_caches.size() ? l.ascent_caches[line] : 1;                                                                            \
 			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
-			if ((p_mode == PROCESS_DRAW) && (align != ALIGN_FILL)) {                                                                                            \
+			if (align != ALIGN_FILL) {                                                                                                                          \
 				if (line < l.offset_caches.size()) {                                                                                                            \
 					wofs = l.offset_caches[line];                                                                                                               \
 				}                                                                                                                                               \
@@ -354,8 +354,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					font = p_base_font;
 				}
 
-				const CharType *c = text->text.c_str();
-				const CharType *cf = c;
+				const char32_t *c = text->text.get_data();
+				const char32_t *cf = c;
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
@@ -461,7 +461,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 								bool selected = false;
 								Color fx_color = Color(color);
 								Point2 fx_offset;
-								CharType fx_char = c[i];
+								char32_t fx_char = c[i];
 
 								if (selection.active) {
 									int cofs = (&c[i]) - cf;
@@ -2529,9 +2529,9 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 	return false;
 }
 
-void RichTextLabel::selection_copy() {
+String RichTextLabel::get_selected_text() {
 	if (!selection.active || !selection.enabled) {
-		return;
+		return "";
 	}
 
 	String text;
@@ -2560,6 +2560,12 @@ void RichTextLabel::selection_copy() {
 
 		item = _get_next_item(item, true);
 	}
+
+	return text;
+}
+
+void RichTextLabel::selection_copy() {
+	String text = get_selected_text();
 
 	if (text != "") {
 		DisplayServer::get_singleton()->clipboard_set(text);

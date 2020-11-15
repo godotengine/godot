@@ -45,7 +45,7 @@ Size2 ScrollContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {
@@ -285,7 +285,7 @@ void ScrollContainer::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (c == h_scroll || c == v_scroll) {
@@ -520,6 +520,8 @@ void ScrollContainer::set_follow_focus(bool p_follow) {
 }
 
 String ScrollContainer::get_configuration_warning() const {
+	String warning = Container::get_configuration_warning();
+
 	int found = 0;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -527,7 +529,7 @@ String ScrollContainer::get_configuration_warning() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (c == h_scroll || c == v_scroll) {
@@ -538,10 +540,12 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1) {
-		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
-	} else {
-		return "";
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
 	}
+	return warning;
 }
 
 HScrollBar *ScrollContainer::get_h_scrollbar() {

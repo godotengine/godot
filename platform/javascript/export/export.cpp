@@ -94,6 +94,9 @@ public:
 		} else if (req[1] == basereq + ".js") {
 			filepath += ".js";
 			ctype = "application/javascript";
+		} else if (req[1] == basereq + ".audio.worklet.js") {
+			filepath += ".audio.worklet.js";
+			ctype = "application/javascript";
 		} else if (req[1] == basereq + ".worker.js") {
 			filepath += ".worker.js";
 			ctype = "application/javascript";
@@ -124,6 +127,9 @@ public:
 		String s = "HTTP/1.1 200 OK\r\n";
 		s += "Connection: Close\r\n";
 		s += "Content-Type: " + ctype + "\r\n";
+		s += "Access-Control-Allow-Origin: *\r\n";
+		s += "Cross-Origin-Opener-Policy: same-origin\r\n";
+		s += "Cross-Origin-Embedder-Policy: require-corp\r\n";
 		s += "\r\n";
 		CharString cs = s.utf8();
 		Error err = connection->put_data((const uint8_t *)cs.get_data(), cs.size() - 1);
@@ -258,6 +264,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
 		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
+		current_line = current_line.replace("$GODOT_FULL_WINDOW", p_preset->get("html/full_window_size") ? "true" : "false");
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
 		current_line = current_line.replace("$GODOT_ARGS", flags_json);
 		str_export += current_line + "\n";
@@ -291,6 +298,7 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/full_window_size"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 }
@@ -435,6 +443,9 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		} else if (file == "godot.worker.js") {
 			file = p_path.get_file().get_basename() + ".worker.js";
 
+		} else if (file == "godot.audio.worklet.js") {
+			file = p_path.get_file().get_basename() + ".audio.worklet.js";
+
 		} else if (file == "godot.wasm") {
 			file = p_path.get_file().get_basename() + ".wasm";
 		}
@@ -561,6 +572,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 		DirAccess::remove_file_or_error(basepath + ".html");
 		DirAccess::remove_file_or_error(basepath + ".js");
 		DirAccess::remove_file_or_error(basepath + ".worker.js");
+		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".pck");
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".wasm");

@@ -7,163 +7,26 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference-counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
+		<link title="GDScript format strings">https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
 	<methods>
-		<method name="String">
+		<method name="String" qualifiers="constructor">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="bool">
-			</argument>
 			<description>
-				Constructs a new String from the given [bool].
+				Constructs an empty [String] ([code]""[/code]).
 			</description>
 		</method>
-		<method name="String">
+		<method name="String" qualifiers="constructor">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="int">
+			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Constructs a new String from the given [int].
+				Constructs a [String] as a copy of the given [String].
 			</description>
 		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="float">
-			</argument>
-			<description>
-				Constructs a new String from the given [float].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector2">
-			</argument>
-			<description>
-				Constructs a new String from the given [Vector2].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector2i">
-			</argument>
-			<description>
-				Constructs a new String from the given [Vector2i].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Rect2">
-			</argument>
-			<description>
-				Constructs a new String from the given [Rect2].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Rect2i">
-			</argument>
-			<description>
-				Constructs a new String from the given [Rect2i].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector3">
-			</argument>
-			<description>
-				Constructs a new String from the given [Vector3].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Vector3i">
-			</argument>
-			<description>
-				Constructs a new String from the given [Vector3i].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Transform2D">
-			</argument>
-			<description>
-				Constructs a new String from the given [Transform2D].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Plane">
-			</argument>
-			<description>
-				Constructs a new String from the given [Plane].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Quat">
-			</argument>
-			<description>
-				Constructs a new String from the given [Quat].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="AABB">
-			</argument>
-			<description>
-				Constructs a new String from the given [AABB].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Basis">
-			</argument>
-			<description>
-				Constructs a new String from the given [Basis].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Transform">
-			</argument>
-			<description>
-				Constructs a new String from the given [Transform].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Color">
-			</argument>
-			<description>
-				Constructs a new String from the given [Color].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="StringName">
-			</argument>
-			<description>
-				Constructs a new String from the given [StringName].
-			</description>
-		</method>
-		<method name="String">
+		<method name="String" qualifiers="constructor">
 			<return type="String">
 			</return>
 			<argument index="0" name="from" type="NodePath">
@@ -172,130 +35,13 @@
 				Constructs a new String from the given [NodePath].
 			</description>
 		</method>
-		<method name="String">
+		<method name="String" qualifiers="constructor">
 			<return type="String">
 			</return>
-			<argument index="0" name="from" type="RID">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<description>
-				Constructs a new String from the given [RID].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Callable">
-			</argument>
-			<description>
-				Constructs a new String from the given [Callable].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Signal">
-			</argument>
-			<description>
-				Constructs a new String from the given [Signal].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Dictionary">
-			</argument>
-			<description>
-				Constructs a new String from the given [Dictionary].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedByteArray">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedByteArray].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedInt32Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedInt32Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedInt64Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedInt64Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedFloat32Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedFloat32Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedFloat64Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedFloat64Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedStringArray">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedStringArray].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedVector2Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedVector2Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedVector3Array">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedVector3Array].
-			</description>
-		</method>
-		<method name="String">
-			<return type="String">
-			</return>
-			<argument index="0" name="from" type="PackedColorArray">
-			</argument>
-			<description>
-				Constructs a new String from the given [PackedColorArray].
+				Constructs a new String from the given [StringName].
 			</description>
 		</method>
 		<method name="begins_with">
@@ -312,6 +58,14 @@
 			</return>
 			<description>
 				Returns the bigrams (pairs of consecutive letters) of this string.
+			</description>
+		</method>
+		<method name="bin_to_int">
+			<return type="int">
+			</return>
+			<argument index="0" name="with_prefix" type="bool" default="true">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="c_escape">
@@ -342,7 +96,10 @@
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
+				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method naturalnocasecmp_to].
 			</description>
 		</method>
 		<method name="count">
@@ -392,17 +149,6 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the string ends with the given string.
-			</description>
-		</method>
-		<method name="erase">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="int">
-			</argument>
-			<argument index="1" name="chars" type="int">
-			</argument>
-			<description>
-				Erases [code]chars[/code] characters from the string starting from [code]position[/code].
 			</description>
 		</method>
 		<method name="find">
@@ -482,10 +228,13 @@
 		<method name="hex_to_int">
 			<return type="int">
 			</return>
+			<argument index="0" name="with_prefix" type="bool" default="true">
+			</argument>
 			<description>
-				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				Converts a string containing a hexadecimal number into a decimal integer. If [code]with_prefix[/code] is [code]true[/code], the hexadecimal string should start with the [code]0x[/code] prefix, otherwise [code]0[/code] is returned.
 				[codeblock]
 				print("0xff".hex_to_int()) # Print "255"
+				print("ab".hex_to_int(false)) # Print "171"
 				[/codeblock]
 			</description>
 		</method>
@@ -506,20 +255,6 @@
 				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
 				[codeblock]
 				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".http_unescape())
-				[/codeblock]
-			</description>
-		</method>
-		<method name="humanize_size">
-			<return type="String">
-			</return>
-			<argument index="0" name="size" type="int">
-			</argument>
-			<description>
-				Converts [code]size[/code] represented as number of bytes to human-readable format using internationalized set of data size units, namely: B, KiB, MiB, GiB, TiB, PiB, EiB. Note that the next smallest unit is picked automatically to hold at most 1024 units.
-				[codeblock]
-				var bytes = 133790307
-				var size = String.humanize_size(bytes)
-				print(size) # prints "127.5 MiB"
 				[/codeblock]
 			</description>
 		</method>
@@ -615,7 +350,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string contains a valid IP address.
+				Returns [code]true[/code] if this string contains only a well-formatted IPv4 or IPv6 address. This method considers [url=https://en.wikipedia.org/wiki/Reserved_IP_addresses]reserved IP addresses[/url] such as [code]0.0.0.0[/code] as valid.
 			</description>
 		</method>
 		<method name="join">
@@ -652,6 +387,17 @@
 			</return>
 			<description>
 				Returns the string's amount of characters.
+			</description>
+		</method>
+		<method name="lpad">
+			<return type="String">
+			</return>
+			<argument index="0" name="min_length" type="int">
+			</argument>
+			<argument index="1" name="character" type="String" default="&quot; &quot;">
+			</argument>
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the left of the string.
 			</description>
 		</method>
 		<method name="lstrip">
@@ -695,13 +441,109 @@
 				Returns the MD5 hash of the string as a string.
 			</description>
 		</method>
+		<method name="naturalnocasecmp_to">
+			<return type="int">
+			</return>
+			<argument index="0" name="to" type="String">
+			</argument>
+			<description>
+				Performs a case-insensitive [i]natural order[/i] comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				When used for sorting, natural order comparison will order suites of numbers as expected by most people. If you sort the numbers from 1 to 10 using natural order, you will get [code][1, 2, 3, ...][/code] instead of [code][1, 10, 2, 3, ...][/code].
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method nocasecmp_to] and [method casecmp_to].
+			</description>
+		</method>
 		<method name="nocasecmp_to">
 			<return type="int">
 			</return>
 			<argument index="0" name="to" type="String">
 			</argument>
 			<description>
-				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
+				Performs a case-insensitive comparison to another string. Returns [code]-1[/code] if less than, [code]1[/code] if greater than, or [code]0[/code] if equal. "less than" or "greater than" are determined by the [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode code points[/code] of each string, which roughly matches the alphabetical order. Internally, lowercase characters will be converted to uppercase during the comparison.
+				[b]Behavior with different string lengths:[/b] Returns [code]1[/code] if the "base" string is longer than the [code]to[/code] string or [code]-1[/code] if the "base" string is shorter than the [code]to[/code] string. Keep in mind this length is determined by the number of Unicode codepoints, [i]not[/i] the actual visible characters.
+				[b]Behavior with empty strings:[/b] Returns [code]-1[/code] if the "base" string is empty, [code]1[/code] if the [code]to[/code] string is empty or [code]0[/code] if both strings are empty.
+				To get a boolean result from a string comparison, use the [code]==[/code] operator instead. See also [method casecmp_to] and [method naturalnocasecmp_to].
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator !=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator %" qualifiers="operator">
+			<return type="String">
+			</return>
+			<argument index="0" name="right" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator +" qualifiers="operator">
+			<return type="String">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &lt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator ==" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="operator &gt;=" qualifiers="operator">
+			<return type="bool">
+			</return>
+			<argument index="0" name="right" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="ord_at">
@@ -814,6 +656,17 @@
 			</argument>
 			<description>
 				Returns the right side of the string from a given position.
+			</description>
+		</method>
+		<method name="rpad">
+			<return type="String">
+			</return>
+			<argument index="0" name="min_length" type="int">
+			</argument>
+			<argument index="1" name="character" type="String" default="&quot; &quot;">
+			</argument>
+			<description>
+				Formats a string to be at least [code]min_length[/code] long by adding [code]character[/code]s to the right of the string.
 			</description>
 		</method>
 		<method name="rsplit">
@@ -949,11 +802,11 @@
 				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using [code]-1[/code] will return remaining characters from given position.
 			</description>
 		</method>
-		<method name="to_ascii">
+		<method name="to_ascii_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
+				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8_buffer], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
 			</description>
 		</method>
 		<method name="to_float">
@@ -984,11 +837,25 @@
 				Returns the string converted to uppercase.
 			</description>
 		</method>
-		<method name="to_utf8">
+		<method name="to_utf16_buffer">
 			<return type="PackedByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
+				Converts the String (which is an array of characters) to UTF-16 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
+		<method name="to_utf32_buffer">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to UTF-32 encoded [PackedByteArray] (which is an array of bytes).
+			</description>
+		</method>
+		<method name="to_utf8_buffer">
+			<return type="PackedByteArray">
+			</return>
+			<description>
+				Converts the String (which is an array of characters) to UTF-8 encode [PackedByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii_buffer], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii_buffer].
 			</description>
 		</method>
 		<method name="trim_prefix">
@@ -1012,8 +879,10 @@
 		<method name="xml_escape">
 			<return type="String">
 			</return>
+			<argument index="0" name="escape_quotes" type="bool" default="false">
+			</argument>
 			<description>
-				Returns a copy of the string with special characters escaped using the XML standard.
+				Returns a copy of the string with special characters escaped using the XML standard. If [code]escape_quotes[/code] is [code]true[/code], the single quote ([code]'[/code]) and double quote ([code]"[/code]) characters are also escaped.
 			</description>
 		</method>
 		<method name="xml_unescape">

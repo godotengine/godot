@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<head>
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<link id='-gd-engine-icon' rel='icon' type='image/png' href='favicon.png' />
+	<title></title>
+	<style type='text/css'>
+
+		body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: black;
+			overflow: hidden;
+		}
+
+		#canvas, #gameCanvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+
+		#canvas:focus, #gameCanvas:focus {
+			outline: none;
+		}
+
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+
+		/* Status display
+		 * ============== */
+
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px;
+			height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress {
+				width: 61.8%;
+			}
+		}
+
+		#status-progress-inner {
+			height: 100%;
+			width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px;
+			height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px;
+			line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+			visibility: visible;
+		}
+	</style>
+</head>
+<body>
+	<div id="tabs-buttons">
+		<button id="btn-tab-loader" class="tab-btn" onclick="showTab('loader')">Loader</button>
+		<button id="btn-tab-editor" class="tab-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
+		<button id="btn-close-editor" class="close-btn" disabled="disabled" onclick="closeEditor()">X</button>
+		<button id="btn-tab-game" class="tab-btn" disabled="disabled" onclick="showTab('game')">Game</button>
+		<button id="btn-close-game" class="close-btn"  disabled="disabled" onclick="closeGame()">X</button>
+	</div>
+	<div id='tabs'>
+		<div id='tab-loader'>
+			<div style="color: white;" id="persistence">
+				<label for="videoMode" style="display: none;">Select video driver:</label><br />
+				<select id="videoMode" style="display: none;">
+					<option value="GLES2" selected="selected">WebGL</option>
+					<option value="GLES3">WebGL 2</option>
+				</select>
+				<br />
+				<label for="zip-file">Preload project zip: </label><input id="zip-file" type="file" id="files" name="files"/>
+				<br />
+				<button id="startButton">Start Godot Editor</button>
+				<br />
+				<br />
+				<button onclick="clearPersistence()">Clear persistent data</button>
+			</div>
+		</div>
+		<div id='tab-editor' style="display: none;">
+			<canvas id='editor-canvas' tabindex="1">
+				HTML5 canvas appears to be unsupported in the current browser.<br />
+				Please try updating or use a different browser.
+			</canvas>
+		</div>
+		<div id='tab-game' style="display: none;">
+			<canvas id='game-canvas' tabindex="2">
+				HTML5 canvas appears to be unsupported in the current browser.<br />
+				Please try updating or use a different browser.
+			</canvas>
+		</div>
+		<div id='tab-status' style="display: none;">
+			<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
+			<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+			<div id='status-notice' class='godot' style='display: none;'></div>
+		</div>
+	</div>
+
+	<script type='text/javascript' src='godot.tools.js'></script>
+	<script type='text/javascript'>//<![CDATA[
+
+		var engine = new Engine;
+		var game = null;
+		var setStatusMode;
+		var setStatusNotice;
+		var video_driver = "GLES2";
+
+		function clearPersistence() {
+			function deleteDB(path) {
+				return new Promise(function(resolve, reject) {
+					var req = indexedDB.deleteDatabase(path);
+					req.onsuccess = function() {
+						resolve();
+					};
+					req.onerror = function(err) {
+						reject(err);
+					};
+					req.onblocked = function(err) {
+						reject(err);
+					}
+
+				});
+			}
+			if (!window.confirm("Are you sure you want to delete all the locally stored files?")) {
+				return;
+			}
+			Promise.all([
+				deleteDB("/home/web_user/projects"),
+				deleteDB("/home/web_user/.config")
+			]).then(function(results) {
+				alert("Done.");
+			}).catch(function (err) {
+				alert("Error deleting local files. Please retry after reloading the page.");
+			});
+		}
+
+		function selectVideoMode() {
+			var select = document.getElementById('videoMode');
+			video_driver = select.selectedOptions[0].value;
+		}
+
+		var tabs = [
+			document.getElementById('tab-loader'),
+			document.getElementById('tab-editor'),
+			document.getElementById('tab-game')
+		]
+		function showTab(name) {
+			tabs.forEach(function (elem) {
+				if (elem.id == 'tab-' + name) {
+					elem.style.display = 'block';
+				} else {
+					elem.style.display = 'none';
+				}
+			});
+		}
+
+		function setButtonEnabled(id, enabled) {
+			if (enabled) {
+				document.getElementById(id).disabled = "";
+			} else {
+				document.getElementById(id).disabled = "disabled";
+			}
+		}
+
+		function setLoaderEnabled(enabled) {
+			setButtonEnabled('btn-tab-loader', enabled);
+			setButtonEnabled('btn-tab-editor', !enabled);
+			setButtonEnabled('btn-close-editor', !enabled);
+		}
+
+		function setGameTabEnabled(enabled) {
+			setButtonEnabled('btn-tab-game', enabled);
+			setButtonEnabled('btn-close-game', enabled);
+		}
+
+		function closeGame() {
+			if (game) {
+				game.requestQuit();
+			}
+		}
+
+		function closeEditor() {
+			closeGame();
+			if (engine) {
+				engine.requestQuit();
+			}
+		}
+
+		function startEditor(zip) {
+
+			const INDETERMINATE_STATUS_STEP_MS = 100;
+			const persistentPaths = ['/home/web_user/.config', '/home/web_user/projects'];
+
+			var editorCanvas = document.getElementById('editor-canvas');
+			var gameCanvas = document.getElementById('game-canvas');
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
+
+			var initializing = true;
+			var statusMode = 'hidden';
+
+			showTab('status');
+
+			var animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach(callback => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+			function adjustCanvasDimensions() {
+				var scale = window.devicePixelRatio || 1;
+				var header = document.getElementById('tabs-buttons');
+				var headerHeight = header.offsetHeight + 1;
+				var width = window.innerWidth;
+				var height = window.innerHeight - headerHeight;
+				editorCanvas.width = width * scale;
+				editorCanvas.height = height * scale;
+				editorCanvas.style.width = width + "px";
+				editorCanvas.style.height = height + "px";
+			}
+			animationCallbacks.push(adjustCanvasDimensions);
+			adjustCanvasDimensions();
+
+			setStatusMode = function setStatusMode(mode) {
+
+				if (statusMode === mode || !initializing)
+					return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
+
+			function animateStatusIndeterminate(ms) {
+
+				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor == '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
+
+			setStatusNotice = function setStatusNotice(text) {
+
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				var lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			};
+
+			engine.setProgressFunc((current, total) => {
+
+				if (total > 0) {
+					statusProgressInner.style.width = current/total * 100 + '%';
+					setStatusMode('progress');
+					if (current === total) {
+						// wait for progress bar animation
+						setTimeout(() => {
+							setStatusMode('indeterminate');
+						}, 100);
+					}
+				} else {
+					setStatusMode('indeterminate');
+				}
+			});
+
+			engine.setPersistentPaths(persistentPaths);
+
+			engine.setOnExecute(function(args) {
+				const is_editor = args.filter(function(v) { return v == '--editor' || v == '-e' }).length != 0;
+				const is_project_manager = args.filter(function(v) { return v == '--project-manager' }).length != 0;
+				const is_game = !is_editor && !is_project_manager;
+				if (is_project_manager) {
+					args.push('--video-driver', video_driver);
+				}
+				if (is_game) {
+					if (game) {
+						console.error("A game is already running. Close it first");
+						return;
+					}
+					setGameTabEnabled(true);
+					game = new Engine();
+					game.setPersistentPaths(persistentPaths);
+					game.setUnloadAfterInit(false);
+					game.setOnExecute(engine.onExecute);
+					game.setCanvas(gameCanvas);
+					game.setCanvasResizedOnStart(true);
+					game.setOnExit(function() {
+						setGameTabEnabled(false);
+						showTab('editor');
+						game = null;
+					});
+					showTab('game');
+					game.init().then(function() {
+						requestAnimationFrame(function() {
+							game.start.apply(game, args).then(function() {
+								gameCanvas.focus();
+							});
+						});
+					});
+				} else { // New editor instances will be run in the same canvas. We want to wait for it to exit.
+					engine.setOnExit(function(code) {
+						setLoaderEnabled(true);
+						setTimeout(function() {
+							engine.init().then(function() {
+								setLoaderEnabled(false);
+								engine.setOnExit(function() {
+									showTab('loader');
+									setLoaderEnabled(true);
+								});
+								engine.start.apply(engine, args);
+							});
+						}, 0);
+						engine.setOnExit(null);
+					});
+				}
+			});
+
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			};
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.setCanvas(editorCanvas);
+				engine.setUnloadAfterInit(false); // Don't want to reload when starting game.
+				engine.init('godot.tools').then(function() {
+					if (zip) {
+						engine.copyToFS("/home/web_user/preload.zip", zip);
+					}
+					try {
+						// Avoid user creating project in the persistent root folder.
+						engine.copyToFS("/home/web_user/projects/keep", new Uint8Array());
+					} catch(e) {
+						// File exists
+					}
+					//selectVideoMode();
+					showTab('editor');
+					setLoaderEnabled(false);
+					engine.setOnExit(function() {
+						showTab('loader');
+						setLoaderEnabled(true);
+					});
+					engine.start('--video-driver', video_driver).then(function() {
+						setStatusMode('hidden');
+						initializing = false;
+					});
+				}).catch(displayFailureNotice);
+			}
+		};
+		document.getElementById("startButton").onclick = function() {
+			preloadZip(document.getElementById('zip-file')).then(function(zip) {
+				startEditor(zip);
+			});
+		}
+
+		function preloadZip(target) {
+			return new Promise(function(resolve, reject) {
+				if (target.files.length > 0) {
+					target.files[0].arrayBuffer().then(function(data) {
+						resolve(data);
+					});
+				} else {
+					resolve();
+				}
+			});
+		}
+	//]]></script>
+</body>
+</html>

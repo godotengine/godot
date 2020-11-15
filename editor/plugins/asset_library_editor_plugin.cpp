@@ -910,7 +910,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	_api_request("asset", REQUESTING_SEARCH, args);
 }
 
-void EditorAssetLibrary::_search_text_entered(const String &p_text) {
+void EditorAssetLibrary::_search_text_changed(const String &p_text) {
+	filter_debounce_timer->start();
+}
+
+void EditorAssetLibrary::_filter_debounce_timer_timeout() {
 	_search();
 }
 
@@ -1299,10 +1303,15 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter = memnew(LineEdit);
 	search_hb->add_child(filter);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->connect("text_entered", callable_mp(this, &EditorAssetLibrary::_search_text_entered));
-	search = memnew(Button(TTR("Search")));
-	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
-	search_hb->add_child(search);
+	filter->connect("text_changed", callable_mp(this, &EditorAssetLibrary::_search_text_changed));
+
+	// Perform a search automatically if the user hasn't entered any text for a certain duration.
+	// This way, the user doesn't need to press Enter to initiate their search.
+	filter_debounce_timer = memnew(Timer);
+	filter_debounce_timer->set_one_shot(true);
+	filter_debounce_timer->set_wait_time(0.25);
+	filter_debounce_timer->connect("timeout", callable_mp(this, &EditorAssetLibrary::_filter_debounce_timer_timeout));
+	search_hb->add_child(filter_debounce_timer);
 
 	if (!p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));

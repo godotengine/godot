@@ -33,9 +33,9 @@
 
 #include "servers/display_server.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "crash_handler_windows.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
@@ -323,6 +323,8 @@ private:
 		HWND hWnd;
 		//layered window
 
+		Vector<Vector2> mpath;
+
 		bool preserve_window_size = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
@@ -416,6 +418,7 @@ private:
 	void _touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx);
 
 	void _update_window_style(WindowID p_window, bool p_repaint = true, bool p_maximized = false);
+	void _update_window_mouse_passthrough(WindowID p_window);
 
 	void _update_real_mouse_position(WindowID p_window);
 
@@ -477,6 +480,7 @@ public:
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual void window_set_title(const String &p_title, WindowID p_window = MAIN_WINDOW_ID);
+	virtual void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID);
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID);

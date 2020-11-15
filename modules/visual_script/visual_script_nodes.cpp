@@ -30,11 +30,11 @@
 
 #include "visual_script_nodes.h"
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
@@ -828,7 +828,6 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL }, //OP_NEGATE,
 		{ Variant::NIL, Variant::NIL }, //OP_POSITIVE,
 		{ Variant::INT, Variant::INT }, //OP_MODULE,
-		{ Variant::STRING, Variant::STRING }, //OP_STRING_CONCAT,
 		//bitwise
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_LEFT,
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_RIGHT,
@@ -873,7 +872,6 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 		Variant::NIL, //OP_NEGATE,
 		Variant::NIL, //OP_POSITIVE,
 		Variant::INT, //OP_MODULE,
-		Variant::STRING, //OP_STRING_CONCAT,
 		//bitwise
 		Variant::INT, //OP_SHIFT_LEFT,
 		Variant::INT, //OP_SHIFT_RIGHT,
@@ -933,36 +931,36 @@ static const char *op_names[] = {
 };
 
 String VisualScriptOperator::get_caption() const {
-	static const wchar_t *op_names[] = {
+	static const char32_t *op_names[] = {
 		//comparison
-		L"A = B", //OP_EQUAL,
-		L"A \u2260 B", //OP_NOT_EQUAL,
-		L"A < B", //OP_LESS,
-		L"A \u2264 B", //OP_LESS_EQUAL,
-		L"A > B", //OP_GREATER,
-		L"A \u2265 B", //OP_GREATER_EQUAL,
+		U"A = B", //OP_EQUAL,
+		U"A \u2260 B", //OP_NOT_EQUAL,
+		U"A < B", //OP_LESS,
+		U"A \u2264 B", //OP_LESS_EQUAL,
+		U"A > B", //OP_GREATER,
+		U"A \u2265 B", //OP_GREATER_EQUAL,
 		//mathematic
-		L"A + B", //OP_ADD,
-		L"A - B", //OP_SUBTRACT,
-		L"A \u00D7 B", //OP_MULTIPLY,
-		L"A \u00F7 B", //OP_DIVIDE,
-		L"\u00AC A", //OP_NEGATE,
-		L"+ A", //OP_POSITIVE,
-		L"A mod B", //OP_MODULE,
-		L"A .. B", //OP_STRING_CONCAT,
+		U"A + B", //OP_ADD,
+		U"A - B", //OP_SUBTRACT,
+		U"A \u00D7 B", //OP_MULTIPLY,
+		U"A \u00F7 B", //OP_DIVIDE,
+		U"\u00AC A", //OP_NEGATE,
+		U"+ A", //OP_POSITIVE,
+		U"A mod B", //OP_MODULE,
+		U"A .. B", //OP_STRING_CONCAT,
 		//bitwise
-		L"A << B", //OP_SHIFT_LEFT,
-		L"A >> B", //OP_SHIFT_RIGHT,
-		L"A & B", //OP_BIT_AND,
-		L"A | B", //OP_BIT_OR,
-		L"A ^ B", //OP_BIT_XOR,
-		L"~A", //OP_BIT_NEGATE,
+		U"A << B", //OP_SHIFT_LEFT,
+		U"A >> B", //OP_SHIFT_RIGHT,
+		U"A & B", //OP_BIT_AND,
+		U"A | B", //OP_BIT_OR,
+		U"A ^ B", //OP_BIT_XOR,
+		U"~A", //OP_BIT_NEGATE,
 		//logic
-		L"A and B", //OP_AND,
-		L"A or B", //OP_OR,
-		L"A xor B", //OP_XOR,
-		L"not A", //OP_NOT,
-		L"A in B", //OP_IN,
+		U"A and B", //OP_AND,
+		U"A or B", //OP_OR,
+		U"A xor B", //OP_XOR,
+		U"not A", //OP_NOT,
+		U"A in B", //OP_IN,
 
 	};
 	return op_names[op];
@@ -1433,7 +1431,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 
 	type = p_type;
 	Callable::CallError ce;
-	value = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, value, nullptr, 0, ce);
 	ports_changed_notify();
 	_change_notify();
 }
@@ -1706,8 +1704,10 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		bool valid;
+		// *p_output[0] points to the same place as *p_inputs[2] so we need a temp to store the value before the change in the next line
+		Variant temp = *p_inputs[2];
 		*p_outputs[0] = *p_inputs[0];
-		p_outputs[0]->set(*p_inputs[1], *p_inputs[2], &valid);
+		p_outputs[0]->set(*p_inputs[1], temp, &valid);
 
 		if (!valid) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1754,7 +1754,7 @@ PropertyInfo VisualScriptGlobalConstant::get_input_value_port_info(int p_idx) co
 }
 
 PropertyInfo VisualScriptGlobalConstant::get_output_value_port_info(int p_idx) const {
-	String name = GlobalConstants::get_global_constant_name(index);
+	String name = CoreConstants::get_global_constant_name(index);
 	return PropertyInfo(Variant::INT, name);
 }
 
@@ -1778,7 +1778,7 @@ public:
 	//virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
-		*p_outputs[0] = GlobalConstants::get_global_constant_value(index);
+		*p_outputs[0] = CoreConstants::get_global_constant_value(index);
 		return 0;
 	}
 };
@@ -1795,11 +1795,11 @@ void VisualScriptGlobalConstant::_bind_methods() {
 
 	String cc;
 
-	for (int i = 0; i < GlobalConstants::get_global_constant_count(); i++) {
+	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 		if (i > 0) {
 			cc += ",";
 		}
-		cc += GlobalConstants::get_global_constant_name(i);
+		cc += CoreConstants::get_global_constant_name(i);
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant", PROPERTY_HINT_ENUM, cc), "set_global_constant", "get_global_constant");
 }
@@ -3255,7 +3255,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 		Callable::CallError ce;
-		*p_outputs[0] = Variant::construct(type, p_inputs, argcount, ce);
+		Variant::construct(type, *p_outputs[0], p_inputs, argcount, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
 			r_error_str = "Invalid arguments for constructor";
 		}
@@ -3727,7 +3727,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	elements.clear();
 	Variant v;
 	Callable::CallError ce;
-	v = Variant::construct(type, nullptr, 0, ce);
+	Variant::construct(type, v, nullptr, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
@@ -3879,7 +3879,6 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/math/negate", create_op_node<Variant::OP_NEGATE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/positive", create_op_node<Variant::OP_POSITIVE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/remainder", create_op_node<Variant::OP_MODULE>);
-	VisualScriptLanguage::singleton->add_register_func("operators/math/string_concat", create_op_node<Variant::OP_STRING_CONCAT>);
 	//bitwise
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_left", create_op_node<Variant::OP_SHIFT_LEFT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_right", create_op_node<Variant::OP_SHIFT_RIGHT>);

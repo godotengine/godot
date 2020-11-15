@@ -31,7 +31,7 @@
 #ifndef RESOURCE_IMPORTER_TEXTURE_ATLAS_H
 #define RESOURCE_IMPORTER_TEXTURE_ATLAS_H
 
-#include "core/image.h"
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
 class ResourceImporterTextureAtlas : public ResourceImporter {
 	GDCLASS(ResourceImporterTextureAtlas, ResourceImporter);

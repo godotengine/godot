@@ -7,7 +7,8 @@
 		Directory type. It is used to manage directories and their content (not restricted to the project folder).
 		When creating a new [Directory], it must be explicitly opened using [method open] before most methods can be used. However, [method file_exists] and [method dir_exists] can be used without opening a directory. If so, they use a path relative to [code]res://[/code].
 		Here is an example on how to iterate through the files of a directory:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		func dir_contents(path):
 		    var dir = Directory.new()
 		    if dir.open(path) == OK:
@@ -21,10 +22,38 @@
 		            file_name = dir.get_next()
 		    else:
 		        print("An error occurred when trying to access the path.")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public void DirContents(string path)
+		{
+		    var dir = new Directory();
+		    if (dir.Open(path) == Error.Ok)
+		    {
+		        dir.ListDirBegin();
+		        string fileName = dir.GetNext();
+		        while (fileName != "")
+		        {
+		            if (dir.CurrentIsDir())
+		            {
+		                GD.Print("Found directory: " + fileName);
+		            }
+		            else
+		            {
+		                GD.Print("Found file: " + fileName);
+		            }
+		            fileName = dir.GetNext();
+		        }
+		    }
+		    else
+		    {
+		        GD.Print("An error occurred when trying to access the path.");
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
+		<link title="File system">https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
 	</tutorials>
 	<methods>
 		<method name="change_dir">

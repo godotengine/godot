@@ -32,7 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 #include <stdlib.h>
 #include <webp/decode.h>

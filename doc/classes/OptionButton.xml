@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		OptionButton is a type button that provides a selectable list of items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -217,7 +218,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Emitted the when user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
+				Emitted when the user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">

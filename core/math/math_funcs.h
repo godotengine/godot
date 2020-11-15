@@ -46,7 +46,8 @@ class Math {
 public:
 	Math() {} // useless to instance
 
-	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
+	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
+	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -283,24 +284,12 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_MAX; }
+	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
 
 	static double random(double from, double to);
 	static float random(float from, float to);
-	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
-
-	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON, real_t min_epsilon = CMP_EPSILON) {
-		// this is an approximate way to check that numbers are close, as a ratio of their average size
-		// helps compare approximate numbers that may be very big or very small
-		real_t diff = abs(a - b);
-		if (diff == 0.0 || diff < min_epsilon) {
-			return true;
-		}
-		real_t avg_size = (abs(a) + abs(b)) / 2.0;
-		diff /= avg_size;
-		return diff < epsilon;
-	}
+	static int random(int from, int to);
 
 	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// Check for exact equality first, required to handle "infinity" values.

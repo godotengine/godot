@@ -20,7 +20,7 @@
 # Alphin Albukhari <alphinalbukhari5@gmail.com>, 2019.
 # I Dewa Agung Adhinata <agungnata2003@gmail.com>, 2019.
 # herri siagian <herry.it.2007@gmail.com>, 2019.
-# MonsterGila <fikrirazor@outlook.co.id>, 2019.
+# MonsterGila <fikrirazor@outlook.co.id>, 2019, 2020.
 # Modeus Darksono <garuga17@gmail.com>, 2019.
 # Akhmad Zulfikar <azuldegratz@gmail.com>, 2020.
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
@@ -31,8 +31,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-06 04:41+0000\n"
-"Last-Translator: yusuf afandi <afandi.yusuf.04@gmail.com>\n"
+"PO-Revision-Date: 2020-10-03 15:29+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -40,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -551,6 +551,7 @@ msgid "Seconds"
 msgstr "Detik"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -729,7 +730,7 @@ msgstr "Kasus Kecocokan"
 msgid "Whole Words"
 msgstr "Semua Kata"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "Ganti"
 
@@ -921,6 +922,10 @@ msgid "Signals"
 msgstr "Sinyal"
 
 #: editor/connections_dialog.cpp
+msgid "Filter signals"
+msgstr "Filter sinyal"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Anda yakin ingin menghapus semua hubungan dari sinyal ini?"
 
@@ -958,7 +963,7 @@ msgid "Recent:"
 msgstr "Saat ini:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Cari:"
@@ -1139,6 +1144,9 @@ msgstr "Penemu Proyek"
 msgid "Lead Developer"
 msgstr "Pengembang Utama"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "Manajer Proyek "
@@ -1158,6 +1166,15 @@ msgstr "Sponsor Platinum"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "Sponsor Emas"
+
+#: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr "Donatur Perak"
+
+#: editor/editor_about.cpp
+#, fuzzy
+msgid "Bronze Sponsors"
+msgstr "Donatur Perunggu"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1477,7 +1494,7 @@ msgstr "Mengatur kembali Autoload-autoload"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Tidak dapat menambahkan autoload:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -1598,6 +1615,37 @@ msgstr ""
 "Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
 "Enabled'."
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platform target membutuhkan kompresi tekstur 'ETC' untuk GLES2. Aktifkan "
+"'Impor Lainnya' di Pengaturan Proyek."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"Platform target membutuhkan kompresi tekstur 'ETC2' untuk GLES3. Aktifkan "
+"'Impor Lainnya 2' di Pengaturan Proyek."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"Platform target membutuhkan kompressi tekstur 'ETC' untuk mengembalikan "
+"driver ke GLES2. \n"
+"Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
+"Enabled'."
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1635,16 +1683,16 @@ msgid "Scene Tree Editing"
 msgstr "Menyunting Pohon Skena"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "Dok Impor"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "Dok Node"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "Dok Impor dan Berkas Sistem"
+msgid "FileSystem Dock"
+msgstr "Berkas Sistem"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "Dok Impor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1908,7 +1956,7 @@ msgstr "Direktori-direktori & File-file:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "Pratinjau:"
 
@@ -2430,15 +2478,17 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Tidak bisa memuat ulang skena yang belum pernah disimpan."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reload Saved Scene"
-msgstr "Simpan Skena"
+msgstr "Muat ulang scene yang sudah disimpan"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
+"Skena saat ini mempunyai perubahan yang belum tersimpan.\n"
+"Tetap muat ulang skena yang tersimpan? Aksi ini tidak dapat dibatalkan."
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
@@ -2785,24 +2835,35 @@ msgstr "Deploy dengan Awakutu Jarak Jauh"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Saat mengekspor atau mendeploy, hasil executable akan mencoba terhubung ke "
-"IP komputer untuk diawakutu."
+"Saat pilihan ini diaktifkan, menggunakan 'one-click deploy' akan membuat "
+"file yang bisa dieksekusi mencoba untuk terhubung ke IP komputer ini, "
+"sehingga proyek yang sedang berajalan dapat didebug.\n"
+"Pilihan ini dimaksudkan untuk digunakan sebagai cara men-debug jarak jauh "
+"(biasanya menggunakan perangkat  selular).\n"
+"Kamu tidak perlu mengaktifkan ini jika menggunakan GDScript debugger secara "
+"lokal."
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+#, fuzzy
+msgid "Small Deploy with Network Filesystem"
 msgstr "Deploy Kecil dengan Jaringan FS"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
 "Ketika opsi ini aktif, ekspor atau deploy akan menghasilkan minimal "
 "executable.\n"
@@ -2815,9 +2876,10 @@ msgid "Visible Collision Shapes"
 msgstr "Collision Shapes Terlihat"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
 msgstr ""
 "Collision shapes dan raycast nodes (untuk 2D dan 3D) akan terlihat pada saat "
 "permainan berjalan jika opsi ini aktif."
@@ -2827,23 +2889,26 @@ msgid "Visible Navigation"
 msgstr "Navigasi Terlihat"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
 msgstr ""
 "Navigasi meshes dan poligon akan terlihat saat game berjalan jika opsi ini "
 "aktif."
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
+#, fuzzy
+msgid "Synchronize Scene Changes"
 msgstr "Sinkronkan Perubahan Skena"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Ketika opsi ini aktif, perubahan yang dibuat pada skena melalui editor akan "
 "direplika pada gim yang sedang berjalan.\n"
@@ -2851,15 +2916,17 @@ msgstr ""
 "berkas sistem jaringan."
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
+#, fuzzy
+msgid "Synchronize Script Changes"
 msgstr "Sinkronkan Perubahan Script"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "Ketika opsi ini aktif, perubahan script yang tersimpan akan di muat kembali "
 "pada permainan yang sedang berjalan.\n"
@@ -2918,12 +2985,11 @@ msgstr "Kelola Templat Ekspor…"
 msgid "Help"
 msgstr "Bantuan"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "Cari"
 
@@ -3341,9 +3407,11 @@ msgid "Add Key/Value Pair"
 msgstr "Tambahkan pasangan Key/Value"
 
 #: editor/editor_run_native.cpp
+#, fuzzy
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
 "Tidak ada preset ekspor yang bisa digunakan untuk platform ini.\n"
 "Mohon tambahkan preset yang bisa digunakan di menu ekspor."
@@ -4342,7 +4410,6 @@ msgid "Add Node to BlendTree"
 msgstr "Tambah Node ke BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "Node Dipindahkan"
 
@@ -5103,7 +5170,7 @@ msgid "Bake Lightmaps"
 msgstr "Panggang Lightmaps"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "Pratinjau"
 
@@ -5168,27 +5235,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "Buat Panduan Horisontal dan Vertikal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "Pindahkan poros"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "Putar CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "Pindahkan jangkar"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Putar CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "Ubah Ukuran CanvasItem"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Pindahkan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "Skalakan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Skalakan CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "Pindahkan CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "Pindahkan CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6472,12 +6562,22 @@ msgid "Move Points"
 msgstr "Geser Titik"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl: Putar"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "Geser: Putar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Geser Semua"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl: Skala"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl: Putar"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6520,12 +6620,14 @@ msgid "Radius:"
 msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "Poligon->UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "Buat Poligon & UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV->Poligon"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "Konversikan menjadi Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6975,17 +7077,17 @@ msgstr "Penyorot Sintaks"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "Pergi Ke"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Bilah Marka"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "Breakpoint"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "Pergi Ke"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7750,7 +7852,8 @@ msgid "New Animation"
 msgstr "Animasi Baru"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
+#, fuzzy
+msgid "Speed:"
 msgstr "Kecepatan (FPS):"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -8067,6 +8170,15 @@ msgstr "Berikan resource TileSet ke TileMap ini untuk menggunakan tile-nya."
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "Cat Tile"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift + Klik Kiri: Menggambar Garis\n"
+"Shift + Ctrl + Klik Kiri: Cat Persegi Panjang"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8595,6 +8707,11 @@ msgid "Add Node to Visual Shader"
 msgstr "Tambah Node ke Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "Node Dipindahkan"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Duplikat Node"
 
@@ -8610,6 +8727,11 @@ msgstr "Hapus Node"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "Tipe Input Visual Shader Berubah"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "Tetapkan Nama Uniform"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9330,6 +9452,10 @@ msgstr ""
 "variasi, seragam, dan konstanta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Khusus mode Fragmen / Cahaya) Fungsi skalar turunan."
 
@@ -9400,18 +9526,6 @@ msgstr "Mode Shader Visual Berubah"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Dapat dijalankan"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "Tambah ekspor awal..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "Tambahkan patch sebelumnya..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "Hapus entri penambalan '%s' dari daftar?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9511,18 +9625,6 @@ msgid ""
 msgstr ""
 "Filter untuk mengecualikan berkas/folder dari proyek\n"
 "(pisahkan dengan koma, contoh: *.json, *.txt, docs/*)"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "Tambalan"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "Buat Tambalan"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "Berkas Pack"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9884,6 +9986,7 @@ msgstr ""
 "Apakah Anda yakin untuk memindai %s folder untuk proyek Godot yang ada?\n"
 "Ini bisa memakan waktu yang lama."
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "Manajer Proyek"
@@ -10324,11 +10427,18 @@ msgid "Batch Rename"
 msgstr "Ubah Nama Massal"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
+#, fuzzy
+msgid "Replace:"
+msgstr "Ganti: "
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "Prefix:"
 msgstr "Awalan"
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
+#, fuzzy
+msgid "Suffix:"
 msgstr "Akhiran"
 
 #: editor/rename_dialog.cpp
@@ -10376,7 +10486,8 @@ msgid "Per-level Counter"
 msgstr "Penghitung per Level"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
+#, fuzzy
+msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Jika diatur, penghitung akan dimulai ulang untuk setiap grup node anak"
 
 #: editor/rename_dialog.cpp
@@ -10436,7 +10547,8 @@ msgid "Reset"
 msgstr "Reset"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
+#, fuzzy
+msgid "Regular Expression Error:"
 msgstr "Kesalahan Ekspresi Reguler"
 
 #: editor/rename_dialog.cpp
@@ -10683,11 +10795,14 @@ msgid "Open Documentation"
 msgstr "Buka Dokumentasi"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
 msgstr ""
+"Tidak dapat melampirkan skrip: tidak ada bahasa yang terdaftar.\n"
+"Ini mungkin karena editor ini dibuat dengan semua modul bahasa dinonaktifkan."
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -12032,6 +12147,22 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
@@ -12064,8 +12195,14 @@ msgstr ""
 "Atau kunjungi docs.godotengine.org untuk dokumentasi build Android."
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "Tak ada build apk yang dihasilkan di: "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12240,10 +12377,14 @@ msgstr ""
 "ciptakan resource shape untuknya!"
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"Bentuk Polygon-based tidak dimaksudkan untuk digunakan atau diedit secara "
+"langsung melalui node CollisionShape2D. Silakan gunakan node "
+"CollisionPolygon2D sebagai gantinya."
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12429,8 +12570,9 @@ msgid "Finishing Plot"
 msgstr "Menyelesaikan Pemetaan"
 
 #: scene/3d/baked_lightmap.cpp
+#, fuzzy
 msgid "Lighting Meshes: "
-msgstr ""
+msgstr "Lighting Meshes: "
 
 #: scene/3d/collision_object.cpp
 msgid ""
@@ -12485,8 +12627,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/cpu_particles.cpp
+#, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr ""
+msgstr "Tidak ada yang tampak karena tidak ada mesh yang ditetapkan."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
@@ -12505,6 +12648,11 @@ msgid ""
 msgstr ""
 "GIProbes tidak didukung oleh driver video GLES2.\n"
 "Gunakan BakedLightmap sebagai gantinya."
+
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12804,6 +12952,52 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Move pivot"
+#~ msgstr "Pindahkan poros"
+
+#~ msgid "Move anchor"
+#~ msgstr "Pindahkan jangkar"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "Ubah Ukuran CanvasItem"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "Poligon->UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV->Poligon"
+
+#~ msgid "Add initial export..."
+#~ msgstr "Tambah ekspor awal..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "Tambahkan patch sebelumnya..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "Hapus entri penambalan '%s' dari daftar?"
+
+#~ msgid "Patches"
+#~ msgstr "Tambalan"
+
+#~ msgid "Make Patch"
+#~ msgstr "Buat Tambalan"
+
+#~ msgid "Pack File"
+#~ msgstr "Berkas Pack"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "Tak ada build apk yang dihasilkan di: "
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "Dok Impor dan Berkas Sistem"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "Saat mengekspor atau mendeploy, hasil executable akan mencoba terhubung "
+#~ "ke IP komputer untuk diawakutu."
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr ""

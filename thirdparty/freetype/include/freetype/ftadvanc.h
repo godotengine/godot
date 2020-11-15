@@ -20,8 +20,7 @@
 #define FTADVANC_H_
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <freetype/freetype.h>
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"
@@ -96,6 +95,7 @@ FT_BEGIN_HEADER
    *   load_flags ::
    *     A set of bit flags similar to those used when calling
    *     @FT_Load_Glyph, used to determine what kind of advances you need.
+   *
    * @output:
    *   padvance ::
    *     The advance value.  If scaling is performed (based on the value of

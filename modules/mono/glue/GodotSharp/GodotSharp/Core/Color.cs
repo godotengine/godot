@@ -257,20 +257,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the most contrasting color.
-        /// </summary>
-        /// <returns>The most contrasting color</returns>
-        public Color Contrasted()
-        {
-            return new Color(
-                (r + 0.5f) % 1.0f,
-                (g + 0.5f) % 1.0f,
-                (b + 0.5f) % 1.0f,
-                a
-            );
-        }
-
-        /// <summary>
         /// Returns a new color resulting from making this color darker
         /// by the specified ratio (on the range of 0 to 1).
         /// </summary>
@@ -351,8 +337,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in ABGR format
-        /// (each byte represents a component of the ABGR profile).
+        /// Returns the color converted to an unsigned 32-bit integer in ABGR
+        /// format (each byte represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A uint representing this color in ABGR32 format.</returns>
@@ -370,8 +356,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in ABGR format
-        /// (each word represents a component of the ABGR profile).
+        /// Returns the color converted to an unsigned 64-bit integer in ABGR
+        /// format (each word represents a color channel).
         /// ABGR is the reversed version of the default format.
         /// </summary>
         /// <returns>A ulong representing this color in ABGR64 format.</returns>
@@ -389,8 +375,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in ARGB format
-        /// (each byte represents a component of the ARGB profile).
+        /// Returns the color converted to an unsigned 32-bit integer in ARGB
+        /// format (each byte represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A uint representing this color in ARGB32 format.</returns>
@@ -408,8 +394,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in ARGB format
-        /// (each word represents a component of the ARGB profile).
+        /// Returns the color converted to an unsigned 64-bit integer in ARGB
+        /// format (each word represents a color channel).
         /// ARGB is more compatible with DirectX, but not used much in Godot.
         /// </summary>
         /// <returns>A ulong representing this color in ARGB64 format.</returns>
@@ -427,8 +413,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 32-bit integer in RGBA format
-        /// (each byte represents a component of the RGBA profile).
+        /// Returns the color converted to an unsigned 32-bit integer in RGBA
+        /// format (each byte represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A uint representing this color in RGBA32 format.</returns>
@@ -446,8 +432,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the color's 64-bit integer in RGBA format
-        /// (each word represents a component of the RGBA profile).
+        /// Returns the color converted to an unsigned 64-bit integer in RGBA
+        /// format (each word represents a color channel).
         /// RGBA is Godot's default and recommended format.
         /// </summary>
         /// <returns>A ulong representing this color in RGBA64 format.</returns>
@@ -486,7 +472,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from RGBA values on the range of 0 to 1.
+        /// Constructs a color from RGBA values, typically on the range of 0 to 1.
         /// </summary>
         /// <param name="r">The color's red component, typically on the range of 0 to 1.</param>
         /// <param name="g">The color's green component, typically on the range of 0 to 1.</param>
@@ -514,8 +500,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 32-bit integer
-        /// (each byte represents a component of the RGBA profile).
+        /// Constructs a color from an unsigned 32-bit integer in RGBA format
+        /// (each byte represents a color channel).
         /// </summary>
         /// <param name="rgba">The uint representing the color.</param>
         public Color(uint rgba)
@@ -530,8 +516,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a color from a 64-bit integer
-        /// (each word represents a component of the RGBA profile).
+        /// Constructs a color from an unsigned 64-bit integer in RGBA format
+        /// (each word represents a color channel).
         /// </summary>
         /// <param name="rgba">The ulong representing the color.</param>
         public Color(ulong rgba)
@@ -565,6 +551,9 @@ namespace Godot
                 rgba = rgba.Substring(1);
             }
 
+            // If enabled, use 1 hex digit per channel instead of 2.
+            // Other sizes aren't in the HTML/CSS spec but we could add them if desired.
+            bool isShorthand = rgba.Length < 5;
             bool alpha;
 
             if (rgba.Length == 8)
@@ -575,46 +564,59 @@ namespace Godot
             {
                 alpha = false;
             }
+            else if (rgba.Length == 4)
+            {
+                alpha = true;
+            }
+            else if (rgba.Length == 3)
+            {
+                alpha = false;
+            }
             else
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Length is " + rgba.Length + " but a length of 6 or 8 is expected: " + rgba);
             }
 
-            if (alpha)
+            a = 1.0f;
+            if (isShorthand)
             {
-                a = ParseCol8(rgba, 6) / 255f;
-
-                if (a < 0)
+                r = ParseCol4(rgba, 0) / 15f;
+                g = ParseCol4(rgba, 1) / 15f;
+                b = ParseCol4(rgba, 2) / 15f;
+                if (alpha)
                 {
-                    throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
+                    a = ParseCol4(rgba, 3) / 15f;
                 }
             }
             else
             {
-                a = 1.0f;
+                r = ParseCol8(rgba, 0) / 255f;
+                g = ParseCol8(rgba, 2) / 255f;
+                b = ParseCol8(rgba, 4) / 255f;
+                if (alpha)
+                {
+                    a = ParseCol8(rgba, 6) / 255f;
+                }
             }
-
-            int from = alpha ? 2 : 0;
-
-            r = ParseCol8(rgba, 0) / 255f;
 
             if (r < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Red part is not valid hexadecimal: " + rgba);
             }
 
-            g = ParseCol8(rgba, 2) / 255f;
-
             if (g < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Green part is not valid hexadecimal: " + rgba);
             }
 
-            b = ParseCol8(rgba, 4) / 255f;
-
             if (b < 0)
             {
                 throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
+            }
+
+            if (a < 0)
+            {
+                throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
             }
         }
 
@@ -751,45 +753,28 @@ namespace Godot
             value = max;
         }
 
+        private static int ParseCol4(string str, int ofs)
+        {
+            char character = str[ofs];
+
+            if (character >= '0' && character <= '9')
+            {
+                return character - '0';
+            }
+            else if (character >= 'a' && character <= 'f')
+            {
+                return character + (10 - 'a');
+            }
+            else if (character >= 'A' && character <= 'F')
+            {
+                return character + (10 - 'A');
+            }
+            return -1;
+        }
+
         private static int ParseCol8(string str, int ofs)
         {
-            int ig = 0;
-
-            for (int i = 0; i < 2; i++)
-            {
-                int c = str[i + ofs];
-                int v;
-
-                if (c >= '0' && c <= '9')
-                {
-                    v = c - '0';
-                }
-                else if (c >= 'a' && c <= 'f')
-                {
-                    v = c - 'a';
-                    v += 10;
-                }
-                else if (c >= 'A' && c <= 'F')
-                {
-                    v = c - 'A';
-                    v += 10;
-                }
-                else
-                {
-                    return -1;
-                }
-
-                if (i == 0)
-                {
-                    ig += v * 16;
-                }
-                else
-                {
-                    ig += v;
-                }
-            }
-
-            return ig;
+            return ParseCol4(str, ofs) * 16 + ParseCol4(str, ofs + 1);
         }
 
         private String ToHex32(float val)
@@ -828,44 +813,22 @@ namespace Godot
 
             if (color[0] == '#')
             {
-                color = color.Substring(1, color.Length - 1);
+                color = color.Substring(1);
             }
 
-            bool alpha;
-
-            switch (color.Length)
+            // Check if the amount of hex digits is valid.
+            int len = color.Length;
+            if (!(len == 3 || len == 4 || len == 6 || len == 8))
             {
-                case 8:
-                    alpha = true;
-                    break;
-                case 6:
-                    alpha = false;
-                    break;
-                default:
-                    return false;
+                return false;
             }
 
-            if (alpha)
-            {
-                if (ParseCol8(color, 0) < 0)
+            // Check if each hex digit is valid.
+            for (int i = 0; i < len; i++) {
+                if (ParseCol4(color, i) == -1)
                 {
                     return false;
                 }
-            }
-
-            int from = alpha ? 2 : 0;
-
-            if (ParseCol8(color, from + 0) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 2) < 0)
-            {
-                return false;
-            }
-            if (ParseCol8(color, from + 4) < 0)
-            {
-                return false;
             }
 
             return true;

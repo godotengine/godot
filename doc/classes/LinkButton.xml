@@ -5,14 +5,13 @@
 	</brief_description>
 	<description>
 		This kind of button is primarily used when the interaction with the button causes a context change (like linking to a web page).
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
 	<members>
-		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" override="true" enum="Control.FocusMode" default="0" />
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="0" />
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" override="true" enum="Control.CursorShape" default="2" />
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The button's text that will be displayed inside the button's area.

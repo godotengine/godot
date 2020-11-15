@@ -76,8 +76,10 @@ void EditorRunNative::_notification(int p_what) {
 				} else {
 					mb->get_popup()->clear();
 					mb->show();
-					mb->set_tooltip(eep->get_options_tooltip());
-					if (dc > 1) {
+					if (dc == 1) {
+						mb->set_tooltip(eep->get_option_tooltip(0));
+					} else {
+						mb->set_tooltip(eep->get_options_tooltip());
 						for (int i = 0; i < dc; i++) {
 							mb->get_popup()->add_icon_item(eep->get_option_icon(i), eep->get_option_label(i));
 							mb->get_popup()->set_item_tooltip(mb->get_popup()->get_item_count() - 1, eep->get_option_tooltip(i));
@@ -121,7 +123,7 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	}
 
 	if (preset.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the export menu."));
+		EditorNode::get_singleton()->show_warning(TTR("No runnable export preset found for this platform.\nPlease add a runnable preset in the Export menu or define an existing preset as runnable."));
 		return;
 	}
 

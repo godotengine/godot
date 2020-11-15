@@ -32,13 +32,13 @@
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
-#include "core/engine.h"
-#include "core/global_constants.h"
+#include "core/config/engine.h"
+#include "core/core_constants.h"
 #include "core/io/compression.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/ucaps.h"
+#include "core/string/ucaps.h"
 
 #include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_defs.h"
@@ -97,7 +97,7 @@
 #define C_METHOD_MANAGED_TO_SIGNAL C_NS_MONOMARSHAL "::signal_info_to_callable"
 #define C_METHOD_MANAGED_FROM_SIGNAL C_NS_MONOMARSHAL "::callable_to_signal_info"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(11)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(12)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
@@ -1368,7 +1368,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append(")\n" OPEN_BLOCK_L2 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" INDENT4 BINDINGS_PTR_FIELD " = ");
 			output.append(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
 			output.append("." + ctor_method);
-			output.append("(this);\n" CLOSE_BLOCK_L2);
+			output.append("(this);\n" INDENT3 "_InitializeGodotScriptInstanceInternals();\n" CLOSE_BLOCK_L2);
 		} else {
 			// Hide the constructor
 			output.append(MEMBER_BEGIN "internal ");
@@ -2426,7 +2426,7 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
-		case Variant::_RID:
+		case Variant::RID:
 		case Variant::ARRAY:
 		case Variant::DICTIONARY:
 		case Variant::PACKED_BYTE_ARRAY:
@@ -2979,7 +2979,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.default_argument = "new %s()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
 			break;
-		case Variant::_RID:
+		case Variant::RID:
 			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
 					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_RID) + "'.");
 
@@ -3399,7 +3399,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 }
 
 void BindingsGenerator::_populate_global_constants() {
-	int global_constants_count = GlobalConstants::get_global_constant_count();
+	int global_constants_count = CoreConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
 		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
@@ -3409,7 +3409,7 @@ void BindingsGenerator::_populate_global_constants() {
 		const DocData::ClassDoc &global_scope_doc = match->value();
 
 		for (int i = 0; i < global_constants_count; i++) {
-			String constant_name = GlobalConstants::get_global_constant_name(i);
+			String constant_name = CoreConstants::get_global_constant_name(i);
 
 			const DocData::ConstantDoc *const_doc = nullptr;
 			for (int j = 0; j < global_scope_doc.constants.size(); j++) {
@@ -3421,8 +3421,8 @@ void BindingsGenerator::_populate_global_constants() {
 				}
 			}
 
-			int constant_value = GlobalConstants::get_global_constant_value(i);
-			StringName enum_name = GlobalConstants::get_global_constant_enum(i);
+			int constant_value = CoreConstants::get_global_constant_value(i);
+			StringName enum_name = CoreConstants::get_global_constant_enum(i);
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), constant_value);
 			iconstant.const_doc = const_doc;

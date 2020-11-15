@@ -246,6 +246,8 @@ void Window::_make_window() {
 		}
 	}
 
+	_update_window_callbacks();
+
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 	DisplayServer::get_singleton()->show_window(window_id);
 }
@@ -379,7 +381,6 @@ void Window::set_visible(bool p_visible) {
 		}
 		if (p_visible && window_id == DisplayServer::INVALID_WINDOW_ID) {
 			_make_window();
-			_update_window_callbacks();
 		}
 	} else {
 		if (visible) {
@@ -738,7 +739,6 @@ void Window::_notification(int p_what) {
 				//create
 				if (visible) {
 					_make_window();
-					_update_window_callbacks();
 				}
 			}
 		}
@@ -895,11 +895,11 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (exclusive_child != nullptr) {
 		Window *focus_target = exclusive_child;
-		while (focus_target->exclusive_child != nullptr) {
-			focus_target->grab_focus();
-			focus_target = focus_target->exclusive_child;
-		}
 		focus_target->grab_focus();
+		while (focus_target->exclusive_child != nullptr) {
+			focus_target = focus_target->exclusive_child;
+			focus_target->grab_focus();
+		}
 
 		if (!is_embedding_subwindows()) { //not embedding, no need for event
 			return;
@@ -983,7 +983,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 
 	Rect2i popup_rect;
 	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
-	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
@@ -1009,7 +1009,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	} else {
 		popup_rect.size = p_minsize;
 	}
-	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }
@@ -1031,7 +1031,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 
 	Rect2i popup_rect;
 	popup_rect.size = parent_rect.size * p_ratio;
-	popup_rect.position = (parent_rect.size - popup_rect.size) / 2;
+	popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
 
 	popup(popup_rect);
 }

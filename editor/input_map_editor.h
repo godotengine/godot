@@ -31,7 +31,7 @@
 #ifndef INPUT_MAP_EDITOR_H
 #define INPUT_MAP_EDITOR_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
 
 class InputMapEditor : public Control {
@@ -69,7 +69,7 @@ class InputMapEditor : public Control {
 	AcceptDialog *message;
 	UndoRedo *undo_redo;
 	String inputmap_changed;
-	bool setting;
+	bool setting = false;
 
 	void _update_actions();
 	void _add_item(int p_item, Ref<InputEvent> p_exiting_event = Ref<InputEvent>());

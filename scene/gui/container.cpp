@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
@@ -168,7 +168,7 @@ String Container::get_configuration_warning() const {
 	String warning = Control::get_configuration_warning();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");

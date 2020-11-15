@@ -47,7 +47,7 @@ bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Tr
 	Vector2 supports[2];
 	int support_count;
 
-	p_shape_B->get_supports(p_transform_A.affine_inverse().basis_xform(-n).normalized(), supports, support_count);
+	p_shape_B->get_supports(p_transform_B.affine_inverse().basis_xform(-n).normalized(), supports, support_count);
 
 	bool found = false;
 

@@ -8,7 +8,8 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Controlling thousands of fish with Particles">https://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
@@ -16,6 +17,22 @@
 			</return>
 			<description>
 				Returns the axis-aligned bounding box that contains all the particles that are active in the current frame.
+			</description>
+		</method>
+		<method name="emit_particle">
+			<return type="void">
+			</return>
+			<argument index="0" name="xform" type="Transform">
+			</argument>
+			<argument index="1" name="velocity" type="Vector3">
+			</argument>
+			<argument index="2" name="color" type="Color">
+			</argument>
+			<argument index="3" name="custom" type="Color">
+			</argument>
+			<argument index="4" name="flags" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
@@ -50,6 +67,8 @@
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">
 			Number of particles to emit.
 		</member>
+		<member name="collision_base_size" type="float" setter="set_collision_base_size" getter="get_collision_base_size" default="0.01">
+		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles3D.DrawOrder" default="0">
 			Particle draw order. Uses [enum DrawOrder] values.
 		</member>
@@ -68,7 +87,7 @@
 		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" default="1">
 			The number of draw passes when rendering particles.
 		</member>
-		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="false">
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
 			If [code]true[/code], particles are being emitted.
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
@@ -101,6 +120,8 @@
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			Speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
+		<member name="sub_emitter" type="NodePath" setter="set_sub_emitter" getter="get_sub_emitter" default="NodePath(&quot;&quot;)">
+		</member>
 		<member name="visibility_aabb" type="AABB" setter="set_visibility_aabb" getter="get_visibility_aabb" default="AABB( -4, -4, -4, 8, 8, 8 )">
 			The [AABB] that determines the area of the world part of which needs to be visible on screen for the particle system to be active.
 		</member>
@@ -114,6 +135,16 @@
 		</constant>
 		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
 			Particles are drawn in order of depth.
+		</constant>
+		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_ROTATION_SCALE" value="2" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
+		</constant>
+		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
 		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4">
 			Maximum number of draw passes supported.

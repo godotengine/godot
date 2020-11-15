@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using GodotTools.Build;
 using GodotTools.Core;
 using GodotTools.Internals;
 using JetBrains.Annotations;
@@ -19,7 +20,7 @@ namespace GodotTools.Export
     public class ExportPlugin : EditorExportPlugin
     {
         [Flags]
-        enum I18NCodesets
+        enum I18NCodesets : long
         {
             None = 0,
             CJK = 1,
@@ -143,6 +144,8 @@ namespace GodotTools.Export
 
         private void _ExportBeginImpl(string[] features, bool isDebug, string path, int flags)
         {
+            _ = flags; // Unused
+
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return;
 
@@ -154,12 +157,10 @@ namespace GodotTools.Export
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
-            string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
-            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
-
+            string scriptsMetadataPath = BuildManager.GenerateExportedGameScriptMetadata(isDebug);
             AddFile(scriptsMetadataPath, scriptsMetadataPath);
 
-            if (!BuildManager.BuildProjectBlocking(buildConfig, platform))
+            if (!BuildManager.BuildProjectBlocking(buildConfig, platform: platform))
                 throw new Exception("Failed to build project");
 
             // Add dependency assemblies
@@ -340,7 +341,7 @@ namespace GodotTools.Export
         private static bool PlatformHasTemplateDir(string platform)
         {
             // OSX export templates are contained in a zip, so we place our custom template inside it and let Godot do the rest.
-            return !new[] {OS.Platforms.OSX, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
+            return !new[] {OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.HTML5}.Contains(platform);
         }
 
         private static bool DeterminePlatformFromFeatures(IEnumerable<string> features, out string platform)
@@ -411,7 +412,7 @@ namespace GodotTools.Export
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
                     return "net_4_x_win";
-                case OS.Platforms.OSX:
+                case OS.Platforms.MacOS:
                 case OS.Platforms.LinuxBSD:
                 case OS.Platforms.Server:
                 case OS.Platforms.Haiku:
@@ -430,7 +431,7 @@ namespace GodotTools.Export
         private static string DetermineDataDirNameForProject()
         {
             var appName = (string)ProjectSettings.GetSetting("application/config/name");
-            string appNameSafe = appName.ToSafeDirName(allowDirSeparator: false);
+            string appNameSafe = appName.ToSafeDirName();
             return $"data_{appNameSafe}";
         }
 

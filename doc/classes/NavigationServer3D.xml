@@ -7,6 +7,7 @@
 		NavigationServer3D is the server responsible for all 3D navigation. It creates the agents, maps, and regions for navigation to work as expected. This keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
+		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
 	</tutorials>
 	<methods>
 		<method name="agent_create" qualifiers="const">

@@ -17,8 +17,6 @@
 ## ======================================================================== ##
 
 import os
-import sys
-import argparse
 from array import array
 
 # Generates a C++ file from the specified binary resource file

@@ -24,11 +24,12 @@
 # Allen H. <w84miracle@gmail.com>, 2020.
 # BinotaLIU <binota@protonmail.ch>, 2020.
 # BinotaLIU <me@binota.org>, 2020.
+# MintSoda <lionlxh@qq.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-07-07 15:56+0000\n"
+"PO-Revision-Date: 2020-10-11 17:17+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -46,7 +47,7 @@ msgstr "convert() 函式收到了無效的引數，請使用 TYPE_* 常數。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "應為一個長度為 1（一個字元）的字串。"
+msgstr "應為一個長度 1（一個字元）的字串。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -60,7 +61,7 @@ msgstr "運算式中的輸入 %i 無效 （未傳遞）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "該實體爲 null，無法使用 self"
+msgstr "該實體為 null，無法使用 self"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -76,7 +77,7 @@ msgstr "命名索引「%s」對基礎型別 %s 無效"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "用了無效的引數來建構「%s」"
+msgstr "用了無效的引數來建置「%s」"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -539,6 +540,7 @@ msgid "Seconds"
 msgstr "秒"
 
 #: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
 msgstr "FPS"
 
@@ -717,7 +719,7 @@ msgstr "區分大小寫"
 msgid "Whole Words"
 msgstr "搜尋完整單詞"
 
-#: editor/code_editor.cpp editor/rename_dialog.cpp
+#: editor/code_editor.cpp
 msgid "Replace"
 msgstr "取代"
 
@@ -906,6 +908,10 @@ msgid "Signals"
 msgstr "訊號"
 
 #: editor/connections_dialog.cpp
+msgid "Filter signals"
+msgstr "篩選訊號"
+
+#: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "確定要刪除所有來自此訊號的連接嗎？"
 
@@ -943,7 +949,7 @@ msgid "Recent:"
 msgstr "最近存取："
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp editor/rename_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "搜尋："
@@ -1123,6 +1129,9 @@ msgstr "專案創始人"
 msgid "Lead Developer"
 msgstr "主要開發者"
 
+#. TRANSLATORS: This refers to a job title.
+#. The trailing space is used to distinguish with the project list application,
+#. you do not have to keep it in your translation.
 #: editor/editor_about.cpp
 msgid "Project Manager "
 msgstr "專案管理員 "
@@ -1142,6 +1151,14 @@ msgstr "白金贊助"
 #: editor/editor_about.cpp
 msgid "Gold Sponsors"
 msgstr "黃金贊助"
+
+#: editor/editor_about.cpp
+msgid "Silver Sponsors"
+msgstr "白銀贊助"
+
+#: editor/editor_about.cpp
+msgid "Bronze Sponsors"
+msgstr "青銅贊助"
 
 #: editor/editor_about.cpp
 msgid "Mini Sponsors"
@@ -1578,6 +1595,35 @@ msgstr ""
 "目標平台上的 GLES2 回退驅動器功能必須使用「ETC」紋理壓縮。\n"
 "請在專案設定中啟用「Import Etc」或是禁用「Driver Fallback Enabled」。"
 
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for GLES2. Enable "
+"'Import Pvrtc' in Project Settings."
+msgstr ""
+"目標平台上的 GLES2 必須使用「ETC」紋理壓縮。請在專案設定中啟用「Import "
+"Etc」。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
+"Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
+msgstr ""
+"目標平台上的 GLES3 必須使用「ETC2」紋理壓縮。請在專案設定中啟用「Import Etc "
+"2」。"
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'PVRTC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
+msgstr ""
+"目標平台上的 GLES2 回退驅動器功能必須使用「ETC」紋理壓縮。\n"
+"請在專案設定中啟用「Import Etc」或是禁用「Driver Fallback Enabled」。"
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1615,16 +1661,16 @@ msgid "Scene Tree Editing"
 msgstr "正在編輯場景樹"
 
 #: editor/editor_feature_profile.cpp
-msgid "Import Dock"
-msgstr "匯入 Dock"
-
-#: editor/editor_feature_profile.cpp
 msgid "Node Dock"
 msgstr "節點 Dock"
 
 #: editor/editor_feature_profile.cpp
-msgid "FileSystem and Import Docks"
-msgstr "檔案系統與匯入 Dock"
+msgid "FileSystem Dock"
+msgstr "檔案系統 Dock"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "匯入 Dock"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1886,7 +1932,7 @@ msgstr "資料夾與檔案："
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/rename_dialog.cpp
 msgid "Preview:"
 msgstr "預覽："
 
@@ -2707,7 +2753,7 @@ msgstr "匯出..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
-msgstr "安裝 Android 建構樣板..."
+msgstr "安裝 Android 建置樣板..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
@@ -2736,28 +2782,35 @@ msgstr "部署並啟用遠端偵錯"
 
 #: editor/editor_node.cpp
 msgid ""
-"When exporting or deploying, the resulting executable will attempt to "
-"connect to the IP of this computer in order to be debugged."
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"匯出或部署時，輸出的可執行檔將會嘗試連接到這台電腦的 IP 位置以進行除錯。"
+"當開啓該選項後，一鍵部署所產生的執行檔會嘗試連線至本電腦之 IP 位置以對執行中"
+"的專案進行除錯。\n"
+"該選項旨在進行遠端除錯（通常配合行動裝置使用）。\n"
+"若要使用本機 GDScript 除錯工具，則不許啟用該選項。"
 
 #: editor/editor_node.cpp
-msgid "Small Deploy with Network FS"
+msgid "Small Deploy with Network Filesystem"
 msgstr "使用網路檔案系統進行小型部署"
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is enabled, export or deploy will produce a minimal "
-"executable.\n"
+"When this option is enabled, using one-click deploy for Android will only "
+"export an executable without the project data.\n"
 "The filesystem will be provided from the project by the editor over the "
 "network.\n"
-"On Android, deploy will use the USB cable for faster performance. This "
-"option speeds up testing for games with a large footprint."
+"On Android, deploying will use the USB cable for faster performance. This "
+"option speeds up testing for projects with large assets."
 msgstr ""
-"啟用該選項後，匯出或部署是會產生最小可執行檔。\n"
-"專案之檔案系統將由本編輯器以網路提供。\n"
-"部署至 Android 平台需使用 USB 線以獲得更快速的效能。該選項對於大型遊戲能加速"
-"測試。"
+"啟用該選項後，一鍵部署至 Android 時的可執行檔將不會包含專案資料。\n"
+"專案之檔案系統將由本編輯器透過網路提供。\n"
+"部署至 Android 平台需使用 USB 線以獲得更快速的效能。該選項適用於有大型素材的"
+"專案，可加速測試。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
@@ -2765,9 +2818,9 @@ msgstr "顯示碰撞區域"
 
 #: editor/editor_node.cpp
 msgid ""
-"Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
-"running game if this option is turned on."
-msgstr "開啟選項後，執行遊戲時將可看見碰撞區域與（2D 或 3D 的）射線節點。"
+"When this option is enabled, collision shapes and raycast nodes (for 2D and "
+"3D) will be visible in the running project."
+msgstr "開啟該選項後，碰撞區域與射線節點（2D 與 3D）會在專案執行時可見。"
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
@@ -2775,36 +2828,36 @@ msgstr "顯示導航"
 
 #: editor/editor_node.cpp
 msgid ""
-"Navigation meshes and polygons will be visible on the running game if this "
-"option is turned on."
-msgstr "開啟該選項後，執行遊戲時將可看見導航網格 (mesh) 與多邊形。"
+"When this option is enabled, navigation meshes and polygons will be visible "
+"in the running project."
+msgstr "開啟該選項後，導航網格與多邊形將在專案執行時可見。"
 
 #: editor/editor_node.cpp
-msgid "Sync Scene Changes"
-msgstr "同步場景改動"
+msgid "Synchronize Scene Changes"
+msgstr "同步常見更改"
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is turned on, any changes made to the scene in the editor "
-"will be replicated in the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any changes made to the scene in the editor "
+"will be replicated in the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
 "開啟該選項後，編輯器中對該場景的所有改動都將被套用至執行中的遊戲。\n"
 "若在遠端裝置上使用，可使用網路檔案系統 NFS 以獲得最佳效能。"
 
 #: editor/editor_node.cpp
-msgid "Sync Script Changes"
-msgstr "同步腳本改動"
+msgid "Synchronize Script Changes"
+msgstr "同步腳本更改"
 
 #: editor/editor_node.cpp
 msgid ""
-"When this option is turned on, any script that is saved will be reloaded on "
-"the running game.\n"
-"When used remotely on a device, this is more efficient with network "
-"filesystem."
+"When this option is enabled, any script that is saved will be reloaded in "
+"the running project.\n"
+"When used remotely on a device, this is more efficient when the network "
+"filesystem option is enabled."
 msgstr ""
-"開啟該選項後，保存之腳本都將於執行中的遊戲重新載入。\n"
+"開啟該選項後，保存腳本時會於執行中的遊戲內重新載入腳本。\n"
 "若在遠端裝置上使用，可使用網路檔案系統 NFS 以獲得最佳效能。"
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
@@ -2859,12 +2912,11 @@ msgstr "管理匯出樣板..."
 msgid "Help"
 msgstr "說明"
 
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
-#: editor/project_settings_editor.cpp editor/rename_dialog.cpp
+#: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "Search"
 msgstr "搜尋"
 
@@ -2976,7 +3028,7 @@ msgstr "不保存"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr "缺少 Android 建構樣板，請先安裝對應的樣板。"
+msgstr "缺少 Android 建置樣板，請先安裝對應的樣板。"
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
@@ -2992,11 +3044,11 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"將於「res://android/build」安裝原始樣板以為該項目設定自定 Android 建構樣"
+"將於「res://android/build」安裝原始樣板以為該項目設定自定 Android 建置樣"
 "板。\n"
-"輸出時可套用修改並建構自定 APK（如新增模組、修改 AndroidManifest.xml …"
+"輸出時可套用修改並建置自定 APK（如新增模組、修改 AndroidManifest.xml …"
 "等）。\n"
-"請注意，若要使用自定建構而非使用預先建構之 APK，請啟用 Android 匯出預設設定中"
+"請注意，若要使用自定建置而非使用預先建置之 APK，請啟用 Android 匯出預設設定中"
 "的 [Use Custom Build] 選項。"
 
 #: editor/editor_node.cpp
@@ -3006,7 +3058,7 @@ msgid ""
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
-"該專案中已安裝 Android 建構樣板，將不會覆蓋。\n"
+"該專案中已安裝 Android 建置樣板，將不會覆蓋。\n"
 "若要再次執行此操作，請先手動移除「res://android/build」目錄。"
 
 #: editor/editor_node.cpp
@@ -3276,10 +3328,11 @@ msgstr "新增索引鍵／值組"
 #: editor/editor_run_native.cpp
 msgid ""
 "No runnable export preset found for this platform.\n"
-"Please add a runnable preset in the export menu."
+"Please add a runnable preset in the Export menu or define an existing preset "
+"as runnable."
 msgstr ""
-"該平台沒有可執行的匯出預設設定。\n"
-"請在匯出選單中新增一個可執行的預設設定。"
+"為找到可執行於該平台的匯出預設設定。\n"
+"請在 [匯出] 選單中新增一個可執行的預設設定，會將現有的預設設定設為可執行。"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -3344,7 +3397,7 @@ msgstr "下載"
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
-msgstr "開發建構 (Development Build) 下無法使用官方匯出樣板。"
+msgstr "開發建置 (Development Build) 下無法使用官方匯出樣板。"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3496,7 +3549,7 @@ msgstr "SSL 交握錯誤"
 
 #: editor/export_template_manager.cpp
 msgid "Uncompressing Android Build Sources"
-msgstr "正在解壓縮 Android 建構來源"
+msgstr "正在解壓縮 Android 建置來源"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -4263,7 +4316,6 @@ msgid "Add Node to BlendTree"
 msgstr "新增節點至混合樹"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Node Moved"
 msgstr "已移動節點"
 
@@ -5018,7 +5070,7 @@ msgid "Bake Lightmaps"
 msgstr "建立光照圖"
 
 #: editor/plugins/camera_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Preview"
 msgstr "預覽"
 
@@ -5083,27 +5135,50 @@ msgid "Create Horizontal and Vertical Guides"
 msgstr "建立水平與垂直參考線"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move pivot"
-msgstr "移動軸心"
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Rotate CanvasItem"
+#, fuzzy
+msgid "Rotate %d CanvasItems"
 msgstr "旋轉 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move anchor"
-msgstr "移動錨點"
+#, fuzzy
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "旋轉 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Resize CanvasItem"
-msgstr "調整 CanvasItem 大小"
+#, fuzzy
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "移動 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Scale CanvasItem"
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale %d CanvasItems"
 msgstr "縮放 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move CanvasItem"
+#, fuzzy
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "縮放 CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move %d CanvasItems"
+msgstr "移動 CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "移動 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6367,12 +6442,22 @@ msgid "Move Points"
 msgstr "移動點"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Ctrl: Rotate"
-msgstr "Ctrl：旋轉"
+#, fuzzy
+msgid "Command: Rotate"
+msgstr "拖移：旋轉"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift：移動全部"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Shift+Command: Scale"
+msgstr "Shift+Ctrl：縮放"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Ctrl: Rotate"
+msgstr "Ctrl：旋轉"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift+Ctrl: Scale"
@@ -6413,12 +6498,14 @@ msgid "Radius:"
 msgstr "半徑："
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Polygon->UV"
-msgstr "多邊形 -> UV"
+#, fuzzy
+msgid "Copy Polygon to UV"
+msgstr "建立多邊形與 UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UV->Polygon"
-msgstr "UV -> 多邊形"
+#, fuzzy
+msgid "Copy UV to Polygon"
+msgstr "轉換為 Polygon2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -6861,17 +6948,17 @@ msgstr "高亮顯示語法"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-msgid "Go To"
-msgstr "跳至"
-
-#: editor/plugins/script_text_editor.cpp
-#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "書籤"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Breakpoints"
 msgstr "中斷點"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Go To"
+msgstr "跳至"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7238,7 +7325,7 @@ msgstr "效果預覽"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Not available when using the GLES2 renderer."
-msgstr "使用 GLES2 轉譯器時無法使用。"
+msgstr "使用 GLES2 算繪引擎時無法使用。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -7639,8 +7726,8 @@ msgid "New Animation"
 msgstr "新增動畫"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Speed (FPS):"
-msgstr "速度 (FPS):"
+msgid "Speed:"
+msgstr "速度："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Loop"
@@ -7956,6 +8043,15 @@ msgstr "為圖塊地圖設定圖塊集資源以使用其圖塊。"
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "繪製圖塊"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Shift+LMB: Line Draw\n"
+"Shift+Command+LMB: Rectangle Paint"
+msgstr ""
+"Shift+左鍵：直線繪製\n"
+"Shift+Ctrl+左鍵：矩形繪圖"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8477,6 +8573,11 @@ msgid "Add Node to Visual Shader"
 msgstr "將節點新增至視覺著色器"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node(s) Moved"
+msgstr "已移動節點"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "重複節點"
 
@@ -8492,6 +8593,11 @@ msgstr "刪除節點"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
 msgstr "已修改視覺著色器輸入類型"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "UniformRef Name Changed"
+msgstr "設定均勻名稱"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9181,6 +9287,10 @@ msgstr ""
 "裡面，並於稍後在表示式中呼叫。也可以聲明 Varying、Uniform 與常數。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "A reference to an existing uniform."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "（限片段／光照模式）純量導函數。"
 
@@ -9239,18 +9349,6 @@ msgstr "已修改視覺著色器模式"
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "可執行"
-
-#: editor/project_export.cpp
-msgid "Add initial export..."
-msgstr "新增初始匯出..."
-
-#: editor/project_export.cpp
-msgid "Add previous patches..."
-msgstr "新增上回修正檔..."
-
-#: editor/project_export.cpp
-msgid "Delete patch '%s' from list?"
-msgstr "是否要自列表中刪除「%s」修正檔？"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -9348,18 +9446,6 @@ msgid ""
 msgstr ""
 "進行篩選以在專案內排除檔案／資料夾\n"
 "（以半形逗號區分，如： *.json, *.txt, docs/*）"
-
-#: editor/project_export.cpp
-msgid "Patches"
-msgstr "修正檔"
-
-#: editor/project_export.cpp
-msgid "Make Patch"
-msgstr "製作修正檔"
-
-#: editor/project_export.cpp
-msgid "Pack File"
-msgstr "打包檔案"
 
 #: editor/project_export.cpp
 msgid "Features"
@@ -9546,7 +9632,7 @@ msgstr "專案安裝路徑："
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr "轉譯器："
+msgstr "算繪引擎："
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
@@ -9582,7 +9668,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
-msgstr "稍後仍可更改轉譯器，但可能需要對場景進行調整。"
+msgstr "稍後仍可更改算繪引擎，但可能需要對場景進行調整。"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -9709,6 +9795,7 @@ msgstr ""
 "確定要掃描 %s 中的 Godot 專案嗎？\n"
 "這可能需要一段時間。"
 
+#. TRANSLATORS: This refers to the application where users manage their Godot projects.
 #: editor/project_manager.cpp
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -10143,12 +10230,16 @@ msgid "Batch Rename"
 msgstr "批次重新命名"
 
 #: editor/rename_dialog.cpp
-msgid "Prefix"
-msgstr "前置"
+msgid "Replace:"
+msgstr "取代："
 
 #: editor/rename_dialog.cpp
-msgid "Suffix"
-msgstr "後置"
+msgid "Prefix:"
+msgstr "前置："
+
+#: editor/rename_dialog.cpp
+msgid "Suffix:"
+msgstr "後置："
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10195,8 +10286,8 @@ msgid "Per-level Counter"
 msgstr "各級別分別計數器"
 
 #: editor/rename_dialog.cpp
-msgid "If set the counter restarts for each group of child nodes"
-msgstr "若啟用則計數器將依據每組子節點重新啟動"
+msgid "If set, the counter restarts for each group of child nodes."
+msgstr "若啟用則計數器將依據每組子節點重新啟動。"
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10255,8 +10346,8 @@ msgid "Reset"
 msgstr "重設"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expression Error"
-msgstr "正規表示式錯誤"
+msgid "Regular Expression Error:"
+msgstr "正規表示式錯誤："
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -10361,7 +10452,6 @@ msgid "Make node as Root"
 msgstr "將節點設為根節點"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Delete %d nodes and any children?"
 msgstr "確定要刪除節點「%s」與其子節點嗎？"
 
@@ -10495,7 +10585,7 @@ msgid ""
 "disabled."
 msgstr ""
 "無法附加腳本：未註冊任何語言。\n"
-"可能是由於編輯器在建構時未啟用任何語言模組。"
+"可能是由於編輯器在建置時未啟用任何語言模組。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -11279,7 +11369,7 @@ msgstr "正在標記可移動的三角形..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr "正在建構緊湊 Heightfield..."
+msgstr "正在建置緊湊 Heightfield..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
@@ -11760,7 +11850,7 @@ msgstr "發行金鑰儲存區中不正確之組態設定至匯出預設設定。
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
-msgstr "自定建構需要有在編輯器設定中設定一個有效的 Android SDK 位置。"
+msgstr "自定建置需要有在編輯器設定中設定一個有效的 Android SDK 位置。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
@@ -11770,7 +11860,7 @@ msgstr "編輯器設定中用於自定義設定之 Android SDK 路徑無效。"
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
-msgstr "尚未於專案中安裝 Android 建構樣板。請先於專案目錄中進行安裝。"
+msgstr "尚未於專案中安裝 Android 建置樣板。請先於專案目錄中進行安裝。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -11790,7 +11880,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "「使用自定建構」必須啟用以使用本外掛。"
+msgstr "「使用自定建置」必須啟用以使用本外掛。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11815,11 +11905,27 @@ msgstr ""
 "Mobile VR」時可用。"
 
 #: platform/android/export/export.cpp
+msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android App Bundle requires the *.aab extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "APK Expansion not compatible with Android App Bundle."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid filename! Android APK requires the *.apk extension."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
-"嘗試自自定建構樣板進行建構，但無版本資訊可用。請自「專案」選單中重新安裝。"
+"嘗試自自定建置樣板進行建置，但無版本資訊可用。請自「專案」選單中重新安裝。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11828,26 +11934,32 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Android 建構版本不符合：\n"
+"Android 建置版本不符合：\n"
 "   已安裝的樣板：%s\n"
 "   Godot 版本：%s\n"
-"請自「專案」目錄中重新安裝 Android 建構樣板。"
+"請自「專案」目錄中重新安裝 Android 建置樣板。"
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
-msgstr "建構 Android 專案（Gradle）"
+msgstr "建置 Android 專案（Gradle）"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"建構 Android 專案失敗，請檢查輸出以確認錯誤。\n"
-"也可以瀏覽 docs.godotengine.org 以瀏覽 Android 建構說明文件。"
+"建置 Android 專案失敗，請檢查輸出以確認錯誤。\n"
+"也可以瀏覽 docs.godotengine.org 以瀏覽 Android 建置說明文件。"
 
 #: platform/android/export/export.cpp
-msgid "No build apk generated at: "
-msgstr "無建構 APK 產生於： "
+msgid "Moving output"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid ""
+"Unable to copy and rename export file, check gradle project directory for "
+"outputs."
+msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12017,6 +12129,8 @@ msgid ""
 "Polygon-based shapes are not meant be used nor edited directly through the "
 "CollisionShape2D node. Please use the CollisionPolygon2D node instead."
 msgstr ""
+"基於多邊形的形狀不應該被 CollisionShape2D 節點直接使用或編輯。請使用 "
+"CollisionPolygon2D 節點。"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12255,6 +12369,11 @@ msgid ""
 msgstr ""
 "GLES2 視訊驅動程式不支援 GIProbs。\n"
 "請改為使用 BakedLightmap。"
+
+#: scene/3d/interpolated_camera.cpp
+msgid ""
+"InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
+msgstr "InterpolatedCamera 已停止維護，且將於 Godot 4.0 中移除。"
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12544,6 +12663,51 @@ msgstr "Varying 變數只可在頂點函式中指派。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+#~ msgid "Move pivot"
+#~ msgstr "移動軸心"
+
+#~ msgid "Move anchor"
+#~ msgstr "移動錨點"
+
+#~ msgid "Resize CanvasItem"
+#~ msgstr "調整 CanvasItem 大小"
+
+#~ msgid "Polygon->UV"
+#~ msgstr "多邊形 -> UV"
+
+#~ msgid "UV->Polygon"
+#~ msgstr "UV -> 多邊形"
+
+#~ msgid "Add initial export..."
+#~ msgstr "新增初始匯出..."
+
+#~ msgid "Add previous patches..."
+#~ msgstr "新增上回修正檔..."
+
+#~ msgid "Delete patch '%s' from list?"
+#~ msgstr "是否要自列表中刪除「%s」修正檔？"
+
+#~ msgid "Patches"
+#~ msgstr "修正檔"
+
+#~ msgid "Make Patch"
+#~ msgstr "製作修正檔"
+
+#~ msgid "Pack File"
+#~ msgstr "打包檔案"
+
+#~ msgid "No build apk generated at: "
+#~ msgstr "無建置 APK 產生於： "
+
+#~ msgid "FileSystem and Import Docks"
+#~ msgstr "檔案系統與匯入 Dock"
+
+#~ msgid ""
+#~ "When exporting or deploying, the resulting executable will attempt to "
+#~ "connect to the IP of this computer in order to be debugged."
+#~ msgstr ""
+#~ "匯出或部署時，輸出的可執行檔將會嘗試連接到這台電腦的 IP 位置以進行除錯。"
 
 #~ msgid "Current scene was never saved, please save it prior to running."
 #~ msgstr "目前的場景從未被保存，請先保存以執行。"

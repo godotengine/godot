@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_MAIN_LOOP_H
-#define SCENE_MAIN_LOOP_H
+#ifndef SCENE_TREE_H
+#define SCENE_TREE_H
 
 #include "core/io/multiplayer_api.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
-#include "core/self_list.h"
+#include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/world_2d.h"
 #include "scene/resources/world_3d.h"
@@ -354,4 +354,4 @@ public:
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
 
-#endif
+#endif // SCENE_TREE_H

@@ -119,7 +119,7 @@ public:
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
 	virtual Vector<String> get_functions() override;
-	virtual void get_breakpoints(List<int> *p_breakpoints) override;
+	virtual Array get_breakpoints() override;
 	virtual void goto_line(int p_line, bool p_with_error = false) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line) override;

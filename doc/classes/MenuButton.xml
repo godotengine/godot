@@ -6,6 +6,7 @@
 	<description>
 		Special button that brings up a [PopupMenu] when clicked.
 		New items can be created inside this [PopupMenu] using [code]get_popup().add_item("My Item Name")[/code]. You can also create them directly from the editor. To do so, select the [MenuButton] node, then in the toolbar at the top of the 2D editor, click [b]Items[/b] then click [b]Add[/b] in the popup. You will be able to give each items new properties.
+		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -29,9 +30,7 @@
 	</methods>
 	<members>
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" override="true" enum="BaseButton.ActionMode" default="0" />
-		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" override="true" enum="Control.FocusMode" default="0" />
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" override="true" default="true" />
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="0" />
 		<member name="switch_on_hover" type="bool" setter="set_switch_on_hover" getter="is_switch_on_hover" default="false">
 			If [code]true[/code], when the cursor hovers above another [MenuButton] within the same parent which also has [code]switch_on_hover[/code] enabled, it will close the current [MenuButton] and open the other one.
 		</member>

@@ -52,6 +52,9 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
 #ifdef VK_USE_PLATFORM_XLIB_KHR
     ptr_instance->wsi_xlib_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+    ptr_instance->wsi_directfb_surface_enabled = false;
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
     ptr_instance->wsi_android_surface_enabled = false;
 #endif  // VK_USE_PLATFORM_ANDROID_KHR
@@ -96,6 +99,12 @@ void wsi_create_instance(struct loader_instance *ptr_instance, const VkInstanceC
             continue;
         }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+        if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME) == 0) {
+            ptr_instance->wsi_directfb_surface_enabled = true;
+            continue;
+        }
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_KHR_ANDROID_SURFACE_EXTENSION_NAME) == 0) {
             ptr_instance->wsi_android_surface_enabled = true;
@@ -154,6 +163,9 @@ bool wsi_unsupported_instance_extension(const VkExtensionProperties *ext_prop) {
 #ifndef VK_USE_PLATFORM_XLIB_KHR
     if (!strcmp(ext_prop->extensionName, "VK_KHR_xlib_surface")) return true;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifndef VK_USE_PLATFORM_DIRECTFB_EXT
+    if (!strcmp(ext_prop->extensionName, "VK_EXT_directfb_surface")) return true;
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 
     return false;
 }
@@ -941,6 +953,124 @@ VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceXlibPresentationSuppo
     return icd_term->dispatch.GetPhysicalDeviceXlibPresentationSupportKHR(phys_dev_term->phys_dev, queueFamilyIndex, dpy, visualID);
 }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+
+// Functions for the VK_EXT_directfb_surface extension:
+
+// This is the trampoline entrypoint for CreateDirectFBSurfaceEXT
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateDirectFBSurfaceEXT(VkInstance instance,
+                                                                        const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo,
+                                                                        const VkAllocationCallbacks *pAllocator,
+                                                                        VkSurfaceKHR *pSurface) {
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(instance);
+    VkResult res;
+
+    res = disp->CreateDirectFBSurfaceEXT(instance, pCreateInfo, pAllocator, pSurface);
+    return res;
+}
+
+// This is the instance chain terminator function for CreateDirectFBSurfaceEXT
+VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateDirectFBSurfaceEXT(VkInstance instance,
+                                                                   const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo,
+                                                                   const VkAllocationCallbacks *pAllocator,
+                                                                   VkSurfaceKHR *pSurface) {
+    VkResult vkRes = VK_SUCCESS;
+    VkIcdSurface *pIcdSurface = NULL;
+    uint32_t i = 0;
+
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_instance *ptr_instance = loader_get_instance(instance);
+    if (!ptr_instance->wsi_directfb_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_EXT_directfb_surface extension not enabled.  vkCreateDirectFBSurfaceEXT not executed!\n");
+        vkRes = VK_ERROR_EXTENSION_NOT_PRESENT;
+        goto out;
+    }
+
+    // Next, if so, proceed with the implementation of this function:
+    pIcdSurface =
+        AllocateIcdSurfaceStruct(ptr_instance, sizeof(pIcdSurface->directfb_surf.base), sizeof(pIcdSurface->directfb_surf));
+    if (pIcdSurface == NULL) {
+        vkRes = VK_ERROR_OUT_OF_HOST_MEMORY;
+        goto out;
+    }
+
+    pIcdSurface->directfb_surf.base.platform = VK_ICD_WSI_PLATFORM_DIRECTFB;
+    pIcdSurface->directfb_surf.dfb = pCreateInfo->dfb;
+    pIcdSurface->directfb_surf.surface = pCreateInfo->surface;
+
+    // Loop through each ICD and determine if they need to create a surface
+    for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+        if (icd_term->scanned_icd->interface_version >= ICD_VER_SUPPORTS_ICD_SURFACE_KHR) {
+            if (NULL != icd_term->dispatch.CreateDirectFBSurfaceEXT) {
+                vkRes = icd_term->dispatch.CreateDirectFBSurfaceEXT(icd_term->instance, pCreateInfo, pAllocator,
+                                                                    &pIcdSurface->real_icd_surfaces[i]);
+                if (VK_SUCCESS != vkRes) {
+                    goto out;
+                }
+            }
+        }
+    }
+
+    *pSurface = (VkSurfaceKHR)pIcdSurface;
+
+out:
+
+    if (VK_SUCCESS != vkRes && NULL != pIcdSurface) {
+        if (NULL != pIcdSurface->real_icd_surfaces) {
+            i = 0;
+            for (struct loader_icd_term *icd_term = ptr_instance->icd_terms; icd_term != NULL; icd_term = icd_term->next, i++) {
+                if ((VkSurfaceKHR)NULL != pIcdSurface->real_icd_surfaces[i] && NULL != icd_term->dispatch.DestroySurfaceKHR) {
+                    icd_term->dispatch.DestroySurfaceKHR(icd_term->instance, pIcdSurface->real_icd_surfaces[i], pAllocator);
+                }
+            }
+            loader_instance_heap_free(ptr_instance, pIcdSurface->real_icd_surfaces);
+        }
+        loader_instance_heap_free(ptr_instance, pIcdSurface);
+    }
+
+    return vkRes;
+}
+
+// This is the trampoline entrypoint for
+// GetPhysicalDeviceDirectFBPresentationSupportEXT
+LOADER_EXPORT VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice,
+                                                                                               uint32_t queueFamilyIndex,
+                                                                                               IDirectFB *dfb) {
+    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
+    const VkLayerInstanceDispatchTable *disp;
+    disp = loader_get_instance_layer_dispatch(physicalDevice);
+    VkBool32 res = disp->GetPhysicalDeviceDirectFBPresentationSupportEXT(unwrapped_phys_dev, queueFamilyIndex, dfb);
+    return res;
+}
+
+// This is the instance chain terminator function for
+// GetPhysicalDeviceDirectFBPresentationSupportEXT
+VKAPI_ATTR VkBool32 VKAPI_CALL terminator_GetPhysicalDeviceDirectFBPresentationSupportEXT(VkPhysicalDevice physicalDevice,
+                                                                                          uint32_t queueFamilyIndex,
+                                                                                          IDirectFB *dfb) {
+    // First, check to ensure the appropriate extension was enabled:
+    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
+    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
+    struct loader_instance *ptr_instance = (struct loader_instance *)icd_term->this_instance;
+    if (!ptr_instance->wsi_directfb_surface_enabled) {
+        loader_log(
+            ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+            "VK_EXT_directfb_surface extension not enabled.  vkGetPhysicalDeviceWaylandPresentationSupportKHR not executed!\n");
+        return VK_SUCCESS;
+    }
+
+    if (NULL == icd_term->dispatch.GetPhysicalDeviceDirectFBPresentationSupportEXT) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "ICD for selected physical device is not exporting vkGetPhysicalDeviceDirectFBPresentationSupportEXT!\n");
+        assert(false && "loader: null GetPhysicalDeviceDirectFBPresentationSupportEXT ICD pointer");
+    }
+
+    return icd_term->dispatch.GetPhysicalDeviceDirectFBPresentationSupportEXT(phys_dev_term->phys_dev, queueFamilyIndex, dfb);
+}
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 
@@ -1806,6 +1936,164 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetDisplayPlaneCapabilities2KHR(VkPhys
                                                              pDisplayPlaneInfo->planeIndex, &pCapabilities->capabilities);
 }
 
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
+vkGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                           VkSurfaceCapabilities2KHR *pSurfaceCapabilities) {
+    const VkLayerInstanceDispatchTable *disp;
+    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
+    disp = loader_get_instance_layer_dispatch(physicalDevice);
+    return disp->GetPhysicalDeviceSurfaceCapabilities2KHR(unwrapped_phys_dev, pSurfaceInfo, pSurfaceCapabilities);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceCapabilities2KHR(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+    VkSurfaceCapabilities2KHR *pSurfaceCapabilities) {
+    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
+    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
+    struct loader_instance *ptr_instance = (struct loader_instance *)icd_term->this_instance;
+
+    if (!ptr_instance->wsi_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_KHR_surface extension not enabled. vkGetPhysicalDeviceSurfaceCapabilities2KHR not executed!\n");
+        return VK_SUCCESS;
+    }
+
+    VkIcdSurface *icd_surface = (VkIcdSurface *)(pSurfaceInfo->surface);
+    uint8_t icd_index = phys_dev_term->icd_index;
+
+    if (icd_term->dispatch.GetPhysicalDeviceSurfaceCapabilities2KHR != NULL) {
+        VkBaseOutStructure *pNext = (VkBaseOutStructure *)pSurfaceCapabilities->pNext;
+        while (pNext != NULL) {
+            if ((int)pNext->sType == VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR) {
+                // Not all ICDs may be supporting VK_KHR_surface_protected_capabilities
+                // Initialize VkSurfaceProtectedCapabilitiesKHR.supportsProtected to false and
+                // if an ICD supports protected surfaces, it will reset it to true accordingly.
+                ((VkSurfaceProtectedCapabilitiesKHR *)pNext)->supportsProtected = VK_FALSE;
+            }
+            pNext = (VkBaseOutStructure *)pNext->pNext;
+        }
+
+        // Pass the call to the driver, possibly unwrapping the ICD surface
+        if (icd_surface->real_icd_surfaces != NULL && (void *)icd_surface->real_icd_surfaces[icd_index] != NULL) {
+            VkPhysicalDeviceSurfaceInfo2KHR info_copy = *pSurfaceInfo;
+            info_copy.surface = icd_surface->real_icd_surfaces[icd_index];
+            return icd_term->dispatch.GetPhysicalDeviceSurfaceCapabilities2KHR(phys_dev_term->phys_dev, &info_copy,
+                                                                               pSurfaceCapabilities);
+        } else {
+            return icd_term->dispatch.GetPhysicalDeviceSurfaceCapabilities2KHR(phys_dev_term->phys_dev, pSurfaceInfo,
+                                                                               pSurfaceCapabilities);
+        }
+    } else {
+        // Emulate the call
+        loader_log(icd_term->this_instance, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0,
+                   "vkGetPhysicalDeviceSurfaceCapabilities2KHR: Emulating call in ICD \"%s\" using "
+                   "vkGetPhysicalDeviceSurfaceCapabilitiesKHR",
+                   icd_term->scanned_icd->lib_name);
+
+        if (pSurfaceInfo->pNext != NULL) {
+            loader_log(icd_term->this_instance, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                       "vkGetPhysicalDeviceSurfaceCapabilities2KHR: Emulation found unrecognized structure type in "
+                       "pSurfaceInfo->pNext - this struct will be ignored");
+        }
+
+        // Write to the VkSurfaceCapabilities2KHR struct
+        VkSurfaceKHR surface = pSurfaceInfo->surface;
+        if (icd_surface->real_icd_surfaces != NULL && (void *)icd_surface->real_icd_surfaces[icd_index] != NULL) {
+            surface = icd_surface->real_icd_surfaces[icd_index];
+        }
+        VkResult res = icd_term->dispatch.GetPhysicalDeviceSurfaceCapabilitiesKHR(phys_dev_term->phys_dev, surface,
+                                                                                  &pSurfaceCapabilities->surfaceCapabilities);
+
+        if (pSurfaceCapabilities->pNext != NULL) {
+            loader_log(icd_term->this_instance, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                       "vkGetPhysicalDeviceSurfaceCapabilities2KHR: Emulation found unrecognized structure type in "
+                       "pSurfaceCapabilities->pNext - this struct will be ignored");
+        }
+        return res;
+    }
+}
+
+LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL
+vkGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                      uint32_t *pSurfaceFormatCount, VkSurfaceFormat2KHR *pSurfaceFormats) {
+    const VkLayerInstanceDispatchTable *disp;
+    VkPhysicalDevice unwrapped_phys_dev = loader_unwrap_physical_device(physicalDevice);
+    disp = loader_get_instance_layer_dispatch(physicalDevice);
+    return disp->GetPhysicalDeviceSurfaceFormats2KHR(unwrapped_phys_dev, pSurfaceInfo, pSurfaceFormatCount, pSurfaceFormats);
+}
+
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
+                                                                              const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                                                              uint32_t *pSurfaceFormatCount,
+                                                                              VkSurfaceFormat2KHR *pSurfaceFormats) {
+    struct loader_physical_device_term *phys_dev_term = (struct loader_physical_device_term *)physicalDevice;
+    struct loader_icd_term *icd_term = phys_dev_term->this_icd_term;
+    struct loader_instance *ptr_instance = (struct loader_instance *)icd_term->this_instance;
+
+    if (!ptr_instance->wsi_surface_enabled) {
+        loader_log(ptr_instance, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                   "VK_KHR_surface extension not enabled. vkGetPhysicalDeviceSurfaceFormats2KHR not executed!\n");
+        return VK_SUCCESS;
+    }
+
+    VkIcdSurface *icd_surface = (VkIcdSurface *)(pSurfaceInfo->surface);
+    uint8_t icd_index = phys_dev_term->icd_index;
+
+    if (icd_term->dispatch.GetPhysicalDeviceSurfaceFormats2KHR != NULL) {
+        // Pass the call to the driver, possibly unwrapping the ICD surface
+        if (icd_surface->real_icd_surfaces != NULL && (void *)icd_surface->real_icd_surfaces[icd_index] != NULL) {
+            VkPhysicalDeviceSurfaceInfo2KHR info_copy = *pSurfaceInfo;
+            info_copy.surface = icd_surface->real_icd_surfaces[icd_index];
+            return icd_term->dispatch.GetPhysicalDeviceSurfaceFormats2KHR(phys_dev_term->phys_dev, &info_copy, pSurfaceFormatCount,
+                                                                          pSurfaceFormats);
+        } else {
+            return icd_term->dispatch.GetPhysicalDeviceSurfaceFormats2KHR(phys_dev_term->phys_dev, pSurfaceInfo,
+                                                                          pSurfaceFormatCount, pSurfaceFormats);
+        }
+    } else {
+        // Emulate the call
+        loader_log(icd_term->this_instance, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0,
+                   "vkGetPhysicalDeviceSurfaceFormats2KHR: Emulating call in ICD \"%s\" using vkGetPhysicalDeviceSurfaceFormatsKHR",
+                   icd_term->scanned_icd->lib_name);
+
+        if (pSurfaceInfo->pNext != NULL) {
+            loader_log(icd_term->this_instance, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                       "vkGetPhysicalDeviceSurfaceFormats2KHR: Emulation found unrecognized structure type in pSurfaceInfo->pNext "
+                       "- this struct will be ignored");
+        }
+
+        VkSurfaceKHR surface = pSurfaceInfo->surface;
+        if (icd_surface->real_icd_surfaces != NULL && (void *)icd_surface->real_icd_surfaces[icd_index] != NULL) {
+            surface = icd_surface->real_icd_surfaces[icd_index];
+        }
+
+        if (*pSurfaceFormatCount == 0 || pSurfaceFormats == NULL) {
+            // Write to pSurfaceFormatCount
+            return icd_term->dispatch.GetPhysicalDeviceSurfaceFormatsKHR(phys_dev_term->phys_dev, surface, pSurfaceFormatCount,
+                                                                         NULL);
+        } else {
+            // Allocate a temporary array for the output of the old function
+            VkSurfaceFormatKHR *formats = loader_stack_alloc(*pSurfaceFormatCount * sizeof(VkSurfaceFormatKHR));
+            if (formats == NULL) {
+                return VK_ERROR_OUT_OF_HOST_MEMORY;
+            }
+
+            VkResult res = icd_term->dispatch.GetPhysicalDeviceSurfaceFormatsKHR(phys_dev_term->phys_dev, surface,
+                                                                                 pSurfaceFormatCount, formats);
+            for (uint32_t i = 0; i < *pSurfaceFormatCount; ++i) {
+                pSurfaceFormats[i].surfaceFormat = formats[i];
+                if (pSurfaceFormats[i].pNext != NULL) {
+                    loader_log(icd_term->this_instance, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                               "vkGetPhysicalDeviceSurfaceFormats2KHR: Emulation found unrecognized structure type in "
+                               "pSurfaceFormats[%d].pNext - this struct will be ignored",
+                               i);
+                }
+            }
+            return res;
+        }
+    }
+}
+
 bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char *name, void **addr) {
     *addr = NULL;
 
@@ -1843,6 +2131,17 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
 
     if (!strcmp("vkGetPhysicalDevicePresentRectanglesKHR", name)) {
         *addr = ptr_instance->wsi_surface_enabled ? (void *)vkGetPhysicalDevicePresentRectanglesKHR : NULL;
+        return true;
+    }
+
+    // Functions for VK_KHR_get_surface_capabilities2 extension:
+    if (!strcmp("vkGetPhysicalDeviceSurfaceCapabilities2KHR", name)) {
+        *addr = ptr_instance->wsi_surface_enabled ? (void *)vkGetPhysicalDeviceSurfaceCapabilities2KHR : NULL;
+        return true;
+    }
+
+    if (!strcmp("vkGetPhysicalDeviceSurfaceFormats2KHR", name)) {
+        *addr = ptr_instance->wsi_surface_enabled ? (void *)vkGetPhysicalDeviceSurfaceFormats2KHR : NULL;
         return true;
     }
 
@@ -1925,6 +2224,18 @@ bool wsi_swapchain_instance_gpa(struct loader_instance *ptr_instance, const char
         return true;
     }
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+#ifdef VK_USE_PLATFORM_DIRECTFB_EXT
+
+    // Functions for the VK_EXT_directfb_surface extension:
+    if (!strcmp("vkCreateDirectFBSurfaceEXT", name)) {
+        *addr = ptr_instance->wsi_directfb_surface_enabled ? (void *)vkCreateDirectFBSurfaceEXT : NULL;
+        return true;
+    }
+    if (!strcmp("vkGetPhysicalDeviceDirectFBPresentationSupportEXT", name)) {
+        *addr = ptr_instance->wsi_directfb_surface_enabled ? (void *)vkGetPhysicalDeviceDirectFBPresentationSupportEXT : NULL;
+        return true;
+    }
+#endif  // VK_USE_PLATFORM_DIRECTFB_EXT
 #ifdef VK_USE_PLATFORM_ANDROID_KHR
 
     // Functions for the VK_KHR_android_surface extension:

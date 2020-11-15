@@ -30,12 +30,12 @@
 
 #ifdef MONO_GLUE_ENABLED
 
-#include "core/array.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/ustring.h"
-#include "core/variant.h"
-#include "core/variant_parser.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_parser.h"
 
 #include "../mono_gd/gd_mono_cache.h"
 #include "../mono_gd/gd_mono_marshal.h"
@@ -55,7 +55,8 @@ MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type) {
 	Variant what = GDMonoMarshal::mono_object_to_variant(p_what);
 	const Variant *args[1] = { &what };
 	Callable::CallError ce;
-	Variant ret = Variant::construct(Variant::Type(p_type), args, 1, ce);
+	Variant ret;
+	Variant::construct(Variant::Type(p_type), ret, args, 1, ce);
 	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
@@ -193,7 +194,11 @@ void godot_icall_GD_randomize() {
 	Math::randomize();
 }
 
-double godot_icall_GD_rand_range(double from, double to) {
+double godot_icall_GD_randf_range(double from, double to) {
+	return Math::random(from, to);
+}
+
+int32_t godot_icall_GD_randi_range(int32_t from, int32_t to) {
 	return Math::random(from, to);
 }
 
@@ -298,7 +303,8 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randf", (void *)godot_icall_GD_randf);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randi", (void *)godot_icall_GD_randi);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_randomize", (void *)godot_icall_GD_randomize);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_range", (void *)godot_icall_GD_rand_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randf_range", (void *)godot_icall_GD_randf_range);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_randi_range", (void *)godot_icall_GD_randi_range);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_rand_seed", (void *)godot_icall_GD_rand_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_seed", (void *)godot_icall_GD_seed);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_str", (void *)godot_icall_GD_str);

@@ -34,6 +34,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
@@ -112,6 +113,12 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
 		tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
+	}
+
+	if (!debugger_plugins.empty()) {
+		for (Set<Ref<Script>>::Element *i = debugger_plugins.front(); i; i = i->next()) {
+			node->add_debugger_plugin(i->get());
+		}
 	}
 
 	return node;
@@ -617,4 +624,24 @@ void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const No
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_reparent_node(p_at, p_new_place, p_new_name, p_at_pos);
 	});
+}
+
+void EditorDebuggerNode::add_debugger_plugin(const Ref<Script> &p_script) {
+	ERR_FAIL_COND_MSG(debugger_plugins.has(p_script), "Debugger plugin already exists.");
+	ERR_FAIL_COND_MSG(p_script.is_null(), "Debugger plugin script is null");
+	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) == "", "Debugger plugin script has error.");
+	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) != "EditorDebuggerPlugin", "Base type of debugger plugin is not 'EditorDebuggerPlugin'.");
+	ERR_FAIL_COND_MSG(!p_script->is_tool(), "Debugger plugin script is not in tool mode.");
+	debugger_plugins.insert(p_script);
+	for (int i = 0; get_debugger(i); i++) {
+		get_debugger(i)->add_debugger_plugin(p_script);
+	}
+}
+
+void EditorDebuggerNode::remove_debugger_plugin(const Ref<Script> &p_script) {
+	ERR_FAIL_COND_MSG(!debugger_plugins.has(p_script), "Debugger plugin doesn't exists.");
+	debugger_plugins.erase(p_script);
+	for (int i = 0; get_debugger(i); i++) {
+		get_debugger(i)->remove_debugger_plugin(p_script);
+	}
 }

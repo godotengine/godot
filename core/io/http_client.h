@@ -34,7 +34,7 @@
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/reference.h"
+#include "core/object/reference.h"
 
 class HTTPClient : public Reference {
 	GDCLASS(HTTPClient, Reference);
@@ -182,7 +182,8 @@ private:
 
 	int response_num = 0;
 	Vector<String> response_headers;
-	int read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	int read_chunk_size = 65536;
 
 	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 

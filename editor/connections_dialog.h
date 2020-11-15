@@ -35,7 +35,7 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "core/undo_redo.h"
+#include "core/object/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
@@ -169,8 +169,11 @@ class ConnectionsDock : public VBoxContainer {
 	PopupMenu *signal_menu;
 	PopupMenu *slot_menu;
 	UndoRedo *undo_redo;
+	LineEdit *search_box;
 
 	Map<StringName, Map<StringName, String>> descr_cache;
+
+	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
 	void _connect(ConnectDialog::ConnectionData cToMake);

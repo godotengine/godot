@@ -37,6 +37,8 @@ layout(rgba32i, set = 0, binding = 12) uniform restrict iimage2D lightprobe_aver
 
 layout(rgba32i, set = 0, binding = 13) uniform restrict iimage2D lightprobe_average_parent_texture;
 
+layout(rgba16f, set = 0, binding = 14) uniform restrict writeonly image2DArray lightprobe_ambient_texture;
+
 layout(set = 1, binding = 0) uniform textureCube sky_irradiance;
 
 layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
@@ -68,6 +70,9 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	vec3 sky_color;
 	float y_mult;
+
+	bool store_ambient_texture;
+	uint pad[3];
 }
 params;
 
@@ -319,12 +324,19 @@ void main() {
 
 		imageStore(lightprobe_history_texture, prev_pos, ivalue);
 		imageStore(lightprobe_average_texture, average_pos, average);
+
+		if (params.store_ambient_texture && i == 0) {
+			ivec3 ambient_pos = ivec3(pos, int(params.cascade));
+			vec4 ambient_light = (vec4(average) / float(params.history_size)) / float(1 << HISTORY_BITS);
+			ambient_light *= 0.88622; // SHL0
+			imageStore(lightprobe_ambient_texture, ambient_pos, ambient_light);
+		}
 	}
 #endif // MODE PROCESS
 
 #ifdef MODE_STORE
 
-	// converting to octahedral in this step is requiered because
+	// converting to octahedral in this step is required because
 	// octahedral is much faster to read from the screen than spherical harmonics,
 	// despite the very slight quality loss
 
@@ -500,7 +512,7 @@ void main() {
 			imageStore(lightprobe_average_scroll_texture, dst_pos, value);
 		}
 	} else if (params.cascade < params.max_cascades - 1) {
-		//cant scroll, must look for position in parent cascade
+		//can't scroll, must look for position in parent cascade
 
 		//to global coords
 		float probe_cell_size = float(params.grid_size.x / float(params.probe_axis_size - 1)) / cascades.data[params.cascade].to_cell;

@@ -32,10 +32,10 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/os/thread_dummy.h"
-#include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
@@ -48,7 +48,7 @@
 #include <mach/mach_time.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
@@ -171,52 +171,53 @@ double OS_Unix::get_unix_time() const {
 
 OS::Date OS_Unix::get_date(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Date ret;
-	ret.year = 1900 + lt->tm_year;
+	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
 	//   of 0-11, noted here: http://www.cplusplus.com/reference/ctime/tm/
-	ret.month = (Month)(lt->tm_mon + 1);
-	ret.day = lt->tm_mday;
-	ret.weekday = (Weekday)lt->tm_wday;
-	ret.dst = lt->tm_isdst;
+	ret.month = (Month)(lt.tm_mon + 1);
+	ret.day = lt.tm_mday;
+	ret.weekday = (Weekday)lt.tm_wday;
+	ret.dst = lt.tm_isdst;
 
 	return ret;
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t = time(nullptr);
-	struct tm *lt;
+	struct tm lt;
 	if (utc) {
-		lt = gmtime(&t);
+		gmtime_r(&t, &lt);
 	} else {
-		lt = localtime(&t);
+		localtime_r(&t, &lt);
 	}
 	Time ret;
-	ret.hour = lt->tm_hour;
-	ret.min = lt->tm_min;
-	ret.sec = lt->tm_sec;
+	ret.hour = lt.tm_hour;
+	ret.min = lt.tm_min;
+	ret.sec = lt.tm_sec;
 	get_time_zone_info();
 	return ret;
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 	time_t t = time(nullptr);
-	struct tm *lt = localtime(&t);
+	struct tm lt;
+	localtime_r(&t, &lt);
 	char name[16];
-	strftime(name, 16, "%Z", lt);
+	strftime(name, 16, "%Z", &lt);
 	name[15] = 0;
 	TimeZoneInfo ret;
 	ret.name = name;
 
 	char bias_buf[16];
-	strftime(bias_buf, 16, "%z", lt);
+	strftime(bias_buf, 16, "%z", &lt);
 	int bias;
 	bias_buf[15] = 0;
 	sscanf(bias_buf, "%d", &bias);
@@ -323,14 +324,14 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// still alive? something failed..
 		fprintf(stderr, "**ERROR** OS_Unix::execute - Could not create child process while executing: %s\n", p_path.utf8().get_data());
-		abort();
+		raise(SIGKILL);
 	}
 
 	if (p_blocking) {
 		int status;
 		waitpid(pid, &status, 0);
 		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(status);
+			*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 		}
 
 	} else {
@@ -476,7 +477,7 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__NetBSD__)
 	char resolved_path[MAXPATHLEN];
 
 	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);

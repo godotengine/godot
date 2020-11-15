@@ -31,8 +31,8 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
-#include "core/array.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/variant/array.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_region_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
@@ -106,7 +106,6 @@ private:
 	struct TileData {
 		String name;
 		Ref<Texture2D> texture;
-		Ref<Texture2D> normal_map;
 		Vector2 offset;
 		Rect2i region;
 		Vector<ShapeData> shapes_data;
@@ -148,9 +147,6 @@ public:
 
 	void tile_set_texture(int p_id, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> tile_get_texture(int p_id) const;
-
-	void tile_set_normal_map(int p_id, const Ref<Texture2D> &p_normal_map);
-	Ref<Texture2D> tile_get_normal_map(int p_id) const;
 
 	void tile_set_texture_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_texture_offset(int p_id) const;

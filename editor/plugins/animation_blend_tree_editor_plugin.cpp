@@ -30,10 +30,10 @@
 
 #include "animation_blend_tree_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
-#include "core/project_settings.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_scale.h"
 #include "scene/animation/animation_player.h"

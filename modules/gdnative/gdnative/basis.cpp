@@ -31,7 +31,7 @@
 #include "gdnative/basis.h"
 
 #include "core/math/basis.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 #ifdef __cplusplus
 extern "C" {

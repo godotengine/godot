@@ -30,13 +30,13 @@
 
 #include "export.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
@@ -78,7 +78,7 @@ class EditorExportPlatformOSX : public EditorExportPlatform {
 		}
 
 		for (int i = 0; i < pname.length(); i++) {
-			CharType c = pname[i];
+			char32_t c = pname[i];
 			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '.')) {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
@@ -95,8 +95,8 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) override;
 
 public:
-	virtual String get_name() const override { return "Mac OSX"; }
-	virtual String get_os_name() const override { return "OSX"; }
+	virtual String get_name() const override { return "macOS"; }
+	virtual String get_os_name() const override { return "macOS"; }
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {

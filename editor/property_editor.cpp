@@ -30,16 +30,16 @@
 
 #include "property_editor.h"
 
-#include "core/class_db.h"
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/math/expression.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/pair.h"
-#include "core/print_string.h"
-#include "core/project_settings.h"
+#include "core/string/print_string.h"
+#include "core/templates/pair.h"
 #include "editor/array_property_edit.h"
 #include "editor/create_dialog.h"
 #include "editor/dictionary_property_edit.h"
@@ -345,7 +345,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		checks20[i]->hide();
 	}
 
-	type = (p_variant.get_type() != Variant::NIL && p_variant.get_type() != Variant::_RID && p_type != Variant::OBJECT) ? p_variant.get_type() : p_type;
+	type = (p_variant.get_type() != Variant::NIL && p_variant.get_type() != Variant::RID && p_type != Variant::OBJECT) ? p_variant.get_type() : p_type;
 
 	switch (type) {
 		case Variant::BOOL: {
@@ -1697,13 +1697,18 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 	int cell_width = 95;
 	int cell_height = 25;
 	int cell_margin = 5;
-	int hor_spacing = 5; // Spacing between labels and their values
-
 	int rows = ((p_amount - 1) / p_columns) + 1;
 
 	set_size(Size2(cell_margin + p_label_w + (cell_width + cell_margin + p_label_w) * p_columns, cell_margin + (cell_height + cell_margin) * rows) * EDSCALE);
 
 	for (int i = 0; i < MAX_VALUE_EDITORS; i++) {
+		value_label[i]->get_parent()->remove_child(value_label[i]);
+		value_editor[i]->get_parent()->remove_child(value_editor[i]);
+
+		int box_id = i / p_columns;
+		value_hboxes[box_id]->add_child(value_label[i]);
+		value_hboxes[box_id]->add_child(value_editor[i]);
+
 		if (i < MAX_VALUE_EDITORS / 4) {
 			if (i <= p_amount / 4) {
 				value_hboxes[i]->show();
@@ -1712,16 +1717,10 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 			}
 		}
 
-		int c = i % p_columns;
-		int r = i / p_columns;
-
 		if (i < p_amount) {
 			value_editor[i]->show();
 			value_label[i]->show();
 			value_label[i]->set_text(i < p_strings.size() ? p_strings[i] : String(""));
-			value_editor[i]->set_position(Point2(cell_margin + p_label_w + hor_spacing + (cell_width + cell_margin + p_label_w + hor_spacing) * c, cell_margin + (cell_height + cell_margin) * r) * EDSCALE);
-			value_editor[i]->set_size(Size2(cell_width, cell_height));
-			value_label[i]->set_position(Point2(cell_margin + (cell_width + cell_margin + p_label_w + hor_spacing) * c, cell_margin + (cell_height + cell_margin) * r) * EDSCALE);
 			value_editor[i]->set_editable(!read_only);
 		} else {
 			value_editor[i]->hide();

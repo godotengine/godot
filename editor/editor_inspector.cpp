@@ -48,7 +48,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -117,7 +117,7 @@ void EditorProperty::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_toplevel()) {
+				if (c->is_set_as_top_level()) {
 					continue;
 				}
 				if (c == bottom_editor) {
@@ -179,7 +179,7 @@ void EditorProperty::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (c == bottom_editor) {
@@ -358,16 +358,16 @@ bool EditorPropertyRevert::may_node_be_in_instance(Node *p_node) {
 	Node *node = p_node;
 
 	while (node) {
-		if (node->get_scene_instance_state().is_valid()) {
-			might_be = true;
-			break;
-		}
 		if (node == edited_scene) {
 			if (node->get_scene_inherited_state().is_valid()) {
 				might_be = true;
 				break;
 			}
 			might_be = false;
+			break;
+		}
+		if (node->get_scene_instance_state().is_valid()) {
+			might_be = true;
 			break;
 		}
 		node = node->get_owner();
@@ -414,9 +414,9 @@ bool EditorPropertyRevert::get_instanced_node_original_property(Node *p_node, co
 		node = node->get_owner();
 	}
 
-	if (!found && node) {
+	if (!found && p_node) {
 		//if not found, try default class value
-		Variant attempt = ClassDB::class_get_default_property_value(node->get_class_name(), p_prop);
+		Variant attempt = ClassDB::class_get_default_property_value(p_node->get_class_name(), p_prop);
 		if (attempt.get_type() != Variant::NIL) {
 			found = true;
 			value = attempt;
@@ -1133,7 +1133,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (!c) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 			if (!c->is_visible_in_tree()) {
@@ -1174,6 +1174,47 @@ void EditorInspectorSection::_notification(int p_what) {
 		if (arrow.is_valid()) {
 			draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 		}
+
+		if (dropping && !vbox->is_visible_in_tree()) {
+			Color accent_color = get_theme_color("accent_color", "Editor");
+			draw_rect(Rect2(Point2(), get_size()), accent_color, false);
+		}
+	}
+
+	if (p_what == NOTIFICATION_DRAG_BEGIN) {
+		Dictionary dd = get_viewport()->gui_get_drag_data();
+
+		// Only allow dropping if the section contains properties which can take the dragged data.
+		bool children_can_drop = false;
+		for (int child_idx = 0; child_idx < vbox->get_child_count(); child_idx++) {
+			Control *editor_property = Object::cast_to<Control>(vbox->get_child(child_idx));
+
+			// Test can_drop_data and can_drop_data_fw, since can_drop_data only works if set up with forwarding or if script attached.
+			if (editor_property && (editor_property->can_drop_data(Point2(), dd) || editor_property->call("can_drop_data_fw", Point2(), dd, this))) {
+				children_can_drop = true;
+				break;
+			}
+		}
+
+		dropping = children_can_drop;
+		update();
+	}
+
+	if (p_what == NOTIFICATION_DRAG_END) {
+		dropping = false;
+		update();
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_ENTER) {
+		if (dropping) {
+			dropping_unfold_timer->start();
+		}
+	}
+
+	if (p_what == NOTIFICATION_MOUSE_EXIT) {
+		if (dropping) {
+			dropping_unfold_timer->stop();
+		}
 	}
 }
 
@@ -1184,7 +1225,7 @@ Size2 EditorInspectorSection::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -1236,14 +1277,11 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		_test_unfold();
-
-		bool unfold = !object->editor_is_section_unfolded(section);
-		object->editor_set_section_unfold(section, unfold);
-		if (unfold) {
-			vbox->show();
+		bool should_unfold = !object->editor_is_section_unfolded(section);
+		if (should_unfold) {
+			unfold();
 		} else {
-			vbox->hide();
+			fold();
 		}
 	}
 }
@@ -1291,6 +1329,13 @@ EditorInspectorSection::EditorInspectorSection() {
 	foldable = false;
 	vbox = memnew(VBoxContainer);
 	vbox_added = false;
+
+	dropping = false;
+	dropping_unfold_timer = memnew(Timer);
+	dropping_unfold_timer->set_wait_time(0.6);
+	dropping_unfold_timer->set_one_shot(true);
+	add_child(dropping_unfold_timer);
+	dropping_unfold_timer->connect("timeout", callable_mp(this, &EditorInspectorSection::unfold));
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
@@ -2233,7 +2278,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 				if (E->get().name == p_path) {
 					Callable::CallError ce;
-					to_create = Variant::construct(E->get().type, nullptr, 0, ce);
+					Variant::construct(E->get().type, to_create, nullptr, 0, ce);
 					break;
 				}
 			}

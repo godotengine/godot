@@ -45,7 +45,7 @@ Size2 PanelContainer::get_minimum_size() const {
 		if (!c || !c->is_visible()) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -95,7 +95,7 @@ void PanelContainer::_notification(int p_what) {
 			if (!c || !c->is_visible_in_tree()) {
 				continue;
 			}
-			if (c->is_set_as_toplevel()) {
+			if (c->is_set_as_top_level()) {
 				continue;
 			}
 

@@ -32,7 +32,7 @@
 #define AREA_2D_SW_H
 
 #include "collision_object_2d_sw.h"
-#include "core/self_list.h"
+#include "core/templates/self_list.h"
 #include "servers/physics_server_2d.h"
 //#include "servers/physics_3d/query_sw.h"
 

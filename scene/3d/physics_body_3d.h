@@ -31,7 +31,7 @@
 #ifndef PHYSICS_BODY_3D_H
 #define PHYSICS_BODY_3D_H
 
-#include "core/vset.h"
+#include "core/templates/vset.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/physics_material.h"
 #include "servers/physics_server_3d.h"
@@ -42,9 +42,6 @@ class PhysicsBody3D : public CollisionObject3D {
 
 	uint32_t collision_layer;
 	uint32_t collision_mask;
-
-	void _set_layers(uint32_t p_mask);
-	uint32_t _get_layers() const;
 
 protected:
 	static void _bind_methods();

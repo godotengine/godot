@@ -34,7 +34,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/rendering/shader_language.h"
@@ -325,7 +325,7 @@ MainLoop *test() {
 	String code;
 
 	while (true) {
-		CharType c = fa->get_8();
+		char32_t c = fa->get_8();
 		if (fa->eof_reached()) {
 			break;
 		}

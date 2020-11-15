@@ -34,9 +34,9 @@
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
-#include "core/hash_map.h"
-#include "core/map.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/map.h"
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {

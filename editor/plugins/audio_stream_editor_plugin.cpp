@@ -30,8 +30,8 @@
 
 #include "audio_stream_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
-#include "core/project_settings.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -44,8 +44,8 @@ void AudioStreamEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
-		_preview->set_frame_color(get_theme_color("dark_color_2", "Editor"));
-		set_frame_color(get_theme_color("dark_color_1", "Editor"));
+		_preview->set_color(get_theme_color("dark_color_2", "Editor"));
+		set_color(get_theme_color("dark_color_1", "Editor"));
 
 		_indicator->update();
 		_preview->update();

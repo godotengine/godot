@@ -31,9 +31,9 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
-#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape_3d.h"
 #include "servers/rendering_server.h"
@@ -209,7 +209,6 @@ public:
 	void surface_update_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
 	int get_surface_count() const override;
-	void surface_remove(int p_idx);
 
 	void clear_surfaces();
 

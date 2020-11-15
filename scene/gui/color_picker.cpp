@@ -610,7 +610,7 @@ void ColorPicker::_screen_pick_pressed() {
 	if (!screen) {
 		screen = memnew(Control);
 		r->add_child(screen);
-		screen->set_as_toplevel(true);
+		screen->set_as_top_level(true);
 		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", callable_mp(this, &ColorPicker::_screen_input));
@@ -873,6 +873,7 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 
 void ColorPickerButton::_modal_closed() {
 	emit_signal("popup_closed");
+	set_pressed(false);
 }
 
 void ColorPickerButton::pressed() {
@@ -976,9 +977,8 @@ void ColorPickerButton::_update_picker() {
 		popup->add_child(picker);
 		add_child(popup);
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
-		popup->connect("modal_closed", callable_mp(this, &ColorPickerButton::_modal_closed));
 		popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true));
-		popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
+		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 		emit_signal("picker_created");

@@ -32,7 +32,7 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectRiderInfosWindows();
                 }
-                if (OS.IsOSX)
+                if (OS.IsMacOS)
                 {
                     return CollectRiderInfosMac();
                 }
@@ -138,7 +138,7 @@ namespace GodotTools.Ides.Rider
                 return GetToolboxRiderRootPath(localAppData);
             }
 
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
@@ -211,7 +211,7 @@ namespace GodotTools.Ides.Rider
         {
             if (OS.IsWindows || OS.IsUnixLike)
                 return "../../build.txt";
-            if (OS.IsOSX)
+            if (OS.IsMacOS)
                 return "Contents/Resources/build.txt";
             throw new Exception("Unknown OS.");
         }

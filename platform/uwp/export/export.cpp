@@ -29,14 +29,15 @@
 /*************************************************************************/
 
 #include "export.h"
-#include "core/bind/core_bind.h"
+
+#include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
@@ -249,7 +250,7 @@ void AppxPackager::make_content_types(const String &p_path) {
 	Map<String, String> types;
 
 	for (int i = 0; i < file_metadata.size(); i++) {
-		String ext = file_metadata[i].name.get_extension();
+		String ext = file_metadata[i].name.get_extension().to_lower();
 
 		if (types.has(ext)) {
 			continue;
@@ -961,7 +962,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		return true;
 	}
 
-	static Error save_appx_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total) {
+	static Error save_appx_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
 		AppxPackager *packager = (AppxPackager *)p_userdata;
 		String dst_path = p_path.replace_first("res://", "game/");
 

@@ -55,8 +55,8 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	_load_theme_settings();
 
-	get_text_edit()->set_text(p_shader->get_code());
-	get_text_edit()->clear_undo_history();
+	get_text_editor()->set_text(p_shader->get_code());
+	get_text_editor()->clear_undo_history();
 
 	_validate_script();
 	_line_col_changed();
@@ -65,7 +65,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 void ShaderTextEditor::reload_text() {
 	ERR_FAIL_COND(shader.is_null());
 
-	TextEdit *te = get_text_edit();
+	CodeEdit *te = get_text_editor();
 	int column = te->cursor_get_column();
 	int row = te->cursor_get_line();
 	int h = te->get_h_scroll();
@@ -107,29 +107,29 @@ void ShaderTextEditor::_load_theme_settings() {
 	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
 
-	get_text_edit()->add_theme_color_override("background_color", background_color);
-	get_text_edit()->add_theme_color_override("completion_background_color", completion_background_color);
-	get_text_edit()->add_theme_color_override("completion_selected_color", completion_selected_color);
-	get_text_edit()->add_theme_color_override("completion_existing_color", completion_existing_color);
-	get_text_edit()->add_theme_color_override("completion_scroll_color", completion_scroll_color);
-	get_text_edit()->add_theme_color_override("completion_font_color", completion_font_color);
-	get_text_edit()->add_theme_color_override("font_color", text_color);
-	get_text_edit()->add_theme_color_override("line_number_color", line_number_color);
-	get_text_edit()->add_theme_color_override("caret_color", caret_color);
-	get_text_edit()->add_theme_color_override("caret_background_color", caret_background_color);
-	get_text_edit()->add_theme_color_override("font_color_selected", text_selected_color);
-	get_text_edit()->add_theme_color_override("selection_color", selection_color);
-	get_text_edit()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
-	get_text_edit()->add_theme_color_override("current_line_color", current_line_color);
-	get_text_edit()->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
-	get_text_edit()->add_theme_color_override("word_highlighted_color", word_highlighted_color);
-	get_text_edit()->add_theme_color_override("mark_color", mark_color);
-	get_text_edit()->add_theme_color_override("bookmark_color", bookmark_color);
-	get_text_edit()->add_theme_color_override("breakpoint_color", breakpoint_color);
-	get_text_edit()->add_theme_color_override("executing_line_color", executing_line_color);
-	get_text_edit()->add_theme_color_override("code_folding_color", code_folding_color);
-	get_text_edit()->add_theme_color_override("search_result_color", search_result_color);
-	get_text_edit()->add_theme_color_override("search_result_border_color", search_result_border_color);
+	get_text_editor()->add_theme_color_override("background_color", background_color);
+	get_text_editor()->add_theme_color_override("completion_background_color", completion_background_color);
+	get_text_editor()->add_theme_color_override("completion_selected_color", completion_selected_color);
+	get_text_editor()->add_theme_color_override("completion_existing_color", completion_existing_color);
+	get_text_editor()->add_theme_color_override("completion_scroll_color", completion_scroll_color);
+	get_text_editor()->add_theme_color_override("completion_font_color", completion_font_color);
+	get_text_editor()->add_theme_color_override("font_color", text_color);
+	get_text_editor()->add_theme_color_override("line_number_color", line_number_color);
+	get_text_editor()->add_theme_color_override("caret_color", caret_color);
+	get_text_editor()->add_theme_color_override("caret_background_color", caret_background_color);
+	get_text_editor()->add_theme_color_override("font_color_selected", text_selected_color);
+	get_text_editor()->add_theme_color_override("selection_color", selection_color);
+	get_text_editor()->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
+	get_text_editor()->add_theme_color_override("current_line_color", current_line_color);
+	get_text_editor()->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
+	get_text_editor()->add_theme_color_override("word_highlighted_color", word_highlighted_color);
+	get_text_editor()->add_theme_color_override("mark_color", mark_color);
+	get_text_editor()->add_theme_color_override("bookmark_color", bookmark_color);
+	get_text_editor()->add_theme_color_override("breakpoint_color", breakpoint_color);
+	get_text_editor()->add_theme_color_override("executing_line_color", executing_line_color);
+	get_text_editor()->add_theme_color_override("code_folding_color", code_folding_color);
+	get_text_editor()->add_theme_color_override("search_result_color", search_result_color);
+	get_text_editor()->add_theme_color_override("search_result_border_color", search_result_border_color);
 
 	syntax_highlighter->set_number_color(EDITOR_GET("text_editor/highlighting/number_color"));
 	syntax_highlighter->set_symbol_color(EDITOR_GET("text_editor/highlighting/symbol_color"));
@@ -176,7 +176,7 @@ void ShaderTextEditor::_load_theme_settings() {
 }
 
 void ShaderTextEditor::_check_shader_mode() {
-	String type = ShaderLanguage::get_shader_type(get_text_edit()->get_text());
+	String type = ShaderLanguage::get_shader_type(get_text_editor()->get_text());
 
 	Shader::Mode mode;
 
@@ -189,7 +189,7 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 
 	if (shader->get_mode() != mode) {
-		shader->set_code(get_text_edit()->get_text());
+		shader->set_code(get_text_editor()->get_text());
 		_load_theme_settings();
 	}
 }
@@ -207,13 +207,13 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 
 	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type, r_options, calltip);
 
-	get_text_edit()->set_code_hint(calltip);
+	get_text_editor()->set_code_hint(calltip);
 }
 
 void ShaderTextEditor::_validate_script() {
 	_check_shader_mode();
 
-	String code = get_text_edit()->get_text();
+	String code = get_text_editor()->get_text();
 	//List<StringName> params;
 	//shader->get_param_list(&params);
 
@@ -225,14 +225,14 @@ void ShaderTextEditor::_validate_script() {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		set_error(error_text);
 		set_error_pos(sl.get_error_line() - 1, 0);
-		for (int i = 0; i < get_text_edit()->get_line_count(); i++) {
-			get_text_edit()->set_line_as_marked(i, false);
+		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+			get_text_editor()->set_line_as_marked(i, false);
 		}
-		get_text_edit()->set_line_as_marked(sl.get_error_line() - 1, true);
+		get_text_editor()->set_line_as_marked(sl.get_error_line() - 1, true);
 
 	} else {
-		for (int i = 0; i < get_text_edit()->get_line_count(); i++) {
-			get_text_edit()->set_line_as_marked(i, false);
+		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
+			get_text_editor()->set_line_as_marked(i, false);
 		}
 		set_error("");
 	}
@@ -245,7 +245,7 @@ void ShaderTextEditor::_bind_methods() {
 
 ShaderTextEditor::ShaderTextEditor() {
 	syntax_highlighter.instance();
-	get_text_edit()->set_syntax_highlighter(syntax_highlighter);
+	get_text_editor()->set_syntax_highlighter(syntax_highlighter);
 }
 
 /*** SCRIPT EDITOR ******/
@@ -253,22 +253,22 @@ ShaderTextEditor::ShaderTextEditor() {
 void ShaderEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case EDIT_UNDO: {
-			shader_editor->get_text_edit()->undo();
+			shader_editor->get_text_editor()->undo();
 		} break;
 		case EDIT_REDO: {
-			shader_editor->get_text_edit()->redo();
+			shader_editor->get_text_editor()->redo();
 		} break;
 		case EDIT_CUT: {
-			shader_editor->get_text_edit()->cut();
+			shader_editor->get_text_editor()->cut();
 		} break;
 		case EDIT_COPY: {
-			shader_editor->get_text_edit()->copy();
+			shader_editor->get_text_editor()->copy();
 		} break;
 		case EDIT_PASTE: {
-			shader_editor->get_text_edit()->paste();
+			shader_editor->get_text_editor()->paste();
 		} break;
 		case EDIT_SELECT_ALL: {
-			shader_editor->get_text_edit()->select_all();
+			shader_editor->get_text_editor()->select_all();
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			shader_editor->move_lines_up();
@@ -281,7 +281,7 @@ void ShaderEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			TextEdit *tx = shader_editor->get_text_edit();
+			CodeEdit *tx = shader_editor->get_text_editor();
 			tx->indent_left();
 
 		} break;
@@ -290,7 +290,7 @@ void ShaderEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			TextEdit *tx = shader_editor->get_text_edit();
+			CodeEdit *tx = shader_editor->get_text_editor();
 			tx->indent_right();
 
 		} break;
@@ -309,7 +309,7 @@ void ShaderEditor::_menu_option(int p_option) {
 
 		} break;
 		case EDIT_COMPLETE: {
-			shader_editor->get_text_edit()->query_code_comple();
+			shader_editor->get_text_editor()->query_code_comple();
 		} break;
 		case SEARCH_FIND: {
 			shader_editor->get_find_replace_bar()->popup_search();
@@ -324,7 +324,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(shader_editor->get_text_edit());
+			goto_line_dialog->popup_find_line(shader_editor->get_text_editor());
 		} break;
 		case BOOKMARK_TOGGLE: {
 			shader_editor->toggle_bookmark();
@@ -343,7 +343,7 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
-		shader_editor->get_text_edit()->call_deferred("grab_focus");
+		shader_editor->get_text_editor()->call_deferred("grab_focus");
 	}
 }
 
@@ -358,28 +358,11 @@ void ShaderEditor::_params_changed() {
 }
 
 void ShaderEditor::_editor_settings_changed() {
-	shader_editor->get_text_edit()->set_auto_brace_completion(EditorSettings::get_singleton()->get("text_editor/completion/auto_brace_complete"));
-	shader_editor->get_text_edit()->set_scroll_pass_end_of_file(EditorSettings::get_singleton()->get("text_editor/cursor/scroll_past_end_of_file"));
-	shader_editor->get_text_edit()->set_indent_size(EditorSettings::get_singleton()->get("text_editor/indent/size"));
-	shader_editor->get_text_edit()->set_indent_using_spaces(EditorSettings::get_singleton()->get("text_editor/indent/type"));
-	shader_editor->get_text_edit()->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
-	shader_editor->get_text_edit()->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
-	shader_editor->get_text_edit()->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
-	shader_editor->get_text_edit()->set_show_line_numbers(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_numbers"));
-	shader_editor->get_text_edit()->set_highlight_all_occurrences(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_all_occurrences"));
-	shader_editor->get_text_edit()->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
-	shader_editor->get_text_edit()->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
-	shader_editor->get_text_edit()->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
-	shader_editor->get_text_edit()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
-	shader_editor->get_text_edit()->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
-	shader_editor->get_text_edit()->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
-	shader_editor->get_text_edit()->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
-	shader_editor->get_text_edit()->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));
-	shader_editor->get_text_edit()->set_minimap_width((int)EditorSettings::get_singleton()->get("text_editor/navigation/minimap_width") * EDSCALE);
-	shader_editor->get_text_edit()->set_show_line_length_guidelines(EditorSettings::get_singleton()->get("text_editor/appearance/show_line_length_guidelines"));
-	shader_editor->get_text_edit()->set_line_length_guideline_soft_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_soft_column"));
-	shader_editor->get_text_edit()->set_line_length_guideline_hard_column(EditorSettings::get_singleton()->get("text_editor/appearance/line_length_guideline_hard_column"));
-	shader_editor->get_text_edit()->set_breakpoint_gutter_enabled(false);
+	shader_editor->update_editor_settings();
+
+	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/theme/line_spacing"));
+	shader_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
+	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
 
 void ShaderEditor::_bind_methods() {
@@ -466,7 +449,7 @@ void ShaderEditor::save_external_data(const String &p_str) {
 void ShaderEditor::apply_shaders() {
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
-		String editor_code = shader_editor->get_text_edit()->get_text();
+		String editor_code = shader_editor->get_text_editor()->get_text();
 		if (shader_code != editor_code) {
 			shader->set_code(editor_code);
 			shader->set_edited(true);
@@ -480,7 +463,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
 			int col, row;
-			TextEdit *tx = shader_editor->get_text_edit();
+			CodeEdit *tx = shader_editor->get_text_editor();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
 			tx->set_right_click_moves_caret(EditorSettings::get_singleton()->get("text_editor/cursor/right_click_moves_caret"));
 
@@ -507,7 +490,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 	Ref<InputEventKey> k = ev;
 	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_MENU) {
-		TextEdit *tx = shader_editor->get_text_edit();
+		CodeEdit *tx = shader_editor->get_text_editor();
 		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
 		context_menu->grab_focus();
 	}
@@ -521,7 +504,7 @@ void ShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = shader_editor->get_text_edit()->get_bookmarks_array();
+	Array bookmark_list = shader_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -529,7 +512,7 @@ void ShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
-		String line = shader_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
+		String line = shader_editor->get_text_editor()->get_line(bookmark_list[i]).strip_edges();
 		// Limit the size of the line if too big.
 		if (line.length() > 50) {
 			line = line.substr(0, 50);
@@ -581,13 +564,13 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
 
-	shader_editor->get_text_edit()->set_callhint_settings(
+	shader_editor->get_text_editor()->set_callhint_settings(
 			EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"),
 			EditorSettings::get_singleton()->get("text_editor/completion/callhint_tooltip_offset"));
 
-	shader_editor->get_text_edit()->set_select_identifiers_on_hover(true);
-	shader_editor->get_text_edit()->set_context_menu_enabled(false);
-	shader_editor->get_text_edit()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
+	shader_editor->get_text_editor()->set_select_identifiers_on_hover(true);
+	shader_editor->get_text_editor()->set_context_menu_enabled(false);
+	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
 
 	shader_editor->update_editor_settings();
 

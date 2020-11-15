@@ -30,8 +30,8 @@
 
 #include "navigation_region_2d.h"
 
+#include "core/config/engine.h"
 #include "core/core_string_names.h"
-#include "core/engine.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "navigation_2d.h"
@@ -500,19 +500,26 @@ String NavigationRegion2D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node2D::get_configuration_warning();
+
 	if (!navpoly.is_valid()) {
-		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");
 	}
 	const Node2D *c = this;
 	while (c) {
 		if (Object::cast_to<Navigation2D>(c)) {
-			return String();
+			return warning;
 		}
 
 		c = Object::cast_to<Node2D>(c->get_parent());
 	}
-
-	return TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
+	if (!warning.empty()) {
+		warning += "\n\n";
+	}
+	return warning + TTR("NavigationRegion2D must be a child or grandchild to a Navigation2D node. It only provides navigation data.");
 }
 
 void NavigationRegion2D::_bind_methods() {

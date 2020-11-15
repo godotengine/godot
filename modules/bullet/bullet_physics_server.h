@@ -32,8 +32,8 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
-#include "core/rid.h"
-#include "core/rid_owner.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "joint_bullet.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server_3d.h"
@@ -52,7 +52,7 @@ class BulletPhysicsServer3D : public PhysicsServer3D {
 
 	bool active = true;
 	char active_spaces_count = 0;
-	LocalVector<SpaceBullet *> active_spaces;
+	Vector<SpaceBullet *> active_spaces;
 
 	mutable RID_PtrOwner<SpaceBullet> space_owner;
 	mutable RID_PtrOwner<ShapeBullet> shape_owner;

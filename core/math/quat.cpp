@@ -31,7 +31,7 @@
 #include "quat.h"
 
 #include "core/math/basis.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 // set_euler_xyz expects a vector containing the Euler angles in the format
 // (ax,ay,az), where ax is the angle of rotation around x axis,

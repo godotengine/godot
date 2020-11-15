@@ -13,7 +13,8 @@
 		[/codeblock]
 		The stored data can be saved to or parsed from a file, though ConfigFile objects can also be used directly without accessing the filesystem.
 		The following example shows how to parse an INI-style file from the system, read its contents and store new values in it:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var config = ConfigFile.new()
 		var err = config.load("user://settings.cfg")
 		if err == OK: # If not, something went wrong with the file loading
@@ -24,7 +25,24 @@
 		        config.set_value("audio", "mute", false)
 		    # Save the changes by overwriting the previous file
 		    config.save("user://settings.cfg")
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		var config = new ConfigFile();
+		Error err = config.Load("user://settings.cfg");
+		if (err == Error.Ok) // If not, something went wrong with the file loading
+		{
+		    // Look for the display/width pair, and default to 1024 if missing
+		    int screenWidth = (int)config.GetValue("display", "width", 1024);
+		    // Store a variable if and only if it hasn't been defined yet
+		    if (!config.HasSectionKey("audio", "mute"))
+		    {
+		        config.SetValue("audio", "mute", false);
+		    }
+		    // Save the changes by overwriting the previous file
+		    config.Save("user://settings.cfg");
+		}
+		[/csharp]
+		[/codeblocks]
 		Keep in mind that section and property names can't contain spaces. Anything after a space will be ignored on save and on load.
 		ConfigFiles can also contain manually written comment lines starting with a semicolon ([code];[/code]). Those lines will be ignored when parsing the file. Note that comments will be lost when saving the ConfigFile. This can still be useful for dedicated server configuration files, which are typically never overwritten without explicit user action.
 	</description>

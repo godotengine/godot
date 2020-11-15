@@ -32,9 +32,9 @@
 #define AUDIO_SERVER_H
 
 #include "core/math/audio_frame.h"
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant.h"
+#include "core/variant/variant.h"
 #include "servers/audio/audio_effect.h"
 
 class AudioDriverDummy;

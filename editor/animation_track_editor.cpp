@@ -228,9 +228,9 @@ public:
 							if (Variant::can_convert(args[idx].get_type(), t)) {
 								Variant old = args[idx];
 								Variant *ptrs[1] = { &old };
-								args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
+								Variant::construct(t, args.write[idx], (const Variant **)ptrs, 1, err);
 							} else {
-								args.write[idx] = Variant::construct(t, nullptr, 0, err);
+								Variant::construct(t, args.write[idx], nullptr, 0, err);
 							}
 							change_notify_deserved = true;
 							d_new["args"] = args;
@@ -846,9 +846,9 @@ public:
 									if (Variant::can_convert(args[idx].get_type(), t)) {
 										Variant old = args[idx];
 										Variant *ptrs[1] = { &old };
-										args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
+										Variant::construct(t, args.write[idx], (const Variant **)ptrs, 1, err);
 									} else {
-										args.write[idx] = Variant::construct(t, nullptr, 0, err);
+										Variant::construct(t, args.write[idx], nullptr, 0, err);
 									}
 									change_notify_deserved = true;
 									d_new["args"] = args;
@@ -3751,7 +3751,8 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	}
 
 	for (int i = 0; i < leftover_path.size() - 1; i++) {
-		property_info_base = property_info_base.get_named(leftover_path[i]);
+		bool valid;
+		property_info_base = property_info_base.get_named(leftover_path[i], valid);
 	}
 
 	List<PropertyInfo> pinfo;
@@ -4586,7 +4587,8 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 					params.push_back(arg);
 				} else {
 					Callable::CallError ce;
-					Variant arg = Variant::construct(E->get().arguments[i].type, nullptr, 0, ce);
+					Variant arg;
+					Variant::construct(E->get().arguments[i].type, arg, nullptr, 0, ce);
 					params.push_back(arg);
 				}
 			}
@@ -4959,11 +4961,6 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 		box_selection->set_size(rect.size);
 
 		box_select_rect = rect;
-
-		if (get_local_mouse_position().y < 0) {
-			//avoid box selection from going up and lose focus to viewport
-			warp_mouse(Vector2(mm->get_position().x, 0));
-		}
 	}
 }
 
@@ -5763,7 +5760,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	box_selection = memnew(Control);
 	add_child(box_selection);
-	box_selection->set_as_toplevel(true);
+	box_selection->set_as_top_level(true);
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect("draw", callable_mp(this, &AnimationTrackEditor::_box_selection_draw));

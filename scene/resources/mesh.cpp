@@ -30,7 +30,7 @@
 
 #include "mesh.h"
 
-#include "core/pair.h"
+#include "core/templates/pair.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "surface_tool.h"
@@ -872,7 +872,6 @@ Array ArrayMesh::_get_surfaces() const {
 
 		ret.push_back(data);
 	}
-	print_line("Saving surfaces: " + itos(ret.size()));
 
 	return ret;
 }

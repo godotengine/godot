@@ -33,7 +33,7 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "dependency_editor.h"
 #include "editor_file_system.h"
 #include "editor_resource_preview.h"
@@ -60,7 +60,7 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 
 void EditorFileDialog::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
-		// update icons
+		// Update icons.
 		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
@@ -94,7 +94,7 @@ void EditorFileDialog::_notification(int p_what) {
 		}
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
-		// update icons
+		// Update icons.
 		mode_thumbnails->set_icon(item_list->get_theme_icon("FileThumbnail", "EditorIcons"));
 		mode_list->set_icon(item_list->get_theme_icon("FileList", "EditorIcons"));
 		dir_prev->set_icon(item_list->get_theme_icon("Back", "EditorIcons"));
@@ -138,9 +138,7 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_hidden_files", p_event)) {
-				bool show = !show_hidden_files;
-				set_show_hidden_files(show);
-				EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files", show);
+				set_show_hidden_files(!show_hidden_files);
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
@@ -559,7 +557,7 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 			continue;
 		}
 		Dictionary item_meta = item_list->get_item_metadata(i);
-		if (item_meta["path"] == "res://.import") {
+		if (String(item_meta["path"]).begins_with("res://.godot")) {
 			allow_delete = false;
 			break;
 		}
@@ -1385,6 +1383,11 @@ void EditorFileDialog::_bind_methods() {
 }
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {
+	if (p_show == show_hidden_files) {
+		return;
+	}
+
+	EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files", p_show);
 	show_hidden_files = p_show;
 	show_hidden->set_pressed(p_show);
 	invalidate();
@@ -1646,7 +1649,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//confirm_save->set_as_toplevel(true);
+	//confirm_save->set_as_top_level(true);
 	add_child(confirm_save);
 	confirm_save->connect("confirmed", callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
 

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "vulkan_context_android.h"
+
 #include <vulkan/vulkan_android.h>
 
 const char *VulkanContextAndroid::_get_platform_surface_extension() const {

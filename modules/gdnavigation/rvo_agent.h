@@ -31,8 +31,9 @@
 #ifndef RVO_AGENT_H
 #define RVO_AGENT_H
 
-#include "core/object.h"
+#include "core/object/class_db.h"
 #include "nav_rid.h"
+
 #include <Agent.h>
 
 /**

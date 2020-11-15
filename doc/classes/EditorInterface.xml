@@ -125,8 +125,10 @@
 			</argument>
 			<argument index="1" name="for_property" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="2" name="inspector_only" type="bool" default="false">
+			</argument>
 			<description>
-				Shows the given property on the given [code]object[/code] in the editor's Inspector dock.
+				Shows the given property on the given [code]object[/code] in the editor's Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins will not attempt to edit [code]object[/code].
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">

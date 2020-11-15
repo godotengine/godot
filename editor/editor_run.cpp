@@ -30,7 +30,7 @@
 
 #include "editor_run.h"
 
-#include "core/project_settings.h"
+#include "core/config/project_settings.h"
 #include "editor_settings.h"
 #include "servers/display_server.h"
 
@@ -192,9 +192,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 	String exec = OS::get_singleton()->get_executable_path();
 
-	printf("Running: %ls", exec.c_str());
+	printf("Running: %s", exec.utf8().get_data());
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		printf(" %ls", E->get().c_str());
+		printf(" %s", E->get().utf8().get_data());
 	};
 	printf("\n");
 
