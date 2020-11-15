@@ -64,10 +64,42 @@ android {
             throw new GradleException("Invalid default abi: " + defaultAbi)
         }
 
+        // Find scons' executable path
+        File sconsExecutableFile = null
+        def sconsName = "scons"
+        def sconsExts = (org.gradle.internal.os.OperatingSystem.current().isWindows()
+            ? [".bat", ".exe"]
+            : [""])
+        logger.lifecycle("Looking for $sconsName executable path")
+        for (ext in sconsExts) {
+            String sconsNameExt = sconsName + ext
+            logger.lifecycle("Checking $sconsNameExt")
+
+            sconsExecutableFile = org.gradle.internal.os.OperatingSystem.current().findInPath(sconsNameExt)
+            if (sconsExecutableFile != null) {
+                // We're done!
+                break
+            }
+
+            // Check all the options in path
+            List<File> allOptions = org.gradle.internal.os.OperatingSystem.current().findAllInPath(sconsNameExt)
+            if (!allOptions.isEmpty()) {
+                // Pick the first option and we're done!
+                sconsExecutableFile = allOptions.get(0)
+                break
+            }
+        }
+
+        if (sconsExecutableFile == null) {
+            throw new GradleException("Unable to find executable path for the '$sconsName' command.")
+        } else {
+            logger.lifecycle("Found executable path for $sconsName: ${sconsExecutableFile.absolutePath}")
+        }
+
         // Creating gradle task to generate the native libraries for the default abi.
         def taskName = getSconsTaskName(buildType)
         tasks.create(name: taskName, type: Exec) {
-            executable "scons" + sconsExt
+            executable sconsExecutableFile.absolutePath
             args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${defaultAbi}", "-j" + Runtime.runtime.availableProcessors()
         }
 
