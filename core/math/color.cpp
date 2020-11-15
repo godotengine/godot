@@ -35,6 +35,8 @@
 #include "core/string/print_string.h"
 #include "core/templates/map.h"
 
+#include "color_uppercase_name_transformation.inc"
+
 uint32_t Color::to_argb32() const {
 	uint32_t c = (uint8_t)Math::round(a * 255);
 	c <<= 8;
@@ -363,6 +365,7 @@ Color Color::named(const String &p_name) {
 	name = name.replace("'", "");
 	name = name.replace(".", "");
 	name = name.to_lower();
+	name = _to_uppercase_color_name(name);
 
 	int idx = 0;
 	while (named_colors[idx].name != nullptr) {
