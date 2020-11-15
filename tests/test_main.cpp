@@ -43,6 +43,7 @@
 #include "test_list.h"
 #include "test_math.h"
 #include "test_method_bind.h"
+#include "test_node_path.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
 #include "test_physics_2d.h"
