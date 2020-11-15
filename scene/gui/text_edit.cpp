@@ -1427,7 +1427,6 @@ void TextEdit::_notification(int p_what) {
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(completion_rect.position, completion_rect.size + Size2(scrollw, 0)), cache.completion_background_color);
 				}
 				RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 					int l = line_from + i;
@@ -1450,6 +1449,13 @@ void TextEdit::_notification(int p_what) {
 
 					if (completion_options[l].default_value.get_type() == Variant::COLOR) {
 						draw_rect(Rect2(Point2(completion_rect.position.x + completion_rect.size.width - icon_area_size.x, icon_area.position.y), icon_area_size), (Color)completion_options[l].default_value);
+					}
+					Point2 match_pos = Point2(completion_rect.position.x + icon_area_size.x + icon_hsep, completion_rect.position.y + i * get_row_height());
+					for (int j = 0; j < completion_options[l].matches.size(); j++) {
+						std::pair<int, int> match = completion_options[l].matches[j];
+						int match_offset = cache.font->get_string_size(completion_options[l].display.substr(0, match.first)).width;
+						int match_len = cache.font->get_string_size(completion_options[l].display.substr(match.first, match.second)).width;
+						draw_rect(Rect2(match_pos + Point2(match_offset, 0), Vector2(match_len, get_row_height())), cache.completion_existing_color);
 					}
 
 					draw_string(cache.font, title_pos, completion_options[l].display, completion_options[l].font_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
@@ -6227,6 +6233,8 @@ void TextEdit::_update_completion_candidates() {
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
 	Vector<ScriptCodeCompletionOption> completion_options_casei;
+	Vector<ScriptCodeCompletionOption> completion_options_substr;
+	Vector<ScriptCodeCompletionOption> completion_options_substr_casei;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq;
 	Vector<ScriptCodeCompletionOption> completion_options_subseq_casei;
 
@@ -6256,13 +6264,18 @@ void TextEdit::_update_completion_candidates() {
 				completion_options.push_back(option);
 			} else if (option.display.to_lower().begins_with(s.to_lower())) {
 				completion_options_casei.push_back(option);
+			} else if (option.display.find(s)) {
+				completion_options_substr.push_back(option);
+			} else if (option.display.findr(s)) {
+				completion_options_substr_casei.push_back(option);
 			} else if (s.is_subsequence_of(option.display)) {
 				completion_options_subseq.push_back(option);
 			} else if (s.is_subsequence_ofi(option.display)) {
 				completion_options_subseq_casei.push_back(option);
 			}
 			*/
-			// But is more performant due to being inlined and looping over the characters only once
+			// But is more performant due to being inlined and looping over the characters only once.
+			// It also extracts the best match between the option.display and s.
 
 			String display_lower = option.display.to_lower();
 
@@ -6272,30 +6285,93 @@ void TextEdit::_update_completion_candidates() {
 			const char32_t *tgt = &option.display[0];
 			const char32_t *tgt_lower = &display_lower[0];
 
-			const char32_t *ssq_last_tgt = nullptr;
-			const char32_t *ssq_lower_last_tgt = nullptr;
+			const char32_t *sst = &s[0];
+			const char32_t *sst_lower = &display_lower[0];
 
-			for (; *tgt; tgt++, tgt_lower++) {
+			Vector<std::pair<int, int>> ssq_matches;
+			int ssq_match_start = 0;
+			int ssq_match_len = 0;
+
+			Vector<std::pair<int, int>> ssq_lower_matches;
+			int ssq_lower_match_start = 0;
+			int ssq_lower_match_len = 0;
+
+			int sst_start = -1;
+			int sst_lower_start = -1;
+
+			for (int i = 0; *tgt; tgt++, tgt_lower++, i++) {
+				// Check substring.
+				if (*sst == *tgt) {
+					sst++;
+					if (sst_start == -1) {
+						sst_start = i;
+					}
+				} else if (sst_start != -1 && *sst) {
+					sst = &s[0];
+					sst_start = -1;
+				}
+				// Check subsequence.
 				if (*ssq == *tgt) {
 					ssq++;
-					ssq_last_tgt = tgt;
+					if (ssq_match_len == 0) {
+						ssq_match_start = i;
+					}
+					ssq_match_len++;
+				} else if (ssq_match_len > 0) {
+					ssq_matches.push_back(std::make_pair(ssq_match_start, ssq_match_len));
+					ssq_match_len = 0;
 				}
+
+				// Check lower substring.
+				if (*sst_lower == *tgt) {
+					sst_lower++;
+					if (sst_lower_start == -1) {
+						sst_lower_start = i;
+					}
+				} else if (sst_lower_start != -1 && *sst_lower) {
+					sst_lower = &s[0];
+					sst_lower_start = -1;
+				}
+				// Check lower subsequence.
 				if (*ssq_lower == *tgt_lower) {
 					ssq_lower++;
-					ssq_lower_last_tgt = tgt;
+					if (ssq_lower_match_len == 0) {
+						ssq_lower_match_start = i;
+					}
+					ssq_lower_match_len++;
+				} else if (ssq_lower_match_len > 0) {
+					ssq_matches.push_back(std::make_pair(ssq_lower_match_start, ssq_lower_match_len));
+					ssq_lower_match_len = 0;
 				}
 			}
-
-			if (!*ssq) { // Matched the whole subsequence in s
-				if (ssq_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+			if (!*ssq) { // Matched the whole subsequence in s.
+				option.matches.clear();
+				if (sst_start == 0) { // Matched substring in beginning of s.
+					option.matches.push_back(std::make_pair(sst_start, s.length()));
 					completion_options.push_back(option);
+				} else if (sst_start > 0) { // Matched substring in s.
+					option.matches.push_back(std::make_pair(sst_start, s.length()));
+					completion_options_substr.push_back(option);
 				} else {
+					if (ssq_match_len > 0) {
+						ssq_matches.push_back(std::make_pair(ssq_match_start, ssq_match_len));
+					}
+					option.matches.append_array(ssq_matches);
 					completion_options_subseq.push_back(option);
 				}
-			} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower
-				if (ssq_lower_last_tgt == &option.display[s.length() - 1]) { // Finished matching in the first s.length() characters
+			} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
+				option.matches.clear();
+				if (sst_lower_start == 0) { // Matched substring in beginning of s_lower.
+					option.matches.push_back(std::make_pair(sst_start, s.length()));
 					completion_options_casei.push_back(option);
+				} else if (sst_lower_start > 0) { // Matched substring in s_lower.
+					option.matches.push_back(std::make_pair(sst_start, s.length()));
+					completion_options_substr_casei.push_back(option);
 				} else {
+					if (ssq_match_len > 0) {
+						ssq_matches.push_back(std::make_pair(ssq_lower_match_start, ssq_lower_match_len));
+					}
+					option.matches.append_array(ssq_matches);
 					completion_options_subseq_casei.push_back(option);
 				}
 			}
@@ -6303,6 +6379,8 @@ void TextEdit::_update_completion_candidates() {
 	}
 
 	completion_options.append_array(completion_options_casei);
+	completion_options.append_array(completion_options_substr);
+	completion_options.append_array(completion_options_substr_casei);
 	completion_options.append_array(completion_options_subseq);
 	completion_options.append_array(completion_options_subseq_casei);
 
