@@ -3,43 +3,43 @@
 #include "core/ustring.h"
 #include "core/vector.h"
 
-static Vector<String> _modifiable_colors;
-static Vector<String> _color_descriptors;
+static Vector<String> _common_colors;
+static Vector<String> _common_color_adjectives;
+
 static void _populate_uppercase_token_lists() {
-	if (_modifiable_colors.empty()) {
-		_modifiable_colors.append("AQUAMARINE");
-		_modifiable_colors.append("BLACK");
-		_modifiable_colors.append("BLUE");
-		_modifiable_colors.append("BROWN");
-		_modifiable_colors.append("CORAL");
-		_modifiable_colors.append("CYAN");
-		_modifiable_colors.append("GRAY");
-		_modifiable_colors.append("GREEN");
-		_modifiable_colors.append("GOLDENROD");
-		_modifiable_colors.append("KHAKI");
-		_modifiable_colors.append("MAROON");
-		_modifiable_colors.append("ORANGE");
-		_modifiable_colors.append("ORCHID");
-		_modifiable_colors.append("PINK");
-		_modifiable_colors.append("PURPLE");
-		_modifiable_colors.append("RED");
-		_modifiable_colors.append("TURQUOISE");
-		_modifiable_colors.append("WHITE");
-		_modifiable_colors.append("YELLOW");
+	if (_common_colors.empty()) {
+		_common_colors.append("AQUAMARINE");
+		_common_colors.append("BLACK");
+		_common_colors.append("BLUE");
+		_common_colors.append("BROWN");
+		_common_colors.append("CORAL");
+		_common_colors.append("CYAN");
+		_common_colors.append("GRAY");
+		_common_colors.append("GREEN");
+		_common_colors.append("GOLDENROD");
+		_common_colors.append("KHAKI");
+		_common_colors.append("MAROON");
+		_common_colors.append("ORANGE");
+		_common_colors.append("ORCHID");
+		_common_colors.append("PINK");
+		_common_colors.append("PURPLE");
+		_common_colors.append("RED");
+		_common_colors.append("TURQUOISE");
+		_common_colors.append("WHITE");
+		_common_colors.append("YELLOW");
 	}
 
-	if (_color_descriptors.empty()) {
-		_color_descriptors.append("DARK");
-		_color_descriptors.append("MEDIUM");
-		_color_descriptors.append("LIGHT");
-		_color_descriptors.append("OLIVE");
-		_color_descriptors.append("PALE");
-		_color_descriptors.append("SEA");
-		_color_descriptors.append("SKY");
-		_color_descriptors.append("SLATE");
-		_color_descriptors.append("SPRING");
-		_color_descriptors.append("STEEL");
-		_color_descriptors.append("WEB");
+	if (_common_color_adjectives.empty()) {
+		_common_color_adjectives.append("DARK");
+		_common_color_adjectives.append("MEDIUM");
+		_common_color_adjectives.append("LIGHT");
+		_common_color_adjectives.append("PALE");
+		_common_color_adjectives.append("SEA");
+		_common_color_adjectives.append("SKY");
+		_common_color_adjectives.append("SLATE");
+		_common_color_adjectives.append("SPRING");
+		_common_color_adjectives.append("STEEL");
+		_common_color_adjectives.append("WEB");
 	}
 }
 
@@ -84,12 +84,14 @@ static String _insert_underscores(const String &name, const Vector<String> &toke
 }
 
 static String _to_uppercase_name(const String &name) {
-	// Edge cases
+	// Edge cases where the color names and their respective adjectives don't appear in the cached lists.
+	// These names are unique enough to warrant not caching them in the lists.
 	if (name == "blanchedalmond") {
 		return "BLANCHED_ALMOND";
 	} else if (name == "burlywood") {
 		return "BURLY_WOOD";
 	} else if (name == "deepskyblue") {
+		// This case behaves weirdly unless kept here since "DEEP" is not in the cached lists.
 		return "DEEP_SKY_BLUE";
 	} else if (name == "lavenderblush") {
 		return "LAVENDER_BLUSH";
@@ -114,7 +116,7 @@ static String _to_uppercase_name(const String &name) {
 	// All other cases
 	_populate_uppercase_token_lists();
 	String uppercase_name = name.to_upper();
-	uppercase_name = _insert_underscores(uppercase_name, _modifiable_colors);
-	uppercase_name = _insert_underscores(uppercase_name, _color_descriptors);
+	uppercase_name = _insert_underscores(uppercase_name, _common_colors);
+	uppercase_name = _insert_underscores(uppercase_name, _common_color_adjectives);
 	return uppercase_name;
 }
