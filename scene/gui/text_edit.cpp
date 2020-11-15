@@ -1755,8 +1755,21 @@ void TextEdit::_notification(int p_what) {
 			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
-			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled)
-				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), true);
+			if (OS::get_singleton()->has_virtual_keyboard() && virtual_keyboard_enabled) {
+				String text = _base_get_text(0, 0, selection.selecting_line, selection.selecting_column);
+				int cursor_start = text.length();
+				int cursor_end = -1;
+
+				if (selection.active) {
+					String selected_text = _base_get_text(selection.from_line, selection.from_column, selection.to_line, selection.to_column);
+
+					if (selected_text.length() > 0) {
+						cursor_end = cursor_start + selected_text.length();
+					}
+				}
+
+				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect(), true, -1, cursor_start, cursor_end);
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
