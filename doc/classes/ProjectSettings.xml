@@ -25,7 +25,8 @@
 				- [code]type[/code]: [int] (see [enum Variant.Type])
 				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
 				[b]Example:[/b]
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				ProjectSettings.set("category/property_name", 0)
 
 				var property_info = {
@@ -36,7 +37,21 @@
 				}
 
 				ProjectSettings.add_property_info(property_info)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				ProjectSettings.Singleton.Set("category/property_name", 0);
+
+				var propertyInfo = new Godot.Collections.Dictionary
+				{
+				    {"name", "category/propertyName"},
+				    {"type", Variant.Type.Int},
+				    {"hint", PropertyHint.Enum},
+				    {"hint_string", "one,two,three"},
+				};
+
+				ProjectSettings.AddPropertyInfo(propertyInfo);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="clear">
@@ -65,9 +80,14 @@
 			<description>
 				Returns the value of a setting.
 				[b]Example:[/b]
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(ProjectSettings.get_setting("application/config/name"))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(ProjectSettings.GetSetting("application/config/name"));
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -178,9 +198,14 @@
 			<description>
 				Sets the value of a setting.
 				[b]Example:[/b]
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				ProjectSettings.set_setting("application/config/name", "Example")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				ProjectSettings.SetSetting("application/config/name", "Example");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>
@@ -895,18 +920,30 @@
 		<member name="physics/2d/default_gravity" type="int" setter="" getter="" default="98">
 			The default gravity strength in 2D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			# Set the default gravity strength to 98.
-			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().get_space(), PhysicsServer2D.AREA_PARAM_GRAVITY, 98)
-			[/codeblock]
+			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY, 98)
+			[/gdscript]
+			[csharp]
+			// Set the default gravity strength to 98.
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.Gravity, 98);
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
 			The default gravity direction in 2D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			# Set the default gravity direction to `Vector2(0, 1)`.
-			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().get_space(), PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR, Vector2(0, 1))
-			[/codeblock]
+			PhysicsServer2D.area_set_param(get_viewport().find_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR, Vector2.DOWN)
+			[/gdscript]
+			[csharp]
+			// Set the default gravity direction to `Vector2(0, 1)`.
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.GravityVector, Vector2.Down)
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="physics/2d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 2D.
@@ -942,18 +979,30 @@
 		<member name="physics/3d/default_gravity" type="float" setter="" getter="" default="9.8">
 			The default gravity strength in 3D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity at runtime, use the following code sample:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			# Set the default gravity strength to 9.8.
-			PhysicsServer3D.area_set_param(get_viewport().find_world().get_space(), PhysicsServer3D.AREA_PARAM_GRAVITY, 9.8)
-			[/codeblock]
+			PhysicsServer3D.area_set_param(get_viewport().find_world().space, PhysicsServer3D.AREA_PARAM_GRAVITY, 9.8)
+			[/gdscript]
+			[csharp]
+			// Set the default gravity strength to 9.8.
+			PhysicsServer3D.AreaSetParam(GetViewport().FindWorld().Space, PhysicsServer3D.AreaParameter.Gravity, 9.8);
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3( 0, -1, 0 )">
 			The default gravity direction in 3D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
-			[codeblock]
+			[codeblocks]
+			[gdscript]
 			# Set the default gravity direction to `Vector3(0, -1, 0)`.
-			PhysicsServer3D.area_set_param(get_viewport().find_world().get_space(), PhysicsServer3D.AREA_PARAM_GRAVITY_VECTOR, Vector3(0, -1, 0))
-			[/codeblock]
+			PhysicsServer3D.area_set_param(get_viewport().find_world().get_space(), PhysicsServer3D.AREA_PARAM_GRAVITY_VECTOR, Vector3.DOWN)
+			[/gdscript]
+			[csharp]
+			// Set the default gravity direction to `Vector3(0, -1, 0)`.
+			PhysicsServer3D.AreaSetParam(GetViewport().FindWorld().Space, PhysicsServer3D.AreaParameter.GravityVector, Vector3.Down)
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="physics/3d/default_linear_damp" type="float" setter="" getter="" default="0.1">
 			The default linear damp in 3D.
