@@ -98,7 +98,12 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item, const Transfor
 	}
 
 	Rect2 rect = ci->get_rect();
-	Transform2D xform = p_transform * ci->xform;
+	Transform2D xform = ci->xform;
+	if (snap_2d_transforms) {
+		xform.elements[2] = xform.elements[2].floor();
+	}
+	xform = p_transform * xform;
+
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
@@ -1477,6 +1482,7 @@ VisualServerCanvas::VisualServerCanvas() {
 	z_last_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
 
 	disable_scale = false;
+	snap_2d_transforms = Engine::get_singleton()->get_snap_2d_transforms();
 }
 
 VisualServerCanvas::~VisualServerCanvas() {
