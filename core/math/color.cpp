@@ -355,6 +355,23 @@ bool Color::html_is_valid(const String &p_color) {
 }
 
 Color Color::named(const String &p_name) {
+	int idx = find_named_color(p_name);
+	if (idx == -1) {
+		ERR_FAIL_V_MSG(Color(), "Invalid color name: " + p_name + ".");
+		return Color();
+	}
+	return get_named_color(idx);
+}
+
+Color Color::named(const String &p_name, const Color &p_default) {
+	int idx = find_named_color(p_name);
+	if (idx == -1) {
+		return p_default;
+	}
+	return get_named_color(idx);
+}
+
+int Color::find_named_color(const String &p_name) {
 	String name = p_name;
 	// Normalize name
 	name = name.replace(" ", "");
@@ -367,14 +384,12 @@ Color Color::named(const String &p_name) {
 	int idx = 0;
 	while (named_colors[idx].name != nullptr) {
 		if (name == named_colors[idx].name) {
-			return named_colors[idx].color;
+			return idx;
 		}
 		idx++;
 	}
 
-	ERR_FAIL_V_MSG(Color(), "Invalid color name: " + p_name + ".");
-
-	return Color();
+	return -1;
 }
 
 int Color::get_named_color_count() {
@@ -384,11 +399,21 @@ int Color::get_named_color_count() {
 	}
 	return idx;
 }
+
 String Color::get_named_color_name(int p_idx) {
 	return named_colors[p_idx].name;
 }
+
 Color Color::get_named_color(int p_idx) {
 	return named_colors[p_idx].color;
+}
+
+Color Color::from_string(const String &p_string, const Color &p_default) {
+	if (html_is_valid(p_string)) {
+		return html(p_string);
+	} else {
+		return named(p_string, p_default);
+	}
 }
 
 String _to_hex(float p_val) {

@@ -182,9 +182,12 @@ struct Color {
 	static Color html(const String &p_rgba);
 	static bool html_is_valid(const String &p_color);
 	static Color named(const String &p_name);
+	static Color named(const String &p_name, const Color &p_default);
+	static int find_named_color(const String &p_name);
 	static int get_named_color_count();
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
+	static Color from_string(const String &p_string, const Color &p_default);
 	String to_html(bool p_alpha = true) const;
 	Color from_hsv(float p_h, float p_s, float p_v, float p_a) const;
 	static Color from_rgbe9995(uint32_t p_rgbe);
