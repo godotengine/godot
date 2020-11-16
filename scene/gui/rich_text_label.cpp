@@ -1449,46 +1449,6 @@ void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack
 	}
 }
 
-Color RichTextLabel::_get_color_from_string(const String &p_color_str, const Color &p_default_color) {
-	if (p_color_str.begins_with("#")) {
-		return Color::html(p_color_str);
-	} else if (p_color_str == "aqua") {
-		return Color(0, 1, 1);
-	} else if (p_color_str == "black") {
-		return Color(0, 0, 0);
-	} else if (p_color_str == "blue") {
-		return Color(0, 0, 1);
-	} else if (p_color_str == "fuchsia") {
-		return Color(1, 0, 1);
-	} else if (p_color_str == "gray" || p_color_str == "grey") {
-		return Color(0.5, 0.5, 0.5);
-	} else if (p_color_str == "green") {
-		return Color(0, 0.5, 0);
-	} else if (p_color_str == "lime") {
-		return Color(0, 1, 0);
-	} else if (p_color_str == "maroon") {
-		return Color(0.5, 0, 0);
-	} else if (p_color_str == "navy") {
-		return Color(0, 0, 0.5);
-	} else if (p_color_str == "olive") {
-		return Color(0.5, 0.5, 0);
-	} else if (p_color_str == "purple") {
-		return Color(0.5, 0, 0.5);
-	} else if (p_color_str == "red") {
-		return Color(1, 0, 0);
-	} else if (p_color_str == "silver") {
-		return Color(0.75, 0.75, 0.75);
-	} else if (p_color_str == "teal") {
-		return Color(0, 0.5, 0.5);
-	} else if (p_color_str == "white") {
-		return Color(1, 1, 1);
-	} else if (p_color_str == "yellow") {
-		return Color(1, 1, 0);
-	} else {
-		return p_default_color;
-	}
-}
-
 bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
@@ -2264,7 +2224,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				Color color = Color(1.0, 1.0, 1.0);
 				OptionMap::Element *color_option = bbcode_options.find("color");
 				if (color_option) {
-					color = _get_color_from_string(color_option->value(), color);
+					color = Color::from_string(color_option->value(), color);
 				}
 
 				int width = 0;
@@ -2296,7 +2256,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("color=")) {
 			String color_str = tag.substr(6, tag.length());
-			Color color = _get_color_from_string(color_str, base_color);
+			Color color = Color::from_string(color_str, base_color);
 			push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
