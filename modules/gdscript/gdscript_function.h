@@ -162,10 +162,16 @@ public:
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_EXTENDS_TEST,
 		OPCODE_IS_BUILTIN,
-		OPCODE_SET,
-		OPCODE_GET,
+		OPCODE_SET_KEYED,
+		OPCODE_SET_KEYED_VALIDATED,
+		OPCODE_SET_INDEXED_VALIDATED,
+		OPCODE_GET_KEYED,
+		OPCODE_GET_KEYED_VALIDATED,
+		OPCODE_GET_INDEXED_VALIDATED,
 		OPCODE_SET_NAMED,
+		OPCODE_SET_NAMED_VALIDATED,
 		OPCODE_GET_NAMED,
+		OPCODE_GET_NAMED_VALIDATED,
 		OPCODE_SET_MEMBER,
 		OPCODE_GET_MEMBER,
 		OPCODE_ASSIGN,
@@ -244,6 +250,18 @@ private:
 	int _default_arg_count = 0;
 	int _operator_funcs_count = 0;
 	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
+	int _setters_count = 0;
+	const Variant::ValidatedSetter *_setters_ptr = nullptr;
+	int _getters_count = 0;
+	const Variant::ValidatedGetter *_getters_ptr = nullptr;
+	int _keyed_setters_count = 0;
+	const Variant::ValidatedKeyedSetter *_keyed_setters_ptr = nullptr;
+	int _keyed_getters_count = 0;
+	const Variant::ValidatedKeyedGetter *_keyed_getters_ptr = nullptr;
+	int _indexed_setters_count = 0;
+	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
+	int _indexed_getters_count = 0;
+	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
 	const int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
@@ -260,6 +278,12 @@ private:
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
 	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
+	Vector<Variant::ValidatedSetter> setters;
+	Vector<Variant::ValidatedGetter> getters;
+	Vector<Variant::ValidatedKeyedSetter> keyed_setters;
+	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
+	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
+	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;

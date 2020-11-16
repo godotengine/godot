@@ -170,6 +170,78 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_operator_funcs_ptr = nullptr;
 	}
 
+	if (setters_map.size()) {
+		function->setters.resize(setters_map.size());
+		function->_setters_count = function->setters.size();
+		function->_setters_ptr = function->setters.ptr();
+		for (const Map<Variant::ValidatedSetter, int>::Element *E = setters_map.front(); E; E = E->next()) {
+			function->setters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_setters_count = 0;
+		function->_setters_ptr = nullptr;
+	}
+
+	if (getters_map.size()) {
+		function->getters.resize(getters_map.size());
+		function->_getters_count = function->getters.size();
+		function->_getters_ptr = function->getters.ptr();
+		for (const Map<Variant::ValidatedGetter, int>::Element *E = getters_map.front(); E; E = E->next()) {
+			function->getters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_getters_count = 0;
+		function->_getters_ptr = nullptr;
+	}
+
+	if (keyed_setters_map.size()) {
+		function->keyed_setters.resize(keyed_setters_map.size());
+		function->_keyed_setters_count = function->keyed_setters.size();
+		function->_keyed_setters_ptr = function->keyed_setters.ptr();
+		for (const Map<Variant::ValidatedKeyedSetter, int>::Element *E = keyed_setters_map.front(); E; E = E->next()) {
+			function->keyed_setters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_keyed_setters_count = 0;
+		function->_keyed_setters_ptr = nullptr;
+	}
+
+	if (keyed_getters_map.size()) {
+		function->keyed_getters.resize(keyed_getters_map.size());
+		function->_keyed_getters_count = function->keyed_getters.size();
+		function->_keyed_getters_ptr = function->keyed_getters.ptr();
+		for (const Map<Variant::ValidatedKeyedGetter, int>::Element *E = keyed_getters_map.front(); E; E = E->next()) {
+			function->keyed_getters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_keyed_getters_count = 0;
+		function->_keyed_getters_ptr = nullptr;
+	}
+
+	if (indexed_setters_map.size()) {
+		function->indexed_setters.resize(indexed_setters_map.size());
+		function->_indexed_setters_count = function->indexed_setters.size();
+		function->_indexed_setters_ptr = function->indexed_setters.ptr();
+		for (const Map<Variant::ValidatedIndexedSetter, int>::Element *E = indexed_setters_map.front(); E; E = E->next()) {
+			function->indexed_setters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_indexed_setters_count = 0;
+		function->_indexed_setters_ptr = nullptr;
+	}
+
+	if (indexed_getters_map.size()) {
+		function->indexed_getters.resize(indexed_getters_map.size());
+		function->_indexed_getters_count = function->indexed_getters.size();
+		function->_indexed_getters_ptr = function->indexed_getters.ptr();
+		for (const Map<Variant::ValidatedIndexedGetter, int>::Element *E = indexed_getters_map.front(); E; E = E->next()) {
+			function->indexed_getters.write[E->get()] = E->key();
+		}
+	} else {
+		function->_indexed_getters_count = 0;
+		function->_indexed_getters_ptr = nullptr;
+	}
+
 	if (debug_stack) {
 		function->stack_debug = stack_debug;
 	}
@@ -192,6 +264,9 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 
 #define HAS_BUILTIN_TYPE(m_var) \
 	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN)
+
+#define IS_BUILTIN_TYPE(m_var, m_type) \
+	(m_var.type.has_type && m_var.type.kind == GDScriptDataType::BUILTIN && m_var.type.builtin_type == m_type)
 
 void GDScriptByteCodeGenerator::write_operator(const Address &p_target, Variant::Operator p_operator, const Address &p_left_operand, const Address &p_right_operand) {
 	if (HAS_BUILTIN_TYPE(p_left_operand) && HAS_BUILTIN_TYPE(p_right_operand)) {
@@ -324,20 +399,69 @@ void GDScriptByteCodeGenerator::write_end_ternary() {
 }
 
 void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address &p_index, const Address &p_source) {
-	append(GDScriptFunction::OPCODE_SET, 3);
+	if (HAS_BUILTIN_TYPE(p_target)) {
+		if (IS_BUILTIN_TYPE(p_index, Variant::INT) && Variant::get_member_validated_indexed_setter(p_target.type.builtin_type)) {
+			// Use indexed setter instead.
+			Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(p_target.type.builtin_type);
+			append(GDScriptFunction::OPCODE_SET_INDEXED_VALIDATED, 3);
+			append(p_target);
+			append(p_index);
+			append(p_source);
+			append(setter);
+			return;
+		} else if (Variant::get_member_validated_keyed_setter(p_target.type.builtin_type)) {
+			Variant::ValidatedKeyedSetter setter = Variant::get_member_validated_keyed_setter(p_target.type.builtin_type);
+			append(GDScriptFunction::OPCODE_SET_KEYED_VALIDATED, 3);
+			append(p_target);
+			append(p_index);
+			append(p_source);
+			append(setter);
+			return;
+		}
+	}
+
+	append(GDScriptFunction::OPCODE_SET_KEYED, 3);
 	append(p_target);
 	append(p_index);
 	append(p_source);
 }
 
 void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address &p_index, const Address &p_source) {
-	append(GDScriptFunction::OPCODE_GET, 3);
+	if (HAS_BUILTIN_TYPE(p_source)) {
+		if (IS_BUILTIN_TYPE(p_index, Variant::INT) && Variant::get_member_validated_indexed_getter(p_source.type.builtin_type)) {
+			// Use indexed getter instead.
+			Variant::ValidatedIndexedGetter getter = Variant::get_member_validated_indexed_getter(p_source.type.builtin_type);
+			append(GDScriptFunction::OPCODE_GET_INDEXED_VALIDATED, 3);
+			append(p_source);
+			append(p_index);
+			append(p_target);
+			append(getter);
+			return;
+		} else if (Variant::get_member_validated_keyed_getter(p_source.type.builtin_type)) {
+			Variant::ValidatedKeyedGetter getter = Variant::get_member_validated_keyed_getter(p_source.type.builtin_type);
+			append(GDScriptFunction::OPCODE_GET_KEYED_VALIDATED, 3);
+			append(p_source);
+			append(p_index);
+			append(p_target);
+			append(getter);
+			return;
+		}
+	}
+	append(GDScriptFunction::OPCODE_GET_KEYED, 3);
 	append(p_source);
 	append(p_index);
 	append(p_target);
 }
 
 void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
+	if (HAS_BUILTIN_TYPE(p_target) && Variant::get_member_validated_setter(p_target.type.builtin_type, p_name)) {
+		Variant::ValidatedSetter setter = Variant::get_member_validated_setter(p_target.type.builtin_type, p_name);
+		append(GDScriptFunction::OPCODE_SET_NAMED_VALIDATED, 2);
+		append(p_target);
+		append(p_source);
+		append(setter);
+		return;
+	}
 	append(GDScriptFunction::OPCODE_SET_NAMED, 2);
 	append(p_target);
 	append(p_source);
@@ -345,6 +469,14 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 }
 
 void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
+	if (HAS_BUILTIN_TYPE(p_source) && Variant::get_member_validated_getter(p_source.type.builtin_type, p_name)) {
+		Variant::ValidatedGetter getter = Variant::get_member_validated_getter(p_source.type.builtin_type, p_name);
+		append(GDScriptFunction::OPCODE_GET_NAMED_VALIDATED, 2);
+		append(p_source);
+		append(p_target);
+		append(getter);
+		return;
+	}
 	append(GDScriptFunction::OPCODE_GET_NAMED, 2);
 	append(p_source);
 	append(p_target);

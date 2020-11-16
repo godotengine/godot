@@ -191,10 +191,16 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_OPERATOR_VALIDATED,          \
 		&&OPCODE_EXTENDS_TEST,                \
 		&&OPCODE_IS_BUILTIN,                  \
-		&&OPCODE_SET,                         \
-		&&OPCODE_GET,                         \
+		&&OPCODE_SET_KEYED,                   \
+		&&OPCODE_SET_KEYED_VALIDATED,         \
+		&&OPCODE_SET_INDEXED_VALIDATED,       \
+		&&OPCODE_GET_KEYED,                   \
+		&&OPCODE_GET_KEYED_VALIDATED,         \
+		&&OPCODE_GET_INDEXED_VALIDATED,       \
 		&&OPCODE_SET_NAMED,                   \
+		&&OPCODE_SET_NAMED_VALIDATED,         \
 		&&OPCODE_GET_NAMED,                   \
+		&&OPCODE_GET_NAMED_VALIDATED,         \
 		&&OPCODE_SET_MEMBER,                  \
 		&&OPCODE_GET_MEMBER,                  \
 		&&OPCODE_ASSIGN,                      \
@@ -575,7 +581,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_SET) {
+			OPCODE(OPCODE_SET_KEYED) {
 				CHECK_SPACE(3);
 
 				GET_INSTRUCTION_ARG(dst, 0);
@@ -601,7 +607,69 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_GET) {
+			OPCODE(OPCODE_SET_KEYED_VALIDATED) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(dst, 0);
+				GET_INSTRUCTION_ARG(index, 1);
+				GET_INSTRUCTION_ARG(value, 2);
+
+				int index_setter = _code_ptr[ip + 4];
+				GD_ERR_BREAK(index_setter < 0 || index_setter >= _keyed_setters_count);
+				const Variant::ValidatedKeyedSetter setter = _keyed_setters_ptr[index_setter];
+
+				bool valid;
+				setter(dst, index, value, valid);
+
+#ifdef DEBUG_ENABLED
+				if (!valid) {
+					String v = index->operator String();
+					if (v != "") {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(index) + "'";
+					}
+					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 5;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_SET_INDEXED_VALIDATED) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(dst, 0);
+				GET_INSTRUCTION_ARG(index, 1);
+				GET_INSTRUCTION_ARG(value, 2);
+
+				int index_setter = _code_ptr[ip + 4];
+				GD_ERR_BREAK(index_setter < 0 || index_setter >= _indexed_setters_count);
+				const Variant::ValidatedIndexedSetter setter = _indexed_setters_ptr[index_setter];
+
+				int64_t int_index = *VariantInternal::get_int(index);
+
+				bool oob;
+				setter(dst, int_index, value, oob);
+
+#ifdef DEBUG_ENABLED
+				if (oob) {
+					String v = index->operator String();
+					if (v != "") {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(index) + "'";
+					}
+					err_text = "Out of bounds set index " + v + " (on base: '" + _get_var_type(dst) + "')";
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 5;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_KEYED) {
 				CHECK_SPACE(3);
 
 				GET_INSTRUCTION_ARG(src, 0);
@@ -610,7 +678,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool valid;
 #ifdef DEBUG_ENABLED
-				//allow better error message in cases where src and dst are the same stack position
+				// Allow better error message in cases where src and dst are the same stack position.
 				Variant ret = src->get(*index, &valid);
 #else
 				*dst = src->get(*index, &valid);
@@ -630,6 +698,74 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				*dst = ret;
 #endif
 				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_KEYED_VALIDATED) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(src, 0);
+				GET_INSTRUCTION_ARG(key, 1);
+				GET_INSTRUCTION_ARG(dst, 2);
+
+				int index_getter = _code_ptr[ip + 4];
+				GD_ERR_BREAK(index_getter < 0 || index_getter >= _keyed_getters_count);
+				const Variant::ValidatedKeyedGetter getter = _keyed_getters_ptr[index_getter];
+
+				bool valid;
+#ifdef DEBUG_ENABLED
+				// Allow better error message in cases where src and dst are the same stack position.
+				Variant ret;
+				getter(src, key, &ret, valid);
+#else
+				getter(src, key, dst, valid);
+#endif
+#ifdef DEBUG_ENABLED
+				if (!valid) {
+					String v = key->operator String();
+					if (v != "") {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(key) + "'";
+					}
+					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
+					OPCODE_BREAK;
+				}
+				*dst = ret;
+#endif
+				ip += 5;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_INDEXED_VALIDATED) {
+				CHECK_SPACE(4);
+
+				GET_INSTRUCTION_ARG(src, 0);
+				GET_INSTRUCTION_ARG(index, 1);
+				GET_INSTRUCTION_ARG(dst, 2);
+
+				int index_getter = _code_ptr[ip + 4];
+				GD_ERR_BREAK(index_getter < 0 || index_getter >= _indexed_getters_count);
+				const Variant::ValidatedIndexedGetter getter = _indexed_getters_ptr[index_getter];
+
+				int64_t int_index = *VariantInternal::get_int(index);
+
+				bool oob;
+				getter(src, int_index, dst, oob);
+
+#ifdef DEBUG_ENABLED
+				if (oob) {
+					String v = index->operator String();
+					if (v != "") {
+						v = "'" + v + "'";
+					} else {
+						v = "of type '" + _get_var_type(index) + "'";
+					}
+					err_text = "Out of bounds get index " + v + " (on base: '" + _get_var_type(src) + "')";
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 5;
 			}
 			DISPATCH_OPCODE;
 
@@ -654,6 +790,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 #endif
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_SET_NAMED_VALIDATED) {
+				CHECK_SPACE(3);
+
+				GET_INSTRUCTION_ARG(dst, 0);
+				GET_INSTRUCTION_ARG(value, 1);
+
+				int index_setter = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index_setter < 0 || index_setter >= _setters_count);
+				const Variant::ValidatedSetter setter = _setters_ptr[index_setter];
+
+				setter(dst, value);
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -688,6 +839,21 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 				*dst = ret;
 #endif
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_NAMED_VALIDATED) {
+				CHECK_SPACE(3);
+
+				GET_INSTRUCTION_ARG(src, 0);
+				GET_INSTRUCTION_ARG(dst, 1);
+
+				int index_getter = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index_getter < 0 || index_getter >= _getters_count);
+				const Variant::ValidatedGetter getter = _getters_ptr[index_getter];
+
+				getter(src, dst);
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
