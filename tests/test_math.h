@@ -54,9 +54,9 @@ TEST_CASE("[Transform] Rotate around global origin") {
 	transform.origin = Vector3(0, 0, 1);
 
 	Transform expected = Transform();
-	expected.origin = Vector3(1, 0, 0);
-	expected.basis.set_axis(0, Vector3(0, 0, 1));
-	expected.basis.set_axis(2, Vector3(-1, 0, 0));
+	expected.origin = Vector3(0, 0, -1);
+	expected.basis.set_axis(0, Vector3(-1, 0, 0));
+	expected.basis.set_axis(2, Vector3(0, 0, -1));
 
 	Transform rotatedTransform = transform.rotated(Vector3(0, 1, 0), FM_PI);
 	REQUIRE(rotatedTransform.is_equal_approx(expected));
@@ -64,14 +64,14 @@ TEST_CASE("[Transform] Rotate around global origin") {
 
 TEST_CASE("[Transform] Rotate in-place") {
 	//Start with the default orientation, but not centered on the origin.
-	//Rotating should rotate both our basis and the origin.
+	//Rotating in-place should only rotate the basis, leaving the origin alone.
 	Transform transform = Transform();
 	transform.origin = Vector3(0, 0, 1);
 
 	Transform expected = Transform();
 	expected.origin = Vector3(0, 0, 1);
-	expected.basis.set_axis(0, Vector3(0, 0, 1));
-	expected.basis.set_axis(2, Vector3(-1, 0, 0));
+	expected.basis.set_axis(0, Vector3(-1, 0, 0));
+	expected.basis.set_axis(2, Vector3(0, 0, -1));
 
 	Transform rotatedTransform = transform.rotated_local(Vector3(0, 1, 0), FM_PI);
 	REQUIRE(rotatedTransform.is_equal_approx(expected));
