@@ -42,9 +42,9 @@
 
 class SceneSynchronizer;
 
-struct NodeDiff {
-	Ref<NetUtility::NodeData> node_data;
-	OAHashMap<uint32_t, Variant> var_diff;
+struct VarDiff {
+	bool is_different = false;
+	Variant value;
 };
 
 /// This class is used to track the scene changes during a particular period of
@@ -58,8 +58,8 @@ class SceneDiff : public Object {
 	static void _bind_methods();
 
 	uint32_t start_tracking_count = 0;
-	LocalVector<NetUtility::NodeTrackingData> tracking;
-	OAHashMap<uint32_t, NodeDiff> diff;
+	LocalVector<LocalVector<Variant> > tracking;
+	LocalVector<LocalVector<VarDiff> > diff;
 
 public:
 	SceneDiff();

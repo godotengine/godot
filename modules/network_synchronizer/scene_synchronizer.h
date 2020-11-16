@@ -243,6 +243,10 @@ private:
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.
 	Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id);
+	const Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id) const;
+
+	/// Returns the latest generated `NetNodeId`.
+	NetNodeId get_biggest_node_id() const;
 
 	void process();
 

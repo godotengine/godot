@@ -350,7 +350,7 @@ void SceneSynchronizer::start_tracking_scene_changes(Object *p_diff_handle) cons
 	SceneDiff *diff = Object::cast_to<SceneDiff>(p_diff_handle);
 	ERR_FAIL_COND_MSG(diff == nullptr, "The object is not a SceneDiff class.");
 
-	diff->start_tracking_scene_changes(node_data);
+	diff->start_tracking_scene_changes(organized_node_data);
 }
 
 void SceneSynchronizer::stop_tracking_scene_changes(Object *p_diff_handle) const {
@@ -380,23 +380,32 @@ Variant SceneSynchronizer::pop_scene_changes(Object *p_diff_handle) const {
 
 	// Generates a sync_data and returns it.
 	Vector<Variant> ret;
-	for (
-			OAHashMap<uint32_t, NodeDiff>::Iterator node_iter = diff->diff.iter();
-			node_iter.valid;
-			node_iter = diff->diff.next_iter(node_iter)) {
-		if (node_iter.value->var_diff.empty() == false) {
-			// Set the node id.
-			ret.push_back(*node_iter.key);
-			for (
-					OAHashMap<uint32_t, Variant>::Iterator var_iter = node_iter.value->var_diff.iter();
-					var_iter.valid;
-					var_iter = node_iter.value->var_diff.next_iter(var_iter)) {
-				ret.push_back(*var_iter.key);
-				ret.push_back(*var_iter.value);
-			}
-			// Close the Node data.
-			ret.push_back(Variant());
+	for (NetNodeId node_id = 0; node_id < diff->diff.size(); node_id += 1) {
+		if (diff->diff[node_id].size() == 0) {
+			// Nothing to do.
+			continue;
 		}
+
+		Ref<NetUtility::NodeData> nd = get_node_data(node_id);
+		if (nd.is_null() || nd->id == UINT32_MAX) {
+			continue;
+		}
+
+		bool node_id_in_ret = false;
+		for (NetVarId var_id = 0; var_id < diff->diff[node_id].size(); var_id += 1) {
+			if (diff->diff[node_id][var_id].is_different == false) {
+				continue;
+			}
+			if (node_id_in_ret == false) {
+				node_id_in_ret = true;
+				// Set the node id.
+				ret.push_back(node_id);
+			}
+			ret.push_back(var_id);
+			ret.push_back(diff->diff[node_id][var_id].value);
+		}
+		// Close the Node data.
+		ret.push_back(Variant());
 	}
 
 	// Clear the diff data.
@@ -426,12 +435,18 @@ void SceneSynchronizer::apply_scene_changes(Variant p_sync_data) {
 			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value) {
 				SceneSynchronizer *scene_sync = static_cast<SceneSynchronizer *>(p_user_pointer);
 
-				p_node_data->node->set(
-						p_node_data->vars[p_var_id].var.name,
-						p_value);
+				const Variant current_val = p_node_data->node->get(
+						p_node_data->vars[p_var_id].var.name);
 
-				p_node_data->node->emit_signal(scene_sync->get_changed_event_name(p_node_data->vars[p_var_id].var.name));
-				scene_sync->synchronizer->on_variable_changed(p_node_data, p_node_data->vars[p_var_id].var.name);
+				if (scene_sync->synchronizer_variant_evaluation(current_val, p_value) == false) {
+					// Different
+					p_node_data->node->set(
+							p_node_data->vars[p_var_id].var.name,
+							p_value);
+
+					p_node_data->node->emit_signal(scene_sync->get_changed_event_name(p_node_data->vars[p_var_id].var.name));
+					scene_sync->synchronizer->on_variable_changed(p_node_data, p_node_data->vars[p_var_id].var.name);
+				}
 			});
 }
 
@@ -627,7 +642,7 @@ void SceneSynchronizer::add_node_data(Ref<NetUtility::NodeData> p_node_data) {
 		// When generate_id is true, the id must always be undefined.
 		CRASH_COND(p_node_data->id != UINT32_MAX);
 #endif
-		p_node_data->id = node_data.size();
+		p_node_data->id = organized_node_data.size();
 	}
 
 #ifdef DEBUG_ENABLED
@@ -646,20 +661,19 @@ void SceneSynchronizer::add_node_data(Ref<NetUtility::NodeData> p_node_data) {
 		}
 	}
 #endif
+
 	node_data.push_back(p_node_data);
-	organized_node_data.resize(node_data.size());
 
 	if (generate_id) {
-		organized_node_data[p_node_data->id] = p_node_data;
+		organized_node_data.push_back(p_node_data);
 	} else {
 		if (p_node_data->id != UINT32_MAX) {
 			// This node has an ID, make sure to organize it properly.
 
-#ifdef DEBUG_ENABLED
-			// The ID is never more than the action node_data size.
-			CRASH_COND(p_node_data->id >= node_data.size());
-#endif
-			organized_node_data.resize(node_data.size());
+			if (organized_node_data.size() <= p_node_data->id) {
+				organized_node_data.resize(p_node_data->id + 1);
+			}
+
 			organized_node_data[p_node_data->id] = p_node_data;
 		}
 	}
@@ -675,7 +689,9 @@ void SceneSynchronizer::set_node_data_id(Ref<NetUtility::NodeData> p_node_data, 
 #ifdef DEBUG_ENABLED
 	CRASH_COND_MSG(generate_id, "This function is not supposed to be called, because this instance is generating the IDs");
 #endif
-	ERR_FAIL_INDEX(p_id, organized_node_data.size());
+	if (organized_node_data.size() <= p_id) {
+		organized_node_data.resize(p_id + 1);
+	}
 	p_node_data->id = p_id;
 	organized_node_data[p_id] = p_node_data;
 	NET_DEBUG_PRINT("NetNodeId: " + itos(p_id) + " just assigned to: " + p_node_data->node->get_path());
@@ -883,6 +899,15 @@ Ref<NetUtility::NodeData> SceneSynchronizer::find_node_data(Node *p_node) {
 Ref<NetUtility::NodeData> SceneSynchronizer::get_node_data(NetNodeId p_id) {
 	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), Ref<NetUtility::NodeData>());
 	return organized_node_data[p_id];
+}
+
+const Ref<NetUtility::NodeData> SceneSynchronizer::get_node_data(NetNodeId p_id) const {
+	ERR_FAIL_INDEX_V(p_id, organized_node_data.size(), Ref<NetUtility::NodeData>());
+	return organized_node_data[p_id];
+}
+
+NetNodeId SceneSynchronizer::get_biggest_node_id() const {
+	return organized_node_data.size() == 0 ? UINT32_MAX : organized_node_data.size() - 1;
 }
 
 void SceneSynchronizer::process() {
@@ -1799,8 +1824,8 @@ bool ClientSynchronizer::parse_sync_data(
 			// Node is null so we expect `v` has the node info.
 
 			bool skip_this_node = false;
-			uint32_t net_node_id = UINT32_MAX;
 			Node *node = nullptr;
+			uint32_t net_node_id = UINT32_MAX;
 			NodePath node_path;
 
 			if (v.is_array()) {
@@ -1831,29 +1856,27 @@ bool ClientSynchronizer::parse_sync_data(
 			}
 
 			if (synchronizer_node_data == nullptr) {
-				if (node == nullptr) {
-					if (node_path.is_empty()) {
-						const NodePath *node_path_ptr = node_paths.lookup_ptr(net_node_id);
+				if (node_path.is_empty()) {
+					const NodePath *node_path_ptr = node_paths.lookup_ptr(net_node_id);
 
-						if (node_path_ptr == nullptr) {
-							// Was not possible lookup the node_path.
-							NET_DEBUG_WARN("The node with ID `" + itos(net_node_id) + "` is not know by this peer, this is not supposed to happen.");
-							notify_server_full_snapshot_is_needed();
-							skip_this_node = true;
-							goto node_lookup_check;
-						} else {
-							node_path = *node_path_ptr;
-						}
-					}
-
-					node = scene_synchronizer->get_tree()->get_root()->get_node(node_path);
-
-					if (node == nullptr) {
-						// The node doesn't exists.
-						NET_DEBUG_ERR("The node " + node_path + " still doesn't exist.");
+					if (node_path_ptr == nullptr) {
+						// Was not possible lookup the node_path.
+						NET_DEBUG_WARN("The node with ID `" + itos(net_node_id) + "` is not know by this peer, this is not supposed to happen.");
+						notify_server_full_snapshot_is_needed();
 						skip_this_node = true;
 						goto node_lookup_check;
+					} else {
+						node_path = *node_path_ptr;
 					}
+				}
+
+				node = scene_synchronizer->get_tree()->get_root()->get_node(node_path);
+
+				if (node == nullptr) {
+					// The node doesn't exists.
+					NET_DEBUG_ERR("The node " + node_path + " still doesn't exist.");
+					skip_this_node = true;
+					goto node_lookup_check;
 				}
 
 				// Register this node, so to make sure the client is tracking it.
@@ -1880,6 +1903,12 @@ bool ClientSynchronizer::parse_sync_data(
 			}
 
 		node_lookup_out:
+
+#ifdef DEBUG_ENABLED
+			// At this point the ID is never UINT32_MAX thanks to the above
+			// mechanism.
+			CRASH_COND(synchronizer_node_data->id == UINT32_MAX);
+#endif
 
 			p_node_parse(p_user_pointer, synchronizer_node_data);
 

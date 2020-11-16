@@ -56,23 +56,35 @@ void SceneDiff::start_tracking_scene_changes(
 
 	for (uint32_t i = 0; i < p_nodes.size(); i += 1) {
 		if (p_nodes[i].is_null()) {
+			tracking[i].clear();
 			continue;
 		}
+
+#ifdef DEBUG_ENABLED
+		// This is never triggered because we always pass the `organized_node_data`
+		// array.
+		CRASH_COND(p_nodes[i]->id != i);
+#endif
+
 		if (p_nodes[i]->is_controller || p_nodes[i]->controlled_by != nullptr) {
 			// This is a controller, Skip.
+			tracking[i].clear();
 			continue;
 		}
-		if (p_nodes[i]->node && p_nodes[i]->id != UINT32_MAX && p_nodes[i]->valid) {
-			tracking[i].node_data = p_nodes[i];
-			tracking[i].variables.resize(p_nodes[i]->vars.size());
-			const NetUtility::VarData *vars = p_nodes[i]->vars.ptr();
 
-			for (int v = 0; v < p_nodes[i]->vars.size(); v += 1) {
+		if (p_nodes[i]->node && p_nodes[i]->valid) {
+			tracking[i].resize(p_nodes[i]->vars.size());
+
+			for (uint32_t v = 0; v < p_nodes[i]->vars.size(); v += 1) {
 				// Take the current variable value and store it.
-				tracking[i].variables[v] = p_nodes[i]->node->get(vars[v].var.name).duplicate(true);
+				if (p_nodes[i]->vars[v].enabled && p_nodes[i]->vars[v].id != UINT32_MAX) {
+					tracking[i][v] = p_nodes[i]->node->get(p_nodes[i]->vars[v].var.name).duplicate(true);
+				} else {
+					tracking[i][v] = Variant();
+				}
 			}
 		} else {
-			tracking[i].variables.clear();
+			tracking[i].clear();
 		}
 	}
 }
@@ -88,45 +100,63 @@ void SceneDiff::stop_tracking_scene_changes(const SceneSynchronizer *p_synchroni
 		return;
 	}
 
-	for (uint32_t i = 0; i < tracking.size(); i += 1) {
-		if (tracking[i].node_data->node && tracking[i].node_data->valid) {
+	if (p_synchronizer->get_biggest_node_id() == UINT32_MAX) {
+		// No nodes to track.
+		tracking.clear();
+		return;
+	}
+
+	if (tracking.size() > (p_synchronizer->get_biggest_node_id() + 1)) {
+		NET_DEBUG_ERR("[BUG] The tracked nodes are exceeding the sync nodes. Probably the sync is different or it has reset?");
+		tracking.clear();
+		return;
+	}
+
+	if (diff.size() < tracking.size()) {
+		// Make sure the diff has room to store the needed info.
+		diff.resize(tracking.size());
+	}
+
+	for (NetNodeId i = 0; i < tracking.size(); i += 1) {
+		const Ref<NetUtility::NodeData> nd = p_synchronizer->get_node_data(i);
+		if (nd.is_null()) {
+			continue;
+		}
+
+		if (nd->node && nd->valid) {
+
 #ifdef DEBUG_NEABLED
 			// Nodes with 0 ID are skipt, so this cond is always false.
-			CRASH_COND(tracking[i].node_data->id <= 0);
+			CRASH_COND(nd->id != UINT32_MAX);
 #endif
 
-			if (tracking[i].variables.size() != uint32_t(tracking[i].node_data->vars.size())) {
+			if (nd->vars.size() != tracking[i].size()) {
 				// These two arrays are different because the node was null
 				// during the start. So we can assume we are not tracking it.
 				continue;
 			}
 
-			NodeDiff *node_diff = diff.lookup_ptr(tracking[i].node_data->id);
+			if (diff[i].size() < tracking[i].size()) {
+				// Make sure the diff has room to store the variable info.
+				diff[i].resize(tracking[i].size());
+			}
 
-			const NetUtility::VarData *vars = tracking[i].node_data->vars.ptr();
-			for (int v = 0; v < tracking[i].node_data->vars.size(); v += 1) {
-				if (vars[v].id <= 0 && vars[v].enabled == false) {
+			for (uint32_t v = 0; v < tracking[i].size(); v += 1) {
+				if (nd->vars[v].id == UINT32_MAX || nd->vars[v].enabled == false) {
 					continue;
 				}
 
-				// Take the current variable value and store it.
+				// Take the current variable value.
 				const Variant current_value =
-						tracking[i].node_data->node->get(vars[v].var.name);
+						nd->node->get(nd->vars[v].var.name);
 
 				// Compare the current value with the one taken during the start.
 				if (p_synchronizer->synchronizer_variant_evaluation(
-							tracking[i].variables[v],
+							tracking[i][v],
 							current_value) == false) {
 
-					if (node_diff == nullptr) {
-						diff.insert(tracking[i].node_data->id, NodeDiff());
-						node_diff = diff.lookup_ptr(tracking[i].node_data->id);
-						node_diff->node_data = tracking[i].node_data;
-					}
-
-					node_diff->var_diff.set(
-							vars[v].id,
-							current_value);
+					diff[i][v].is_different = true;
+					diff[i][v].value = current_value;
 				}
 			}
 		}
