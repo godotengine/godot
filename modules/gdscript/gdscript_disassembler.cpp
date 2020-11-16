@@ -167,8 +167,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
-			case OPCODE_SET: {
-				text += "set ";
+			case OPCODE_SET_KEYED: {
+				text += "set keyed ";
 				text += DADDR(1);
 				text += "[";
 				text += DADDR(2);
@@ -177,8 +177,28 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
-			case OPCODE_GET: {
-				text += "get ";
+			case OPCODE_SET_KEYED_VALIDATED: {
+				text += "set keyed validated ";
+				text += DADDR(1);
+				text += "[";
+				text += DADDR(2);
+				text += "] = ";
+				text += DADDR(3);
+
+				incr += 5;
+			} break;
+			case OPCODE_SET_INDEXED_VALIDATED: {
+				text += "set indexed validated ";
+				text += DADDR(1);
+				text += "[";
+				text += DADDR(2);
+				text += "] = ";
+				text += DADDR(3);
+
+				incr += 5;
+			} break;
+			case OPCODE_GET_KEYED: {
+				text += "get keyed ";
 				text += DADDR(3);
 				text += " = ";
 				text += DADDR(1);
@@ -188,11 +208,43 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
+			case OPCODE_GET_KEYED_VALIDATED: {
+				text += "get keyed validated ";
+				text += DADDR(3);
+				text += " = ";
+				text += DADDR(1);
+				text += "[";
+				text += DADDR(2);
+				text += "]";
+
+				incr += 5;
+			} break;
+			case OPCODE_GET_INDEXED_VALIDATED: {
+				text += "get indexed validated ";
+				text += DADDR(3);
+				text += " = ";
+				text += DADDR(1);
+				text += "[";
+				text += DADDR(2);
+				text += "]";
+
+				incr += 5;
+			} break;
 			case OPCODE_SET_NAMED: {
 				text += "set_named ";
 				text += DADDR(1);
 				text += "[\"";
 				text += _global_names_ptr[_code_ptr[ip + 3]];
+				text += "\"] = ";
+				text += DADDR(2);
+
+				incr += 4;
+			} break;
+			case OPCODE_SET_NAMED_VALIDATED: {
+				text += "set_named validated ";
+				text += DADDR(1);
+				text += "[\"";
+				text += "<unknown name>";
 				text += "\"] = ";
 				text += DADDR(2);
 
@@ -205,6 +257,17 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(1);
 				text += "[\"";
 				text += _global_names_ptr[_code_ptr[ip + 3]];
+				text += "\"]";
+
+				incr += 4;
+			} break;
+			case OPCODE_GET_NAMED_VALIDATED: {
+				text += "get_named validated ";
+				text += DADDR(2);
+				text += " = ";
+				text += DADDR(1);
+				text += "[\"";
+				text += "<unknown name>";
 				text += "\"]";
 
 				incr += 4;
