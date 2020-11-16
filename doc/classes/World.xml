@@ -13,7 +13,7 @@
 	</methods>
 	<members>
 		<member name="direct_space_state" type="PhysicsDirectSpaceState" setter="" getter="get_direct_space_state">
-			Direct access to the world's physics 3D space state. Used for querying current and potential collisions. Must only be accessed from within [code]_physics_process(delta)[/code].
+			Direct access to the world's physics 3D space state. Used for querying current and potential collisions.
 		</member>
 		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The World's [Environment].

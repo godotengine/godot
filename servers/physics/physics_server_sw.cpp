@@ -196,7 +196,7 @@ PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
 
 	SpaceSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -979,7 +979,7 @@ PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
-	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1408,7 +1408,6 @@ void PhysicsServerSW::set_active(bool p_active) {
 
 void PhysicsServerSW::init() {
 
-	doing_sync = true;
 	last_step = 0.001;
 	iterations = 8; // 8?
 	stepper = memnew(StepSW);
@@ -1423,8 +1422,6 @@ void PhysicsServerSW::step(real_t p_step) {
 		return;
 
 	_update_shapes();
-
-	doing_sync = false;
 
 	last_step = p_step;
 	PhysicsDirectBodyStateSW::singleton->step = p_step;
@@ -1442,18 +1439,12 @@ void PhysicsServerSW::step(real_t p_step) {
 #endif
 }
 
-void PhysicsServerSW::sync(){
-
-};
-
 void PhysicsServerSW::flush_queries() {
 
 #ifndef _3D_DISABLED
 
 	if (!active)
 		return;
-
-	doing_sync = true;
 
 	flushing_queries = true;
 

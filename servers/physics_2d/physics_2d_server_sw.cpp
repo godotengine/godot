@@ -1332,8 +1332,6 @@ void Physics2DServerSW::step(real_t p_step) {
 
 	_update_shapes();
 
-	doing_sync = false;
-
 	last_step = p_step;
 	Physics2DDirectBodyStateSW::singleton->step = p_step;
 	island_count = 0;

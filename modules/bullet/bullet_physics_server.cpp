@@ -1568,9 +1568,6 @@ void BulletPhysicsServer::step(float p_deltaTime) {
 	}
 }
 
-void BulletPhysicsServer::sync() {
-}
-
 void BulletPhysicsServer::flush_queries() {
 }
 

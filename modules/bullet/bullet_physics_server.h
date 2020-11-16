@@ -396,7 +396,6 @@ public:
 
 	virtual void init();
 	virtual void step(float p_deltaTime);
-	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
 
