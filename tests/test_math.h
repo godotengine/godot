@@ -31,6 +31,7 @@
 #ifndef TEST_MATH_H
 #define TEST_MATH_H
 
+#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/transform.h"
 #include "core/os/os.h"
@@ -45,8 +46,6 @@ namespace TestMath {
 MainLoop *test();
 }
 
-const float FM_PI = 3.1415926535897932384626433832795028841971693993751f;
-
 TEST_CASE("[Transform] Rotate around global origin") {
 	// Start with the default orientation, but not centered on the origin.
 	// Rotating should rotate both our basis and the origin.
@@ -58,8 +57,8 @@ TEST_CASE("[Transform] Rotate around global origin") {
 	expected.basis.set_axis(0, Vector3(-1, 0, 0));
 	expected.basis.set_axis(2, Vector3(0, 0, -1));
 
-	Transform rotatedTransform = transform.rotated(Vector3(0, 1, 0), FM_PI);
-	REQUIRE(rotatedTransform.is_equal_approx(expected));
+	Transform rotated_transform = transform.rotated(Vector3(0, 1, 0), Math_PI);
+	REQUIRE(rotated_transform.is_equal_approx(expected));
 }
 
 TEST_CASE("[Transform] Rotate in-place") {
@@ -73,10 +72,10 @@ TEST_CASE("[Transform] Rotate in-place") {
 	expected.basis.set_axis(0, Vector3(-1, 0, 0));
 	expected.basis.set_axis(2, Vector3(0, 0, -1));
 
-	Transform rotated_transform = transform.rotated_local(Vector3(0, 1, 0), FM_PI);
+	Transform rotated_transform = transform.rotated_local(Vector3(0, 1, 0), Math_PI);
 	REQUIRE(rotated_transform.is_equal_approx(expected));
 
-	// Make sure that the rotatedTransform isn't sharing references with the original transform.
+	// Make sure that the rotated transform isn't sharing references with the original transform.
 	REQUIRE(&rotated_transform.basis != &transform.basis);
 	REQUIRE(&rotated_transform.origin != &transform.origin);
 }
