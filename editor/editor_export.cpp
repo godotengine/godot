@@ -737,6 +737,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	_edit_filter_list(paths, p_preset->get_include_filter(), false);
 	_edit_filter_list(paths, p_preset->get_exclude_filter(), true);
 
+	// Ignore import files, since these are automatically added to the jar later with the resources
+	_edit_filter_list(paths, String("*.import"), true);
+
 	// Get encryption filters.
 	bool enc_pck = p_preset->get_enc_pck();
 	Vector<String> enc_in_filters;
