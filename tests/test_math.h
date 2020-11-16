@@ -31,8 +31,8 @@
 #ifndef TEST_MATH_H
 #define TEST_MATH_H
 
-#include "core/math/transform.h"
 #include "core/math/math_funcs.h"
+#include "core/math/transform.h"
 #include "core/os/os.h"
 
 #include <math.h>
