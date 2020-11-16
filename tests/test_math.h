@@ -48,8 +48,8 @@ MainLoop *test();
 const float FM_PI = 3.1415926535897932384626433832795028841971693993751f;
 
 TEST_CASE("[Transform] Rotate around global origin") {
-	//Start with the default orientation, but not centered on the origin.
-	//Rotating should rotate both our basis and the origin.
+	// Start with the default orientation, but not centered on the origin.
+	// Rotating should rotate both our basis and the origin.
 	Transform transform = Transform();
 	transform.origin = Vector3(0, 0, 1);
 
@@ -63,8 +63,8 @@ TEST_CASE("[Transform] Rotate around global origin") {
 }
 
 TEST_CASE("[Transform] Rotate in-place") {
-	//Start with the default orientation, but not centered on the origin.
-	//Rotating in-place should only rotate the basis, leaving the origin alone.
+	// Start with the default orientation, but not centered on the origin.
+	// Rotating in-place should only rotate the basis, leaving the origin alone.
 	Transform transform = Transform();
 	transform.origin = Vector3(0, 0, 1);
 
@@ -73,12 +73,12 @@ TEST_CASE("[Transform] Rotate in-place") {
 	expected.basis.set_axis(0, Vector3(-1, 0, 0));
 	expected.basis.set_axis(2, Vector3(0, 0, -1));
 
-	Transform rotatedTransform = transform.rotated_local(Vector3(0, 1, 0), FM_PI);
-	REQUIRE(rotatedTransform.is_equal_approx(expected));
+	Transform rotated_transform = transform.rotated_local(Vector3(0, 1, 0), FM_PI);
+	REQUIRE(rotated_transform.is_equal_approx(expected));
 
-	//Make sure that the rotatedTransform isn't sharing references with the original transform.
-	REQUIRE(&rotatedTransform.basis != &transform.basis);
-	REQUIRE(&rotatedTransform.origin != &transform.origin);
+	// Make sure that the rotatedTransform isn't sharing references with the original transform.
+	REQUIRE(&rotated_transform.basis != &transform.basis);
+	REQUIRE(&rotated_transform.origin != &transform.origin);
 }
 
 #endif
