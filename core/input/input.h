@@ -117,6 +117,7 @@ private:
 		uint64_t idle_frame;
 		bool pressed;
 		float strength;
+		float raw_strength;
 	};
 
 	Map<StringName, Action> action_state;
@@ -223,7 +224,6 @@ private:
 	JoyAxisList _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
-	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
@@ -266,6 +266,10 @@ public:
 	bool is_action_just_pressed(const StringName &p_action) const;
 	bool is_action_just_released(const StringName &p_action) const;
 	float get_action_strength(const StringName &p_action) const;
+	float get_action_raw_strength(const StringName &p_action) const;
+
+	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
+	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
 
 	float get_joy_axis(int p_device, int p_axis) const;
 	String get_joy_name(int p_idx);

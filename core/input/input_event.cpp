@@ -61,10 +61,15 @@ bool InputEvent::is_action_released(const StringName &p_action) const {
 }
 
 float InputEvent::get_action_strength(const StringName &p_action) const {
-	bool pressed;
 	float strength;
-	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, &pressed, &strength);
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, nullptr, &strength);
 	return valid ? strength : 0.0f;
+}
+
+float InputEvent::get_action_raw_strength(const StringName &p_action) const {
+	float raw_strength;
+	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, nullptr, nullptr, &raw_strength);
+	return valid ? raw_strength : 0.0f;
 }
 
 bool InputEvent::is_pressed() const {
@@ -83,7 +88,7 @@ String InputEvent::as_text() const {
 	return String();
 }
 
-bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEvent::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	return false;
 }
 
@@ -307,7 +312,7 @@ String InputEventKey::as_text() const {
 	return kc;
 }
 
-bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventKey> key = p_event;
 	if (key.is_null()) {
 		return false;
@@ -329,8 +334,12 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		if (p_pressed != nullptr) {
 			*p_pressed = key->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 	return match;
@@ -470,7 +479,7 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 	return mb;
 }
 
-bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_null()) {
 		return false;
@@ -481,8 +490,12 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 		if (p_pressed != nullptr) {
 			*p_pressed = mb->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 
@@ -713,7 +726,7 @@ bool InputEventJoypadMotion::is_pressed() const {
 	return Math::abs(axis_value) >= 0.5f;
 }
 
-bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
 		return false;
@@ -721,8 +734,9 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 
 	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
 	if (match) {
+		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
-		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
+		bool pressed = same_direction && jm_abs_axis_value >= p_deadzone;
 		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
 		}
@@ -731,10 +745,17 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 				if (p_deadzone == 1.0f) {
 					*p_strength = 1.0f;
 				} else {
-					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, jm_abs_axis_value), 0.0f, 1.0f);
 				}
 			} else {
 				*p_strength = 0.0f;
+			}
+		}
+		if (p_raw_strength != nullptr) {
+			if (same_direction) { // NOT pressed, because we want to ignore the deadzone.
+				*p_raw_strength = jm_abs_axis_value;
+			} else {
+				*p_raw_strength = 0.0f;
 			}
 		}
 	}
@@ -782,7 +803,7 @@ float InputEventJoypadButton::get_pressure() const {
 	return pressure;
 }
 
-bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventJoypadButton> jb = p_event;
 	if (jb.is_null()) {
 		return false;
@@ -793,8 +814,12 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 		if (p_pressed != nullptr) {
 			*p_pressed = jb->is_pressed();
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 
@@ -997,7 +1022,7 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 	return action == p_action;
 }
 
-bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const {
 	Ref<InputEventAction> act = p_event;
 	if (act.is_null()) {
 		return false;
@@ -1008,8 +1033,12 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pres
 		if (p_pressed != nullptr) {
 			*p_pressed = act->pressed;
 		}
+		float strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
 		if (p_strength != nullptr) {
-			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+			*p_strength = strength;
+		}
+		if (p_raw_strength != nullptr) {
+			*p_raw_strength = strength;
 		}
 	}
 	return match;
