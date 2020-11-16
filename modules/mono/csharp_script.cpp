@@ -3365,9 +3365,10 @@ Error CSharpScript::reload(bool p_keep_state) {
 			if (klass && CACHED_CLASS(GodotObject)->is_assignable_from(klass)) {
 				script_class = klass;
 			}
-		} else {
-			// Missing script metadata. Fallback to legacy method
-			script_class = project_assembly->get_object_derived_class(name);
+		}
+		if (!script_class) {
+			// Missing script metadata or unable to find before. Fallback to searching loaded assemblies
+			script_class = GDMono::get_singleton()->find_object_derived_class(name);
 		}
 
 		valid = script_class != nullptr;

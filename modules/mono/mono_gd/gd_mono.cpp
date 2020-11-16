@@ -1209,6 +1209,25 @@ GDMonoClass *GDMono::get_class(const StringName &p_namespace, const StringName &
 	return nullptr;
 }
 
+GDMonoClass *GDMono::find_object_derived_class(const StringName &p_name) {
+
+    const uint32_t *k = nullptr;
+    while ((k = assemblies.next(k))) {
+        HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies.get(*k);
+
+        const String *kk = nullptr;
+        while ((kk = domain_assemblies.next(kk))) {
+            GDMonoAssembly *assembly = domain_assemblies.get(*kk);
+            
+            GDMonoClass *klass = assembly->get_object_derived_class(p_name); 
+            if (klass) {
+                return klass;
+            }
+        }
+    }
+    return nullptr;
+}
+
 void GDMono::_domain_assemblies_cleanup(int32_t p_domain_id) {
 	HashMap<String, GDMonoAssembly *> &domain_assemblies = assemblies[p_domain_id];
 
