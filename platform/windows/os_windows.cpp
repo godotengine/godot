@@ -2944,9 +2944,10 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
-
-		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
+		WaitForSingleObject(pi.pi.hProcess, INFINITE);
 		if (r_exitcode) {
+			DWORD ret2;
+			GetExitCodeProcess(pi.pi.hProcess, &ret2);
 			*r_exitcode = ret2;
 		}
 
