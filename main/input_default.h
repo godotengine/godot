@@ -85,7 +85,6 @@ class InputDefault : public Input {
 		bool connected;
 		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
 		float last_axis[JOY_AXIS_MAX];
-		float filter;
 		int last_hat;
 		int mapping;
 		int hat_current;
@@ -101,7 +100,6 @@ class InputDefault : public Input {
 			}
 			connected = false;
 			last_hat = HAT_MASK_CENTER;
-			filter = 0.01f;
 			mapping = -1;
 			hat_current = 0;
 		}
