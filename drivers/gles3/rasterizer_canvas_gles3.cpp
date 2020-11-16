@@ -511,10 +511,10 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 
 		switch (batch.type) {
 			case RasterizerStorageCommon::BT_RECT: {
-				_batch_render_rects(batch, p_material);
+				_batch_render_generic(batch, p_material);
 			} break;
 			case RasterizerStorageCommon::BT_POLY: {
-				_batch_render_polys(batch, p_material);
+				_batch_render_generic(batch, p_material);
 			} break;
 			case RasterizerStorageCommon::BT_LINE: {
 				_batch_render_lines(batch, p_material, false);
@@ -2036,43 +2036,8 @@ void RasterizerCanvasGLES3::_batch_render_lines(const Batch &p_batch, Rasterizer
 #endif
 }
 
-void RasterizerCanvasGLES3::_batch_render_polys(const Batch &p_batch, RasterizerStorageGLES3::Material *p_material) {
-	ERR_FAIL_COND(p_batch.num_commands <= 0);
-
-	_set_texture_rect_mode(false);
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
-
-	glBindVertexArray(batch_gl_data.batch_vertex_array[1]);
-
-	// batch tex
-	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
-
-	_bind_canvas_texture(tex.RID_texture, tex.RID_normal);
-
-	// may not need this disable
-	//	glDisableVertexAttribArray(VS::ARRAY_COLOR);
-	//	glVertexAttrib4fv(VS::ARRAY_COLOR, p_batch.color.get_data());
-
-	// we need to convert explicitly from pod Vec2 to Vector2 ...
-	// could use a cast but this might be unsafe in future
-	Vector2 tps;
-	tex.tex_pixel_size.to(tps);
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, tps);
-
-	int64_t offset = p_batch.first_vert;
-
-	int num_elements = p_batch.num_commands;
-	glDrawArrays(GL_TRIANGLES, offset, num_elements);
-
-	storage->info.render._2d_draw_call_count++;
-
-	glBindVertexArray(0);
-}
-
-void RasterizerCanvasGLES3::_batch_render_rects(const Batch &p_batch, RasterizerStorageGLES3::Material *p_material) {
-	ERR_FAIL_COND(p_batch.num_commands <= 0);
-
-	const bool &colored_verts = bdata.use_colored_vertices;
+void RasterizerCanvasGLES3::_batch_render_prepare() {
+	//const bool &colored_verts = bdata.use_colored_vertices;
 	const bool &use_light_angles = bdata.use_light_angles;
 	const bool &use_modulate = bdata.use_modulate;
 	const bool &use_large_verts = bdata.use_large_verts;
@@ -2102,11 +2067,41 @@ void RasterizerCanvasGLES3::_batch_render_rects(const Batch &p_batch, Rasterizer
 			glBindVertexArray(batch_gl_data.batch_vertex_array[4]);
 			break;
 	}
+}
 
-	//	if (state.canvas_shader.bind()) {
-	//		_set_uniforms();
-	//		state.canvas_shader.use_material((void *)p_material);
-	//	}
+void RasterizerCanvasGLES3::_batch_render_generic(const Batch &p_batch, RasterizerStorageGLES3::Material *p_material) {
+	ERR_FAIL_COND(p_batch.num_commands <= 0);
+
+	const bool &use_light_angles = bdata.use_light_angles;
+	const bool &use_modulate = bdata.use_modulate;
+	const bool &use_large_verts = bdata.use_large_verts;
+	const bool &colored_verts = bdata.use_colored_vertices | use_light_angles | use_modulate | use_large_verts;
+
+	_set_texture_rect_mode(false, false, use_light_angles, use_modulate, use_large_verts);
+
+	//	state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, p_rect->flags & CANVAS_RECT_CLIP_UV);
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
+
+	switch (bdata.fvf) {
+		case RasterizerStorageCommon::FVF_UNBATCHED: // should not happen
+			return;
+			break;
+		case RasterizerStorageCommon::FVF_REGULAR: // no change
+			glBindVertexArray(batch_gl_data.batch_vertex_array[0]);
+			break;
+		case RasterizerStorageCommon::FVF_COLOR:
+			glBindVertexArray(batch_gl_data.batch_vertex_array[1]);
+			break;
+		case RasterizerStorageCommon::FVF_LIGHT_ANGLE:
+			glBindVertexArray(batch_gl_data.batch_vertex_array[2]);
+			break;
+		case RasterizerStorageCommon::FVF_MODULATED:
+			glBindVertexArray(batch_gl_data.batch_vertex_array[3]);
+			break;
+		case RasterizerStorageCommon::FVF_LARGE:
+			glBindVertexArray(batch_gl_data.batch_vertex_array[4]);
+			break;
+	}
 
 	// batch tex
 	const BatchTex &tex = bdata.batch_textures[p_batch.batch_texture_id];
@@ -2143,10 +2138,23 @@ void RasterizerCanvasGLES3::_batch_render_rects(const Batch &p_batch, Rasterizer
 	tex.tex_pixel_size.to(tps);
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, tps);
 
-	int64_t offset = p_batch.first_vert * 3; // 6 inds per quad at 2 bytes each
+	switch (p_batch.type) {
+		default: {
+			// prevent compiler warning
+		} break;
+		case RasterizerStorageCommon::BT_RECT: {
+			int64_t offset = p_batch.first_vert * 3; // 6 inds per quad at 2 bytes each
 
-	int num_elements = p_batch.num_commands * 6;
-	glDrawElements(GL_TRIANGLES, num_elements, GL_UNSIGNED_SHORT, (void *)offset);
+			int num_elements = p_batch.num_commands * 6;
+			glDrawElements(GL_TRIANGLES, num_elements, GL_UNSIGNED_SHORT, (void *)offset);
+		} break;
+		case RasterizerStorageCommon::BT_POLY: {
+			int64_t offset = p_batch.first_vert;
+
+			int num_elements = p_batch.num_commands;
+			glDrawArrays(GL_TRIANGLES, offset, num_elements);
+		} break;
+	}
 
 	storage->info.render._2d_draw_call_count++;
 

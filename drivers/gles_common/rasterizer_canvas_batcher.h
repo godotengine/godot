@@ -1492,9 +1492,42 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 	CRASH_COND(!vertex_colors);
 #endif
 
+	// are we using large FVF?
+	////////////////////////////////////
+	const bool use_large_verts = bdata.use_large_verts;
+	const bool use_modulate = bdata.use_modulate;
+
+	BatchColor *vertex_modulates = nullptr;
+	if (use_modulate) {
+		vertex_modulates = bdata.vertex_modulates.request(num_inds);
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+		CRASH_COND(!vertex_modulates);
+#endif
+		// precalc the vertex modulate (will be shared by all verts)
+		// we store the modulate as an attribute in the fvf rather than a uniform
+		vertex_modulates[0].set(r_fill_state.final_modulate);
+	}
+
+	BatchTransform *pBT = nullptr;
+	if (use_large_verts) {
+		pBT = bdata.vertex_transforms.request(num_inds);
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+		CRASH_COND(!pBT);
+#endif
+		// precalc the batch transform (will be shared by all verts)
+		// we store the transform as an attribute in the fvf rather than a uniform
+		const Transform2D &tr = r_fill_state.transform_combined;
+
+		pBT[0].translate.set(tr.elements[2]);
+		// could do swizzling in shader?
+		pBT[0].basis[0].set(tr.elements[0][0], tr.elements[1][0]);
+		pBT[0].basis[1].set(tr.elements[0][1], tr.elements[1][1]);
+	}
+	////////////////////////////////////
+
 	// the modulate is always baked
 	Color modulate;
-	if (multiply_final_modulate)
+	if (!use_large_verts && !use_modulate && multiply_final_modulate)
 		modulate = r_fill_state.final_modulate;
 	else
 		modulate = Color(1, 1, 1, 1);
@@ -1508,6 +1541,11 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 	}
 
 	// N.B. polygons don't have color thus don't need a batch change with color
+	// This code is left as reference in case of problems.
+	//	if (!r_fill_state.curr_batch->color.equals(modulate)) {
+	//		change_batch = true;
+	//		bdata.total_color_changes++;
+	//	}
 
 	if (change_batch) {
 		// put the tex pixel size  in a local (less verbose and can be a register)
@@ -1586,8 +1624,32 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 			}
 
 			vertex_colors[n] = precalced_colors[ind];
+
+			if (use_modulate) {
+				vertex_modulates[n] = vertex_modulates[0];
+			}
+
+			if (use_large_verts) {
+				// reuse precalced transform (same for each vertex within polygon)
+				pBT[n] = pBT[0];
+			}
 		}
 	} // if not software skinning
+	else {
+		// software skinning extra passes
+		if (use_modulate) {
+			for (int n = 0; n < num_inds; n++) {
+				vertex_modulates[n] = vertex_modulates[0];
+			}
+		}
+		// not sure if this will produce garbage if software skinning is changing vertex pos
+		// in the shader, but is included for completeness
+		if (use_large_verts) {
+			for (int n = 0; n < num_inds; n++) {
+				pBT[n] = pBT[0];
+			}
+		}
+	}
 
 	// increment total vert count
 	bdata.total_verts += num_inds;
@@ -2707,6 +2769,8 @@ T_PREAMBLE
 template <class BATCH_VERTEX_TYPE, bool INCLUDE_LIGHT_ANGLES, bool INCLUDE_MODULATE, bool INCLUDE_LARGE>
 void C_PREAMBLE::_translate_batches_to_larger_FVF() {
 
+	bool include_poly_color = INCLUDE_LIGHT_ANGLES | INCLUDE_MODULATE | INCLUDE_LARGE;
+
 	// zeros the size and sets up how big each unit is
 	bdata.unit_vertices.prepare(sizeof(BATCH_VERTEX_TYPE));
 	bdata.batches_temp.reset();
@@ -2724,6 +2788,7 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF() {
 
 	Batch *dest_batch = nullptr;
 
+	const BatchColor *source_vertex_colors = &bdata.vertex_colors[0];
 	const float *source_light_angles = &bdata.light_angles[0];
 	const BatchColor *source_vertex_modulates = &bdata.vertex_modulates[0];
 	const BatchTransform *source_vertex_transforms = &bdata.vertex_transforms[0];
@@ -2820,7 +2885,13 @@ void C_PREAMBLE::_translate_batches_to_larger_FVF() {
 #endif
 					cv->pos = bv.pos;
 					cv->uv = bv.uv;
-					cv->col = source_batch.color;
+
+					// polys are special, they can have per vertex colors
+					if (!include_poly_color) {
+						cv->col = source_batch.color;
+					} else {
+						cv->col = *source_vertex_colors++;
+					}
 
 					if (INCLUDE_LIGHT_ANGLES) {
 						// this is required to allow compilation with non light angle vertex.
