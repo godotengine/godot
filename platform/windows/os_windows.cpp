@@ -2269,6 +2269,10 @@ bool OS_Windows::is_window_resizable() const {
 }
 void OS_Windows::set_window_minimized(bool p_enabled) {
 
+	if (is_no_window_mode_enabled()) {
+		return;
+	}
+
 	if (p_enabled) {
 		maximized = false;
 		minimized = true;
@@ -2284,6 +2288,10 @@ bool OS_Windows::is_window_minimized() const {
 	return minimized;
 }
 void OS_Windows::set_window_maximized(bool p_enabled) {
+
+	if (is_no_window_mode_enabled()) {
+		return;
+	}
 
 	if (p_enabled) {
 		maximized = true;
