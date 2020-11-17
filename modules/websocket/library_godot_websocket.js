@@ -163,10 +163,8 @@ var GodotWebSocket = {
 		for(i = 0; i < p_buf_len; i++) {
 			bytes_array[i] = getValue(p_buf + i, 'i8');
 		}
-		var out = bytes_array;
-		if (p_raw) {
-			out = bytes_array.buffer;
-		} else {
+		var out = bytes_array.buffer;
+		if (!p_raw) {
 			out = new TextDecoder("utf-8").decode(bytes_array);
 		}
 		return GodotWebSocket.send(p_id, out);
