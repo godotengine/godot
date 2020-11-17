@@ -99,8 +99,8 @@ void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderShape3D::get_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.01,4096,0.01"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,4096,0.001"), "set_height", "get_height");
 }
 
 CylinderShape3D::CylinderShape3D() :
