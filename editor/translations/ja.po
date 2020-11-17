@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-19 21:08+0000\n"
+"PO-Revision-Date: 2020-11-04 02:39+0000\n"
 "Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3.1-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1056,14 +1056,19 @@ msgid "Owners Of:"
 msgstr "次のオーナー:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "選択したファイルをプロジェクトから削除しますか？(元に戻せません)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "除去しようとしているファイルは他のリソースの動作に必要です。\n"
 "無視して除去しますか？(元に戻せません)"
@@ -1619,35 +1624,33 @@ msgstr ""
 "にしてください。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
-"クト設定より 'Import Etc' をオンにしてください。"
+"対象プラットフォームではGLES2のために'PVRTC'テクスチャ圧縮が必要です。プロ"
+"ジェクト設定より 'Import Pvrtc' をオンにしてください。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"対象プラットフォームではGLES3のために'ETC2'テクスチャ圧縮が必要です。プロジェ"
-"クト設定より 'Import Etc 2' をオンにしてください。"
+"対象プラットフォームではGLES3のために 'ETC2' あるいは 'PVRTC' テクスチャ圧縮"
+"が必要です。プロジェクト設定より 'Import Etc 2' あるいは 'Import Pvrtc' をオ"
+"ンにしてください。"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"対象プラットフォームではGLES2へフォールバックするために'ETC'テクスチャ圧縮が"
-"必要です。\n"
-"プロジェクト設定より 'Import Etc' をオンにするか、'Fallback To Gles 2' をオフ"
-"にしてください。"
+"対象プラットフォームではGLES2へフォールバックするために 'PVRTC' テクスチャ圧"
+"縮が必要です。\n"
+"プロジェクト設定より 'Import Pvrtc' をオンにするか、'Driver Fallback "
+"Enabled' をオフにしてください。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2330,19 +2333,25 @@ msgid "Error saving TileSet!"
 msgstr "タイルセットの保存エラー！"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "レイアウトの保存エラー！"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "デフォルトのエディタ レイアウトを上書きしました。"
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "レイアウト名が見つかりません！"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "デフォルトのレイアウトを基本設定に戻しました。"
 
 #: editor/editor_node.cpp
@@ -3772,6 +3781,11 @@ msgstr "複製..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "移動..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "自動読込みを移動"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5235,14 +5249,12 @@ msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "CanvasItemを回転"
+msgstr "%d 個のCanvasItemを回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "CanvasItemを回転"
+msgstr "CanvasItem \"%s\" を %d 度回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -11017,7 +11029,7 @@ msgstr "スクリプトのパス/名前は有効です。"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "使用可能: a-z、A-Z、0-9及び_。"
+msgstr "使用可能: a-z、A-Z、0-9、_ 及び ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -12063,6 +12075,14 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr "エディタ設定のカスタムビルドのAndroid SDKパスが無効です。"
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12119,16 +12139,33 @@ msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
+"無効なファイル名です！ Android App Bundle には拡張子 *.aab が必要です。"
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "APK Expansion は Android App Bundle とは互換性がありません。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "無効なファイル名です！ Android APKには拡張子 *.apk が必要です。"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12173,6 +12210,8 @@ msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
+"エクスポートファイルのコピーと名前の変更ができません。出力結果をみるには"
+"gradleのプロジェクトディレクトリを確認してください。"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12335,7 +12374,7 @@ msgid ""
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
 "CollisionShape2Dは、CollisionObject2D派生ノードにコリジョンシェイプを提供する"
-"場合にのみ機能します。シェイプを追加する場合は、Area2D、staticBody2D、"
+"場合にのみ機能します。シェイプを追加する場合は、Area2D、StaticBody2D、"
 "RigidBody2D、KinematicBody2Dなどの子として使用してください。"
 
 #: scene/2d/collision_shape_2d.cpp
@@ -12930,6 +12969,12 @@ msgstr "Varying変数は頂点関数にのみ割り当てることができま�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "レイアウトの保存エラー！"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "デフォルトのエディタ レイアウトを上書きしました。"
 
 #~ msgid "Move pivot"
 #~ msgstr "ピボットを移動"

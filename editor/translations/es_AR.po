@@ -1045,15 +1045,20 @@ msgid "Owners Of:"
 msgstr "Dueños De:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "¿Eliminar los archivos seleccionados del proyecto? (No puede ser restaurado)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Los archivos que se están removiendo son requeridos por otros recursos para "
 "funcionar.\n"
@@ -2326,19 +2331,25 @@ msgid "Error saving TileSet!"
 msgstr "Error guardando TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Error al tratar de guardar el layout!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Se ha sobreescrito el layout del editor por defecto."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Nombre de layout no encontrado!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Se restauró el layout por defecto a su configuración básica."
 
 #: editor/editor_node.cpp
@@ -3789,6 +3800,11 @@ msgstr "Duplicar..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Mover A..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Mover Autoload"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -12131,6 +12147,14 @@ msgstr ""
 "Configuración del Editor."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12181,6 +12205,22 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13010,6 +13050,12 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Error al tratar de guardar el layout!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Se ha sobreescrito el layout del editor por defecto."
 
 #~ msgid "Move pivot"
 #~ msgstr "Mover pivote"

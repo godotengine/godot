@@ -17,12 +17,13 @@
 # Ziv D <wizdavid@gmail.com>, 2020.
 # yariv benj <yariv4400@gmail.com>, 2020.
 # Guy Dadon <guydadon14@gmail.com>, 2020.
+# bruvzg <bruvzg13@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-27 18:26+0000\n"
-"Last-Translator: Guy Dadon <guydadon14@gmail.com>\n"
+"PO-Revision-Date: 2020-11-17 11:07+0000\n"
+"Last-Translator: Ziv D <wizdavid@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -50,7 +51,7 @@ msgstr "אין מספיק בתים לפענוח בתים, או פורמט לא �
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "קלט שגוי %I (לא הועבר) בתוך הביטוי"
+msgstr "קלט שגוי %i (לא הועבר) בתוך הביטוי"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -58,7 +59,7 @@ msgstr "'self' לא ניתן לשימוש כי המופע הינו 'null' ( לא
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "אופרנדים לא תקינים לאופרטור %s, %s ו%s."
+msgstr "אופרנדים לא תקינים לאופרטור ⁨%s⁩, ⁨%s⁩ ו ⁨%s⁩."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -70,7 +71,7 @@ msgstr "שם אינדקס לא תקין '%s' לסוג בסיס %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "פרמטרים שגויים לבניית 's%'"
+msgstr "פרמטרים שגויים לבניית '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -1040,14 +1041,17 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 #, fuzzy
-msgid "Remove selected files from the project? (Can't be restored)"
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "להסיר את הקבצים הנבחרים מהמיזם? (אי אפשר לשחזר)"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 
 #: editor/dependency_editor.cpp
@@ -1740,7 +1744,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr "שגיאה בשמירת פרופיל לנתיב 's%'."
+msgstr "שגיאה בשמירת פרופיל לנתיב '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
@@ -2046,8 +2050,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"כרגע אין תיאור למאפיין זה. בבקשה עזור לנו על-ידי [/color][/url]כתיבת "
-"תיאור[url=$url][color=$color]!"
+"כרגע אין תיאור למאפיין זה. בבקשה עזור לנו על-ידי [color=$color][url="
+"$url]כתיבת תיאור[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2058,8 +2062,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"כרגע אין תיאור למתודה זו. בבקשה עזור לנו על-ידי [/url][/color]כתיבת תיאור "
-"[color=$color][url=$url]!"
+"כרגע אין תיאור למתודה זו. בבקשה עזור לנו על-ידי [color=$color][url="
+"$url]כתיבת תיאור [/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2248,11 +2252,11 @@ msgstr "שגיאה בעת השמירה."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "לא יכול לפתוח את 's%'. יכול להיות שהקובץ הועבר או נמחק."
+msgstr "לא יכול לפתוח את '%s'. יכול להיות שהקובץ הועבר או נמחק."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr "שגיאה בפענוח 's%'."
+msgstr "שגיאה בפענוח '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
@@ -2260,11 +2264,11 @@ msgstr "סוף קובץ בלתי צפוי '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "חסר 's%' או תלות שלו."
+msgstr "חסר '%s' או תלות שלו."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr "שגיאה בטעינת 's%'."
+msgstr "שגיאה בטעינת '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -2317,19 +2321,25 @@ msgid "Error saving TileSet!"
 msgstr "שגיאה בשמירת TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "שמירת הפריסה נכשלה!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "ברירת המחדל של עורך הפריסה נדרסה."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "שם הפריסה לא נמצא!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "פריסת ברירת המחדל שוחזרה להגדרות הבסיס."
 
 #: editor/editor_node.cpp
@@ -3049,7 +3059,7 @@ msgstr "מערכת קבצים"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr "חוקר"
+msgstr "מפקח"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
@@ -3735,6 +3745,11 @@ msgstr "שכפול…"
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "העברה אל…"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "הזזת טעינה אוטומטית"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4592,180 +4607,171 @@ msgstr "ניגון ההנפשה שנבחרה מהמיקום הנוכחי. (D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation position (in seconds)."
-msgstr ""
+msgstr "מיקום הנפשה (בשניות)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr ""
+msgstr "שינוי קנה מידה לניגון הנפשה באופן גלובלי עבור המפרק."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
-msgstr ""
+msgstr "כלי הנפשה"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "הנפשה"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Transitions..."
-msgstr "מעברונים"
+msgstr "עריכת מעברים..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Open in Inspector"
-msgstr "חוקר"
+msgstr "פתיחה במפקח"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
-msgstr ""
+msgstr "הצגת רשימת הנפשות בנגן."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Autoplay on Load"
-msgstr ""
+msgstr "הפעלה אוטומטית בטעינה"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
-msgstr ""
+msgstr "הפעלת שכבות בצל"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Onion Skinning Options"
-msgstr "הגדרות הצמדה"
+msgstr "הגדרות שכבות בצל"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
-msgstr ""
+msgstr "כיוונים"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Past"
-msgstr ""
+msgstr "עבר"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Future"
-msgstr ""
+msgstr "עתיד"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr ""
+msgstr "עומק"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
-msgstr ""
+msgstr "צעד 1"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "2 steps"
-msgstr ""
+msgstr "2 צעדים"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "3 steps"
-msgstr ""
+msgstr "3 צעדים"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Differences Only"
-msgstr ""
+msgstr "רק הבדלים"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Force White Modulate"
-msgstr ""
+msgstr "אילוץ ציור לבן"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr ""
+msgstr "הכללת גיזמו (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Pin AnimationPlayer"
-msgstr "שם הנפשה חדשה:"
+msgstr "הצמדת AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
-msgstr ""
+msgstr "יצירת הנפשה חדשה"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Name:"
-msgstr ""
+msgstr "שם הנפשה:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 msgid "Error!"
-msgstr ""
+msgstr "שגיאה!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
-msgstr ""
+msgstr "זמני מיזוג:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Next (Auto Queue):"
-msgstr ""
+msgstr "הבא (תור אוטומטי):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr ""
+msgstr "זמני מיזוג בין הנפשות"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "מצב הזזה (W)"
+msgstr "הזזת מפרק"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition exists!"
 msgstr "המעברון קיים!"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "מעברון"
+msgstr "הוספת מעברון"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
-msgstr ""
+msgstr "הוספת מפרק"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr ""
+msgstr "סוף"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "מיידי"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "סנכרון"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "בסוף"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "טיול"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
+msgstr "יש צורך במפרקי התחלה וסוף למעברון משנה."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "No playback resource set at path: %s."
-msgstr "לא בנתיב המשאב."
+msgstr "לא נקבע משאב לניגון בנתיב: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "הסרה"
+msgstr "הוסר מפרק"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "מעברון"
+msgstr "הוסר מעברון"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr ""
+msgstr "קביעת מפרק התחלה (ניגון אוטומטי)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4773,199 +4779,200 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"בחירת והזזת מפרקים.\n"
+"RMB להוספת מפרקים חדשים.\n"
+"Shift + LMB ליצירת חיבורים."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Create new nodes."
-msgstr "יצירת %s חדש"
+msgstr "יצירת מפרקים חדשים."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Connect nodes."
-msgstr "התחברות למפרק:"
+msgstr "חיבור מפרקים."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "להסיר את הקבצים הנבחרים מהמיזם? (אי אפשר לשחזר)"
+msgstr "הסרת מפרק או מעברון שנבחרו."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
-msgstr ""
+msgstr "הפעלה/ביטול ניגון אוטומטי של הנפשה זו בהפעלה, הפעלה מחדש או מעבר לאפס."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "קביעת הנפשת הסיום. זה שימושי למעברי משנה."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
 msgstr "מעברון: "
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Play Mode:"
-msgstr "מצב גולמי"
+msgstr "מצב ניגון:"
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr ""
+msgstr "עץ הנפשה"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
-msgstr ""
+msgstr "שם חדש:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "קנה מידה:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Fade In (s):"
-msgstr ""
+msgstr "דהייה/יות:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#, fuzzy
 msgid "Fade Out (s):"
-msgstr ""
+msgstr "עמעום/ים:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend"
-msgstr ""
+msgstr "מיזוג"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix"
-msgstr ""
+msgstr "עירבוב"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Auto Restart:"
-msgstr ""
+msgstr "התחלה מחדש אוטומטית:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Restart (s):"
-msgstr ""
+msgstr "התחלה(ות) מחדש:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Random Restart (s):"
-msgstr ""
+msgstr "התחלה(ות) מחדש באקראי:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Start!"
-msgstr ""
+msgstr "התחלה!"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
-msgstr ""
+msgstr "כמות:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
-msgstr ""
+msgstr "מיזוג 0:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 1:"
-msgstr ""
+msgstr "מיזוג 1:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "X-Fade Time (s):"
-msgstr ""
+msgstr "זמן עמעום/ים (X-Fade):"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Current:"
-msgstr ""
+msgstr "נוכחי:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Input"
-msgstr ""
+msgstr "הוספת קלט"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr ""
+msgstr "הפסקת קידום אוטומטי"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
-msgstr ""
+msgstr "קביעת קידום אוטומטי"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Delete Input"
-msgstr ""
+msgstr "מחיקת קלט"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr ""
+msgstr "עץ הנפשה חוקי."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr ""
+msgstr "עץ הנפשה לא חוקי."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr ""
+msgstr "מפרק הנפשה"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "מפרק חד-פעמי"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "מפרק ערבוב"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "מפרק Blend2"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "מפרק Blend3"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "מפרק Blend4"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "מפרק TimeScale"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "מפרק TimeSeek"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "מפרק מעברון"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
-msgstr ""
+msgstr "ייבוא הנפשות..."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Node Filters"
-msgstr ""
+msgstr "עריכת מסנני המפרק"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Filters..."
-msgstr ""
+msgstr "מסננים..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
-msgstr ""
+msgstr "תוכן:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "View Files"
-msgstr ""
+msgstr "הצגת קבצים"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr ""
+msgstr "שגיאת חיבור, אנא נסה שוב."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
-msgstr ""
+msgstr "לא ניתן להתחבר למארח:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response from host:"
-msgstr ""
+msgstr "אין תגובה מהמארח:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve hostname:"
@@ -12101,6 +12108,14 @@ msgstr ""
 "נתיב לא חוקי לערכת פיתוח אנדרואיד עבור בנייה מותאמת אישית בהגדרות העורך."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12147,6 +12162,22 @@ msgstr "\"Focus Awareness\" תקף רק כאשר \"מצב Xr\" הוא \"Oculus M
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12919,6 +12950,12 @@ msgstr "ניתן להקצות שינויים רק בפונקצית vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "שמירת הפריסה נכשלה!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "ברירת המחדל של עורך הפריסה נדרסה."
 
 #, fuzzy
 #~ msgid "Move pivot"
