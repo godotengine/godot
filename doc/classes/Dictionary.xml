@@ -10,43 +10,53 @@
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		Creating a dictionary:
 		[codeblock]
-		var my_dir = {} # Creates an empty dictionary.
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-		var another_dir = {
-		    key1: value1,
-		    key2: value2,
-		    key3: value3,
+		var my_dict = {} # Creates an empty dictionary.
+
+		var dict_variable_key = "Another key name"
+		var dict_variable_value = "value2"
+		var another_dict = {
+		    "Some key name": "value1",
+		    dict_variable_key: dict_variable_value,
+		}
+
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+
+		# Alternative Lua-style syntax.
+		# Doesn't require quotes around keys, but only string constants can be used as key names.
+		# Additionally, key names must start with a letter or an underscore.
+		# Here, `some_key` is a string literal, not a variable!
+		another_dict = {
+		    some_key = 42,
 		}
 		[/codeblock]
 		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblock]
-		export(String, "White", "Yellow", "Orange") var my_color
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-
+		export(string, "White", "Yellow", "Orange") var my_color
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.
-		    var points = points_dir[my_color]
+		    var points = points_dict[my_color]
 		[/codeblock]
 		In the above code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
 		Dictionaries can contain more complex data:
 		[codeblock]
-		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
+		my_dict = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
 		[/codeblock]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
 		[codeblock]
-		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
-		points_dir["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
+		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		points_dict["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
 		[/codeblock]
 		Finally, dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblock]
 		# This is a valid dictionary.
 		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
-		var my_dir = {
+		var my_dict = {
 		    "String Key": 5,
 		    4: [1, 2, 3],
 		    7: "Hello",
-		    "sub_dir": {"sub_key": "Nested value"},
+		    "sub_dict": {"sub_key": "Nested value"},
 		}
 		[/codeblock]
 		[b]Note:[/b] Unlike [Array]s, you can't compare dictionaries directly:
@@ -57,20 +67,21 @@
 		func compare_arrays():
 		    print(array1 == array2) # Will print true.
 
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		var dict1 = {"a": 1, "b": 2, "c": 3}
+		var dict2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
-		    print(dir1 == dir2) # Will NOT print true.
+		    print(dict1 == dict2) # Will NOT print true.
 		[/codeblock]
 		You need to first calculate the dictionary's hash with [method hash] before you can compare them:
 		[codeblock]
-		dir1 = {"a": 1, "b": 2, "c": 3}
-		dir2 = {"a": 1, "b": 2, "c": 3}
+		var dict1 = {"a": 1, "b": 2, "c": 3}
+		var dict2 = {"a": 1, "b": 2, "c": 3}
 
 		func compare_dictionaries():
-		    print(dir1.hash() == dir2.hash()) # Will print true.
+		    print(dict1.hash() == dict2.hash()) # Will print true.
 		[/codeblock]
+		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary itself can still be mutated by defining the values of individual keys. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">https://docs.godotengine.org/en/3.2/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
@@ -169,7 +180,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the size of the dictionary (in pairs).
+				Returns the number of keys in the dictionary.
 			</description>
 		</method>
 		<method name="values">

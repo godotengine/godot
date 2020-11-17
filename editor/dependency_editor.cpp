@@ -474,13 +474,13 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	removed_deps.sort();
 	if (removed_deps.empty()) {
 		owners->hide();
-		text->set_text(TTR("Remove selected files from the project? (Can't be restored)"));
+		text->set_text(TTR("Remove selected files from the project? (no undo)\nYou can find the removed files in the system trash to restore them."));
 		set_size(Size2());
 		popup_centered();
 	} else {
 		_build_removed_dependency_tree(removed_deps);
 		owners->show();
-		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
+		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)\nYou can find the removed files in the system trash to restore them."));
 		popup_centered(Size2(500, 350));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();

@@ -59,8 +59,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-28 11:18+0000\n"
-"Last-Translator: Mirko <miknsop@gmail.com>\n"
+"PO-Revision-Date: 2020-11-10 11:28+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1080,14 +1080,19 @@ msgid "Owners Of:"
 msgstr "Proprietari di:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Rimuovere i file selezionati dal progetto? (Non può essere annullato)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "I file che stanno per essere rimossi sono richiesti da altre risorse perché "
 "esse funzionino.\n"
@@ -1646,34 +1651,32 @@ msgstr ""
 "'Driver Fallback Enabled'."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"La piattaforma di destinazione richiede la compressione 'ETC' delle texture "
-"per GLES2. Attiva 'Import Etc' nelle impostazioni del progetto."
+"La piattaforma di destinazione richiede la compressione 'PVRTC' delle "
+"texture per GLES2. Attiva 'Import Pvrtc' nelle impostazioni del progetto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"La piattaforma di destinazione richiede la compressione 'ETC2' delle texture "
-"per GLES3. Attiva 'Import Etc 2' nelle impostazioni del progetto."
+"La piattaforma di destinazione richiede la compressione 'ETC2' o 'PVRTC' "
+"delle texture per GLES3. Attiva 'Import Etc 2' oppure 'Import Pvrtc' nelle "
+"impostazioni del progetto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"La piattaforma di destinazione richiede la compressione 'ETC' delle texture "
-"per il fallback del driver a GLES2.\n"
-"Attivare 'Import Etc' nelle impostazioni del progetto, oppure disattivare "
+"La piattaforma di destinazione richiede la compressione 'PVRTC' delle "
+"texture per il fallback del driver a GLES2.\n"
+"Attiva 'Import Pvrtc' nelle impostazioni del progetto, oppure disattiva "
 "'Driver Fallback Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -2358,19 +2361,25 @@ msgid "Error saving TileSet!"
 msgstr "Errore di salvataggio del TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Errore nel salvataggio della disposizione!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Disposizione predefinita dell'editor sovrascritta."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Nome della disposizione non trovato!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Ripristinata la disposizione predefinita alle impostazioni originali."
 
 #: editor/editor_node.cpp
@@ -3818,6 +3827,11 @@ msgstr "Duplica..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Sposta in..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Sposta Autoload"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5288,50 +5302,43 @@ msgstr "Crea Guide Orizzontali e Verticali"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "Imposta Pivot Offset CanvasItem \"%s\" a (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "Ruota CanvasItem"
+msgstr "Ruota %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Ruota CanvasItem"
+msgstr "Ruota CanvasItem \"%s\" a %d gradi"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Sposta CanvasItem"
+msgstr "Sposta Ancora CanvasItem \"%s\""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "Scala Node2D \"%s\" a (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "Ridimensiona Control \"%s\" a (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "Scala CanvasItem"
+msgstr "Scala %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Scala CanvasItem"
+msgstr "Scala CanvasItem \"%s\" a (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "Sposta CanvasItem"
+msgstr "Sposta %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Sposta CanvasItem"
+msgstr "Sposta CanvasItem \"%s\" a (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6622,18 +6629,16 @@ msgid "Move Points"
 msgstr "Sposta Punti"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "Trascina: Ruota"
+msgstr "Command: Ruota"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: Muovi Tutti"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
-msgstr "Shift+Ctrl: Scala"
+msgstr "Shift+Command: Scala"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -6682,14 +6687,12 @@ msgid "Radius:"
 msgstr "Raggio:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "Crea Poligono e UV"
+msgstr "Copia Poligono su UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "Converti in Polygon2D"
+msgstr "Copia UV su Poligono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8238,13 +8241,12 @@ msgid "Paint Tile"
 msgstr "Disegna tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
-"Shift + LMB: Traccia una linea\n"
-"Shift + Ctrl + LMB: Colora il rettangolo"
+"Shift + LMB: Disegna Linea\n"
+"Shift + Ctrl + LMB: Disegna Rettangolo"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8775,9 +8777,8 @@ msgid "Add Node to Visual Shader"
 msgstr "Aggiungi Nodo a Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "Nodo Spostato"
+msgstr "Nodo(i) Spostato(i)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8797,9 +8798,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Tipo di Input Visual Shader Cambiato"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "Imposta Nome Uniforme"
+msgstr "Nome UniformRef Modificato"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9520,7 +9520,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "Un riferimento ad una uniform esistente."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -12166,6 +12166,14 @@ msgstr ""
 "dell'editor non è valido."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12218,18 +12226,35 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr ""
+"\"Export AAB\" è valido soltanto quanto \"Use Custom Build\" è abilitato."
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
+msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
-msgstr ""
+msgstr "Nome file invalido! Il Bundle Android App richiede l'estensione *.aab."
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "L'estensione APK non è compatibile con il Bundle Android App."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "Nome file invalido! L'APK Android richiede l'estensione *.apk."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12268,13 +12293,15 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "Spostando l'output"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
+"Impossibile copiare e rinominare il file di esportazione, controlla la "
+"directory del progetto gradle per gli output."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -13051,6 +13078,12 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Errore nel salvataggio della disposizione!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Disposizione predefinita dell'editor sovrascritta."
 
 #~ msgid "Move pivot"
 #~ msgstr "Sposta pivot"
