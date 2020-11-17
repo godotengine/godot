@@ -98,7 +98,6 @@ public:
 			}
 		}*/
 		/*for(int i=0;i<100;i++) {
-
 			vts.push_back( Vector3(Math::randf()*2-1.0,Math::randf()*2-1.0,Math::randf()*2-1.0).normalized()*2);
 		}*/
 		/*
@@ -216,7 +215,6 @@ public:
 			vs->instance_set_transform(E->get().instance, pre * E->get().base);
 			/*
 			if( !E->next() ) {
-
 				vs->free( E->get().instance );
 				instances.erase(E );
 			}*/
@@ -236,5 +234,4 @@ public:
 MainLoop *test() {
 	return memnew(TestMainLoop);
 }
-
 } // namespace TestRender

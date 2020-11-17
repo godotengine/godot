@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 const GodotAudio = {
-
 	$GodotAudio__deps: ['$GodotOS'],
 	$GodotAudio: {
 		ctx: null,
@@ -182,7 +181,6 @@ mergeInto(LibraryManager.library, GodotAudio);
  * The AudioWorklet API driver, used when threads are available.
  */
 const GodotAudioWorklet = {
-
 	$GodotAudioWorklet__deps: ['$GodotAudio'],
 	$GodotAudioWorklet: {
 		promise: null,
@@ -269,7 +267,6 @@ mergeInto(LibraryManager.library, GodotAudioWorklet);
  * The deprecated ScriptProcessorNode API, used when threads are disabled.
  */
 const GodotAudioScript = {
-
 	$GodotAudioScript__deps: ['$GodotAudio'],
 	$GodotAudioScript: {
 		script: null,

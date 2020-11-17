@@ -52,7 +52,6 @@ import org.godotengine.godot.plugin.GodotPluginRegistry
  * @see [VkSurfaceView.startRenderer]
  */
 internal class VkRenderer {
-
 	private val pluginRegistry: GodotPluginRegistry = GodotPluginRegistry.getPluginRegistry()
 
 	/**

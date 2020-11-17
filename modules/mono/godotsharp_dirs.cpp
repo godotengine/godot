@@ -322,5 +322,4 @@ String get_data_mono_bin_dir() {
 	return _GodotSharpDirs::get_singleton().data_mono_bin_dir;
 }
 #endif
-
 } // namespace GodotSharpDirs

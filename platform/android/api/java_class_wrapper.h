@@ -47,7 +47,6 @@ class JavaClass : public Reference {
 
 #ifdef ANDROID_ENABLED
 	enum ArgumentType{
-
 		ARG_TYPE_VOID,
 		ARG_TYPE_BOOLEAN,
 		ARG_TYPE_BYTE,

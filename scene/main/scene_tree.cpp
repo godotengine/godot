@@ -827,12 +827,9 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 /*
 void SceneMainLoop::_update_listener_2d() {
-
 	if (listener_2d.is_valid()) {
-
 		SpatialSound2DServer::get_singleton()->listener_set_space( listener_2d, world_2d->get_sound_space() );
 	}
-
 }
 
 */

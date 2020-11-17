@@ -628,7 +628,6 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 
 /*
 void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
-
 	Transform inv_xform = p_xform.affine_inverse();
 	if (!get_space()) {
 		_set_transform(p_xform);
@@ -655,8 +654,6 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	simulated_motion=true;
 	_set_transform(p_xform);
-
-
 }
 
 */

@@ -373,7 +373,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/4;
 
 				for(int i=0;i<colcount;i++) {
-
 					uint8_t r = wb[i*4+1];
 					uint8_t g = wb[i*4+2];
 					uint8_t b = wb[i*4+3];
@@ -392,7 +391,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/3;
 
 				for(int i=0;i<colcount;i++) {
-
 					SWAP( wb[i*3+0],wb[i*3+2] );
 				}*/
 			} break;

@@ -600,13 +600,11 @@ void DisplayServerJavaScript::process_joypads() {
 
 #if 0
 bool DisplayServerJavaScript::is_joy_known(int p_device) {
-
 	return Input::get_singleton()->is_joy_mapped(p_device);
 }
 
 
 String DisplayServerJavaScript::get_joy_guid(int p_device) const {
-
 	return Input::get_singleton()->get_joy_guid_remapped(p_device);
 }
 #endif

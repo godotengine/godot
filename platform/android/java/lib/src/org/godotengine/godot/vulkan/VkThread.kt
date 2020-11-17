@@ -41,7 +41,6 @@ import kotlin.concurrent.withLock
  * The implementation is modeled after [android.opengl.GLSurfaceView]'s GLThread.
  */
 internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vkRenderer: VkRenderer) : Thread(TAG) {
-
 	companion object {
 		private val TAG = VkThread::class.java.simpleName
 	}
@@ -226,5 +225,4 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 			threadExiting()
 		}
 	}
-
 }

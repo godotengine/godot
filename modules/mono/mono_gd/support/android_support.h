@@ -45,7 +45,6 @@ void initialize();
 void cleanup();
 
 void register_internal_calls();
-
 } // namespace support
 } // namespace android
 } // namespace gdmono

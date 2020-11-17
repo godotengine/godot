@@ -102,7 +102,6 @@ static voidpf godot_alloc(voidpf opaque, uInt items, uInt size) {
 static void godot_free(voidpf opaque, voidpf address) {
 	memfree(address);
 }
-
 } // extern "C"
 
 void ZipArchive::close_handle(unzFile p_file) const {

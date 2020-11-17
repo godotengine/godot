@@ -50,7 +50,6 @@ enum class CompletionKind {
 };
 
 PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
-
 } // namespace gdmono
 
 #endif // CODE_COMPLETION_H

@@ -372,7 +372,6 @@ void ShaderEditor::_bind_methods() {
 void ShaderEditor::ensure_select_current() {
 	/*
 	if (tab_container->get_child_count() && tab_container->get_current_tab()>=0) {
-
 		ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(tab_container->get_child(tab_container->get_current_tab()));
 		if (!ste)
 			return;

@@ -40,7 +40,6 @@
 
 class EditorHistory {
 	enum {
-
 		HISTORY_MAX = 64
 	};
 

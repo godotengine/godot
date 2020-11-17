@@ -34,7 +34,6 @@
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
 /*void FileAccessAndroid::make_default() {
-
 	create_func=create_android;
 }*/
 

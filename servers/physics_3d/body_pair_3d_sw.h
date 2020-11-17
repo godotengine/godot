@@ -36,7 +36,6 @@
 
 class BodyPair3DSW : public Constraint3DSW {
 	enum {
-
 		MAX_CONTACTS = 4
 	};
 

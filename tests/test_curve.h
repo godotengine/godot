@@ -216,7 +216,6 @@ TEST_CASE("[Curve] Custom curve with linear tangents") {
 			Math::is_equal_approx(curve->interpolate_baked(0.7), 0.8),
 			"Custom free curve should return the expected baked value at offset 0.7 after removing point at invalid index 10.");
 }
-
 } // namespace TestCurve
 
 #endif // TEST_CURVE_H

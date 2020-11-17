@@ -71,7 +71,6 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 	GPUParticles3D *node;
 
 	enum Menu {
-
 		MENU_OPTION_GENERATE_AABB,
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,

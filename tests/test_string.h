@@ -1296,7 +1296,6 @@ TEST_CASE("[String] humanize_size") {
 	CHECK(String::humanize_size(100523550) == "95.86 MiB");
 	CHECK(String::humanize_size(5345555000) == "4.97 GiB");
 }
-
 } // namespace TestString
 
 #endif // TEST_STRING_H

@@ -868,7 +868,6 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		inout float alpha,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
-
 	vec3 light_rel_vec = lights.data[idx].position - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * lights.data[idx].inv_radius;
@@ -1158,7 +1157,6 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
-
 	vec3 light_rel_vec = lights.data[idx].position - vertex;
 	float light_length = length(light_rel_vec);
 	float normalized_distance = light_length * lights.data[idx].inv_radius;

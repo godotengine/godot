@@ -53,7 +53,6 @@ autoAddDeps(IDHandler, "$IDHandler");
 mergeInto(LibraryManager.library, IDHandler);
 
 const GodotConfig = {
-
 	$GodotConfig__postset: 'Module["initConfig"] = GodotConfig.init_config;',
 	$GodotConfig: {
 		canvas: null,
@@ -209,7 +208,6 @@ const GodotOS = {
 		'GodotOS._fs_sync_promise = Promise.resolve();',
 	].join(''),
 	$GodotOS: {
-
 		request_quit: function() {},
 		_async_cbs: [],
 		_fs_sync_promise: null,

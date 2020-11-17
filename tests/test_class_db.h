@@ -830,7 +830,6 @@ TEST_SUITE("[ClassDB]") {
 		}
 	}
 }
-
 } // namespace TestClassDB
 
 #endif //GODOT_TEST_CLASS_DB_H

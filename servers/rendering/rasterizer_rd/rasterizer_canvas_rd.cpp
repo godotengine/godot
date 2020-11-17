@@ -687,7 +687,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 #if 0
 			case Item::Command::TYPE_MESH: {
-
 				Item::CommandMesh *mesh = static_cast<Item::CommandMesh *>(c);
 				_set_texture_rect_mode(false);
 
@@ -702,7 +701,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 				RasterizerStorageGLES3::Mesh *mesh_data = storage->mesh_owner.getornull(mesh->mesh);
 				if (mesh_data) {
-
 					for (int j = 0; j < mesh_data->surfaces.size(); j++) {
 						RasterizerStorageGLES3::Surface *s = mesh_data->surfaces[j];
 						// materials are ignored in 2D meshes, could be added but many things (ie, lighting mode, reading from screen, etc) would break as they are not meant be set up at this point of drawing
@@ -723,7 +721,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 			} break;
 			case Item::Command::TYPE_MULTIMESH: {
-
 				Item::CommandMultiMesh *mmesh = static_cast<Item::CommandMultiMesh *>(c);
 
 				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getornull(mmesh->multimesh);
@@ -786,7 +783,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					int custom_data_ofs = color_ofs;
 
 					switch (multi_mesh->color_format) {
-
 						case RS::MULTIMESH_COLOR_NONE: {
 							glDisableVertexAttribArray(11);
 							glVertexAttrib4f(11, 1, 1, 1, 1);
@@ -807,7 +803,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 					}
 
 					switch (multi_mesh->custom_data_format) {
-
 						case RS::MULTIMESH_CUSTOM_DATA_NONE: {
 							glDisableVertexAttribArray(12);
 							glVertexAttrib4f(12, 1, 1, 1, 1);
@@ -841,7 +836,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 
 			} break;
 			case Item::Command::TYPE_PARTICLES: {
-
 				Item::CommandParticles *particles_cmd = static_cast<Item::CommandParticles *>(c);
 
 				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getornull(particles_cmd->particles);
@@ -875,7 +869,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				}
 
 				if (!particles->use_local_coords) {
-
 					Transform2D inv_xf;
 					inv_xf.set_axis(0, Vector2(particles->emission_transform.basis.get_axis(0).x, particles->emission_transform.basis.get_axis(0).y));
 					inv_xf.set_axis(1, Vector2(particles->emission_transform.basis.get_axis(1).x, particles->emission_transform.basis.get_axis(1).y));
@@ -893,7 +886,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				int amount = particles->amount;
 
 				if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_LIFETIME) {
-
 					glEnableVertexAttribArray(8); //xform x
 					glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(sizeof(float) * 4 * 3));
 					glVertexAttribDivisor(8, 1);

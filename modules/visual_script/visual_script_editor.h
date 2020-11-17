@@ -64,7 +64,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	};
 
 	enum PortAction {
-
 		CREATE_CALL_SET_GET,
 		CREATE_ACTION,
 	};

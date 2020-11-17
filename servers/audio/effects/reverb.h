@@ -46,7 +46,6 @@ public:
 
 private:
 	enum {
-
 		MAX_COMBS = 8,
 		MAX_ALLPASS = 4,
 		MAX_ECHO_MS = 500
