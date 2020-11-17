@@ -1613,14 +1613,6 @@ bool Main::start() {
 		return false;
 	}
 
-	if (_export_preset != "") {
-		if (positional_arg == "") {
-			String err = "Command line includes export parameter option, but no destination path was given.\n";
-			err += "Please specify the binary's file path to export to. Aborting export.";
-			ERR_PRINT(err);
-			return false;
-		}
-	}
 #endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
