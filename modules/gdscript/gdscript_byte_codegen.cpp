@@ -242,11 +242,24 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_indexed_getters_ptr = nullptr;
 	}
 
+	if (method_bind_map.size()) {
+		function->methods.resize(method_bind_map.size());
+		function->_methods_ptr = function->methods.ptrw();
+		function->_methods_count = method_bind_map.size();
+		for (const Map<MethodBind *, int>::Element *E = method_bind_map.front(); E; E = E->next()) {
+			function->methods.write[E->get()] = E->key();
+		}
+	} else {
+		function->_methods_ptr = nullptr;
+		function->_methods_count = 0;
+	}
+
 	if (debug_stack) {
 		function->stack_debug = stack_debug;
 	}
 	function->_stack_size = stack_max;
 	function->_instruction_args_size = instr_args_max;
+	function->_ptrcall_args_size = ptrcall_max;
 
 	ended = true;
 	return function;
@@ -634,26 +647,84 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 	append(p_function);
 }
 
-void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
+	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
 	append(p_target);
 	append(p_arguments.size());
-	append(p_method->get_name());
+	append(p_method);
 }
 
-void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
+#define CASE_TYPE(m_type)                                                               \
+	case Variant::m_type:                                                               \
+		append(GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type, 2 + p_arguments.size()); \
+		break
+
+	bool is_ptrcall = true;
+
+	if (p_method->has_return()) {
+		MethodInfo info;
+		ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
+		switch (info.return_val.type) {
+			CASE_TYPE(BOOL);
+			CASE_TYPE(INT);
+			CASE_TYPE(FLOAT);
+			CASE_TYPE(STRING);
+			CASE_TYPE(VECTOR2);
+			CASE_TYPE(VECTOR2I);
+			CASE_TYPE(RECT2);
+			CASE_TYPE(RECT2I);
+			CASE_TYPE(VECTOR3);
+			CASE_TYPE(VECTOR3I);
+			CASE_TYPE(TRANSFORM2D);
+			CASE_TYPE(PLANE);
+			CASE_TYPE(AABB);
+			CASE_TYPE(BASIS);
+			CASE_TYPE(TRANSFORM);
+			CASE_TYPE(COLOR);
+			CASE_TYPE(STRING_NAME);
+			CASE_TYPE(NODE_PATH);
+			CASE_TYPE(RID);
+			CASE_TYPE(QUAT);
+			CASE_TYPE(OBJECT);
+			CASE_TYPE(CALLABLE);
+			CASE_TYPE(SIGNAL);
+			CASE_TYPE(DICTIONARY);
+			CASE_TYPE(ARRAY);
+			CASE_TYPE(PACKED_BYTE_ARRAY);
+			CASE_TYPE(PACKED_INT32_ARRAY);
+			CASE_TYPE(PACKED_INT64_ARRAY);
+			CASE_TYPE(PACKED_FLOAT32_ARRAY);
+			CASE_TYPE(PACKED_FLOAT64_ARRAY);
+			CASE_TYPE(PACKED_STRING_ARRAY);
+			CASE_TYPE(PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(PACKED_COLOR_ARRAY);
+			default:
+				append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
+				is_ptrcall = false;
+				break;
+		}
+	} else {
+		append(GDScriptFunction::OPCODE_CALL_PTRCALL_NO_RETURN, 2 + p_arguments.size());
+	}
+
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
 	append(p_target);
 	append(p_arguments.size());
-	append(p_method->get_name());
+	append(p_method);
+	if (is_ptrcall) {
+		alloc_ptrcall(p_arguments.size());
+	}
+
+#undef CASE_TYPE
 }
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {

@@ -191,6 +191,44 @@ public:
 		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_CALL_METHOD_BIND,
+		OPCODE_CALL_METHOD_BIND_RET,
+		// ptrcall have one instruction per return type.
+		OPCODE_CALL_PTRCALL_NO_RETURN,
+		OPCODE_CALL_PTRCALL_BOOL,
+		OPCODE_CALL_PTRCALL_INT,
+		OPCODE_CALL_PTRCALL_FLOAT,
+		OPCODE_CALL_PTRCALL_STRING,
+		OPCODE_CALL_PTRCALL_VECTOR2,
+		OPCODE_CALL_PTRCALL_VECTOR2I,
+		OPCODE_CALL_PTRCALL_RECT2,
+		OPCODE_CALL_PTRCALL_RECT2I,
+		OPCODE_CALL_PTRCALL_VECTOR3,
+		OPCODE_CALL_PTRCALL_VECTOR3I,
+		OPCODE_CALL_PTRCALL_TRANSFORM2D,
+		OPCODE_CALL_PTRCALL_PLANE,
+		OPCODE_CALL_PTRCALL_QUAT,
+		OPCODE_CALL_PTRCALL_AABB,
+		OPCODE_CALL_PTRCALL_BASIS,
+		OPCODE_CALL_PTRCALL_TRANSFORM,
+		OPCODE_CALL_PTRCALL_COLOR,
+		OPCODE_CALL_PTRCALL_STRING_NAME,
+		OPCODE_CALL_PTRCALL_NODE_PATH,
+		OPCODE_CALL_PTRCALL_RID,
+		OPCODE_CALL_PTRCALL_OBJECT,
+		OPCODE_CALL_PTRCALL_CALLABLE,
+		OPCODE_CALL_PTRCALL_SIGNAL,
+		OPCODE_CALL_PTRCALL_DICTIONARY,
+		OPCODE_CALL_PTRCALL_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_BYTE_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_STRING_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR2_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR3_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
 		OPCODE_JUMP,
@@ -262,11 +300,15 @@ private:
 	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
 	int _indexed_getters_count = 0;
 	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
+	int _methods_count = 0;
+	MethodBind **_methods_ptr = nullptr;
 	const int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
+	int _ptrcall_args_size = 0;
+
 	int _initial_line = 0;
 	bool _static = false;
 	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
@@ -284,6 +326,7 @@ private:
 	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
 	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
 	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
+	Vector<MethodBind *> methods;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;

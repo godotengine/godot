@@ -54,6 +54,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int current_line = 0;
 	int stack_max = 0;
 	int instr_args_max = 0;
+	int ptrcall_max = 0;
 
 	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 	Map<StringName, int> name_map;
@@ -67,6 +68,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Map<Variant::ValidatedKeyedGetter, int> keyed_getters_map;
 	Map<Variant::ValidatedIndexedSetter, int> indexed_setters_map;
 	Map<Variant::ValidatedIndexedGetter, int> indexed_getters_map;
+	Map<MethodBind *, int> method_bind_map;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
 	List<int> for_jmp_addrs;
@@ -199,6 +201,15 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_method_bind_pos(MethodBind *p_method) {
+		if (method_bind_map.has(p_method)) {
+			return method_bind_map[p_method];
+		}
+		int pos = method_bind_map.size();
+		method_bind_map[p_method] = pos;
+		return pos;
+	}
+
 	void alloc_stack(int p_level) {
 		if (p_level >= stack_max)
 			stack_max = p_level + 1;
@@ -208,6 +219,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		int top = current_stack_size++;
 		alloc_stack(current_stack_size);
 		return top;
+	}
+
+	void alloc_ptrcall(int p_params) {
+		if (p_params >= ptrcall_max)
+			ptrcall_max = p_params;
 	}
 
 	int address_of(const Address &p_address) {
@@ -282,6 +298,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_indexed_getter_pos(p_indexed_getter));
 	}
 
+	void append(MethodBind *p_method) {
+		opcodes.push_back(get_method_bind_pos(p_method));
+	}
+
 	void patch_jump(int p_address) {
 		opcodes.write[p_address] = opcodes.size();
 	}
@@ -337,8 +357,8 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;
