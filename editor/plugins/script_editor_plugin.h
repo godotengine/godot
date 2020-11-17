@@ -160,8 +160,7 @@ class ScriptEditor : public PanelContainer {
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_SHOW,
-		DEBUG_SHOW_KEEP_OPEN,
+		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 		SEARCH_IN_FILES,
 		SEARCH_HELP,
@@ -270,6 +269,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
+	void _update_debug_options();
 	void _theme_option(int p_option);
 	void _show_save_theme_as_dialog();
 
