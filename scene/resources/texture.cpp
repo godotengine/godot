@@ -151,7 +151,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 }
 
 void ImageTexture::create_from_image(const Ref<Image> &p_image) {
-	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
 	w = p_image->get_width();
 	h = p_image->get_height();
 	format = p_image->get_format();
@@ -174,11 +174,14 @@ Image::Format ImageTexture::get_format() const {
 }
 
 void ImageTexture::update(const Ref<Image> &p_image, bool p_immediate) {
-	ERR_FAIL_COND(p_image.is_null());
-	ERR_FAIL_COND(texture.is_null());
-	ERR_FAIL_COND(p_image->get_width() != w || p_image->get_height() != h);
-	ERR_FAIL_COND(p_image->get_format() != format);
-	ERR_FAIL_COND(mipmaps != p_image->has_mipmaps());
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
+	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
+	ERR_FAIL_COND_MSG(p_image->get_width() != w || p_image->get_height() != h,
+			"The new image dimensions must match the texture size.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != format,
+			"The new image format must match the texture's image format.");
+	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
+			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
 
 	if (p_immediate) {
 		RenderingServer::get_singleton()->texture_2d_update_immediate(texture, p_image);
