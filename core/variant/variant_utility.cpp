@@ -40,12 +40,15 @@
 
 struct VariantUtilityFunctions {
 	// Math
+
 	static inline double sin(double arg) {
 		return Math::sin(arg);
 	}
+
 	static inline double cos(double arg) {
 		return Math::cos(arg);
 	}
+
 	static inline double tan(double arg) {
 		return Math::tan(arg);
 	}
@@ -53,9 +56,11 @@ struct VariantUtilityFunctions {
 	static inline double sinh(double arg) {
 		return Math::sinh(arg);
 	}
+
 	static inline double cosh(double arg) {
 		return Math::cosh(arg);
 	}
+
 	static inline double tanh(double arg) {
 		return Math::tanh(arg);
 	}
@@ -63,9 +68,11 @@ struct VariantUtilityFunctions {
 	static inline double asin(double arg) {
 		return Math::asin(arg);
 	}
+
 	static inline double acos(double arg) {
 		return Math::acos(arg);
 	}
+
 	static inline double atan(double arg) {
 		return Math::atan(arg);
 	}
@@ -173,6 +180,7 @@ struct VariantUtilityFunctions {
 	static inline double pow(double x, double y) {
 		return Math::pow(x, y);
 	}
+
 	static inline double log(double x) {
 		return Math::log(x);
 	}
@@ -181,24 +189,24 @@ struct VariantUtilityFunctions {
 		return Math::exp(x);
 	}
 
-	static inline double is_nan(double x) {
+	static inline bool is_nan(double x) {
 		return Math::is_nan(x);
 	}
 
-	static inline double is_inf(double x) {
+	static inline bool is_inf(double x) {
 		return Math::is_inf(x);
 	}
 
-	static inline double is_equal_approx(double x, double y) {
+	static inline bool is_equal_approx(double x, double y) {
 		return Math::is_equal_approx(x, y);
 	}
 
-	static inline double is_zero_approx(double x) {
+	static inline bool is_zero_approx(double x) {
 		return Math::is_zero_approx(x);
 	}
 
-	static inline double ease(float x, float c) {
-		return Math::ease(x, c);
+	static inline double ease(float x, float curve) {
+		return Math::ease(x, curve);
 	}
 
 	static inline int step_decimals(float step) {
@@ -268,6 +276,7 @@ struct VariantUtilityFunctions {
 	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		return Math::wrapi(value, min, max);
 	}
+
 	static inline double wrapf(double value, double min, double max) {
 		return Math::wrapf(value, min, max);
 	}
@@ -695,9 +704,9 @@ struct VariantUtilityFunctions {
 		return p_arr.hash();
 	}
 
-	static inline Variant instance_from_id(int64_t p_id) {
+	static inline Object *instance_from_id(int64_t p_id) {
 		ObjectID id = ObjectID((uint64_t)p_id);
-		Variant ret = ObjectDB::get_instance(id);
+		Object *ret = ObjectDB::get_instance(id);
 		return ret;
 	}
 
@@ -829,22 +838,18 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args, r_error);                               \
 		}                                                                                                        \
-                                                                                                                 \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			validated_call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args);                              \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			ptr_call_helperr(VariantUtilityFunctions::m_func, ret, p_args);                                      \
 		}                                                                                                        \
-                                                                                                                 \
 		static int get_argument_count() {                                                                        \
 			return get_arg_count_helperr(VariantUtilityFunctions::m_func);                                       \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
 			return get_arg_type_helperr(VariantUtilityFunctions::m_func, p_arg);                                 \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_return_type() {                                                                 \
 			return get_ret_type_helperr(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
@@ -863,7 +868,6 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r_error.error = Callable::CallError::CALL_OK;                                                               \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], r_error);                                              \
 		}                                                                                                               \
-                                                                                                                        \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                            \
 			Callable::CallError ce;                                                                                     \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], ce);                                                   \
@@ -872,15 +876,12 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError ce;                                                                                     \
 			PtrToArg<Variant>::encode(VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), ce), ret); \
 		}                                                                                                               \
-                                                                                                                        \
 		static int get_argument_count() {                                                                               \
 			return 1;                                                                                                   \
 		}                                                                                                               \
-                                                                                                                        \
 		static Variant::Type get_argument_type(int p_arg) {                                                             \
 			return Variant::NIL;                                                                                        \
 		}                                                                                                               \
-                                                                                                                        \
 		static Variant::Type get_return_type() {                                                                        \
 			return Variant::NIL;                                                                                        \
 		}                                                                                                               \
@@ -899,7 +900,6 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r_error.error = Callable::CallError::CALL_OK;                                                                                                                 \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], r_error);                                                                        \
 		}                                                                                                                                                                 \
-                                                                                                                                                                          \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                                                                              \
 			Callable::CallError ce;                                                                                                                                       \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], ce);                                                                             \
@@ -910,15 +910,12 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r = VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), PtrToArg<Variant>::convert(p_args[2]), ce); \
 			PtrToArg<Variant>::encode(r, ret);                                                                                                                            \
 		}                                                                                                                                                                 \
-                                                                                                                                                                          \
 		static int get_argument_count() {                                                                                                                                 \
 			return 3;                                                                                                                                                     \
 		}                                                                                                                                                                 \
-                                                                                                                                                                          \
 		static Variant::Type get_argument_type(int p_arg) {                                                                                                               \
 			return Variant::NIL;                                                                                                                                          \
 		}                                                                                                                                                                 \
-                                                                                                                                                                          \
 		static Variant::Type get_return_type() {                                                                                                                          \
 			return Variant::NIL;                                                                                                                                          \
 		}                                                                                                                                                                 \
@@ -937,7 +934,6 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                               \
 		}                                                                                                        \
-                                                                                                                 \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                     \
@@ -955,15 +951,12 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
 			PtrToArg<Variant>::encode(r, ret);                                                                   \
 		}                                                                                                        \
-                                                                                                                 \
 		static int get_argument_count() {                                                                        \
 			return 2;                                                                                            \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
 			return Variant::NIL;                                                                                 \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_return_type() {                                                                 \
 			return Variant::NIL;                                                                                 \
 		}                                                                                                        \
@@ -986,7 +979,6 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                               \
 		}                                                                                                        \
-                                                                                                                 \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                     \
@@ -1004,15 +996,12 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
 			PtrToArg<String>::encode(r.operator String(), ret);                                                  \
 		}                                                                                                        \
-                                                                                                                 \
 		static int get_argument_count() {                                                                        \
 			return 1;                                                                                            \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
 			return Variant::NIL;                                                                                 \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_return_type() {                                                                 \
 			return Variant::STRING;                                                                              \
 		}                                                                                                        \
@@ -1035,7 +1024,6 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			r_error.error = Callable::CallError::CALL_OK;                                                        \
 			VariantUtilityFunctions::m_func(p_args, p_argcount, r_error);                                        \
 		}                                                                                                        \
-                                                                                                                 \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			Callable::CallError c;                                                                               \
 			VariantUtilityFunctions::m_func(p_args, p_argcount, c);                                              \
@@ -1052,15 +1040,12 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Variant r;                                                                                           \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount);                                       \
 		}                                                                                                        \
-                                                                                                                 \
 		static int get_argument_count() {                                                                        \
 			return 1;                                                                                            \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
 			return Variant::NIL;                                                                                 \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_return_type() {                                                                 \
 			return Variant::NIL;                                                                                 \
 		}                                                                                                        \
@@ -1082,22 +1067,18 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static void call(Variant *r_ret, const Variant **p_args, int p_argcount, Callable::CallError &r_error) { \
 			call_helper(VariantUtilityFunctions::m_func, p_args, r_error);                                       \
 		}                                                                                                        \
-                                                                                                                 \
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) {                     \
 			validated_call_helper(VariantUtilityFunctions::m_func, p_args);                                      \
 		}                                                                                                        \
 		static void ptrcall(void *ret, const void **p_args, int p_argcount) {                                    \
 			ptr_call_helper(VariantUtilityFunctions::m_func, p_args);                                            \
 		}                                                                                                        \
-                                                                                                                 \
 		static int get_argument_count() {                                                                        \
 			return get_arg_count_helper(VariantUtilityFunctions::m_func);                                        \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_argument_type(int p_arg) {                                                      \
 			return get_arg_type_helper(VariantUtilityFunctions::m_func, p_arg);                                  \
 		}                                                                                                        \
-                                                                                                                 \
 		static Variant::Type get_return_type() {                                                                 \
 			return get_ret_type_helper(VariantUtilityFunctions::m_func);                                         \
 		}                                                                                                        \
@@ -1187,7 +1168,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(signf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(signi, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(pow, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(pow, sarray("base", "exp"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(log, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(exp, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1197,17 +1178,17 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(ease, sarray("x", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(stepify, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(stepify, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(lerp, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(lerp_angle, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(inverse_lerp, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(smoothstep, sarray("from", "to", "c"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(dectime, sarray("value", "amount", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 
@@ -1238,7 +1219,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(nearest_po2, sarray("value"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	//Random
+	// Random
 
 	FUNCBIND(randomize, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randi, sarray(), Variant::UTILITY_FUNC_TYPE_RANDOM);
@@ -1249,7 +1230,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 
 	// Utility
-	FUNCBINDVR(weakref, sarray("from"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDVR(weakref, sarray("obj"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(_typeof, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGS(str, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDVARARGV(print, sarray(), Variant::UTILITY_FUNC_TYPE_GENERAL);
@@ -1271,10 +1253,11 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(hash, sarray("variable"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
-	FUNCBINDR(instance_from_id, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+	FUNCBINDR(instance_from_id, sarray("instance_id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_id_valid, sarray("id"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 	FUNCBINDR(is_instance_valid, sarray("instance"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
+
 void Variant::_unregister_variant_utility_functions() {
 	utility_function_table.clear();
 	utility_function_name_table.clear();
@@ -1318,6 +1301,7 @@ Variant::ValidatedUtilityFunction Variant::get_validated_utility_function(const 
 
 	return bfi->validated_call_utility;
 }
+
 Variant::PTRUtilityFunction Variant::get_ptr_utility_function(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1344,6 +1328,7 @@ int Variant::get_utility_function_argument_count(const StringName &p_name) {
 
 	return bfi->argcount;
 }
+
 Variant::Type Variant::get_utility_function_argument_type(const StringName &p_name, int p_arg) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1352,6 +1337,7 @@ Variant::Type Variant::get_utility_function_argument_type(const StringName &p_na
 
 	return bfi->get_arg_type(p_arg);
 }
+
 String Variant::get_utility_function_argument_name(const StringName &p_name, int p_arg) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1361,6 +1347,7 @@ String Variant::get_utility_function_argument_name(const StringName &p_name, int
 	ERR_FAIL_INDEX_V(p_arg, bfi->argnames.size(), String());
 	return bfi->argnames[p_arg];
 }
+
 bool Variant::has_utility_function_return_value(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1368,6 +1355,7 @@ bool Variant::has_utility_function_return_value(const StringName &p_name) {
 	}
 	return bfi->returns_value;
 }
+
 Variant::Type Variant::get_utility_function_return_type(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
@@ -1376,6 +1364,7 @@ Variant::Type Variant::get_utility_function_return_type(const StringName &p_name
 
 	return bfi->return_type;
 }
+
 bool Variant::is_utility_function_vararg(const StringName &p_name) {
 	const VariantUtilityFunctionInfo *bfi = utility_function_table.lookup_ptr(p_name);
 	if (!bfi) {
