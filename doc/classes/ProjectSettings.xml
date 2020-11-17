@@ -1097,8 +1097,12 @@
 			Consider using the project setting [member rendering/batching/precision/uv_contract] to prevent artifacts.
 		</member>
 		<member name="rendering/quality/2d/use_software_skinning" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], performs 2d skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
+			If [code]true[/code], performs 2D skinning on the CPU rather than the GPU. This provides greater compatibility with a wide range of hardware, and also may be faster in some circumstances.
 			Currently only available when [member rendering/batching/options/use_batching] is active.
+		</member>
+		<member name="rendering/quality/2d/use_transform_snap" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], forces snapping of 2D object transforms to the nearest whole coordinate.
+			Can help prevent unwanted relative movement in pixel art styles.
 		</member>
 		<member name="rendering/quality/depth/hdr" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], allocates the main framebuffer with high dynamic range. High dynamic range allows the use of [Color] values greater than 1.
