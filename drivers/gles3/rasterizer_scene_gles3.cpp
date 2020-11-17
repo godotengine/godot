@@ -1834,14 +1834,13 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform &p_view_transform) {
 
-	int omni_indices[16];
+	int maxobj = state.max_forward_lights_per_object;
+	int *omni_indices = (int *)alloca(maxobj * sizeof(int));
 	int omni_count = 0;
-	int spot_indices[16];
+	int *spot_indices = (int *)alloca(maxobj * sizeof(int));
 	int spot_count = 0;
 	int reflection_indices[16];
 	int reflection_count = 0;
-
-	int maxobj = MIN(16, state.max_forward_lights_per_object);
 
 	int lc = e->instance->light_instances.size();
 	if (lc) {
@@ -5054,6 +5053,8 @@ void RasterizerSceneGLES3::initialize() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_lights", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_lights", PROPERTY_HINT_RANGE, "16,4096,1"));
 	render_list.max_reflections = GLOBAL_DEF("rendering/limits/rendering/max_renderable_reflections", (int)RenderList::DEFAULT_MAX_REFLECTIONS);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_renderable_reflections", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_renderable_reflections", PROPERTY_HINT_RANGE, "8,1024,1"));
+	render_list.max_lights_per_object = GLOBAL_DEF_RST("rendering/limits/rendering/max_lights_per_object", (int)RenderList::DEFAULT_MAX_LIGHTS_PER_OBJECT);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/rendering/max_lights_per_object", PropertyInfo(Variant::INT, "rendering/limits/rendering/max_lights_per_object", PROPERTY_HINT_RANGE, "8,1024,1"));
 
 	{
 		//quad buffers
@@ -5168,7 +5169,7 @@ void RasterizerSceneGLES3::initialize() {
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightDataUBO), NULL, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		state.max_forward_lights_per_object = 8;
+		state.max_forward_lights_per_object = MIN(state.max_ubo_lights, render_list.max_lights_per_object);
 
 		state.scene_shader.add_custom_define("#define MAX_LIGHT_DATA_STRUCTS " + itos(state.max_ubo_lights) + "\n");
 		state.scene_shader.add_custom_define("#define MAX_FORWARD_LIGHTS " + itos(state.max_forward_lights_per_object) + "\n");
