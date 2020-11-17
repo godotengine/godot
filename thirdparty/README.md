@@ -115,7 +115,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.33 (2019)
+- Version: 0.1.34 (2020)
 - License: MIT
 
 The files we package are automatically generated.
