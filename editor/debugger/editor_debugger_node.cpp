@@ -232,6 +232,9 @@ void EditorDebuggerNode::_notification(int p_what) {
 				tabs->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 			}
 		} break;
+		case NOTIFICATION_READY: {
+			_update_debug_options();
+		} break;
 		default:
 			break;
 	}
@@ -385,7 +388,7 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/break"), DEBUG_BREAK);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/continue"), DEBUG_CONTINUE);
 	p->add_separator();
-	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/keep_debugger_open"), DEBUG_SHOW_KEEP_OPEN);
+	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/keep_debugger_open"), DEBUG_KEEP_DEBUGGER_OPEN);
 	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/debug_with_external_editor"), DEBUG_WITH_EXTERNAL_EDITOR);
 	p->connect("id_pressed", callable_mp(this, &EditorDebuggerNode::_menu_option));
 
@@ -425,17 +428,30 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 		case DEBUG_CONTINUE: {
 			debug_continue();
 		} break;
-
-		case DEBUG_SHOW_KEEP_OPEN: {
-			bool visible = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN));
-			hide_on_stop = visible;
-			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_SHOW_KEEP_OPEN), !visible);
+		case DEBUG_KEEP_DEBUGGER_OPEN: {
+			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN));
+			hide_on_stop = ischecked;
+			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_KEEP_DEBUGGER_OPEN), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "keep_debugger_open", !ischecked);
 		} break;
 		case DEBUG_WITH_EXTERNAL_EDITOR: {
-			bool checked = !script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
-			debug_with_external_editor = checked;
-			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), checked);
+			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
+			debug_with_external_editor = !ischecked;
+			script_menu->get_popup()->set_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "debug_with_external_editor", !ischecked);
 		} break;
+	}
+}
+
+void EditorDebuggerNode::_update_debug_options() {
+	bool keep_debugger_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "keep_debugger_open", false);
+	bool debug_with_external_editor = EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false);
+
+	if (keep_debugger_open) {
+		_menu_option(DEBUG_KEEP_DEBUGGER_OPEN);
+	}
+	if (debug_with_external_editor) {
+		_menu_option(DEBUG_WITH_EXTERNAL_EDITOR);
 	}
 }
 
