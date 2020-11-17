@@ -5760,46 +5760,51 @@ EditorNode::EditorNode() {
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
-		float custom_display_scale = EditorSettings::get_singleton()->get("interface/editor/custom_display_scale");
 
 		switch (display_scale) {
 			case 0: {
-				// Try applying a suitable display scale automatically
+				// Try applying a suitable display scale automatically.
 #ifdef OSX_ENABLED
 				editor_set_scale(OS::get_singleton()->get_screen_max_scale());
 #else
 				const int screen = OS::get_singleton()->get_current_screen();
-				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+				float scale;
+				if (OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).y >= 1400) {
+					// hiDPI display.
+					scale = 2.0;
+				} else if (OS::get_singleton()->get_screen_size(screen).y <= 800) {
+					// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
+					// Icons won't look great, but this is better than having editor elements overflow from its window.
+					scale = 0.75;
+				} else {
+					scale = 1.0;
+				}
+
+				editor_set_scale(scale);
 #endif
 			} break;
 
-			case 1: {
+			case 1:
 				editor_set_scale(0.75);
-			} break;
-
-			case 2: {
+				break;
+			case 2:
 				editor_set_scale(1.0);
-			} break;
-
-			case 3: {
+				break;
+			case 3:
 				editor_set_scale(1.25);
-			} break;
-
-			case 4: {
+				break;
+			case 4:
 				editor_set_scale(1.5);
-			} break;
-
-			case 5: {
+				break;
+			case 5:
 				editor_set_scale(1.75);
-			} break;
-
-			case 6: {
+				break;
+			case 6:
 				editor_set_scale(2.0);
-			} break;
-
-			default: {
-				editor_set_scale(custom_display_scale);
-			} break;
+				break;
+			default:
+				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
+				break;
 		}
 	}
 
