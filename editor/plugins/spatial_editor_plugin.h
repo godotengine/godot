@@ -760,6 +760,7 @@ public:
 	Ref<ArrayMesh> get_scale_gizmo(int idx) const { return scale_gizmo[idx]; }
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 
+	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = NULL);
 	void snap_selected_nodes_to_floor();

@@ -507,17 +507,35 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/grid_map/pick_distance", 5000.0);
 
 	// 3D
-	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56));
-	hints["editors/3d/primary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/primary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	_initial_set("editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5));
+	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5));
 
-	_initial_set("editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38));
-	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_COLOR_NO_ALPHA, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-
-	_initial_set("editors/3d/grid_size", 50);
-	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
-
+	// If a line is a multiple of this, it uses the primary grid color.
 	_initial_set("editors/3d/primary_grid_steps", 10);
-	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
+
+	// At 1000, the grid mostly looks like it has no edge.
+	_initial_set("editors/3d/grid_size", 200);
+	hints["editors/3d/grid_size"] = PropertyInfo(Variant::INT, "editors/3d/grid_size", PROPERTY_HINT_RANGE, "1,2000,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default largest grid size is 100m, 10^2 (primary grid lines are 1km apart when primary_grid_steps is 10).
+	_initial_set("editors/3d/grid_division_level_max", 2);
+	// Higher values produce graphical artifacts when far away unless View Z-Far
+	// is increased significantly more than it really should need to be.
+	hints["editors/3d/grid_division_level_max"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_max", PROPERTY_HINT_RANGE, "-1,3,1", PROPERTY_USAGE_DEFAULT);
+
+	// Default smallest grid size is 1cm, 10^-2.
+	_initial_set("editors/3d/grid_division_level_min", -2);
+	// Lower values produce graphical artifacts regardless of view clipping planes, so limit to -2 as a lower bound.
+	hints["editors/3d/grid_division_level_min"] = PropertyInfo(Variant::INT, "editors/3d/grid_division_level_min", PROPERTY_HINT_RANGE, "-2,2,1", PROPERTY_USAGE_DEFAULT);
+
+	// -0.2 seems like a sensible default. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
+	_initial_set("editors/3d/grid_division_level_bias", -0.2);
+	hints["editors/3d/grid_division_level_bias"] = PropertyInfo(Variant::REAL, "editors/3d/grid_division_level_bias", PROPERTY_HINT_RANGE, "-1.0,0.5,0.1", PROPERTY_USAGE_DEFAULT);
+
+	_initial_set("editors/3d/grid_xz_plane", true);
+	_initial_set("editors/3d/grid_xy_plane", false);
+	_initial_set("editors/3d/grid_yz_plane", false);
 
 	_initial_set("editors/3d/default_fov", 70.0);
 	_initial_set("editors/3d/default_z_near", 0.05);
