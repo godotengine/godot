@@ -46,7 +46,7 @@ class RingBuffer {
 
 	read(output) {
 		const size = this.buffer.length;
-		let from = 0
+		let from = 0;
 		let to_write = output.length;
 		if (this.rpos + to_write > size) {
 			const high = size - this.rpos;
@@ -151,7 +151,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 			const output = outputs[0];
 			const chunk = output[0].length * output.length;
 			if (this.output_buffer.length != chunk) {
-				this.output_buffer = new Float32Array(chunk)
+				this.output_buffer = new Float32Array(chunk);
 			}
 			if (this.output.data_left() >= chunk) {
 				this.output.read(this.output_buffer);
