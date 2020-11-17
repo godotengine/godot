@@ -4,10 +4,12 @@
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
-		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
+		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		An [Image] cannot be assigned to a [code]texture[/code] property of an object directly (such as [Sprite]), and has to be converted manually to an [ImageTexture] first.
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
 	</description>
 	<tutorials>
+		<link title="Importing images">https://docs.godotengine.org/en/3.2/getting_started/workflow/assets/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="blend_rect">
@@ -331,6 +333,8 @@
 			</argument>
 			<description>
 				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/3.2/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
+				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
+				See also [ImageTexture] description for usage examples.
 			</description>
 		</method>
 		<method name="load_bmp_from_buffer">
