@@ -60,7 +60,7 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_SHOW_KEEP_OPEN,
+		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -133,6 +133,7 @@ protected:
 	void _paused();
 	void _break_state_changed();
 	void _menu_option(int p_id);
+	void _update_debug_options();
 
 protected:
 	void _notification(int p_what);
