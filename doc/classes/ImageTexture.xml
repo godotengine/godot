@@ -4,10 +4,31 @@
 		A [Texture] based on an [Image].
 	</brief_description>
 	<description>
-		A [Texture] based on an [Image]. Can be created from an [Image] with [method create_from_image].
-		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
+		A [Texture] based on an [Image]. For an image to be displayed, an [ImageTexture] has to be created from it using the [method create_from_image] method:
+		[codeblock]
+		var texture = ImageTexture.new()
+		var image = Image.new()
+		image.load("res://icon.png")
+		texture.create_from_image(image)
+		$Sprite.texture = texture
+		[/codeblock]
+		This way, textures can be created at run-time by loading images both from within the editor and externally.
+		[b]Warning:[/b] Prefer to load imported textures with [method @GDScript.load] over loading them from within the filesystem dynamically with [method Image.load], as it may not work in exported projects:
+		[codeblock]
+		var texture = load("res://icon.png")
+		$Sprite.texture = texture
+		[/codeblock]
+		This is because images have to be imported as [StreamTexture] first to be loaded with [method @GDScript.load]. If you'd still like to load an image file just like any other [Resource], import it as an [Image] resource instead, and then load it normally using the [method @GDScript.load] method.
+		But do note that the image data can still be retrieved from an imported texture as well using the [method Texture.get_data] method, which returns a copy of the data:
+		[codeblock]
+		var texture = load("res://icon.png")
+		var image : Image = texture.get_data()
+		[/codeblock]
+		An [ImageTexture] is not meant to be operated from within the editor interface directly, and is mostly useful for rendering images on screen dynamically via code. If you need to generate images procedurally from within the editor, consider saving and importing images as custom texture resources implementing a new [EditorImportPlugin].
+		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations.
 	</description>
 	<tutorials>
+		<link title="Importing images">https://docs.godotengine.org/en/3.2/getting_started/workflow/assets/importing_images.html</link>
 	</tutorials>
 	<methods>
 		<method name="create">
@@ -34,14 +55,14 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [ImageTexture] from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
+				Initializes the texture by allocating and setting the data from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Returns the format of the [ImageTexture], one of [enum Image.Format].
+				Returns the format of the texture, one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">
@@ -50,7 +71,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [ImageTexture] from a file path.
+				Loads an image from a file path and creates a texture from it.
+				[b]Note:[/b] the method is deprecated and will be removed in Godot 4.0, use [method Image.load] and [method create_from_image] instead.
 			</description>
 		</method>
 		<method name="set_data">
@@ -59,7 +81,9 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
-				Sets the [Image] of this [ImageTexture].
+				Replaces the texture's data with a new [Image].
+				[b]Note:[/b] The texture has to be initialized first with the [method create_from_image] method before it can be updated. The new image dimensions, format, and mipmaps configuration should match the existing texture's image configuration, otherwise it has to be re-created with the [method create_from_image] method.
+				Use this method over [method create_from_image] if you need to update the texture frequently, which is faster than allocating additional memory for a new texture each time.
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -68,7 +92,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Resizes the [ImageTexture] to the specified dimensions.
+				Resizes the texture to the specified dimensions.
 			</description>
 		</method>
 	</methods>

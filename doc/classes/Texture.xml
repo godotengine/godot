@@ -7,6 +7,7 @@
 		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite] or GUI [Control].
 		Textures are often created by loading them from a file. See [method @GDScript.load].
 		[Texture] is a base for other resources. It cannot be used directly.
+		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations. Larger textures may fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
