@@ -310,6 +310,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a new <see cref="Vector2i"/> from a single value assigned to all components.
+        /// </summary>
+        /// <param name="xy">The value to assign to all components.</param>
+        public Vector2i(int xy)
+        {
+            x = xy;
+            y = xy;
+        }
+
+        /// <summary>
         /// Constructs a new <see cref="Vector2i"/> from an existing <see cref="Vector2i"/>.
         /// </summary>
         /// <param name="vi">The existing <see cref="Vector2i"/>.</param>
