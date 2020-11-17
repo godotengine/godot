@@ -20,12 +20,13 @@
 # Doyun Kwon <caen4516@gmail.com>, 2020.
 # Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
 # Yongjin Jo <wnrhd114@gmail.com>, 2020.
+# Yungjoong Song <yungjoong.song@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-05 01:02+0000\n"
-"Last-Translator: Yongjin Jo <wnrhd114@gmail.com>\n"
+"PO-Revision-Date: 2020-10-31 23:15+0000\n"
+"Last-Translator: Yungjoong Song <yungjoong.song@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -746,17 +747,17 @@ msgstr "스크립트 패널 토글"
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
-msgstr "확대"
+msgstr "줌 인"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr "축소"
+msgstr "줌 아웃"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr "확대/축소 다시 설정"
+msgstr "줌 재설정"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
@@ -1043,14 +1044,19 @@ msgid "Owners Of:"
 msgstr "소유자:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "프로젝트에서 선택한 파일을 삭제할까요? (되돌릴 수 없습니다)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "삭제하려는 파일은 다른 리소스가 동작하기 위해 필요한 파일입니다.\n"
 "무시하고 삭제할까요? (되돌릴 수 없습니다)"
@@ -1605,34 +1611,31 @@ msgstr ""
 "Enabled' 설정을 비활성화 하세요."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"대상 플랫폼에서 GLES2 용 'ETC' 텍스처 압축이 필요합니다. 프로젝트 설정에서 "
-"'Import Etc' 설정을 켜세요."
+"대상 플랫폼에서 GLES2 용 'PVRTC' 텍스처 압축이 필요합니다. 프로젝트 설정에서 "
+"'Import Pvrt' 를 활성화 하세요."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"대상 플랫폼에서 GLES3 용 'ETC2' 텍스처 압축이 필요합니다. 프로젝트 설정에서 "
-"'Import Etc 2' 설정을 켜세요."
+"대상 플랫폼은 GLES3 용 'ETC2' 나 'PVRTC' 텍스처 압축이 필요합니다. 프로젝트 "
+"설정에서 'Import Etc 2' 나 'Import Pvrtc' 를 활성화 하세요."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"대상 플랫폼에서 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스처 압축이 필요합니"
-"다.\n"
-"프로젝트 설정에서 'Import Etc' 설정을 활성화 하거나, 'Driver Fallback "
+"대상 플랫폼에서 드라이버가 GLES2로 폴백하기 위해 'PVRTC' 텍스처 압축이 필요합"
+"니다.\n"
+"프로젝트 설정에서 'Import Pvrtc' 설정을 활성화 하거나, 'Driver Fallback "
 "Enabled' 설정을 비활성화 하세요."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -2158,7 +2161,7 @@ msgstr "출력 지우기"
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
 msgid "Stop"
-msgstr "중단"
+msgstr "정지"
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
@@ -2311,19 +2314,25 @@ msgid "Error saving TileSet!"
 msgstr "타일셋 저장 중 오류!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "레이아웃 저장 중 오류!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "기본 편집기 레이아웃을 덮어씁니다."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "레이아웃 이름을 찾을 수 없습니다!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "기본 레이아웃을 초기화하였습니다."
 
 #: editor/editor_node.cpp
@@ -2822,14 +2831,17 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
+"이 옵션이 활성화 된 경우 원 클릭 배포를 사용하면 실행중인 프로젝트를 디버깅 "
+"할 수 있도록이 컴퓨터의 IP에 연결을 시도합니다.\n"
+"이 옵션은 원격 디버깅 (일반적으로 모바일 장치 사용)에 사용하기위한 것입니"
+"다.\n"
+"GDScript 디버거를 로컬에서 사용하기 위해 활성화 할 필요는 없습니다."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Small Deploy with Network Filesystem"
 msgstr "네트워크 파일 시스템을 사용하여 작게 배포"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
 "export an executable without the project data.\n"
@@ -2838,60 +2850,55 @@ msgid ""
 "On Android, deploying will use the USB cable for faster performance. This "
 "option speeds up testing for projects with large assets."
 msgstr ""
-"이 설정을 켜면, 내보내거나 배포할 때 최소한의 실행 파일을 만듭니다.\n"
-"이 경우, 실행 파일이 네트워크 너머에 있는 편집기의 파일 시스템을 사용합니"
-"다.\n"
-"Android의 경우, 배포 시 더 빠른 속도를 위해 USB 케이블을 사용합니다. 이 설정"
-"은 용량이 큰 게임의 테스트 배포 속도를 향상시킬 수 있습니다."
+"이 옵션을 활성화하고 Android 용 원 클릭 배포를 사용하면 프로젝트 데이터없이 "
+"실행 파일만 내 보냅니다.\n"
+"파일 시스템은 네트워크를 통해 편집기에 의해 프로젝트에서 제공됩니다.\n"
+"Android의 경우, 배포시 더 빠른 속도를 위해 USB 케이블을 사용합니다. 이 설정"
+"은 용량이 큰 게임의 테스트 속도를 향상시킵니다."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
 msgstr "충돌 모양 보이기"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, collision shapes and raycast nodes (for 2D and "
 "3D) will be visible in the running project."
 msgstr ""
-"이 설정을 켜면 게임을 실행하는 동안 (2D와 3D용) Collision 모양과 Raycast 노드"
-"가 보이게 됩니다."
+"이 설정을 켜면 프로젝트를 실행하는 동안 (2D와 3D용) Collision 모양과 Raycast "
+"노드가 보이게 됩니다."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
 msgstr "내비게이션 보이기"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, navigation meshes and polygons will be visible "
 "in the running project."
 msgstr ""
-"이 설정을 켜면, 게임을 실행하는 동안 Navigation 메시와 폴리곤이 보이게 됩니"
-"다."
+"이 설정을 켜면,프로젝트를 실행하는 동안 Navigation 메시와 폴리곤이 보이게 됩"
+"니다."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Scene Changes"
-msgstr "씬 변경 사항 동기화"
+msgstr "씬 변경사항 동기화"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor "
 "will be replicated in the running project.\n"
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"이 설정이 활성화된 경우, 편집기에서 씬을 수정하면 실행 중인 게임에도 반영됩니"
-"다.\n"
-"원격 장치에서 사용중인 경우 네트워크 파일 시스템 기능을 활성화하면 더욱 효율"
-"적입니다."
+"이 설정이 활성화된 경우, 편집기에서 씬을 수정하면 실행중인 프로젝트에 반영됩"
+"니다.\n"
+"원격장치에서 사용중인 경우 네트워크 파일 시스템 기능을 활성화하면 더욱 효율적"
+"입니다."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Synchronize Script Changes"
-msgstr "스크립트 변경 사항 동기화"
+msgstr "스크립트 변경사항 동기화"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -3005,7 +3012,7 @@ msgstr "디버깅을 하기 위해 씬 실행을 중단합니다."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr "씬 멈추기"
+msgstr "씬 일시정지"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
@@ -3025,7 +3032,7 @@ msgstr "씬을 지정해서 실행합니다"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr "맞춤 씬 실행하기"
+msgstr "커스텀 씬 실행"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
@@ -3062,7 +3069,7 @@ msgstr "인스펙터"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "하단 패널 펼치기"
+msgstr "하단 패널 확장"
 
 #: editor/editor_node.cpp
 msgid "Output"
@@ -3744,6 +3751,11 @@ msgstr "복제..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "여기로 이동..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "오토로드 이동"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5201,7 +5213,7 @@ msgstr "수평 및 수직 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "CanvasItem \"%s\" Pivot Offset (%d, %d)로 설정"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5414,12 +5426,12 @@ msgstr "경고: 컨테이너의 자식 규모와 위치는 부모에 의해 결�
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr "배율 초기화"
+msgstr "줌 초기화"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "선택 모드"
+msgstr "모드 선택"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5440,17 +5452,17 @@ msgstr "Alt+우클릭: 겹친 목록 선택"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
-msgstr "이동 모드"
+msgstr "이동모드"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr "회전 모드"
+msgstr "회전모드"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "크기 조절 모드"
+msgstr "크기조절 모드"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -8221,7 +8233,7 @@ msgstr "어클루전"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation"
-msgstr "내비게이션"
+msgstr "네비게이션"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Bitmask"
@@ -9379,7 +9391,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "기존 유니폼에 대한 참조입니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -10335,19 +10347,16 @@ msgid "Batch Rename"
 msgstr "일괄 이름 바꾸기"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Replace:"
-msgstr "바꾸기: "
+msgstr "바꾸기:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Prefix:"
-msgstr "접두사"
+msgstr "접두사:"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Suffix:"
-msgstr "접미사"
+msgstr "접미사:"
 
 #: editor/rename_dialog.cpp
 msgid "Use Regular Expressions"
@@ -10394,9 +10403,8 @@ msgid "Per-level Counter"
 msgstr "단계별 카운터"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "If set, the counter restarts for each group of child nodes."
-msgstr "설정하면 각 그룹의 자식 노드의 카운터를 다시 시작합니다"
+msgstr "설정하면 각 그룹의 자식 노드의 카운터를 다시 시작합니다."
 
 #: editor/rename_dialog.cpp
 msgid "Initial value for the counter"
@@ -10455,9 +10463,8 @@ msgid "Reset"
 msgstr "되돌리기"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error:"
-msgstr "정규 표현식 오류"
+msgstr "정규 표현식 오류:"
 
 #: editor/rename_dialog.cpp
 msgid "At character %s"
@@ -11988,6 +11995,14 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr "편집기 설정에서 맞춤 빌드에 잘못된 안드로이드 SDK 경로입니다."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12038,19 +12053,35 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr "\"Export AAB\"는 \"Use Custom Build\"가 활성화 된 경우에만 유효합니다."
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
-msgstr ""
+msgstr "잘못된 파일명! Android App Bundle에는 * .aab 확장자가 필요합니다."
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "APK 확장은 Android App Bundle과 호환되지 않습니다."
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "잘못된 파일명! Android APK는 *.apk 확장자가 필요합니다."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -12529,7 +12560,7 @@ msgstr ""
 #: scene/3d/interpolated_camera.cpp
 msgid ""
 "InterpolatedCamera has been deprecated and will be removed in Godot 4.0."
-msgstr ""
+msgstr "InterpolatedCamera는 더 이상 사용되지 않으며 Godot 4.0에서 제거됩니다."
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
@@ -12829,6 +12860,12 @@ msgstr "Varying은 꼭짓점 함수에만 지정할 수 있습니다."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "레이아웃 저장 중 오류!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "기본 편집기 레이아웃을 덮어씁니다."
 
 #~ msgid "Move pivot"
 #~ msgstr "피벗 이동"

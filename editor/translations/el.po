@@ -1040,14 +1040,19 @@ msgid "Owners Of:"
 msgstr "Ιδιοκτήτες του:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Αφαίρεση επιλεγμένων αρχείων από το έργο; (Αδυναμία αναίρεσης)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Τα αρχεία που αφαιρούνται απαιτούνται από άλλους πόρους για να δουλέψουν.\n"
 "Να αφαιρεθούν; (Αδύνατη η αναίρεση)"
@@ -2314,19 +2319,25 @@ msgid "Error saving TileSet!"
 msgstr "Σφάλμα κατά την αποθήκευση TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Σφάλμα κατά την αποθήκευση διάταξης!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Η προεπιλεγμένη διάταξη του editor έχει παρακαμφθεί."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Το όνομα της διάταξης δεν βρέθηκε!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Επαναφορά της προεπιλεγμένης διάταξης στις βασικές ρυθμίσεις."
 
 #: editor/editor_node.cpp
@@ -3778,6 +3789,11 @@ msgstr "Αναπαραγωγή..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Μετακίνηση σε..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Μετακίνηση AutoLoad"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -12137,6 +12153,14 @@ msgstr ""
 "Επεξεργαστή."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12189,6 +12213,22 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13015,6 +13055,12 @@ msgstr "Τα «varying» μπορούν να ανατεθούν μόνο στη�
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Σφάλμα κατά την αποθήκευση διάταξης!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Η προεπιλεγμένη διάταξη του editor έχει παρακαμφθεί."
 
 #~ msgid "Move pivot"
 #~ msgstr "Μετακίνηση πηγαίου σημείου"

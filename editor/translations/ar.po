@@ -45,12 +45,13 @@
 # ChemicalInk <aladdinalkhafaji@gmail.com>, 2020.
 # Musab Alasaifer <mousablasefer@gmail.com>, 2020.
 # Yassine Oudjana <y.oudjana@protonmail.com>, 2020.
+# bruvzg <bruvzg13@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-12 00:46+0000\n"
-"Last-Translator: Yassine Oudjana <y.oudjana@protonmail.com>\n"
+"PO-Revision-Date: 2020-11-08 10:26+0000\n"
+"Last-Translator: bruvzg <bruvzg13@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -78,7 +79,7 @@ msgstr "لا يوجد ما يكفي من البايتات من أجل فك ال�
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "مدخلات خاطئة i% (لم يتم تمريره) في التعبير"
+msgstr "مدخلات خاطئة %i (لم يتم تمريره) في التعبير"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -86,7 +87,7 @@ msgstr "لا يمكن إستخدامه نفسه لأن الحالة فارغة (
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "معاملات غير صالحة للمشغل s،%s% و s%."
+msgstr "معاملات غير صالحة للمشغل ‏⁨%s⁩، ⁨%s⁩‏ و ⁨%s⁩."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -1063,14 +1064,19 @@ msgid "Owners Of:"
 msgstr "ملاك:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "إمسح الملفات المختارة من المشروع؟ (لا يمكن استعادتها)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "الملف الذي يُمسح مطلوب من موارد أخري لكل تعمل جيداً.\n"
 "إمسح علي أية حال؟ (لا رجعة)"
@@ -1398,7 +1404,7 @@ msgstr "إفتح نسق مسار الصوت"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr "لا يوجد ملف 's%'."
+msgstr "لا يوجد ملف '%s'."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1410,7 +1416,7 @@ msgstr "ملف خطأ، ليس ملف نسق مسار الصوت."
 
 #: editor/editor_audio_buses.cpp
 msgid "Error saving file: %s"
-msgstr "خطأ في تحميل الملف: s%"
+msgstr "خطأ في تحميل الملف: %s"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -2057,8 +2063,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"لا يوجد حاليا وصف لهذه الخاصية. الرجاء المساعدة من خلال [url][/color/] "
-"المساهمة واحد [color=$color][url=$url]!"
+"لا يوجد حاليا وصف لهذه الخاصية. الرجاء المساعدة من خلال [color=$color][url="
+"$url]المساهمة واحد [/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2268,7 +2274,7 @@ msgstr "خطأ خلال تحميل '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "نهاية ملف غير مرتقبة 's%'."
+msgstr "نهاية ملف غير مرتقبة '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
@@ -2329,19 +2335,25 @@ msgid "Error saving TileSet!"
 msgstr "خطأ في حفظ مجموعة البلاط!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "خطآ في محاولة حفظ النسق!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "تخطي نسق المُحرر الإفتراضي."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "إسم النسق غير موجود!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "إسترجاع النسق الإفتراضي إلي الإعدادات الأساسية."
 
 #: editor/editor_node.cpp
@@ -3769,6 +3781,11 @@ msgid "Move To..."
 msgstr "تحريك إلي..."
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "نقل التحميل التلقائي"
+
+#: editor/filesystem_dock.cpp
 msgid "New Scene..."
 msgstr "مشهد جديد..."
 
@@ -4737,7 +4754,7 @@ msgstr "عُقد البداية والنهاية مطلوبة لأجل الان�
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
-msgstr "لم يتم تعيين موارد التشغيل في المسار:٪ s."
+msgstr "لم يتم تعيين موارد التشغيل في المسار: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Node Removed"
@@ -12056,6 +12073,14 @@ msgstr ""
 "مسار حزمة تطوير Android SDK للبُنى المخصوصة، غير صالح في إعدادات المُحرر."
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12106,6 +12131,22 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12933,6 +12974,12 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "خطآ في محاولة حفظ النسق!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "تخطي نسق المُحرر الإفتراضي."
 
 #~ msgid "Move pivot"
 #~ msgstr "نقل المحور"

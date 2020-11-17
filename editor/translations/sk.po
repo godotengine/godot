@@ -1027,14 +1027,19 @@ msgid "Owners Of:"
 msgstr "Majitelia:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Odstrániť vybraté súbory z projektu? (nedá sa vrátiť späť)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Súbory ktoré budú odstránené vyžadujú ďalšie zdroje, aby mohli pracovať.\n"
 "Odstrániť aj napriek tomu? (nedá sa vrátiť späť)"
@@ -2298,19 +2303,25 @@ msgid "Error saving TileSet!"
 msgstr "Error pri ukladaní TileSet-u!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Error pri ukladaní layout-i!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "Predvolený editor layout je prepísaný."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "Meno Layout-u sa nenašlo!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "Obnovené predvolené rozloženie na základné nastavenia."
 
 #: editor/editor_node.cpp
@@ -3738,6 +3749,11 @@ msgstr "Duplikovať..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Presunúť Do..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Presunúť AutoLoad-y"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -12002,6 +12018,14 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12044,6 +12068,22 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12740,6 +12780,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Error pri ukladaní layout-i!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "Predvolený editor layout je prepísaný."
 
 #~ msgid "Move pivot"
 #~ msgstr "Presunúť pivot"

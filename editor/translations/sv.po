@@ -19,12 +19,14 @@
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
 # Gustav Andersson <gustav.andersson96@outlook.com>, 2020.
+# Shaggy <anton_christoffersson@hotmail.com>, 2020.
+# Marcus Toftedahl <marcus.toftedahl@his.se>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-09-29 09:14+0000\n"
-"Last-Translator: Gustav Andersson <gustav.andersson96@outlook.com>\n"
+"PO-Revision-Date: 2020-11-04 02:39+0000\n"
+"Last-Translator: Marcus Toftedahl <marcus.toftedahl@his.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -32,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -913,9 +915,8 @@ msgid "Signals"
 msgstr "Signaler"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtrera Filer..."
+msgstr "Filtrera signaler"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1043,14 +1044,19 @@ msgid "Owners Of:"
 msgstr "Ägare av:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "Ta bort valda filer från projektet? (Kan ej återställas)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "Filerna som tas bort krävs av andra resurser för att de ska fungera.\n"
 "Ta bort dem ändå? (går inte ångra)"
@@ -1089,9 +1095,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "Ta bort %d sak(er) permanent? (Går inte ångra!)"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "Beroenden"
+msgstr "Visa Beroenden"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
@@ -1161,12 +1166,10 @@ msgid "Gold Sponsors"
 msgstr "Guldsponsorer"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Silver Sponsors"
 msgstr "Silverdonatorer"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Bronze Sponsors"
 msgstr "Bronsdonatorer"
 
@@ -1308,9 +1311,8 @@ msgid "Delete Bus Effect"
 msgstr "Ta bort Buss-Effekt"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Drag & drop to rearrange."
-msgstr "Ljud-Buss, dra och släpp för att ändra ordning."
+msgstr "Dra och släpp för att ändra ordning."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -1370,12 +1372,10 @@ msgid "Move Audio Bus"
 msgstr "Flytta Ljud-Buss"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Save Audio Bus Layout As..."
 msgstr "Spara Ljud-Buss Layout Som..."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Location for New Layout..."
 msgstr "Plats för Ny Layout..."
 
@@ -1615,6 +1615,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"Målplattformen kräver 'ETC' texturkomprimering så GLES2 kan användas som "
+"reserv grafik drivare.\n"
+"Aktivera 'Import Etc' i Projektinställningarna eller deaktivera 'Driver "
+"Fallback Enabled'."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -1655,7 +1659,7 @@ msgstr "Mallfil hittades inte:"
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Anpassad release mall hittades inte."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1663,7 +1667,7 @@ msgstr "Mallfil hittades inte:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars exporter."
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1706,7 +1710,7 @@ msgstr "Ersätt Alla"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr ""
+msgstr "Profilen måste ha ett giltigt filnamn och får inte innehålla '.'"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1715,7 +1719,7 @@ msgstr "En fil eller mapp med detta namn finns redan."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr ""
+msgstr "(Editor inaktiverad, Egenskaper inaktiverad)"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1734,7 +1738,7 @@ msgstr "Beskrivning:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enable Contextual Editor"
-msgstr ""
+msgstr "Aktivera kontextuell redigerare"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1743,7 +1747,7 @@ msgstr "Egenskaper"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Features:"
-msgstr ""
+msgstr "Aktivera funktioner:"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1752,13 +1756,15 @@ msgstr "Sök Klasser"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr ""
+msgstr "Fil '%s''s format är ogiltig, import avbruten"
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Profilen '%s' finns redan. Ta bort den före du importerar. Importeringen "
+"avbruten."
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1816,7 +1822,7 @@ msgstr "Radera punkter"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr ""
+msgstr "Godot funktions profil"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1970,11 +1976,11 @@ msgstr "Växla Dolda Filer"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
-msgstr ""
+msgstr "sortera objekt som ett rutnät av bilder."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
-msgstr ""
+msgstr "Visa objekt som lista."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -2369,11 +2375,16 @@ msgid "Error saving TileSet!"
 msgstr "Fel vid sparande av TileSet!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "Fel vid försök att spara layout!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -2381,7 +2392,7 @@ msgid "Layout name not found!"
 msgstr "Layoutnamn hittades inte!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+msgid "Restored the Default layout to its base settings."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3826,6 +3837,11 @@ msgstr "Duplicera"
 #, fuzzy
 msgid "Move To..."
 msgstr "Flytta Till..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Flytta Autoload"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -12275,6 +12291,14 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12317,6 +12341,22 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -13031,6 +13071,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "Fel vid försök att spara layout!"
 
 #, fuzzy
 #~ msgid "Move pivot"

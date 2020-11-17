@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-15 17:26+0000\n"
+"PO-Revision-Date: 2020-10-31 23:15+0000\n"
 "Last-Translator: Thanachart Monpassorn <nunf_2539@hotmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1020,14 +1020,19 @@ msgid "Owners Of:"
 msgstr "เจ้าของของ:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (Can't be restored)"
+#, fuzzy
+msgid ""
+"Remove selected files from the project? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr "ลบไฟล์ที่เลือกออกจากโปรเจกต์? (กู้คืนไม่ได้)"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
-"Remove them anyway? (no undo)"
+"Remove them anyway? (no undo)\n"
+"You can find the removed files in the system trash to restore them."
 msgstr ""
 "ไฟล์ที่กำลังจะลบ จำเป็นสำหรับใช้งานโดยทรัพยากรอันอื่น\n"
 "จะทำการลบหรือไม่? (คืนกลับไม่ได้)"
@@ -1580,33 +1585,30 @@ msgstr ""
 "เปิด 'Import Etc' ในตั้งค่าโปรเจ็คหรือปิด 'Driver Fallback Enabled'"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'ETC' สำหรับ GLES2 เปิด 'Import Etc' "
+"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'ETC' สำหรับ GLES2 กรุณาเปิด 'Import Etc' "
 "ในตั้งค่าโปรเจ็ค"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'ETC2' สำหรับ GLES3 เปิด 'Import Etc 2' "
-"ในตั้งค่าโปรเจ็ค"
+"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'ETC2' สำหรับ GLES3 กรุณาเปิด 'Import Etc "
+"2' หรือ 'Import Pvrtc' ในตั้งค่าโปรเจ็ค"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'ETC' สำหรับการกลับมาใช้ GLES2\n"
-"เปิด 'Import Etc' ในตั้งค่าโปรเจ็คหรือปิด 'Driver Fallback Enabled'"
+"แพลตฟอร์มเป้าหมายต้องการการบีบอัดเทกเจอร์ 'PVRTC' สำหรับการกลับมาใช้ GLES2\n"
+"เปิด 'Import Pvrtc' ในตั้งค่าโปรเจ็คหรือปิด 'Driver Fallback Enabled'"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2274,19 +2276,25 @@ msgid "Error saving TileSet!"
 msgstr "ผิดพลาดขณะบันทึกไทล์เซต!"
 
 #: editor/editor_node.cpp
-msgid "Error trying to save layout!"
-msgstr "ผิดพลาดขณะบันทึกเลย์เอาต์!"
+msgid ""
+"An error occurred while trying to save the editor layout.\n"
+"Make sure the editor's user data path is writable."
+msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Default editor layout overridden."
-msgstr "แทนที่เลย์เอาต์เริ่มต้น"
+msgid ""
+"Default editor layout overridden.\n"
+"To restore the Default layout to its base settings, use the Delete Layout "
+"option and delete the Default layout."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "ไม่พบชื่อเลย์เอาต์!"
 
 #: editor/editor_node.cpp
-msgid "Restored default layout to base settings."
+#, fuzzy
+msgid "Restored the Default layout to its base settings."
 msgstr "คืนเลย์เอาต์เป็นค่าเริ่มต้น"
 
 #: editor/editor_node.cpp
@@ -3680,6 +3688,11 @@ msgstr "ทำซ้ำ..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "ย้ายไป..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Move to Trash"
+msgstr "เลื่อนออโต้โหลด"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -5125,50 +5138,43 @@ msgstr "สร้างเส้นไกด์แนวตั้งและแ
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr ""
+msgstr "ตั้งออฟเซ็ตจุดหมุน CanvasItem \"%s\" ไปยัง (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate %d CanvasItems"
-msgstr "หมุน CanvasItem"
+msgstr "หมุน %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "หมุน CanvasItem"
+msgstr "หมุน CanvasItem \"%s\" ไปที่ %d องศา"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "เลื่อน CanvasItem"
+msgstr "เลื่อนจุดยึด CanvasItem \"%s\""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr ""
+msgstr "ปรับขนาด Node2D \"%s\" ไปยัง (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr ""
+msgstr "ปรับขนาด Control \"%s\" ไปยัง (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale %d CanvasItems"
-msgstr "ขนาด CanvasItem"
+msgstr "ปรับขนาด %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "ขนาด CanvasItem"
+msgstr "ปรับขนาด CanvasItem \"%s\" ไปยัง (%s, %s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move %d CanvasItems"
-msgstr "เลื่อน CanvasItem"
+msgstr "เลื่อน %d CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "เลื่อน CanvasItem"
+msgstr "เลื่อน CanvasItem \"%s\" ไปยัง (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -6431,16 +6437,14 @@ msgid "Move Points"
 msgstr "ย้ายจุด"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Command: Rotate"
-msgstr "ลาก: หมุน"
+msgstr "ctrl: หมุน"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Shift: Move All"
 msgstr "Shift: ย้ายทั้งหมด"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Command: Scale"
 msgstr "Shift+Ctrl: ปรับขนาด"
 
@@ -6489,14 +6493,12 @@ msgid "Radius:"
 msgstr "รัศมี:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Polygon to UV"
-msgstr "สร้าง Polygon และ UV"
+msgstr "คัดลอกโพลีกอนไปยังยูวี"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Copy UV to Polygon"
-msgstr "แปลงเป็น Polygon2D"
+msgstr "คัดลอกยูวีไปยังโพลีกอน"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Clear UV"
@@ -8036,13 +8038,12 @@ msgid "Paint Tile"
 msgstr "วาดไทล์"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Command+LMB: Rectangle Paint"
 msgstr ""
-"Shift+LMB: วาดเส้น\n"
-"Shift+Ctrl+LMB: วาดสี่เหลี่ยม"
+"Shift+คลิกซ้าย: วาดเส้น\n"
+"Shift+Ctrl+คลิกซ้าย: วาดสี่เหลี่ยม"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8564,9 +8565,8 @@ msgid "Add Node to Visual Shader"
 msgstr "เพิ่มโหนดไปยังเวอร์ชวลเชดเดอร์"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node(s) Moved"
-msgstr "ย้ายโหนดเรียบร้อย"
+msgstr "เลื่อนโหนดแล้ว"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
@@ -8586,9 +8586,8 @@ msgid "Visual Shader Input Type Changed"
 msgstr "เปลี่ยนชนิดของอินพุตเวอร์ชวลเชดเดอร์"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "UniformRef Name Changed"
-msgstr "ตั้งชื่อยูนิฟอร์ม"
+msgstr "เปลี่ยนชื่อ UniformRef แล้ว"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -9285,7 +9284,7 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "A reference to an existing uniform."
-msgstr ""
+msgstr "การอ้างอิงถึงยูนิฟอร์มที่มีอยู่"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(Fragment/Light mode only) Scalar derivative function."
@@ -11859,6 +11858,14 @@ msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr "ที่อยู่ Android SDK ผิดพลาดสำหรับการสร้างแบบกำหนดเองในการตั้งค่าเอดิเตอร์"
 
 #: platform/android/export/export.cpp
+msgid "Missing 'platform-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Missing 'build-tools' directory!"
+msgstr ""
+
+#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -11904,19 +11911,35 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
+msgstr "\"Export AAB\" จะใช้ได้เฉพาะเมื่อเปิดใช้งาน \"Use Custom Build\""
+
+#: platform/android/export/export.cpp
+msgid "Unable to find the zipalign tool."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Aligning APK..."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to complete APK alignment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
-msgstr ""
+msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์แอปบันเดิลจำเป็นต้องมีนามสกุล *.aab"
 
 #: platform/android/export/export.cpp
 msgid "APK Expansion not compatible with Android App Bundle."
-msgstr ""
+msgstr "การขยาย APK เข้ากันไม่ได้กับแอนดรอยด์แอปบันเดิล"
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android APK requires the *.apk extension."
-msgstr ""
+msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์ APK จำเป็นต้องมีนามสกุล *.apk"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11951,13 +11974,14 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Moving output"
-msgstr ""
+msgstr "กำลังย้ายเอาต์พุต"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Unable to copy and rename export file, check gradle project directory for "
 "outputs."
 msgstr ""
+"ไม่สามารถคัดลอกและเปลี่ยนชื่อไฟล์ส่งออก ตรวจสอบไดเร็กทอรีโปรเจ็กต์ gradle สำหรับเอาต์พุต"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -12658,6 +12682,12 @@ msgstr "Varyings สามารถกำหนดในังก์ชันเ
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+#~ msgid "Error trying to save layout!"
+#~ msgstr "ผิดพลาดขณะบันทึกเลย์เอาต์!"
+
+#~ msgid "Default editor layout overridden."
+#~ msgstr "แทนที่เลย์เอาต์เริ่มต้น"
 
 #~ msgid "Move pivot"
 #~ msgstr "ย้ายจุดหมุน"
