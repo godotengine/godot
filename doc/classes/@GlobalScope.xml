@@ -10,6 +10,1147 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="abs">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="x" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="absf">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the absolute value of float parameter [code]x[/code] (i.e. positive value).
+				[codeblock]
+				# a is 1.2
+				a = absf(-1.2)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="absi">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<description>
+				Returns the absolute value of int parameter [code]x[/code] (i.e. positive value).
+				[codeblock]
+				# a is 1
+				a = absi(-1)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="acos">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc cosine of [code]x[/code] in radians. Use to get the angle of cosine [code]x[/code].
+				[codeblock]
+				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
+				c = acos(0.866025)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asin">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc sine of [code]x[/code] in radians. Use to get the angle of sine [code]x[/code].
+				[codeblock]
+				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
+				s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]x[/code] in radians. Use it to get the angle from an angle's tangent in trigonometry: [code]atan(tan(angle)) == angle[/code].
+				The method cannot know in which quadrant the angle should fall. See [method atan2] if you have both [code]y[/code] and [code]x[/code].
+				[codeblock]
+				a = atan(0.5) # a is 0.463648
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atan2">
+			<return type="float">
+			</return>
+			<argument index="0" name="y" type="float">
+			</argument>
+			<argument index="1" name="x" type="float">
+			</argument>
+			<description>
+				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
+				Important note: The Y coordinate comes first, by convention.
+				[codeblock]
+				a = atan2(0, -1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="bytes2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="PackedByteArray">
+			</argument>
+			<description>
+				Decodes a byte array back to a [Variant] value, without decoding objects.
+				[b]Note:[/b] If you need object deserialization, see [method bytes2var_with_objects].
+			</description>
+		</method>
+		<method name="bytes2var_with_objects">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="bytes" type="PackedByteArray">
+			</argument>
+			<description>
+				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+			</description>
+		</method>
+		<method name="cartesian2polar">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the cartesian coordinate system (X and Y axis) to the polar coordinate system (a distance from the origin and an angle).
+			</description>
+		</method>
+		<method name="ceil">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] upward (towards positive infinity), returning the smallest whole number that is not less than [code]x[/code].
+				[codeblock]
+				i = ceil(1.45)  # i is 2
+				i = ceil(1.001) # i is 2
+				[/codeblock]
+				See also [method floor], [method round], and [method stepify].
+			</description>
+		</method>
+		<method name="clamp">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="value" type="Variant">
+			</argument>
+			<argument index="1" name="min" type="Variant">
+			</argument>
+			<argument index="2" name="max" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clampf">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Clamps the float [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 42.1
+				# a is 20.0
+				a = clampf(speed, 1.0, 20.0)
+
+				speed = -10.0
+				# a is -1.0
+				a = clampf(speed, -1.0, 1.0)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="clampi">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Clamps the integer [code]value[/code] and returns a value not less than [code]min[/code] and not more than [code]max[/code].
+				[codeblock]
+				speed = 42
+				# a is 20
+				a = clampi(speed, 1, 20)
+
+				speed = -10
+				# a is -1
+				a = clampi(speed, -1, 1)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cos">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the cosine of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				# Prints 1 then -1
+				print(cos(PI * 2))
+				print(cos(PI))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="cosh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic cosine of [code]x[/code] in radians.
+				[codeblock]
+				# Prints 1.543081
+				print(cosh(1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="db2linear">
+			<return type="float">
+			</return>
+			<argument index="0" name="db" type="float">
+			</argument>
+			<description>
+				Converts from decibels to linear energy (audio).
+			</description>
+		</method>
+		<method name="dectime">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="amount" type="float">
+			</argument>
+			<argument index="2" name="step" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]value[/code] decreased by [code]step[/code] * [code]amount[/code].
+				[codeblock]
+				# a = 59
+				a = dectime(60, 10, 0.1))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="deg2rad">
+			<return type="float">
+			</return>
+			<argument index="0" name="deg" type="float">
+			</argument>
+			<description>
+				Converts an angle expressed in degrees to radians.
+				[codeblock]
+				# r is 3.141593
+				r = deg2rad(180)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="ease">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="curve" type="float">
+			</argument>
+			<description>
+				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
+			</description>
+		</method>
+		<method name="exp">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]x[/code] and returns it.
+				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
+				For exponents to other bases use the method [method pow].
+				[codeblock]
+				a = exp(2) # Approximately 7.39
+				[/codeblock]
+			</description>
+		</method>
+		<method name="floor">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] downward (towards negative infinity), returning the largest whole number that is not more than [code]x[/code].
+				[codeblock]
+				# a is 2.0
+				a = floor(2.99)
+				# a is -3.0
+				a = floor(-2.99)
+				[/codeblock]
+				See also [method ceil], [method round], and [method stepify].
+				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
+			</description>
+		</method>
+		<method name="fmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point remainder of [code]x/y[/code], keeping the sign of [code]x[/code].
+				[codeblock]
+				# Remainder is 1.5
+				var remainder = fmod(7, 5.5)
+				[/codeblock]
+				For the integer remainder operation, use the [code]%[/code] operator.
+			</description>
+		</method>
+		<method name="fposmod">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the floating-point modulus of [code]x/y[/code] that wraps equally in positive and negative.
+				[codeblock]
+				for i in 7:
+				    var x = 0.5 * i - 1.5
+				    print("%4.1f %4.1f %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-1.5 -0.0  0.0
+				-1.0 -1.0  0.5
+				-0.5 -0.5  1.0
+				 0.0  0.0  0.0
+				 0.5  0.5  0.5
+				 1.0  1.0  1.0
+				 1.5  0.0  0.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="hash">
+			<return type="int">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Returns the integer hash of the variable passed.
+				[codeblock]
+				print(hash("a")) # Prints 177670
+				[/codeblock]
+			</description>
+		</method>
+		<method name="instance_from_id">
+			<return type="Object">
+			</return>
+			<argument index="0" name="instance_id" type="int">
+			</argument>
+			<description>
+				Returns the Object that corresponds to [code]instance_id[/code]. All Objects have a unique instance ID.
+				[codeblock]
+				var foo = "bar"
+				func _ready():
+				    var id = get_instance_id()
+				    var inst = instance_from_id(id)
+				    print(inst.foo) # Prints bar
+				[/codeblock]
+			</description>
+		</method>
+		<method name="inverse_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Returns a normalized value considering the given range. This is the opposite of [method lerp].
+				[codeblock]
+				var middle = lerp(20, 30, 0.75)
+				# `middle` is now 27.5.
+				# Now, we pretend to have forgotten the original ratio and want to get it back.
+				var ratio = inverse_lerp(20, 30, 27.5)
+				# `ratio` is now 0.75.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]a[/code] and [code]b[/code] are approximately equal to each other.
+				Here, approximately equal means that [code]a[/code] and [code]b[/code] are within a small internal epsilon of each other, which scales with the magnitude of the numbers.
+				Infinity values of the same sign are considered equal.
+			</description>
+		</method>
+		<method name="is_inf">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns whether [code]x[/code] is an infinity value (either positive infinity or negative infinity).
+			</description>
+		</method>
+		<method name="is_instance_id_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_instance_valid">
+			<return type="bool">
+			</return>
+			<argument index="0" name="instance" type="Variant">
+			</argument>
+			<description>
+				Returns whether [code]instance[/code] is a valid object (e.g. has not been deleted from memory).
+			</description>
+		</method>
+		<method name="is_nan">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns whether [code]x[/code] is a NaN ("Not a Number" or invalid) value.
+			</description>
+		</method>
+		<method name="is_zero_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]x[/code] is zero or almost zero.
+				This method is faster than using [method is_equal_approx] with one value as zero.
+			</description>
+		</method>
+		<method name="lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two values by a normalized value. This is the opposite of [method inverse_lerp].
+				[codeblock]
+				lerp(0, 4, 0.75) # Returns 3.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="lerp_angle">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two angles (in radians) by a normalized value.
+				Similar to [method lerp], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				[codeblock]
+				extends Sprite
+				var elapsed = 0.0
+				func _process(delta):
+				    var min_angle = deg2rad(0.0)
+				    var max_angle = deg2rad(90.0)
+				    rotation = lerp_angle(min_angle, max_angle, elapsed)
+				    elapsed += delta
+				[/codeblock]
+			</description>
+		</method>
+		<method name="linear2db">
+			<return type="float">
+			</return>
+			<argument index="0" name="lin" type="float">
+			</argument>
+			<description>
+				Converts from linear energy to decibels (audio). This can be used to implement volume sliders that behave as expected (since volume isn't linear). Example:
+				[codeblock]
+				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
+				# Its range must be configured to go from 0 to 1.
+				# Change the bus name if you'd like to change the volume of a specific bus only.
+				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear2db($Slider.value))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="log">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Natural logarithm. The amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
+				[codeblock]
+				log(10) # Returns 2.302585
+				[/codeblock]
+				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
+			</description>
+		</method>
+		<method name="max" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the maximum of the given values. This method can take any number of arguments.
+				[codeblock]
+				max(1, 7, 3, -6, 5) # Returns 7
+				[/codeblock]
+			</description>
+		</method>
+		<method name="maxf">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the maximum of two float values.
+				[codeblock]
+				maxf(3.6, 24) # Returns 24.0
+				maxf(-3.99, -4) # Returns -3.99
+				[/codeblock]
+			</description>
+		</method>
+		<method name="maxi">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the maximum of two int values.
+				[codeblock]
+				maxi(1, 2) # Returns 2
+				maxi(-3, -4) # Returns -3
+				[/codeblock]
+			</description>
+		</method>
+		<method name="min" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the minimum of the given values. This method can take any number of arguments.
+				[codeblock]
+				min(1, 7, 3, -6, 5) # Returns -6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="minf">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			</argument>
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns the minimum of two float values.
+				[codeblock]
+				minf(3.6, 24) # Returns 3.6
+				minf(-3.99, -4) # Returns -4.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="mini">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the minimum of two int values.
+				[codeblock]
+				mini(1, 2) # Returns 1
+				mini(-3, -4) # Returns -4
+				[/codeblock]
+			</description>
+		</method>
+		<method name="move_toward">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="delta" type="float">
+			</argument>
+			<description>
+				Moves [code]from[/code] toward [code]to[/code] by the [code]delta[/code] value.
+				Use a negative [code]delta[/code] value to move away.
+				[codeblock]
+				move_toward(5, 10, 4) # Returns 9
+				move_toward(10, 5, 4) # Returns 6
+				move_toward(10, 5, -1.5) # Returns 11.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="nearest_po2">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<description>
+				Returns the nearest equal or larger power of 2 for integer [code]value[/code].
+				In other words, returns the smallest value [code]a[/code] where [code]a = pow(2, n)[/code] such that [code]value &lt;= a[/code] for some non-negative integer [code]n[/code].
+				[codeblock]
+				nearest_po2(3) # Returns 4
+				nearest_po2(4) # Returns 4
+				nearest_po2(5) # Returns 8
+
+				nearest_po2(0) # Returns 0 (this may not be what you expect)
+				nearest_po2(-1) # Returns 0 (this may not be what you expect)
+				[/codeblock]
+				[b]WARNING:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for non-positive values of [code]value[/code] (in reality, 1 is the smallest integer power of 2).
+			</description>
+		</method>
+		<method name="polar2cartesian">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="r" type="float">
+			</argument>
+			<argument index="1" name="th" type="float">
+			</argument>
+			<description>
+				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
+			</description>
+		</method>
+		<method name="pow">
+			<return type="float">
+			</return>
+			<argument index="0" name="base" type="float">
+			</argument>
+			<argument index="1" name="exp" type="float">
+			</argument>
+			<description>
+				Returns the result of [code]base[/code] raised to the power of [code]exp[/code].
+				[codeblock]
+				pow(2, 5) # Returns 32
+				[/codeblock]
+			</description>
+		</method>
+		<method name="print" qualifiers="vararg">
+			<description>
+				Converts one or more arguments to strings in the best way possible and prints them to the console.
+				[codeblock]
+				a = [1, 2, 3]
+				print("a", "b", a) # Prints ab[1, 2, 3]
+				[/codeblock]
+				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+			</description>
+		</method>
+		<method name="printerr" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to strings in the best way possible to standard error line.
+				[codeblock]
+				printerr("prints to stderr")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printraw" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to strings in the best way possible to console. No newline is added at the end.
+				[codeblock]
+				printraw("A")
+				printraw("B")
+				# Prints AB
+				[/codeblock]
+				[b]Note:[/b] Due to limitations with Godot's built-in console, this only prints to the terminal. If you need to print in the editor, use another method, such as [method print].
+			</description>
+		</method>
+		<method name="prints" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to the console with a space between each argument.
+				[codeblock]
+				prints("A", "B", "C") # Prints A B C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="printt" qualifiers="vararg">
+			<description>
+				Prints one or more arguments to the console with a tab between each argument.
+				[codeblock]
+				printt("A", "B", "C") # Prints A       B       C
+				[/codeblock]
+			</description>
+		</method>
+		<method name="push_error" qualifiers="vararg">
+			<description>
+				Pushes an error message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_error("test error") # Prints "test error" to debugger and terminal as error call
+				[/codeblock]
+				[b]Note:[/b] Errors printed this way will not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
+			</description>
+		</method>
+		<method name="push_warning" qualifiers="vararg">
+			<description>
+				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+				[codeblock]
+				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rad2deg">
+			<return type="float">
+			</return>
+			<argument index="0" name="rad" type="float">
+			</argument>
+			<description>
+				Converts an angle expressed in radians to degrees.
+				[codeblock]
+				rad2deg(0.523599) # Returns 30
+				[/codeblock]
+			</description>
+		</method>
+		<method name="rand_from_seed">
+			<return type="PackedInt64Array">
+			</return>
+			<argument index="0" name="seed" type="int">
+			</argument>
+			<description>
+				Random from seed: pass a [code]seed[/code], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
+			</description>
+		</method>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Returns a random floating point value on the interval [code][0, 1][/code].
+				[codeblock]
+				randf() # Returns e.g. 0.375671
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randf_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				[codeblock]
+				prints(randf_range(-10, 10), randf_range(-10, 10)) # Prints e.g. -3.844535 7.45315
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Returns a random unsigned 32 bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
+				[codeblock]
+				randi()           # Returns random integer between 0 and 2^32 - 1
+				randi() % 20      # Returns random integer between 0 and 19
+				randi() % 100     # Returns random integer between 0 and 99
+				randi() % 100 + 1 # Returns random integer between 1 and 100
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Random range, any 32-bit integer value between [code]from[/code] and [code]to[/code] (inclusive). If [code]to[/code] is lesser than [code]from[/code] they are swapped.
+				[codeblock]
+				print(randi_range(0, 1)) # Prints 0 or 1
+				print(randi_range(-10, 1000)) # Prints any number from -10 to 1000
+				[/codeblock]
+			</description>
+		</method>
+		<method name="randomize">
+			<description>
+				Randomizes the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
+				[codeblock]
+				func _ready():
+				    randomize()
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range_lerp">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="istart" type="float">
+			</argument>
+			<argument index="2" name="istop" type="float">
+			</argument>
+			<argument index="3" name="ostart" type="float">
+			</argument>
+			<argument index="4" name="ostop" type="float">
+			</argument>
+			<description>
+				Maps a [code]value[/code] from range [code][istart, istop][/code] to [code][ostart, ostop][/code].
+				[codeblock]
+				range_lerp(75, 0, 100, -1, 1) # Returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="range_step_decimals">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="round">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Rounds [code]x[/code] to the nearest whole number, with halfway cases rounded away from zero.
+				[codeblock]
+				round(2.6) # Returns 3
+				[/codeblock]
+				See also [method floor], [method ceil], and [method stepify].
+			</description>
+		</method>
+		<method name="seed">
+			<argument index="0" name="base" type="int">
+			</argument>
+			<description>
+				Sets seed for the random number generator.
+				[codeblock]
+				my_seed = "Godot Rocks"
+				seed(my_seed.hash())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sign">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="x" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="signf">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the sign of [code]x[/code] as a float: -1.0 or 1.0. Returns 0.0 if [code]x[/code] is 0.
+				[codeblock]
+				sign(-6.0) # Returns -1.0
+				sign(0.0)  # Returns 0.0
+				sign(6.0)  # Returns 1.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="signi">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<description>
+				Returns the sign of [code]x[/code] as an integer: -1 or 1. Returns 0 if [code]x[/code] is 0.
+				[codeblock]
+				sign(-6) # Returns -1
+				sign(0)  # Returns 0
+				sign(6)  # Returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sin">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the sine of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				sin(0.523599) # Returns 0.5
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sinh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic sine of [code]x[/code].
+				[codeblock]
+				a = log(2.0) # Returns 0.693147
+				sinh(a) # Returns 0.75
+				[/codeblock]
+			</description>
+		</method>
+		<method name="smoothstep">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="x" type="float">
+			</argument>
+			<description>
+				Returns the result of smoothly interpolating the value of [code]x[/code] between [code]0[/code] and [code]1[/code], based on the where [code]x[/code] lies with respect to the edges [code]from[/code] and [code]to[/code].
+				The return value is [code]0[/code] if [code]x &lt;= from[/code], and [code]1[/code] if [code]x &gt;= to[/code]. If [code]x[/code] lies between [code]from[/code] and [code]to[/code], the returned value follows an S-shaped curve that maps [code]x[/code] between [code]0[/code] and [code]1[/code].
+				This S-shaped curve is the cubic Hermite interpolator, given by [code]f(x) = 3*x^2 - 2*x^3[/code].
+				[codeblock]
+				smoothstep(0, 2, -5.0) # Returns 0.0
+				smoothstep(0, 2, 0.5) # Returns 0.15625
+				smoothstep(0, 2, 1.0) # Returns 0.5
+				smoothstep(0, 2, 2.0) # Returns 1.0
+				[/codeblock]
+			</description>
+		</method>
+		<method name="sqrt">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the square root of [code]x[/code], where [code]x[/code] is a non-negative number.
+				[codeblock]
+				sqrt(9) # Returns 3
+				[/codeblock]
+				[b]Note:[/b]Negative values of [code]x[/code] return NaN. If you need negative inputs, use [code]System.Numerics.Complex[/code] in C#.
+			</description>
+		</method>
+		<method name="step_decimals">
+			<return type="int">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
+				[codeblock]
+				# n is 0
+				n = step_decimals(5)
+				# n is 4
+				n = step_decimals(1.0005)
+				# n is 9
+				n = step_decimals(0.000000005)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="stepify">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="step" type="float">
+			</argument>
+			<description>
+				Snaps float value [code]x[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				stepify(100, 32) # Returns 96
+				stepify(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
+				See also [method ceil], [method floor], and [method round].
+			</description>
+		</method>
+		<method name="str" qualifiers="vararg">
+			<return type="String">
+			</return>
+			<description>
+				Converts one or more arguments to string in the best way possible.
+			</description>
+		</method>
+		<method name="str2var">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+				Converts a formatted string that was returned by [method var2str] to the original value.
+				[codeblock]
+				a = '{ "a": 1, "b": 2 }'
+				b = str2var(a)
+				print(b["a"]) # Prints 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tan">
+			<return type="float">
+			</return>
+			<argument index="0" name="angle_rad" type="float">
+			</argument>
+			<description>
+				Returns the tangent of angle [code]angle_rad[/code] in radians.
+				[codeblock]
+				tan(deg2rad(45)) # Returns 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="tanh">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
+				Returns the hyperbolic tangent of [code]x[/code].
+				[codeblock]
+				a = log(2.0) # Returns 0.693147
+				tanh(a)      # Returns 0.6
+				[/codeblock]
+			</description>
+		</method>
+		<method name="typeof">
+			<return type="int">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Returns the internal type of the given Variant object, using the [enum Variant.Type] values.
+				[codeblock]
+				p = parse_json('["a", "b", "c"]')
+				if typeof(p) == TYPE_ARRAY:
+				    print(p[0]) # Prints a
+				else:
+				    print("unexpected results")
+				[/codeblock]
+			</description>
+		</method>
+		<method name="var2bytes">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes2var].
+				[b]Note:[/b] If you need object serialization, see [method var2bytes_with_objects].
+			</description>
+		</method>
+		<method name="var2bytes_with_objects">
+			<return type="PackedByteArray">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes2var_with_objects].
+			</description>
+		</method>
+		<method name="var2str">
+			<return type="String">
+			</return>
+			<argument index="0" name="variable" type="Variant">
+			</argument>
+			<description>
+				Converts a Variant [code]variable[/code] to a formatted string that can later be parsed using [method str2var].
+				[codeblock]
+				a = { "a": 1, "b": 2 }
+				print(var2str(a))
+				[/codeblock]
+				prints
+				[codeblock]
+				{
+				"a": 1,
+				"b": 2
+				}
+				[/codeblock]
+			</description>
+		</method>
+		<method name="weakref">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="obj" type="Variant">
+			</argument>
+			<description>
+				Returns a weak reference to an object, or [code]null[/code] is the argument is invalid.
+				A weak reference to an object is not enough to keep the object alive: when the only remaining references to a referent are weak references, garbage collection is free to destroy the referent and reuse its memory for something else. However, until the object is actually destroyed the weak reference may return the object even if there are no strong references to it.
+			</description>
+		</method>
+		<method name="wrapf">
+			<return type="float">
+			</return>
+			<argument index="0" name="value" type="float">
+			</argument>
+			<argument index="1" name="min" type="float">
+			</argument>
+			<argument index="2" name="max" type="float">
+			</argument>
+			<description>
+				Wraps float [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# Infinite loop between 5.0 and 9.9
+				value = wrapf(value + 0.1, 5.0, 10.0)
+				[/codeblock]
+				[codeblock]
+				# Infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, 0.0, TAU)
+				[/codeblock]
+				[codeblock]
+				# Infinite rotation (in radians)
+				angle = wrapf(angle + 0.1, -PI, PI)
+				[/codeblock]
+				[b]Note:[/b] If [code]min[/code] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
+				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+			</description>
+		</method>
+		<method name="wrapi">
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="int">
+			</argument>
+			<argument index="1" name="min" type="int">
+			</argument>
+			<argument index="2" name="max" type="int">
+			</argument>
+			<description>
+				Wraps integer [code]value[/code] between [code]min[/code] and [code]max[/code].
+				Usable for creating loop-alike behavior or infinite surfaces.
+				[codeblock]
+				# Infinite loop between 5 and 9
+				frame = wrapi(frame + 1, 5, 10)
+				[/codeblock]
+				[codeblock]
+				# result is -2
+				var result = wrapi(-6, -5, -1)
+				[/codeblock]
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
