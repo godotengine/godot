@@ -302,7 +302,7 @@ Error VulkanContext::_create_physical_device() {
 		/*flags*/ 0,
 		/*pApplicationInfo*/ &app,
 		/*enabledLayerCount*/ enabled_layer_count,
-		/*ppEnabledLayerNames*/ (const char *const *)instance_validation_layers,
+		/*ppEnabledLayerNames*/ (const char *const *)enabled_layers,
 		/*enabledExtensionCount*/ enabled_extension_count,
 		/*ppEnabledExtensionNames*/ (const char *const *)extension_names,
 	};
