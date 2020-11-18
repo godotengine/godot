@@ -572,6 +572,27 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_PTRCALL(PACKED_VECTOR3_ARRAY);
 				DISASSEMBLE_PTRCALL(PACKED_COLOR_ARRAY);
 
+			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				text += "call-builtin-method validated ";
+
+				text += DADDR(2 + argc) + " = ";
+
+				text += DADDR(1) + ".";
+				text += "<unknown method>";
+
+				text += "(";
+
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(1 + i);
+				}
+				text += ")";
+
+				incr = 5 + argc;
+			} break;
 			case OPCODE_CALL_BUILT_IN: {
 				text += "call-built-in ";
 
