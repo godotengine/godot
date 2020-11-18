@@ -128,7 +128,7 @@ static bool _start_success = false;
 
 String tablet_driver = "";
 String text_driver = "";
-
+String rendering_driver = "";
 static int text_driver_idx = -1;
 static int display_driver_idx = -1;
 static int audio_driver_idx = -1;
@@ -734,7 +734,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				N = I->next()->next();
 			} else {
-				OS::get_singleton()->print("Missing video driver argument, aborting.\n");
+				OS::get_singleton()->print("Missing display driver argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--rendering-driver") {
+			if (I->next()) {
+				rendering_driver = I->next()->get();
+
+				// as the rendering drivers available may depend on the display driver selected,
+				// we can't do an exhaustive check here, but we can look through all the options in
+				// all the display drivers for a match
+
+				bool found = false;
+				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+					Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
+
+					for (int d = 0; d < r_drivers.size(); d++) {
+						if (rendering_driver == r_drivers[d]) {
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (!found) {
+					OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
+							rendering_driver.utf8().get_data());
+
+					for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+						Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
+
+						for (int d = 0; d < r_drivers.size(); d++) {
+							OS::get_singleton()->print("'%s', ", r_drivers[d].utf8().get_data());
+						}
+					}
+
+					OS::get_singleton()->print(".\n");
+
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing rendering driver argument, aborting.\n");
 				goto error;
 			}
 		} else if (I->get() == "-f" || I->get() == "--fullscreen") { // force fullscreen
@@ -1231,14 +1273,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 	register_core_extensions(); //before display
-
+	// possibly be worth changing the default from vulkan to something lower spec,
+	// for the project manager, depending on how smooth the fallback is.
 	GLOBAL_DEF("rendering/driver/driver_name", "Vulkan");
+
+	// this list is hard coded, which makes it more difficult to add new backends.
+	// can potentially be changed to more of a plugin system at a later date.
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/driver/driver_name",
 			PropertyInfo(Variant::STRING,
 					"rendering/driver/driver_name",
-					PROPERTY_HINT_ENUM, "Vulkan"));
-	if (display_driver == "") {
-		display_driver = GLOBAL_GET("rendering/driver/driver_name");
+					PROPERTY_HINT_ENUM, "Vulkan,GLES2,GLES3"));
+
+	// if not set on the command line
+	if (rendering_driver == "") {
+		rendering_driver = GLOBAL_GET("rendering/driver/driver_name");
+	}
+
+	// note this is the desired rendering driver, it doesn't mean we will get it.
+	// TODO - make sure this is updated in the case of fallbacks, so that the user interface
+	// shows the correct driver string.
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+
+	// always convert to lower case vulkan for consistency in the code
+	if (rendering_driver == "Vulkan") {
+		rendering_driver = "vulkan";
 	}
 
 	GLOBAL_DEF_BASIC("display/window/size/width", 1024);
@@ -1338,8 +1396,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	/* Determine audio and video drivers */
 
+	// Display driver, e.g. X11, Wayland.
+	// print_line("requested display driver : " + display_driver);
 	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-		if (display_driver == DisplayServer::get_create_function_name(i)) {
+		String name = DisplayServer::get_create_function_name(i);
+		// print_line("\t" + itos(i) + " : " + name);
+
+		if (display_driver == name) {
 			display_driver_idx = i;
 			break;
 		}
@@ -1348,6 +1411,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (display_driver_idx < 0) {
 		display_driver_idx = 0;
 	}
+
+	// Store this in a globally accessible place, so we can retrieve the rendering drivers
+	// list from the display driver for the editor UI.
+	OS::get_singleton()->set_display_driver_id(display_driver_idx);
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver == "") { // Specified in project.godot.
@@ -1505,8 +1572,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	/* Initialize Display Server */
 
 	{
-		String rendering_driver; // temp broken
+		String display_driver = DisplayServer::get_create_function_name(display_driver_idx);
 
+		// rendering_driver now held in static global String in main and initialized in setup()
+		print_line("creating display driver : " + display_driver);
+		print_line("creating rendering driver : " + rendering_driver);
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_size, err);
 		if (err != OK || display_server == nullptr) {
@@ -1565,6 +1635,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	rendering_server = memnew(RenderingServerDefault(OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 
 	rendering_server->init();
+	//rendering_server->call_set_use_vsync(OS::get_singleton()->_use_vsync);
 	rendering_server->set_render_loop_enabled(!disable_render_loop);
 
 	if (profile_gpu || (!editor && bool(GLOBAL_GET("debug/settings/stdout/print_gpu_profile")))) {

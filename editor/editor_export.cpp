@@ -1491,6 +1491,9 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
+//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+//	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
+//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
@@ -1508,6 +1511,9 @@ String EditorExportPlatform::test_etc2_or_pvrtc() const {
 	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
 	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
+//	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
+//	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_etc2");
+//	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_pvrtc");
 
 	if (driver == "GLES2" && !pvrtc_supported) {
 		return TTR("Target platform requires 'PVRTC' texture compression for GLES2. Enable 'Import Pvrtc' in Project Settings.");

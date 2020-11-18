@@ -3855,6 +3855,10 @@ void RendererSceneCull::update() {
 }
 
 bool RendererSceneCull::free(RID p_rid) {
+	if (p_rid.is_null()) {
+		return true;
+	}
+
 	if (scene_render->free(p_rid)) {
 		return true;
 	}

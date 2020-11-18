@@ -31,7 +31,7 @@
 #ifdef X11_ENABLED
 #if defined(OPENGL_ENABLED)
 
-#include "detect_prime.h"
+#include "detect_prime_x11.h"
 
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"

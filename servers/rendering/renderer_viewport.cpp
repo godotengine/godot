@@ -129,6 +129,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		timestamp_vp_map[rt_id] = p_viewport->self;
 	}
 
+	// This is currently needed for GLES to keep the current window being rendered to up to date
+	DisplayServer::get_singleton()->gl_window_make_current(p_viewport->viewport_to_screen);
+
 	/* Camera should always be BEFORE any other 3D */
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front

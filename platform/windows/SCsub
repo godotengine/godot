@@ -15,7 +15,7 @@ common_win = [
     "joypad_windows.cpp",
     "windows_terminal_logger.cpp",
     "vulkan_context_win.cpp",
-    "context_gl_windows.cpp",
+    "gl_manager_windows.cpp",
 ]
 
 res_file = "godot_res.rc"

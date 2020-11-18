@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_windows.h                                                 */
+/*  rasterizer_gles2.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#pragma once
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+#include "drivers/gles_common/rasterizer_platforms.h"
+#ifdef GLES2_BACKEND_ENABLED
 
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
+#include "drivers/gles_common/rasterizer_version.h"
+#include "rasterizer_canvas_gles2.h"
+#include "rasterizer_scene_gles2.h"
+#include "rasterizer_storage_gles2.h"
+#include "servers/rendering/renderer_compositor.h"
 
-#include "core/error/error_list.h"
-#include "core/os/os.h"
+class RasterizerGLES2 : public RendererCompositor {
+private:
+	uint64_t frame = 1;
+	float delta = 0;
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+	double time_total = 0.0;
+	double time_scale = 1.0;
 
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
+protected:
+	RasterizerCanvasGLES2 canvas;
+	RasterizerStorageGLES2 storage;
+	RasterizerSceneGLES2 scene;
 
-class ContextGL_Windows {
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT;
+	void _blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect);
 
 public:
-	void release_current();
+	RendererStorage *get_storage() { return &storage; }
+	RendererCanvasRender *get_canvas() { return &canvas; }
+	RendererSceneRender *get_scene() { return &scene; }
 
-	void make_current();
+	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
 
-	int get_window_width();
-	int get_window_height();
-	void swap_buffers();
+	void initialize();
+	void begin_frame(double frame_step);
 
-	Error initialize();
+	void prepare_for_blitting_render_targets();
+	void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount);
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void end_frame(bool p_swap_buffers);
 
-	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Windows();
+	void finalize() {}
+
+	static RendererCompositor *_create_current() {
+		return memnew(RasterizerGLES2);
+	}
+
+	static void make_current() {
+		_create_func = _create_current;
+	}
+
+	virtual bool is_low_end() const { return true; }
+	uint64_t get_frame_number() const { return frame; }
+	double get_frame_delta_time() const { return delta; }
+
+	RasterizerGLES2();
+	~RasterizerGLES2() {}
 };
 
-#endif
-#endif
+#endif // GLES2_BACKEND_ENABLED

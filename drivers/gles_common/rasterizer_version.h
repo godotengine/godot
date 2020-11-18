@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_x11.h                                                     */
+/*  rasterizer_version.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,53 +28,57 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_GL_X11_H
-#define CONTEXT_GL_X11_H
+#pragma once
 
-#ifdef X11_ENABLED
+//#define GLES_OVER_GL
 
-#if defined(OPENGL_ENABLED)
+//#define GODOT_3
+#define GODOT_4
 
-#include "core/os/os.h"
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
+#ifdef GODOT_4
+// visual server becomes rendering server
+#define GD_VS RS
 
-struct ContextGL_X11_Private;
+#define GD_RD RenderingDevice
 
-class ContextGL_X11 {
-public:
-	enum ContextType {
-		GLES_2_0_COMPATIBLE,
-	};
+//#define GD_COMMAND_LINE CommandPrimitive
+#else
 
-private:
-	ContextGL_X11_Private *p;
-	OS::VideoMode default_video_mode;
-	::Display *x11_display;
-	::Window &x11_window;
-	bool double_buffer;
-	bool direct_render;
-	int glx_minor, glx_major;
-	bool use_vsync;
-	ContextType context_type;
+//class ContextGL_Windows {
+//	HDC hDC;
+//	HGLRC hRC;
+//	unsigned int pixel_format;
+//	HWND hWnd;
+//	bool opengl_3_context;
+//	bool use_vsync;
+#define GD_VS VS
 
-public:
-	void release_current();
-	void make_current();
-	void swap_buffers();
-	int get_window_width();
-	int get_window_height();
+// no rendering device in 3.2?
+#define GD_RD VS
 
-	Error initialize();
+//public:
+//	void release_current();
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+//	void make_current();
 
-	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	~ContextGL_X11();
-};
+//	int get_window_width();
+//	int get_window_height();
+//	void swap_buffers();
 
-#endif
+//	Error initialize();
 
-#endif
+//	void set_use_vsync(bool p_use);
+//	bool is_using_vsync() const;
+
+//	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
+//	~ContextGL_Windows();
+//};
+
+//#endif
+//#define GD_COMMAND_LINE CommandLine
+
+#define GD_TYPE_LINE TYPE_LINE
+#define GD_TYPE_POLYLINE TYPE_POLYLINE
+#define GD_TYPE_POLYGON TYPE_POLYGON
+#define GD_TYPE_CIRCLE TYPE_CIRCLE
 #endif
