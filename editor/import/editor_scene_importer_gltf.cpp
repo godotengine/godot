@@ -1305,12 +1305,14 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			String uri = d["uri"];
 
 			if (uri.begins_with("data:")) { // Embedded data using base64.
-				// Validate data MIME types and throw an error if it's one we don't know/support.
+				// Validate data MIME types and throw a warning if it's one we don't know/support.
 				if (!uri.begins_with("data:application/octet-stream;base64") &&
 						!uri.begins_with("data:application/gltf-buffer;base64") &&
 						!uri.begins_with("data:image/png;base64") &&
 						!uri.begins_with("data:image/jpeg;base64")) {
-					ERR_PRINT("glTF: Got image data with an unknown URI data type: " + uri);
+					WARN_PRINT(vformat("glTF: Image index '%d' uses an unsupported URI data type: %s. Skipping it.", i, uri));
+					state.images.push_back(Ref<Texture>()); // Placeholder to keep count.
+					continue;
 				}
 				data = _parse_base64_uri(uri);
 				data_ptr = data.ptr();
@@ -1345,7 +1347,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			}
 		} else if (d.has("bufferView")) {
 			// Handles the third bullet point from the spec (bufferView).
-			ERR_FAIL_COND_V_MSG(mimetype.empty(), ERR_FILE_CORRUPT, "glTF: Image specifies 'bufferView' but no 'mimeType', which is invalid.");
+			ERR_FAIL_COND_V_MSG(mimetype.empty(), ERR_FILE_CORRUPT,
+					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
 
@@ -1382,7 +1385,8 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 			}
 		}
 
-		ERR_FAIL_COND_V_MSG(img.is_null(), ERR_FILE_CORRUPT, "glTF: Couldn't load image with its given mimetype: " + mimetype);
+		ERR_FAIL_COND_V_MSG(img.is_null(), ERR_FILE_CORRUPT,
+				vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
 
 		Ref<ImageTexture> t;
 		t.instance();
