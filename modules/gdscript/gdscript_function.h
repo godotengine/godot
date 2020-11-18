@@ -183,7 +183,8 @@ public:
 		OPCODE_CAST_TO_BUILTIN,
 		OPCODE_CAST_TO_NATIVE,
 		OPCODE_CAST_TO_SCRIPT,
-		OPCODE_CONSTRUCT, //only for basic types!!
+		OPCODE_CONSTRUCT, // Only for basic types!
+		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CALL,
@@ -341,6 +342,8 @@ private:
 	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
 	int _builtin_methods_count = 0;
 	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
+	int _constructors_count = 0;
+	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
 	int _methods_count = 0;
 	MethodBind **_methods_ptr = nullptr;
 	const int *_code_ptr = nullptr;
@@ -368,6 +371,7 @@ private:
 	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
 	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
 	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
+	Vector<Variant::ValidatedConstructor> constructors;
 	Vector<MethodBind *> methods;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;

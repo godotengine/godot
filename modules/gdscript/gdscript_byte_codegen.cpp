@@ -244,7 +244,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 
 	if (builtin_method_map.size()) {
 		function->builtin_methods.resize(builtin_method_map.size());
-		function->_builtin_methods_ptr = function->builtin_methods.ptrw();
+		function->_builtin_methods_ptr = function->builtin_methods.ptr();
 		function->_builtin_methods_count = builtin_method_map.size();
 		for (const Map<Variant::ValidatedBuiltInMethod, int>::Element *E = builtin_method_map.front(); E; E = E->next()) {
 			function->builtin_methods.write[E->get()] = E->key();
@@ -252,6 +252,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	} else {
 		function->_builtin_methods_ptr = nullptr;
 		function->_builtin_methods_count = 0;
+	}
+
+	if (constructors_map.size()) {
+		function->constructors.resize(constructors_map.size());
+		function->_constructors_ptr = function->constructors.ptr();
+		function->_constructors_count = constructors_map.size();
+		for (const Map<Variant::ValidatedConstructor, int>::Element *E = constructors_map.front(); E; E = E->next()) {
+			function->constructors.write[E->get()] = E->key();
+		}
+	} else {
+		function->_constructors_ptr = nullptr;
+		function->_constructors_count = 0;
 	}
 
 	if (method_bind_map.size()) {
@@ -797,6 +809,46 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 }
 
 void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) {
+	// Try to find an appropriate constructor.
+	bool all_have_type = true;
+	Vector<Variant::Type> arg_types;
+	for (int i = 0; i < p_arguments.size(); i++) {
+		if (!HAS_BUILTIN_TYPE(p_arguments[i])) {
+			all_have_type = false;
+			break;
+		}
+		arg_types.push_back(p_arguments[i].type.builtin_type);
+	}
+	if (all_have_type) {
+		int valid_constructor = -1;
+		for (int i = 0; i < Variant::get_constructor_count(p_type); i++) {
+			if (Variant::get_constructor_argument_count(p_type, i) != p_arguments.size()) {
+				continue;
+			}
+			int types_correct = true;
+			for (int j = 0; j < arg_types.size(); j++) {
+				if (arg_types[j] != Variant::get_constructor_argument_type(p_type, i, j)) {
+					types_correct = false;
+					break;
+				}
+			}
+			if (types_correct) {
+				valid_constructor = i;
+				break;
+			}
+		}
+		if (valid_constructor >= 0) {
+			append(GDScriptFunction::OPCODE_CONSTRUCT_VALIDATED, 1 + p_arguments.size());
+			for (int i = 0; i < p_arguments.size(); i++) {
+				append(p_arguments[i]);
+			}
+			append(p_target);
+			append(p_arguments.size());
+			append(Variant::get_validated_constructor(p_type, valid_constructor));
+			return;
+		}
+	}
+
 	append(GDScriptFunction::OPCODE_CONSTRUCT, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);

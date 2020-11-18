@@ -214,6 +214,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CAST_TO_NATIVE,                     \
 		&&OPCODE_CAST_TO_SCRIPT,                     \
 		&&OPCODE_CONSTRUCT,                          \
+		&&OPCODE_CONSTRUCT_VALIDATED,                \
 		&&OPCODE_CONSTRUCT_ARRAY,                    \
 		&&OPCODE_CONSTRUCT_DICTIONARY,               \
 		&&OPCODE_CALL,                               \
@@ -1271,6 +1272,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 #endif
+
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CONSTRUCT_VALIDATED) {
+				CHECK_SPACE(2 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+
+				int constructor_idx = _code_ptr[ip + 2];
+				GD_ERR_BREAK(constructor_idx < 0 || constructor_idx >= _constructors_count);
+				Variant::ValidatedConstructor constructor = _constructors_ptr[constructor_idx];
+
+				Variant **argptrs = instruction_args;
+
+				GET_INSTRUCTION_ARG(dst, argc);
+
+				constructor(*dst, (const Variant **)argptrs);
 
 				ip += 3;
 			}
