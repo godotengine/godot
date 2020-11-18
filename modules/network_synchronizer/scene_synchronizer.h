@@ -140,14 +140,14 @@ private:
 	bool generate_id = false;
 	
 	// All possible registered nodes.
-	LocalVector<Ref<NetUtility::NodeData>> node_data;
+	LocalVector<NetUtility::NodeData *> node_data;
 
 	// All registered nodes, that have the NetworkNodeId assigned, organized per
 	// NetworkNodeId.
-	LocalVector<Ref<NetUtility::NodeData> > organized_node_data;
+	LocalVector<NetUtility::NodeData *> organized_node_data;
 
 	// Controller nodes.
-	LocalVector<Ref<NetUtility::NodeData> > node_data_controllers;
+	LocalVector<NetUtility::NodeData *> node_data_controllers;
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
@@ -219,14 +219,16 @@ public:
 	void trigger_event(const NetUtility::NodeChangeListener &p_event, NetEventFlag p_flag);
 
 private:
+	void expand_organized_node_data_vector(uint32_t p_size);
+
 	/// This function is slow, but allow to take the node data even if the
 	/// `NetNodeId` is not yet assigned.
-	Ref<NetUtility::NodeData> find_node_data(Node *p_node);
+	NetUtility::NodeData *find_node_data(Node *p_node);
 
 	/// This function is super fast, but only nodes with a `NetNodeId` assigned
 	/// can be returned.
-	Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id);
-	const Ref<NetUtility::NodeData> get_node_data(NetNodeId p_id) const;
+	NetUtility::NodeData *get_node_data(NetNodeId p_id);
+	const NetUtility::NodeData *get_node_data(NetNodeId p_id) const;
 
 	/// Returns the latest generated `NetNodeId`.
 	NetNodeId get_biggest_node_id() const;
@@ -242,13 +244,13 @@ private:
 	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
 	/// Register a new node and returns its `NodeData`.
-	Ref<NetUtility::NodeData> register_node(Node *p_node);
+	NetUtility::NodeData *register_node(Node *p_node);
 
 	/// Add node data and generates the `NetNodeId` if allowed.
-	void add_node_data(Ref<NetUtility::NodeData> p_node_data);
+	void add_node_data(NetUtility::NodeData *p_node_data);
 
 	/// Set the node data net id.
-	void set_node_data_id(Ref<NetUtility::NodeData> p_node_data, NetNodeId p_id);
+	void set_node_data_id(NetUtility::NodeData *p_node_data, NetNodeId p_id);
 
 public:
 	// Returns true when the vectors are the same.

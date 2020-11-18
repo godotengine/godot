@@ -239,7 +239,6 @@ void StatisticalRingBuffer<T>::force_recompute_avg_sum() {
 /// Specific node listener. Alone this doesn't do much, but allows the
 /// `ChangeListener` to know and keep track of the node events.
 struct NodeChangeListener {
-	// TODO make sure to not leak this when a node_data is removed or use a Ref.
 	class NodeData *node_data;
 	NetVarId var_id;
 
@@ -287,18 +286,14 @@ struct VarData {
 	bool operator<(const VarData &p_other) const;
 };
 
-struct NodeData : public Reference {
-	GDCLASS(NodeData, Reference);
-
-public:
+struct NodeData {
 	// ID used to reference this Node in the networked calls.
-	bool valid = true;
 	uint32_t id = 0;
 	ObjectID instance_id = ObjectID();
-	NodeData *controlled_by = nullptr; // TODO consider use Ref.
+	NodeData *controlled_by = nullptr;
 
 	bool is_controller = false;
-	LocalVector<NodeData *> controlled_nodes; // TODO consider use a Ref
+	LocalVector<NodeData *> controlled_nodes;
 
 	/// The sync variables of this node. The order of this vector matters
 	/// because the index is the `NetVarId`.
@@ -334,11 +329,6 @@ struct Snapshot {
 struct PostponedRecover {
 	NodeData *node_data = nullptr;
 	Vector<Var> vars; // TODO use a LocalVector?
-};
-
-struct NodeTrackingData {
-	Ref<NetUtility::NodeData> node_data;
-	LocalVector<Variant> variables;
 };
 
 } // namespace NetUtility
