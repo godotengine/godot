@@ -39,7 +39,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-static const char *_joy_buttons[JOY_SDL_BUTTONS + 1] = {
+static const char *_joy_buttons[JOY_BUTTON_SDL_MAX] = {
 	"a",
 	"b",
 	"x",
@@ -55,69 +55,15 @@ static const char *_joy_buttons[JOY_SDL_BUTTONS + 1] = {
 	"dpdown",
 	"dpleft",
 	"dpright",
-	nullptr
 };
 
-static const char *_joy_button_names[JOY_BUTTON_MAX] = {
-	"Face Bottom",
-	"Face Right",
-	"Face Left",
-	"Face Top",
-	"Select",
-	"Guide",
-	"Start",
-	"Left Stick",
-	"Right Stick",
-	"Left Shoulder",
-	"Right Shoulder",
-	"D-Pad Up",
-	"D-Pad Down",
-	"D-Pad Left",
-	"D-Pad Right",
-	"Button 15",
-	"Button 16",
-	"Button 17",
-	"Button 18",
-	"Button 19",
-	"Button 20",
-	"Button 21",
-	"Button 22",
-	"Button 23",
-	"Button 24",
-	"Button 25",
-	"Button 26",
-	"Button 27",
-	"Button 28",
-	"Button 29",
-	"Button 30",
-	"Button 31",
-	"Button 32",
-	"Button 33",
-	"Button 34",
-	"Button 35"
-};
-
-static const char *_joy_axes[JOY_SDL_AXES + 1] = {
+static const char *_joy_axes[JOY_AXIS_SDL_MAX] = {
 	"leftx",
 	"lefty",
 	"rightx",
 	"righty",
 	"lefttrigger",
 	"righttrigger",
-	nullptr
-};
-
-static const char *_joy_axis_names[JOY_AXIS_MAX] = {
-	"Left Stick X",
-	"Left Stick Y",
-	"Right Stick X",
-	"Right Stick Y",
-	"Left Trigger",
-	"Right Trigger",
-	"Joystick 3 Stick X",
-	"Joystick 3 Stick Y",
-	"Joystick 4 Stick X",
-	"Joystick 4 Stick Y"
 };
 
 Input *Input::singleton = nullptr;
@@ -162,10 +108,6 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_joypads"), &Input::get_connected_joypads);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
-	ClassDB::bind_method(D_METHOD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
-	ClassDB::bind_method(D_METHOD("get_joy_button_index_from_string", "button"), &Input::get_joy_button_index_from_string);
-	ClassDB::bind_method(D_METHOD("get_joy_axis_string", "axis_index"), &Input::get_joy_axis_string);
-	ClassDB::bind_method(D_METHOD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
@@ -1226,21 +1168,21 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, J
 }
 
 JoyButtonList Input::_get_output_button(String output) {
-	for (int i = 0; _joy_buttons[i]; i++) {
+	for (int i = 0; i < JOY_BUTTON_SDL_MAX; i++) {
 		if (output == _joy_buttons[i]) {
 			return JoyButtonList(i);
 		}
 	}
-	return JoyButtonList::JOY_INVALID_BUTTON;
+	return JoyButtonList::JOY_BUTTON_INVALID;
 }
 
 JoyAxisList Input::_get_output_axis(String output) {
-	for (int i = 0; _joy_axes[i]; i++) {
+	for (int i = 0; i < JOY_AXIS_SDL_MAX; i++) {
 		if (output == _joy_axes[i]) {
 			return JoyAxisList(i);
 		}
 	}
-	return JoyAxisList::JOY_INVALID_AXIS;
+	return JoyAxisList::JOY_AXIS_INVALID;
 }
 
 void Input::parse_mapping(String p_mapping) {
@@ -1300,16 +1242,16 @@ void Input::parse_mapping(String p_mapping) {
 
 		JoyButtonList output_button = _get_output_button(output);
 		JoyAxisList output_axis = _get_output_axis(output);
-		ERR_CONTINUE_MSG(output_button == JOY_INVALID_BUTTON && output_axis == JOY_INVALID_AXIS,
+		ERR_CONTINUE_MSG(output_button == JOY_BUTTON_INVALID && output_axis == JOY_AXIS_INVALID,
 				String(entry[idx] + "\nUnrecognised output string: " + output));
-		ERR_CONTINUE_MSG(output_button != JOY_INVALID_BUTTON && output_axis != JOY_INVALID_AXIS,
+		ERR_CONTINUE_MSG(output_button != JOY_BUTTON_INVALID && output_axis != JOY_AXIS_INVALID,
 				String("BUG: Output string matched both button and axis: " + output));
 
 		JoyBinding binding;
-		if (output_button != JOY_INVALID_BUTTON) {
+		if (output_button != JOY_BUTTON_INVALID) {
 			binding.outputType = TYPE_BUTTON;
 			binding.output.button = output_button;
-		} else if (output_axis != JOY_INVALID_AXIS) {
+		} else if (output_axis != JOY_AXIS_INVALID) {
 			binding.outputType = TYPE_AXIS;
 			binding.output.axis.axis = output_axis;
 			binding.output.axis.range = output_range;
@@ -1401,20 +1343,6 @@ Array Input::get_connected_joypads() {
 	return ret;
 }
 
-String Input::get_joy_button_string(int p_button) {
-	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX, "Invalid button");
-	return _joy_button_names[p_button];
-}
-
-int Input::get_joy_button_index_from_string(String p_button) {
-	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-		if (p_button == _joy_button_names[i]) {
-			return i;
-		}
-	}
-	ERR_FAIL_V(JOY_INVALID_BUTTON);
-}
-
 int Input::get_unused_joy_id() {
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 		if (!joy_names.has(i) || !joy_names[i].connected) {
@@ -1422,20 +1350,6 @@ int Input::get_unused_joy_id() {
 		}
 	}
 	return -1;
-}
-
-String Input::get_joy_axis_string(int p_axis) {
-	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "Invalid axis");
-	return _joy_axis_names[p_axis];
-}
-
-int Input::get_joy_axis_index_from_string(String p_axis) {
-	for (int i = 0; i < JOY_AXIS_MAX; i++) {
-		if (p_axis == _joy_axis_names[i]) {
-			return i;
-		}
-	}
-	ERR_FAIL_V(JOY_INVALID_AXIS);
 }
 
 Input::Input() {
