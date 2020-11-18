@@ -68,6 +68,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Map<Variant::ValidatedKeyedGetter, int> keyed_getters_map;
 	Map<Variant::ValidatedIndexedSetter, int> indexed_setters_map;
 	Map<Variant::ValidatedIndexedGetter, int> indexed_getters_map;
+	Map<Variant::ValidatedBuiltInMethod, int> builtin_method_map;
 	Map<MethodBind *, int> method_bind_map;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
@@ -201,6 +202,15 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_builtin_method_pos(const Variant::ValidatedBuiltInMethod p_method) {
+		if (builtin_method_map.has(p_method)) {
+			return builtin_method_map[p_method];
+		}
+		int pos = builtin_method_map.size();
+		builtin_method_map[p_method] = pos;
+		return pos;
+	}
+
 	int get_method_bind_pos(MethodBind *p_method) {
 		if (method_bind_map.has(p_method)) {
 			return method_bind_map[p_method];
@@ -298,6 +308,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_indexed_getter_pos(p_indexed_getter));
 	}
 
+	void append(const Variant::ValidatedBuiltInMethod p_method) {
+		opcodes.push_back(get_builtin_method_pos(p_method));
+	}
+
 	void append(MethodBind *p_method) {
 		opcodes.push_back(get_method_bind_pos(p_method));
 	}
@@ -357,6 +371,7 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) override;
+	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;

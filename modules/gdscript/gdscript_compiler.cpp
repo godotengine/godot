@@ -522,6 +522,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								} else {
 									gen->write_call(result, base, call->function_name, arguments);
 								}
+							} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
+								gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
 							} else {
 								gen->write_call(result, base, call->function_name, arguments);
 							}

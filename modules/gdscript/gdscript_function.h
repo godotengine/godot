@@ -190,6 +190,7 @@ public:
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
+		OPCODE_CALL_BUILTIN_TYPE_VALIDATED,
 		OPCODE_CALL_SELF_BASE,
 		OPCODE_CALL_METHOD_BIND,
 		OPCODE_CALL_METHOD_BIND_RET,
@@ -300,6 +301,8 @@ private:
 	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
 	int _indexed_getters_count = 0;
 	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
+	int _builtin_methods_count = 0;
+	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
 	int _methods_count = 0;
 	MethodBind **_methods_ptr = nullptr;
 	const int *_code_ptr = nullptr;
@@ -326,6 +329,7 @@ private:
 	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
 	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
 	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
+	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
 	Vector<MethodBind *> methods;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;

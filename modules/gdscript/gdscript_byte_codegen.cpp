@@ -242,6 +242,18 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_indexed_getters_ptr = nullptr;
 	}
 
+	if (builtin_method_map.size()) {
+		function->builtin_methods.resize(builtin_method_map.size());
+		function->_builtin_methods_ptr = function->builtin_methods.ptrw();
+		function->_builtin_methods_count = builtin_method_map.size();
+		for (const Map<Variant::ValidatedBuiltInMethod, int>::Element *E = builtin_method_map.front(); E; E = E->next()) {
+			function->builtin_methods.write[E->get()] = E->key();
+		}
+	} else {
+		function->_builtin_methods_ptr = nullptr;
+		function->_builtin_methods_count = 0;
+	}
+
 	if (method_bind_map.size()) {
 		function->methods.resize(method_bind_map.size());
 		function->_methods_ptr = function->methods.ptrw();
@@ -645,6 +657,41 @@ void GDScriptByteCodeGenerator::write_call_builtin(const Address &p_target, GDSc
 	append(p_target);
 	append(p_arguments.size());
 	append(p_function);
+}
+
+void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) {
+	bool is_validated = false;
+
+	// Check if all types are correct.
+	if (Variant::is_builtin_method_vararg(p_type, p_method)) {
+		is_validated = true; // Vararg works fine with any argument, since they can be any type.
+	} else if (p_arguments.size() == Variant::get_builtin_method_argument_count(p_type, p_method)) {
+		bool all_types_exact = true;
+		for (int i = 0; i < p_arguments.size(); i++) {
+			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_builtin_method_argument_type(p_type, p_method, i))) {
+				all_types_exact = false;
+				break;
+			}
+		}
+
+		is_validated = all_types_exact;
+	}
+
+	if (!is_validated) {
+		// Perform regular call.
+		write_call(p_target, p_base, p_method, p_arguments);
+		return;
+	}
+
+	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
+
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	append(p_base);
+	append(p_target);
+	append(p_arguments.size());
+	append(Variant::get_validated_builtin_method(p_type, p_method));
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {

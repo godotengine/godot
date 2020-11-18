@@ -219,6 +219,7 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CALL_RETURN,                       \
 		&&OPCODE_CALL_ASYNC,                        \
 		&&OPCODE_CALL_BUILT_IN,                     \
+		&&OPCODE_CALL_BUILTIN_TYPE_VALIDATED,       \
 		&&OPCODE_CALL_SELF_BASE,                    \
 		&&OPCODE_CALL_METHOD_BIND,                  \
 		&&OPCODE_CALL_METHOD_BIND_RET,              \
@@ -1649,6 +1650,40 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
 				}
 #endif
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CALL_BUILTIN_TYPE_VALIDATED) {
+				CHECK_SPACE(3 + instr_arg_count);
+
+				ip += instr_arg_count;
+
+				int argc = _code_ptr[ip + 1];
+				GD_ERR_BREAK(argc < 0);
+
+				GET_INSTRUCTION_ARG(base, argc);
+
+				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _builtin_methods_count);
+				Variant::ValidatedBuiltInMethod method = _builtin_methods_ptr[_code_ptr[ip + 2]];
+				Variant **argptrs = instruction_args;
+
+#ifdef DEBUG_ENABLED
+				uint64_t call_time = 0;
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					call_time = OS::get_singleton()->get_ticks_usec();
+				}
+#endif
+
+				GET_INSTRUCTION_ARG(ret, argc + 1);
+				method(base, (const Variant **)argptrs, argc, ret);
+
+#ifdef DEBUG_ENABLED
+				if (GDScriptLanguage::get_singleton()->profiling) {
+					function_call_time += OS::get_singleton()->get_ticks_usec() - call_time;
+				}
+#endif
+
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
