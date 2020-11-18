@@ -120,7 +120,6 @@ class VulkanContext {
 	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
 
-	const char **instance_validation_layers = nullptr;
 	uint32_t enabled_layer_count = 0;
 	const char *enabled_layers[MAX_LAYERS];
 
