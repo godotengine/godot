@@ -1022,7 +1022,7 @@ void VisualShaderEditor::_update_options_menu() {
 	Color unsupported_color = get_theme_color("error_color", "Editor");
 	Color supported_color = get_theme_color("warning_color", "Editor");
 
-	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES2";
+	static bool low_driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/rendering_driver") == "GLES2";
 
 	Map<String, TreeItem *> folders;
 

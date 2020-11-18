@@ -1379,7 +1379,7 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/rendering_driver");
 	bool etc_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2");
 
@@ -1393,7 +1393,7 @@ String EditorExportPlatform::test_etc2() const {
 }
 
 String EditorExportPlatform::test_etc2_or_pvrtc() const {
-	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/rendering_driver");
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2");
 	bool pvrtc_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc");
 

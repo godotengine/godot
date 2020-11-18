@@ -38,6 +38,10 @@
 
 #include <avrt.h>
 
+#if defined(GLES_WINDOWS_ENABLED)
+#include "drivers/gles2/rasterizer_gles2.h"
+#endif
+
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
@@ -534,6 +538,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
+#ifdef GLES_WINDOWS_ENABLED
+	if (rendering_driver == "GLES2") {
+		gl_manager->window_destroy(p_window);
+	}
+#endif
 
 	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
@@ -541,6 +550,12 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
+}
+
+void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+#if defined(GLES_WINDOWS_ENABLED)
+	gl_manager->window_make_current(p_window_id);
+#endif
 }
 
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
@@ -820,6 +835,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		context_vulkan->window_resize(p_window, w, h);
+	}
+#endif
+#if defined(GLES_WINDOWS_ENABLED)
+	if (rendering_driver == "GLES2") {
+		gl_manager->window_resize(p_window, w, h);
 	}
 #endif
 
@@ -1548,6 +1568,9 @@ void DisplayServerWindows::make_rendering_thread() {
 }
 
 void DisplayServerWindows::swap_buffers() {
+#if defined(GLES_WINDOWS_ENABLED)
+	gl_manager->swap_buffers();
+#endif
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
@@ -3023,6 +3046,14 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 #endif
 
+#ifdef GLES_WINDOWS_ENABLED
+		print_line("rendering_driver " + rendering_driver);
+		if (rendering_driver == "GLES2") {
+			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
+			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a GLES2 window");
+		}
+#endif
+
 		RegisterTouchWindow(wd.hWnd, 0);
 
 		TRACKMOUSEEVENT tme;
@@ -3167,7 +3198,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		use_raw_input = false;
 	}
 
-	rendering_driver = "vulkan";
+	// hard coded render drivers...
+	//	rendering_driver = "vulkan";
+	//	rendering_driver = "GLES2";
+	print_line("rendering_driver " + rendering_driver);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -3180,6 +3214,35 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+	// Init context and rendering device
+#if defined(GLES_WINDOWS_ENABLED)
+
+	if (rendering_driver == "GLES2") {
+		GLManager_Windows::ContextType opengl_api_type = GLManager_Windows::GLES_2_0_COMPATIBLE;
+
+		gl_manager = memnew(GLManager_Windows(opengl_api_type));
+
+		if (gl_manager->initialize() != OK) {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+
+		//		gl_manager->set_use_vsync(current_videomode.use_vsync);
+
+		if (true) {
+			RasterizerGLES2::make_current();
+		} else {
+			memdelete(gl_manager);
+			gl_manager = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+	}
+#endif
+
+	/*
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver_index == VIDEO_DRIVER_GLES2) {
 		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
@@ -3203,6 +3266,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+	*/
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
@@ -3261,8 +3325,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
-#ifdef OPENGL_ENABLED
-	drivers.push_back("opengl");
+#ifdef GLES_WINDOWS_ENABLED
+	drivers.push_back("GLES2");
 #endif
 
 	return drivers;
@@ -3292,6 +3356,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
 
+#ifdef GLES_WINDOWS_ENABLED
+		// destroy windows .. NYI?
+#endif
+
 	if (windows.has(MAIN_WINDOW_ID)) {
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
@@ -3314,6 +3382,13 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 		if (context_vulkan)
 			memdelete(context_vulkan);
+	}
+#endif
+
+#ifdef GLES_WINDOWS_ENABLED
+	if (gl_manager) {
+		memdelete(gl_manager);
+		gl_manager = nullptr;
 	}
 #endif
 }

@@ -1597,7 +1597,7 @@ public:
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
-		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/rendering_driver");
 		if (driver == "GLES2") {
 			r_features->push_back("etc");
 		}
