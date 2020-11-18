@@ -58,6 +58,39 @@
 typedef uint32_t NetNodeId;
 typedef uint32_t NetVarId;
 
+/// Flags used to control when an event is executed.
+enum NetEventFlag {
+
+	// ~~ Flags ~~ //
+	EMPTY = 0,
+
+	/// Called at the end of the frame, if the value is different.
+	/// It's also called when a variable is modified by the
+	/// `apply_scene_changes` function.
+	CHANGE = 1 << 0,
+
+	/// Called when the variable is modified by the `NetworkSynchronizer`
+	/// because not in sync with the server.
+	SYNC_RECOVER = 1 << 1,
+
+	/// Called when the variable is modified by the `NetworkSynchronizer`
+	/// because it's preparing the node for the rewinding.
+	SYNC_RESET = 1 << 2,
+
+	/// Called when the variable is modified during the rewinding phase.
+	SYNC_REWIND = 1 << 3,
+
+	/// Called at the end of the recovering phase, if the value was modified
+	/// during the rewinding.
+	END_SYNC = 1 << 4,
+
+	// ~~ Preconfigured ~~ //
+
+	DEFAULT = CHANGE | END_SYNC,
+	SYNC = SYNC_RECOVER | SYNC_RESET | SYNC_REWIND,
+	ALWAYS = CHANGE | SYNC_RECOVER | SYNC_RESET | SYNC_REWIND | END_SYNC
+};
+
 namespace NetUtility {
 
 template <class T>
@@ -203,6 +236,37 @@ void StatisticalRingBuffer<T>::force_recompute_avg_sum() {
 	}
 }
 
+/// Specific node listener. Alone this doesn't do much, but allows the
+/// `ChangeListener` to know and keep track of the node events.
+struct NodeChangeListener {
+	// TODO make sure to not leak this when a node_data is removed or use a Ref.
+	class NodeData *node_data;
+	NetVarId var_id;
+
+	bool old_set = false;
+	Variant old_value;
+
+	bool operator==(const NodeChangeListener &p_other) const;
+};
+
+/// Change listener that rapresents a pair of Object and Method.
+/// This can track the changes of many nodes and variables. It's dispatched
+/// if one or more tracked variable change during the tracked phase, specified
+/// by the flag.
+struct ChangeListener {
+	// TODO use a callable instead??
+	ObjectID object_id = ObjectID();
+	StringName method;
+	uint32_t method_argument_count;
+	NetEventFlag flag;
+
+	LocalVector<NodeChangeListener> watching_vars;
+	LocalVector<Variant> old_values;
+	bool emitted = true;
+
+	bool operator==(const ChangeListener &p_other) const;
+};
+
 struct Var {
 	StringName name;
 	Variant value;
@@ -213,6 +277,7 @@ struct VarData {
 	Var var;
 	bool skip_rewinding = false;
 	bool enabled = false;
+	Vector<uint32_t> change_listeners;
 
 	VarData();
 	VarData(StringName p_name);
@@ -260,6 +325,7 @@ struct Snapshot {
 	uint32_t input_id;
 	/// The Node variables in a particular frame. The order of this vector
 	/// matters because the index is the `NetNodeId`.
+	/// The variable array order also matter.
 	LocalVector<Vector<Var> > node_vars; // TODO use Vector instead of LocalVector.
 
 	operator String() const;

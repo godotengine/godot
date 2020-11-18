@@ -37,6 +37,10 @@
 #include "core/variant.h"
 #include "scene/main/node.h"
 
+bool NetUtility::ChangeListener::operator==(const ChangeListener &p_other) const {
+	return object_id == p_other.object_id && method == p_other.method;
+}
+
 NetUtility::VarData::VarData() {}
 
 NetUtility::VarData::VarData(StringName p_name) {
@@ -85,4 +89,8 @@ NetUtility::Snapshot::operator String() const {
 		}
 	}
 	return s;
+}
+
+bool NetUtility::NodeChangeListener::operator==(const NodeChangeListener &p_other) const {
+	return node_data == p_other.node_data && var_id == p_other.var_id;
 }

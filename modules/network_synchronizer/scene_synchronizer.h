@@ -123,32 +123,6 @@ public:
 		SYNCHRONIZER_TYPE_SERVER
 	};
 
-	/// Flags used to control when an event is executed.
-	enum NetEventFlag {
-		/// Called at the end of the frame, if the value is different.
-		/// It's also called when a variable is modified by the
-		/// `apply_scene_changes` function.
-		CHANGE = 1 << 0,
-
-		/// Called when the variable is modified by the `NetworkSynchronizer`
-		/// because not in sync with the server.
-		SYNC_RECOVER = 1 << 1,
-
-		/// Called when the variable is modified by the `NetworkSynchronizer`
-		/// because it's preparing the node for the rewinding.
-		SYNC_RESET = 1 << 2,
-
-		/// Called when the variable is modified during the rewinding phase.
-		SYNC_REWIND = 1 << 3,
-
-		/// Called at the end of the recovering phase, if the value was modified
-		/// during the rewinding.
-		SYNC_END = 1 << 4,
-
-		DEFAULT = CHANGE | SYNC_END,
-		ALWAYS = CHANGE | SYNC_RECOVER | SYNC_RESET | SYNC_REWIND | SYNC_END
-	};
-
 private:
 	real_t server_notify_state_interval = 1.0;
 	real_t comparison_float_tolerance = 0.001;
@@ -158,6 +132,7 @@ private:
 	bool recover_in_progress = false;
 	bool reset_in_progress = false;
 	bool rewinding_in_progress = false;
+	bool end_sync = false;
 
 	bool peer_dirty = false;
 	OAHashMap<int, NetUtility::PeerData> peer_data;
@@ -176,6 +151,9 @@ private:
 
 	// Just used to detect when the peer change. TODO Remove this and use a singnal instead.
 	void *peer_ptr = nullptr;
+
+	int event_flag;
+	LocalVector<NetUtility::ChangeListener> event_listener;
 
 public:
 	static void _bind_methods();
@@ -200,10 +178,8 @@ public:
 
 	void set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding);
 
-	String get_changed_event_name(StringName p_variable);
-
-	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method, NetEventFlag p_flags = NetEventFlag::DEFAULT);
-	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+	void track_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method, NetEventFlag p_flags = NetEventFlag::DEFAULT);
+	void untrack_variable_changes(Node *p_node, StringName p_variable, Object *p_object, StringName p_method);
 
 	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
 
@@ -218,6 +194,7 @@ public:
 	bool is_recovered() const;
 	bool is_resetted() const;
 	bool is_rewinding() const;
+	bool is_end_sync() const;
 
 	/// This function works only on server.
 	void force_state_notify();
@@ -234,6 +211,12 @@ public:
 	void _rpc_notify_need_full_snapshot();
 
 	void update_peers();
+
+	void change_events_begin(int p_flag);
+	void change_event_add(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old);
+	void change_events_flush();
+
+	void trigger_event(const NetUtility::NodeChangeListener &p_event, NetEventFlag p_flag);
 
 private:
 	/// This function is slow, but allow to take the node data even if the
@@ -293,7 +276,7 @@ public:
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) {}
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) {}
 	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
-	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, StringName p_var_name) {}
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) {}
 };
 
 class NoNetSynchronizer : public Synchronizer {
@@ -330,7 +313,7 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot) override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_variable_added(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
-	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, StringName p_var_name) override;
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
 
 	void process_snapshot_notificator(real_t p_delta);
 	Vector<Variant> global_nodes_generate_snapshot(bool p_force_full_snapshot) const;
@@ -350,6 +333,22 @@ class ClientSynchronizer : public Synchronizer {
 
 	bool need_full_snapshot_notified = false;
 
+	struct EndSyncEvent {
+		NetUtility::NodeData *node_data;
+		NetVarId var_id;
+		Variant old_value;
+
+		bool operator<(const EndSyncEvent &p_other) const {
+			if (node_data->id == p_other.node_data->id) {
+				return var_id < p_other.var_id;
+			} else {
+				return node_data->id < p_other.node_data->id;
+			}
+		}
+	};
+
+	Set<EndSyncEvent> sync_end_events;
+
 public:
 	ClientSynchronizer(SceneSynchronizer *p_node);
 
@@ -359,6 +358,7 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot) override;
 	virtual void on_node_added(NetUtility::NodeData *p_node_data) override;
 	virtual void on_node_removed(NetUtility::NodeData *p_node_data) override;
+	virtual void on_variable_changed(NetUtility::NodeData *p_node_data, NetVarId p_var_id, Variant p_old_value, int p_flag) override;
 
 	bool parse_sync_data(
 			Variant p_snapshot,
@@ -387,6 +387,6 @@ private:
 	void notify_server_full_snapshot_is_needed();
 };
 
-VARIANT_ENUM_CAST(SceneSynchronizer::NetEventFlag)
+VARIANT_ENUM_CAST(NetEventFlag)
 
 #endif
