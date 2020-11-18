@@ -2105,7 +2105,7 @@ void ProjectManager::_run_project_confirm() {
 		if (selected_main == "") {
 			run_error_diag->set_text(TTR("Can't run project: no main scene defined.\nPlease edit the project and set the main scene in the Project Settings under the \"Application\" category."));
 			run_error_diag->popup_centered();
-			return;
+			continue;
 		}
 
 		const String &selected = selected_list[i].project_key;
@@ -2115,7 +2115,7 @@ void ProjectManager::_run_project_confirm() {
 		if (!DirAccess::exists(path.plus_file(ProjectSettings::IMPORTED_FILES_PATH.right(6)))) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
-			return;
+			continue;
 		}
 
 		print_line("Running project: " + path + " (" + selected + ")");
