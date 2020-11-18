@@ -2093,130 +2093,61 @@
 		<constant name="BUTTON_MASK_XBUTTON2" value="256" enum="ButtonList">
 			Extra mouse button 2 mask.
 		</constant>
-		<constant name="JOY_INVALID_BUTTON" value="-1" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButtonList">
 			An invalid game controller button.
 		</constant>
 		<constant name="JOY_BUTTON_A" value="0" enum="JoyButtonList">
-			Game controller SDL button A.
+			Game controller SDL button A. Corresponds to the bottom action button: Sony Cross, Xbox A, Nintendo B.
 		</constant>
 		<constant name="JOY_BUTTON_B" value="1" enum="JoyButtonList">
-			Game controller SDL button B.
+			Game controller SDL button B. Corresponds to the right action button: Sony Circle, Xbox B, Nintendo A.
 		</constant>
 		<constant name="JOY_BUTTON_X" value="2" enum="JoyButtonList">
-			Game controller SDL button X.
+			Game controller SDL button X. Corresponds to the left action button: Sony Square, Xbox X, Nintendo Y.
 		</constant>
 		<constant name="JOY_BUTTON_Y" value="3" enum="JoyButtonList">
-			Game controller SDL button Y.
+			Game controller SDL button Y. Corresponds to the top action button: Sony Triangle, Xbox Y, Nintendo X.
 		</constant>
 		<constant name="JOY_BUTTON_BACK" value="4" enum="JoyButtonList">
-			Game controller SDL back button.
+			Game controller SDL back button. Corresponds to the Sony Select, Xbox Back, Nintendo - button.
 		</constant>
 		<constant name="JOY_BUTTON_GUIDE" value="5" enum="JoyButtonList">
-			Game controller SDL guide button.
+			Game controller SDL guide button. Corresponds to the Sony PS, Xbox Home button.
 		</constant>
 		<constant name="JOY_BUTTON_START" value="6" enum="JoyButtonList">
-			Game controller SDL start button.
+			Game controller SDL start button. Corresponds to the Nintendo + button.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_STICK" value="7" enum="JoyButtonList">
-			Game controller SDL left stick button.
+			Game controller SDL left stick button. Corresponds to the Sony L3, Xbox L/LS button.
 		</constant>
 		<constant name="JOY_BUTTON_RIGHT_STICK" value="8" enum="JoyButtonList">
-			Game controller SDL right stick button.
+			Game controller SDL right stick button. Corresponds to the Sony R3, Xbox R/RS button.
 		</constant>
 		<constant name="JOY_BUTTON_LEFT_SHOULDER" value="9" enum="JoyButtonList">
-			Game controller SDL left shoulder button.
+			Game controller SDL left shoulder button. Corresponds to the Sony L1, Xbox LB button.
 		</constant>
 		<constant name="JOY_BUTTON_RIGHT_SHOULDER" value="10" enum="JoyButtonList">
-			Game controller SDL right shoulder button.
+			Game controller SDL right shoulder button. Corresponds to the Sony R1, Xbox RB button.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_UP" value="11" enum="JoyButtonList">
-			Game controller SDL D-pad up button.
+			Game controller D-pad up button.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_DOWN" value="12" enum="JoyButtonList">
-			Game controller SDL D-pad down button.
+			Game controller D-pad down button.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_LEFT" value="13" enum="JoyButtonList">
-			Game controller SDL D-pad left button.
+			Game controller D-pad left button.
 		</constant>
 		<constant name="JOY_BUTTON_DPAD_RIGHT" value="14" enum="JoyButtonList">
-			Game controller SDL D-pad right button.
+			Game controller D-pad right button.
 		</constant>
-		<constant name="JOY_SDL_BUTTONS" value="15" enum="JoyButtonList">
+		<constant name="JOY_BUTTON_SDL_MAX" value="15" enum="JoyButtonList">
 			The number of SDL game controller buttons.
 		</constant>
-		<constant name="JOY_SONY_X" value="0" enum="JoyButtonList">
-			Sony DualShock controller X button maps to SDL button A.
-		</constant>
-		<constant name="JOY_SONY_CROSS" value="0" enum="JoyButtonList">
-			Sony DualShock controller cross button maps to SDL button A.
-		</constant>
-		<constant name="JOY_SONY_CIRCLE" value="1" enum="JoyButtonList">
-			Sony DualShock controller circle button maps to SDL button B.
-		</constant>
-		<constant name="JOY_SONY_SQUARE" value="2" enum="JoyButtonList">
-			Sony DualShock controller square button maps to SDL button X.
-		</constant>
-		<constant name="JOY_SONY_TRIANGLE" value="3" enum="JoyButtonList">
-			Sony DualShock controller triangle button maps to SDL button Y.
-		</constant>
-		<constant name="JOY_SONY_SELECT" value="4" enum="JoyButtonList">
-			Sony DualShock controller select button maps to SDL back button.
-		</constant>
-		<constant name="JOY_SONY_START" value="6" enum="JoyButtonList">
-			Sony DualShock controller start button maps to SDL start button.
-		</constant>
-		<constant name="JOY_SONY_PS" value="5" enum="JoyButtonList">
-			Sony DualShock controller PS button maps to SDL guide button.
-		</constant>
-		<constant name="JOY_SONY_L1" value="9" enum="JoyButtonList">
-			Sony DualShock controller L1 button maps to SDL left shoulder button.
-		</constant>
-		<constant name="JOY_SONY_R1" value="10" enum="JoyButtonList">
-			Sony DualShock controller R1 button maps to SDL right shoulder button.
-		</constant>
-		<constant name="JOY_SONY_L3" value="7" enum="JoyButtonList">
-			Sony DualShock controller L3 button maps to SDL left stick button.
-		</constant>
-		<constant name="JOY_SONY_R3" value="8" enum="JoyButtonList">
-			Sony DualShock controller R3 button maps to SDL right stick button.
-		</constant>
-		<constant name="JOY_XBOX_A" value="0" enum="JoyButtonList">
-			Xbox game controller A button maps to SDL button A.
-		</constant>
-		<constant name="JOY_XBOX_B" value="1" enum="JoyButtonList">
-			Xbox game controller B button maps to SDL button B.
-		</constant>
-		<constant name="JOY_XBOX_X" value="2" enum="JoyButtonList">
-			Xbox game controller X button maps to SDL button X.
-		</constant>
-		<constant name="JOY_XBOX_Y" value="3" enum="JoyButtonList">
-			Xbox game controller Y button maps to SDL button Y.
-		</constant>
-		<constant name="JOY_XBOX_BACK" value="4" enum="JoyButtonList">
-			Xbox game controller back button maps to SDL back button.
-		</constant>
-		<constant name="JOY_XBOX_START" value="6" enum="JoyButtonList">
-			Xbox game controller start button maps to SDL start button.
-		</constant>
-		<constant name="JOY_XBOX_HOME" value="5" enum="JoyButtonList">
-			Xbox game controller home button maps to SDL guide button.
-		</constant>
-		<constant name="JOY_XBOX_LS" value="7" enum="JoyButtonList">
-			Xbox game controller left stick button maps to SDL left stick button.
-		</constant>
-		<constant name="JOY_XBOX_RS" value="8" enum="JoyButtonList">
-			Xbox game controller right stick button maps to SDL right stick button.
-		</constant>
-		<constant name="JOY_XBOX_LB" value="9" enum="JoyButtonList">
-			Xbox game controller left bumper button maps to SDL left shoulder button.
-		</constant>
-		<constant name="JOY_XBOX_RB" value="10" enum="JoyButtonList">
-			Xbox game controller right bumper button maps to SDL right shoulder button.
-		</constant>
 		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">
-			The maximum number of game controller buttons.
+			The maximum number of game controller buttons: Android supports up to 36 buttons.
 		</constant>
-		<constant name="JOY_INVALID_AXIS" value="-1" enum="JoyAxisList">
+		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxisList">
 			An invalid game controller axis.
 		</constant>
 		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxisList">
@@ -2237,41 +2168,11 @@
 		<constant name="JOY_AXIS_TRIGGER_RIGHT" value="5" enum="JoyAxisList">
 			Game controller right trigger axis.
 		</constant>
-		<constant name="JOY_SDL_AXES" value="6" enum="JoyAxisList">
+		<constant name="JOY_AXIS_SDL_MAX" value="6" enum="JoyAxisList">
 			The number of SDL game controller axes.
 		</constant>
-		<constant name="JOY_AXIS_0_X" value="0" enum="JoyAxisList">
-			Game controller joystick 0 x-axis.
-		</constant>
-		<constant name="JOY_AXIS_0_Y" value="1" enum="JoyAxisList">
-			Game controller joystick 0 y-axis.
-		</constant>
-		<constant name="JOY_AXIS_1_X" value="2" enum="JoyAxisList">
-			Game controller joystick 1 x-axis.
-		</constant>
-		<constant name="JOY_AXIS_1_Y" value="3" enum="JoyAxisList">
-			Game controller joystick 1 y-axis.
-		</constant>
-		<constant name="JOY_AXIS_2_X" value="4" enum="JoyAxisList">
-			Game controller joystick 2 x-axis.
-		</constant>
-		<constant name="JOY_AXIS_2_Y" value="5" enum="JoyAxisList">
-			Game controller joystick 2 y-axis.
-		</constant>
-		<constant name="JOY_AXIS_3_X" value="6" enum="JoyAxisList">
-			Game controller joystick 3 x-axis.
-		</constant>
-		<constant name="JOY_AXIS_3_Y" value="7" enum="JoyAxisList">
-			Game controller joystick 3 y-axis.
-		</constant>
-		<constant name="JOY_AXIS_4_X" value="8" enum="JoyAxisList">
-			Game controller joystick 4 x-axis.
-		</constant>
-		<constant name="JOY_AXIS_4_Y" value="9" enum="JoyAxisList">
-			Game controller joystick 4 y-axis.
-		</constant>
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxisList">
-			The maximum number of game controller axes.
+			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MidiMessageList">
 			MIDI note OFF message.

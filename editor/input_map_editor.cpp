@@ -35,37 +35,37 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 
-static const char *_button_descriptions[JOY_SDL_BUTTONS] = {
-	TTRC("Face Bottom, DualShock Cross, Xbox A, Nintendo B"),
-	TTRC("Face Right, DualShock Circle, Xbox B, Nintendo A"),
-	TTRC("Face Left, DualShock Square, Xbox X, Nintendo Y"),
-	TTRC("Face Top, DualShock Triangle, Xbox Y, Nintendo X"),
-	TTRC("DualShock Select, Xbox Back, Nintendo -"),
-	TTRC("Home, DualShock PS, Guide"),
+static const char *_button_descriptions[JOY_BUTTON_SDL_MAX] = {
+	TTRC("Bottom Action, Sony Cross, Xbox A, Nintendo B"),
+	TTRC("Right Action, Sony Circle, Xbox B, Nintendo A"),
+	TTRC("Left Action, Sony Square, Xbox X, Nintendo Y"),
+	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
+	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
+	TTRC("Guide, Sony PS, Xbox Home"),
 	TTRC("Start, Nintendo +"),
-	TTRC("Left Stick, DualShock L3, Xbox L/LS"),
-	TTRC("Right Stick, DualShock R3, Xbox R/RS"),
-	TTRC("Left Shoulder, DualShock L1, Xbox LB"),
-	TTRC("Right Shoulder, DualShock R1, Xbox RB"),
-	TTRC("D-Pad Up"),
-	TTRC("D-Pad Down"),
-	TTRC("D-Pad Left"),
-	TTRC("D-Pad Right")
+	TTRC("Left Stick, Sony L3, Xbox L/LS"),
+	TTRC("Right Stick, Sony R3, Xbox R/RS"),
+	TTRC("Left Shoulder, Sony L1, Xbox LB"),
+	TTRC("Right Shoulder, Sony R1, Xbox RB"),
+	TTRC("D-pad Up"),
+	TTRC("D-pad Down"),
+	TTRC("D-pad Left"),
+	TTRC("D-pad Right"),
 };
 
 static const char *_axis_descriptions[JOY_AXIS_MAX * 2] = {
-	TTRC("Left Stick Left"),
-	TTRC("Left Stick Right"),
-	TTRC("Left Stick Up"),
-	TTRC("Left Stick Down"),
-	TTRC("Right Stick Left"),
-	TTRC("Right Stick Right"),
-	TTRC("Right Stick Up"),
-	TTRC("Right Stick Down"),
+	TTRC("Left Stick Left, Joystick 0 Left"),
+	TTRC("Left Stick Right, Joystick 0 Right"),
+	TTRC("Left Stick Up, Joystick 0 Up"),
+	TTRC("Left Stick Down, Joystick 0 Down"),
+	TTRC("Right Stick Left, Joystick 1 Left"),
+	TTRC("Right Stick Right, Joystick 1 Right"),
+	TTRC("Right Stick Up, Joystick 1 Up"),
+	TTRC("Right Stick Down, Joystick 1 Down"),
 	TTRC("Joystick 2 Left"),
-	TTRC("Joystick 2 Right, Left Trigger, L2, LT"),
+	TTRC("Left Trigger, L2, LT, Joystick 2 Right"),
 	TTRC("Joystick 2 Up"),
-	TTRC("Joystick 2 Down, Right Trigger, R2, RT"),
+	TTRC("Right Trigger, R2, RT, Joystick 2 Down"),
 	TTRC("Joystick 3 Left"),
 	TTRC("Joystick 3 Right"),
 	TTRC("Joystick 3 Up"),
@@ -503,7 +503,7 @@ void InputMapEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_event) {
 			device_index->clear();
 			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 				String desc = TTR("Button") + " " + itos(i);
-				if (i < JOY_SDL_BUTTONS) {
+				if (i < JOY_BUTTON_SDL_MAX) {
 					desc += " (" + TTR(_button_descriptions[i]) + ")";
 				}
 				device_index->add_item(desc);
@@ -717,7 +717,7 @@ void InputMapEditor::_update_actions() {
 				const int idx = jb->get_button_index();
 				String str = _get_device_string(jb->get_device()) + ", " +
 							 TTR("Button") + " " + itos(idx);
-				if (idx >= 0 && idx < JOY_SDL_BUTTONS) {
+				if (idx >= 0 && idx < JOY_BUTTON_SDL_MAX) {
 					str += String() + " (" + TTR(_button_descriptions[jb->get_button_index()]) + ")";
 				}
 
