@@ -15,6 +15,8 @@ from collections import OrderedDict
 # Local
 import methods
 import glsl_builders
+import gles_builders
+from platform_methods import run_in_subprocess
 
 # Scan possible build platforms
 
@@ -705,6 +707,26 @@ if selected_platform in platform_list:
         ),
     }
     env.Append(BUILDERS=GLSL_BUILDERS)
+
+    if not env["platform"] == "server":  # FIXME: detect GLES3
+        env.Append(
+            BUILDERS={
+                "GLES3_GLSL": env.Builder(
+                    action=run_in_subprocess(gles_builders.build_gles3_headers),
+                    suffix="glsl.gen.h",
+                    src_suffix=".glsl",
+                )
+            }
+        )
+        env.Append(
+            BUILDERS={
+                "GLES2_GLSL": env.Builder(
+                    action=run_in_subprocess(gles_builders.build_gles2_headers),
+                    suffix="glsl.gen.h",
+                    src_suffix=".glsl",
+                )
+            }
+        )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

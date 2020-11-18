@@ -453,8 +453,7 @@ def configure_mingw(env):
     if not env["use_volk"]:
         env.Append(LIBS=["vulkan"])
 
-    ## TODO !!! Re-enable when OpenGLES Rendering Device is implemented !!!
-    # env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(CPPDEFINES=["OPENGL_ENABLED"])
     env.Append(LIBS=["opengl32"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
