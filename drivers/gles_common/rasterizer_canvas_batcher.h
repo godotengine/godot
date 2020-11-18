@@ -1621,6 +1621,8 @@ bool C_PREAMBLE::_prefill_polygon(RasterizerCanvas::Item::CommandPolygon *p_poly
 			if (ind < p_poly->uvs.size()) {
 				const Point2 &uv = p_poly->uvs[ind];
 				bvs[n].uv.set(uv.x, uv.y);
+			} else {
+				bvs[n].uv.set(0.0f, 0.0f);
 			}
 
 			vertex_colors[n] = precalced_colors[ind];
@@ -1756,6 +1758,8 @@ PREAMBLE(bool)::_software_skin_poly(RasterizerCanvas::Item::CommandPolygon *p_po
 		if (ind < p_poly->uvs.size()) {
 			const Point2 &uv = p_poly->uvs[ind];
 			bvs[n].uv.set(uv.x, uv.y);
+		} else {
+			bvs[n].uv.set(0.0f, 0.0f);
 		}
 
 		vertex_colors[n] = p_precalced_colors[ind];
