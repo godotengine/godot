@@ -304,7 +304,6 @@
 				a = floor(-2.99)
 				[/codeblock]
 				See also [method ceil], [method round], and [method stepify].
-				[b]Note:[/b] This method returns a float. If you need an integer, you can use [code]int(x)[/code] directly.
 			</description>
 		</method>
 		<method name="fmod">
