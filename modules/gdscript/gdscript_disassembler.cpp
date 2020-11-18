@@ -384,13 +384,30 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CONSTRUCT: {
 				Variant::Type t = Variant::Type(_code_ptr[ip + 3 + instr_var_args]);
-				int argc = _code_ptr[ip + 2 + instr_var_args];
+				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "construct ";
 				text += DADDR(1 + argc);
 				text += " = ";
 
 				text += Variant::get_type_name(t) + "(";
+				for (int i = 0; i < argc; i++) {
+					if (i > 0)
+						text += ", ";
+					text += DADDR(i + 1);
+				}
+				text += ")";
+
+				incr = 3 + instr_var_args;
+			} break;
+			case OPCODE_CONSTRUCT_VALIDATED: {
+				int argc = _code_ptr[ip + 1 + instr_var_args];
+
+				text += "construct validated ";
+				text += DADDR(1 + argc);
+				text += " = ";
+
+				text += "<unkown type>(";
 				for (int i = 0; i < argc; i++) {
 					if (i > 0)
 						text += ", ";

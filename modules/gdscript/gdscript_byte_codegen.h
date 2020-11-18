@@ -69,6 +69,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Map<Variant::ValidatedIndexedSetter, int> indexed_setters_map;
 	Map<Variant::ValidatedIndexedGetter, int> indexed_getters_map;
 	Map<Variant::ValidatedBuiltInMethod, int> builtin_method_map;
+	Map<Variant::ValidatedConstructor, int> constructors_map;
 	Map<MethodBind *, int> method_bind_map;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
@@ -211,6 +212,15 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_constructor_pos(const Variant::ValidatedConstructor p_constructor) {
+		if (constructors_map.has(p_constructor)) {
+			return constructors_map[p_constructor];
+		}
+		int pos = constructors_map.size();
+		constructors_map[p_constructor] = pos;
+		return pos;
+	}
+
 	int get_method_bind_pos(MethodBind *p_method) {
 		if (method_bind_map.has(p_method)) {
 			return method_bind_map[p_method];
@@ -310,6 +320,10 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	void append(const Variant::ValidatedBuiltInMethod p_method) {
 		opcodes.push_back(get_builtin_method_pos(p_method));
+	}
+
+	void append(const Variant::ValidatedConstructor p_constructor) {
+		opcodes.push_back(get_constructor_pos(p_constructor));
 	}
 
 	void append(MethodBind *p_method) {
