@@ -168,7 +168,8 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				Returns a new transform created by rotating around the given axis by the given angle (in radians). The axis must be a normalized vector.
+				The axis of rotation goes through (0, 0, 0) in local space, so the transform's origin will also rotate. If you want to change the transform's orientation while keeping it in place, consider calling [code]rotated[/code] on the transform's basis instead.
 			</description>
 		</method>
 		<method name="scaled">
