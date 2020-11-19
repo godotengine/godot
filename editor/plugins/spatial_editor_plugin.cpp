@@ -4993,6 +4993,8 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 					}
 				}
 			}
+			_finish_grid();
+			_init_grid();
 
 			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(p_option), grid_enabled);
 
