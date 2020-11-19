@@ -48,8 +48,11 @@ public:
 		PREVENT_COLOR_BAKING = 1 << 0,
 		PREVENT_VERTEX_BAKING = 1 << 1,
 
-		USE_MODULATE_FVF = 1 << 2,
-		USE_LARGE_FVF = 1 << 3,
+		// custom vertex shaders using BUILTINS that vary per item
+		PREVENT_ITEM_JOINING = 1 << 2,
+
+		USE_MODULATE_FVF = 1 << 3,
+		USE_LARGE_FVF = 1 << 4,
 	};
 
 	enum BatchType : uint16_t {

@@ -458,6 +458,12 @@ public:
 			bool uses_color;
 			bool uses_vertex;
 
+			// all these should disable item joining if used in a custom shader
+			bool uses_world_matrix;
+			bool uses_extra_matrix;
+			bool uses_projection_matrix;
+			bool uses_instance_custom;
+
 		} canvas_item;
 
 		struct Spatial {
