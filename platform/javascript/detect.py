@@ -107,7 +107,6 @@ def configure(env):
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"
-    env["LINK"] = "emcc"
 
     env["AR"] = "emar"
     env["RANLIB"] = "emranlib"
