@@ -468,6 +468,43 @@ bool NetworkedController::player_has_new_input() const {
 	return has_player_new_input;
 }
 
+void NetworkedController::reset() {
+	if (controller != nullptr) {
+		memdelete(controller);
+		controller = nullptr;
+		controller_type = CONTROLLER_TYPE_NULL;
+
+		if (get_tree()->is_network_server()) {
+			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
+			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
+		}
+	}
+
+	if (get_tree() == nullptr) {
+		// Nothing to do.
+		return;
+	}
+
+	if (get_tree()->get_network_peer().is_null()) {
+		controller_type = CONTROLLER_TYPE_NONETWORK;
+		controller = memnew(NoNetController(this));
+	} else if (get_tree()->is_network_server()) {
+		controller_type = CONTROLLER_TYPE_SERVER;
+		controller = memnew(ServerController(this, get_network_traced_frames()));
+		get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
+		get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
+		static_cast<ServerController *>(controller)->update_peers();
+	} else if (is_network_master()) {
+		controller_type = CONTROLLER_TYPE_PLAYER;
+		controller = memnew(PlayerController(this));
+	} else {
+		controller_type = CONTROLLER_TYPE_DOLL;
+		controller = memnew(DollController(this));
+	}
+
+	controller->ready();
+}
+
 void NetworkedController::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: { // TODO consider use the process instead.
@@ -483,26 +520,6 @@ void NetworkedController::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			// Unreachable.
-			CRASH_COND(get_tree() == NULL);
-
-			if (get_tree()->get_network_peer().is_null()) {
-				controller_type = CONTROLLER_TYPE_NONETWORK;
-				controller = memnew(NoNetController(this));
-			} else if (get_tree()->is_network_server()) {
-				controller_type = CONTROLLER_TYPE_SERVER;
-				controller = memnew(ServerController(this, get_network_traced_frames()));
-				get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
-				get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
-				static_cast<ServerController *>(controller)->update_peers();
-			} else if (is_network_master()) {
-				controller_type = CONTROLLER_TYPE_PLAYER;
-				controller = memnew(PlayerController(this));
-			} else {
-				controller_type = CONTROLLER_TYPE_DOLL;
-				controller = memnew(DollController(this));
-			}
-
 			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `NetworkedController`.");
@@ -512,21 +529,15 @@ void NetworkedController::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(has_method("parse_epoch_data") == false, "In your script you must inherit the virtual method `parse_epoch_data` to correctly use the `NetworkedController`.");
 			ERR_FAIL_COND_MSG(has_method("apply_epoch") == false, "In your script you must inherit the virtual method `apply_epoch` to correctly use the `NetworkedController`.");
 
-			controller->ready();
+			reset();
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			memdelete(controller);
-			controller = NULL;
-			controller_type = CONTROLLER_TYPE_NULL;
+			reset();
 
-			if (get_tree()->is_network_server()) {
-				get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
-				get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
-			}
 		} break;
 	}
 }

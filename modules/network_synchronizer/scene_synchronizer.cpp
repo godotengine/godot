@@ -680,6 +680,11 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 			}
 		}
 	}
+
+	// Reset the controllers.
+	for (uint32_t i = 0; i < node_data_controllers.size(); i += 1) {
+		static_cast<NetworkedController *>(node_data_controllers[i]->node)->reset();
+	}
 }
 
 void SceneSynchronizer::clear() {

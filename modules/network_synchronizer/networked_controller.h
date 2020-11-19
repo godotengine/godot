@@ -304,6 +304,8 @@ public:
 	void player_set_has_new_input(bool p_has);
 	bool player_has_new_input() const;
 
+	void reset();
+
 private:
 	virtual void _notification(int p_what);
 };
