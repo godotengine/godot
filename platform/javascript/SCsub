@@ -19,27 +19,28 @@ build = env.add_program(build_targets, javascript_files)
 
 env.AddJSLibraries(
     [
-        "native/http_request.js",
-        "native/library_godot_audio.js",
-        "native/library_godot_display.js",
-        "native/library_godot_os.js",
+        "js/libs/library_godot_audio.js",
+        "js/libs/library_godot_display.js",
+        "js/libs/library_godot_http_request.js",
+        "js/libs/library_godot_os.js",
+        "js/libs/library_godot_runtime.js",
     ]
 )
 
 if env["tools"]:
-    env.AddJSLibraries(["native/library_godot_editor_tools.js"])
+    env.AddJSLibraries(["js/libs/library_godot_editor_tools.js"])
 if env["javascript_eval"]:
-    env.AddJSLibraries(["native/library_godot_eval.js"])
+    env.AddJSLibraries(["js/libs/library_godot_eval.js"])
 for lib in env["JS_LIBS"]:
     env.Append(LINKFLAGS=["--js-library", lib])
 env.Depends(build, env["JS_LIBS"])
 
 engine = [
-    "engine/preloader.js",
-    "engine/utils.js",
-    "engine/engine.js",
+    "js/engine/preloader.js",
+    "js/engine/utils.js",
+    "js/engine/engine.js",
 ]
-externs = [env.File("#platform/javascript/engine/externs.js")]
+externs = [env.File("#platform/javascript/js/engine/engine.externs.js")]
 js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs)
 env.Depends(js_engine, externs)
 
@@ -58,7 +59,7 @@ out_files = [
     zip_dir.File(binary_name + ".audio.worklet.js"),
 ]
 html_file = "#misc/dist/html/editor.html" if env["tools"] else "#misc/dist/html/full-size.html"
-in_files = [js_wrapped, build[1], html_file, "#platform/javascript/native/audio.worklet.js"]
+in_files = [js_wrapped, build[1], html_file, "#platform/javascript/js/libs/audio.worklet.js"]
 if env["threads_enabled"]:
     in_files.append(build[2])
     out_files.append(zip_dir.File(binary_name + ".worker.js"))

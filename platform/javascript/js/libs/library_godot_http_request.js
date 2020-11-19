@@ -27,10 +27,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-var GodotHTTPRequest = {
 
+const GodotHTTPRequest = {
+	$GodotHTTPRequest__deps: ['$GodotRuntime'],
 	$GodotHTTPRequest: {
-
 		requests: [],
 
 		getUnusedRequestId: function() {
@@ -67,14 +67,14 @@ var GodotHTTPRequest = {
 		GodotHTTPRequest.requests[xhrId] = null;
 	},
 
-	godot_xhr_open: function(xhrId, method, url, user, password) {
-		user = user > 0 ? UTF8ToString(user) : null;
-		password = password > 0 ? UTF8ToString(password) : null;
-		GodotHTTPRequest.requests[xhrId].open(UTF8ToString(method), UTF8ToString(url), true, user, password);
+	godot_xhr_open: function(xhrId, method, url, p_user, p_password) {
+		const user = p_user > 0 ? GodotRuntime.parseString(p_user) : null;
+		const password = p_password > 0 ? GodotRuntime.parseString(p_password) : null;
+		GodotHTTPRequest.requests[xhrId].open(GodotRuntime.parseString(method), GodotRuntime.parseString(url), true, user, password);
 	},
 
 	godot_xhr_set_request_header: function(xhrId, header, value) {
-		GodotHTTPRequest.requests[xhrId].setRequestHeader(UTF8ToString(header), UTF8ToString(value));
+		GodotHTTPRequest.requests[xhrId].setRequestHeader(GodotRuntime.parseString(header), GodotRuntime.parseString(value));
 	},
 
 	godot_xhr_send_null: function(xhrId) {
@@ -83,19 +83,19 @@ var GodotHTTPRequest = {
 
 	godot_xhr_send_string: function(xhrId, strPtr) {
 		if (!strPtr) {
-			err("Failed to send string per XHR: null pointer");
+			GodotRuntime.error("Failed to send string per XHR: null pointer");
 			return;
 		}
-		GodotHTTPRequest.requests[xhrId].send(UTF8ToString(strPtr));
+		GodotHTTPRequest.requests[xhrId].send(GodotRuntime.parseString(strPtr));
 	},
 
 	godot_xhr_send_data: function(xhrId, ptr, len) {
 		if (!ptr) {
-			err("Failed to send data per XHR: null pointer");
+			GodotRuntime.error("Failed to send data per XHR: null pointer");
 			return;
 		}
 		if (len < 0) {
-			err("Failed to send data per XHR: buffer length less than 0");
+			GodotRuntime.error("Failed to send data per XHR: buffer length less than 0");
 			return;
 		}
 		GodotHTTPRequest.requests[xhrId].send(HEAPU8.subarray(ptr, ptr + len));
@@ -115,17 +115,14 @@ var GodotHTTPRequest = {
 
 	godot_xhr_get_response_headers_length: function(xhrId) {
 		var headers = GodotHTTPRequest.requests[xhrId].getAllResponseHeaders();
-		return headers === null ? 0 : lengthBytesUTF8(headers);
+		return headers === null ? 0 : GodotRuntime.strlen(headers);
 	},
 
 	godot_xhr_get_response_headers: function(xhrId, dst, len) {
 		var str = GodotHTTPRequest.requests[xhrId].getAllResponseHeaders();
 		if (str === null)
 			return;
-		var buf = new Uint8Array(len + 1);
-		stringToUTF8Array(str, buf, 0, buf.length);
-		buf = buf.subarray(0, -1);
-		HEAPU8.set(buf, dst);
+		GodotRuntime.stringToHeap(str, dst, len);
 	},
 
 	godot_xhr_get_response_length: function(xhrId) {

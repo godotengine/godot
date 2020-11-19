@@ -33,13 +33,14 @@
  * Keeps track of registered event listeners so it can remove them on shutdown.
  */
 const GodotDisplayListeners = {
+	$GodotDisplayListeners__deps: ['$GodotOS'],
 	$GodotDisplayListeners__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayListeners.clear(); resolve(); });',
 	$GodotDisplayListeners: {
 		handlers: [],
 
 		has: function(target, event, method, capture) {
 			return GodotDisplayListeners.handlers.findIndex(function(e) {
-				return e.target === target && e.event === event && e.method === method && e.capture == capture;
+				return e.target === target && e.event === event && e.method === method && e.capture === capture;
 			}) !== -1;
 		},
 
@@ -47,11 +48,11 @@ const GodotDisplayListeners = {
 			if (GodotDisplayListeners.has(target, event, method, capture)) {
 				return;
 			}
-			function Handler(target, event, method, capture) {
-				this.target = target;
-				this.event = event;
-				this.method = method;
-				this.capture = capture;
+			function Handler(p_target, p_event, p_method, p_capture) {
+				this.target = p_target;
+				this.event = p_event;
+				this.method = p_method;
+				this.capture = p_capture;
 			};
 			GodotDisplayListeners.handlers.push(new Handler(target, event, method, capture));
 			target.addEventListener(event, method, capture);
@@ -78,7 +79,6 @@ mergeInto(LibraryManager.library, GodotDisplayListeners);
  * deferred callbacks won't be able to access the files.
  */
 const GodotDisplayDragDrop = {
-
 	$GodotDisplayDragDrop__deps: ['$FS', '$GodotFS'],
 	$GodotDisplayDragDrop: {
 		promises: [],
@@ -90,7 +90,7 @@ const GodotDisplayDragDrop = {
 			} else if (entry.isFile) {
 				GodotDisplayDragDrop.add_file(entry);
 			} else {
-				console.error("Unrecognized entry...", entry);
+				GodotRuntime.error("Unrecognized entry...", entry);
 			}
 		},
 
@@ -125,19 +125,19 @@ const GodotDisplayDragDrop = {
 						resolve()
 					};
 					reader.onerror = function() {
-						console.log("Error reading file");
+						GodotRuntime.print("Error reading file");
 						reject();
 					}
 					reader.readAsArrayBuffer(file);
 				}, function(err) {
-					console.log("Error!");
+					GodotRuntime.print("Error!");
 					reject();
 				});
 			}));
 		},
 
 		process: function(resolve, reject) {
-			if (GodotDisplayDragDrop.promises.length == 0) {
+			if (GodotDisplayDragDrop.promises.length === 0) {
 				resolve();
 				return;
 			}
@@ -165,10 +165,10 @@ const GodotDisplayDragDrop = {
 					}
 				}
 			} else {
-				console.error("File upload not supported");
+				GodotRuntime.error("File upload not supported");
 			}
 			new Promise(GodotDisplayDragDrop.process).then(function() {
-				const DROP = "/tmp/drop-" + parseInt(Math.random() * Math.pow(2, 31)) + "/";
+				const DROP = "/tmp/drop-" + parseInt(Math.random() * (1 << 30), 10) + "/";
 				const drops = [];
 				const files = [];
 				FS.mkdir(DROP);
@@ -176,14 +176,14 @@ const GodotDisplayDragDrop = {
 					const path = elem['path'];
 					GodotFS.copy_to_fs(DROP + path, elem['data']);
 					let idx = path.indexOf("/");
-					if (idx == -1) {
+					if (idx === -1) {
 						// Root file
 						drops.push(DROP + path);
 					} else {
 						// Subdir
 						const sub = path.substr(0, idx);
 						idx = sub.indexOf("/");
-						if (idx < 0 && drops.indexOf(DROP + sub) == -1) {
+						if (idx < 0 && drops.indexOf(DROP + sub) === -1) {
 							drops.push(DROP + sub);
 						}
 					}
@@ -200,7 +200,7 @@ const GodotDisplayDragDrop = {
 					let idx = dir.lastIndexOf("/");
 					while (idx > 0) {
 						dir = dir.substr(0, idx);
-						if (dirs.indexOf(DROP + dir) == -1) {
+						if (dirs.indexOf(DROP + dir) === -1) {
 							dirs.push(DROP + dir);
 						}
 						idx = dir.lastIndexOf("/");
@@ -235,8 +235,8 @@ mergeInto(LibraryManager.library, GodotDisplayDragDrop);
  * Keeps track of cursor status and custom shapes.
  */
 const GodotDisplayCursor = {
+	$GodotDisplayCursor__deps: ['$GodotOS', '$GodotConfig'],
 	$GodotDisplayCursor__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayCursor.clear(); resolve(); });',
-	$GodotDisplayCursor__deps: ['$GodotConfig', '$GodotOS'],
 	$GodotDisplayCursor: {
 		shape: 'auto',
 		visible: true,
@@ -274,7 +274,7 @@ mergeInto(LibraryManager.library, GodotDisplayCursor);
  * Exposes all the functions needed by DisplayServer implementation.
  */
 const GodotDisplay = {
-	$GodotDisplay__deps: ['$GodotConfig', '$GodotOS', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop'],
+	$GodotDisplay__deps: ['$GodotConfig', '$GodotRuntime', '$GodotDisplayCursor', '$GodotDisplayListeners', '$GodotDisplayDragDrop'],
 	$GodotDisplay: {
 		window_icon: '',
 	},
@@ -289,7 +289,7 @@ const GodotDisplay = {
 	},
 
 	godot_js_display_alert: function(p_text) {
-		window.alert(UTF8ToString(p_text));
+		window.alert(GodotRuntime.parseString(p_text)); // eslint-disable-line no-alert
 	},
 
 	godot_js_display_pixel_ratio_get: function() {
@@ -304,13 +304,13 @@ const GodotDisplay = {
 	},
 
 	godot_js_display_canvas_is_focused: function() {
-		return document.activeElement == GodotConfig.canvas;
+		return document.activeElement === GodotConfig.canvas;
 	},
 
 	godot_js_display_canvas_bounding_rect_position_get: function(r_x, r_y) {
 		const brect = GodotConfig.canvas.getBoundingClientRect();
-		setValue(r_x, brect.x, 'i32');
-		setValue(r_y, brect.y, 'i32');
+		GodotRuntime.setHeapValue(r_x, brect.x, 'i32');
+		GodotRuntime.setHeapValue(r_y, brect.y, 'i32');
 	},
 
 	/*
@@ -324,25 +324,24 @@ const GodotDisplay = {
 	 * Clipboard
 	 */
 	godot_js_display_clipboard_set: function(p_text) {
-		const text = UTF8ToString(p_text);
+		const text = GodotRuntime.parseString(p_text);
 		if (!navigator.clipboard || !navigator.clipboard.writeText) {
 			return 1;
 		}
 		navigator.clipboard.writeText(text).catch(function(e) {
 			// Setting OS clipboard is only possible from an input callback.
-			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+			GodotRuntime.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
 		});
 		return 0;
 	},
 
-	godot_js_display_clipboard_get_deps: ['$GodotOS'],
 	godot_js_display_clipboard_get: function(callback) {
-		const func = GodotOS.get_func(callback);
+		const func = GodotRuntime.get_func(callback);
 		try {
 			navigator.clipboard.readText().then(function (result) {
-				const ptr = allocate(intArrayFromString(result), ALLOC_NORMAL);
+				const ptr = GodotRuntime.allocString(result);
 				func(ptr);
-				_free(ptr);
+				GodotRuntime.free(ptr);
 			}).catch(function (e) {
 				// Fail graciously.
 			});
@@ -363,7 +362,7 @@ const GodotDisplay = {
 	},
 
 	godot_js_display_window_title_set: function(p_data) {
-		document.title = UTF8ToString(p_data);
+		document.title = GodotRuntime.parseString(p_data);
 	},
 
 	godot_js_display_window_icon_set: function(p_ptr, p_len) {
@@ -375,7 +374,7 @@ const GodotDisplay = {
 			document.head.appendChild(link);
 		}
 		const old_icon = GodotDisplay.window_icon;
-		const png = new Blob([GodotOS.heapCopy(HEAPU8, p_ptr, p_len)], { type: "image/png" });
+		const png = new Blob([GodotRuntime.heapCopy(HEAPU8, p_ptr, p_len)], { type: "image/png" });
 		GodotDisplay.window_icon = URL.createObjectURL(png);
 		link.href = GodotDisplay.window_icon;
 		if (old_icon) {
@@ -387,8 +386,8 @@ const GodotDisplay = {
 	 * Cursor
 	 */
 	godot_js_display_cursor_set_visible: function(p_visible) {
-		const visible = p_visible != 0;
-		if (visible == GodotDisplayCursor.visible) {
+		const visible = p_visible !== 0;
+		if (visible === GodotDisplayCursor.visible) {
 			return;
 		}
 		GodotDisplayCursor.visible = visible;
@@ -404,14 +403,14 @@ const GodotDisplay = {
 	},
 
 	godot_js_display_cursor_set_shape: function(p_string) {
-		GodotDisplayCursor.set_shape(UTF8ToString(p_string));
+		GodotDisplayCursor.set_shape(GodotRuntime.parseString(p_string));
 	},
 
 	godot_js_display_cursor_set_custom_shape: function(p_shape, p_ptr, p_len, p_hotspot_x, p_hotspot_y) {
-		const shape = UTF8ToString(p_shape);
+		const shape = GodotRuntime.parseString(p_shape);
 		const old_shape = GodotDisplayCursor.cursors[shape];
 		if (p_len > 0) {
-			const png = new Blob([GodotOS.heapCopy(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
+			const png = new Blob([GodotRuntime.heapCopy(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
 			const url = URL.createObjectURL(png);
 			GodotDisplayCursor.cursors[shape] = {
 				url: url,
@@ -421,7 +420,7 @@ const GodotDisplay = {
 		} else {
 			delete GodotDisplayCursor.cursors[shape];
 		}
-		if (shape == GodotDisplayCursor.shape) {
+		if (shape === GodotDisplayCursor.shape) {
 			GodotDisplayCursor.set_shape(GodotDisplayCursor.shape);
 		}
 		if (old_shape) {
@@ -434,7 +433,7 @@ const GodotDisplay = {
 	 */
 	godot_js_display_notification_cb: function(callback, p_enter, p_exit, p_in, p_out) {
 		const canvas = GodotConfig.canvas;
-		const func = GodotOS.get_func(callback);
+		const func = GodotRuntime.get_func(callback);
 		const notif = [p_enter, p_exit, p_in, p_out];
 		['mouseover', 'mouseleave', 'focus', 'blur'].forEach(function(evt_name, idx) {
 			GodotDisplayListeners.add(canvas, evt_name, function() {
@@ -444,26 +443,26 @@ const GodotDisplay = {
 	},
 
 	godot_js_display_paste_cb: function(callback) {
-		const func = GodotOS.get_func(callback);
+		const func = GodotRuntime.get_func(callback);
 		GodotDisplayListeners.add(window, 'paste', function(evt) {
 			const text = evt.clipboardData.getData('text');
-			const ptr = allocate(intArrayFromString(text), ALLOC_NORMAL);
+			const ptr = GodotRuntime.allocString(text);
 			func(ptr);
-			_free(ptr);
+			GodotRuntime.free(ptr);
 		}, false);
 	},
 
 	godot_js_display_drop_files_cb: function(callback) {
-		const func = GodotOS.get_func(callback)
+		const func = GodotRuntime.get_func(callback)
 		const dropFiles = function(files) {
 			const args = files || [];
 			if (!args.length) {
 				return;
 			}
 			const argc = args.length;
-			const argv = GodotOS.allocStringArray(args);
+			const argv = GodotRuntime.allocStringArray(args);
 			func(argv, argc);
-			GodotOS.freeStringArray(argv, argc);
+			GodotRuntime.freeStringArray(argv, argc);
 		};
 		const canvas = GodotConfig.canvas;
 		GodotDisplayListeners.add(canvas, 'dragover', function(ev) {

@@ -29,36 +29,34 @@
 /*************************************************************************/
 
 const GodotEval = {
-
-	godot_js_eval__deps: ['$GodotOS'],
+	godot_js_eval__deps: ['$GodotRuntime'],
 	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
-		const js_code = UTF8ToString(p_js);
+		const js_code = GodotRuntime.parseString(p_js);
 		let eval_ret = null;
 		try {
 			if (p_use_global_ctx) {
 				// indirect eval call grants global execution context
-				const global_eval = eval;
+				const global_eval = eval; // eslint-disable-line no-eval
 				eval_ret = global_eval(js_code);
 			} else {
-				eval_ret = eval(js_code);
+				eval_ret = eval(js_code); // eslint-disable-line no-eval
 			}
 		} catch (e) {
-			err(e);
+			GodotRuntime.error(e);
 		}
 
 		switch (typeof eval_ret) {
 
 			case 'boolean':
-				setValue(p_union_ptr, eval_ret, 'i32');
+				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
 				return 1; // BOOL
 
 			case 'number':
-				setValue(p_union_ptr, eval_ret, 'double');
+				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
 				return 3; // REAL
 
 			case 'string':
-				let array_ptr = GodotOS.allocString(eval_ret);
-				setValue(p_union_ptr, array_ptr , '*');
+				GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
 				return 4; // STRING
 
 			case 'object':
@@ -73,12 +71,14 @@ const GodotEval = {
 					eval_ret = new Uint8Array(eval_ret);
 				}
 				if (eval_ret instanceof Uint8Array) {
-					const func = GodotOS.get_func(p_callback);
+					const func = GodotRuntime.get_func(p_callback);
 					const bytes_ptr = func(p_byte_arr, p_byte_arr_write,  eval_ret.length);
 					HEAPU8.set(eval_ret, bytes_ptr);
 					return 20; // POOL_BYTE_ARRAY
 				}
 				break;
+
+			// no default
 		}
 		return 0; // NIL
 	},

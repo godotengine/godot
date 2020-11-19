@@ -1,4 +1,4 @@
-var Utils = {
+var Utils = { // eslint-disable-line no-unused-vars
 
 	createLocateRewrite: function(execName) {
 		function rw(path) {
@@ -11,18 +11,20 @@ var Utils = {
 			} else if (path.endsWith('.wasm')) {
 				return execName + '.wasm';
 			}
+			return path;
 		}
 		return rw;
 	},
 
 	createInstantiatePromise: function(wasmLoader) {
+		let loader = wasmLoader;
 		function instantiateWasm(imports, onSuccess) {
-			wasmLoader.then(function(xhr) {
+			loader.then(function(xhr) {
 				WebAssembly.instantiate(xhr.response, imports).then(function(result) {
 					onSuccess(result['instance'], result['module']);
 				});
 			});
-			wasmLoader = null;
+			loader = null;
 			return {};
 		};
 
@@ -34,7 +36,7 @@ var Utils = {
 		if (nodes.length && nodes[0] instanceof HTMLCanvasElement) {
 			return nodes[0];
 		}
-		throw new Error("No canvas found");
+		return null;
 	},
 
 	isWebGLAvailable: function(majorVersion = 1) {
@@ -47,7 +49,9 @@ var Utils = {
 			} else if (majorVersion === 2) {
 				testContext = testCanvas.getContext('webgl2') || testCanvas.getContext('experimental-webgl2');
 			}
-		} catch (e) {}
+		} catch (e) {
+			// Not available
+		}
 		return !!testContext;
 	}
 };

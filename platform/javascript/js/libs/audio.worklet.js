@@ -27,8 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-class RingBuffer {
 
+class RingBuffer {
 	constructor(p_buffer, p_state) {
 		this.buffer = p_buffer;
 		this.avail = p_state;
@@ -105,7 +105,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 	}
 
 	parse_message(p_cmd, p_data) {
-		if (p_cmd == "start" && p_data) {
+		if (p_cmd === "start" && p_data) {
 			const state = p_data[0];
 			let idx = 0;
 			this.lock = state.subarray(idx, ++idx);
@@ -114,14 +114,14 @@ class GodotProcessor extends AudioWorkletProcessor {
 			const avail_out = state.subarray(idx, ++idx);
 			this.input = new RingBuffer(p_data[1], avail_in);
 			this.output = new RingBuffer(p_data[2], avail_out);
-		} else if (p_cmd == "stop") {
+		} else if (p_cmd === "stop") {
 			this.runing = false;
 			this.output = null;
 			this.input = null;
 		}
 	}
 
-	array_has_data(arr) {
+	static array_has_data(arr) {
 		return arr.length && arr[0].length && arr[0][0].length;
 	}
 
@@ -132,30 +132,30 @@ class GodotProcessor extends AudioWorkletProcessor {
 		if (this.output === null) {
 			return true; // Not ready yet, keep processing.
 		}
-		const process_input = this.array_has_data(inputs);
+		const process_input = GodotProcessor.array_has_data(inputs);
 		if (process_input) {
 			const input = inputs[0];
 			const chunk = input[0].length * input.length;
-			if (this.input_buffer.length != chunk) {
+			if (this.input_buffer.length !== chunk) {
 				this.input_buffer = new Float32Array(chunk);
 			}
 			if (this.input.space_left() >= chunk) {
-				this.write_input(this.input_buffer, input);
+				GodotProcessor.write_input(this.input_buffer, input);
 				this.input.write(this.input_buffer);
 			} else {
 				this.port.postMessage("Input buffer is full! Skipping input frame.");
 			}
 		}
-		const process_output = this.array_has_data(outputs);
+		const process_output = GodotProcessor.array_has_data(outputs);
 		if (process_output) {
 			const output = outputs[0];
 			const chunk = output[0].length * output.length;
-			if (this.output_buffer.length != chunk) {
+			if (this.output_buffer.length !== chunk) {
 				this.output_buffer = new Float32Array(chunk);
 			}
 			if (this.output.data_left() >= chunk) {
 				this.output.read(this.output_buffer);
-				this.write_output(output, this.output_buffer);
+				GodotProcessor.write_output(output, this.output_buffer);
 			} else {
 				this.port.postMessage("Output buffer has not enough frames! Skipping output frame.");
 			}
@@ -164,7 +164,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 		return true;
 	}
 
-	write_output(dest, source) {
+	static write_output(dest, source) {
 		const channels = dest.length;
 		for (let ch = 0; ch < channels; ch++) {
 			for (let sample = 0; sample < dest[ch].length; sample++) {
@@ -173,7 +173,7 @@ class GodotProcessor extends AudioWorkletProcessor {
 		}
 	}
 
-	write_input(dest, source) {
+	static write_input(dest, source) {
 		const channels = source.length;
 		for (let ch = 0; ch < channels; ch++) {
 			for (let sample = 0; sample < source[ch].length; sample++) {

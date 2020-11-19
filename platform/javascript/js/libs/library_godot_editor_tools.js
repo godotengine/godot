@@ -29,12 +29,11 @@
 /*************************************************************************/
 
 const GodotEditorTools = {
-
 	godot_js_editor_download_file__deps: ['$FS'],
 	godot_js_editor_download_file: function(p_path, p_name, p_mime) {
-		const path = UTF8ToString(p_path);
-		const name = UTF8ToString(p_name);
-		const mime = UTF8ToString(p_mime);
+		const path = GodotRuntime.parseString(p_path);
+		const name = GodotRuntime.parseString(p_name);
+		const mime = GodotRuntime.parseString(p_mime);
 		const size = FS.stat(path)['size'];
 		const buf = new Uint8Array(size);
 		const fd = FS.open(path, 'r');
