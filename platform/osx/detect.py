@@ -97,7 +97,6 @@ def configure(env):
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
             env["CC"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang"
-            env["LINK"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["CXX"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
             env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"

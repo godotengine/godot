@@ -354,18 +354,17 @@ def configure_mingw(env):
 
     if env["use_llvm"]:
         env["CC"] = mingw_prefix + "clang"
-        env["AS"] = mingw_prefix + "as"
         env["CXX"] = mingw_prefix + "clang++"
+        env["AS"] = mingw_prefix + "as"
         env["AR"] = mingw_prefix + "ar"
         env["RANLIB"] = mingw_prefix + "ranlib"
-        env["LINK"] = mingw_prefix + "clang++"
     else:
         env["CC"] = mingw_prefix + "gcc"
-        env["AS"] = mingw_prefix + "as"
         env["CXX"] = mingw_prefix + "g++"
+        env["AS"] = mingw_prefix + "as"
         env["AR"] = mingw_prefix + "gcc-ar"
         env["RANLIB"] = mingw_prefix + "gcc-ranlib"
-        env["LINK"] = mingw_prefix + "g++"
+
     env["x86_libtheora_opt_gcc"] = True
 
     if env["use_lto"]:
