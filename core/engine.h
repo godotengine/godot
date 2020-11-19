@@ -42,10 +42,7 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) :
-				name(p_name),
-				ptr(p_ptr) {
-		}
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL);
 	};
 
 private:
