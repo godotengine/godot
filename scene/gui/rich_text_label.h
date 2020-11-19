@@ -76,6 +76,7 @@ public:
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
 		ITEM_META,
+		ITEM_DROPCAP,
 		ITEM_CUSTOMFX
 	};
 
@@ -89,6 +90,9 @@ private:
 		Item *from = nullptr;
 
 		Ref<TextParagraph> text_buf;
+		Color dc_color;
+		int dc_ol_size = 0;
+		Color dc_ol_color;
 
 		Vector2 offset;
 		int char_offset = 0;
@@ -138,6 +142,17 @@ private:
 	struct ItemText : public Item {
 		String text;
 		ItemText() { type = ITEM_TEXT; }
+	};
+
+	struct ItemDropcap : public Item {
+		String text;
+		Ref<Font> font;
+		int font_size;
+		Color color;
+		int ol_size;
+		Color ol_color;
+		Rect2 dropcap_margins;
+		ItemDropcap() { type = ITEM_DROPCAP; }
 	};
 
 	struct ItemImage : public Item {
@@ -391,6 +406,7 @@ private:
 	Dictionary _find_font_features(Item *p_item);
 	int _find_outline_size(Item *p_item);
 	ItemList *_find_list_item(Item *p_item);
+	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	Align _find_align(Item *p_item);
@@ -435,6 +451,7 @@ public:
 	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), VAlign p_align = VALIGN_TOP);
 	void add_newline();
 	bool remove_line(const int p_line);
+	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	void push_font(const Ref<Font> &p_font);
 	void push_font_size(int p_font_size);
 	void push_font_features(const Dictionary &p_features);

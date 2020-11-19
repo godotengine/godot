@@ -49,6 +49,13 @@
 				Clears text paragraph (removes text and inline objects).
 			</description>
 		</method>
+		<method name="clear_dropcap">
+			<return type="void">
+			</return>
+			<description>
+				Removes dropcap.
+			</description>
+		</method>
 		<method name="draw" qualifiers="const">
 			<return type="void">
 			</return>
@@ -58,8 +65,38 @@
 			</argument>
 			<argument index="2" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
+			<argument index="3" name="dc_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
 			<description>
-				Draw text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_dropcap" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<description>
+				Draw drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_dropcap_outline" qualifiers="const">
+			<return type="void">
+			</return>
+			<argument index="0" name="canvas" type="RID">
+			</argument>
+			<argument index="1" name="pos" type="Vector2">
+			</argument>
+			<argument index="2" name="outline_size" type="int" default="1">
+			</argument>
+			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<description>
+				Draw drop cap outline into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
 			</description>
 		</method>
 		<method name="draw_line" qualifiers="const">
@@ -99,14 +136,37 @@
 			</return>
 			<argument index="0" name="canvas" type="RID">
 			</argument>
-			<argument index="1" name="outline_size" type="Vector2">
+			<argument index="1" name="pos" type="Vector2">
 			</argument>
-			<argument index="2" name="color" type="int" default="1">
+			<argument index="2" name="outline_size" type="int" default="1">
 			</argument>
-			<argument index="3" name="arg3" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="dc_color" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
 			<description>
-				Draw outline of the text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+				Draw outilines of all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="get_dropcap_lines" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns number of lines used by dropcap.
+			</description>
+		</method>
+		<method name="get_dropcap_rid" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+				Return drop cap text buffer RID.
+			</description>
+		</method>
+		<method name="get_dropcap_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns drop cap bounding box size.
 			</description>
 		</method>
 		<method name="get_line_ascent" qualifiers="const">
@@ -259,6 +319,26 @@
 			<description>
 				Overrides BiDi for the structured text.
 				Override ranges should cover full source text without overlaps. BiDi algorithm will be used on each range separately.
+			</description>
+		</method>
+		<method name="set_dropcap">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="fonts" type="Font">
+			</argument>
+			<argument index="2" name="size" type="int">
+			</argument>
+			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="4" name="opentype_features" type="Dictionary" default="{
+}">
+			</argument>
+			<argument index="5" name="language" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+				Sets drop cap, overrides previously set drop cap. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
 			</description>
 		</method>
 		<method name="tab_align">
