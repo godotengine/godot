@@ -155,6 +155,7 @@
 			<argument index="1" name="phi" type="float" />
 			<description>
 				Rotates the transform around the given axis by the given angle (in radians), using matrix multiplication. The axis must be a normalized vector.
+				The axis of rotation goes through (0, 0, 0) in local space, so the transform's origin will also rotate relative to its parent. If you want to change the transform's orientation while keeping it in place, consider calling [code]rotated[/code] on the transform's basis instead.
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">

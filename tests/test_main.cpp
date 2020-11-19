@@ -76,6 +76,7 @@
 #include "test_string.h"
 #include "test_text_server.h"
 #include "test_time.h"
+#include "test_transform_3d.h"
 #include "test_translation.h"
 #include "test_validate_testing.h"
 #include "test_variant.h"
