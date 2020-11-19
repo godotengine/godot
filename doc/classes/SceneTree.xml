@@ -188,7 +188,7 @@
 			<argument index="0" name="exit_code" type="int" default="-1">
 			</argument>
 			<description>
-				Quits the application. A process [code]exit_code[/code] can optionally be passed as an argument. If this argument is [code]0[/code] or greater, it will override the [member OS.exit_code] defined before quitting the application.
+				Quits the application at the end of the current iteration. A process [code]exit_code[/code] can optionally be passed as an argument. If this argument is [code]0[/code] or greater, it will override the [member OS.exit_code] defined before quitting the application.
 			</description>
 		</method>
 		<method name="reload_current_scene">
