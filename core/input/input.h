@@ -330,11 +330,6 @@ public:
 	void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(String p_guid);
 
-	String get_joy_button_string(int p_button);
-	String get_joy_axis_string(int p_axis);
-	int get_joy_axis_index_from_string(String p_axis);
-	int get_joy_button_index_from_string(String p_button);
-
 	int get_unused_joy_id();
 
 	bool is_joy_known(int p_device);
