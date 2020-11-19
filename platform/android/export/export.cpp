@@ -2630,6 +2630,13 @@ public:
 
 	Error _zip_align_project(const String &sdk_path, const String &unaligned_file_path, const String &aligned_file_path) {
 		// Look for the zipalign tool.
+		String zipalign_command_name;
+#ifdef WINDOWS_ENABLED
+		zipalign_command_name = "zipalign.exe";
+#else
+		zipalign_command_name = "zipalign";
+#endif
+
 		String zipalign_command;
 		Error errn;
 		String build_tools_dir = sdk_path.plus_file("build-tools");
@@ -2644,7 +2651,7 @@ public:
 		while (!sub_dir.empty()) {
 			if (!sub_dir.begins_with(".") && da->current_is_dir()) {
 				// Check if the tool is here.
-				String tool_path = build_tools_dir.plus_file(sub_dir).plus_file("zipalign");
+				String tool_path = build_tools_dir.plus_file(sub_dir).plus_file(zipalign_command_name);
 				if (FileAccess::exists(tool_path)) {
 					zipalign_command = tool_path;
 					break;
