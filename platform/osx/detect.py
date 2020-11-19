@@ -85,8 +85,8 @@ def configure(env):
 
     if env["arch"] == "arm64":
         print("Building for macOS 10.15+, platform arm64.")
-        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
-        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15", "-target", "arm64-apple-macos10.15"])
+        env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=10.15"])
     else:
         print("Building for macOS 10.9+, platform x86-64.")
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.9"])
