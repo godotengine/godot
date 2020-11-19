@@ -1647,12 +1647,12 @@ void ClientSynchronizer::store_snapshot() {
 	NetUtility::Snapshot &snap = client_snapshots.back();
 	snap.input_id = controller->get_current_input_id();
 
-	snap.node_vars.resize(scene_synchronizer->node_data.size());
+	snap.node_vars.resize(scene_synchronizer->organized_node_data.size());
 
 	// Store the nodes state and skip anything is related to the other
 	// controllers.
-	for (uint32_t i = 0; i < scene_synchronizer->node_data.size(); i += 1) {
-		const NetUtility::NodeData *node_data = scene_synchronizer->node_data[i];
+	for (uint32_t i = 0; i < scene_synchronizer->organized_node_data.size(); i += 1) {
+		const NetUtility::NodeData *node_data = scene_synchronizer->organized_node_data[i];
 
 		if (node_data == nullptr) {
 			// Nothing to do.
@@ -1732,7 +1732,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 #ifdef DEBUG_ENABLED
 	if (client_snapshots.empty() == false) {
 		// The SceneSynchronizer and the PlayerController are always in sync.
-		CRASH_COND(client_snapshots.back().input_id != player_controller->last_known_input());
+		CRASH_COND_MSG(client_snapshots.back().input_id != player_controller->last_known_input(), "This should not be possible: snapshot input: " + itos(client_snapshots.back().input_id) + " last_know_input: " + itos(player_controller->last_known_input()));
 	}
 #endif
 
