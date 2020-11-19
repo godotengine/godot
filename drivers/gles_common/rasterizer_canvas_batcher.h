@@ -579,7 +579,7 @@ private:
 	// translating vertex formats prior to rendering
 	void _translate_batches_to_vertex_colored_FVF();
 	template <class BATCH_VERTEX_TYPE, bool INCLUDE_LIGHT_ANGLES, bool INCLUDE_MODULATE, bool INCLUDE_LARGE>
-	void _translate_batches_to_larger_FVF();
+	void _translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type_flags);
 
 protected:
 	// accessory funcs
@@ -2344,19 +2344,19 @@ PREAMBLE(void)::flush_render_batches(RasterizerCanvas::Item *p_first_item, Raste
 		case RasterizerStorageCommon::FVF_COLOR: {
 			// special case, where vertex colors are used (polys)
 			if (!bdata.vertex_colors.size())
-				_translate_batches_to_larger_FVF<BatchVertexColored, false, false, false>();
+				_translate_batches_to_larger_FVF<BatchVertexColored, false, false, false>(p_sequence_batch_type_flags);
 			else
 				// normal, reduce number of batches by baking batch colors
 				_translate_batches_to_vertex_colored_FVF();
 		} break;
 		case RasterizerStorageCommon::FVF_LIGHT_ANGLE:
-			_translate_batches_to_larger_FVF<BatchVertexLightAngled, true, false, false>();
+			_translate_batches_to_larger_FVF<BatchVertexLightAngled, true, false, false>(p_sequence_batch_type_flags);
 			break;
 		case RasterizerStorageCommon::FVF_MODULATED:
-			_translate_batches_to_larger_FVF<BatchVertexModulated, true, true, false>();
+			_translate_batches_to_larger_FVF<BatchVertexModulated, true, true, false>(p_sequence_batch_type_flags);
 			break;
 		case RasterizerStorageCommon::FVF_LARGE:
-			_translate_batches_to_larger_FVF<BatchVertexLarge, true, true, true>();
+			_translate_batches_to_larger_FVF<BatchVertexLarge, true, true, true>(p_sequence_batch_type_flags);
 			break;
 	}
 
@@ -2771,9 +2771,15 @@ PREAMBLE(void)::_translate_batches_to_vertex_colored_FVF() {
 // In addition this can optionally add light angles to the FVF, necessary for normal mapping.
 T_PREAMBLE
 template <class BATCH_VERTEX_TYPE, bool INCLUDE_LIGHT_ANGLES, bool INCLUDE_MODULATE, bool INCLUDE_LARGE>
-void C_PREAMBLE::_translate_batches_to_larger_FVF() {
+void C_PREAMBLE::_translate_batches_to_larger_FVF(uint32_t p_sequence_batch_type_flags) {
 
-	bool include_poly_color = INCLUDE_LIGHT_ANGLES | INCLUDE_MODULATE | INCLUDE_LARGE;
+	bool include_poly_color = false;
+
+	// we ONLY want to include the color verts in translation when using polys,
+	// as rects do not write vertex colors, only colors per batch.
+	if (p_sequence_batch_type_flags & RasterizerStorageCommon::BTF_POLY) {
+		include_poly_color = INCLUDE_LIGHT_ANGLES | INCLUDE_MODULATE | INCLUDE_LARGE;
+	}
 
 	// zeros the size and sets up how big each unit is
 	bdata.unit_vertices.prepare(sizeof(BATCH_VERTEX_TYPE));
