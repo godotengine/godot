@@ -1770,31 +1770,41 @@ bool RasterizerCanvasGLES3::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	bdata.joined_item_batch_flags = 0;
 	if (r_ris.shader_cache) {
 
-		unsigned int and_flags = r_ris.shader_cache->canvas_item.batch_flags & (RasterizerStorageCommon::PREVENT_COLOR_BAKING | RasterizerStorageCommon::PREVENT_VERTEX_BAKING);
+		unsigned int and_flags = r_ris.shader_cache->canvas_item.batch_flags & (RasterizerStorageCommon::PREVENT_COLOR_BAKING | RasterizerStorageCommon::PREVENT_VERTEX_BAKING | RasterizerStorageCommon::PREVENT_ITEM_JOINING);
 		if (and_flags) {
 
-			bool use_larger_fvfs = true;
+			// special case for preventing item joining altogether
+			if (and_flags & RasterizerStorageCommon::PREVENT_ITEM_JOINING) {
+				join = false;
+				//r_batch_break = true; // don't think we need a batch break
 
-			if (and_flags == RasterizerStorageCommon::PREVENT_COLOR_BAKING) {
-				// in some circumstances, if the modulate is identity, we still allow baking because reading modulate / color
-				// will still be okay to do in the shader with no ill effects
-				if (r_ris.final_modulate == Color(1, 1, 1, 1)) {
-					use_larger_fvfs = false;
-				}
-			}
-
-			// new .. always use large FVF
-			if (use_larger_fvfs) {
-				if (and_flags == RasterizerStorageCommon::PREVENT_COLOR_BAKING) {
-					bdata.joined_item_batch_flags |= RasterizerStorageCommon::USE_MODULATE_FVF;
-				} else {
-					// we need to save on the joined item that it should use large fvf.
-					// This info will then be used in filling and rendering
-					bdata.joined_item_batch_flags |= RasterizerStorageCommon::USE_LARGE_FVF;
-				}
-
+				// save the flags so that they don't need to be recalculated in the 2nd pass
 				bdata.joined_item_batch_flags |= r_ris.shader_cache->canvas_item.batch_flags;
-			}
+			} else {
+
+				bool use_larger_fvfs = true;
+
+				if (and_flags == RasterizerStorageCommon::PREVENT_COLOR_BAKING) {
+					// in some circumstances, if the modulate is identity, we still allow baking because reading modulate / color
+					// will still be okay to do in the shader with no ill effects
+					if (r_ris.final_modulate == Color(1, 1, 1, 1)) {
+						use_larger_fvfs = false;
+					}
+				}
+
+				// new .. always use large FVF
+				if (use_larger_fvfs) {
+					if (and_flags == RasterizerStorageCommon::PREVENT_COLOR_BAKING) {
+						bdata.joined_item_batch_flags |= RasterizerStorageCommon::USE_MODULATE_FVF;
+					} else {
+						// we need to save on the joined item that it should use large fvf.
+						// This info will then be used in filling and rendering
+						bdata.joined_item_batch_flags |= RasterizerStorageCommon::USE_LARGE_FVF;
+					}
+
+					bdata.joined_item_batch_flags |= r_ris.shader_cache->canvas_item.batch_flags;
+				}
+			} // if not prevent item joining
 		}
 	}
 
