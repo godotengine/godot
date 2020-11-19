@@ -404,6 +404,18 @@ void RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> 
 			break;
 		}
 		switch (it->type) {
+			case ITEM_DROPCAP: {
+				// Add dropcap.
+				const ItemDropcap *dc = (ItemDropcap *)it;
+				if (dc != nullptr) {
+					l.text_buf->set_dropcap(dc->text, dc->font, dc->font_size, dc->dropcap_margins);
+					l.dc_color = dc->color;
+					l.dc_ol_size = dc->ol_size;
+					l.dc_ol_color = dc->ol_color;
+				} else {
+					l.text_buf->clear_dropcap();
+				}
+			} break;
 			case ITEM_NEWLINE: {
 				Ref<Font> font = _find_font(it);
 				if (font.is_null()) {
@@ -679,6 +691,14 @@ float RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 		}
 	}
 
+	// Draw dropcap.
+	int dc_lines = l.text_buf->get_dropcap_lines();
+	float h_off = l.text_buf->get_dropcap_size().x;
+	if (l.dc_ol_size > 0) {
+		l.text_buf->draw_dropcap_outline(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_ol_size, l.dc_ol_color);
+	}
+	l.text_buf->draw_dropcap(ci, p_ofs + ((rtl) ? Vector2() : Vector2(l.offset.x, 0)), l.dc_color);
+
 	// Draw text.
 	for (int line = 0; line < l.text_buf->get_line_count(); line++) {
 		RID rid = l.text_buf->get_line_rid(line);
@@ -716,6 +736,14 @@ float RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p
 					off.x += width - length;
 				}
 			} break;
+		}
+
+		if (line <= dc_lines) {
+			if (rtl) {
+				off.x -= h_off;
+			} else {
+				off.x += h_off;
+			}
 		}
 
 		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
@@ -1743,6 +1771,19 @@ Dictionary RichTextLabel::_find_font_features(Item *p_item) {
 	return Dictionary();
 }
 
+RichTextLabel::ItemDropcap *RichTextLabel::_find_dc_item(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_DROPCAP) {
+			return static_cast<ItemDropcap *>(item);
+		}
+		item = item->parent;
+	}
+
+	return nullptr;
+}
+
 RichTextLabel::ItemList *RichTextLabel::_find_list_item(Item *p_item) {
 	Item *item = p_item;
 
@@ -2317,6 +2358,24 @@ bool RichTextLabel::remove_line(const int p_line) {
 	return true;
 }
 
+void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins, const Color &p_color, int p_ol_size, const Color &p_ol_color) {
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ERR_FAIL_COND(p_string.empty());
+	ERR_FAIL_COND(p_font.is_null());
+	ERR_FAIL_COND(p_size <= 0);
+
+	ItemDropcap *item = memnew(ItemDropcap);
+
+	item->text = p_string;
+	item->font = p_font;
+	item->font_size = p_size;
+	item->color = p_color;
+	item->ol_size = p_ol_size;
+	item->ol_color = p_ol_color;
+	item->dropcap_margins = p_dropcap_margins;
+	_add_item(item, false);
+}
+
 void RichTextLabel::push_font(const Ref<Font> &p_font) {
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ERR_FAIL_COND(p_font.is_null());
@@ -2766,7 +2825,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 
 			tag_stack.pop_front();
 			pos = brk_end + 1;
-			if (tag != "/img") {
+			if (tag != "/img" && tag != "/dropcap") {
 				pop();
 			}
 
@@ -3042,6 +3101,54 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
+		} else if (tag.begins_with("dropcap")) {
+			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			Ref<Font> f = get_theme_font("normal_font");
+			int fs = get_theme_font_size("normal_font_size") * 3;
+			Color color = get_theme_color("default_color");
+			Color outline_color = get_theme_color("outline_color");
+			int outline_size = get_theme_constant("outline_size");
+			Rect2 dropcap_margins = Rect2();
+
+			for (int i = 0; i < subtag.size(); i++) {
+				Vector<String> subtag_a = subtag[i].split("=");
+				if (subtag_a.size() == 2) {
+					if (subtag_a[0] == "font" || subtag_a[0] == "f") {
+						String fnt = subtag_a[1];
+						Ref<Font> font = ResourceLoader::load(fnt, "Font");
+						if (font.is_valid()) {
+							f = font;
+						}
+					} else if (subtag_a[0] == "font_size") {
+						fs = subtag_a[1].to_int();
+					} else if (subtag_a[0] == "margins") {
+						Vector<String> subtag_b = subtag_a[1].split(",");
+						if (subtag_b.size() == 4) {
+							dropcap_margins.position.x = subtag_b[0].to_float();
+							dropcap_margins.position.y = subtag_b[1].to_float();
+							dropcap_margins.size.x = subtag_b[2].to_float();
+							dropcap_margins.size.y = subtag_b[3].to_float();
+						}
+					} else if (subtag_a[0] == "outline_size") {
+						outline_size = subtag_a[1].to_int();
+					} else if (subtag_a[0] == "color") {
+						color = _get_color_from_string(subtag_a[1], color);
+					} else if (subtag_a[0] == "outline_color") {
+						outline_color = _get_color_from_string(subtag_a[1], outline_color);
+					}
+				}
+			}
+			int end = p_bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = p_bbcode.length();
+			}
+
+			String txt = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			push_dropcap(txt, f, fs, dropcap_margins, color, outline_size, outline_color);
+
+			pos = end;
+			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("img")) {
 			VAlign align = VALIGN_TOP;
 			if (tag.begins_with("img=")) {
@@ -3680,6 +3787,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_underline"), &RichTextLabel::push_underline);
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align"), &RichTextLabel::push_table, DEFVAL(VALIGN_TOP));
+	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
 	ClassDB::bind_method(D_METHOD("set_cell_row_background_color", "odd_row_bg", "even_row_bg"), &RichTextLabel::set_cell_row_background_color);
 	ClassDB::bind_method(D_METHOD("set_cell_border_color", "color"), &RichTextLabel::set_cell_border_color);
@@ -3815,8 +3923,9 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(ITEM_WAVE);
 	BIND_ENUM_CONSTANT(ITEM_TORNADO);
 	BIND_ENUM_CONSTANT(ITEM_RAINBOW);
-	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
 	BIND_ENUM_CONSTANT(ITEM_META);
+	BIND_ENUM_CONSTANT(ITEM_DROPCAP);
+	BIND_ENUM_CONSTANT(ITEM_CUSTOMFX);
 }
 
 void RichTextLabel::set_visible_characters(int p_visible) {

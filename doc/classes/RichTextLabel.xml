@@ -164,6 +164,27 @@
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="push_dropcap">
+			<return type="void">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<argument index="1" name="font" type="Font">
+			</argument>
+			<argument index="2" name="size" type="int">
+			</argument>
+			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="4" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="5" name="outline_size" type="int" default="0">
+			</argument>
+			<argument index="6" name="outline_color" type="Color" default="Color( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
+			</description>
+		</method>
 		<method name="push_font">
 			<return type="void">
 			</return>
@@ -525,9 +546,11 @@
 		</constant>
 		<constant name="ITEM_RAINBOW" value="20" enum="ItemType">
 		</constant>
-		<constant name="ITEM_CUSTOMFX" value="22" enum="ItemType">
-		</constant>
 		<constant name="ITEM_META" value="21" enum="ItemType">
+		</constant>
+		<constant name="ITEM_DROPCAP" value="22" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="23" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>
