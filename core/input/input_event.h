@@ -208,6 +208,8 @@ public:
 class InputEventWithModifiers : public InputEventFromWindow {
 	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
 
+	bool store_command = true;
+
 	bool shift = false;
 	bool alt = false;
 #ifdef APPLE_STYLE_KEYS
@@ -227,8 +229,12 @@ class InputEventWithModifiers : public InputEventFromWindow {
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
+	void set_store_command(bool p_enabled);
+	bool is_storing_command() const;
+
 	void set_shift(bool p_enabled);
 	bool get_shift() const;
 
