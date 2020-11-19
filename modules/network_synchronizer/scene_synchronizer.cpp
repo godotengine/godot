@@ -1615,12 +1615,14 @@ void ClientSynchronizer::on_node_added(NetUtility::NodeData *p_node_data) {
 	ERR_FAIL_COND_MSG(player_controller_node_data != nullptr, "Only one player controller is supported, at the moment.");
 	if (static_cast<NetworkedController *>(p_node_data->node)->is_player_controller()) {
 		player_controller_node_data = p_node_data;
+		client_snapshots.clear();
 	}
 }
 
 void ClientSynchronizer::on_node_removed(NetUtility::NodeData *p_node_data) {
 	if (player_controller_node_data == p_node_data) {
 		player_controller_node_data = nullptr;
+		client_snapshots.clear();
 	}
 }
 
@@ -1637,10 +1639,11 @@ void ClientSynchronizer::on_variable_changed(NetUtility::NodeData *p_node_data, 
 void ClientSynchronizer::store_snapshot() {
 	NetworkedController *controller = static_cast<NetworkedController *>(player_controller_node_data->node);
 
-	if (client_snapshots.size() > 0 && controller->get_current_input_id() <= client_snapshots.back().input_id) {
-		NET_DEBUG_ERR("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snapshots.back().input_id) + ". This snapshot is not stored.");
-		return;
+#ifdef DEBUG_ENABLED
+	if (unlikely(client_snapshots.size() > 0 && controller->get_current_input_id() <= client_snapshots.back().input_id)) {
+		CRASH_NOW_MSG("[FATAL] During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snapshots.back().input_id) + ".");
 	}
+#endif
 
 	client_snapshots.push_back(NetUtility::Snapshot());
 

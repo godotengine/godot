@@ -339,7 +339,7 @@ public:
 class ClientSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
-	NetUtility::NodeData *player_controller_node_data = nullptr; //TODO use a Ref?
+	NetUtility::NodeData *player_controller_node_data = nullptr;
 	OAHashMap<NetNodeId, NodePath> node_paths;
 
 	NetUtility::Snapshot last_received_snapshot;
