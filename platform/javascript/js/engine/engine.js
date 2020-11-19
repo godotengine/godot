@@ -1,4 +1,4 @@
-Function('return this')()['Engine'] = (function() {
+const Engine = (function() {
 	var preloader = new Preloader();
 
 	var wasmExt = '.wasm';
@@ -25,7 +25,7 @@ Function('return this')()['Engine'] = (function() {
 	};
 
 	/** @constructor */
-	function Engine() {
+	function Engine() { // eslint-disable-line no-shadow
 		this.canvas = null;
 		this.executableName = '';
 		this.rtenv = null;
@@ -90,6 +90,9 @@ Function('return this')()['Engine'] = (function() {
 
 			if (!(me.canvas instanceof HTMLCanvasElement)) {
 				me.canvas = Utils.findCanvas();
+				if (!me.canvas) {
+					return Promise.reject(new Error('No canvas found in page'));
+				}
 			}
 
 			// Canvas can grab focus on click, or key events won't work.
@@ -104,7 +107,7 @@ Function('return this')()['Engine'] = (function() {
 
 			// Until context restoration is implemented warn the user of context loss.
 			me.canvas.addEventListener('webglcontextlost', function(ev) {
-				alert("WebGL context lost, please reload the page");
+				alert("WebGL context lost, please reload the page"); // eslint-disable-line no-alert
 				ev.preventDefault();
 			}, false);
 
@@ -198,10 +201,11 @@ Function('return this')()['Engine'] = (function() {
 
 	Engine.prototype.setStdoutFunc = function(func) {
 		var print = function(text) {
+			let msg = text;
 			if (arguments.length > 1) {
-				text = Array.prototype.slice.call(arguments).join(" ");
+				msg = Array.prototype.slice.call(arguments).join(" ");
 			}
-			func(text);
+			func(msg);
 		};
 		if (this.rtenv)
 			this.rtenv.print = print;
@@ -210,9 +214,11 @@ Function('return this')()['Engine'] = (function() {
 
 	Engine.prototype.setStderrFunc = function(func) {
 		var printErr = function(text) {
-			if (arguments.length > 1)
-				text = Array.prototype.slice.call(arguments).join(" ");
-			func(text);
+			let msg = text
+			if (arguments.length > 1) {
+				msg = Array.prototype.slice.call(arguments).join(" ");
+			}
+			func(msg);
 		};
 		if (this.rtenv)
 			this.rtenv.printErr = printErr;
@@ -269,3 +275,4 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 	return Engine;
 })();
+if (typeof window !== 'undefined') window['Engine'] = Engine;
