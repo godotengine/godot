@@ -79,7 +79,7 @@ NetUtility::Snapshot::operator String() const {
 	String s;
 	s += "Snapshot input ID: " + itos(input_id);
 
-	for (uint32_t net_node_id = 0; net_node_id < node_vars.size(); net_node_id += 1) {
+	for (int net_node_id = 0; net_node_id < node_vars.size(); net_node_id += 1) {
 		s += "\nNode Data: " + itos(net_node_id);
 		for (int i = 0; i < it.value->size(); i += 1) {
 			s += "\n|- Variable: ";

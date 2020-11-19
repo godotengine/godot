@@ -239,8 +239,8 @@ void StatisticalRingBuffer<T>::force_recompute_avg_sum() {
 /// Specific node listener. Alone this doesn't do much, but allows the
 /// `ChangeListener` to know and keep track of the node events.
 struct NodeChangeListener {
-	class NodeData *node_data;
-	NetVarId var_id;
+	struct NodeData *node_data = nullptr;
+	NetVarId var_id = UINT32_MAX;
 
 	bool old_set = false;
 	Variant old_value;

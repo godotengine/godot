@@ -233,8 +233,6 @@ public:
 	void change_event_add(NetUtility::NodeData *p_node_data, NetVarId p_var_id, const Variant &p_old);
 	void change_events_flush();
 
-	void trigger_event(const NetUtility::NodeChangeListener &p_event, NetEventFlag p_flag);
-
 private:
 	void expand_organized_node_data_vector(uint32_t p_size);
 

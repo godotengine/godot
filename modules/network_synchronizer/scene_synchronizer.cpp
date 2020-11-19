@@ -1666,8 +1666,9 @@ void ClientSynchronizer::store_snapshot() {
 		}
 
 		if (node_data->id >= uint32_t(snap.node_vars.size())) {
-			// Skip this node, it doesn't have a valid ID.
-			ERR_FAIL_COND_MSG(node_data->id != UINT32_MAX, "[BUG], because it's not expected that the client has a node with the NetNodeId bigger than the registered node count.");
+			// Make sure this ID is valid.
+			ERR_FAIL_COND_MSG(node_data->id != UINT32_MAX, "[BUG] It's not expected that the client has a node with the NetNodeId (" + itos(node_data->id) + ") bigger than the registered node count: " + itos(snap.node_vars.size()));
+			// Skip this node
 			continue;
 		}
 
