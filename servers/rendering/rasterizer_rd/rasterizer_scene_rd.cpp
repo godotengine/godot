@@ -351,8 +351,7 @@ void RasterizerSceneRD::sdfgi_update(RID p_render_buffers, RID p_environment, co
 
 		RD::TextureFormat tf_probe_average = tf_probes;
 		tf_probe_average.format = RD::DATA_FORMAT_R32G32B32A32_SINT; //signed integer because SH are signed
-		tf_probe_average.type = RD::TEXTURE_TYPE_2D_ARRAY;
-		tf_probe_average.array_layers = 1;
+		tf_probe_average.type = RD::TEXTURE_TYPE_2D;
 
 		sdfgi->lightprobe_history_scroll = RD::get_singleton()->texture_create(tf_probe_history, RD::TextureView());
 		sdfgi->lightprobe_average_scroll = RD::get_singleton()->texture_create(tf_probe_average, RD::TextureView());
@@ -8218,7 +8217,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
-				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE));
+				u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_WHITE));
 				uniforms.push_back(u);
 			}
 			{
