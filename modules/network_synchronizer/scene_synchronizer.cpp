@@ -57,8 +57,13 @@ void SceneSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_comparison_float_tolerance", "tolerance"), &SceneSynchronizer::set_comparison_float_tolerance);
 	ClassDB::bind_method(D_METHOD("get_comparison_float_tolerance"), &SceneSynchronizer::get_comparison_float_tolerance);
 
+	ClassDB::bind_method(D_METHOD("register_node", "node"), &SceneSynchronizer::register_node);
+	ClassDB::bind_method(D_METHOD("unregister_node", "node"), &SceneSynchronizer::unregister_node);
+	ClassDB::bind_method(D_METHOD("get_node_id", "node"), &SceneSynchronizer::get_node_id);
+
 	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify", "flags"), &SceneSynchronizer::register_variable, DEFVAL(StringName()), DEFVAL(NetEventFlag::DEFAULT));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneSynchronizer::unregister_variable);
+	ClassDB::bind_method(D_METHOD("get_variable_id", "node", "variable"), &SceneSynchronizer::get_variable_id);
 
 	ClassDB::bind_method(D_METHOD("set_skip_rewinding", "node", "variable", "skip_rewinding"), &SceneSynchronizer::set_skip_rewinding);
 
@@ -174,6 +179,54 @@ real_t SceneSynchronizer::get_comparison_float_tolerance() const {
 	return comparison_float_tolerance;
 }
 
+NetUtility::NodeData *SceneSynchronizer::register_node(Node *p_node) {
+	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
+
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	if (unlikely(nd == nullptr)) {
+		nd = memnew(NetUtility::NodeData);
+		nd->id = UINT32_MAX;
+		nd->instance_id = p_node->get_instance_id();
+		nd->node = p_node;
+
+		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
+		if (controller) {
+			if (unlikely(controller->has_scene_synchronizer())) {
+				ERR_FAIL_V_MSG(nullptr, "This controller already has a synchronizer. This is a bug!");
+			}
+
+			nd->is_controller = true;
+			controller->set_scene_synchronizer(this);
+			peer_dirty = true;
+		}
+
+		add_node_data(nd);
+
+		NET_DEBUG_PRINT("New node registered" + (generate_id ? String(" #ID: ") + itos(nd->id) : "") + " : " + p_node->get_path());
+	}
+
+	return nd;
+}
+
+void SceneSynchronizer::unregister_node(Node *p_node) {
+	ERR_FAIL_COND(p_node == nullptr)
+
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	if (unlikely(nd == nullptr)) {
+		// Nothing to do.
+		return;
+	}
+
+	drop_node_data(nd);
+}
+
+uint32_t SceneSynchronizer::get_node_id(Node *p_node) {
+	ERR_FAIL_COND_V(p_node == nullptr, UINT32_MAX);
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	ERR_FAIL_COND_V_MSG(nd == nullptr, UINT32_MAX, "This node " + p_node->get_path() + " is not yet registered, so there is not an available ID.");
+	return nd->id;
+}
+
 void SceneSynchronizer::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, NetEventFlag p_flags) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_variable == StringName());
@@ -238,6 +291,19 @@ void SceneSynchronizer::unregister_variable(Node *p_node, StringName p_variable)
 	}
 
 	nd->vars[index].change_listeners.clear();
+}
+
+uint32_t SceneSynchronizer::get_variable_id(Node *p_node, StringName p_variable) {
+	ERR_FAIL_COND_V(p_node == nullptr, UINT32_MAX);
+	ERR_FAIL_COND_V(p_variable == StringName(), UINT32_MAX);
+
+	NetUtility::NodeData *nd = find_node_data(p_node);
+	ERR_FAIL_COND_V_MSG(nd == nullptr, UINT32_MAX, "This node " + p_node->get_path() + "is not registered.");
+
+	const int64_t index = nd->vars.find(p_variable);
+	ERR_FAIL_COND_V_MSG(index == -1, UINT32_MAX, "This variable " + p_node->get_path() + ":" + p_variable + " is not registered.");
+
+	return uint32_t(index);
 }
 
 void SceneSynchronizer::set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding) {
@@ -784,35 +850,6 @@ void SceneSynchronizer::change_events_flush() {
 	end_sync = false;
 }
 
-NetUtility::NodeData *SceneSynchronizer::register_node(Node *p_node) {
-	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
-
-	NetUtility::NodeData *nd = find_node_data(p_node);
-	if (unlikely(nd == nullptr)) {
-		nd = memnew(NetUtility::NodeData);
-		nd->id = UINT32_MAX;
-		nd->instance_id = p_node->get_instance_id();
-		nd->node = p_node;
-
-		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
-		if (controller) {
-			if (unlikely(controller->has_scene_synchronizer())) {
-				ERR_FAIL_V_MSG(nullptr, "This controller already has a synchronizer. This is a bug!");
-			}
-
-			nd->is_controller = true;
-			controller->set_scene_synchronizer(this);
-			peer_dirty = true;
-		}
-
-		add_node_data(nd);
-
-		NET_DEBUG_PRINT("New node registered" + (generate_id ? String(" #ID: ") + itos(nd->id) : "") + " : " + p_node->get_path());
-	}
-
-	return nd;
-}
-
 void SceneSynchronizer::add_node_data(NetUtility::NodeData *p_node_data) {
 	if (generate_id) {
 #ifdef DEBUG_ENABLED
@@ -860,6 +897,40 @@ void SceneSynchronizer::add_node_data(NetUtility::NodeData *p_node_data) {
 	}
 
 	synchronizer->on_node_added(p_node_data);
+}
+
+void SceneSynchronizer::drop_node_data(NetUtility::NodeData *p_node_data) {
+	synchronizer->on_node_removed(p_node_data);
+
+	if (p_node_data->controlled_by) {
+		// This node is controlled by another one, remove from that node.
+		p_node_data->controlled_by->controlled_nodes.erase(p_node_data);
+		p_node_data->controlled_by = nullptr;
+	}
+
+	if (p_node_data->is_controller) {
+		// This is a controller, make sure to reset the peers.
+		peer_dirty = true;
+		node_data_controllers.erase(p_node_data);
+	}
+
+	node_data.erase(p_node_data);
+
+	if (p_node_data->id < organized_node_data.size()) {
+		// Never resize this vector to keep it sort.
+		organized_node_data[p_node_data->id] = nullptr;
+	}
+
+	// Remove this `NodeData` from any event listener.
+	for (uint32_t i = 0; i < event_listener.size(); i += 1) {
+		for (int v = event_listener[i].watching_vars.size() - 1; v >= 0; v -= 1) {
+			if (event_listener[i].watching_vars[v].node_data == p_node_data) {
+				event_listener[i].watching_vars.remove(v);
+			}
+		}
+	}
+
+	memdelete(p_node_data);
 }
 
 void SceneSynchronizer::set_node_data_id(NetUtility::NodeData *p_node_data, NetNodeId p_id) {
@@ -1028,6 +1099,7 @@ bool SceneSynchronizer::is_client() const {
 
 void SceneSynchronizer::validate_nodes() {
 	LocalVector<NetUtility::NodeData *> null_objects;
+	null_objects.reserve(node_data.size());
 
 	for (uint32_t i = 0; i < node_data.size(); i += 1) {
 		if (ObjectDB::get_instance(node_data[i]->instance_id) == nullptr) {
@@ -1036,30 +1108,9 @@ void SceneSynchronizer::validate_nodes() {
 		}
 	}
 
-	// Removes the NodeData.
+	// Removes the invalidated `NodeData`.
 	for (uint32_t i = 0; i < null_objects.size(); i += 1) {
-		// TODO centralize this so to avoid a lot of issue. Consider that a lot of other things may want to remve a NodeData.
-		if (null_objects[i]->controlled_by) {
-			null_objects[i]->controlled_by->controlled_nodes.erase(null_objects[i]);
-			null_objects[i]->controlled_by = nullptr;
-		}
-
-		if (null_objects[i]->is_controller) {
-			peer_dirty = true;
-		}
-
-		synchronizer->on_node_removed(null_objects[i]);
-
-		node_data.erase(null_objects[i]);
-		node_data_controllers.erase(null_objects[i]);
-		if (null_objects[i]->id < organized_node_data.size()) {
-			// Never resize this vector to keep it sort.
-			organized_node_data[null_objects[i]->id] = nullptr;
-		}
-
-		// TODO remove this object from the Listeners.
-
-		memdelete(null_objects[i]);
+		drop_node_data(null_objects[i]);
 	}
 }
 

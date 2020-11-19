@@ -173,8 +173,25 @@ public:
 	void set_comparison_float_tolerance(real_t p_tolerance);
 	real_t get_comparison_float_tolerance() const;
 
+	/// Register a new node and returns its `NodeData`.
+	NetUtility::NodeData *register_node(Node *p_node);
+	void unregister_node(Node *p_node);
+
+	/// Returns the node ID.
+	/// This may return `UINT32_MAX` in various cases:
+	/// - The node is not registered.
+	/// - The client doesn't know the ID yet.
+	uint32_t get_node_id(Node *p_node);
+
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), NetEventFlag p_flags = NetEventFlag::DEFAULT);
 	void unregister_variable(Node *p_node, StringName p_variable);
+
+	/// Returns the variable ID relative to the `Node`.
+	/// This may return `UINT32_MAX` in various cases:
+	/// - The node is not registered.
+	/// - The variable is not registered.
+	/// - The client doesn't know the ID yet.
+	uint32_t get_variable_id(Node *p_node, StringName p_variable);
 
 	void set_skip_rewinding(Node *p_node, StringName p_variable, bool p_skip_rewinding);
 
@@ -243,11 +260,9 @@ private:
 	// previous one and emits a signal.
 	void pull_node_changes(NetUtility::NodeData *p_node_data);
 
-	/// Register a new node and returns its `NodeData`.
-	NetUtility::NodeData *register_node(Node *p_node);
-
 	/// Add node data and generates the `NetNodeId` if allowed.
 	void add_node_data(NetUtility::NodeData *p_node_data);
+	void drop_node_data(NetUtility::NodeData *p_node_data);
 
 	/// Set the node data net id.
 	void set_node_data_id(NetUtility::NodeData *p_node_data, NetNodeId p_id);
