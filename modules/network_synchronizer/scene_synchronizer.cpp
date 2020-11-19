@@ -1665,18 +1665,20 @@ void ClientSynchronizer::store_snapshot() {
 			continue;
 		}
 
-		if (node_data->id >= snap.node_vars.size()) {
+		if (node_data->id >= uint32_t(snap.node_vars.size())) {
 			// Skip this node, it doesn't have a valid ID.
 			ERR_FAIL_COND_MSG(node_data->id != UINT32_MAX, "[BUG], because it's not expected that the client has a node with the NetNodeId bigger than the registered node count.");
 			continue;
 		}
 
-		snap.node_vars[node_data->id].resize(node_data->vars.size());
+		Vector<NetUtility::Var> *snap_node_vars = snap.node_vars.ptrw() + node_data->id;
+		snap_node_vars->resize(node_data->vars.size());
+		NetUtility::Var *vars = snap_node_vars->ptrw();
 		for (uint32_t v = 0; v < node_data->vars.size(); v += 1) {
 			if (node_data->vars[v].enabled) {
-				snap.node_vars[node_data->id].write[v] = node_data->vars[v].var;
+				vars[v] = node_data->vars[v].var;
 			} else {
-				snap.node_vars[node_data->id].write[v].name = StringName();
+				vars[v].name = StringName();
 			}
 		}
 	}
@@ -1797,7 +1799,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 	LocalVector<NetUtility::PostponedRecover> postponed_recover;
 
 	nodes_to_recover.reserve(server_snapshots.front().node_vars.size());
-	for (uint32_t net_node_id = 0; net_node_id < server_snapshots.front().node_vars.size(); net_node_id += 1) {
+	for (uint32_t net_node_id = 0; net_node_id < uint32_t(server_snapshots.front().node_vars.size()); net_node_id += 1) {
 		NetUtility::NodeData* rew_node_data = scene_synchronizer->get_node_data(net_node_id);
 		if (rew_node_data == nullptr) {
 			continue;
@@ -1805,7 +1807,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 		bool recover_this_node = false;
 		const Vector<NetUtility::VarData> *c_vars = client_snapshots.front().node_vars.lookup_ptr(*s_snap_it.key);
-		if (net_node_id >= client_snapshots.front().node_vars.size()) {
+		if (net_node_id >= uint32_t(client_snapshots.front().node_vars.size())) {
 			NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contain this node: " + rew_node_data->node->get_path());
 			recover_this_node = true;
 		} else {
@@ -1871,7 +1873,7 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 		// so to be able to correctly reply the movements.
 		scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER | NetEventFlag::SYNC_RESET);
 		for (uint32_t i = 0; i < nodes_to_recover.size(); i += 1) {
-			if (nodes_to_recover[i]->id >= server_snapshots.front().node_vars.size()) {
+			if (nodes_to_recover[i]->id >= uint32_t(server_snapshots.front().node_vars.size())) {
 				NET_DEBUG_WARN("The node: " + nodes_to_recover[i]->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
 				continue;
 			}
@@ -1941,14 +1943,16 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 				scene_synchronizer->pull_node_changes(nodes_to_recover[r]);
 
 				// Update client snapshot.
-				if (client_snapshots[i].node_vars.size() <= nodes_to_recover[r]->id) {
+				if (uint32_t(client_snapshots[i].node_vars.size()) <= nodes_to_recover[r]->id) {
 					client_snapshots[i].node_vars.resize(nodes_to_recover[r]->id + 1);
 				}
 
-				client_snapshots[i].node_vars[nodes_to_recover[r]->id].resize(nodes_to_recover[r]->vars.size());
+				Vector<NetUtility::Var> *snap_node_vars = client_snapshots[i].node_vars.ptrw() + nodes_to_recover[r]->id;
+				snap_node_vars->resize(nodes_to_recover[r]->vars.size());
 
+				NetUtility::Var *vars = snap_node_vars->ptrw();
 				for (uint32_t v = 0; v < nodes_to_recover[r]->vars.size(); v += 1) {
-					client_snapshots[i].node_vars[nodes_to_recover[r]->id].write[v] = nodes_to_recover[r]->vars[v].var;
+					vars[v] = nodes_to_recover[r]->vars[v].var;
 				}
 			}
 			scene_synchronizer->change_events_flush();
@@ -1994,14 +1998,17 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 			// Update the last client snapshot.
 			if (client_snapshots.empty() == false) {
-				if (client_snapshots.back().node_vars.size() <= rew_node_data->id) {
+				if (uint32_t(client_snapshots.back().node_vars.size()) <= rew_node_data->id) {
 					client_snapshots.back().node_vars.resize(rew_node_data->id + 1);
 				}
 
-				client_snapshots.back().node_vars[rew_node_data->id].resize(rew_node_data->vars.size());
+				Vector<NetUtility::Var> *snap_node_vars = client_snapshots.back().node_vars.ptrw() + rew_node_data->id;
+				snap_node_vars->resize(rew_node_data->vars.size());
+
+				NetUtility::Var *vars = snap_node_vars->ptrw();
 
 				for (uint32_t v = 0; v < rew_node_data->vars.size(); v += 1) {
-					client_snapshots.back().node_vars[rew_node_data->id].write[v] = rew_node_data->vars[v].var;
+					vars[v] = rew_node_data->vars[v].var;
 				}
 			}
 		}
@@ -2029,7 +2036,7 @@ void ClientSynchronizer::process_paused_controller_recovery(real_t p_delta) {
 	CRASH_COND(server_snapshots.empty());
 #endif
 	scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER);
-	for (uint32_t net_node_id = 0; net_node_id < server_snapshots.front().node_vars.size(); net_node_id += 1) {
+	for (uint32_t net_node_id = 0; net_node_id < uint32_t(server_snapshots.front().node_vars.size()); net_node_id += 1) {
 		NetUtility::NodeData *rew_node_data = scene_synchronizer->get_node_data(net_node_id);
 		if (rew_node_data == nullptr) {
 			continue;
@@ -2330,12 +2337,12 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 				ParseData *pd = static_cast<ParseData *>(p_user_pointer);
 
 				// Make sure this node is part of the server node too.
-				if (pd->snapshot.node_vars.size() <= p_node_data->id) {
+				if (uint32_t(pd->snapshot.node_vars.size()) <= p_node_data->id) {
 					pd->snapshot.node_vars.resize(p_node_data->id + 1);
 				}
 
 				// Make sure this snapshot has all the variables.
-				pd->snapshot.node_vars[p_node_data->id].resize(p_node_data->vars.size());
+				pd->snapshot.node_vars.write[p_node_data->id].resize(p_node_data->vars.size());
 			},
 
 			// Parse controller:
@@ -2351,8 +2358,8 @@ bool ClientSynchronizer::parse_snapshot(Variant p_snapshot) {
 			[](void *p_user_pointer, NetUtility::NodeData *p_node_data, uint32_t p_var_id, const Variant &p_value) {
 				ParseData *pd = static_cast<ParseData *>(p_user_pointer);
 
-				pd->snapshot.node_vars[p_node_data->id].write[p_var_id].name = p_node_data->vars[p_var_id].var.name;
-				pd->snapshot.node_vars[p_node_data->id].write[p_var_id].value = p_value.duplicate(true);
+				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].name = p_node_data->vars[p_var_id].var.name;
+				pd->snapshot.node_vars.write[p_node_data->id].write[p_var_id].value = p_value.duplicate(true);
 			});
 
 	if (success == false) {

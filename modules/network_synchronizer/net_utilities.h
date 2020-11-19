@@ -321,14 +321,14 @@ struct Snapshot {
 	/// The Node variables in a particular frame. The order of this vector
 	/// matters because the index is the `NetNodeId`.
 	/// The variable array order also matter.
-	LocalVector<Vector<Var> > node_vars; // TODO use Vector instead of LocalVector.
+	Vector<Vector<Var> > node_vars;
 
 	operator String() const;
 };
 
 struct PostponedRecover {
 	NodeData *node_data = nullptr;
-	Vector<Var> vars; // TODO use a LocalVector?
+	Vector<Var> vars;
 };
 
 } // namespace NetUtility
