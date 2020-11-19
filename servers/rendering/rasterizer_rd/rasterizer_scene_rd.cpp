@@ -1471,7 +1471,9 @@ void RasterizerSceneRD::_setup_giprobes(RID p_render_buffers, const Transform &p
 	}
 
 	if (giprobes_changed) {
-		RD::get_singleton()->free(rb->gi_uniform_set);
+		if (RD::get_singleton()->uniform_set_is_valid(rb->gi_uniform_set)) {
+			RD::get_singleton()->free(rb->gi_uniform_set);
+		}
 		rb->gi_uniform_set = RID();
 		if (rb->volumetric_fog) {
 			if (RD::get_singleton()->uniform_set_is_valid(rb->volumetric_fog->uniform_set)) {
