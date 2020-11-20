@@ -725,7 +725,7 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(w[i].spatial_attachment_path));
 		}
 		if (!w[i].spatial_attachment) {
-			ERR_PRINT("Node3D node not defined in the pinned point, Softbody undefined behaviour!");
+			ERR_PRINT("Node3D node not defined in the pinned point, this is undefined behavior for SoftBody3D!");
 		}
 	}
 }
