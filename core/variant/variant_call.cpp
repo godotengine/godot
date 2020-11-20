@@ -42,27 +42,6 @@
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
-template <class T>
-struct TypeAdjust {
-	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-		VariantTypeChanger<typename GetSimpleTypeT<T>::type_t>::change(r_ret);
-	}
-};
-
-template <> //do nothing for variant
-struct TypeAdjust<Variant> {
-	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-	}
-};
-
-template <> //do nothing for variant
-struct TypeAdjust<Object *> {
-	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-		VariantInternal::clear(r_ret);
-		*r_ret = (Object *)nullptr;
-	}
-};
-
 template <class R, class T, class... P>
 static _FORCE_INLINE_ void vc_method_call(R (T::*method)(P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
 	call_with_variant_args_ret_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_ret, r_error, p_defvals);
@@ -124,12 +103,12 @@ static _FORCE_INLINE_ void vc_ptrcall(void (T::*method)(P...) const, void *p_bas
 
 template <class R, class T, class... P>
 static _FORCE_INLINE_ void vc_change_return_type(R (T::*method)(P...), Variant *v) {
-	TypeAdjust<R>::adjust(v);
+	VariantTypeAdjust<R>::adjust(v);
 }
 
 template <class R, class T, class... P>
 static _FORCE_INLINE_ void vc_change_return_type(R (T::*method)(P...) const, Variant *v) {
-	TypeAdjust<R>::adjust(v);
+	VariantTypeAdjust<R>::adjust(v);
 }
 
 template <class T, class... P>
@@ -144,7 +123,7 @@ static _FORCE_INLINE_ void vc_change_return_type(void (T::*method)(P...) const, 
 
 template <class R, class... P>
 static _FORCE_INLINE_ void vc_change_return_type(R (*method)(P...), Variant *v) {
-	TypeAdjust<R>::adjust(v);
+	VariantTypeAdjust<R>::adjust(v);
 }
 
 template <class R, class T, class... P>
