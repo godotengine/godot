@@ -66,6 +66,7 @@
 #include "test_random_number_generator.h"
 #include "test_rect2.h"
 #include "test_render.h"
+#include "test_resource.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
 #include "test_text_server.h"
