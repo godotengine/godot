@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "drivers/gles_common/rasterizer_asserts.h"
 #include "rasterizer_scene_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 
@@ -531,6 +532,13 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+#endif
+
+#ifdef RASTERIZER_EXTRA_CHECKS
+	// very slow, do not enable in normal use
+	for (int n = 0; n < p_index_count; n++) {
+		RAST_DEV_DEBUG_ASSERT(p_indices[n] < p_vertex_count);
+	}
 #endif
 
 	//bind the indices buffer.
