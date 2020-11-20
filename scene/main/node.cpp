@@ -377,18 +377,30 @@ void Node::raise() {
 }
 
 void Node::add_child_notify(Node *p_child) {
-
-	// to be used when not wanted
+	// Called when a node is added as a child to this one.
+	if (get_script_instance()) {
+		Variant c = p_child;
+		const Variant *ptr[1] = { &c };
+		get_script_instance()->call_multilevel("add_child_notify", ptr, 1);
+	}
 }
 
 void Node::remove_child_notify(Node *p_child) {
-
-	// to be used when not wanted
+	// Called when a child is removed from this node.
+	if (get_script_instance()) {
+		Variant c = p_child;
+		const Variant *ptr[1] = { &c };
+		get_script_instance()->call_multilevel("remove_child_notify", ptr, 1);
+	}
 }
 
 void Node::move_child_notify(Node *p_child) {
-
-	// to be used when not wanted
+	// Called when a child is moved inside this node.
+	if (get_script_instance()) {
+		Variant c = p_child;
+		const Variant *ptr[1] = { &c };
+		get_script_instance()->call_multilevel("move_child_notify", ptr, 1);
+	}
 }
 
 void Node::set_physics_process(bool p_process) {
@@ -2735,8 +2747,13 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
+
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	BIND_VMETHOD(MethodInfo("add_child_notify", PropertyInfo(Variant::OBJECT, "child", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0)));
+
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
+	BIND_VMETHOD(MethodInfo("remove_child_notify", PropertyInfo(Variant::OBJECT, "child", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0)));
+
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
@@ -2757,7 +2774,10 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
+
 	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
+	BIND_VMETHOD(MethodInfo("move_child_notify", PropertyInfo(Variant::OBJECT, "child", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0)));
+
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
 	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);

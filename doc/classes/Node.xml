@@ -152,6 +152,15 @@
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 			</description>
 		</method>
+		<method name="add_child_notify" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="child" type="Node">
+			</argument>
+			<description>
+				Called when a node is added as a child to this one.
+			</description>
+		</method>
 		<method name="add_to_group">
 			<return type="void">
 			</return>
@@ -498,6 +507,15 @@
 				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
 			</description>
 		</method>
+		<method name="move_child_notify" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="child" type="Node">
+			</argument>
+			<description>
+				Called when a child is moved inside this node.
+			</description>
+		</method>
 		<method name="print_stray_nodes">
 			<return type="void">
 			</return>
@@ -587,6 +605,15 @@
 			</argument>
 			<description>
 				Removes a child node. The node is NOT deleted and must be deleted manually.
+			</description>
+		</method>
+		<method name="remove_child_notify" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="child" type="Node">
+			</argument>
+			<description>
+				Called when a child is removed from this node.
 			</description>
 		</method>
 		<method name="remove_from_group">
