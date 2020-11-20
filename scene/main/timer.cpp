@@ -46,7 +46,7 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
+			if (!processing || timer_process_mode == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
 				return;
 			}
 			time_left -= get_process_delta_time();
@@ -63,7 +63,7 @@ void Timer::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
+			if (!processing || timer_process_mode == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
 				return;
 			}
 			time_left -= get_physics_process_delta_time();
