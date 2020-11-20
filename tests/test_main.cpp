@@ -112,10 +112,6 @@ int test_main(int argc, char *argv[]) {
 
 	test_context.applyCommandLine(test_args.size(), doctest_args);
 
-	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);
-	test_context.setOption("no-breaks", true);
-
 	for (int x = 0; x < test_args.size(); x++) {
 		delete[] doctest_args[x];
 	}
