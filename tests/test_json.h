@@ -161,7 +161,6 @@ TEST_CASE("[JSON] Parsing objects (dictionaries)") {
 			dictionary["empty_object"].hash() == Dictionary().hash(),
 			"The parsed JSON should contain the expected values.");
 }
-
 } // namespace TestJSON
 
 #endif // TEST_JSON_H
