@@ -76,14 +76,10 @@ Files extracted from upstream source:
 
 ## doctest
 - Upstream: https://github.com/onqtam/doctest
-- Version: 1c8da00 (2.4.0)
+- Version: 8424be5 (2.4.1)
 - License: MIT
 
 Extracted from .zip provided. Extracted license and header only.
-
-Important: Some files have Godot-made changes.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments.
 
 ## enet
 
