@@ -128,7 +128,7 @@ License: Expat
 
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2019, Viktor Kirilov
+Copyright: 2016-2020, Viktor Kirilov
 License: Expat
 
 Files: ./thirdparty/enet/
