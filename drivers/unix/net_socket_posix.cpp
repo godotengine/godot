@@ -350,11 +350,11 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 		// recv/recvfrom and an ICMP reply was received from a previous send/sendto.
 		unsigned long disable = 0;
 		if (ioctlsocket(_sock, SIO_UDP_CONNRESET, &disable) == SOCKET_ERROR) {
-			print_verbose("Unable to turn off UDP WSAECONNRESET behaviour on Windows");
+			print_verbose("Unable to turn off UDP WSAECONNRESET behavior on Windows");
 		}
 		if (ioctlsocket(_sock, SIO_UDP_NETRESET, &disable) == SOCKET_ERROR) {
 			// This feature seems not to be supported on wine.
-			print_verbose("Unable to turn off UDP WSAENETRESET behaviour on Windows");
+			print_verbose("Unable to turn off UDP WSAENETRESET behavior on Windows");
 		}
 	}
 #endif
