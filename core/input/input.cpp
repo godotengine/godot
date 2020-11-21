@@ -141,6 +141,19 @@ Input::MouseMode Input::get_mouse_mode() const {
 	return get_mouse_mode_func();
 }
 
+void Input::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			for (const Map<StringName, InputMap::Action>::Element *E = InputMap::get_singleton()->get_action_map().front(); E; E = E->next()) {
+				MethodInfo signal_pressed(Variant::NIL, vformat("%s_pressed", E->key()));
+				add_user_signal(signal_pressed);
+				MethodInfo signal_released(Variant::NIL, vformat("%s_released", E->key()));
+				add_user_signal(signal_released);
+			}
+		} break;
+	}
+}
+
 void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &Input::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
@@ -652,7 +665,14 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
 				action_state[E->key()] = action;
+				// For any action.
 				emit_signal("action_toggled", E->key(), action.pressed);
+				// For specific actions defined in `InputMap`.
+				if (action.pressed) {
+					emit_signal(vformat("%s_pressed", E->key()));
+				} else {
+					emit_signal(vformat("%s_released", E->key()));
+				}
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
 			action_state[E->key()].raw_strength = p_event->get_action_raw_strength(E->key());
