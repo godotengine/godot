@@ -3026,8 +3026,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	Ref<ConfigFile> cf;
 	cf.instance();
-	String addon_path = String("res://addons").plus_file(p_addon).plus_file("plugin.cfg");
-	if (!DirAccess::exists(addon_path.get_base_dir())) {
+	if (!DirAccess::exists(p_addon.get_base_dir())) {
 		ProjectSettings *ps = ProjectSettings::get_singleton();
 		PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
 		for (int i = 0; i < enabled_plugins.size(); ++i) {
@@ -3041,14 +3040,14 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		WARN_PRINT("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
-	Error err = cf->load(addon_path);
+	Error err = cf->load(p_addon);
 	if (err != OK) {
-		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
+		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), p_addon));
 		return;
 	}
 
 	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(vformat(TTR("Unable to find script field for addon plugin at: 'res://addons/%s'."), p_addon));
+		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), p_addon));
 		return;
 	}
 
@@ -3057,7 +3056,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	// Only try to load the script if it has a name. Else, the plugin has no init script.
 	if (script_path.length() > 0) {
-		script_path = String("res://addons").plus_file(p_addon).plus_file(script_path);
+		script_path = p_addon.get_base_dir().plus_file(script_path);
 		script = ResourceLoader::load(script_path);
 
 		if (script.is_null()) {
