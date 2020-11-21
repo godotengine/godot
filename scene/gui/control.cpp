@@ -436,6 +436,7 @@ void Control::_resize(const Size2 &p_size) {
 //moved theme configuration here, so controls can set up even if still not inside active scene
 
 void Control::add_child_notify(Node *p_child) {
+	CanvasItem::add_child_notify(p_child);
 
 	Control *child_c = Object::cast_to<Control>(p_child);
 	if (!child_c)
@@ -447,6 +448,7 @@ void Control::add_child_notify(Node *p_child) {
 }
 
 void Control::remove_child_notify(Node *p_child) {
+	CanvasItem::remove_child_notify(p_child);
 
 	Control *child_c = Object::cast_to<Control>(p_child);
 	if (!child_c)
