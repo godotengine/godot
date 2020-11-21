@@ -2370,7 +2370,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
+		//accept release event only if not a special key
 		if (!k->is_pressed()) {
+			if (!(k->get_keycode() & SPKEY)) {
+				accept_event();
+			}
 			return;
 		}
 

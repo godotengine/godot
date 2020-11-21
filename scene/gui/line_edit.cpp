@@ -152,7 +152,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
+		//accept release event only if not a special key
 		if (!k->is_pressed()) {
+			if (!(k->get_keycode() & SPKEY)) {
+				accept_event();
+			}
 			return;
 		}
 
