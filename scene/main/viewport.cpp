@@ -47,6 +47,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
@@ -3685,6 +3686,11 @@ bool SubViewport::is_using_xr() {
 
 void SubViewport::set_size(const Size2i &p_size) {
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (c) {
+		c->minimum_size_changed();
+	}
 }
 
 Size2i SubViewport::get_size() const {
