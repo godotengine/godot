@@ -279,7 +279,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, const Strin
 	String manifest_application_text =
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"false\" tools:ignore=\"GoogleAppIndexingWarning\"\n"
-			"        android:icon=\"@mipmap/icon\">)\n\n"
+			"        android:icon=\"@mipmap/icon\">\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_mode_metadata_name\" />\n";
 
 	manifest_application_text += _get_plugins_tag(plugins_names);
