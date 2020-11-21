@@ -209,7 +209,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 
-	ADD_SIGNAL(MethodInfo("action_state_changed", PropertyInfo(Variant::STRING, "action"), PropertyInfo(Variant::BOOL, "pressed")));
+	ADD_SIGNAL(MethodInfo("action_toggled", PropertyInfo(Variant::STRING, "action"), PropertyInfo(Variant::BOOL, "pressed")));
 	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "device"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
@@ -652,7 +652,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
 				action_state[E->key()] = action;
-				emit_signal("action_state_changed", E->key(), action.pressed);
+				emit_signal("action_toggled", E->key(), action.pressed);
 			}
 			action_state[E->key()].strength = p_event->get_action_strength(E->key());
 			action_state[E->key()].raw_strength = p_event->get_action_raw_strength(E->key());
