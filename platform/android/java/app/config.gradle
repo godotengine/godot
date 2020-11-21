@@ -34,7 +34,11 @@ ext.getExportVersionCode = { ->
     if (versionCode == null || versionCode.isEmpty()) {
         versionCode = "1"
     }
-    return Integer.parseInt(versionCode)
+    try {
+        return Integer.parseInt(versionCode)
+    } catch (NumberFormatException ignored) {
+        return 1
+    }
 }
 
 ext.getExportVersionName = { ->
@@ -135,4 +139,38 @@ ext.getGodotPluginsLocalBinaries = { ->
     }
 
     return binDeps
+}
+
+ext.getReleaseKeystoreFile = { ->
+    String keystoreFile = project.hasProperty("release_keystore_file") ? project.property("release_keystore_file") : ""
+    if (keystoreFile == null || keystoreFile.isEmpty()) {
+        keystoreFile = "."
+    }
+    return keystoreFile
+}
+
+ext.getReleaseKeystorePassword = { ->
+    String keystorePassword = project.hasProperty("release_keystore_password") ? project.property("release_keystore_password") : ""
+    return keystorePassword
+}
+
+ext.getReleaseKeyAlias = { ->
+    String keyAlias = project.hasProperty("release_keystore_alias") ? project.property("release_keystore_alias") : ""
+    return keyAlias
+}
+
+ext.shouldZipAlign = { ->
+    String zipAlignFlag = project.hasProperty("perform_zipalign") ? project.property("perform_zipalign") : ""
+    if (zipAlignFlag == null || zipAlignFlag.isEmpty()) {
+        zipAlignFlag = "false"
+    }
+    return Boolean.parseBoolean(zipAlignFlag)
+}
+
+ext.shouldSign = { ->
+    String signFlag = project.hasProperty("perform_signing") ? project.property("perform_signing") : ""
+    if (signFlag == null || signFlag.isEmpty()) {
+        signFlag = "false"
+    }
+    return Boolean.parseBoolean(signFlag)
 }
