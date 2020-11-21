@@ -2766,8 +2766,8 @@ Dictionary Image::_get_data() const {
 	return d;
 }
 
-Color Image::get_pixelv(const Point2 &p_src) const {
-	return get_pixel(p_src.x, p_src.y);
+Color Image::get_pixelv(const Point2i &p_point) const {
+	return get_pixel(p_point.x, p_point.y);
 }
 
 Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
@@ -2976,8 +2976,8 @@ Color Image::get_pixel(int p_x, int p_y) const {
 	return _get_color_at_ofs(data.ptr(), ofs);
 }
 
-void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {
-	set_pixel(p_dst.x, p_dst.y, p_color);
+void Image::set_pixelv(const Point2i &p_point, const Color &p_color) {
+	set_pixel(p_point.x, p_point.y, p_color);
 }
 
 void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
@@ -3132,9 +3132,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Image::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &Image::_get_data);
 
-	ClassDB::bind_method(D_METHOD("get_pixelv", "src"), &Image::get_pixelv);
+	ClassDB::bind_method(D_METHOD("get_pixelv", "point"), &Image::get_pixelv);
 	ClassDB::bind_method(D_METHOD("get_pixel", "x", "y"), &Image::get_pixel);
-	ClassDB::bind_method(D_METHOD("set_pixelv", "dst", "color"), &Image::set_pixelv);
+	ClassDB::bind_method(D_METHOD("set_pixelv", "point", "color"), &Image::set_pixelv);
 	ClassDB::bind_method(D_METHOD("set_pixel", "x", "y", "color"), &Image::set_pixel);
 
 	ClassDB::bind_method(D_METHOD("load_png_from_buffer", "buffer"), &Image::load_png_from_buffer);
