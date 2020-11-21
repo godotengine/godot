@@ -510,7 +510,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/secondary_grid_color"] = PropertyInfo(Variant::COLOR, "editors/3d/secondary_grid_color", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT);
 
 	// If a line is a multiple of this, it uses the primary grid color.
-	_initial_set("editors/3d/primary_grid_steps", 10);
+	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
+	_initial_set("editors/3d/primary_grid_steps", 8);
 	hints["editors/3d/primary_grid_steps"] = PropertyInfo(Variant::INT, "editors/3d/primary_grid_steps", PROPERTY_HINT_RANGE, "1,100,1", PROPERTY_USAGE_DEFAULT);
 
 	// At 1000, the grid mostly looks like it has no edge.
