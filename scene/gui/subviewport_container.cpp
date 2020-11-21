@@ -54,6 +54,7 @@ Size2 SubViewportContainer::get_minimum_size() const {
 
 void SubViewportContainer::set_stretch(bool p_enable) {
 	stretch = p_enable;
+	update_minimum_size();
 	queue_sort();
 	update();
 }
