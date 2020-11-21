@@ -269,16 +269,18 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code](x, y)[/code]. This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2] argument.
+				Returns the color of the pixel at [code](x, y)[/code].
+				This is the same as [method get_pixelv], but with two integer arguments instead of a [Vector2i] argument.
 			</description>
 		</method>
 		<method name="get_pixelv" qualifiers="const">
 			<return type="Color">
 			</return>
-			<argument index="0" name="src" type="Vector2">
+			<argument index="0" name="point" type="Vector2i">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code]src[/code]. This is the same as [method get_pixel], but with a [Vector2] argument instead of two integer arguments.
+				Returns the color of the pixel at [code]point[/code].
+				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -475,28 +477,56 @@
 			<argument index="2" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](x, y)[/code]. Example:
-				[codeblock]
+				Sets the [Color] of the pixel at [code](x, y)[/code] to [code]color[/code]. Example:
+				[codeblocks]
+				[gdscript]
+				var img_width = 10
+				var img_height = 5
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.set_pixel(x, y, color)
-				[/codeblock]
+
+				img.set_pixel(1, 2, Color.red) # Sets the color at (1, 2) to red.
+				[/gdscript]
+				[csharp]
+				int imgWidth = 10;
+				int imgHeight = 5;
+				var img = new Image();
+				img.Create(imgWidth, imgHeight, false, Image.Format.Rgba8);
+
+				img.SetPixel(1, 2, Colors.Red); // Sets the color at (1, 2) to red.
+				[/csharp]
+				[/codeblocks]
+				This is the same as [method set_pixelv], but with a two integer arguments instead of a [Vector2i] argument.
 			</description>
 		</method>
 		<method name="set_pixelv">
 			<return type="void">
 			</return>
-			<argument index="0" name="dst" type="Vector2">
+			<argument index="0" name="point" type="Vector2i">
 			</argument>
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
-				Sets the [Color] of the pixel at [code](dst.x, dst.y)[/code]. Note that the [code]dst[/code] values must be integers. Example:
-				[codeblock]
+				Sets the [Color] of the pixel at [code]point[/code] to [code]color[/code]. Example:
+				[codeblocks]
+				[gdscript]
+				var img_width = 10
+				var img_height = 5
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
-				img.set_pixelv(Vector2(x, y), color)
-				[/codeblock]
+
+				img.set_pixelv(Vector2i(1, 2), Color.red) # Sets the color at (1, 2) to red.
+				[/gdscript]
+				[csharp]
+				int imgWidth = 10;
+				int imgHeight = 5;
+				var img = new Image();
+				img.Create(imgWidth, imgHeight, false, Image.Format.Rgba8);
+
+				img.SetPixelv(new Vector2i(1, 2), Colors.Red); // Sets the color at (1, 2) to red.
+				[/csharp]
+				[/codeblocks]
+				This is the same as [method set_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="shrink_x2">
