@@ -219,13 +219,3 @@ Engine *Engine::get_singleton() {
 Engine::Engine() {
 	singleton = this;
 }
-
-Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
-		name(p_name),
-		ptr(p_ptr) {
-#ifdef DEBUG_ENABLED
-	if (Object::cast_to<Reference>(p_ptr)) {
-		ERR_PRINT("A class intended to be used as a singleton must *not* inherit from Reference.");
-	}
-#endif
-}
