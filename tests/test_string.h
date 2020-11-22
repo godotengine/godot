@@ -40,10 +40,6 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
-
 #include "tests/test_macros.h"
 
 namespace TestString {
@@ -474,15 +470,6 @@ TEST_CASE("[String] Erasing") {
 	s.erase(s.find("cute "), String("cute ").length());
 	CHECK(s == "Josephine is such a girl!");
 }
-
-#ifdef MODULE_REGEX_ENABLED
-TEST_CASE("[String] Regex substitution") {
-	String s = "Double all the vowels.";
-	RegEx re("(?<vowel>[aeiou])");
-	s = re.sub(s, "$0$vowel", true);
-	CHECK(s == "Doouublee aall thee vooweels.");
-}
-#endif
 
 struct test_27_data {
 	char const *data;

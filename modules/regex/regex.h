@@ -83,7 +83,6 @@ protected:
 public:
 	void clear();
 	Error compile(const String &p_pattern);
-	void _init(const String &p_pattern = "");
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	Array search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
