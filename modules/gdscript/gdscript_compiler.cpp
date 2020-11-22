@@ -1474,13 +1474,27 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.start_block();
 
 				// Evaluate the match expression.
+				GDScriptCodeGenerator::Address value_local = codegen.add_local("@match_value", _gdtype_from_datatype(match->test->get_datatype()));
 				GDScriptCodeGenerator::Address value = _parse_expression(codegen, error, match->test);
 				if (error) {
 					return error;
 				}
 
+				// Assign to local.
+				// TODO: This can be improved by passing the target to parse_expression().
+				gen->write_assign(value_local, value);
+
+				if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+
 				// Then, let's save the type of the value in the stack too, so we can reuse for later comparisons.
-				GDScriptCodeGenerator::Address type = codegen.add_temporary();
+				GDScriptDataType typeof_type;
+				typeof_type.has_type = true;
+				typeof_type.kind = GDScriptDataType::BUILTIN;
+				typeof_type.builtin_type = Variant::INT;
+				GDScriptCodeGenerator::Address type = codegen.add_local("@match_type", typeof_type);
+
 				Vector<GDScriptCodeGenerator::Address> typeof_args;
 				typeof_args.push_back(value);
 				gen->write_call_builtin(type, GDScriptFunctions::TYPE_OF, typeof_args);
@@ -1534,12 +1548,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					gen->write_endif();
 				}
 
-				gen->pop_temporary();
-
-				if (value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
-
 				gen->end_match();
 			} break;
 			case GDScriptParser::Node::IF: {
@@ -1577,12 +1585,20 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				codegen.start_block();
 				GDScriptCodeGenerator::Address iterator = codegen.add_local(for_n->variable->name, _gdtype_from_datatype(for_n->variable->get_datatype()));
 
+				gen->start_for(iterator.type, _gdtype_from_datatype(for_n->list->get_datatype()));
+
 				GDScriptCodeGenerator::Address list = _parse_expression(codegen, error, for_n->list);
 				if (error) {
 					return error;
 				}
 
-				gen->write_for(iterator, list);
+				gen->write_for_assignment(iterator, list);
+
+				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+
+				gen->write_for();
 
 				error = _parse_block(codegen, for_n->loop);
 				if (error) {
@@ -1590,10 +1606,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				gen->write_endfor();
-
-				if (list.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
 
 				codegen.end_block();
 			} break;

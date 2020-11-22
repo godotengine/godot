@@ -43,6 +43,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Vector<int> opcodes;
 	List<Map<StringName, int>> stack_id_stack;
 	Map<StringName, int> stack_identifiers;
+	List<int> stack_identifiers_counts;
 	Map<StringName, int> local_constants;
 
 	List<GDScriptFunction::StackDebug> stack_debug;
@@ -51,10 +52,15 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	int current_stack_size = 0;
 	int current_temporaries = 0;
+	int current_locals = 0;
 	int current_line = 0;
 	int stack_max = 0;
 	int instr_args_max = 0;
 	int ptrcall_max = 0;
+
+#ifdef DEBUG_ENABLED
+	List<int> temp_stack;
+#endif
 
 	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 	Map<StringName, int> name_map;
@@ -72,8 +78,12 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Map<Variant::ValidatedConstructor, int> constructors_map;
 	Map<MethodBind *, int> method_bind_map;
 
-	List<int> if_jmp_addrs; // List since this can be nested.
+	// Lists since these can be nested.
+	List<int> if_jmp_addrs;
 	List<int> for_jmp_addrs;
+	List<Address> for_iterator_variables;
+	List<Address> for_counter_variables;
+	List<Address> for_container_variables;
 	List<int> while_jmp_addrs;
 	List<int> continue_addrs;
 
@@ -89,6 +99,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<List<int>> match_continues_to_patch;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
+		current_locals++;
 		stack_identifiers[p_id] = p_stackpos;
 		if (debug_stack) {
 			block_identifiers[p_id] = p_stackpos;
@@ -102,17 +113,26 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void push_stack_identifiers() {
+		stack_identifiers_counts.push_back(current_locals);
 		stack_id_stack.push_back(stack_identifiers);
 		if (debug_stack) {
-			block_identifier_stack.push_back(block_identifiers);
+			Map<StringName, int> block_ids(block_identifiers);
+			block_identifier_stack.push_back(block_ids);
 			block_identifiers.clear();
 		}
 	}
 
 	void pop_stack_identifiers() {
+		current_locals = stack_identifiers_counts.back()->get();
+		stack_identifiers_counts.pop_back();
 		stack_identifiers = stack_id_stack.back()->get();
-		current_stack_size = stack_identifiers.size() + current_temporaries;
 		stack_id_stack.pop_back();
+#ifdef DEBUG_ENABLED
+		if (current_temporaries != 0) {
+			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(current_temporaries));
+		}
+#endif
+		current_stack_size = current_locals;
 
 		if (debug_stack) {
 			for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
@@ -397,7 +417,9 @@ public:
 	virtual void write_if(const Address &p_condition) override;
 	virtual void write_else() override;
 	virtual void write_endif() override;
-	virtual void write_for(const Address &p_variable, const Address &p_list) override;
+	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) override;
+	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) override;
+	virtual void write_for() override;
 	virtual void write_endfor() override;
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
