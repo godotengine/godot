@@ -906,13 +906,22 @@ PREAMBLE(int)::_batch_find_or_create_tex(const RID &p_texture, const RID &p_norm
 	typename T_STORAGE::Texture *texture = _get_canvas_texture(p_texture);
 
 	if (texture) {
-		new_batch_tex.tex_pixel_size.x = 1.0 / texture->width;
-		new_batch_tex.tex_pixel_size.y = 1.0 / texture->height;
+		// special case, there can be textures with no width or height
+		int w = texture->width;
+		int h = texture->height;
+
+		if (!w || !h) {
+			w = 1;
+			h = 1;
+		}
+
+		new_batch_tex.tex_pixel_size.x = 1.0 / w;
+		new_batch_tex.tex_pixel_size.y = 1.0 / h;
 		new_batch_tex.flags = texture->flags;
 	} else {
 		// maybe doesn't need doing...
-		new_batch_tex.tex_pixel_size.x = 1.0;
-		new_batch_tex.tex_pixel_size.y = 1.0;
+		new_batch_tex.tex_pixel_size.x = 1.0f;
+		new_batch_tex.tex_pixel_size.y = 1.0f;
 		new_batch_tex.flags = 0;
 	}
 
