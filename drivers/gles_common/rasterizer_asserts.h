@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rasterizer_storage_common.h                                          */
+/*  rasterizer_asserts.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RASTERIZER_STORAGE_COMMON_H
-#define RASTERIZER_STORAGE_COMMON_H
+#ifndef RASTERIZER_ASSERTS_H
+#define RASTERIZER_ASSERTS_H
 
-class RasterizerStorageCommon {
-public:
-	enum FVF {
-		FVF_UNBATCHED,
-		FVF_REGULAR,
-		FVF_COLOR,
-		FVF_LIGHT_ANGLE,
-		FVF_MODULATED,
-		FVF_LARGE,
-	};
+// For flow control checking, we want an easy way to apply asserts that occur in debug development builds only.
+// This is enforced by outputting a warning which will fail CI checks if the define is set in a PR.
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+// only uncomment this define for error checking in development, not in the main repository
+// as these checks will slow things down in debug builds.
+//#define RASTERIZER_EXTRA_CHECKS
+#endif
 
-	// these flags are specifically for batching
-	// some of the logic is thus in rasterizer_storage.cpp
-	// we could alternatively set bitflags for each 'uses' and test on the fly
-	enum BatchFlags {
-		PREVENT_COLOR_BAKING = 1 << 0,
-		PREVENT_VERTEX_BAKING = 1 << 1,
+#ifdef RASTERIZER_EXTRA_CHECKS
+#ifndef _MSC_VER
+#warning do not define RASTERIZER_EXTRA_CHECKS in main repository builds
+#endif
+#define RAST_DEV_DEBUG_ASSERT(a) CRASH_COND(!(a))
+#else
+#define RAST_DEV_DEBUG_ASSERT(a)
+#endif
 
-		// custom vertex shaders using BUILTINS that vary per item
-		PREVENT_ITEM_JOINING = 1 << 2,
+// Also very useful, an assert check that only occurs in debug tools builds
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+#define RAST_DEBUG_ASSERT(a) CRASH_COND(!(a))
+#else
+#define RAST_DEBUG_ASSERT(a)
+#endif
 
-		USE_MODULATE_FVF = 1 << 3,
-		USE_LARGE_FVF = 1 << 4,
-	};
-
-	enum BatchType : uint16_t {
-		BT_DEFAULT = 0,
-		BT_RECT = 1,
-		BT_LINE = 2,
-		BT_LINE_AA = 3,
-		BT_POLY = 4,
-		BT_DUMMY = 5, // dummy batch is just used to keep the batch creation loop simple
-	};
-
-	enum BatchTypeFlags {
-		BTF_DEFAULT = 1 << BT_DEFAULT,
-		BTF_RECT = 1 << BT_RECT,
-		BTF_LINE = 1 << BT_LINE,
-		BTF_LINE_AA = 1 << BT_LINE_AA,
-		BTF_POLY = 1 << BT_POLY,
-	};
-};
-
-#endif // RASTERIZER_STORAGE_COMMON_H
+#endif // RASTERIZER_ASSERTS_H
