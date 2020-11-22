@@ -77,11 +77,22 @@ uint32_t GDScriptByteCodeGenerator::add_or_get_name(const StringName &p_name) {
 
 uint32_t GDScriptByteCodeGenerator::add_temporary() {
 	current_temporaries++;
-	return increase_stack();
+	int idx = increase_stack();
+#ifdef DEBUG_ENABLED
+	temp_stack.push_back(idx);
+#endif
+	return idx;
 }
 
 void GDScriptByteCodeGenerator::pop_temporary() {
+	ERR_FAIL_COND(current_temporaries == 0);
 	current_stack_size--;
+#ifdef DEBUG_ENABLED
+	if (temp_stack.back()->get() != current_stack_size) {
+		ERR_PRINT("Mismatched popping of temporary value");
+	}
+	temp_stack.pop_back();
+#endif
 	current_temporaries--;
 }
 
@@ -111,6 +122,11 @@ void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName
 }
 
 GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
+#ifdef DEBUG_ENABLED
+	if (current_temporaries != 0) {
+		ERR_PRINT("Non-zero temporary variables at end of function: " + itos(current_temporaries));
+	}
+#endif
 	append(GDScriptFunction::OPCODE_END, 0);
 
 	if (constant_map.size()) {
@@ -905,23 +921,39 @@ void GDScriptByteCodeGenerator::write_endif() {
 	if_jmp_addrs.pop_back();
 }
 
-void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Address &p_list) {
-	int counter_pos = add_temporary() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
-	int container_pos = add_temporary() | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+void GDScriptByteCodeGenerator::start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) {
+	Address counter(Address::LOCAL_VARIABLE, add_local("@counter_pos", p_iterator_type), p_iterator_type);
+	Address container(Address::LOCAL_VARIABLE, add_local("@container_pos", p_list_type), p_list_type);
 
-	current_breaks_to_patch.push_back(List<int>());
+	// Store state.
+	for_counter_variables.push_back(counter);
+	for_container_variables.push_back(container);
+}
+
+void GDScriptByteCodeGenerator::write_for_assignment(const Address &p_variable, const Address &p_list) {
+	const Address &container = for_container_variables.back()->get();
 
 	// Assign container.
 	append(GDScriptFunction::OPCODE_ASSIGN, 2);
-	append(container_pos);
+	append(container);
 	append(p_list);
+
+	for_iterator_variables.push_back(p_variable);
+}
+
+void GDScriptByteCodeGenerator::write_for() {
+	const Address &iterator = for_iterator_variables.back()->get();
+	const Address &counter = for_counter_variables.back()->get();
+	const Address &container = for_container_variables.back()->get();
+
+	current_breaks_to_patch.push_back(List<int>());
 
 	GDScriptFunction::Opcode begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN;
 	GDScriptFunction::Opcode iterate_opcode = GDScriptFunction::OPCODE_ITERATE;
 
-	if (p_list.type.has_type) {
-		if (p_list.type.kind == GDScriptDataType::BUILTIN) {
-			switch (p_list.type.builtin_type) {
+	if (container.type.has_type) {
+		if (container.type.kind == GDScriptDataType::BUILTIN) {
+			switch (container.type.builtin_type) {
 				case Variant::INT:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_INT;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_INT;
@@ -1005,9 +1037,9 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Addre
 
 	// Begin loop.
 	append(begin_opcode, 3);
-	append(counter_pos);
-	append(container_pos);
-	append(p_variable);
+	append(counter);
+	append(container);
+	append(iterator);
 	for_jmp_addrs.push_back(opcodes.size());
 	append(0); // End of loop address, will be patched.
 	append(GDScriptFunction::OPCODE_JUMP, 0);
@@ -1017,9 +1049,9 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, const Addre
 	int continue_addr = opcodes.size();
 	continue_addrs.push_back(continue_addr);
 	append(iterate_opcode, 3);
-	append(counter_pos);
-	append(container_pos);
-	append(p_variable);
+	append(counter);
+	append(container);
+	append(iterator);
 	for_jmp_addrs.push_back(opcodes.size());
 	append(0); // Jump destination, will be patched.
 }
@@ -1042,9 +1074,10 @@ void GDScriptByteCodeGenerator::write_endfor() {
 	}
 	current_breaks_to_patch.pop_back();
 
-	// Remove loop temporaries.
-	pop_temporary();
-	pop_temporary();
+	// Pop state.
+	for_iterator_variables.pop_back();
+	for_counter_variables.pop_back();
+	for_container_variables.pop_back();
 }
 
 void GDScriptByteCodeGenerator::start_while_condition() {
