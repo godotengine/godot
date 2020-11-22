@@ -14,7 +14,7 @@
 		- Blend Shapes
 		- Auto Tangents Only
 		- *Do not check* Constraints (as it will break the file)
-		- Units: ANY will work.
+		- Units: Any will work
 		- Binary format in FBX 2020
 		[/codeblock]
 	</description>
