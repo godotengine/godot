@@ -1128,4 +1128,26 @@ struct VariantTypeChanger {
 	}
 };
 
+template <class T>
+struct VariantTypeAdjust {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+		VariantTypeChanger<typename GetSimpleTypeT<T>::type_t>::change(r_ret);
+	}
+};
+
+template <>
+struct VariantTypeAdjust<Variant> {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+		// Do nothing for variant.
+	}
+};
+
+template <>
+struct VariantTypeAdjust<Object *> {
+	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
+		VariantInternal::clear(r_ret);
+		*r_ret = (Object *)nullptr;
+	}
+};
+
 #endif // VARIANT_INTERNAL_H

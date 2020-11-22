@@ -41,9 +41,7 @@
 #define SETGET_STRUCT(m_base_type, m_member_type, m_member)                                                                          \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                                \
 		static void get(const Variant *base, Variant *member) {                                                                      \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member;                                                   \
-		}                                                                                                                            \
-		static void validated_get(const Variant *base, Variant *member) {                                                            \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                        \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member;    \
 		}                                                                                                                            \
 		static void ptr_get(const void *base, void *member) {                                                                        \
@@ -71,9 +69,7 @@
 #define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member)                                                                \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                             \
 		static void get(const Variant *base, Variant *member) {                                                                   \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member;                                                \
-		}                                                                                                                         \
-		static void validated_get(const Variant *base, Variant *member) {                                                         \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                     \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_member; \
 		}                                                                                                                         \
 		static void ptr_get(const void *base, void *member) {                                                                     \
@@ -104,9 +100,7 @@
 #define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                                         \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                                \
 		static void get(const Variant *base, Variant *member) {                                                                      \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom;                                                   \
-		}                                                                                                                            \
-		static void validated_get(const Variant *base, Variant *member) {                                                            \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                        \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom;    \
 		}                                                                                                                            \
 		static void ptr_get(const void *base, void *member) {                                                                        \
@@ -134,9 +128,7 @@
 #define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom)                                               \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                             \
 		static void get(const Variant *base, Variant *member) {                                                                   \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom;                                                \
-		}                                                                                                                         \
-		static void validated_get(const Variant *base, Variant *member) {                                                         \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                     \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_custom; \
 		}                                                                                                                         \
 		static void ptr_get(const void *base, void *member) {                                                                     \
@@ -167,9 +159,7 @@
 #define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                                \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                               \
 		static void get(const Variant *base, Variant *member) {                                                                     \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter();                                                \
-		}                                                                                                                           \
-		static void validated_get(const Variant *base, Variant *member) {                                                           \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                       \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(); \
 		}                                                                                                                           \
 		static void ptr_get(const void *base, void *member) {                                                                       \
@@ -197,9 +187,7 @@
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter)                                         \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                               \
 		static void get(const Variant *base, Variant *member) {                                                                     \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter();                                                \
-		}                                                                                                                           \
-		static void validated_get(const Variant *base, Variant *member) {                                                           \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                       \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(); \
 		}                                                                                                                           \
 		static void ptr_get(const void *base, void *member) {                                                                       \
@@ -230,9 +218,7 @@
 #define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index)                                          \
 	struct VariantSetGet_##m_base_type##_##m_member {                                                                                        \
 		static void get(const Variant *base, Variant *member) {                                                                              \
-			*member = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(m_index);                                                  \
-		}                                                                                                                                    \
-		static void validated_get(const Variant *base, Variant *member) {                                                                    \
+			VariantTypeAdjust<m_member_type>::adjust(member);                                                                                \
 			*VariantGetInternalPtr<m_member_type>::get_ptr(member) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_getter(m_index);   \
 		}                                                                                                                                    \
 		static void ptr_get(const void *base, void *member) {                                                                                \
@@ -340,7 +326,7 @@ static void register_member(Variant::Type p_type, const StringName &p_member) {
 	sgi.ptr_setter = T::ptr_set;
 
 	sgi.getter = T::get;
-	sgi.validated_getter = T::validated_get;
+	sgi.validated_getter = T::get;
 	sgi.ptr_getter = T::ptr_get;
 
 	sgi.member_type = T::get_type();
@@ -605,18 +591,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				oob = true;                                                                                                          \
 				return;                                                                                                              \
 			}                                                                                                                        \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];                                                    \
-			oob = false;                                                                                                             \
-		}                                                                                                                            \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                   \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
-			if (index < 0) {                                                                                                         \
-				index += size;                                                                                                       \
-			}                                                                                                                        \
-			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
-				return;                                                                                                              \
-			}                                                                                                                        \
+			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                           \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];       \
 			oob = false;                                                                                                             \
 		}                                                                                                                            \
@@ -682,18 +657,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				oob = true;                                                                                                          \
 				return;                                                                                                              \
 			}                                                                                                                        \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];                                                    \
-			oob = false;                                                                                                             \
-		}                                                                                                                            \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                   \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                                                \
-			if (index < 0) {                                                                                                         \
-				index += size;                                                                                                       \
-			}                                                                                                                        \
-			if (index < 0 || index >= size) {                                                                                        \
-				oob = true;                                                                                                          \
-				return;                                                                                                              \
-			}                                                                                                                        \
+			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                           \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];       \
 			oob = false;                                                                                                             \
 		}                                                                                                                            \
@@ -760,14 +724,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				oob = true;                                                                                                    \
 				return;                                                                                                        \
 			}                                                                                                                  \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];                                              \
-			oob = false;                                                                                                       \
-		}                                                                                                                      \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                             \
-			if (index < 0 || index >= m_max) {                                                                                 \
-				oob = true;                                                                                                    \
-				return;                                                                                                        \
-			}                                                                                                                  \
+			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                     \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index]; \
 			oob = false;                                                                                                       \
 		}                                                                                                                      \
@@ -822,14 +779,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				oob = true;                                                                                                               \
 				return;                                                                                                                   \
 			}                                                                                                                             \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))m_accessor[index];                                               \
-			oob = false;                                                                                                                  \
-		}                                                                                                                                 \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                        \
-			if (index < 0 || index >= m_max) {                                                                                            \
-				oob = true;                                                                                                               \
-				return;                                                                                                                   \
-			}                                                                                                                             \
+			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                                \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))m_accessor[index];  \
 			oob = false;                                                                                                                  \
 		}                                                                                                                                 \
@@ -878,14 +828,7 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				oob = true;                                                                                                        \
 				return;                                                                                                            \
 			}                                                                                                                      \
-			*value = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_get(index);                                              \
-			oob = false;                                                                                                           \
-		}                                                                                                                          \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                 \
-			if (index < 0 || index >= m_max) {                                                                                     \
-				oob = true;                                                                                                        \
-				return;                                                                                                            \
-			}                                                                                                                      \
+			VariantTypeAdjust<m_elem_type>::adjust(value);                                                                         \
 			*VariantGetInternalPtr<m_elem_type>::get_ptr(value) = VariantGetInternalPtr<m_base_type>::get_ptr(base)->m_get(index); \
 			oob = false;                                                                                                           \
 		}                                                                                                                          \
@@ -930,18 +873,6 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 #define INDEXED_SETGET_STRUCT_VARIANT(m_base_type)                                                    \
 	struct VariantIndexedSetGet_##m_base_type {                                                       \
 		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {              \
-			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                 \
-			if (index < 0) {                                                                          \
-				index += size;                                                                        \
-			}                                                                                         \
-			if (index < 0 || index >= size) {                                                         \
-				oob = true;                                                                           \
-				return;                                                                               \
-			}                                                                                         \
-			*value = (*VariantGetInternalPtr<m_base_type>::get_ptr(base))[index];                     \
-			oob = false;                                                                              \
-		}                                                                                             \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {    \
 			int64_t size = VariantGetInternalPtr<m_base_type>::get_ptr(base)->size();                 \
 			if (index < 0) {                                                                          \
 				index += size;                                                                        \
@@ -1002,15 +933,6 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 #define INDEXED_SETGET_STRUCT_DICT(m_base_type)                                                                                     \
 	struct VariantIndexedSetGet_##m_base_type {                                                                                     \
 		static void get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                            \
-			const Variant *ptr = VariantGetInternalPtr<m_base_type>::get_ptr(base)->getptr(index);                                  \
-			if (!ptr) {                                                                                                             \
-				oob = true;                                                                                                         \
-				return;                                                                                                             \
-			}                                                                                                                       \
-			*value = *ptr;                                                                                                          \
-			oob = false;                                                                                                            \
-		}                                                                                                                           \
-		static void validated_get(const Variant *base, int64_t index, Variant *value, bool &oob) {                                  \
 			const Variant *ptr = VariantGetInternalPtr<m_base_type>::get_ptr(base)->getptr(index);                                  \
 			if (!ptr) {                                                                                                             \
 				oob = true;                                                                                                         \
@@ -1094,7 +1016,7 @@ static void register_indexed_member(Variant::Type p_type) {
 	sgi.ptr_setter = T::ptr_set;
 
 	sgi.getter = T::get;
-	sgi.validated_getter = T::validated_get;
+	sgi.validated_getter = T::get;
 	sgi.ptr_getter = T::ptr_get;
 
 	sgi.index_type = T::get_index_type();
