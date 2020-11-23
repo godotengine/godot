@@ -284,6 +284,13 @@
 				Returns the given column's tooltip.
 			</description>
 		</method>
+		<method name="is_active">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the TreeItem or at least one of it's descendent have at least one column selected.
+			</description>
+		</method>
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -417,6 +424,20 @@
 			</argument>
 			<description>
 				If [code]true[/code], the column [code]column[/code] is checked.
+			</description>
+		</method>
+		<method name="set_collapsed_recursive">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<argument index="1" name="ignore_active" type="bool">
+			</argument>
+			<argument index="2" name="ignore_self" type="bool">
+			</argument>
+			<description>
+				Recursively collapse this TreeItem and all its descendants when [code]enable[/code] is [code]true[/code], otherwise expanding them, ignoring any active TreeItem if [code]ignore_active[/code] is [code]true[/code].
+				Only descendants are affected when [code]ignore_self[/code] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -620,6 +641,14 @@
 			</argument>
 			<description>
 				Sets the given column's tooltip text.
+			</description>
+		</method>
+		<method name="toggle_collapsed_all_descendants">
+			<return type="void">
+			</return>
+			<description>
+				Collapses or expands all descendants of this TreeItem depending on if the descendants are currently collapsed or not.
+				Default comportment when someone [code]ALT + CLICK[/code] the folding arrow next to the TreeItem in a tree.
 			</description>
 		</method>
 	</methods>

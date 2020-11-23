@@ -210,10 +210,8 @@ public:
 	bool is_button_disabled(int p_column, int p_idx) const;
 
 	/* range works for mode number or mode combo */
-
 	void set_range(int p_column, double p_value);
 	double get_range(int p_column) const;
-
 	void set_range_config(int p_column, double p_min, double p_max, double p_step, bool p_exp = false);
 	void get_range_config(int p_column, double &r_min, double &r_max, double &r_step) const;
 	bool is_range_exponential(int p_column) const;
@@ -224,6 +222,8 @@ public:
 	void set_custom_draw(int p_column, Object *p_object, const StringName &p_callback);
 
 	void set_collapsed(bool p_collapsed);
+	void set_collapsed_recursive(bool p_collapsed, bool p_ignore_active, bool p_skip_self);
+	void toggle_collapsed_all_descendants();
 	bool is_collapsed();
 
 	void set_custom_minimum_height(int p_height);
@@ -243,6 +243,7 @@ public:
 	bool is_selectable(int p_column) const;
 
 	bool is_selected(int p_column);
+	bool is_active();
 	void select(int p_column);
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);
@@ -330,9 +331,6 @@ private:
 
 	bool propagate_mouse_activated;
 
-	//TreeItem *cursor_item;
-	//int cursor_column;
-
 	Rect2 custom_popup_rect;
 	int edited_col;
 	int selected_col;
@@ -374,7 +372,6 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
@@ -473,22 +470,13 @@ private:
 	void update_scrollbars();
 
 	Rect2 search_item_rect(TreeItem *p_from, TreeItem *p_item);
-	//Rect2 get_item_rect(TreeItem *p_item);
 	uint64_t last_keypress;
 	String incr_search;
 	bool cursor_can_exit_tree;
 	void _do_incr_search(const String &p_add);
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
-
 	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
-
-	/*	float drag_speed;
-	float drag_accum;
-
-	float last_drag_accum;
-	float last_drag_time;
-	float time_since_motion;*/
 
 	float drag_speed;
 	float drag_from;
@@ -604,6 +592,8 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_collapsed_all(bool p_collapsed, bool p_ignore_active);
 
 	Tree();
 	~Tree();
