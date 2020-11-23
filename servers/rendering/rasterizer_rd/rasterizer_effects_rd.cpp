@@ -94,7 +94,7 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use
 	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
 	uniforms.push_back(u);
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	//anything with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 0);
 
 	texture_to_uniform_set_cache[p_texture] = uniform_set;
@@ -718,7 +718,10 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
 	tonemap.push_constant.glow_mode = p_settings.glow_mode;
 
-	TonemapMode mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
+	int mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
+	if (p_settings.use_1d_color_correction) {
+		mode += 2;
+	}
 
 	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
 	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
@@ -1423,6 +1426,8 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		Vector<String> tonemap_modes;
 		tonemap_modes.push_back("\n");
 		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n");
+		tonemap_modes.push_back("\n#define USE_1D_LUT\n");
+		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n#define USE_1D_LUT\n");
 
 		tonemap.shader.initialize(tonemap_modes);
 
