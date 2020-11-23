@@ -4,7 +4,7 @@
 		Plays 3D sound in 3D space.
 	</brief_description>
 	<description>
-		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space.
+		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space. For greater realism, a low-pass filter is automatically applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
 		By default, audio is heard from the camera position. This can be changed by adding a [Listener] node to the scene and enabling it by calling [method Listener.make_current] on it.
 	</description>
 	<tutorials>
@@ -56,19 +56,19 @@
 			Areas in which this sound plays.
 		</member>
 		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" default="5000.0">
-			Dampens audio above this frequency, in Hz.
+			Dampens audio using a low-pass filter above this frequency, in Hz. To disable the dampening effect entirely, set this to [code]20500[/code] as this frequency is above the human hearing limit.
 		</member>
 		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db" default="-24.0">
-			Amount how much the filter affects the loudness, in dB.
+			Amount how much the filter affects the loudness, in decibels.
 		</member>
 		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" enum="AudioStreamPlayer3D.AttenuationModel" default="0">
 			Decides if audio should get quieter with distance linearly, quadratically, logarithmically, or not be affected by distance, effectively disabling attenuation.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
-			If [code]true[/code], audio plays when added to scene tree.
+			If [code]true[/code], audio plays when the AudioStreamPlayer3D node is added to scene tree.
 		</member>
 		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
-			Bus on which this audio is playing.
+			The bus on which this audio is playing.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
 			Decides in which step the Doppler effect should be calculated.
@@ -80,10 +80,10 @@
 			If [code]true[/code], the audio should be dampened according to the direction of the sound.
 		</member>
 		<member name="emission_angle_filter_attenuation_db" type="float" setter="set_emission_angle_filter_attenuation_db" getter="get_emission_angle_filter_attenuation_db" default="-12.0">
-			Dampens audio if camera is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set by this factor, in dB.
+			Dampens audio if camera is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set by this factor, in decibels.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" default="3.0">
-			Sets the absolute maximum of the soundlevel, in dB.
+			Sets the absolute maximum of the soundlevel, in decibels.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
 			Sets the distance from which the [member out_of_range_mode] takes effect. Has no effect if set to 0.
@@ -98,16 +98,16 @@
 			If [code]true[/code], audio is playing.
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
-			The [AudioStream] object to be played.
+			The [AudioStream] resource to be played.
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
-			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
+			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
 		</member>
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" default="0.0">
-			Base sound level unaffected by dampening, in dB.
+			The base sound level unaffected by dampening, in decibels.
 		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="1.0">
-			Factor for the attenuation effect.
+			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>
 	</members>
 	<signals>
@@ -128,13 +128,13 @@
 			Logarithmic dampening of loudness according to distance.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
-			No dampening of loudness according to distance.
+			No dampening of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer].
 		</constant>
 		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
-			Mix this audio in, even when it's out of range.
+			Mix this audio in, even when it's out of range. This increases CPU usage, but keeps the sound playing at the correct position if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
 		</constant>
 		<constant name="OUT_OF_RANGE_PAUSE" value="1" enum="OutOfRangeMode">
-			Pause this audio when it gets out of range.
+			Pause this audio when it gets out of range. This decreases CPU usage, but will cause the sound to restart if the camera leaves and enters the [AudioStreamPlayer3D]'s [member max_distance] radius.
 		</constant>
 		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
 			Disables doppler tracking.
