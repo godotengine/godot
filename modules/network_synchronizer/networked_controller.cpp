@@ -474,7 +474,7 @@ void NetworkedController::reset() {
 		controller = nullptr;
 		controller_type = CONTROLLER_TYPE_NULL;
 
-		if (get_tree()->is_network_server()) {
+		if (get_tree() && get_tree()->is_network_server()) {
 			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
 			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
 		}
