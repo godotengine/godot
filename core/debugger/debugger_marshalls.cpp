@@ -171,7 +171,7 @@ bool DebuggerMarshalls::ServersProfilerFrame::deserialize(const Array &p_arr) {
 		}
 		servers.push_back(si);
 	}
-	CHECK_SIZE(p_arr, idx + 3, "ServersProfilerFrame");
+	CHECK_SIZE(p_arr, idx + 1, "ServersProfilerFrame");
 	int func_size = p_arr[idx];
 	idx += 1;
 	CHECK_SIZE(p_arr, idx + func_size, "ServersProfilerFrame");
