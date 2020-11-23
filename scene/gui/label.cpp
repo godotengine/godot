@@ -386,6 +386,7 @@ void Label::regenerate_word_cache() {
 	int line_spacing = get_theme_constant("line_spacing");
 	line_count = 1;
 	total_char_cache = 0;
+	total_space_cache = 0;
 
 	WordCache *last = nullptr;
 
@@ -447,6 +448,7 @@ void Label::regenerate_word_cache() {
 			if (i < xl_text.length() && xl_text[i] == ' ') {
 				if (line_width > 0 || last == nullptr || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
+					total_space_cache++;
 					line_width += space_width;
 				} else {
 					space_count = 0;
@@ -623,7 +625,7 @@ int Label::get_total_character_count() const {
 		const_cast<Label *>(this)->regenerate_word_cache();
 	}
 
-	return total_char_cache;
+	return total_char_cache + total_space_cache;
 }
 
 void Label::_bind_methods() {
@@ -678,6 +680,7 @@ Label::Label(const String &p_text) {
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	set_text(p_text);
 	set_v_size_flags(SIZE_SHRINK_CENTER);
+	total_space_cache = 0;
 }
 
 Label::~Label() {
