@@ -149,7 +149,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 	float radius = get_size().x / 2.0;
 
 	float axis_radius = radius - AXIS_CIRCLE_RADIUS - 2.0 * EDSCALE;
-	Basis camera_basis = viewport->to_camera_transform(viewport->cursor).get_basis().inverse();
+	Basis camera_basis = (viewport->previewing ? viewport->previewing : viewport->camera)->get_camera_transform().basis.inverse();
 
 	for (int i = 0; i < 3; ++i) {
 		Vector3 axis_3d = camera_basis.get_axis(i);
@@ -3176,6 +3176,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		view_menu->set_disabled(true);
 		surface->update();
 	}
+
+	rotation_control->update();
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
@@ -3905,6 +3907,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	view_menu->set_flat(false);
 	vbox->add_child(view_menu);
 	view_menu->set_h_size_flags(0);
+	view_menu->get_popup()->set_hide_on_checkable_item_selection(false);
 
 	display_submenu = memnew(PopupMenu);
 	view_menu->get_popup()->add_child(display_submenu);
@@ -4059,7 +4062,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 	locked_label->hide();
 
 	top_right_vbox = memnew(VBoxContainer);
-	top_right_vbox->set_anchors_and_margins_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 2.0 * EDSCALE);
+	top_right_vbox->set_anchors_and_margins_preset(PRESET_TOP_RIGHT, PRESET_MODE_MINSIZE, 10.0 * EDSCALE);
 	top_right_vbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
 
 	rotation_control = memnew(ViewportRotationControl);
