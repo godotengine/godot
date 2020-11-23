@@ -547,15 +547,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="ord_at">
-			<return type="int">
-			</return>
-			<argument index="0" name="at" type="int">
-			</argument>
-			<description>
-				Returns the character code at position [code]at[/code].
-			</description>
-		</method>
 		<method name="pad_decimals">
 			<return type="String">
 			</return>
@@ -876,6 +867,15 @@
 			</argument>
 			<description>
 				Removes a given string from the end if it ends with it or leaves the string unchanged.
+			</description>
+		</method>
+		<method name="unicode_at">
+			<return type="int">
+			</return>
+			<argument index="0" name="at" type="int">
+			</argument>
+			<description>
+				Returns the character code at position [code]at[/code].
 			</description>
 		</method>
 		<method name="xml_escape">

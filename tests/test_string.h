@@ -266,7 +266,7 @@ TEST_CASE("[String] Operator []") {
 	a[6] = 'C';
 	CHECK(a == "Sugar Cane");
 	CHECK(a[1] == 'u');
-	CHECK(a.ord_at(1) == 'u');
+	CHECK(a.unicode_at(1) == 'u');
 }
 
 TEST_CASE("[String] Case function test") {

@@ -366,7 +366,7 @@ public:
 	String get_extension() const;
 	String get_basename() const;
 	String plus_file(const String &p_file) const;
-	char32_t ord_at(int p_idx) const;
+	char32_t unicode_at(int p_idx) const;
 
 	void erase(int p_pos, int p_chars);
 
