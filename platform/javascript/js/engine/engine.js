@@ -1,14 +1,14 @@
-const Engine = (function() {
-	var preloader = new Preloader();
+const Engine = (function () {
+	const preloader = new Preloader();
 
-	var wasmExt = '.wasm';
-	var unloadAfterInit = true;
-	var loadPath = '';
-	var loadPromise = null;
-	var initPromise = null;
-	var stderr = null;
-	var stdout = null;
-	var progressFunc = null;
+	let wasmExt = '.wasm';
+	let unloadAfterInit = true;
+	let loadPath = '';
+	let loadPromise = null;
+	let initPromise = null;
+	let stderr = null;
+	let stdout = null;
+	let progressFunc = null;
 
 	function load(basePath) {
 		if (loadPromise == null) {
@@ -18,11 +18,11 @@ const Engine = (function() {
 			requestAnimationFrame(preloader.animateProgress);
 		}
 		return loadPromise;
-	};
+	}
 
 	function unload() {
 		loadPromise = null;
-	};
+	}
 
 	/** @constructor */
 	function Engine() { // eslint-disable-line no-shadow
@@ -34,30 +34,32 @@ const Engine = (function() {
 		this.onExecute = null;
 		this.onExit = null;
 		this.persistentPaths = ['/userfs'];
-	};
+	}
 
-	Engine.prototype.init = /** @param {string=} basePath */ function(basePath) {
+	Engine.prototype.init = /** @param {string=} basePath */ function (basePath) {
 		if (initPromise) {
 			return initPromise;
 		}
 		if (loadPromise == null) {
 			if (!basePath) {
-				initPromise = Promise.reject(new Error("A base path must be provided when calling `init` and the engine is not loaded."));
+				initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
 				return initPromise;
 			}
 			load(basePath);
 		}
-		var config = {};
-		if (typeof stdout === 'function')
+		let config = {};
+		if (typeof stdout === 'function') {
 			config.print = stdout;
-		if (typeof stderr === 'function')
+		}
+		if (typeof stderr === 'function') {
 			config.printErr = stderr;
-		var me = this;
-		initPromise = new Promise(function(resolve, reject) {
+		}
+		const me = this;
+		initPromise = new Promise(function (resolve, reject) {
 			config['locateFile'] = Utils.createLocateRewrite(loadPath);
 			config['instantiateWasm'] = Utils.createInstantiatePromise(loadPromise);
-			Godot(config).then(function(module) {
-				module['initFS'](me.persistentPaths).then(function(fs_err) {
+			Godot(config).then(function (module) {
+				module['initFS'](me.persistentPaths).then(function (fs_err) {
 					me.rtenv = module;
 					if (unloadAfterInit) {
 						unload();
@@ -71,19 +73,19 @@ const Engine = (function() {
 	};
 
 	/** @type {function(string, string):Object} */
-	Engine.prototype.preloadFile = function(file, path) {
+	Engine.prototype.preloadFile = function (file, path) {
 		return preloader.preload(file, path);
 	};
 
 	/** @type {function(...string):Object} */
-	Engine.prototype.start = function() {
+	Engine.prototype.start = function () {
 		// Start from arguments.
-		var args = [];
-		for (var i = 0; i < arguments.length; i++) {
+		const args = [];
+		for (let i = 0; i < arguments.length; i++) {
 			args.push(arguments[i]);
 		}
-		var me = this;
-		return me.init().then(function() {
+		const me = this;
+		return me.init().then(function () {
 			if (!me.rtenv) {
 				return Promise.reject(new Error('The engine must be initialized before it can be started'));
 			}
@@ -101,18 +103,18 @@ const Engine = (function() {
 			}
 
 			// Disable right-click context menu.
-			me.canvas.addEventListener('contextmenu', function(ev) {
+			me.canvas.addEventListener('contextmenu', function (ev) {
 				ev.preventDefault();
 			}, false);
 
 			// Until context restoration is implemented warn the user of context loss.
-			me.canvas.addEventListener('webglcontextlost', function(ev) {
-				alert("WebGL context lost, please reload the page"); // eslint-disable-line no-alert
+			me.canvas.addEventListener('webglcontextlost', function (ev) {
+				alert('WebGL context lost, please reload the page'); // eslint-disable-line no-alert
 				ev.preventDefault();
 			}, false);
 
 			// Browser locale, or custom one if defined.
-			var locale = me.customLocale;
+			let locale = me.customLocale;
 			if (!locale) {
 				locale = navigator.languages ? navigator.languages[0] : navigator.language;
 				locale = locale.split('.')[0];
@@ -125,14 +127,14 @@ const Engine = (function() {
 				'resizeCanvasOnStart': me.resizeCanvasOnStart,
 				'canvas': me.canvas,
 				'locale': locale,
-				'onExecute': function(p_args) {
+				'onExecute': function (p_args) {
 					if (me.onExecute) {
 						me.onExecute(p_args);
 						return 0;
 					}
 					return 1;
 				},
-				'onExit': function(p_code) {
+				'onExit': function (p_code) {
 					me.rtenv['deinitFS']();
 					if (me.onExit) {
 						me.onExit(p_code);
@@ -141,8 +143,8 @@ const Engine = (function() {
 				},
 			});
 
-			return new Promise(function(resolve, reject) {
-				preloader.preloadedFiles.forEach(function(file) {
+			return new Promise(function (resolve, reject) {
+				preloader.preloadedFiles.forEach(function (file) {
 					me.rtenv['copyToFS'](file.path, file.buffer);
 				});
 				preloader.preloadedFiles.length = 0; // Clear memory
@@ -153,98 +155,101 @@ const Engine = (function() {
 		});
 	};
 
-	Engine.prototype.startGame = function(execName, mainPack, extraArgs) {
+	Engine.prototype.startGame = function (execName, mainPack, extraArgs) {
 		// Start and init with execName as loadPath if not inited.
 		this.executableName = execName;
-		var me = this;
+		const me = this;
 		return Promise.all([
 			this.init(execName),
-			this.preloadFile(mainPack, mainPack)
-		]).then(function() {
-			var args = ['--main-pack', mainPack];
-			if (extraArgs)
+			this.preloadFile(mainPack, mainPack),
+		]).then(function () {
+			let args = ['--main-pack', mainPack];
+			if (extraArgs) {
 				args = args.concat(extraArgs);
+			}
 			return me.start.apply(me, args);
 		});
 	};
 
-	Engine.prototype.setWebAssemblyFilenameExtension = function(override) {
+	Engine.prototype.setWebAssemblyFilenameExtension = function (override) {
 		if (String(override).length === 0) {
 			throw new Error('Invalid WebAssembly filename extension override');
 		}
 		wasmExt = String(override);
 	};
 
-	Engine.prototype.setUnloadAfterInit = function(enabled) {
+	Engine.prototype.setUnloadAfterInit = function (enabled) {
 		unloadAfterInit = enabled;
 	};
 
-	Engine.prototype.setCanvas = function(canvasElem) {
+	Engine.prototype.setCanvas = function (canvasElem) {
 		this.canvas = canvasElem;
 	};
 
-	Engine.prototype.setCanvasResizedOnStart = function(enabled) {
+	Engine.prototype.setCanvasResizedOnStart = function (enabled) {
 		this.resizeCanvasOnStart = enabled;
 	};
 
-	Engine.prototype.setLocale = function(locale) {
+	Engine.prototype.setLocale = function (locale) {
 		this.customLocale = locale;
 	};
 
-	Engine.prototype.setExecutableName = function(newName) {
+	Engine.prototype.setExecutableName = function (newName) {
 		this.executableName = newName;
 	};
 
-	Engine.prototype.setProgressFunc = function(func) {
+	Engine.prototype.setProgressFunc = function (func) {
 		progressFunc = func;
 	};
 
-	Engine.prototype.setStdoutFunc = function(func) {
-		var print = function(text) {
+	Engine.prototype.setStdoutFunc = function (func) {
+		const print = function (text) {
 			let msg = text;
 			if (arguments.length > 1) {
-				msg = Array.prototype.slice.call(arguments).join(" ");
+				msg = Array.prototype.slice.call(arguments).join(' ');
 			}
 			func(msg);
 		};
-		if (this.rtenv)
+		if (this.rtenv) {
 			this.rtenv.print = print;
+		}
 		stdout = print;
 	};
 
-	Engine.prototype.setStderrFunc = function(func) {
-		var printErr = function(text) {
-			let msg = text
+	Engine.prototype.setStderrFunc = function (func) {
+		const printErr = function (text) {
+			let msg = text;
 			if (arguments.length > 1) {
-				msg = Array.prototype.slice.call(arguments).join(" ");
+				msg = Array.prototype.slice.call(arguments).join(' ');
 			}
 			func(msg);
 		};
-		if (this.rtenv)
+		if (this.rtenv) {
 			this.rtenv.printErr = printErr;
+		}
 		stderr = printErr;
 	};
 
-	Engine.prototype.setOnExecute = function(onExecute) {
+	Engine.prototype.setOnExecute = function (onExecute) {
 		this.onExecute = onExecute;
-	}
+	};
 
-	Engine.prototype.setOnExit = function(onExit) {
+	Engine.prototype.setOnExit = function (onExit) {
 		this.onExit = onExit;
-	}
+	};
 
-	Engine.prototype.copyToFS = function(path, buffer) {
+	Engine.prototype.copyToFS = function (path, buffer) {
 		if (this.rtenv == null) {
-			throw new Error("Engine must be inited before copying files");
+			throw new Error('Engine must be inited before copying files');
 		}
 		this.rtenv['copyToFS'](path, buffer);
-	}
+	};
 
-	Engine.prototype.setPersistentPaths = function(persistentPaths) {
+	Engine.prototype.setPersistentPaths = function (persistentPaths) {
 		this.persistentPaths = persistentPaths;
 	};
 
-	Engine.prototype.requestQuit = function() {
+	Engine.prototype.requestQuit = function () {
 		if (this.rtenv) {
 			this.rtenv['request_quit']();
 		}
@@ -274,5 +279,7 @@ const Engine = (function() {
 	Engine.prototype['setPersistentPaths'] = Engine.prototype.setPersistentPaths;
 	Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 	return Engine;
-})();
-if (typeof window !== 'undefined') window['Engine'] = Engine;
+}());
+if (typeof window !== 'undefined') {
+	window['Engine'] = Engine;
+}
