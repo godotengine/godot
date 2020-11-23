@@ -1,37 +1,36 @@
-var Preloader = /** @constructor */ function() { // eslint-disable-line no-unused-vars
-
-	const loadXHR = function(resolve, reject, file, tracker, attempts) {
+const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+	const loadXHR = function (resolve, reject, file, tracker, attempts) {
 		const xhr = new XMLHttpRequest();
 		tracker[file] = {
 			total: 0,
 			loaded: 0,
 			final: false,
 		};
-		xhr.onerror = function() {
+		xhr.onerror = function () {
 			if (attempts <= 1) {
-				reject(new Error("Failed loading file '" + file + "'"));
+				reject(new Error(`Failed loading file '${file}'`));
 			} else {
 				setTimeout(function () {
 					loadXHR(resolve, reject, file, tracker, attempts - 1);
 				}, 1000);
 			}
 		};
-		xhr.onabort = function() {
+		xhr.onabort = function () {
 			tracker[file].final = true;
-			reject(new Error("Loading file '" + file + "' was aborted."));
+			reject(new Error(`Loading file '${file}' was aborted.`));
 		};
-		xhr.onloadstart = function(ev) {
+		xhr.onloadstart = function (ev) {
 			tracker[file].total = ev.total;
 			tracker[file].loaded = ev.loaded;
 		};
-		xhr.onprogress = function(ev) {
+		xhr.onprogress = function (ev) {
 			tracker[file].loaded = ev.loaded;
 			tracker[file].total = ev.total;
 		};
-		xhr.onload = function() {
+		xhr.onload = function () {
 			if (xhr.status >= 400) {
 				if (xhr.status < 500 || attempts <= 1) {
-					reject(new Error("Failed loading file '" + file + "': " + xhr.statusText));
+					reject(new Error(`Failed loading file '${file}': ${xhr.statusText}`));
 					xhr.abort();
 				} else {
 					setTimeout(function () {
@@ -56,14 +55,13 @@ var Preloader = /** @constructor */ function() { // eslint-disable-line no-unuse
 	const lastProgress = { loaded: 0, total: 0 };
 	let progressFunc = null;
 
-	const animateProgress = function() {
+	const animateProgress = function () {
+		let loaded = 0;
+		let total = 0;
+		let totalIsValid = true;
+		let progressIsFinal = true;
 
-		var loaded = 0;
-		var total = 0;
-		var totalIsValid = true;
-		var progressIsFinal = true;
-
-		Object.keys(loadingFiles).forEach(function(file) {
+		Object.keys(loadingFiles).forEach(function (file) {
 			const stat = loadingFiles[file];
 			if (!stat.final) {
 				progressIsFinal = false;
@@ -79,35 +77,36 @@ var Preloader = /** @constructor */ function() { // eslint-disable-line no-unuse
 		if (loaded !== lastProgress.loaded || total !== lastProgress.total) {
 			lastProgress.loaded = loaded;
 			lastProgress.total = total;
-			if (typeof progressFunc === 'function')
+			if (typeof progressFunc === 'function') {
 				progressFunc(loaded, total);
+			}
 		}
-		if (!progressIsFinal)
+		if (!progressIsFinal) {
 			requestAnimationFrame(animateProgress);
-	}
+		}
+	};
 
 	this.animateProgress = animateProgress;
 
-	this.setProgressFunc = function(callback) {
+	this.setProgressFunc = function (callback) {
 		progressFunc = callback;
-	}
+	};
 
-
-	this.loadPromise = function(file) {
-		return new Promise(function(resolve, reject) {
+	this.loadPromise = function (file) {
+		return new Promise(function (resolve, reject) {
 			loadXHR(resolve, reject, file, loadingFiles, DOWNLOAD_ATTEMPTS_MAX);
 		});
-	}
+	};
 
 	this.preloadedFiles = [];
-	this.preload = function(pathOrBuffer, destPath) {
+	this.preload = function (pathOrBuffer, destPath) {
 		let buffer = null;
 		if (typeof pathOrBuffer === 'string') {
-			var me = this;
-			return this.loadPromise(pathOrBuffer).then(function(xhr) {
+			const me = this;
+			return this.loadPromise(pathOrBuffer).then(function (xhr) {
 				me.preloadedFiles.push({
 					path: destPath || pathOrBuffer,
-					buffer: xhr.response
+					buffer: xhr.response,
 				});
 				return Promise.resolve();
 			});
@@ -119,11 +118,10 @@ var Preloader = /** @constructor */ function() { // eslint-disable-line no-unuse
 		if (buffer) {
 			this.preloadedFiles.push({
 				path: destPath,
-				buffer: pathOrBuffer
+				buffer: pathOrBuffer,
 			});
 			return Promise.resolve();
-		} else {
-			return Promise.reject(new Error("Invalid object for preloading"));
 		}
+		return Promise.reject(new Error('Invalid object for preloading'));
 	};
 };

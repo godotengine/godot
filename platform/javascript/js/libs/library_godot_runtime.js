@@ -33,29 +33,29 @@ const GodotRuntime = {
 		/*
 		 * Functions
 		 */
-		get_func: function(ptr) {
+		get_func: function (ptr) {
 			return wasmTable.get(ptr); // eslint-disable-line no-undef
 		},
 
 		/*
 		 * Prints
 		 */
-		error: function() {
+		error: function () {
 			err.apply(null, Array.from(arguments)); // eslint-disable-line no-undef
 		},
 
-		print: function() {
+		print: function () {
 			out.apply(null, Array.from(arguments)); // eslint-disable-line no-undef
 		},
 
 		/*
 		 * Memory
 		 */
-		malloc: function(p_size) {
+		malloc: function (p_size) {
 			return _malloc(p_size); // eslint-disable-line no-undef
 		},
 
-		free: function(p_ptr) {
+		free: function (p_ptr) {
 			_free(p_ptr); // eslint-disable-line no-undef
 		},
 
@@ -63,16 +63,16 @@ const GodotRuntime = {
 			return getValue(p_ptr, p_type); // eslint-disable-line no-undef
 		},
 
-		setHeapValue: function(p_ptr, p_value, p_type) {
+		setHeapValue: function (p_ptr, p_value, p_type) {
 			setValue(p_ptr, p_value, p_type); // eslint-disable-line no-undef
 		},
 
-		heapSub: function(p_heap, p_ptr, p_len) {
+		heapSub: function (p_heap, p_ptr, p_len) {
 			const bytes = p_heap.BYTES_PER_ELEMENT;
 			return p_heap.subarray(p_ptr / bytes, p_ptr / bytes + p_len);
 		},
 
-		heapCopy: function(p_heap, p_ptr, p_len) {
+		heapCopy: function (p_heap, p_ptr, p_len) {
 			const bytes = p_heap.BYTES_PER_ELEMENT;
 			return p_heap.slice(p_ptr / bytes, p_ptr / bytes + p_len);
 		},
@@ -80,22 +80,22 @@ const GodotRuntime = {
 		/*
 		 * Strings
 		 */
-		parseString: function(p_ptr) {
+		parseString: function (p_ptr) {
 			return UTF8ToString(p_ptr); // eslint-disable-line no-undef
 		},
 
-		strlen: function(p_str) {
+		strlen: function (p_str) {
 			return lengthBytesUTF8(p_str); // eslint-disable-line no-undef
 		},
 
-		allocString: function(p_str) {
-			const length = GodotRuntime.strlen(p_str)+1;
+		allocString: function (p_str) {
+			const length = GodotRuntime.strlen(p_str) + 1;
 			const c_str = GodotRuntime.malloc(length);
 			stringToUTF8(p_str, c_str, length); // eslint-disable-line no-undef
 			return c_str;
 		},
 
-		allocStringArray: function(p_strings) {
+		allocStringArray: function (p_strings) {
 			const size = p_strings.length;
 			const c_ptr = GodotRuntime.malloc(size * 4);
 			for (let i = 0; i < size; i++) {
@@ -104,7 +104,7 @@ const GodotRuntime = {
 			return c_ptr;
 		},
 
-		freeStringArray: function(p_ptr, p_len) {
+		freeStringArray: function (p_ptr, p_len) {
 			for (let i = 0; i < p_len; i++) {
 				GodotRuntime.free(HEAP32[(p_ptr >> 2) + i]);
 			}
@@ -116,5 +116,5 @@ const GodotRuntime = {
 		},
 	},
 };
-autoAddDeps(GodotRuntime, "$GodotRuntime");
+autoAddDeps(GodotRuntime, '$GodotRuntime');
 mergeInto(LibraryManager.library, GodotRuntime);
