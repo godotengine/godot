@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Azure repositories are not reliable, we need to prevent azure giving us packages.
+      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
         run: |
           sudo rm -f /etc/apt/sources.list.d/*
@@ -32,6 +32,12 @@ jobs:
       - name: Python style checks via black (black_format.sh)
         run: |
           bash ./misc/scripts/black_format.sh
+
+      - name: JavaScript style checks via ESLint
+        run: |
+          cd platform/javascript
+          npm ci
+          npm run lint
 
       - name: Documentation checks
         run: |
