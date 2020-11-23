@@ -61,6 +61,8 @@ class SpinBox : public Range {
 
 	void _line_edit_focus_exit();
 
+	void _set_line_edit_mouse_filter(MouseFilter p_filter);
+
 	inline void _adjust_width_for_icon(const Ref<Texture2D> &icon);
 
 protected:
@@ -86,6 +88,8 @@ public:
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+
+	void set_mouse_filter(MouseFilter p_filter);
 
 	void apply();
 

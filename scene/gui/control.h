@@ -414,7 +414,7 @@ public:
 
 	Control *get_focus_owner() const;
 
-	void set_mouse_filter(MouseFilter p_filter);
+	virtual void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
