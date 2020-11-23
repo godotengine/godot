@@ -50,6 +50,7 @@ private:
 	Ref<Texture2D> icon;
 	bool expand_icon;
 	bool clip_text;
+	bool localize_text;
 	TextAlign align;
 	float _internal_margin[4];
 
@@ -75,6 +76,9 @@ public:
 
 	void set_clip_text(bool p_clip_text);
 	bool get_clip_text() const;
+
+	void set_localize_text(bool p_localize_text);
+	bool is_localizing_text() const;
 
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;

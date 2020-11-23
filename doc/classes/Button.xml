@@ -48,6 +48,9 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
 		</member>
+		<member name="localize_text" type="bool" setter="set_localize_text" getter="is_localizing_text" default="true">
+			When disabled, the button's text won't be localized.
+		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
 			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect.
 		</member>

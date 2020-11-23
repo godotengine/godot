@@ -50,6 +50,9 @@
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.
 		</member>
+		<member name="localize" type="bool" setter="set_localize" getter="is_localizing" default="true">
+			If [code]false[/code], the text won't be localized.
+		</member>
 		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
 			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
 		</member>

@@ -68,7 +68,7 @@ int Label::get_line_height() const {
 
 void Label::_notification(int p_what) {
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		String new_text = tr(text);
+		String new_text = localize ? tr(text) : text;
 		if (new_text == xl_text) {
 			return; //nothing new
 		}
@@ -548,7 +548,7 @@ void Label::set_text(const String &p_string) {
 		return;
 	}
 	text = p_string;
-	xl_text = tr(p_string);
+	xl_text = localize ? tr(p_string) : p_string;
 	word_cache_dirty = true;
 	if (percent_visible < 1) {
 		visible_chars = get_total_character_count() * percent_visible;
@@ -564,6 +564,16 @@ void Label::set_clip_text(bool p_clip) {
 
 bool Label::is_clipping_text() const {
 	return clip;
+}
+
+void Label::set_localize(bool p_localize) {
+	localize = p_localize;
+	update();
+	minimum_size_changed();
+}
+
+bool Label::is_localizing() const {
+	return localize;
 }
 
 String Label::get_text() const {
@@ -637,6 +647,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_autowrap"), &Label::has_autowrap);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_localize", "enable"), &Label::set_localize);
+	ClassDB::bind_method(D_METHOD("is_localizing"), &Label::is_localizing);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &Label::is_uppercase);
 	ClassDB::bind_method(D_METHOD("get_line_height"), &Label::get_line_height);
@@ -667,6 +679,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "valign", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_valign", "get_valign");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autowrap"), "set_autowrap", "has_autowrap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "localize"), "set_localize", "is_localizing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1", PROPERTY_USAGE_EDITOR), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
