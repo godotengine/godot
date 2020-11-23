@@ -35,8 +35,8 @@
 
 class FileAccessMemory : public FileAccess {
 	uint8_t *data = nullptr;
-	int length;
-	mutable int pos;
+	int length = 0;
+	mutable int pos = 0;
 
 	static FileAccess *create();
 

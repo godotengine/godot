@@ -492,8 +492,8 @@ public:
 	virtual ~_Directory();
 
 private:
-	bool _list_skip_navigational;
-	bool _list_skip_hidden;
+	bool _list_skip_navigational = false;
+	bool _list_skip_hidden = false;
 };
 
 class _Marshalls : public Object {

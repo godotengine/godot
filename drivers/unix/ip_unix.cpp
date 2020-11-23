@@ -91,7 +91,7 @@ static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
 
 IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 	struct addrinfo hints;
-	struct addrinfo *result;
+	struct addrinfo *result = nullptr;
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 	if (p_type == TYPE_IPV4) {

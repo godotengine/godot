@@ -56,17 +56,17 @@ class AudioDriverALSA : public AudioDriver {
 
 	static void thread_func(void *p_udata);
 
-	unsigned int mix_rate;
+	unsigned int mix_rate = 0;
 	SpeakerMode speaker_mode;
 
 	snd_pcm_uframes_t buffer_frames;
 	snd_pcm_uframes_t buffer_size;
 	snd_pcm_uframes_t period_size;
-	int channels;
+	int channels = 0;
 
-	bool active;
-	bool thread_exited;
-	mutable bool exit_thread;
+	bool active = false;
+	bool thread_exited = false;
+	mutable bool exit_thread = false;
 
 public:
 	const char *get_name() const {

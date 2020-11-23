@@ -46,16 +46,16 @@ class DirAccessWindows : public DirAccess {
 		MAX_DRIVES = 26
 	};
 
-	DirAccessWindowsPrivate *p;
+	DirAccessWindowsPrivate *p = nullptr;
 	/* Windows stuff */
 
-	char drives[MAX_DRIVES]; // a-z:
-	int drive_count;
+	char drives[MAX_DRIVES] = { 0 }; // a-z:
+	int drive_count = 0;
 
 	String current_dir;
 
-	bool _cisdir;
-	bool _cishidden;
+	bool _cisdir = false;
+	bool _cishidden = false;
 
 public:
 	virtual Error list_dir_begin(); ///< This starts dir listing

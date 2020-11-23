@@ -165,7 +165,7 @@ uint64_t atomic_exchange_if_greater(volatile uint64_t *pw, volatile uint64_t val
 #endif
 
 struct SafeRefCount {
-	uint32_t count;
+	uint32_t count = 0;
 
 public:
 	// destroy() is called when weak_count_ drops to zero.
