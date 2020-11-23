@@ -43,6 +43,7 @@ public:
 	EditorImportPlugin();
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
+	virtual int get_importer_version() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_preset_name(int p_idx) const override;
 	virtual int get_preset_count() const override;
