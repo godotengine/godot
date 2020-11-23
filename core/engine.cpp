@@ -241,8 +241,9 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr) :
 		name(p_name),
 		ptr(p_ptr) {
 #ifdef DEBUG_ENABLED
-	if (Object::cast_to<Reference>(p_ptr)) {
-		ERR_PRINT("A class intended to be used as a singleton must *not* inherit from Reference.");
+	Reference *ref = Object::cast_to<Reference>(p_ptr);
+	if (ref && !ref->is_referenced()) {
+		WARN_PRINT("You must use Ref<> to ensure the lifetime of a Reference object intended to be used as a singleton.");
 	}
 #endif
 }
