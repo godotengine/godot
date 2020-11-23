@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  library_godot_editor_tools.js                                        */
+/*  library_godot_eval.js                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-const GodotEditorTools = {
+const GodotEval = {
+	godot_js_eval__deps: ['$GodotRuntime'],
+	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+		const js_code = GodotRuntime.parseString(p_js);
+		let eval_ret = null;
+		try {
+			if (p_use_global_ctx) {
+				// indirect eval call grants global execution context
+				const global_eval = eval; // eslint-disable-line no-eval
+				eval_ret = global_eval(js_code);
+			} else {
+				eval_ret = eval(js_code); // eslint-disable-line no-eval
+			}
+		} catch (e) {
+			GodotRuntime.error(e);
+		}
 
-	godot_js_editor_download_file__deps: ['$FS'],
-	godot_js_editor_download_file: function(p_path, p_name, p_mime) {
-		const path = UTF8ToString(p_path);
-		const name = UTF8ToString(p_name);
-		const mime = UTF8ToString(p_mime);
-		const size = FS.stat(path)['size'];
-		const buf = new Uint8Array(size);
-		const fd = FS.open(path, 'r');
-		FS.read(fd, buf, 0, size);
-		FS.close(fd);
-		FS.unlink(path);
-		const blob = new Blob([buf], { type: mime });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = name;
-		a.style.display = 'none';
-		document.body.appendChild(a);
-		a.click();
-		a.remove();
-		window.URL.revokeObjectURL(url);
+		switch (typeof eval_ret) {
+		case 'boolean':
+			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
+			return 1; // BOOL
+
+		case 'number':
+			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
+			return 3; // REAL
+
+		case 'string':
+			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
+			return 4; // STRING
+
+		case 'object':
+			if (eval_ret === null) {
+				break;
+			}
+
+			if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+				eval_ret = new Uint8Array(eval_ret.buffer);
+			} else if (eval_ret instanceof ArrayBuffer) {
+				eval_ret = new Uint8Array(eval_ret);
+			}
+			if (eval_ret instanceof Uint8Array) {
+				const func = GodotRuntime.get_func(p_callback);
+				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
+				HEAPU8.set(eval_ret, bytes_ptr);
+				return 20; // POOL_BYTE_ARRAY
+			}
+			break;
+
+			// no default
+		}
+		return 0; // NIL
 	},
 };
 
-mergeInto(LibraryManager.library, GodotEditorTools);
+mergeInto(LibraryManager.library, GodotEval);
