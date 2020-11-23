@@ -594,7 +594,7 @@ public:
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
-	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
+	BIND7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
 	BIND9(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float)
 	BIND9(environment_set_volumetric_fog, RID, bool, float, const Color &, float, float, float, float, EnvVolumetricFogShadowFilter)

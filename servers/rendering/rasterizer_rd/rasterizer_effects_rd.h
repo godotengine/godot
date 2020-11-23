@@ -167,6 +167,8 @@ class RasterizerEffectsRD {
 	enum TonemapMode {
 		TONEMAP_MODE_NORMAL,
 		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
+		TONEMAP_MODE_1D_LUT,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER_1D_LUT,
 		TONEMAP_MODE_MAX
 	};
 
@@ -198,7 +200,7 @@ class RasterizerEffectsRD {
 
 	/* tonemap actually writes to a framebuffer, which is
 	 * better to do using the raster pipeline rather than
-	 * comptute, as that framebuffer might be in different formats
+	 * compute, as that framebuffer might be in different formats
 	 */
 	struct Tonemap {
 		TonemapPushConstant push_constant;
@@ -654,6 +656,7 @@ public:
 		float saturation = 1.0;
 
 		bool use_color_correction = false;
+		bool use_1d_color_correction = false;
 		RID color_correction_texture;
 
 		bool use_fxaa = false;
