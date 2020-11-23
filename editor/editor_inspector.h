@@ -49,6 +49,13 @@ public:
 class EditorProperty : public Container {
 	GDCLASS(EditorProperty, Container);
 
+public:
+	enum MenuItems {
+		MENU_COPY_PROPERTY,
+		MENU_COPY_PROPERTY_PATH,
+		MENU_PASTE_PROPERTY
+	};
+
 private:
 	String label;
 	int text_size;
@@ -95,6 +102,7 @@ private:
 	Vector<Control *> focusables;
 	Control *label_reference;
 	Control *bottom_editor;
+	PopupMenu *menu;
 
 	mutable String tooltip_text;
 
@@ -103,6 +111,7 @@ protected:
 	static void _bind_methods();
 
 	void _gui_input(const Ref<InputEvent> &p_event);
+	void _unhandled_key_input(Ref<InputEvent> p_event);
 
 public:
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
@@ -167,6 +176,8 @@ public:
 	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
 
 	bool can_revert_to_default() const { return can_revert; }
+
+	void menu_option(int p_option);
 
 	EditorProperty();
 };
@@ -308,6 +319,7 @@ class EditorInspector : public ScrollContainer {
 
 	String property_prefix; //used for sectioned inspector
 	String object_class;
+	Variant property_clipboard;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -395,6 +407,9 @@ public:
 	void set_sub_inspector(bool p_enable);
 
 	void set_use_deletable_properties(bool p_enabled);
+
+	void set_property_clipboard(const Variant &p_value);
+	Variant get_property_clipboard() const;
 
 	EditorInspector();
 };

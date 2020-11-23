@@ -31,10 +31,12 @@
 #include "editor_inspector.h"
 
 #include "array_property_edit.h"
+#include "core/os/keyboard.h"
 #include "dictionary_property_edit.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "editor_settings.h"
 #include "multi_node_edit.h"
 #include "scene/resources/packed_scene.h"
 
@@ -749,6 +751,29 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 			update();
 			emit_signal("property_checked", property, checked);
 		}
+	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+		menu->set_size(Vector2(1, 1));
+		menu->popup();
+		select();
+		return;
+	}
+}
+
+void EditorProperty::_unhandled_key_input(Ref<InputEvent> p_event) {
+	if (!selected) {
+		return;
+	}
+
+	if (ED_IS_SHORTCUT("property_editor/copy_property", p_event)) {
+		menu_option(MENU_COPY_PROPERTY);
+		accept_event();
+	} else if (ED_IS_SHORTCUT("property_editor/paste_property", p_event)) {
+		menu_option(MENU_PASTE_PROPERTY);
+		accept_event();
+	} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
+		menu_option(MENU_COPY_PROPERTY_PATH);
+		accept_event();
 	}
 }
 
@@ -840,6 +865,20 @@ String EditorProperty::get_tooltip_text() const {
 	return tooltip_text;
 }
 
+void EditorProperty::menu_option(int p_option) {
+	switch (p_option) {
+		case MENU_COPY_PROPERTY: {
+			EditorNode::get_singleton()->get_inspector()->set_property_clipboard(object->get(property));
+		} break;
+		case MENU_PASTE_PROPERTY: {
+			emit_changed(property, EditorNode::get_singleton()->get_inspector()->get_property_clipboard());
+		} break;
+		case MENU_COPY_PROPERTY_PATH: {
+			DisplayServer::get_singleton()->clipboard_set(property);
+		} break;
+	}
+}
+
 void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_label", "text"), &EditorProperty::set_label);
 	ClassDB::bind_method(D_METHOD("get_label"), &EditorProperty::get_label);
@@ -866,6 +905,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &EditorProperty::_gui_input);
+	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &EditorProperty::_unhandled_key_input);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
 
@@ -918,6 +958,14 @@ EditorProperty::EditorProperty() {
 	selected_focusable = -1;
 	label_reference = nullptr;
 	bottom_editor = nullptr;
+	set_process_unhandled_key_input(true);
+
+	menu = memnew(PopupMenu);
+	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/copy_property"), MENU_COPY_PROPERTY);
+	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/paste_property"), MENU_PASTE_PROPERTY);
+	menu->add_shortcut(ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
+	menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
+	add_child(menu);
 }
 
 ////////////////////////////////////////////////
@@ -2525,6 +2573,14 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 	r_list.erase(bottom);
 }
 
+void EditorInspector::set_property_clipboard(const Variant &p_value) {
+	property_clipboard = p_value;
+}
+
+Variant EditorInspector::get_property_clipboard() const {
+	return property_clipboard;
+}
+
 void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_edit_request_change", &EditorInspector::_edit_request_change);
 
@@ -2570,7 +2626,11 @@ EditorInspector::EditorInspector() {
 	property_focusable = -1;
 	sub_inspector = false;
 	deletable_properties = false;
+	property_clipboard = Variant();
 
 	get_v_scrollbar()->connect("value_changed", callable_mp(this, &EditorInspector::_vscroll_changed));
 	update_scroll_request = -1;
+	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KEY_MASK_CMD | KEY_V);
+	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 }
