@@ -133,7 +133,7 @@ private:
 
 		ENode *next = nullptr;
 
-		Type type;
+		Type type = TYPE_INPUT;
 
 		ENode() {}
 		virtual ~ENode() {
@@ -144,7 +144,7 @@ private:
 	};
 
 	struct ExpressionNode {
-		bool is_op;
+		bool is_op = false;
 		union {
 			Variant::Operator op;
 			ENode *node;
@@ -154,23 +154,23 @@ private:
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-		int index;
+		int index = 0;
 		InputNode() {
 			type = TYPE_INPUT;
 		}
 	};
 
 	struct ConstantNode : public ENode {
-		Variant value;
+		Variant value = Variant::NIL;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
 		}
 	};
 
 	struct OperatorNode : public ENode {
-		Variant::Operator op;
+		Variant::Operator op = Variant::Operator::OP_ADD;
 
-		ENode *nodes[2];
+		ENode *nodes[2] = { nullptr, nullptr };
 
 		OperatorNode() {
 			type = TYPE_OPERATOR;
@@ -184,8 +184,8 @@ private:
 	};
 
 	struct IndexNode : public ENode {
-		ENode *base;
-		ENode *index;
+		ENode *base = nullptr;
+		ENode *index = nullptr;
 
 		IndexNode() {
 			type = TYPE_INDEX;
@@ -193,7 +193,7 @@ private:
 	};
 
 	struct NamedIndexNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName name;
 
 		NamedIndexNode() {
@@ -202,7 +202,7 @@ private:
 	};
 
 	struct ConstructorNode : public ENode {
-		Variant::Type data_type;
+		Variant::Type data_type = Variant::Type::NIL;
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {
@@ -211,7 +211,7 @@ private:
 	};
 
 	struct CallNode : public ENode {
-		ENode *base;
+		ENode *base = nullptr;
 		StringName method;
 		Vector<ENode *> arguments;
 

@@ -57,7 +57,6 @@ protected:
 	String _get_root_string() const;
 
 	String fix_path(String p_path) const;
-	bool next_is_dir;
 
 	template <class T>
 	static DirAccess *_create_builtin() {

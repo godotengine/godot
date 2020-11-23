@@ -542,9 +542,9 @@ void _OS::dump_memory_to_file(const String &p_file) {
 struct _OSCoreBindImg {
 	String path;
 	Size2 size;
-	int fmt;
+	int fmt = 0;
 	ObjectID id;
-	int vram;
+	int vram = 0;
 	bool operator<(const _OSCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
 };
 

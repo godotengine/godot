@@ -84,7 +84,7 @@ class PackedDataContainerRef : public Reference {
 	GDCLASS(PackedDataContainerRef, Reference);
 
 	friend class PackedDataContainer;
-	uint32_t offset;
+	uint32_t offset = 0;
 	Ref<PackedDataContainer> from;
 
 protected:

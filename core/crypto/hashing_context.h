@@ -45,7 +45,7 @@ public:
 
 private:
 	void *ctx = nullptr;
-	HashType type;
+	HashType type = HASH_MD5;
 
 protected:
 	static void _bind_methods();

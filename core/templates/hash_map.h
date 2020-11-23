@@ -73,7 +73,7 @@ public:
 	private:
 		friend class HashMap;
 
-		uint32_t hash;
+		uint32_t hash = 0;
 		Element *next = nullptr;
 		Element() {}
 		Pair pair;

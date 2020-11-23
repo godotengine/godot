@@ -47,8 +47,8 @@ private:
 	Vector<uint8_t> key;
 	bool writing = false;
 	FileAccess *file = nullptr;
-	size_t base;
-	size_t length;
+	size_t base = 0;
+	size_t length = 0;
 	Vector<uint8_t> data;
 	mutable int pos = 0;
 	mutable bool eofed = false;

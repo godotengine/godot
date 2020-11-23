@@ -7645,7 +7645,6 @@ RenderingDevice *RenderingDeviceVulkan::create_local_device() {
 }
 
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
-	screen_prepared = false;
 }
 
 RenderingDeviceVulkan::~RenderingDeviceVulkan() {

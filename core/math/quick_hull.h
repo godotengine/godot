@@ -41,7 +41,7 @@ public:
 	struct Edge {
 		union {
 			uint32_t vertices[2];
-			uint64_t id;
+			uint64_t id = 0;
 		};
 
 		bool operator<(const Edge &p_edge) const {
@@ -60,7 +60,7 @@ public:
 
 	struct Face {
 		Plane plane;
-		uint32_t vertices[3];
+		uint32_t vertices[3] = { 0 };
 		Vector<int> points_over;
 
 		bool operator<(const Face &p_face) const {
@@ -70,11 +70,13 @@ public:
 
 private:
 	struct FaceConnect {
-		List<Face>::Element *left, *right = nullptr;
+		List<Face>::Element *left = nullptr;
+		List<Face>::Element *right = nullptr;
 		FaceConnect() {}
 	};
 	struct RetFaceConnect {
-		List<Geometry3D::MeshData::Face>::Element *left, *right = nullptr;
+		List<Geometry3D::MeshData::Face>::Element *left = nullptr;
+		List<Geometry3D::MeshData::Face>::Element *right = nullptr;
 		RetFaceConnect() {}
 	};
 

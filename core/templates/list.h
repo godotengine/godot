@@ -137,9 +137,9 @@ public:
 
 private:
 	struct _Data {
-		Element *first;
-		Element *last;
-		int size_cache;
+		Element *first = nullptr;
+		Element *last = nullptr;
+		int size_cache = 0;
 
 		bool erase(const Element *p_I) {
 			ERR_FAIL_COND_V(!p_I, false);

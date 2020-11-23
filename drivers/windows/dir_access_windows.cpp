@@ -367,8 +367,6 @@ DirAccessWindows::DirAccessWindows() {
 	p->h = INVALID_HANDLE_VALUE;
 	current_dir = ".";
 
-	drive_count = 0;
-
 #ifdef UWP_ENABLED
 	Windows::Storage::StorageFolder ^ install_folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
 	change_dir(install_folder->Path->Data());

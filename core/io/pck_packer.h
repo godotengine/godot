@@ -39,7 +39,7 @@ class PCKPacker : public Reference {
 	GDCLASS(PCKPacker, Reference);
 
 	FileAccess *file = nullptr;
-	int alignment;
+	int alignment = 0;
 	uint64_t ofs = 0;
 
 	Vector<uint8_t> key;
@@ -50,9 +50,9 @@ class PCKPacker : public Reference {
 	struct File {
 		String path;
 		String src_path;
-		uint64_t ofs;
-		uint64_t size;
-		bool encrypted;
+		uint64_t ofs = 0;
+		uint64_t size = 0;
+		bool encrypted = false;
 		Vector<uint8_t> md5;
 	};
 	Vector<File> files;

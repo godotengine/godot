@@ -41,8 +41,8 @@ class ThreadWorkPool {
 	std::atomic<uint32_t> index;
 
 	struct BaseWork {
-		std::atomic<uint32_t> *index;
-		uint32_t max_elements;
+		std::atomic<uint32_t> *index = nullptr;
+		uint32_t max_elements = 0;
 		virtual void work() = 0;
 		virtual ~BaseWork() = default;
 	};

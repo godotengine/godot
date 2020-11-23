@@ -47,13 +47,13 @@ class VulkanContext {
 		FRAME_LAG = 2
 	};
 
-	VkInstance inst;
-	VkSurfaceKHR surface;
-	VkPhysicalDevice gpu;
+	VkInstance inst = VK_NULL_HANDLE;
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+	VkPhysicalDevice gpu = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties gpu_props;
-	uint32_t queue_family_count;
+	uint32_t queue_family_count = 0;
 	VkQueueFamilyProperties *queue_props = nullptr;
-	VkDevice device;
+	VkDevice device = VK_NULL_HANDLE;
 	bool device_initialized = false;
 	bool inst_initialized = false;
 
@@ -61,17 +61,17 @@ class VulkanContext {
 
 	// Present queue.
 	bool queues_initialized = false;
-	uint32_t graphics_queue_family_index;
-	uint32_t present_queue_family_index;
-	bool separate_present_queue;
-	VkQueue graphics_queue;
-	VkQueue present_queue;
+	uint32_t graphics_queue_family_index = 0;
+	uint32_t present_queue_family_index = 0;
+	bool separate_present_queue = false;
+	VkQueue graphics_queue = VK_NULL_HANDLE;
+	VkQueue present_queue = VK_NULL_HANDLE;
 	VkColorSpaceKHR color_space;
 	VkFormat format;
 	VkSemaphore image_acquired_semaphores[FRAME_LAG];
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
 	VkSemaphore image_ownership_semaphores[FRAME_LAG];
-	int frame_index;
+	int frame_index = 0;
 	VkFence fences[FRAME_LAG];
 	VkPhysicalDeviceMemoryProperties memory_properties;
 	VkPhysicalDeviceFeatures physical_device_features;
@@ -91,14 +91,14 @@ class VulkanContext {
 		uint32_t current_buffer = 0;
 		int width = 0;
 		int height = 0;
-		VkCommandPool present_cmd_pool; // For separate present queue.
+		VkCommandPool present_cmd_pool = VK_NULL_HANDLE; // For separate present queue.
 		VkRenderPass render_pass = VK_NULL_HANDLE;
 	};
 
 	struct LocalDevice {
 		bool waiting = false;
-		VkDevice device;
-		VkQueue queue;
+		VkDevice device = VK_NULL_HANDLE;
+		VkQueue queue = VK_NULL_HANDLE;
 	};
 
 	RID_Owner<LocalDevice, true> local_device_owner;
@@ -108,7 +108,7 @@ class VulkanContext {
 
 	// Commands.
 
-	bool prepared;
+	bool prepared = false;
 
 	Vector<VkCommandBuffer> command_buffer_queue;
 	int command_buffer_count = 1;
@@ -142,7 +142,7 @@ class VulkanContext {
 	PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
 	PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
-	VkDebugUtilsMessengerEXT dbg_messenger;
+	VkDebugUtilsMessengerEXT dbg_messenger = VK_NULL_HANDLE;
 
 	Error _create_validation_layers();
 	Error _initialize_extensions();

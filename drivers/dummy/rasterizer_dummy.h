@@ -183,21 +183,21 @@ class RasterizerStorageDummy : public RasterizerStorage {
 public:
 	/* TEXTURE API */
 	struct DummyTexture {
-		int width;
-		int height;
-		uint32_t flags;
-		Image::Format format;
+		int width = 0;
+		int height = 0;
+		uint32_t flags = 0;
+		Image::Format format = Image::Format::FORMAT_MAX;
 		Ref<Image> image;
 		String path;
 	};
 
 	struct DummySurface {
-		uint32_t format;
-		RS::PrimitiveType primitive;
+		uint32_t format = 0;
+		RS::PrimitiveType primitive = RS::PrimitiveType::PRIMITIVE_MAX;
 		Vector<uint8_t> array;
-		int vertex_count;
+		int vertex_count = 0;
 		Vector<uint8_t> index_array;
-		int index_count;
+		int index_count = 0;
 		AABB aabb;
 		Vector<Vector<uint8_t>> blend_shapes;
 		Vector<AABB> bone_aabbs;
@@ -205,8 +205,8 @@ public:
 
 	struct DummyMesh {
 		Vector<DummySurface> surfaces;
-		int blend_shape_count;
-		RS::BlendShapeMode blend_shape_mode;
+		int blend_shape_count = 0;
+		RS::BlendShapeMode blend_shape_mode = RS::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED;
 	};
 
 	mutable RID_PtrOwner<DummyTexture> texture_owner;

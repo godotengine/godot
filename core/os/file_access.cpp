@@ -254,8 +254,8 @@ class CharBuffer {
 	Vector<char> vector;
 	char stack_buffer[256];
 
-	char *buffer;
-	int capacity;
+	char *buffer = nullptr;
+	int capacity = 0;
 	int written = 0;
 
 	bool grow() {
