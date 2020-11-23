@@ -125,42 +125,6 @@
 				Returns the current value of the joypad axis at given index (see [enum JoyAxisList]).
 			</description>
 		</method>
-		<method name="get_joy_axis_index_from_string">
-			<return type="int">
-			</return>
-			<argument index="0" name="axis" type="String">
-			</argument>
-			<description>
-				Returns the index of the provided axis name.
-			</description>
-		</method>
-		<method name="get_joy_axis_string">
-			<return type="String">
-			</return>
-			<argument index="0" name="axis_index" type="int">
-			</argument>
-			<description>
-				Receives a [enum JoyAxisList] axis and returns its equivalent name as a string.
-			</description>
-		</method>
-		<method name="get_joy_button_index_from_string">
-			<return type="int">
-			</return>
-			<argument index="0" name="button" type="String">
-			</argument>
-			<description>
-				Returns the index of the provided button name.
-			</description>
-		</method>
-		<method name="get_joy_button_string">
-			<return type="String">
-			</return>
-			<argument index="0" name="button_index" type="int">
-			</argument>
-			<description>
-				Receives a gamepad button from [enum JoyButtonList] and returns its equivalent name as a string.
-			</description>
-		</method>
 		<method name="get_joy_guid" qualifiers="const">
 			<return type="String">
 			</return>
