@@ -1,16 +1,12 @@
-def can_build(env, platform):
-    return env.module_check_dependencies("theora", ["ogg", "vorbis"])
+def can_build(env: dict) -> bool:
+    return True
 
 
-def configure(env):
-    pass
-
-
-def get_doc_classes():
+def get_doc_classes() -> [str]:
     return [
         "VideoStreamTheora",
     ]
 
 
-def get_doc_path():
+def get_doc_path() -> str:
     return "doc_classes"

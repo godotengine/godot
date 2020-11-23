@@ -1,0 +1,61 @@
+# NOTE: do not use files() here
+_rd_shaders = [
+    'bokeh_dof.glsl',
+    'canvas.glsl',
+    'canvas_occlusion.glsl',
+    'canvas_sdf.glsl',
+    'canvas_uniforms_inc.glsl',
+    'cluster_data_inc.glsl',
+    'copy.glsl',
+    'copy_to_fb.glsl',
+    'cube_to_dp.glsl',
+    'cubemap_downsampler.glsl',
+    'cubemap_filter.glsl',
+    'cubemap_roughness.glsl',
+    'gi.glsl',
+    'giprobe.glsl',
+    'giprobe_debug.glsl',
+    'giprobe_sdf.glsl',
+    'giprobe_write.glsl',
+    'luminance_reduce.glsl',
+    'particles.glsl',
+    'particles_copy.glsl',
+    'resolve.glsl',
+    'roughness_limiter.glsl',
+    'scene_forward.glsl',
+    'scene_forward_inc.glsl',
+    'screen_space_reflection.glsl',
+    'screen_space_reflection_filter.glsl',
+    'screen_space_reflection_scale.glsl',
+    'sdfgi_debug.glsl',
+    'sdfgi_debug_probes.glsl',
+    'sdfgi_direct_light.glsl',
+    'sdfgi_fields.glsl',
+    'sdfgi_integrate.glsl',
+    'sdfgi_preprocess.glsl',
+    'shadow_reduce.glsl',
+    'skeleton.glsl',
+    'sky.glsl',
+    'sort.glsl',
+    'specular_merge.glsl',
+    'ssao.glsl',
+    'ssao_blur.glsl',
+    'ssao_downsample.glsl',
+    'ssao_importance_map.glsl',
+    'ssao_interleave.glsl',
+    'subsurface_scattering.glsl',
+    'tonemap.glsl',
+    'volumetric_fog.glsl',
+]
+
+foreach glsl_file : _rd_shaders
+    _rd_target = custom_target(
+        'rd_target_' + glsl_file,
+        output: '@PLAINNAME@.gen.h',
+        input: glsl_file,
+        command: [SCRIPT_GLSL, 'rd', '@INPUT@', '@OUTPUT@'],
+        build_by_default: true
+    )
+
+    SOURCES += [_rd_target]
+endforeach

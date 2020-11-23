@@ -1,0 +1,18 @@
+SOURCES += files([
+    'collada.cpp',
+    'editor_import_collada.cpp',
+    'editor_import_plugin.cpp',
+    'resource_importer_bitmask.cpp',
+    'resource_importer_csv.cpp',
+    'resource_importer_csv_translation.cpp',
+    'resource_importer_image.cpp',
+    'resource_importer_layered_texture.cpp',
+    'resource_importer_obj.cpp',
+    'resource_importer_scene.cpp',
+    'resource_importer_shader_file.cpp',
+    'resource_importer_texture.cpp',
+    'resource_importer_texture_atlas.cpp',
+    'resource_importer_wav.cpp',
+    'scene_importer_mesh.cpp',
+    'scene_importer_mesh_node_3d.cpp',
+])

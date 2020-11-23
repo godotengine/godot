@@ -305,3 +305,21 @@ index 601f814..487f0a9 100644
    }
  
  } // namespace oidn
+
+
+
+diff --git a/thirdparty/oidn/common/platform.h b/thirdparty/oidn/common/platform.h
+index 9373b617b5..a08cdf39e4 100644
+--- a/thirdparty/oidn/common/platform.h
++++ b/thirdparty/oidn/common/platform.h
+@@ -18,7 +18,9 @@
+ 
+ #if defined(_WIN32)
+   #define WIN32_LEAN_AND_MEAN
+-  #define NOMINMAX
++  #ifndef NOMINMAX
++    #define NOMINMAX
++  #endif
+   #include <windows.h>
+ #elif defined(__APPLE__)
+   #include <sys/sysctl.h>

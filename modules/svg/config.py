@@ -1,6 +1,2 @@
-def can_build(env, platform):
+def can_build(env: dict) -> bool:
     return True
-
-
-def configure(env):
-    pass

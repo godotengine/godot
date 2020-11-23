@@ -1,0 +1,23 @@
+[binaries]
+c = '/usr/bin/x86_64-w64-mingw32-gcc-posix'
+cpp = '/usr/bin/x86_64-w64-mingw32-g++-posix'
+objc = '/usr/bin/x86_64-w64-mingw32-gcc-posix'
+ar = '/usr/bin/x86_64-w64-mingw32-ar'
+strip = '/usr/bin/x86_64-w64-mingw32-strip'
+pkgconfig = '/usr/bin/x86_64-w64-mingw32-pkg-config'
+windres = '/usr/bin/x86_64-w64-mingw32-windres'
+#exe_wrapper = 'wine64'
+#cmake = '/usr/bin/cmake'
+
+[properties]
+platform = 'windows'
+# Directory that contains 'bin', 'lib', etc
+root = '/usr/x86_64-w64-mingw32'
+# Directory that contains 'bin', 'lib', etc for the toolchain and system libraries
+sys_root = '/usr/x86_64-w64-mingw32/sys-root/mingw'
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

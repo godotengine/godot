@@ -1,17 +1,13 @@
-def can_build(env, platform):
+def can_build(env: dict) -> bool:
     return True
 
 
-def configure(env):
-    pass
-
-
-def get_doc_classes():
+def get_doc_classes() -> [str]:
     return [
         "NoiseTexture",
         "OpenSimplexNoise",
     ]
 
 
-def get_doc_path():
+def get_doc_path() -> str:
     return "doc_classes"

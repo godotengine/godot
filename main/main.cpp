@@ -50,11 +50,8 @@
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 #include "drivers/register_driver_types.h"
-#include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
-#include "main/splash.gen.h"
-#include "main/splash_editor.gen.h"
 #include "modules/modules_enabled.gen.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
@@ -74,6 +71,9 @@
 #include "servers/rendering/rendering_server_wrap_mt.h"
 #include "servers/text_server.h"
 #include "servers/xr_server.h"
+#include "splash/app_icon.gen.h"
+#include "splash/splash.gen.h"
+#include "splash/splash_editor.gen.h"
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"

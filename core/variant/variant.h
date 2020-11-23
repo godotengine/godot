@@ -40,6 +40,7 @@
 #include "core/math/quat.h"
 #include "core/math/transform.h"
 #include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
 #include "core/object/object_id.h"

@@ -1,6 +1,3 @@
-def can_build(env, platform):
-    return platform == "osx" or platform == "windows"
-
-
-def configure(env):
-    pass
+def can_build(env: dict) -> bool:
+    supported_platforms = ['osx', 'windows']
+    return env.platform in supported_platforms

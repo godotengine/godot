@@ -33,7 +33,7 @@
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
-#include "scene/resources/default_theme/theme_data.h"
+#include "scene/resources/default_theme/theme_data.gen.h"
 #include "scene/resources/gradient.h"
 
 class GradientEdit : public Control {

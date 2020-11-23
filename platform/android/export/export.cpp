@@ -43,11 +43,11 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "main/splash.gen.h"
 #include "platform/android/export/gradle_export_util.h"
 #include "platform/android/logo.gen.h"
 #include "platform/android/plugin/godot_plugin_config.h"
 #include "platform/android/run_icon.gen.h"
+#include "splash/splash.gen.h"
 
 #include <string.h>
 

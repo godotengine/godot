@@ -1,19 +1,12 @@
-def can_build(env, platform):
-    if platform in ["iphone"]:
-        return False
-
-    return env.module_check_dependencies("webm", ["ogg", "opus", "vorbis"])
+def can_build(env: dict) -> bool:
+    return env.platform == 'iphone'
 
 
-def configure(env):
-    pass
-
-
-def get_doc_classes():
+def get_doc_classes() -> [str]:
     return [
         "VideoStreamWebm",
     ]
 
 
-def get_doc_path():
+def get_doc_path() -> str:
     return "doc_classes"

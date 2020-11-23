@@ -1,0 +1,22 @@
+################################################################################
+# Tools Scripts
+################################################################################
+SCRIPT_AUTHORS = find_program('authors.py')
+SCRIPT_CERTS = find_program('certs.py')
+SCRIPT_DEFAULT_CONTROLLER_MAPPINGS = find_program('default_controller_mappings.py')
+SCRIPT_DOCS = find_program('docs.py')
+SCRIPT_DONORS = find_program('donors.py')
+SCRIPT_EDITOR_ICONS = find_program('editor_icons.py')
+SCRIPT_ENCRYPTION_KEY = find_program('encryption_key.py')
+SCRIPT_FONTS = find_program('fonts.py')
+SCRIPT_GLSL = find_program('glsl.py')
+SCRIPT_LICENSE = find_program('license.py')
+SCRIPT_MODULE_DB = find_program('module_db.py')
+SCRIPT_MODULES_GEN = find_program('modules_gen.py')
+SCRIPT_PLATFORM_LOGO = find_program('platform_logo.py')
+SCRIPT_REGISTER_EXPORTERS = find_program('register_exporters.py')
+SCRIPT_REGISTER_PLATFORM_APIS = find_program('register_platform_apis.py')
+SCRIPT_SPLASH_GENERATOR = find_program('splash_generator.py')
+SCRIPT_THEME_DATA = find_program('theme_data.py')
+SCRIPT_TRANSLATIONS = find_program('translations.py')
+SCRIPT_VERSION = find_program('version.py')

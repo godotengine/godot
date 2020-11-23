@@ -1,6 +1,2 @@
-def can_build(env, platform):
-    return platform == "iphone"
-
-
-def configure(env):
-    pass
+def can_build(env: dict) -> bool:
+    return env.platform == "iphone"

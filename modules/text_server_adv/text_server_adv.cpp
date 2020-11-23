@@ -35,7 +35,7 @@
 #include "core/string/translation.h"
 
 #ifdef ICU_STATIC_DATA
-#include "thirdparty/icu4c/icudata.gen.h"
+#include "modules/text_server_adv/icu_data/icudata.gen.h"
 #endif
 
 _FORCE_INLINE_ bool is_ain(char32_t p_chr) {
