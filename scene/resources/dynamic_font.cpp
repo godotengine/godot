@@ -867,9 +867,13 @@ Size2 DynamicFont::get_char_size(char32_t p_char, char32_t p_next) const {
 		return Size2(1, 1);
 	}
 
+	const int tab_spacing = 4 * spacing_space;
+
 	Size2 ret = data_at_size->get_char_size(p_char, p_next, fallback_data_at_size);
 	if (p_char == ' ') {
 		ret.width += spacing_space + spacing_char;
+	} else if (p_char == '\t') {
+		ret.width += tab_spacing + spacing_char;
 	} else if (p_next) {
 		ret.width += spacing_char;
 	}
