@@ -96,7 +96,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Converts a localized path ([code]res://[/code]) to a full native OS path.
+				Converts a localized path ([code]res://[/code]) to a full native OS path. 
+				[b]Note:[/b] This method doesn't work in an exported project. To load files outside the PCK in an exported project, append the file path to the result of [method OS.get_executable_path] instead.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
