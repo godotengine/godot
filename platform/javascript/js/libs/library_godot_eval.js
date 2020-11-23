@@ -30,7 +30,7 @@
 
 const GodotEval = {
 	godot_js_eval__deps: ['$GodotRuntime'],
-	godot_js_eval: function(p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
+	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
 		const js_code = GodotRuntime.parseString(p_js);
 		let eval_ret = null;
 		try {
@@ -46,42 +46,40 @@ const GodotEval = {
 		}
 
 		switch (typeof eval_ret) {
+		case 'boolean':
+			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
+			return 1; // BOOL
 
-			case 'boolean':
-				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'i32');
-				return 1; // BOOL
+		case 'number':
+			GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
+			return 3; // REAL
 
-			case 'number':
-				GodotRuntime.setHeapValue(p_union_ptr, eval_ret, 'double');
-				return 3; // REAL
+		case 'string':
+			GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
+			return 4; // STRING
 
-			case 'string':
-				GodotRuntime.setHeapValue(p_union_ptr, GodotRuntime.allocString(eval_ret), '*');
-				return 4; // STRING
-
-			case 'object':
-				if (eval_ret === null) {
-					break;
-				}
-
-				if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
-					eval_ret = new Uint8Array(eval_ret.buffer);
-				}
-				else if (eval_ret instanceof ArrayBuffer) {
-					eval_ret = new Uint8Array(eval_ret);
-				}
-				if (eval_ret instanceof Uint8Array) {
-					const func = GodotRuntime.get_func(p_callback);
-					const bytes_ptr = func(p_byte_arr, p_byte_arr_write,  eval_ret.length);
-					HEAPU8.set(eval_ret, bytes_ptr);
-					return 20; // POOL_BYTE_ARRAY
-				}
+		case 'object':
+			if (eval_ret === null) {
 				break;
+			}
+
+			if (ArrayBuffer.isView(eval_ret) && !(eval_ret instanceof Uint8Array)) {
+				eval_ret = new Uint8Array(eval_ret.buffer);
+			} else if (eval_ret instanceof ArrayBuffer) {
+				eval_ret = new Uint8Array(eval_ret);
+			}
+			if (eval_ret instanceof Uint8Array) {
+				const func = GodotRuntime.get_func(p_callback);
+				const bytes_ptr = func(p_byte_arr, p_byte_arr_write, eval_ret.length);
+				HEAPU8.set(eval_ret, bytes_ptr);
+				return 20; // POOL_BYTE_ARRAY
+			}
+			break;
 
 			// no default
 		}
 		return 0; // NIL
 	},
-}
+};
 
 mergeInto(LibraryManager.library, GodotEval);
