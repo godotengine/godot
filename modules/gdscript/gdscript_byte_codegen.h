@@ -33,6 +33,8 @@
 
 #include "gdscript_codegen.h"
 
+#include "gdscript_function.h"
+
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
@@ -49,15 +51,26 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	int current_stack_size = 0;
 	int current_temporaries = 0;
+	int current_line = 0;
+	int stack_max = 0;
+	int instr_args_max = 0;
+	int ptrcall_max = 0;
 
 	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
 	Map<StringName, int> name_map;
 #ifdef TOOLS_ENABLED
 	Vector<StringName> named_globals;
 #endif
-	int current_line = 0;
-	int stack_max = 0;
-	int call_max = 0;
+	Map<Variant::ValidatedOperatorEvaluator, int> operator_func_map;
+	Map<Variant::ValidatedSetter, int> setters_map;
+	Map<Variant::ValidatedGetter, int> getters_map;
+	Map<Variant::ValidatedKeyedSetter, int> keyed_setters_map;
+	Map<Variant::ValidatedKeyedGetter, int> keyed_getters_map;
+	Map<Variant::ValidatedIndexedSetter, int> indexed_setters_map;
+	Map<Variant::ValidatedIndexedGetter, int> indexed_getters_map;
+	Map<Variant::ValidatedBuiltInMethod, int> builtin_method_map;
+	Map<Variant::ValidatedConstructor, int> constructors_map;
+	Map<MethodBind *, int> method_bind_map;
 
 	List<int> if_jmp_addrs; // List since this can be nested.
 	List<int> for_jmp_addrs;
@@ -134,20 +147,103 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
+	int get_operation_pos(const Variant::ValidatedOperatorEvaluator p_operation) {
+		if (operator_func_map.has(p_operation))
+			return operator_func_map[p_operation];
+		int pos = operator_func_map.size();
+		operator_func_map[p_operation] = pos;
+		return pos;
+	}
+
+	int get_setter_pos(const Variant::ValidatedSetter p_setter) {
+		if (setters_map.has(p_setter))
+			return setters_map[p_setter];
+		int pos = setters_map.size();
+		setters_map[p_setter] = pos;
+		return pos;
+	}
+
+	int get_getter_pos(const Variant::ValidatedGetter p_getter) {
+		if (getters_map.has(p_getter))
+			return getters_map[p_getter];
+		int pos = getters_map.size();
+		getters_map[p_getter] = pos;
+		return pos;
+	}
+
+	int get_keyed_setter_pos(const Variant::ValidatedKeyedSetter p_keyed_setter) {
+		if (keyed_setters_map.has(p_keyed_setter))
+			return keyed_setters_map[p_keyed_setter];
+		int pos = keyed_setters_map.size();
+		keyed_setters_map[p_keyed_setter] = pos;
+		return pos;
+	}
+
+	int get_keyed_getter_pos(const Variant::ValidatedKeyedGetter p_keyed_getter) {
+		if (keyed_getters_map.has(p_keyed_getter))
+			return keyed_getters_map[p_keyed_getter];
+		int pos = keyed_getters_map.size();
+		keyed_getters_map[p_keyed_getter] = pos;
+		return pos;
+	}
+
+	int get_indexed_setter_pos(const Variant::ValidatedIndexedSetter p_indexed_setter) {
+		if (indexed_setters_map.has(p_indexed_setter))
+			return indexed_setters_map[p_indexed_setter];
+		int pos = indexed_setters_map.size();
+		indexed_setters_map[p_indexed_setter] = pos;
+		return pos;
+	}
+
+	int get_indexed_getter_pos(const Variant::ValidatedIndexedGetter p_indexed_getter) {
+		if (indexed_getters_map.has(p_indexed_getter))
+			return indexed_getters_map[p_indexed_getter];
+		int pos = indexed_getters_map.size();
+		indexed_getters_map[p_indexed_getter] = pos;
+		return pos;
+	}
+
+	int get_builtin_method_pos(const Variant::ValidatedBuiltInMethod p_method) {
+		if (builtin_method_map.has(p_method)) {
+			return builtin_method_map[p_method];
+		}
+		int pos = builtin_method_map.size();
+		builtin_method_map[p_method] = pos;
+		return pos;
+	}
+
+	int get_constructor_pos(const Variant::ValidatedConstructor p_constructor) {
+		if (constructors_map.has(p_constructor)) {
+			return constructors_map[p_constructor];
+		}
+		int pos = constructors_map.size();
+		constructors_map[p_constructor] = pos;
+		return pos;
+	}
+
+	int get_method_bind_pos(MethodBind *p_method) {
+		if (method_bind_map.has(p_method)) {
+			return method_bind_map[p_method];
+		}
+		int pos = method_bind_map.size();
+		method_bind_map[p_method] = pos;
+		return pos;
+	}
+
 	void alloc_stack(int p_level) {
 		if (p_level >= stack_max)
 			stack_max = p_level + 1;
-	}
-
-	void alloc_call(int p_params) {
-		if (p_params >= call_max)
-			call_max = p_params;
 	}
 
 	int increase_stack() {
 		int top = current_stack_size++;
 		alloc_stack(current_stack_size);
 		return top;
+	}
+
+	void alloc_ptrcall(int p_params) {
+		if (p_params >= ptrcall_max)
+			ptrcall_max = p_params;
 	}
 
 	int address_of(const Address &p_address) {
@@ -177,8 +273,13 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return -1; // Unreachable.
 	}
 
-	void append(int code) {
-		opcodes.push_back(code);
+	void append(GDScriptFunction::Opcode p_code, int p_argument_count) {
+		opcodes.push_back((p_code & GDScriptFunction::INSTR_MASK) | (p_argument_count << GDScriptFunction::INSTR_BITS));
+		instr_args_max = MAX(instr_args_max, p_argument_count);
+	}
+
+	void append(int p_code) {
+		opcodes.push_back(p_code);
 	}
 
 	void append(const Address &p_address) {
@@ -187,6 +288,46 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	void append(const StringName &p_name) {
 		opcodes.push_back(get_name_map_pos(p_name));
+	}
+
+	void append(const Variant::ValidatedOperatorEvaluator p_operation) {
+		opcodes.push_back(get_operation_pos(p_operation));
+	}
+
+	void append(const Variant::ValidatedSetter p_setter) {
+		opcodes.push_back(get_setter_pos(p_setter));
+	}
+
+	void append(const Variant::ValidatedGetter p_getter) {
+		opcodes.push_back(get_getter_pos(p_getter));
+	}
+
+	void append(const Variant::ValidatedKeyedSetter p_keyed_setter) {
+		opcodes.push_back(get_keyed_setter_pos(p_keyed_setter));
+	}
+
+	void append(const Variant::ValidatedKeyedGetter p_keyed_getter) {
+		opcodes.push_back(get_keyed_getter_pos(p_keyed_getter));
+	}
+
+	void append(const Variant::ValidatedIndexedSetter p_indexed_setter) {
+		opcodes.push_back(get_indexed_setter_pos(p_indexed_setter));
+	}
+
+	void append(const Variant::ValidatedIndexedGetter p_indexed_getter) {
+		opcodes.push_back(get_indexed_getter_pos(p_indexed_getter));
+	}
+
+	void append(const Variant::ValidatedBuiltInMethod p_method) {
+		opcodes.push_back(get_builtin_method_pos(p_method));
+	}
+
+	void append(const Variant::ValidatedConstructor p_constructor) {
+		opcodes.push_back(get_constructor_pos(p_constructor));
+	}
+
+	void append(MethodBind *p_method) {
+		opcodes.push_back(get_method_bind_pos(p_method));
 	}
 
 	void patch_jump(int p_address) {
@@ -244,8 +385,9 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin(const Address &p_target, GDScriptFunctions::Function p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;

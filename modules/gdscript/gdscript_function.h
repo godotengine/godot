@@ -159,12 +159,19 @@ class GDScriptFunction {
 public:
 	enum Opcode {
 		OPCODE_OPERATOR,
+		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_EXTENDS_TEST,
 		OPCODE_IS_BUILTIN,
-		OPCODE_SET,
-		OPCODE_GET,
+		OPCODE_SET_KEYED,
+		OPCODE_SET_KEYED_VALIDATED,
+		OPCODE_SET_INDEXED_VALIDATED,
+		OPCODE_GET_KEYED,
+		OPCODE_GET_KEYED_VALIDATED,
+		OPCODE_GET_INDEXED_VALIDATED,
 		OPCODE_SET_NAMED,
+		OPCODE_SET_NAMED_VALIDATED,
 		OPCODE_GET_NAMED,
+		OPCODE_GET_NAMED_VALIDATED,
 		OPCODE_SET_MEMBER,
 		OPCODE_GET_MEMBER,
 		OPCODE_ASSIGN,
@@ -176,14 +183,54 @@ public:
 		OPCODE_CAST_TO_BUILTIN,
 		OPCODE_CAST_TO_NATIVE,
 		OPCODE_CAST_TO_SCRIPT,
-		OPCODE_CONSTRUCT, //only for basic types!!
+		OPCODE_CONSTRUCT, // Only for basic types!
+		OPCODE_CONSTRUCT_VALIDATED, // Only for basic types!
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
 		OPCODE_CALL_BUILT_IN,
+		OPCODE_CALL_BUILTIN_TYPE_VALIDATED,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_CALL_METHOD_BIND,
+		OPCODE_CALL_METHOD_BIND_RET,
+		// ptrcall have one instruction per return type.
+		OPCODE_CALL_PTRCALL_NO_RETURN,
+		OPCODE_CALL_PTRCALL_BOOL,
+		OPCODE_CALL_PTRCALL_INT,
+		OPCODE_CALL_PTRCALL_FLOAT,
+		OPCODE_CALL_PTRCALL_STRING,
+		OPCODE_CALL_PTRCALL_VECTOR2,
+		OPCODE_CALL_PTRCALL_VECTOR2I,
+		OPCODE_CALL_PTRCALL_RECT2,
+		OPCODE_CALL_PTRCALL_RECT2I,
+		OPCODE_CALL_PTRCALL_VECTOR3,
+		OPCODE_CALL_PTRCALL_VECTOR3I,
+		OPCODE_CALL_PTRCALL_TRANSFORM2D,
+		OPCODE_CALL_PTRCALL_PLANE,
+		OPCODE_CALL_PTRCALL_QUAT,
+		OPCODE_CALL_PTRCALL_AABB,
+		OPCODE_CALL_PTRCALL_BASIS,
+		OPCODE_CALL_PTRCALL_TRANSFORM,
+		OPCODE_CALL_PTRCALL_COLOR,
+		OPCODE_CALL_PTRCALL_STRING_NAME,
+		OPCODE_CALL_PTRCALL_NODE_PATH,
+		OPCODE_CALL_PTRCALL_RID,
+		OPCODE_CALL_PTRCALL_OBJECT,
+		OPCODE_CALL_PTRCALL_CALLABLE,
+		OPCODE_CALL_PTRCALL_SIGNAL,
+		OPCODE_CALL_PTRCALL_DICTIONARY,
+		OPCODE_CALL_PTRCALL_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_BYTE_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_INT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT32_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_FLOAT64_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_STRING_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR2_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_VECTOR3_ARRAY,
+		OPCODE_CALL_PTRCALL_PACKED_COLOR_ARRAY,
 		OPCODE_AWAIT,
 		OPCODE_AWAIT_RESUME,
 		OPCODE_JUMP,
@@ -192,7 +239,45 @@ public:
 		OPCODE_JUMP_TO_DEF_ARGUMENT,
 		OPCODE_RETURN,
 		OPCODE_ITERATE_BEGIN,
+		OPCODE_ITERATE_BEGIN_INT,
+		OPCODE_ITERATE_BEGIN_FLOAT,
+		OPCODE_ITERATE_BEGIN_VECTOR2,
+		OPCODE_ITERATE_BEGIN_VECTOR2I,
+		OPCODE_ITERATE_BEGIN_VECTOR3,
+		OPCODE_ITERATE_BEGIN_VECTOR3I,
+		OPCODE_ITERATE_BEGIN_STRING,
+		OPCODE_ITERATE_BEGIN_DICTIONARY,
+		OPCODE_ITERATE_BEGIN_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_BYTE_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_INT32_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_INT64_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_FLOAT32_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_FLOAT64_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_STRING_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_BEGIN_OBJECT,
 		OPCODE_ITERATE,
+		OPCODE_ITERATE_INT,
+		OPCODE_ITERATE_FLOAT,
+		OPCODE_ITERATE_VECTOR2,
+		OPCODE_ITERATE_VECTOR2I,
+		OPCODE_ITERATE_VECTOR3,
+		OPCODE_ITERATE_VECTOR3I,
+		OPCODE_ITERATE_STRING,
+		OPCODE_ITERATE_DICTIONARY,
+		OPCODE_ITERATE_ARRAY,
+		OPCODE_ITERATE_PACKED_BYTE_ARRAY,
+		OPCODE_ITERATE_PACKED_INT32_ARRAY,
+		OPCODE_ITERATE_PACKED_INT64_ARRAY,
+		OPCODE_ITERATE_PACKED_FLOAT32_ARRAY,
+		OPCODE_ITERATE_PACKED_FLOAT64_ARRAY,
+		OPCODE_ITERATE_PACKED_STRING_ARRAY,
+		OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,
+		OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,
+		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_OBJECT,
 		OPCODE_ASSERT,
 		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
@@ -215,6 +300,12 @@ public:
 		ADDR_TYPE_NIL = 9
 	};
 
+	enum Instruction {
+		INSTR_BITS = 20,
+		INSTR_MASK = ((1 << INSTR_BITS) - 1),
+		INSTR_ARGS_MASK = ~INSTR_MASK,
+	};
+
 	struct StackDebug {
 		int line;
 		int pos;
@@ -229,27 +320,59 @@ private:
 	StringName source;
 
 	mutable Variant nil;
-	mutable Variant *_constants_ptr;
-	int _constant_count;
-	const StringName *_global_names_ptr;
-	int _global_names_count;
-	const int *_default_arg_ptr;
-	int _default_arg_count;
-	const int *_code_ptr;
-	int _code_size;
-	int _argument_count;
-	int _stack_size;
-	int _call_size;
-	int _initial_line;
-	bool _static;
-	MultiplayerAPI::RPCMode rpc_mode;
+	mutable Variant *_constants_ptr = nullptr;
+	int _constant_count = 0;
+	const StringName *_global_names_ptr = nullptr;
+	int _global_names_count = 0;
+	const int *_default_arg_ptr = nullptr;
+	int _default_arg_count = 0;
+	int _operator_funcs_count = 0;
+	const Variant::ValidatedOperatorEvaluator *_operator_funcs_ptr = nullptr;
+	int _setters_count = 0;
+	const Variant::ValidatedSetter *_setters_ptr = nullptr;
+	int _getters_count = 0;
+	const Variant::ValidatedGetter *_getters_ptr = nullptr;
+	int _keyed_setters_count = 0;
+	const Variant::ValidatedKeyedSetter *_keyed_setters_ptr = nullptr;
+	int _keyed_getters_count = 0;
+	const Variant::ValidatedKeyedGetter *_keyed_getters_ptr = nullptr;
+	int _indexed_setters_count = 0;
+	const Variant::ValidatedIndexedSetter *_indexed_setters_ptr = nullptr;
+	int _indexed_getters_count = 0;
+	const Variant::ValidatedIndexedGetter *_indexed_getters_ptr = nullptr;
+	int _builtin_methods_count = 0;
+	const Variant::ValidatedBuiltInMethod *_builtin_methods_ptr = nullptr;
+	int _constructors_count = 0;
+	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
+	int _methods_count = 0;
+	MethodBind **_methods_ptr = nullptr;
+	const int *_code_ptr = nullptr;
+	int _code_size = 0;
+	int _argument_count = 0;
+	int _stack_size = 0;
+	int _instruction_args_size = 0;
+	int _ptrcall_args_size = 0;
 
-	GDScript *_script;
+	int _initial_line = 0;
+	bool _static = false;
+	MultiplayerAPI::RPCMode rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
+
+	GDScript *_script = nullptr;
 
 	StringName name;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
+	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
+	Vector<Variant::ValidatedSetter> setters;
+	Vector<Variant::ValidatedGetter> getters;
+	Vector<Variant::ValidatedKeyedSetter> keyed_setters;
+	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
+	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
+	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
+	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
+	Vector<Variant::ValidatedConstructor> constructors;
+	Vector<MethodBind *> methods;
 	Vector<int> code;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
@@ -265,22 +388,22 @@ private:
 
 	friend class GDScriptLanguage;
 
-	SelfList<GDScriptFunction> function_list;
+	SelfList<GDScriptFunction> function_list{ this };
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
-	const char *_func_cname;
+	const char *_func_cname = nullptr;
 
 	struct Profile {
 		StringName signature;
-		uint64_t call_count;
-		uint64_t self_time;
-		uint64_t total_time;
-		uint64_t frame_call_count;
-		uint64_t frame_self_time;
-		uint64_t frame_total_time;
-		uint64_t last_frame_call_count;
-		uint64_t last_frame_self_time;
-		uint64_t last_frame_total_time;
+		uint64_t call_count = 0;
+		uint64_t self_time = 0;
+		uint64_t total_time = 0;
+		uint64_t frame_call_count = 0;
+		uint64_t frame_self_time = 0;
+		uint64_t frame_total_time = 0;
+		uint64_t last_frame_call_count = 0;
+		uint64_t last_frame_self_time = 0;
+		uint64_t last_frame_total_time = 0;
 	} profile;
 
 #endif
