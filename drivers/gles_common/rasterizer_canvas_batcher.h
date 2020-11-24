@@ -3048,6 +3048,11 @@ PREAMBLE(bool)::_detect_item_batch_break(RenderItemState &r_ris, RasterizerCanva
 
 	} // else
 
+	// special case, back buffer copy, so don't join
+	if (p_ci->copy_back_buffer) {
+		return true;
+	}
+
 	return false;
 }
 
