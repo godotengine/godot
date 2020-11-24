@@ -556,14 +556,15 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									w += font->get_char_size(c[i], c[i + 1]).x;
 								}
 
-								if (c[i] == '\t') {
-									visible = false;
-								}
-
 								if (visible) {
 									if (selected) {
+										// Text selection
+										int bg_box = font->get_char_size(fx_char, c[i + 1]).x;
+										if (char(fx_char) == '\t') {
+											bg_box = tab_size * font->get_char_size(' ').width;
+										}
 										cw = font->get_char_size(fx_char, c[i + 1]).x;
-										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
+										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, bg_box, lh), selection_bg);
 									}
 
 									if (p_font_color_shadow.a > 0) {
