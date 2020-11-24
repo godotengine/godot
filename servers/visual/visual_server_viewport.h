@@ -71,6 +71,11 @@ public:
 		int shadow_atlas_size;
 
 		int render_info[VS::VIEWPORT_RENDER_INFO_MAX];
+
+		int selected_render_info[VS::VIEWPORT_RENDER_INFO_MAX];
+
+		Vector<RID> queued_render_info;
+
 		VS::ViewportDebugDraw debug_draw;
 
 		VS::ViewportClearMode clear_mode;
@@ -195,7 +200,11 @@ public:
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
 
-	virtual int viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info);
+	virtual Vector<int> viewport_get_render_info(RID p_viewport);
+	virtual Vector<int> viewport_get_selected_render_info(RID p_viewport);
+	virtual void viewport_queue_selected_render_info(RID p_viewport, RID p_rid);
+	virtual void viewport_selected_render_info_clear(RID p_viewport);
+
 	virtual void viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw);
 
 	void set_default_clear_color(const Color &p_color);

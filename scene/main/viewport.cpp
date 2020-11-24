@@ -3114,9 +3114,9 @@ Viewport::DebugDraw Viewport::get_debug_draw() const {
 	return debug_draw;
 }
 
-int Viewport::get_render_info(RenderInfo p_info) {
+Vector<int> Viewport::get_render_info() {
 
-	return VS::get_singleton()->viewport_get_render_info(viewport, VS::ViewportRenderInfo(p_info));
+	return VS::get_singleton()->viewport_get_render_info(viewport);
 }
 
 void Viewport::set_snap_controls_to_pixels(bool p_enable) {

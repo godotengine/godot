@@ -143,20 +143,24 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
-		case OBJECT_NODE_COUNT: return _get_node_count();
-		case OBJECT_ORPHAN_NODE_COUNT: return Node::orphan_node_count;
-		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
-		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
-		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
-		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
-		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
-		case RENDER_2D_ITEMS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
-		case RENDER_2D_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
-		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
-		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
-		case RENDER_VERTEX_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
-		case RENDER_USAGE_VIDEO_MEM_TOTAL: return VS::get_singleton()->get_render_info(VS::INFO_USAGE_VIDEO_MEM_TOTAL);
+		case OBJECT_NODE_COUNT: {
+
+			MainLoop *ml = OS::get_singleton()->get_main_loop();
+			SceneTree *sml = Object::cast_to<SceneTree>(ml);
+			if (!sml)
+				return 0;
+			return sml->get_node_count();
+		};
+		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_OBJECTS_IN_FRAME];
+		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_VERTICES_IN_FRAME];
+		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_MATERIAL_CHANGES_IN_FRAME];
+		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_SHADER_CHANGES_IN_FRAME];
+		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_SURFACE_CHANGES_IN_FRAME];
+		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info()[VS::INFO_DRAW_CALLS_IN_FRAME];
+		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info()[VS::INFO_VIDEO_MEM_USED];
+		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info()[VS::INFO_TEXTURE_MEM_USED];
+		case RENDER_VERTEX_MEM_USED: return VS::get_singleton()->get_render_info()[VS::INFO_VERTEX_MEM_USED];
+		case RENDER_USAGE_VIDEO_MEM_TOTAL: return VS::get_singleton()->get_render_info()[VS::INFO_USAGE_VIDEO_MEM_TOTAL];
 		case PHYSICS_2D_ACTIVE_OBJECTS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ISLAND_COUNT);

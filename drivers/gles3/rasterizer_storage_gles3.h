@@ -175,12 +175,21 @@ public:
 			}
 		} render, render_final, snap;
 
+		bool per_id_instance = true;
+
+		Map<RID_Data *, Render> rid_render_info_render, rid_render_info_final, rid_render_info_snap;
+
 		Info() {
 
+#ifndef TOOLS_ENABLED
+			per_id_instance = false;
+#endif
 			texture_mem = 0;
 			vertex_mem = 0;
 			render.reset();
 			render_final.reset();
+			rid_render_info_render.clear();
+			rid_render_info_final.clear();
 		}
 
 	} info;
@@ -1493,6 +1502,8 @@ public:
 
 	} frame;
 
+	Vector<RID> render_info_rids;
+
 	void initialize();
 	void finalize();
 
@@ -1504,9 +1515,10 @@ public:
 
 	virtual void render_info_begin_capture();
 	virtual void render_info_end_capture();
-	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
-	virtual int get_render_info(VS::RenderInfo p_info);
+	virtual const Vector<int> get_captured_render_info();
+	virtual const Vector<int> get_captured_selected_render_info(const Vector<RID> &p_rids);
+	virtual const Vector<int> get_render_info();
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
 

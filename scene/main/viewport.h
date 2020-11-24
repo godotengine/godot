@@ -552,7 +552,7 @@ public:
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
 
-	int get_render_info(RenderInfo p_info);
+	Vector<int> get_render_info();
 
 	void set_snap_controls_to_pixels(bool p_enable);
 	bool is_snap_controls_to_pixels_enabled() const;

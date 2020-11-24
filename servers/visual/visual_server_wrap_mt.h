@@ -418,8 +418,23 @@ public:
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
-	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
-		return visual_server->viewport_get_render_info(p_viewport, p_info);
+	virtual Vector<int> viewport_get_render_info(RID p_viewport) {
+		return visual_server->viewport_get_render_info(p_viewport);
+	}
+
+	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
+	virtual Vector<int> viewport_get_selected_render_info(RID p_viewport) {
+		return visual_server->viewport_get_selected_render_info(p_viewport);
+	}
+
+	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
+	virtual void viewport_queue_selected_render_info(RID p_viewport, RID p_rid) {
+		visual_server->viewport_queue_selected_render_info(p_viewport, p_rid);
+	}
+
+	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
+	virtual void viewport_selected_render_info_clear(RID p_viewport) {
+		visual_server->viewport_selected_render_info_clear(p_viewport);
 	}
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
@@ -604,8 +619,8 @@ public:
 	/* RENDER INFO */
 
 	//this passes directly to avoid stalling
-	virtual int get_render_info(RenderInfo p_info) {
-		return visual_server->get_render_info(p_info);
+	virtual Vector<int> get_render_info() {
+		return visual_server->get_render_info();
 	}
 
 	virtual String get_video_adapter_name() const {

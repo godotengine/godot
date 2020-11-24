@@ -342,16 +342,21 @@ void VisualServerViewport::draw_viewports() {
 
 			// render standard mono camera
 			_draw_viewport(vp);
-
 			VSG::storage->render_info_end_capture();
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_OBJECTS_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_VERTICES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_ITEMS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
-			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
+			const Vector<int> frame_info = VSG::storage->get_captured_render_info();
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = frame_info[VS::INFO_OBJECTS_IN_FRAME];
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = frame_info[VS::INFO_VERTICES_IN_FRAME];
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = frame_info[VS::INFO_MATERIAL_CHANGES_IN_FRAME];
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = frame_info[VS::INFO_SHADER_CHANGES_IN_FRAME];
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = frame_info[VS::INFO_SURFACE_CHANGES_IN_FRAME];
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = frame_info[VS::INFO_DRAW_CALLS_IN_FRAME];
+			const Vector<int> &selected_info = VSG::storage->get_captured_selected_render_info(vp->queued_render_info);
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = selected_info[VS::INFO_OBJECTS_IN_FRAME];
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = selected_info[VS::INFO_VERTICES_IN_FRAME];
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = selected_info[VS::INFO_MATERIAL_CHANGES_IN_FRAME];
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = selected_info[VS::INFO_SHADER_CHANGES_IN_FRAME];
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = selected_info[VS::INFO_SURFACE_CHANGES_IN_FRAME];
+			vp->selected_render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = selected_info[VS::INFO_DRAW_CALLS_IN_FRAME];
 
 			if (vp->viewport_to_screen_rect != Rect2() && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
@@ -715,15 +720,51 @@ void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage 
 	}
 }
 
-int VisualServerViewport::viewport_get_render_info(RID p_viewport, VS::ViewportRenderInfo p_info) {
+Vector<int> VisualServerViewport::viewport_get_render_info(RID p_viewport) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	Vector<int> new_info;
+	new_info.resize(VS::INFO_MAX);
+	if (!viewport)
+		return new_info; //there should be a lock here..
 
-	ERR_FAIL_INDEX_V(p_info, VS::VIEWPORT_RENDER_INFO_MAX, -1);
+	int *info_write = new_info.ptrw();
+	info_write[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = viewport->render_info[VS::INFO_OBJECTS_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = viewport->render_info[VS::INFO_VERTICES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = viewport->render_info[VS::INFO_MATERIAL_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = viewport->render_info[VS::INFO_SHADER_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = viewport->render_info[VS::INFO_SURFACE_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = viewport->render_info[VS::INFO_DRAW_CALLS_IN_FRAME];
+	return new_info;
+}
 
+Vector<int> VisualServerViewport::viewport_get_selected_render_info(RID p_viewport) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	Vector<int> new_info;
+	new_info.resize(VS::INFO_MAX);
+	int *info_write = new_info.ptrw();
+	if (!viewport)
+		return new_info; //there should be a lock here..
+
+	info_write[VS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = viewport->selected_render_info[VS::INFO_OBJECTS_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME] = viewport->selected_render_info[VS::INFO_VERTICES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME] = viewport->selected_render_info[VS::INFO_MATERIAL_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = viewport->selected_render_info[VS::INFO_SHADER_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = viewport->selected_render_info[VS::INFO_SURFACE_CHANGES_IN_FRAME];
+	info_write[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = viewport->selected_render_info[VS::INFO_DRAW_CALLS_IN_FRAME];
+	return new_info;
+}
+
+void VisualServerViewport::viewport_queue_selected_render_info(RID p_viewport, RID p_rid) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	if (!viewport)
-		return 0; //there should be a lock here..
-
-	return viewport->render_info[p_info];
+		return; //there should be a lock here..
+	viewport->queued_render_info.push_back(p_rid);
+}
+void VisualServerViewport::viewport_selected_render_info_clear(RID p_viewport) {
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	if (!viewport)
+		return; //there should be a lock here..
+	viewport->queued_render_info.clear();
 }
 
 void VisualServerViewport::viewport_set_debug_draw(RID p_viewport, VS::ViewportDebugDraw p_draw) {

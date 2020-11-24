@@ -1532,19 +1532,41 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
 
 				glDrawElements(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0);
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->index_array_len;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->index_array_len;
 			} else
 #endif
 					if (s->index_array_len > 0) {
 
 				glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
-
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->index_array_len;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->index_array_len;
 
 			} else {
 
 				glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
-
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->array_len;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->array_len;
 			}
 
@@ -1564,19 +1586,41 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
 
 				glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount);
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->index_array_len * amount;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->index_array_len * amount;
 			} else
 #endif
 					if (s->index_array_len > 0) {
 
 				glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
-
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->index_array_len * amount;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->index_array_len * amount;
 
 			} else {
 
 				glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
-
+				if (storage->info.per_id_instance) {
+					RasterizerStorageGLES3::Info::Render render = {};
+					if (storage->info.rid_render_info_render.has(s->mesh)) {
+						render = storage->info.rid_render_info_render[s->mesh];
+					}
+					render.vertices_count += s->array_len * amount;
+					storage->info.rid_render_info_render[s->mesh] = render;
+				}
 				storage->info.render.vertices_count += s->array_len * amount;
 			}
 
@@ -1602,7 +1646,6 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 				int vertices = c.vertices.size();
 				uint32_t buf_ofs = 0;
-
 				storage->info.render.vertices_count += vertices;
 
 				if (c.texture.is_valid() && storage->texture_owner.owns(c.texture)) {
@@ -1746,19 +1789,41 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
 
 						glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount - split);
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s)) {
+								render = storage->info.rid_render_info_render[s];
+							}
+							render.vertices_count += s->index_array_len * (amount - split);
+							storage->info.rid_render_info_render[s] = render;
+						}
 						storage->info.render.vertices_count += s->index_array_len * (amount - split);
 					} else
 #endif
 							if (s->index_array_len > 0) {
 
 						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount - split);
-
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s->mesh)) {
+								render = storage->info.rid_render_info_render[s->mesh];
+							}
+							render.vertices_count += s->index_array_len * (amount - split);
+							storage->info.rid_render_info_render[s->mesh] = render;
+						}
 						storage->info.render.vertices_count += s->index_array_len * (amount - split);
 
 					} else {
 
 						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount - split);
-
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s->mesh)) {
+								render = storage->info.rid_render_info_render[s->mesh];
+							}
+							render.vertices_count += s->array_len * (amount - split);
+							storage->info.rid_render_info_render[s->mesh] = render;
+						}
 						storage->info.render.vertices_count += s->array_len * (amount - split);
 					}
 				}
@@ -1784,19 +1849,40 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
 
 						glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, split);
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s->mesh)) {
+								render = storage->info.rid_render_info_render[s->mesh];
+							}
+							render.vertices_count += s->index_array_len * split;
+						}
 						storage->info.render.vertices_count += s->index_array_len * split;
 					} else
 #endif
 							if (s->index_array_len > 0) {
 
 						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, split);
-
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s->mesh)) {
+								render = storage->info.rid_render_info_render[s->mesh];
+							}
+							render.vertices_count += s->index_array_len * split;
+							storage->info.rid_render_info_render[s->mesh] = render;
+						}
 						storage->info.render.vertices_count += s->index_array_len * split;
 
 					} else {
 
 						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, split);
-
+						if (storage->info.per_id_instance) {
+							RasterizerStorageGLES3::Info::Render render = {};
+							if (storage->info.rid_render_info_render.has(s->mesh)) {
+								render = storage->info.rid_render_info_render[s->mesh];
+							}
+							render.vertices_count += s->array_len * split;
+							storage->info.rid_render_info_render[s->mesh] = render;
+						}
 						storage->info.render.vertices_count += s->array_len * split;
 					}
 				}
@@ -1808,6 +1894,14 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
 
 					glDrawElementsInstanced(GL_LINES, s->index_wireframe_len, GL_UNSIGNED_INT, 0, amount);
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						if (storage->info.rid_render_info_render.has(s->mesh)) {
+							render = storage->info.rid_render_info_render[s->mesh];
+						}
+						render.vertices_count += s->index_array_len * amount;
+						storage->info.rid_render_info_render[s->mesh] = render;
+					}
 					storage->info.render.vertices_count += s->index_array_len * amount;
 				} else
 #endif
@@ -1815,13 +1909,27 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 						if (s->index_array_len > 0) {
 
 					glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
-
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						if (storage->info.rid_render_info_render.has(s->mesh)) {
+							render = storage->info.rid_render_info_render[s->mesh];
+						}
+						render.vertices_count += s->index_array_len * amount;
+						storage->info.rid_render_info_render[s->mesh] = render;
+					}
 					storage->info.render.vertices_count += s->index_array_len * amount;
 
 				} else {
 
 					glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
-
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						if (storage->info.rid_render_info_render.has(s->mesh)) {
+							render = storage->info.rid_render_info_render[s->mesh];
+						}
+						render.vertices_count += s->array_len * amount;
+						storage->info.rid_render_info_render[s->mesh] = render;
+					}
 					storage->info.render.vertices_count += s->array_len * amount;
 				}
 			}
@@ -2042,6 +2150,15 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	for (int i = 0; i < p_element_count; i++) {
 
 		RenderList::Element *e = p_elements[i];
+		RasterizerStorageGLES3::Info::Render render = {};
+		RasterizerStorageGLES3::Surface *s = nullptr;
+		if (e->instance->base_type == VS::INSTANCE_MESH) {
+			s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
+			render = storage->info.rid_render_info_render[s->mesh];
+		}
+		if (storage->info.per_id_instance) {
+			render.draw_call_count++;
+		}
 		RasterizerStorageGLES3::Material *material = e->material;
 		RasterizerStorageGLES3::Skeleton *skeleton = NULL;
 		if (e->instance->skeleton.is_valid()) {
@@ -2207,11 +2324,16 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		if (material != prev_material || rebind) {
 
 			storage->info.render.material_switch_count++;
-
+			if (storage->info.per_id_instance) {
+				render.material_switch_count++;
+			}
 			rebind = _setup_material(material, use_opaque_prepass, p_alpha_pass);
 
 			if (rebind) {
 				storage->info.render.shader_rebind_count++;
+				if (storage->info.per_id_instance) {
+					render.shader_rebind_count++;
+				}
 			}
 		}
 
@@ -2222,13 +2344,18 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		if (e->owner != prev_owner || prev_base_type != e->instance->base_type || prev_geometry != e->geometry) {
 
 			_setup_geometry(e, p_view_transform);
+			if (storage->info.per_id_instance) {
+				render.surface_switch_count++;
+			}
 			storage->info.render.surface_switch_count++;
 		}
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
-
+		if (s) {
+			storage->info.rid_render_info_render[s->mesh] = render;
+		}
 		_render_geometry(e);
 
 		prev_material = material;
@@ -3149,7 +3276,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getptr(inst->base);
 				ERR_CONTINUE(!mesh);
-
+				if (storage->info.rid_render_info_render.has(mesh)) {
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						render = storage->info.rid_render_info_render[mesh];
+						render.object_count++;
+						storage->info.rid_render_info_render[mesh] = render;
+					}
+				}
 				int ssize = mesh->surfaces.size();
 
 				for (int j = 0; j < ssize; j++) {
@@ -3166,7 +3300,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(inst->base);
 				ERR_CONTINUE(!multi_mesh);
-
+				if (storage->info.rid_render_info_render.has(multi_mesh)) {
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						render = storage->info.rid_render_info_render[multi_mesh];
+						render.object_count++;
+						storage->info.rid_render_info_render[multi_mesh] = render;
+					}
+				}
 				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0)
 					continue;
 
@@ -3187,7 +3328,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getptr(inst->base);
 				ERR_CONTINUE(!immediate);
-
+				if (storage->info.rid_render_info_render.has(immediate)) {
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						render = storage->info.rid_render_info_render[immediate];
+						render.object_count++;
+						storage->info.rid_render_info_render[immediate] = render;
+					}
+				}
 				_add_geometry(immediate, inst, NULL, -1, p_depth_pass, p_shadow_pass);
 
 			} break;
@@ -3195,7 +3343,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getptr(inst->base);
 				ERR_CONTINUE(!particles);
-
+				if (storage->info.rid_render_info_render.has(particles)) {
+					if (storage->info.per_id_instance) {
+						RasterizerStorageGLES3::Info::Render render = {};
+						render = storage->info.rid_render_info_render[particles];
+						render.object_count++;
+						storage->info.rid_render_info_render[particles] = render;
+					}
+				}
 				for (int j = 0; j < particles->draw_passes.size(); j++) {
 
 					RID pmesh = particles->draw_passes[j];

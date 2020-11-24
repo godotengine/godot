@@ -706,8 +706,11 @@ public:
 		VIEWPORT_RENDER_INFO_MAX
 	};
 
-	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) = 0;
+	virtual Vector<int> viewport_get_render_info(RID p_viewport) = 0;
+	virtual void viewport_queue_selected_render_info(RID p_viewport, RID p_rid) = 0;
+	virtual void viewport_selected_render_info_clear(RID p_viewport) = 0;
 
+	virtual Vector<int> viewport_get_selected_render_info(RID p_rid) = 0;
 	enum ViewportDebugDraw {
 		VIEWPORT_DEBUG_DRAW_DISABLED,
 		VIEWPORT_DEBUG_DRAW_UNSHADED,
@@ -1036,9 +1039,10 @@ public:
 		INFO_VIDEO_MEM_USED,
 		INFO_TEXTURE_MEM_USED,
 		INFO_VERTEX_MEM_USED,
+		INFO_MAX
 	};
 
-	virtual int get_render_info(RenderInfo p_info) = 0;
+	virtual Vector<int> get_render_info() = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 

@@ -1325,6 +1325,8 @@ public:
 
 	} frame;
 
+	Vector<RID> render_info_rids;
+
 	void initialize();
 	void finalize();
 
@@ -1336,13 +1338,16 @@ public:
 
 	virtual void set_debug_generate_wireframes(bool p_generate);
 
+	virtual const Vector<int> get_captured_render_info();
+	virtual const Vector<int> get_captured_selected_render_info(const Vector<RID> &p_rids);
+	virtual void set_object_detail_list(Vector<RID> p_rids) { render_info_rids.append_array(p_rids); };
+	virtual void clear_object_detail_list() { render_info_rids.clear(); }
 	virtual void render_info_begin_capture();
 	virtual void render_info_end_capture();
-	virtual int get_captured_render_info(VS::RenderInfo p_info);
 
-	virtual int get_render_info(VS::RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
+	virtual const Vector<int> get_render_info();
 
 	void buffer_orphan_and_upload(unsigned int p_buffer_size, unsigned int p_offset, unsigned int p_data_size, const void *p_data, GLenum p_target = GL_ARRAY_BUFFER, GLenum p_usage = GL_DYNAMIC_DRAW, bool p_optional_orphan = false) const;
 	bool safe_buffer_sub_data(unsigned int p_total_buffer_size, GLenum p_target, unsigned int p_offset, unsigned int p_data_size, const void *p_data, unsigned int &r_offset_after) const;

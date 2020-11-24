@@ -5880,68 +5880,40 @@ void RasterizerStorageGLES2::render_info_end_capture() {
 	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
 }
 
-int RasterizerStorageGLES2::get_captured_render_info(VS::RenderInfo p_info) {
-
-	switch (p_info) {
-		case VS::INFO_OBJECTS_IN_FRAME: {
-			return info.snap.object_count;
-		} break;
-		case VS::INFO_VERTICES_IN_FRAME: {
-			return info.snap.vertices_count;
-		} break;
-		case VS::INFO_MATERIAL_CHANGES_IN_FRAME: {
-			return info.snap.material_switch_count;
-		} break;
-		case VS::INFO_SHADER_CHANGES_IN_FRAME: {
-			return info.snap.shader_rebind_count;
-		} break;
-		case VS::INFO_SURFACE_CHANGES_IN_FRAME: {
-			return info.snap.surface_switch_count;
-		} break;
-		case VS::INFO_DRAW_CALLS_IN_FRAME: {
-			return info.snap.draw_call_count;
-		} break;
-		case VS::INFO_2D_ITEMS_IN_FRAME: {
-			return info.snap._2d_item_count;
-		} break;
-		case VS::INFO_2D_DRAW_CALLS_IN_FRAME: {
-			return info.snap._2d_draw_call_count;
-		} break;
-		default: {
-			return get_render_info(p_info);
-		}
-	}
+const Vector<int> RasterizerStorageGLES2::get_captured_selected_render_info(const Vector<RID> &p_rids) {
+	Vector<int> new_info;
+	new_info.resize(VS::INFO_MAX);
+	return new_info;
 }
 
-int RasterizerStorageGLES2::get_render_info(VS::RenderInfo p_info) {
-	switch (p_info) {
-		case VS::INFO_OBJECTS_IN_FRAME:
-			return info.render_final.object_count;
-		case VS::INFO_VERTICES_IN_FRAME:
-			return info.render_final.vertices_count;
-		case VS::INFO_MATERIAL_CHANGES_IN_FRAME:
-			return info.render_final.material_switch_count;
-		case VS::INFO_SHADER_CHANGES_IN_FRAME:
-			return info.render_final.shader_rebind_count;
-		case VS::INFO_SURFACE_CHANGES_IN_FRAME:
-			return info.render_final.surface_switch_count;
-		case VS::INFO_DRAW_CALLS_IN_FRAME:
-			return info.render_final.draw_call_count;
-		case VS::INFO_2D_ITEMS_IN_FRAME:
-			return info.render_final._2d_item_count;
-		case VS::INFO_2D_DRAW_CALLS_IN_FRAME:
-			return info.render_final._2d_draw_call_count;
-		case VS::INFO_USAGE_VIDEO_MEM_TOTAL:
-			return 0; //no idea
-		case VS::INFO_VIDEO_MEM_USED:
-			return info.vertex_mem + info.texture_mem;
-		case VS::INFO_TEXTURE_MEM_USED:
-			return info.texture_mem;
-		case VS::INFO_VERTEX_MEM_USED:
-			return info.vertex_mem;
-		default:
-			return 0; //no idea either
-	}
+const Vector<int> RasterizerStorageGLES2::get_captured_render_info() {
+	Vector<int> new_info;
+	new_info.resize(VS::INFO_MAX);
+	int *info_write = new_info.ptrw();
+	info_write[VS::INFO_OBJECTS_IN_FRAME] = info.snap.object_count;
+	info_write[VS::INFO_VERTICES_IN_FRAME] = info.snap.vertices_count;
+	info_write[VS::INFO_MATERIAL_CHANGES_IN_FRAME] = info.snap.material_switch_count;
+	info_write[VS::INFO_SHADER_CHANGES_IN_FRAME] = info.snap.shader_rebind_count;
+	info_write[VS::INFO_SURFACE_CHANGES_IN_FRAME] = info.snap.surface_switch_count;
+	info_write[VS::INFO_DRAW_CALLS_IN_FRAME] = info.snap.draw_call_count;
+	return new_info;
+}
+
+const Vector<int> RasterizerStorageGLES2::get_render_info() {
+	Vector<int> new_info;
+	new_info.resize(VS::INFO_MAX);
+	int *info_write = new_info.ptrw();
+	info_write[VS::INFO_OBJECTS_IN_FRAME] = info.render_final.object_count;
+	info_write[VS::INFO_VERTICES_IN_FRAME] = info.render_final.vertices_count;
+	info_write[VS::INFO_MATERIAL_CHANGES_IN_FRAME] = info.render_final.material_switch_count;
+	info_write[VS::INFO_SHADER_CHANGES_IN_FRAME] = info.render_final.shader_rebind_count;
+	info_write[VS::INFO_SURFACE_CHANGES_IN_FRAME] = info.render_final.surface_switch_count;
+	info_write[VS::INFO_DRAW_CALLS_IN_FRAME] = info.render_final.draw_call_count;
+	info_write[VS::INFO_USAGE_VIDEO_MEM_TOTAL] = 0; //no idea
+	info_write[VS::INFO_VIDEO_MEM_USED] = info.vertex_mem + info.texture_mem;
+	info_write[VS::INFO_TEXTURE_MEM_USED] = info.texture_mem;
+	info_write[VS::INFO_VERTEX_MEM_USED] = info.vertex_mem;
+	return new_info;
 }
 
 String RasterizerStorageGLES2::get_video_adapter_name() const {

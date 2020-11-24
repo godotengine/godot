@@ -761,11 +761,24 @@ public:
 
 	void render_info_begin_capture() {}
 	void render_info_end_capture() {}
-	int get_captured_render_info(VS::RenderInfo p_info) { return 0; }
 
 	int get_render_info(VS::RenderInfo p_info) { return 0; }
 	String get_video_adapter_name() const { return String(); }
 	String get_video_adapter_vendor() const { return String(); }
+
+	const Vector<int> get_captured_render_info() { return Vector<int>(); }
+	const Vector<int> get_captured_selected_render_info(const Vector<RID> &p_rids) {
+		Vector<int> new_info;
+		new_info.resize(VS::INFO_MAX);
+		return new_info;
+	}
+	const Vector<int> get_render_info() {
+		Vector<int> new_info;
+		new_info.resize(VS::INFO_MAX);
+		return new_info;
+	}
+
+	bool has_shadows() { return true; }
 
 	static RasterizerStorage *base_singleton;
 

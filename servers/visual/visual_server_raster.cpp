@@ -148,9 +148,9 @@ void VisualServerRaster::finish() {
 
 /* STATUS INFORMATION */
 
-int VisualServerRaster::get_render_info(RenderInfo p_info) {
+Vector<int> VisualServerRaster::get_render_info() {
 
-	return VSG::storage->get_render_info(p_info);
+	return VSG::storage->get_render_info();
 }
 
 String VisualServerRaster::get_video_adapter_name() const {

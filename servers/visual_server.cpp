@@ -1895,7 +1895,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_use_debanding", "viewport", "debanding"), &VisualServer::viewport_set_use_debanding);
 	ClassDB::bind_method(D_METHOD("viewport_set_hdr", "viewport", "enabled"), &VisualServer::viewport_set_hdr);
 	ClassDB::bind_method(D_METHOD("viewport_set_usage", "viewport", "usage"), &VisualServer::viewport_set_usage);
-	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &VisualServer::viewport_get_render_info);
+	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport"), &VisualServer::viewport_get_render_info);
 	ClassDB::bind_method(D_METHOD("viewport_set_debug_draw", "viewport", "draw"), &VisualServer::viewport_set_debug_draw);
 
 	ClassDB::bind_method(D_METHOD("environment_create"), &VisualServer::environment_create);
@@ -2034,7 +2034,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_changed"), &VisualServer::has_changed);
 	ClassDB::bind_method(D_METHOD("init"), &VisualServer::init);
 	ClassDB::bind_method(D_METHOD("finish"), &VisualServer::finish);
-	ClassDB::bind_method(D_METHOD("get_render_info", "info"), &VisualServer::get_render_info);
+	ClassDB::bind_method(D_METHOD("get_render_info"), &VisualServer::get_render_info);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &VisualServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &VisualServer::get_video_adapter_vendor);
 #ifndef _3D_DISABLED

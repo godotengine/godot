@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
+#include "scene/3d/mesh_instance.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"
 
@@ -284,6 +285,7 @@ private:
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
+	void _update_render_info();
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
@@ -313,6 +315,7 @@ private:
 	float get_zfar() const;
 	float get_fov() const;
 
+	void _get_children_rids(Node *p_current);
 	ObjectID clicked;
 	Vector<_RayResult> selection_results;
 	bool clicked_includes_current;
