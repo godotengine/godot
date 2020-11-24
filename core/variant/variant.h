@@ -128,7 +128,7 @@ private:
 
 	struct ObjData {
 		ObjectID id;
-		Object *obj;
+		Object *obj = nullptr;
 	};
 
 	/* array helpers */

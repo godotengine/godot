@@ -62,9 +62,9 @@ public:
 			CALL_ERROR_TOO_FEW_ARGUMENTS, // expected is number of arguments
 			CALL_ERROR_INSTANCE_IS_NULL,
 		};
-		Error error;
-		int argument;
-		int expected;
+		Error error = Error::CALL_OK;
+		int argument = 0;
+		int expected = 0;
 	};
 
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;

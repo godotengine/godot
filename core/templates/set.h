@@ -80,7 +80,7 @@ public:
 private:
 	struct _Data {
 		Element *_root = nullptr;
-		Element *_nil;
+		Element *_nil = nullptr;
 		int size_cache = 0;
 
 		_FORCE_INLINE_ _Data() {

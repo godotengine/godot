@@ -371,7 +371,7 @@ void Array::sort() {
 }
 
 struct _ArrayVariantSortCustom {
-	Object *obj;
+	Object *obj = nullptr;
 	StringName func;
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
