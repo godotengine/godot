@@ -131,8 +131,6 @@ class TileMapEditor : public VBoxContainer {
 		bool yf = false;
 		bool tr = false;
 		Vector2 ac;
-
-		CellOp() {}
 	};
 
 	Map<Point2i, CellOp> paint_undo;
@@ -144,8 +142,6 @@ class TileMapEditor : public VBoxContainer {
 		bool flip_v = false;
 		bool transpose = false;
 		Point2i autotile_coord;
-
-		TileData() {}
 	};
 
 	List<TileData> copydata;

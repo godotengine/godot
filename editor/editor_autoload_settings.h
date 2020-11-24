@@ -50,19 +50,13 @@ class EditorAutoloadSettings : public VBoxContainer {
 	struct AutoLoadInfo {
 		String name;
 		String path;
-		bool is_singleton;
-		bool in_editor;
-		int order;
-		Node *node;
+		bool is_singleton = false;
+		bool in_editor = false;
+		int order = 0;
+		Node *node = nullptr;
 
 		bool operator==(const AutoLoadInfo &p_info) const {
 			return order == p_info.order;
-		}
-
-		AutoLoadInfo() {
-			is_singleton = false;
-			in_editor = false;
-			node = nullptr;
 		}
 	};
 

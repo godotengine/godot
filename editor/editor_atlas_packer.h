@@ -41,23 +41,23 @@ public:
 	struct Chart {
 		Vector<Vector2> vertices;
 		struct Face {
-			int vertex[3];
+			int vertex[3] = { 0 };
 		};
 		Vector<Face> faces;
-		bool can_transpose;
+		bool can_transpose = false;
 
 		Vector2 final_offset;
-		bool transposed;
+		bool transposed = false;
 	};
 
 private:
 	struct PlottedBitmap {
-		int chart_index;
+		int chart_index = 0;
 		Vector2i offset;
-		int area;
+		int area = 0;
 		Vector<int> top_heights;
 		Vector<int> bottom_heights;
-		bool transposed;
+		bool transposed = false;
 
 		Vector2 final_pos;
 

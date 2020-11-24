@@ -211,6 +211,7 @@ ContextGL_Windows::ContextGL_Windows(HWND hwnd, bool p_opengl_3_context) {
 	hWnd = hwnd;
 	use_vsync = false;
 	vsync_via_compositor = false;
+	pixel_format = 0;
 }
 
 ContextGL_Windows::~ContextGL_Windows() {

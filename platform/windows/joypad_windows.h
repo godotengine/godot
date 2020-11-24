@@ -92,21 +92,13 @@ private:
 	};
 
 	struct xinput_gamepad {
-		int id;
-		bool attached;
-		bool vibrating;
-		DWORD last_packet;
+		int id = 0;
+		bool attached = false;
+		bool vibrating = false;
+		DWORD last_packet = 0;
 		XINPUT_STATE state;
-		uint64_t ff_timestamp;
-		uint64_t ff_end_timestamp;
-
-		xinput_gamepad() {
-			attached = false;
-			vibrating = false;
-			ff_timestamp = 0;
-			ff_end_timestamp = 0;
-			last_packet = 0;
-		}
+		uint64_t ff_timestamp = 0;
+		uint64_t ff_end_timestamp = 0;
 	};
 
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);

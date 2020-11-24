@@ -38,19 +38,19 @@
 #include <SLES/OpenSLES_Android.h>
 
 class AudioDriverOpenSL : public AudioDriver {
-	bool active;
+	bool active = false;
 	Mutex mutex;
 
 	enum {
 		BUFFER_COUNT = 2
 	};
 
-	bool pause;
+	bool pause = false;
 
-	uint32_t buffer_size;
-	int16_t *buffers[BUFFER_COUNT];
-	int32_t *mixdown_buffer;
-	int last_free;
+	uint32_t buffer_size = 0;
+	int16_t *buffers[BUFFER_COUNT] = {};
+	int32_t *mixdown_buffer = nullptr;
+	int last_free = 0;
 
 	Vector<int16_t> rec_buffer;
 

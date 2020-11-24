@@ -86,11 +86,6 @@ static bool find_next(const String &line, String pattern, int from, bool match_c
 }
 
 //--------------------------------------------------------------------------------
-FindInFiles::FindInFiles() {
-	_searching = false;
-	_whole_words = true;
-	_match_case = true;
-}
 
 void FindInFiles::set_search_text(String p_pattern) {
 	_pattern = p_pattern;

@@ -108,7 +108,7 @@ class AppxPackager {
 
 	struct BlockHash {
 		String base64_hash;
-		size_t compressed_size;
+		size_t compressed_size = 0;
 	};
 
 	struct FileMeta {
@@ -120,12 +120,10 @@ class AppxPackager {
 		Vector<BlockHash> hashes;
 		uLong file_crc32 = 0;
 		ZPOS64_T zip_offset = 0;
-
-		FileMeta() {}
 	};
 
 	String progress_task;
-	FileAccess *package;
+	FileAccess *package = nullptr;
 
 	Set<String> mime_types;
 

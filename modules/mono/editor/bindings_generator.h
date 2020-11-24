@@ -45,7 +45,7 @@ class BindingsGenerator {
 	struct ConstantInterface {
 		String name;
 		String proxy_name;
-		int value;
+		int value = 0;
 		const DocData::ConstantDoc *const_doc;
 
 		ConstantInterface() {}
@@ -75,7 +75,7 @@ class BindingsGenerator {
 	struct PropertyInterface {
 		StringName cname;
 		String proxy_name;
-		int index;
+		int index = 0;
 
 		StringName setter;
 		StringName getter;
@@ -480,7 +480,7 @@ class BindingsGenerator {
 		String im_type_out; // Return type for the C# method declaration. Also used as companion of [unique_siq]
 		String im_sig; // Signature for the C# method declaration
 		String unique_sig; // Unique signature to avoid duplicates in containers
-		bool editor_only;
+		bool editor_only = false;
 
 		InternalCall() {}
 

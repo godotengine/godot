@@ -94,8 +94,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 	struct IOSExportAsset {
 		String exported_path;
-		bool is_framework; // framework is anything linked to the binary, otherwise it's a resource
-		bool should_embed;
+		bool is_framework = false; // framework is anything linked to the binary, otherwise it's a resource
+		bool should_embed = false;
 	};
 
 	String _get_additional_plist_content();
@@ -314,9 +314,9 @@ Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_ge
 struct LoadingScreenInfo {
 	const char *preset_key;
 	const char *export_name;
-	int width;
-	int height;
-	bool rotate;
+	int width = 0;
+	int height = 0;
+	bool rotate = false;
 };
 
 static const LoadingScreenInfo loading_screen_infos[] = {
@@ -667,7 +667,7 @@ struct IconInfo {
 	const char *actual_size_side;
 	const char *scale;
 	const char *unscaled_size;
-	bool is_required;
+	bool is_required = false;
 };
 
 static const IconInfo icon_infos[] = {
@@ -962,7 +962,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler 
 
 struct CodesignData {
 	const Ref<EditorExportPreset> &preset;
-	bool debug;
+	bool debug = false;
 
 	CodesignData(const Ref<EditorExportPreset> &p_preset, bool p_debug) :
 			preset(p_preset),

@@ -126,10 +126,10 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
 		StringName advance_condition_name;
-		bool advance_condition_state;
-		bool disabled;
-		bool auto_advance;
-		float width;
+		bool advance_condition_state = false;
+		bool disabled = false;
+		bool auto_advance = false;
+		float width = 0;
 	};
 
 	Vector<TransitionLine> transition_lines;

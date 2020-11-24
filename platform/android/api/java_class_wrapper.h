@@ -66,10 +66,10 @@ class JavaClass : public Reference {
 	Map<StringName, Variant> constant_map;
 
 	struct MethodInfo {
-		bool _static;
+		bool _static = false;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
-		uint32_t return_type;
+		uint32_t return_type = 0;
 		jmethodID method;
 	};
 

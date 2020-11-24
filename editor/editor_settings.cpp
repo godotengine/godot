@@ -158,10 +158,10 @@ void EditorSettings::_initial_set(const StringName &p_name, const Variant &p_val
 
 struct _EVCSort {
 	String name;
-	Variant::Type type;
-	int order;
-	bool save;
-	bool restart_if_changed;
+	Variant::Type type = Variant::Type::NIL;
+	int order = 0;
+	bool save = false;
+	bool restart_if_changed = false;
 
 	bool operator<(const _EVCSort &p_vcs) const { return order < p_vcs.order; }
 };
@@ -1540,8 +1540,8 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 }
 
 struct ShortcutMapping {
-	const char *path;
-	uint32_t keycode;
+	const char *path = nullptr;
+	uint32_t keycode = 0;
 };
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {

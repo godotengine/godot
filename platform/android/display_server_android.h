@@ -41,7 +41,7 @@ class RenderingDeviceVulkan;
 class DisplayServerAndroid : public DisplayServer {
 public:
 	struct TouchPos {
-		int id;
+		int id = 0;
 		Point2 pos;
 	};
 
@@ -52,12 +52,12 @@ public:
 	};
 
 	struct JoypadEvent {
-		int device;
-		int type;
-		int index;
-		bool pressed;
-		float value;
-		int hat;
+		int device = 0;
+		int type = 0;
+		int index = 0;
+		bool pressed = false;
+		float value = 0;
+		int hat = 0;
 	};
 
 private:

@@ -563,6 +563,8 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
 	edit_handle = -1;
 	pressed = false;
+
+	shape_type = 0;
 }
 
 void CollisionShape2DEditorPlugin::edit(Object *p_obj) {

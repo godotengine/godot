@@ -89,10 +89,10 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	PanelContainer *previews_bg;
 
 	struct Preview {
-		int id;
-		bool is_video;
+		int id = 0;
+		bool is_video = false;
 		String video_link;
-		Button *button;
+		Button *button = nullptr;
 		Ref<Texture2D> image;
 	};
 
@@ -234,12 +234,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	struct ImageQueue {
-		bool active;
-		int queue_id;
-		ImageType image_type;
-		int image_index;
+		bool active = false;
+		int queue_id = 0;
+		ImageType image_type = ImageType::IMAGE_QUEUE_ICON;
+		int image_index = 0;
 		String image_url;
-		HTTPRequest *request;
+		HTTPRequest *request = nullptr;
 		ObjectID target;
 	};
 

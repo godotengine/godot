@@ -47,12 +47,12 @@ class EditorHistory {
 		REF ref;
 		ObjectID object;
 		String property;
-		bool inspector_only;
+		bool inspector_only = false;
 	};
 
 	struct History {
 		Vector<Obj> path;
-		int level;
+		int level = 0;
 	};
 	friend class EditorData;
 
@@ -109,14 +109,14 @@ public:
 	};
 
 	struct EditedScene {
-		Node *root;
+		Node *root = nullptr;
 		String path;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
-		int history_current;
+		int history_current = 0;
 		Dictionary custom_state;
-		uint64_t version;
+		uint64_t version = 0;
 		NodePath live_edit_root;
 	};
 

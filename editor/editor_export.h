@@ -169,9 +169,9 @@ public:
 
 private:
 	struct SavedData {
-		uint64_t ofs;
-		uint64_t size;
-		bool encrypted;
+		uint64_t ofs = 0;
+		uint64_t size = 0;
+		bool encrypted = false;
 		Vector<uint8_t> md5;
 		CharString path_utf8;
 
@@ -181,15 +181,15 @@ private:
 	};
 
 	struct PackData {
-		FileAccess *f;
+		FileAccess *f = nullptr;
 		Vector<SavedData> file_ofs;
-		EditorProgress *ep;
-		Vector<SharedObject> *so_files;
+		EditorProgress *ep = nullptr;
+		Vector<SharedObject> *so_files = nullptr;
 	};
 
 	struct ZipData {
-		void *zip;
-		EditorProgress *ep;
+		void *zip = nullptr;
+		EditorProgress *ep = nullptr;
 	};
 
 	struct FeatureContainers {
@@ -294,7 +294,7 @@ class EditorExportPlugin : public Reference {
 	struct ExtraFile {
 		String path;
 		Vector<uint8_t> data;
-		bool remap;
+		bool remap = false;
 	};
 	Vector<ExtraFile> extra_files;
 	bool skipped;

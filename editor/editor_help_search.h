@@ -98,7 +98,7 @@ class EditorHelpSearch::Runner : public Reference {
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
-		bool name;
+		bool name = false;
 		Vector<DocData::MethodDoc *> methods;
 		Vector<DocData::MethodDoc *> signals;
 		Vector<DocData::ConstantDoc *> constants;
@@ -118,12 +118,12 @@ class EditorHelpSearch::Runner : public Reference {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc;
+	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
-	Map<String, ClassMatch>::Element *iterator_match;
-	TreeItem *root_item;
+	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
-	TreeItem *matched_item;
+	TreeItem *matched_item = nullptr;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 

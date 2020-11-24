@@ -61,16 +61,10 @@ public:
 		Ref<Material> material;
 		Ref<SkinReference> skin_reference;
 		RID skeleton;
-		bool billboard;
-		bool unscaled;
-		bool can_intersect;
-		bool extra_margin;
-		Instance() {
-			billboard = false;
-			unscaled = false;
-			can_intersect = false;
-			extra_margin = false;
-		}
+		bool billboard = false;
+		bool unscaled = false;
+		bool can_intersect = false;
+		bool extra_margin = false;
 
 		void create_instance(Node3D *p_base, bool p_hidden = false);
 	};
@@ -80,7 +74,7 @@ public:
 
 	struct Handle {
 		Vector3 pos;
-		bool billboard;
+		bool billboard = false;
 	};
 
 	Vector<Vector3> handles;
@@ -297,9 +291,9 @@ private:
 	Label *fps_label;
 
 	struct _RayResult {
-		Node3D *item;
-		float depth;
-		int handle;
+		Node3D *item = nullptr;
+		float depth = 0;
+		int handle = 0;
 		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
@@ -376,11 +370,11 @@ private:
 		Vector3 click_ray_pos;
 		Vector3 center;
 		Vector3 orig_gizmo_pos;
-		int edited_gizmo;
+		int edited_gizmo = 0;
 		Point2 mouse_pos;
-		bool snap;
+		bool snap = false;
 		Ref<EditorNode3DGizmo> gizmo;
-		int gizmo_handle;
+		int gizmo_handle = 0;
 		Variant gizmo_initial_value;
 		Vector3 gizmo_initial_pos;
 	} _edit;
@@ -626,8 +620,8 @@ private:
 	AABB preview_bounds;
 
 	struct Gizmo {
-		bool visible;
-		float scale;
+		bool visible = false;
+		float scale = 0;
 		Transform transform;
 	} gizmo;
 

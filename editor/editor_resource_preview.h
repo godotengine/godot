@@ -77,9 +77,9 @@ class EditorResourcePreview : public Node {
 	struct Item {
 		Ref<Texture2D> preview;
 		Ref<Texture2D> small_preview;
-		int order;
-		uint32_t last_hash;
-		uint64_t modified_time;
+		int order = 0;
+		uint32_t last_hash = 0;
+		uint64_t modified_time = 0;
 	};
 
 	int order;

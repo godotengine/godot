@@ -111,10 +111,10 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-		int track;
-		float time;
+		int track = 0;
+		float time = 0;
 		Variant key;
-		float transition;
+		float transition = 0;
 	};
 
 	AnimationTrackEditor *editor;

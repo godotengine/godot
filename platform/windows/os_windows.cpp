@@ -802,6 +802,11 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
+	ticks_per_second = 0;
+	ticks_start = 0;
+	main_loop = nullptr;
+	process_map = nullptr;
+
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {

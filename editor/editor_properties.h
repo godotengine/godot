@@ -41,7 +41,7 @@
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
-	LineEdit *text;
+	LineEdit *text = nullptr;
 
 public:
 	virtual void update_property() override;

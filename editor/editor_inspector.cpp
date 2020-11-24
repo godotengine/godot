@@ -963,6 +963,7 @@ EditorProperty::EditorProperty() {
 	selected_focusable = -1;
 	label_reference = nullptr;
 	bottom_editor = nullptr;
+	delete_hover = false;
 }
 
 ////////////////////////////////////////////////

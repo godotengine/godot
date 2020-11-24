@@ -57,7 +57,7 @@
 struct module_data {
 	std::string image_name;
 	std::string module_name;
-	void *base_address;
+	void *base_address = nullptr;
 	DWORD load_size;
 };
 

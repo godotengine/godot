@@ -35,9 +35,9 @@
 class SectionedInspectorFilter : public Object {
 	GDCLASS(SectionedInspectorFilter, Object);
 
-	Object *edited;
+	Object *edited = nullptr;
 	String section;
-	bool allow_sub;
+	bool allow_sub = false;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (!edited) {
@@ -122,10 +122,6 @@ public:
 	void set_edited(Object *p_edited) {
 		edited = p_edited;
 		_change_notify();
-	}
-
-	SectionedInspectorFilter() {
-		edited = nullptr;
 	}
 };
 

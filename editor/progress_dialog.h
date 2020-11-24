@@ -43,8 +43,8 @@ class BackgroundProgress : public HBoxContainer {
 	_THREAD_SAFE_CLASS_
 
 	struct Task {
-		HBoxContainer *hb;
-		ProgressBar *progress;
+		HBoxContainer *hb = nullptr;
+		ProgressBar *progress = nullptr;
 	};
 
 	Map<String, Task> tasks;
@@ -70,9 +70,9 @@ class ProgressDialog : public PopupPanel {
 	GDCLASS(ProgressDialog, PopupPanel);
 	struct Task {
 		String task;
-		VBoxContainer *vb;
-		ProgressBar *progress;
-		Label *state;
+		VBoxContainer *vb = nullptr;
+		ProgressBar *progress = nullptr;
+		Label *state = nullptr;
 	};
 	HBoxContainer *cancel_hb;
 	Button *cancel;

@@ -46,9 +46,9 @@ class EditorVisualProfiler : public VBoxContainer {
 
 public:
 	struct Metric {
-		bool valid;
+		bool valid = false;
 
-		uint64_t frame_number;
+		uint64_t frame_number = 0;
 
 		struct Area {
 			String name;
@@ -59,10 +59,6 @@ public:
 		};
 
 		Vector<Area> areas;
-
-		Metric() {
-			valid = false;
-		}
 	};
 
 	enum DisplayTimeMode {

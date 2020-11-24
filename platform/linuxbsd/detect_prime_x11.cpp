@@ -56,7 +56,7 @@ typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLX
 
 struct vendor {
 	const char *glxvendor;
-	int priority;
+	int priority = 0;
 };
 
 vendor vendormap[] = {

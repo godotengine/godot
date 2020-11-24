@@ -116,8 +116,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		GLTFNodeIndex fake_joint_parent = -1;
 
 		GLTFLightIndex light = -1;
-
-		GLTFNode() {}
 	};
 
 	struct GLTFBufferView {
@@ -127,8 +125,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		int byte_stride = 0;
 		bool indices = false;
 		//matrices need to be transformed to this
-
-		GLTFBufferView() {}
 	};
 
 	struct GLTFAccessor {
@@ -137,7 +133,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		int component_type = 0;
 		bool normalized = false;
 		int count = 0;
-		GLTFType type;
+		GLTFType type = GLTFType::TYPE_SCALAR;
 		float min = 0;
 		float max = 0;
 		int sparse_count = 0;
@@ -146,8 +142,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		int sparse_indices_component_type = 0;
 		int sparse_values_buffer_view = 0;
 		int sparse_values_byte_offset = 0;
-
-		GLTFAccessor() {}
 	};
 	struct GLTFTexture {
 		GLTFImageIndex src_image;
@@ -166,8 +160,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		// Set of unique bone names for the skeleton
 		Set<String> unique_names;
-
-		GLTFSkeleton() {}
 	};
 
 	struct GLTFSkin {
@@ -204,8 +196,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		// The Actual Skin that will be created as a mapping between the IBM's of this skin
 		// to the generated skeleton for the mesh instances.
 		Ref<Skin> godot_skin;
-
-		GLTFSkin() {}
 	};
 
 	struct GLTFMesh {
@@ -218,8 +208,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		float fov_size = 64;
 		float zfar = 500;
 		float znear = 0.1;
-
-		GLTFCamera() {}
 	};
 
 	struct GLTFLight {
@@ -229,8 +217,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		float range = Math_INF;
 		float inner_cone_angle = 0.0f;
 		float outer_cone_angle = Math_PI / 4.0;
-
-		GLTFLight() {}
 	};
 
 	struct GLTFAnimation {
@@ -264,11 +250,11 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	struct GLTFState {
 		Dictionary json;
-		int major_version;
-		int minor_version;
+		int major_version = 0;
+		int minor_version = 0;
 		Vector<uint8_t> glb_data;
 
-		bool use_named_skin_binds;
+		bool use_named_skin_binds = false;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t>> buffers;
