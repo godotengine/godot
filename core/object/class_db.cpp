@@ -993,7 +993,8 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
+		int req_args = mb_set->get_argument_count() - mb_set->get_default_argument_count();
+		ERR_FAIL_COND_MSG(req_args != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
 #endif
 	}
 
@@ -1005,7 +1006,8 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
+		int req_args = mb_get->get_argument_count() - mb_get->get_default_argument_count();
+		ERR_FAIL_COND_MSG(req_args != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
 #endif
 	}
 
