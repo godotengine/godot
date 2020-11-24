@@ -41,6 +41,8 @@
 			</argument>
 			<argument index="6" name="width" type="float" default="1.0">
 			</argument>
+			<argument index="7" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws an arc between the given angles. The larger the value of [code]point_count[/code], the smoother the curve.
 			</description>
@@ -216,6 +218,8 @@
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
 			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
 				Draws interconnected line segments with a uniform [code]color[/code] and [code]width[/code].
 			</description>
@@ -228,6 +232,8 @@
 			<argument index="1" name="colors" type="PackedColorArray">
 			</argument>
 			<argument index="2" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="3" name="antialiased" type="bool" default="false">
 			</argument>
 			<description>
 				Draws interconnected line segments with a uniform [code]width[/code] and segment-by-segment coloring. Colors assigned to line segments match by index between [code]points[/code] and [code]colors[/code].

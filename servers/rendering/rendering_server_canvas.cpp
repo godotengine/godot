@@ -540,59 +540,60 @@ void RenderingServerCanvas::canvas_item_add_line(RID p_item, const Point2 &p_fro
 	}
 }
 
-void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
+void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width, bool p_antialiased) {
 	ERR_FAIL_COND(p_points.size() < 2);
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
+	Vector<int> indices;
+	int pc = p_points.size();
+	int pc2 = pc * 2;
+
+	Vector2 prev_t;
+	int j2;
+
 	Item::CommandPolygon *pline = canvas_item->alloc_command<Item::CommandPolygon>();
 	ERR_FAIL_COND(!pline);
 
-	if (true || p_width <= 1) {
-#define TODO make thick lines possible
-		Vector<int> indices;
-		int pc = p_points.size();
-		indices.resize((pc - 1) * 2);
-		{
-			int *iptr = indices.ptrw();
-			for (int i = 0; i < (pc - 1); i++) {
-				iptr[i * 2 + 0] = i;
-				iptr[i * 2 + 1] = i + 1;
-			}
-		}
+	PackedColorArray colors;
+	PackedVector2Array points;
 
-		pline->primitive = RS::PRIMITIVE_LINES;
-		pline->polygon.create(indices, p_points, p_colors);
-	} else {
-#if 0
-		//make a trianglestrip for drawing the line...
-		Vector2 prev_t;
-		pline->triangles.resize(p_points.size() * 2);
-		if (p_antialiased) {
-			pline->lines.resize(p_points.size() * 2);
-		}
+	colors.resize(pc2);
+	points.resize(pc2);
 
-		if (p_colors.size() == 0) {
-			pline->triangle_colors.push_back(Color(1, 1, 1, 1));
-			if (p_antialiased) {
-				pline->line_colors.push_back(Color(1, 1, 1, 1));
-			}
-		} else if (p_colors.size() == 1) {
-			pline->triangle_colors = p_colors;
-			pline->line_colors = p_colors;
-		} else {
-			if (p_colors.size() != p_points.size()) {
-				pline->triangle_colors.push_back(p_colors[0]);
-				pline->line_colors.push_back(p_colors[0]);
-			} else {
-				pline->triangle_colors.resize(pline->triangles.size());
-				pline->line_colors.resize(pline->lines.size());
-			}
-		}
+	Vector2 *points_ptr = points.ptrw();
+	Color *colors_ptr = colors.ptrw();
 
-		for (int i = 0; i < p_points.size(); i++) {
+	if (p_antialiased) {
+		PackedColorArray colors_top;
+		PackedVector2Array points_top;
+
+		colors_top.resize(pc2);
+		points_top.resize(pc2);
+
+		PackedColorArray colors_bottom;
+		PackedVector2Array points_bottom;
+
+		colors_bottom.resize(pc2);
+		points_bottom.resize(pc2);
+
+		Item::CommandPolygon *pline_top = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_top);
+
+		Item::CommandPolygon *pline_bottom = canvas_item->alloc_command<Item::CommandPolygon>();
+		ERR_FAIL_COND(!pline_bottom);
+
+		//make three trianglestrip's for drawing the antialiased line...
+
+		Vector2 *points_top_ptr = points_top.ptrw();
+		Vector2 *points_bottom_ptr = points_bottom.ptrw();
+
+		Color *colors_top_ptr = colors_top.ptrw();
+		Color *colors_bottom_ptr = colors_bottom.ptrw();
+
+		for (int i = 0, j = 0; i < pc; i++, j += 2) {
 			Vector2 t;
-			if (i == p_points.size() - 1) {
+			if (i == pc - 1) {
 				t = prev_t;
 			} else {
 				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
@@ -601,29 +602,73 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 				}
 			}
 
+			j2 = j + 1;
+
 			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+			Vector2 pos = p_points[i];
 
-			if (p_antialiased) {
-				pline->lines.write[i] = p_points[i] + tangent;
-				pline->lines.write[p_points.size() * 2 - i - 1] = p_points[i] - tangent;
-				if (pline->line_colors.size() > 1) {
-					pline->line_colors.write[i] = p_colors[i];
-					pline->line_colors.write[p_points.size() * 2 - i - 1] = p_colors[i];
-				}
-			}
+			points_ptr[j] = pos + tangent;
+			points_ptr[j2] = pos - tangent;
 
-			pline->triangles.write[i * 2 + 0] = p_points[i] + tangent;
-			pline->triangles.write[i * 2 + 1] = p_points[i] - tangent;
+			points_top_ptr[j] = pos + tangent + tangent;
+			points_top_ptr[j2] = pos + tangent;
 
-			if (pline->triangle_colors.size() > 1) {
-				pline->triangle_colors.write[i * 2 + 0] = p_colors[i];
-				pline->triangle_colors.write[i * 2 + 1] = p_colors[i];
-			}
+			points_bottom_ptr[j] = pos - tangent;
+			points_bottom_ptr[j2] = pos - tangent - tangent;
+
+			Color color = p_colors[i];
+			Color color2 = Color(color.r, color.g, color.b, 0);
+
+			colors_ptr[j] = color;
+			colors_ptr[j2] = color;
+
+			colors_top_ptr[j] = color2;
+			colors_top_ptr[j2] = color;
+
+			colors_bottom_ptr[j] = color;
+			colors_bottom_ptr[j2] = color2;
 
 			prev_t = t;
 		}
-#endif
+
+		pline_top->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_top->polygon.create(indices, points_top, colors_top);
+
+		pline_bottom->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+		pline_bottom->polygon.create(indices, points_bottom, colors_bottom);
+	} else {
+		//make a trianglestrip for drawing the line...
+
+		for (int i = 0, j = 0; i < pc; i++, j += 2) {
+			Vector2 t;
+			if (i == pc - 1) {
+				t = prev_t;
+			} else {
+				t = (p_points[i + 1] - p_points[i]).normalized().tangent();
+				if (i == 0) {
+					prev_t = t;
+				}
+			}
+
+			j2 = j + 1;
+
+			Vector2 tangent = ((t + prev_t).normalized()) * p_width * 0.5;
+
+			Vector2 pos = p_points[j];
+			Color color = p_colors[j2];
+
+			points_ptr[j] = pos + tangent;
+			points_ptr[j2] = pos - tangent;
+
+			colors_ptr[j] = color;
+			colors_ptr[j2] = color;
+
+			prev_t = t;
+		}
 	}
+
+	pline->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
+	pline->polygon.create(indices, points, colors);
 }
 
 void RenderingServerCanvas::canvas_item_add_multiline(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width) {
