@@ -32,6 +32,7 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "drivers/gles_common/rasterizer_asserts.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/visual_server_raster.h"
 
@@ -1122,14 +1123,27 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
 							}
 
+							// we need a temporary because this must be nulled out
+							// if only a single color specified
+							const Color *colors = primitive->colors.ptr();
 							if (primitive->colors.size() == 1 && primitive->points.size() > 1) {
 								Color c = primitive->colors[0];
 								glVertexAttrib4f(VS::ARRAY_COLOR, c.r, c.g, c.b, c.a);
+								colors = nullptr;
 							} else if (primitive->colors.empty()) {
 								glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 							}
+#ifdef RASTERIZER_EXTRA_CHECKS
+							else {
+								RAST_DEV_DEBUG_ASSERT(primitive->colors.size() == primitive->points.size());
+							}
 
-							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
+							if (primitive->uvs.ptr()) {
+								RAST_DEV_DEBUG_ASSERT(primitive->uvs.size() == primitive->points.size());
+							}
+#endif
+
+							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), colors, primitive->uvs.ptr());
 						} break;
 
 						case Item::Command::TYPE_TRANSFORM: {

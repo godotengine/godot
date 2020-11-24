@@ -350,16 +350,18 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 
 	uint32_t buffer_ofs = 0;
+	uint32_t buffer_ofs_after = buffer_ofs + (sizeof(Vector2) * p_vertex_count);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs_after > data.polygon_buffer_size);
+#endif
+
 	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-	buffer_ofs += sizeof(Vector2) * p_vertex_count;
-	//color
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
+	buffer_ofs = buffer_ofs_after;
 
+	//color
 	if (p_singlecolor) {
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
 		Color m = *p_colors;
@@ -368,44 +370,33 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 	} else {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false, sizeof(Color), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Color) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 	}
 
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
-
 	if (p_uvs) {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 
 	} else {
 		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
 
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
-
 	if (p_bones && p_weights) {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(int) * 4 * p_vertex_count, p_bones);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(int) * 4 * p_vertex_count, p_bones, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_BONES);
 		//glVertexAttribPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, false, sizeof(int) * 4, ((uint8_t *)0) + buffer_ofs);
 		glVertexAttribIPointer(VS::ARRAY_BONES, 4, GL_UNSIGNED_INT, sizeof(int) * 4, CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(int) * 4 * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(float) * 4 * p_vertex_count, p_weights);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(float) * 4 * p_vertex_count, p_weights, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_WEIGHTS);
 		glVertexAttribPointer(VS::ARRAY_WEIGHTS, 4, GL_FLOAT, false, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(float) * 4 * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 
 	} else if (state.using_skeleton) {
 		glVertexAttribI4ui(VS::ARRAY_BONES, 0, 0, 0, 0);
@@ -413,7 +404,7 @@ void RasterizerCanvasBaseGLES3::_draw_polygon(const int *p_indices, int p_index_
 	}
 
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
+	ERR_FAIL_COND((sizeof(int) * p_index_count) > data.polygon_index_buffer_size);
 #endif
 
 	//bind the indices buffer.
@@ -442,11 +433,15 @@ void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_c
 
 	//vertex
 	uint32_t buffer_ofs = 0;
+	uint32_t buffer_ofs_after = buffer_ofs + (sizeof(Vector2) * p_vertex_count);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs_after > data.polygon_buffer_size);
+#endif
 	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-	buffer_ofs += sizeof(Vector2) * p_vertex_count;
+	buffer_ofs = buffer_ofs_after;
 
 	//color
 	if (p_singlecolor) {
@@ -457,19 +452,17 @@ void RasterizerCanvasBaseGLES3::_draw_generic(GLuint p_primitive, int p_vertex_c
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 	} else {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false, sizeof(Color), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Color) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 	}
 
 	if (p_uvs) {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 
 	} else {
 		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
@@ -490,16 +483,17 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 
 	//vertex
 	uint32_t buffer_ofs = 0;
+	uint32_t buffer_ofs_after = buffer_ofs + (sizeof(Vector2) * p_vertex_count);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(buffer_ofs_after > data.polygon_buffer_size);
+#endif
 	storage->buffer_orphan_and_upload(data.polygon_buffer_size, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices, GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-	buffer_ofs += sizeof(Vector2) * p_vertex_count;
-	//color
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
+	buffer_ofs = buffer_ofs_after;
 
+	//color
 	if (p_singlecolor) {
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
 		Color m = *p_colors;
@@ -508,37 +502,31 @@ void RasterizerCanvasBaseGLES3::_draw_generic_indices(GLuint p_primitive, const 
 		glDisableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 	} else {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Color) * p_vertex_count, p_colors, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_COLOR);
 		glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, false, sizeof(Color), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Color) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 	}
 
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
-
 	if (p_uvs) {
-
-		glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs);
+		RAST_FAIL_COND(!storage->safe_buffer_sub_data(data.polygon_buffer_size, GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_uvs, buffer_ofs_after));
 		glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
-		buffer_ofs += sizeof(Vector2) * p_vertex_count;
+		buffer_ofs = buffer_ofs_after;
 
 	} else {
 		glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
 	}
-
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
 
 #ifdef RASTERIZER_EXTRA_CHECKS
 	// very slow, do not enable in normal use
 	for (int n = 0; n < p_index_count; n++) {
 		RAST_DEV_DEBUG_ASSERT(p_indices[n] < p_vertex_count);
 	}
+#endif
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND((sizeof(int) * p_index_count) > data.polygon_index_buffer_size);
 #endif
 
 	//bind the indices buffer.
@@ -584,6 +572,7 @@ void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 
 		stride += 1;
 	}
 
+	RAST_DEV_DEBUG_ASSERT(p_points <= 4);
 	float b[(2 + 2 + 4 + 1) * 4];
 
 	for (int i = 0; i < p_points; i++) {
@@ -1218,8 +1207,8 @@ void RasterizerCanvasBaseGLES3::initialize() {
 
 		uint32_t poly_size = GLOBAL_DEF_RST("rendering/limits/buffers/canvas_polygon_buffer_size_kb", 128);
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_buffer_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
+		poly_size = MAX(poly_size, 2); // minimum 2k, may still see anomalies in editor
 		poly_size *= 1024; //kb
-		poly_size = MAX(poly_size, (2 + 2 + 4 + 1) * 4 * sizeof(float));
 		glGenBuffers(1, &data.polygon_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
 		glBufferData(GL_ARRAY_BUFFER, poly_size, NULL, GL_DYNAMIC_DRAW); //allocate max size
@@ -1278,6 +1267,7 @@ void RasterizerCanvasBaseGLES3::initialize() {
 
 		uint32_t index_size = GLOBAL_DEF_RST("rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", 128);
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_index_buffer_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
+		index_size = MAX(index_size, 2);
 		index_size *= 1024; //kb
 		glGenBuffers(1, &data.polygon_index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);

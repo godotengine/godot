@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "rasterizer_canvas_gles3.h"
+
+#include "drivers/gles_common/rasterizer_asserts.h"
 #include "servers/visual/visual_server_raster.h"
 
 static const GLenum gl_primitive[] = {
@@ -595,6 +597,11 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 
 							if (pline->triangles.size()) {
 
+#ifdef RASTERIZER_EXTRA_CHECKS
+								if (pline->triangle_colors.ptr() && (pline->triangle_colors.size() != 1)) {
+									RAST_DEV_DEBUG_ASSERT(pline->triangle_colors.size() == pline->triangles.size());
+								}
+#endif
 								_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
 #ifdef GLES_OVER_GL
 								glEnable(GL_LINE_SMOOTH);
@@ -774,16 +781,30 @@ void RasterizerCanvasGLES3::render_batches(Item::Command *const *p_commands, Ite
 								Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
 								state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 							}
+
+							// we need a temporary because this must be nulled out
+							// if only a single color specified
+							const Color *colors = primitive->colors.ptr();
 							if (primitive->colors.size() == 1 && primitive->points.size() > 1) {
 
 								Color col = primitive->colors[0];
 								glVertexAttrib4f(VS::ARRAY_COLOR, col.r, col.g, col.b, col.a);
+								colors = nullptr;
 
 							} else if (primitive->colors.empty()) {
 								glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 							}
+#ifdef RASTERIZER_EXTRA_CHECKS
+							else {
+								RAST_DEV_DEBUG_ASSERT(primitive->colors.size() == primitive->points.size());
+							}
 
-							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
+							if (primitive->uvs.ptr()) {
+								RAST_DEV_DEBUG_ASSERT(primitive->uvs.size() == primitive->points.size());
+							}
+#endif
+
+							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), colors, primitive->uvs.ptr());
 
 						} break;
 						case Item::Command::TYPE_POLYGON: {
