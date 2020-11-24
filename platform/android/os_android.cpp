@@ -314,6 +314,7 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 #if defined(OPENGL_ENABLED)
 	gl_extensions = nullptr;
 	use_gl2 = false;
+	use_16bits_fbo = false;
 #endif
 
 #if defined(VULKAN_ENABLED)

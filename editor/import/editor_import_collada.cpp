@@ -46,29 +46,24 @@
 
 struct ColladaImport {
 	Collada collada;
-	Node3D *scene;
+	Node3D *scene = nullptr;
 
 	Vector<Ref<Animation>> animations;
 
 	struct NodeMap {
 		//String path;
-		Node3D *node;
-		int bone;
+		Node3D *node = nullptr;
+		int bone = -1;
 		List<int> anim_tracks;
-
-		NodeMap() {
-			node = nullptr;
-			bone = -1;
-		}
 	};
 
-	bool found_ambient;
+	bool found_ambient = false;
 	Color ambient;
-	bool found_directional;
-	bool force_make_tangents;
-	bool apply_mesh_xform_to_vertices;
-	bool use_mesh_builtin_materials;
-	float bake_fps;
+	bool found_directional = false;
+	bool force_make_tangents = false;
+	bool apply_mesh_xform_to_vertices = true;
+	bool use_mesh_builtin_materials = false;
+	float bake_fps = 15;
 
 	Map<String, NodeMap> node_map; //map from collada node to engine node
 	Map<String, String> node_name_map; //map from collada node to engine node
@@ -98,14 +93,6 @@ struct ColladaImport {
 	Vector<String> missing_textures;
 
 	void _pre_process_lights(Collada::Node *p_node);
-
-	ColladaImport() {
-		found_ambient = false;
-		found_directional = false;
-		force_make_tangents = false;
-		apply_mesh_xform_to_vertices = true;
-		bake_fps = 15;
-	}
 };
 
 Error ColladaImport::_populate_skeleton(Skeleton3D *p_skeleton, Collada::Node *p_node, int &r_bone, int p_parent) {

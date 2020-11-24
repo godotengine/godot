@@ -409,7 +409,7 @@ void TileMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 // In modern C++ this could have been inside its body.
 namespace {
 struct _PaletteEntry {
-	int id;
+	int id = 0;
 	String name;
 
 	bool operator<(const _PaletteEntry &p_rhs) const {

@@ -48,7 +48,7 @@
 class EditorExportPlatformOSX : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformOSX, EditorExportPlatform);
 
-	int version_code;
+	int version_code = 0;
 
 	Ref<ImageTexture> logo;
 

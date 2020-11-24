@@ -204,7 +204,8 @@ ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 		mEglContext(EGL_NO_CONTEXT),
 		mEglSurface(EGL_NO_SURFACE),
 		driver(p_driver),
-		window(p_window) {}
+		window(p_window),
+		vsync(false) {}
 
 ContextEGL_UWP::~ContextEGL_UWP() {
 	cleanup();

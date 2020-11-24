@@ -49,7 +49,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 
 	struct Entry {
 		String path;
-		float score;
+		float score = 0;
 	};
 
 	struct EntryComparator {

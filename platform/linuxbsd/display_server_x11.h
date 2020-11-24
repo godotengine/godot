@@ -63,25 +63,25 @@
 
 // Hints for X11 fullscreen
 typedef struct {
-	unsigned long flags;
-	unsigned long functions;
-	unsigned long decorations;
-	long inputMode;
-	unsigned long status;
+	unsigned long flags = 0;
+	unsigned long functions = 0;
+	unsigned long decorations = 0;
+	long inputMode = 0;
+	unsigned long status = 0;
 } Hints;
 
 typedef struct _xrr_monitor_info {
 	Atom name;
-	Bool primary;
-	Bool automatic;
-	int noutput;
-	int x;
-	int y;
-	int width;
-	int height;
-	int mwidth;
-	int mheight;
-	RROutput *outputs;
+	Bool primary = false;
+	Bool automatic = false;
+	int noutput = 0;
+	int x = 0;
+	int y = 0;
+	int width = 0;
+	int height = 0;
+	int mwidth = 0;
+	int mheight = 0;
+	RROutput *outputs = nullptr;
 } xrr_monitor_info;
 
 #undef CursorShape

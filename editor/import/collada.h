@@ -128,7 +128,7 @@ public:
 		String name;
 		struct Source {
 			Vector<float> array;
-			int stride;
+			int stride = 0;
 		};
 
 		Map<String, Source> sources;
@@ -142,15 +142,15 @@ public:
 		struct Primitives {
 			struct SourceRef {
 				String source;
-				int offset;
+				int offset = 0;
 			};
 
 			String material;
 			Map<String, SourceRef> sources;
 			Vector<float> polygons;
 			Vector<float> indices;
-			int count;
-			int vertex_size;
+			int count = 0;
+			int vertex_size = 0;
 		};
 
 		Vector<Primitives> primitives;
@@ -168,7 +168,7 @@ public:
 		struct Source {
 			Vector<String> sarray;
 			Vector<float> array;
-			int stride;
+			int stride = 0;
 		};
 
 		Map<String, Source> sources;
@@ -200,14 +200,14 @@ public:
 		struct Weights {
 			struct SourceRef {
 				String source;
-				int offset;
+				int offset = 0;
 			};
 
 			String material;
 			Map<String, SourceRef> sources;
 			Vector<float> sets;
 			Vector<float> indices;
-			int count;
+			int count = 0;
 		} weights;
 
 		Map<String, Transform> bone_rest_map;
@@ -242,8 +242,8 @@ public:
 		Color color;
 		int uid = 0;
 		struct Weight {
-			int bone_idx;
-			float weight;
+			int bone_idx = 0;
+			float weight = 0;
 			bool operator<(const Weight w) const { return weight > w.weight; } //heaviest first
 		};
 
@@ -331,7 +331,7 @@ public:
 			};
 
 			String id;
-			Op op;
+			Op op = OP_ROTATE;
 			Vector<float> data;
 		};
 
@@ -375,7 +375,7 @@ public:
 	};
 
 	struct NodeGeometry : public Node {
-		bool controller;
+		bool controller = false;
 		String source;
 
 		struct Material {
@@ -438,7 +438,7 @@ public:
 				TYPE_MATRIX
 			};
 
-			float time;
+			float time = 0;
 			Vector<float> data;
 			Point2 in_tangent;
 			Point2 out_tangent;
@@ -463,10 +463,10 @@ public:
 
 		float unit_scale = 1.0;
 		Vector3::Axis up_axis = Vector3::AXIS_Y;
-		bool z_up;
+		bool z_up = false;
 
 		struct Version {
-			int major, minor, rev;
+			int major = 0, minor = 0, rev = 0;
 
 			bool operator<(const Version &p_ver) const { return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major; }
 			Version(int p_major = 0, int p_minor = 0, int p_rev = 0) {

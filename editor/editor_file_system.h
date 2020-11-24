@@ -52,12 +52,12 @@ class EditorFileSystemDirectory : public Object {
 	struct FileInfo {
 		String file;
 		StringName type;
-		uint64_t modified_time;
-		uint64_t import_modified_time;
-		bool import_valid;
+		uint64_t modified_time = 0;
+		uint64_t import_modified_time = 0;
+		bool import_valid = false;
 		String import_group_file;
 		Vector<String> deps;
-		bool verified; //used for checking changes
+		bool verified = false; //used for checking changes
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
@@ -119,18 +119,11 @@ class EditorFileSystem : public Node {
 			ACTION_FILE_RELOAD
 		};
 
-		Action action;
-		EditorFileSystemDirectory *dir;
+		Action action = ACTION_NONE;
+		EditorFileSystemDirectory *dir = nullptr;
 		String file;
-		EditorFileSystemDirectory *new_dir;
-		EditorFileSystemDirectory::FileInfo *new_file;
-
-		ItemAction() {
-			action = ACTION_NONE;
-			dir = nullptr;
-			new_dir = nullptr;
-			new_file = nullptr;
-		}
+		EditorFileSystemDirectory *new_dir = nullptr;
+		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
 	};
 
 	bool use_threads;
@@ -162,10 +155,10 @@ class EditorFileSystem : public Node {
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
 		String type;
-		uint64_t modification_time;
-		uint64_t import_modification_time;
+		uint64_t modification_time = 0;
+		uint64_t import_modification_time = 0;
 		Vector<String> deps;
-		bool import_valid;
+		bool import_valid = false;
 		String import_group_file;
 		String script_class_name;
 		String script_class_extends;
@@ -175,9 +168,9 @@ class EditorFileSystem : public Node {
 	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
-		float low;
-		float hi;
-		mutable EditorProgressBG *progress;
+		float low = 0;
+		float hi = 0;
+		mutable EditorProgressBG *progress = nullptr;
 		void update(int p_current, int p_total) const;
 		ScanProgress get_sub(int p_current, int p_total) const;
 	};
@@ -220,7 +213,7 @@ class EditorFileSystem : public Node {
 
 	struct ImportFile {
 		String path;
-		int order;
+		int order = 0;
 		bool operator<(const ImportFile &p_if) const {
 			return order < p_if.order;
 		}

@@ -35,8 +35,8 @@
 #include <core/os/keyboard.h>
 
 struct _WinTranslatePair {
-	unsigned int keysym;
-	unsigned int keycode;
+	unsigned int keysym = 0;
+	unsigned int keycode = 0;
 };
 
 static _WinTranslatePair _ak_to_keycode[] = {

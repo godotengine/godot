@@ -56,17 +56,16 @@ private:
 		Input::JoyAxis curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
-		int dpad;
-		int fd;
+		int dpad = 0;
+		int fd = -1;
 
 		String devpath;
-		input_absinfo *abs_info[MAX_ABS];
+		input_absinfo *abs_info[MAX_ABS] = {};
 
-		bool force_feedback;
-		int ff_effect_id;
-		uint64_t ff_effect_timestamp;
+		bool force_feedback = false;
+		int ff_effect_id = 0;
+		uint64_t ff_effect_timestamp = 0;
 
-		Joypad();
 		~Joypad();
 		void reset();
 	};

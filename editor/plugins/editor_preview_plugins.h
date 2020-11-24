@@ -90,7 +90,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -134,7 +134,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 
@@ -156,7 +156,7 @@ class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID viewport_texture;
 	RID canvas;
 	RID canvas_item;
-	mutable volatile bool preview_done;
+	mutable volatile bool preview_done = false;
 
 	void _preview_done(const Variant &p_udata);
 

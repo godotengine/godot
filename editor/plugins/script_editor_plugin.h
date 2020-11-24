@@ -291,7 +291,7 @@ class ScriptEditor : public PanelContainer {
 	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
 	struct ScriptHistory {
-		Control *control;
+		Control *control = nullptr;
 		Variant state;
 	};
 

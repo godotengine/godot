@@ -38,7 +38,7 @@ class MultiNodeEdit : public Reference {
 
 	List<NodePath> nodes;
 	struct PLData {
-		int uses;
+		int uses = 0;
 		PropertyInfo info;
 	};
 

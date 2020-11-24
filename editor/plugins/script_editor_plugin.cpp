@@ -234,15 +234,15 @@ static bool _is_built_in_script(Script *p_script) {
 
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
 	struct Cache {
-		uint64_t time_loaded;
+		uint64_t time_loaded = 0;
 		RES cache;
 	};
 
 	Map<String, Cache> cached;
 
 public:
-	uint64_t max_time_cache;
-	int max_cache_size;
+	uint64_t max_time_cache = 5 * 60 * 1000; //minutes, five
+	int max_cache_size = 128;
 
 	void cleanup() {
 		List<Map<String, Cache>::Element *> to_clean;
@@ -290,11 +290,6 @@ public:
 		}
 
 		return E->get().cache;
-	}
-
-	EditorScriptCodeCompletionCache() {
-		max_cache_size = 128;
-		max_time_cache = 5 * 60 * 1000; //minutes, five
 	}
 
 	virtual ~EditorScriptCodeCompletionCache() {}
@@ -1723,11 +1718,11 @@ struct _ScriptEditorItemData {
 	String name;
 	String sort_key;
 	Ref<Texture2D> icon;
-	int index;
+	int index = 0;
 	String tooltip;
-	bool used;
-	int category;
-	Node *ref;
+	bool used = false;
+	int category = 0;
+	Node *ref = nullptr;
 
 	bool operator<(const _ScriptEditorItemData &id) const {
 		if (category == id.category) {

@@ -44,7 +44,7 @@ class AnimationTrackKeyEdit : public Object {
 	GDCLASS(AnimationTrackKeyEdit, Object);
 
 public:
-	bool setting;
+	bool setting = false;
 
 	bool _hide_script_from_inspector() {
 		return true;
@@ -622,15 +622,15 @@ public:
 		}
 	}
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 	Ref<Animation> animation;
-	int track;
-	float key_ofs;
-	Node *root_path;
+	int track = -1;
+	float key_ofs = 0;
+	Node *root_path = nullptr;
 
 	PropertyInfo hint;
 	NodePath base;
-	bool use_fps;
+	bool use_fps = false;
 
 	void notify_change() {
 		_change_notify();
@@ -644,21 +644,13 @@ public:
 		use_fps = p_enable;
 		_change_notify();
 	}
-
-	AnimationTrackKeyEdit() {
-		use_fps = false;
-		key_ofs = 0;
-		track = -1;
-		setting = false;
-		root_path = nullptr;
-	}
 };
 
 class AnimationMultiTrackKeyEdit : public Object {
 	GDCLASS(AnimationMultiTrackKeyEdit, Object);
 
 public:
-	bool setting;
+	bool setting = false;
 
 	bool _hide_script_from_inspector() {
 		return true;
@@ -1276,11 +1268,11 @@ public:
 	Map<int, NodePath> base_map;
 	PropertyInfo hint;
 
-	Node *root_path;
+	Node *root_path = nullptr;
 
-	bool use_fps;
+	bool use_fps = false;
 
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	void notify_change() {
 		_change_notify();
@@ -1293,12 +1285,6 @@ public:
 	void set_use_fps(bool p_enable) {
 		use_fps = p_enable;
 		_change_notify();
-	}
-
-	AnimationMultiTrackKeyEdit() {
-		use_fps = false;
-		setting = false;
-		root_path = nullptr;
 	}
 };
 
@@ -4669,10 +4655,10 @@ void AnimationTrackEditor::_move_selection(float p_offset) {
 }
 
 struct _AnimMoveRestore {
-	int track;
-	float time;
+	int track = 0;
+	float time = 0;
 	Variant key;
-	float transition;
+	float transition = 0;
 };
 //used for undo/redo
 

@@ -77,13 +77,13 @@ public:
 
 	struct KeyEvent {
 		WindowID window_id;
-		unsigned int osx_state;
-		bool pressed;
-		bool echo;
-		bool raw;
-		uint32_t keycode;
-		uint32_t physical_keycode;
-		uint32_t unicode;
+		unsigned int osx_state = false;
+		bool pressed = false;
+		bool echo = false;
+		bool raw = false;
+		uint32_t keycode = 0;
+		uint32_t physical_keycode = 0;
+		uint32_t unicode = 0;
 	};
 
 	struct WarpEvent {

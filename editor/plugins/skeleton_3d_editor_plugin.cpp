@@ -264,12 +264,7 @@ void BoneTransformEditor::_update_transform_properties(Transform tform) {
 }
 
 BoneTransformEditor::BoneTransformEditor(Skeleton3D *p_skeleton) :
-		skeleton(p_skeleton),
-		key_button(nullptr),
-		enabled_checkbox(nullptr),
-		keyable(false),
-		toggle_enabled(false),
-		updating(false) {
+		skeleton(p_skeleton) {
 	undo_redo = EditorNode::get_undo_redo();
 }
 
