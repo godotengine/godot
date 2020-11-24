@@ -192,7 +192,11 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 }
 
 void GodotIOJavaWrapper::play_video(const String &p_path) {
-	// Why is this not here?!?!
+	if (_play_video) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jstring jStr = env->NewStringUTF(p_path.utf8().get_data());
+		env->CallVoidMethod(godot_io_instance, _play_video, jStr);
+	}
 }
 
 bool GodotIOJavaWrapper::is_video_playing() {
