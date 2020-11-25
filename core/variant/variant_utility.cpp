@@ -537,7 +537,7 @@ struct VariantUtilityFunctions {
 			str += p_args[i]->operator String();
 		}
 
-		print_error(str);
+		print_line(str);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -554,7 +554,7 @@ struct VariantUtilityFunctions {
 			str += p_args[i]->operator String();
 		}
 
-		print_error(str);
+		print_line(str);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
