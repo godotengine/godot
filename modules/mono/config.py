@@ -11,7 +11,6 @@ def configure(env):
     if platform not in supported_platforms:
         raise RuntimeError("This module does not currently support building for this platform")
 
-    env.use_ptrcall = True
     env.add_module_version_string("mono")
 
     from SCons.Script import BoolVariable, PathVariable, Variables, Help

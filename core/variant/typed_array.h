@@ -120,8 +120,6 @@ MAKE_TYPED_ARRAY(Vector<Vector2>, Variant::PACKED_VECTOR2_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Vector3>, Variant::PACKED_VECTOR3_ARRAY)
 MAKE_TYPED_ARRAY(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
 
-#ifdef PTRCALL_ENABLED
-
 template <class T>
 struct PtrToArg<TypedArray<T>> {
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
@@ -139,8 +137,6 @@ struct PtrToArg<const TypedArray<T> &> {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
-
-#endif // PTRCALL_ENABLED
 
 #ifdef DEBUG_METHODS_ENABLED
 
