@@ -1808,6 +1808,7 @@ VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 			}
 		}
 	}
+	_member_cancel();
 
 	VisualShaderNodeUniform *uniform = Object::cast_to<VisualShaderNodeUniform>(vsnode.ptr());
 	if (uniform) {
