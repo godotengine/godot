@@ -36,11 +36,8 @@
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
-#ifdef PTRCALL_ENABLED
-
 template <class T>
-struct PtrToArg {
-};
+struct PtrToArg {};
 
 #define MAKE_PTRARG(m_type)                                            \
 	template <>                                                        \
@@ -146,7 +143,7 @@ MAKE_PTRARG(PackedVector3Array);
 MAKE_PTRARG(PackedColorArray);
 MAKE_PTRARG_BY_REFERENCE(Variant);
 
-//this is for Object
+// This is for Object.
 
 template <class T>
 struct PtrToArg<T *> {
@@ -170,7 +167,7 @@ struct PtrToArg<const T *> {
 	}
 };
 
-//this is for ObjectID
+// This is for ObjectID.
 
 template <>
 struct PtrToArg<ObjectID> {
@@ -183,7 +180,7 @@ struct PtrToArg<ObjectID> {
 	}
 };
 
-//this is for the special cases used by Variant
+// This is for the special cases used by Variant.
 
 #define MAKE_VECARG(m_type)                                                              \
 	template <>                                                                          \
@@ -274,18 +271,11 @@ struct PtrToArg<ObjectID> {
 			return ret;                                                                  \
 		}                                                                                \
 	}
-/*
-MAKE_VECARG(String);
-MAKE_VECARG(uint8_t);
-MAKE_VECARG(int);
-MAKE_VECARG(float);
-MAKE_VECARG(Vector2);
-MAKE_VECARG(Vector3);
-MAKE_VECARG(Color);
-*/
+
 MAKE_VECARG_ALT(String, StringName);
 
-//for stuff that gets converted to Array vectors
+// For stuff that gets converted to Array vectors.
+
 #define MAKE_VECARR(m_type)                                                    \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type>> {                                          \
@@ -429,6 +419,7 @@ struct PtrToArg<Vector<Face3>> {
 		}
 	}
 };
+
 template <>
 struct PtrToArg<const Vector<Face3> &> {
 	_FORCE_INLINE_ static Vector<Face3> convert(const void *p_ptr) {
@@ -450,4 +441,3 @@ struct PtrToArg<const Vector<Face3> &> {
 };
 
 #endif // METHOD_PTRCALL_H
-#endif
