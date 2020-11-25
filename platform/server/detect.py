@@ -94,7 +94,6 @@ def configure(env):
         if "clang++" not in os.path.basename(env["CXX"]):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
     if env["use_coverage"]:
