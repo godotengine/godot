@@ -1929,6 +1929,8 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 
 		bool has_next = false;
 		for (int i = 0; i < remaining_inputs; i += 1) {
+			scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER | NetEventFlag::SYNC_REWIND);
+
 			// Step 1 -- Process the scene nodes.
 			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
 				nodes_to_recover[r]->process(p_delta);
@@ -1946,7 +1948,6 @@ void ClientSynchronizer::process_controllers_recovery(real_t p_delta) {
 			}
 
 			// Step 3 -- Pull node changes and Update snapshots.
-			scene_synchronizer->change_events_begin(NetEventFlag::SYNC_RECOVER | NetEventFlag::SYNC_REWIND);
 			for (uint32_t r = 0; r < nodes_to_recover.size(); r += 1) {
 				// Pull changes
 				scene_synchronizer->pull_node_changes(nodes_to_recover[r]);

@@ -79,6 +79,7 @@ public:
 	void reset();
 
 	int register_variable(const Variant &p_default, Fallback p_fallback);
+	void set_variable_default(int p_var_id, const Variant &p_default);
 	void set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name);
 	void terminate_init();
 

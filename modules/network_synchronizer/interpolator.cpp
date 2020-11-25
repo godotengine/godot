@@ -40,6 +40,7 @@
 
 void Interpolator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_variable", "default", "fallback"), &Interpolator::register_variable);
+	ClassDB::bind_method(D_METHOD("set_variable_default", "var_id", "default"), &Interpolator::set_variable_default);
 	ClassDB::bind_method(D_METHOD("set_variable_custom_interpolator", "var_id", "object", "function_name"), &Interpolator::set_variable_custom_interpolator);
 
 	ClassDB::bind_method(D_METHOD("epoch_insert", "var_id", "value"), &Interpolator::epoch_insert);
@@ -81,6 +82,12 @@ int Interpolator::register_variable(const Variant &p_default, Fallback p_fallbac
 	const uint32_t id = variables.size();
 	variables.push_back(VariableInfo{ p_default, p_fallback, ObjectID(), StringName() });
 	return id;
+}
+
+void Interpolator::set_variable_default(int p_var_id, const Variant &p_default) {
+	ERR_FAIL_INDEX(p_var_id, variables.size());
+	ERR_FAIL_COND(variables[p_var_id].default_value.get_type() != p_default.get_type());
+	variables[p_var_id].default_value = p_default;
 }
 
 void Interpolator::set_variable_custom_interpolator(int p_var_id, Object *p_object, StringName p_function_name) {

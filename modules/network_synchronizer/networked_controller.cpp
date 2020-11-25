@@ -95,6 +95,8 @@ void NetworkedController::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
+	ClassDB::bind_method(D_METHOD("player_get_pretended_delta", "iterations_per_seconds"), &NetworkedController::player_get_pretended_delta);
+
 	ClassDB::bind_method(D_METHOD("mark_epoch_as_important"), &NetworkedController::mark_epoch_as_important);
 
 	ClassDB::bind_method(D_METHOD("set_doll_collect_rate_factor", "peer", "factor"), &NetworkedController::set_doll_collect_rate_factor);
@@ -279,9 +281,14 @@ uint32_t NetworkedController::get_current_input_id() const {
 	return controller->get_current_input_id();
 }
 
+real_t NetworkedController::player_get_pretended_delta(uint32_t p_iterations_per_seconds) const {
+	ERR_FAIL_COND_V_MSG(is_player_controller() == false, 1.0 / real_t(p_iterations_per_seconds), "This function can be called only on client.");
+	return get_player_controller()->get_pretended_delta(p_iterations_per_seconds);
+}
+
 void NetworkedController::mark_epoch_as_important() {
 	ERR_FAIL_COND_MSG(is_server_controller() == false, "This function must be called only within the function `collect_epoch_data`.");
-	static_cast<ServerController *>(controller)->is_epoch_important = true;
+	get_server_controller()->is_epoch_important = true;
 }
 
 void NetworkedController::set_doll_collect_rate_factor(int p_peer, real_t p_factor) {
@@ -324,24 +331,44 @@ bool NetworkedController::process_instant(int p_i, real_t p_delta) {
 	return static_cast<PlayerController *>(controller)->process_instant(p_i, p_delta);
 }
 
-ServerController *NetworkedController::get_server_controller() const {
+ServerController *NetworkedController::get_server_controller() {
 	ERR_FAIL_COND_V_MSG(is_server_controller() == false, nullptr, "This controller is not a server controller.");
 	return static_cast<ServerController *>(controller);
 }
 
-PlayerController *NetworkedController::get_player_controller() const {
+const ServerController *NetworkedController::get_server_controller() const {
+	ERR_FAIL_COND_V_MSG(is_server_controller() == false, nullptr, "This controller is not a server controller.");
+	return static_cast<const ServerController *>(controller);
+}
+
+PlayerController *NetworkedController::get_player_controller() {
 	ERR_FAIL_COND_V_MSG(is_player_controller() == false, nullptr, "This controller is not a player controller.");
 	return static_cast<PlayerController *>(controller);
 }
 
-DollController *NetworkedController::get_doll_controller() const {
+const PlayerController *NetworkedController::get_player_controller() const {
+	ERR_FAIL_COND_V_MSG(is_player_controller() == false, nullptr, "This controller is not a player controller.");
+	return static_cast<const PlayerController *>(controller);
+}
+
+DollController *NetworkedController::get_doll_controller() {
 	ERR_FAIL_COND_V_MSG(is_doll_controller() == false, nullptr, "This controller is not a doll controller.");
 	return static_cast<DollController *>(controller);
 }
 
-NoNetController *NetworkedController::get_nonet_controller() const {
+const DollController *NetworkedController::get_doll_controller() const {
+	ERR_FAIL_COND_V_MSG(is_doll_controller() == false, nullptr, "This controller is not a doll controller.");
+	return static_cast<const DollController *>(controller);
+}
+
+NoNetController *NetworkedController::get_nonet_controller() {
 	ERR_FAIL_COND_V_MSG(is_nonet_controller() == false, nullptr, "This controller is not a no net controller.");
 	return static_cast<NoNetController *>(controller);
+}
+
+const NoNetController *NetworkedController::get_nonet_controller() const {
+	ERR_FAIL_COND_V_MSG(is_nonet_controller() == false, nullptr, "This controller is not a no net controller.");
+	return static_cast<const NoNetController *>(controller);
 }
 
 bool NetworkedController::is_server_controller() const {

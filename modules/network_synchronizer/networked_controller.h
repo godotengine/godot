@@ -254,6 +254,9 @@ public:
 		return inputs_buffer;
 	}
 
+	/// Returns the pretended delta used by the player.
+	real_t player_get_pretended_delta(uint32_t p_iterations_per_seconds) const;
+
 	void mark_epoch_as_important();
 
 	void set_doll_collect_rate_factor(int p_peer, real_t p_factor);
@@ -264,13 +267,17 @@ public:
 	bool process_instant(int p_i, real_t p_delta);
 
 	/// Returns the server controller or nullptr if this is not a server.
-	ServerController *get_server_controller() const;
+	ServerController *get_server_controller();
+	const ServerController *get_server_controller() const;
 	/// Returns the player controller or nullptr if this is not a player.
-	PlayerController *get_player_controller() const;
+	PlayerController *get_player_controller();
+	const PlayerController *get_player_controller() const;
 	/// Returns the doll controller or nullptr if this is not a doll.
-	DollController *get_doll_controller() const;
+	DollController *get_doll_controller();
+	const DollController *get_doll_controller() const;
 	/// Returns the no net controller or nullptr if this is not a no net.
-	NoNetController *get_nonet_controller() const;
+	NoNetController *get_nonet_controller();
+	const NoNetController *get_nonet_controller() const;
 
 	bool is_server_controller() const;
 	bool is_player_controller() const;
