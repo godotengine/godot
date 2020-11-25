@@ -81,6 +81,11 @@ void Joint3D::set_node_a(const NodePath &p_node_a) {
 		return;
 	}
 
+	if (b == p_node_a) {
+		b = NodePath();
+		_change_notify("nodes/node_b");
+	}
+
 	a = p_node_a;
 	_update_joint();
 }
@@ -93,6 +98,12 @@ void Joint3D::set_node_b(const NodePath &p_node_b) {
 	if (b == p_node_b) {
 		return;
 	}
+
+	if (a == p_node_b) {
+		a = NodePath();
+		_change_notify("nodes/node_a");
+	}
+
 	b = p_node_b;
 	_update_joint();
 }
