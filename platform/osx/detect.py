@@ -132,11 +132,6 @@ def configure(env):
         env["AS"] = basecmd + "as"
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
-    if env["CXX"] == "clang++":
-        env.Append(CPPDEFINES=["TYPED_METHOD_BIND"])
-        env["CC"] = "clang"
-        env["LINK"] = "clang++"
-
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += "s"
 
