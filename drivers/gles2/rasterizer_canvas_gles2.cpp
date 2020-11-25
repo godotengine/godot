@@ -1946,10 +1946,6 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	}
 #endif
 
-	// this must be reset for each joined item,
-	// it only exists to prevent capturing the screen more than once per item
-	state.canvas_texscreen_used = false;
-
 	// all the joined items will share the same state with the first item
 	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;
 
