@@ -37,11 +37,20 @@
 			<description>
 				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last call to [method move_and_slide] or [method move_and_slide_with_snap]. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
 				[b]Example usage:[/b]
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				for i in get_slide_count():
 				    var collision = get_slide_collision(i)
 				    print("Collided with: ", collision.collider.name)
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				for (int i = 0; i &lt; GetSlideCount(); i++)
+				{
+				    KinematicCollision2D collision = GetSlideCollision(i);
+				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_slide_count" qualifiers="const">

@@ -6,8 +6,9 @@
 	<description>
 		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. This is useful for example when computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
 		The [enum HashType] enum shows the supported hashing algorithms.
-		[codeblock]
-		const CHUNK_SIZE = 1024
+		[codeblocks]
+		[gdscript]
+		const CHUNK_SIZE = 102
 
 		func hash_file(path):
 		    var ctx = HashingContext.new()
@@ -26,7 +27,36 @@
 		    var res = ctx.finish()
 		    # Print the result as hex string and array.
 		    printt(res.hex_encode(), Array(res))
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		public const int ChunkSize = 1024;
+
+		public void HashFile(string path)
+		{
+		    var ctx = new HashingContext();
+		    var file = new File();
+		    // Start a SHA-256 context.
+		    ctx.Start(HashingContext.HashType.Sha256);
+		    // Check that file exists.
+		    if (!file.FileExists(path))
+		    {
+		        return;
+		    }
+		    // Open the file to hash.
+		    file.Open(path, File.ModeFlags.Read);
+		    // Update the context after reading each chunk.
+		    while (!file.EofReached())
+		    {
+		        ctx.Update(file.GetBuffer(ChunkSize));
+		    }
+		    // Get the computed hash.
+		    byte[] res = ctx.Finish();
+		    // Print the result as hex string and array.
+
+		    GD.PrintT(res.HexEncode(), res);
+		}
+		[/csharp]
+		[/codeblocks]
 		[b]Note:[/b] Not available in HTML5 exports.
 	</description>
 	<tutorials>
