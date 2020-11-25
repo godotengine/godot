@@ -437,7 +437,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				gen->pop_temporary();
 			}
 
-			return source;
+			return result;
 		} break;
 		case GDScriptParser::Node::CALL: {
 			const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_expression);
