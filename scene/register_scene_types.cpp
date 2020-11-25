@@ -425,50 +425,62 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 #ifndef _3D_DISABLED
+	// Render assist virtual classes
 	ClassDB::register_virtual_class<VisualInstance3D>();
 	ClassDB::register_virtual_class<GeometryInstance3D>();
-	ClassDB::register_class<Camera3D>();
-	ClassDB::register_class<ClippedCamera3D>();
-	ClassDB::register_class<Listener3D>();
-	ClassDB::register_class<XRCamera3D>();
-	ClassDB::register_class<XRController3D>();
-	ClassDB::register_class<XRAnchor3D>();
-	ClassDB::register_class<XROrigin3D>();
-	ClassDB::register_class<MeshInstance3D>();
-	ClassDB::register_class<ImmediateGeometry3D>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
-	ClassDB::register_class<Sprite3D>();
-	ClassDB::register_class<AnimatedSprite3D>();
-	ClassDB::register_virtual_class<Light3D>();
-	ClassDB::register_class<DirectionalLight3D>();
-	ClassDB::register_class<OmniLight3D>();
-	ClassDB::register_class<SpotLight3D>();
-	ClassDB::register_class<ReflectionProbe>();
-	ClassDB::register_class<Decal>();
-	ClassDB::register_class<GIProbe>();
-	ClassDB::register_class<GIProbeData>();
-	ClassDB::register_class<BakedLightmap>();
-	ClassDB::register_class<BakedLightmapData>();
-	ClassDB::register_class<LightmapProbe>();
-	ClassDB::register_virtual_class<Lightmapper>();
+	
+	// GPU and CPU
 	ClassDB::register_class<GPUParticles3D>();
-	ClassDB::register_virtual_class<GPUParticlesCollision3D>();
 	ClassDB::register_class<GPUParticlesCollisionBox>();
 	ClassDB::register_class<GPUParticlesCollisionSphere>();
 	ClassDB::register_class<GPUParticlesCollisionSDF>();
 	ClassDB::register_class<GPUParticlesCollisionHeightField>();
-	ClassDB::register_virtual_class<GPUParticlesAttractor3D>();
 	ClassDB::register_class<GPUParticlesAttractorBox>();
 	ClassDB::register_class<GPUParticlesAttractorSphere>();
 	ClassDB::register_class<GPUParticlesAttractorVectorField>();
 	ClassDB::register_class<CPUParticles3D>();
+	ClassDB::register_virtual_class<GPUParticlesCollision3D>();
+	ClassDB::register_virtual_class<GPUParticlesAttractor3D>();
+	
+	// Camera
+	ClassDB::register_class<Camera3D>();
+	ClassDB::register_class<ClippedCamera3D>();
+	ClassDB::register_class<XRCamera3D>();
+	
+	// Render assist classes
+	ClassDB::register_class<Listener3D>();
+	ClassDB::register_class<MeshInstance3D>();
+	ClassDB::register_class<ImmediateGeometry3D>();
+	ClassDB::register_class<Sprite3D>();
+	ClassDB::register_class<AnimatedSprite3D>();
+	ClassDB::register_class<ReflectionProbe>();
+	ClassDB::register_class<Decal>();
+	
+	// Light
+	ClassDB::register_class<DirectionalLight3D>();
+	ClassDB::register_class<OmniLight3D>();
+	ClassDB::register_class<SpotLight3D>();
+	ClassDB::register_class<BakedLightmap>();
+	ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<LightmapProbe>();
+	ClassDB::register_class<GIProbe>();
+	ClassDB::register_class<GIProbeData>();
+	ClassDB::register_virtual_class<Light3D>();
+	ClassDB::register_virtual_class<Lightmapper>();
+	
+	// Others
 	ClassDB::register_class<Position3D>();
+	ClassDB::register_class<XRController3D>();
+	ClassDB::register_class<XRAnchor3D>();
+	ClassDB::register_class<XROrigin3D>();
 
 	ClassDB::register_class<RootMotionView>();
 	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
 
 	OS::get_singleton()->yield(); //may take time to init
-
+	
+	// Body
 	ClassDB::register_virtual_class<CollisionObject3D>();
 	ClassDB::register_virtual_class<PhysicsBody3D>();
 	ClassDB::register_class<StaticBody3D>();
@@ -482,7 +494,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<SkeletonIK3D>();
 	ClassDB::register_class<BoneAttachment3D>();
-
+	
 	ClassDB::register_class<VehicleBody3D>();
 	ClassDB::register_class<VehicleWheel3D>();
 	ClassDB::register_class<Area3D>();
@@ -491,7 +503,15 @@ void register_scene_types() {
 	ClassDB::register_class<CollisionPolygon3D>();
 	ClassDB::register_class<RayCast3D>();
 	ClassDB::register_class<MultiMeshInstance3D>();
-
+	
+	ClassDB::register_virtual_class<Joint3D>();
+	ClassDB::register_class<PinJoint3D>();
+	ClassDB::register_class<HingeJoint3D>();
+	ClassDB::register_class<SliderJoint3D>();
+	ClassDB::register_class<ConeTwistJoint3D>();
+	ClassDB::register_class<Generic6DOFJoint3D>();
+	
+	// Calculations and scene setups
 	ClassDB::register_class<Curve3D>();
 	ClassDB::register_class<Path3D>();
 	ClassDB::register_class<PathFollow3D>();
@@ -499,14 +519,8 @@ void register_scene_types() {
 	ClassDB::register_class<VisibilityEnabler3D>();
 	ClassDB::register_class<WorldEnvironment>();
 	ClassDB::register_class<RemoteTransform3D>();
-
-	ClassDB::register_virtual_class<Joint3D>();
-	ClassDB::register_class<PinJoint3D>();
-	ClassDB::register_class<HingeJoint3D>();
-	ClassDB::register_class<SliderJoint3D>();
-	ClassDB::register_class<ConeTwistJoint3D>();
-	ClassDB::register_class<Generic6DOFJoint3D>();
-
+	
+	// Navigation
 	ClassDB::register_class<Navigation3D>();
 	ClassDB::register_class<NavigationRegion3D>();
 	ClassDB::register_class<NavigationAgent3D>();
