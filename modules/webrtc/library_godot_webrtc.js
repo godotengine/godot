@@ -208,7 +208,7 @@ const GodotRTCPeerConnection = {
 			if (!ref) {
 				return;
 			}
-			let state = 5; // CLOSED
+			let state;
 			switch (p_conn.iceConnectionState) {
 			case 'new':
 				state = 0;
