@@ -125,7 +125,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="gizmo" type="EditorNode3DGizmo">
+			<argument index="1" name="gizmo" type="EditorNode3DGizmo" default="null">
 			</argument>
 			<description>
 				Gets material from the internal list of materials. If an [EditorNode3DGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
