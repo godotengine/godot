@@ -202,8 +202,8 @@ void BoneTransformEditor::_value_changed_transform(const String p_property_name,
 void BoneTransformEditor::_change_transform(Transform p_new_transform) {
 	if (property.get_slicec('/', 0) == "bones" && property.get_slicec('/', 2) == "custom_pose") {
 		undo_redo->create_action(TTR("Set Custom Bone Pose Transform"), UndoRedo::MERGE_ENDS);
-		undo_redo->add_undo_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
-		undo_redo->add_do_method(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), p_new_transform);
+		undo_redo->add_undo_method_compat(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), skeleton->get_bone_custom_pose(property.get_slicec('/', 1).to_int()));
+		undo_redo->add_do_method_compat(skeleton, "set_bone_custom_pose", property.get_slicec('/', 1).to_int(), p_new_transform);
 		undo_redo->commit_action();
 	} else if (property.get_slicec('/', 0) == "bones") {
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
@@ -352,9 +352,9 @@ void Skeleton3DEditor::create_physical_skeleton() {
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
 				ur->create_action(TTR("Create physical bones"));
-				ur->add_do_method(skeleton, "add_child", bones_infos[parent].physical_bone);
+				ur->add_do_method_compat(skeleton, "add_child", bones_infos[parent].physical_bone);
 				ur->add_do_reference(bones_infos[parent].physical_bone);
-				ur->add_undo_method(skeleton, "remove_child", bones_infos[parent].physical_bone);
+				ur->add_undo_method_compat(skeleton, "remove_child", bones_infos[parent].physical_bone);
 				ur->commit_action();
 
 				bones_infos[parent].physical_bone->set_bone_name(skeleton->get_bone_name(parent));
@@ -470,14 +470,14 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 		const int bone_count = skeleton->get_bone_count();
 		for (BoneId i = 0; i < bone_count; ++i) {
 			if (skeleton->get_bone_parent(i) == p_selected_boneidx) {
-				ur->add_undo_method(skeleton, "set_bone_parent", i, skeleton->get_bone_parent(i));
-				ur->add_do_method(skeleton, "set_bone_parent", i, parent_idx);
+				ur->add_undo_method_compat(skeleton, "set_bone_parent", i, skeleton->get_bone_parent(i));
+				ur->add_do_method_compat(skeleton, "set_bone_parent", i, parent_idx);
 				skeleton->set_bone_parent(i, parent_idx);
 			}
 		}
 	}
-	ur->add_undo_method(skeleton, "set_bone_parent", p_selected_boneidx, skeleton->get_bone_parent(p_selected_boneidx));
-	ur->add_do_method(skeleton, "set_bone_parent", p_selected_boneidx, p_target_boneidx);
+	ur->add_undo_method_compat(skeleton, "set_bone_parent", p_selected_boneidx, skeleton->get_bone_parent(p_selected_boneidx));
+	ur->add_do_method_compat(skeleton, "set_bone_parent", p_selected_boneidx, p_target_boneidx);
 	skeleton->set_bone_parent(p_selected_boneidx, p_target_boneidx);
 
 	update_joint_tree();

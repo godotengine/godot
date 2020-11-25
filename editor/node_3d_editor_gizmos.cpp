@@ -899,14 +899,14 @@ void Light3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, co
 	} else if (p_idx == 0) {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
-		ur->add_do_method(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
-		ur->add_undo_method(light, "set_param", Light3D::PARAM_RANGE, p_restore);
+		ur->add_do_method_compat(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
+		ur->add_undo_method_compat(light, "set_param", Light3D::PARAM_RANGE, p_restore);
 		ur->commit_action();
 	} else if (p_idx == 1) {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
-		ur->add_do_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
-		ur->add_undo_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, p_restore);
+		ur->add_do_method_compat(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
+		ur->add_undo_method_compat(light, "set_param", Light3D::PARAM_SPOT_ANGLE, p_restore);
 		ur->commit_action();
 	}
 }
@@ -1124,8 +1124,8 @@ void AudioStreamPlayer3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, i
 	} else {
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change AudioStreamPlayer3D Emission Angle"));
-		ur->add_do_method(player, "set_emission_angle", player->get_emission_angle());
-		ur->add_undo_method(player, "set_emission_angle", p_restore);
+		ur->add_do_method_compat(player, "set_emission_angle", player->get_emission_angle());
+		ur->add_undo_method_compat(player, "set_emission_angle", p_restore);
 		ur->commit_action();
 	}
 }
@@ -2208,8 +2208,8 @@ void VisibilityNotifier3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, 
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Notifier AABB"));
-	ur->add_do_method(notifier, "set_aabb", notifier->get_aabb());
-	ur->add_undo_method(notifier, "set_aabb", p_restore);
+	ur->add_do_method_compat(notifier, "set_aabb", notifier->get_aabb());
+	ur->add_undo_method_compat(notifier, "set_aabb", p_restore);
 	ur->commit_action();
 }
 
@@ -2399,8 +2399,8 @@ void GPUParticles3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Particles AABB"));
-	ur->add_do_method(particles, "set_visibility_aabb", particles->get_visibility_aabb());
-	ur->add_undo_method(particles, "set_visibility_aabb", p_restore);
+	ur->add_do_method_compat(particles, "set_visibility_aabb", particles->get_visibility_aabb());
+	ur->add_undo_method_compat(particles, "set_visibility_aabb", p_restore);
 	ur->commit_action();
 }
 
@@ -2562,8 +2562,8 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizm
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Radius"));
-		ur->add_do_method(sn, "set_radius", sn->call("get_radius"));
-		ur->add_undo_method(sn, "set_radius", p_restore);
+		ur->add_do_method_compat(sn, "set_radius", sn->call("get_radius"));
+		ur->add_undo_method_compat(sn, "set_radius", p_restore);
 		ur->commit_action();
 	}
 
@@ -2575,8 +2575,8 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizm
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Extents"));
-		ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
-		ur->add_undo_method(sn, "set_extents", p_restore);
+		ur->add_do_method_compat(sn, "set_extents", sn->call("get_extents"));
+		ur->add_undo_method_compat(sn, "set_extents", p_restore);
 		ur->commit_action();
 	}
 }
@@ -2835,10 +2835,10 @@ void ReflectionProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Probe Extents"));
-	ur->add_do_method(probe, "set_extents", probe->get_extents());
-	ur->add_do_method(probe, "set_origin_offset", probe->get_origin_offset());
-	ur->add_undo_method(probe, "set_extents", restore.position);
-	ur->add_undo_method(probe, "set_origin_offset", restore.size);
+	ur->add_do_method_compat(probe, "set_extents", probe->get_extents());
+	ur->add_do_method_compat(probe, "set_origin_offset", probe->get_origin_offset());
+	ur->add_undo_method_compat(probe, "set_extents", restore.position);
+	ur->add_undo_method_compat(probe, "set_origin_offset", restore.size);
 	ur->commit_action();
 }
 
@@ -2987,8 +2987,8 @@ void DecalGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, cons
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Decal Extents"));
-	ur->add_do_method(decal, "set_extents", decal->get_extents());
-	ur->add_undo_method(decal, "set_extents", restore);
+	ur->add_do_method_compat(decal, "set_extents", decal->get_extents());
+	ur->add_undo_method_compat(decal, "set_extents", restore);
 	ur->commit_action();
 }
 
@@ -3128,8 +3128,8 @@ void GIProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, co
 
 	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Probe Extents"));
-	ur->add_do_method(probe, "set_extents", probe->get_extents());
-	ur->add_undo_method(probe, "set_extents", restore);
+	ur->add_do_method_compat(probe, "set_extents", probe->get_extents());
+	ur->add_undo_method_compat(probe, "set_extents", restore);
 	ur->commit_action();
 }
 
@@ -3729,8 +3729,8 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Sphere Shape Radius"));
-		ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
-		ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
+		ur->add_do_method_compat(ss.ptr(), "set_radius", ss->get_radius());
+		ur->add_undo_method_compat(ss.ptr(), "set_radius", p_restore);
 		ur->commit_action();
 	}
 
@@ -3743,8 +3743,8 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Size"));
-		ur->add_do_method(ss.ptr(), "set_size", ss->get_size());
-		ur->add_undo_method(ss.ptr(), "set_size", p_restore);
+		ur->add_do_method_compat(ss.ptr(), "set_size", ss->get_size());
+		ur->add_undo_method_compat(ss.ptr(), "set_size", p_restore);
 		ur->commit_action();
 	}
 
@@ -3762,12 +3762,12 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
 			ur->create_action(TTR("Change Capsule Shape Radius"));
-			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
-			ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
+			ur->add_do_method_compat(ss.ptr(), "set_radius", ss->get_radius());
+			ur->add_undo_method_compat(ss.ptr(), "set_radius", p_restore);
 		} else {
 			ur->create_action(TTR("Change Capsule Shape Height"));
-			ur->add_do_method(ss.ptr(), "set_height", ss->get_height());
-			ur->add_undo_method(ss.ptr(), "set_height", p_restore);
+			ur->add_do_method_compat(ss.ptr(), "set_height", ss->get_height());
+			ur->add_undo_method_compat(ss.ptr(), "set_height", p_restore);
 		}
 
 		ur->commit_action();
@@ -3787,16 +3787,16 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
 			ur->create_action(TTR("Change Cylinder Shape Radius"));
-			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
-			ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
+			ur->add_do_method_compat(ss.ptr(), "set_radius", ss->get_radius());
+			ur->add_undo_method_compat(ss.ptr(), "set_radius", p_restore);
 		} else {
 			ur->create_action(
 					///
 
 					////////
 					TTR("Change Cylinder Shape Height"));
-			ur->add_do_method(ss.ptr(), "set_height", ss->get_height());
-			ur->add_undo_method(ss.ptr(), "set_height", p_restore);
+			ur->add_do_method_compat(ss.ptr(), "set_height", ss->get_height());
+			ur->add_undo_method_compat(ss.ptr(), "set_height", p_restore);
 		}
 
 		ur->commit_action();
@@ -3811,8 +3811,8 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Ray Shape Length"));
-		ur->add_do_method(ss.ptr(), "set_length", ss->get_length());
-		ur->add_undo_method(ss.ptr(), "set_length", p_restore);
+		ur->add_do_method_compat(ss.ptr(), "set_length", ss->get_length());
+		ur->add_undo_method_compat(ss.ptr(), "set_length", p_restore);
 		ur->commit_action();
 	}
 }

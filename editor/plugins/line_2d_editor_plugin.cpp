@@ -52,8 +52,8 @@ void Line2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
 
 void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	Node2D *node = _get_node();
-	undo_redo->add_do_method(node, "set_points", p_polygon);
-	undo_redo->add_undo_method(node, "set_points", p_previous);
+	undo_redo->add_do_method_compat(node, "set_points", p_polygon);
+	undo_redo->add_undo_method_compat(node, "set_points", p_previous);
 }
 
 Line2DEditor::Line2DEditor(EditorNode *p_editor) :

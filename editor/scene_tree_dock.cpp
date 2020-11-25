@@ -211,20 +211,20 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String> &p_files, Node
 	for (int i = 0; i < instances.size(); i++) {
 		Node *instanced_scene = instances[i];
 
-		editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
+		editor_data->get_undo_redo().add_do_method_compat(parent, "add_child", instanced_scene);
 		if (p_pos >= 0) {
-			editor_data->get_undo_redo().add_do_method(parent, "move_child", instanced_scene, p_pos + i);
+			editor_data->get_undo_redo().add_do_method_compat(parent, "move_child", instanced_scene, p_pos + i);
 		}
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", edited_scene);
-		editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
-		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", instanced_scene);
+		editor_data->get_undo_redo().add_do_method_compat(instanced_scene, "set_owner", edited_scene);
+		editor_data->get_undo_redo().add_do_method_compat(editor_selection, "clear");
+		editor_data->get_undo_redo().add_do_method_compat(editor_selection, "add_node", instanced_scene);
 		editor_data->get_undo_redo().add_do_reference(instanced_scene);
-		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+		editor_data->get_undo_redo().add_undo_method_compat(parent, "remove_child", instanced_scene);
 
 		String new_name = parent->validate_child_name(instanced_scene);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), p_files[i], new_name);
-		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(new_name)));
+		editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_instance_node", edited_scene->get_path_to(parent), p_files[i], new_name);
+		editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(new_name)));
 	}
 
 	editor_data->get_undo_redo().commit_action();
@@ -251,12 +251,12 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 
 	Node *parent = base->get_parent();
 	int pos = base->get_index();
-	undo_redo->add_do_method(parent, "remove_child", base);
-	undo_redo->add_undo_method(parent, "remove_child", instanced_scene);
-	undo_redo->add_do_method(parent, "add_child", instanced_scene);
-	undo_redo->add_undo_method(parent, "add_child", base);
-	undo_redo->add_do_method(parent, "move_child", instanced_scene, pos);
-	undo_redo->add_undo_method(parent, "move_child", base, pos);
+	undo_redo->add_do_method_compat(parent, "remove_child", base);
+	undo_redo->add_undo_method_compat(parent, "remove_child", instanced_scene);
+	undo_redo->add_do_method_compat(parent, "add_child", instanced_scene);
+	undo_redo->add_undo_method_compat(parent, "add_child", base);
+	undo_redo->add_do_method_compat(parent, "move_child", instanced_scene, pos);
+	undo_redo->add_undo_method_compat(parent, "move_child", base, pos);
 
 	List<Node *> owned;
 	base->get_owned_by(base->get_owner(), &owned);
@@ -264,13 +264,13 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 		owners.push_back(F->get());
 	}
-	undo_redo->add_do_method(instanced_scene, "set_owner", edited_scene);
-	undo_redo->add_undo_method(this, "_set_owners", edited_scene, owners);
+	undo_redo->add_do_method_compat(instanced_scene, "set_owner", edited_scene);
+	undo_redo->add_undo_method_compat(this, "_set_owners", edited_scene, owners);
 
-	undo_redo->add_do_method(editor_selection, "clear");
-	undo_redo->add_undo_method(editor_selection, "clear");
-	undo_redo->add_do_method(editor_selection, "add_node", instanced_scene);
-	undo_redo->add_undo_method(editor_selection, "add_node", base);
+	undo_redo->add_do_method_compat(editor_selection, "clear");
+	undo_redo->add_undo_method_compat(editor_selection, "clear");
+	undo_redo->add_do_method_compat(editor_selection, "add_node", instanced_scene);
+	undo_redo->add_undo_method_compat(editor_selection, "add_node", base);
 	undo_redo->add_do_property(scene_tree, "set_selected", instanced_scene);
 	undo_redo->add_undo_property(scene_tree, "set_selected", base);
 
@@ -444,20 +444,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			editor_data->get_undo_redo().create_action(TTR("Detach Script"));
-			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)nullptr);
+			editor_data->get_undo_redo().add_do_method_compat(editor, "push_item", (Script *)nullptr);
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *n = Object::cast_to<Node>(selection[i]);
 				Ref<Script> existing = n->get_script();
 				Ref<Script> empty = EditorNode::get_singleton()->get_object_custom_type_base(n);
 				if (existing != empty) {
-					editor_data->get_undo_redo().add_do_method(n, "set_script", empty);
-					editor_data->get_undo_redo().add_undo_method(n, "set_script", existing);
+					editor_data->get_undo_redo().add_do_method_compat(n, "set_script", empty);
+					editor_data->get_undo_redo().add_undo_method_compat(n, "set_script", existing);
 				}
 			}
 
-			editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-			editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+			editor_data->get_undo_redo().add_do_method_compat(this, "_update_script_button");
+			editor_data->get_undo_redo().add_undo_method_compat(this, "_update_script_button");
 
 			editor_data->get_undo_redo().commit_action();
 		} break;
@@ -530,8 +530,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				int bottom_node_pos = bottom_node->get_index();
 				int top_node_pos_next = top_node->get_index() + (MOVING_DOWN ? 1 : -1);
 
-				editor_data->get_undo_redo().add_do_method(top_node->get_parent(), "move_child", top_node, top_node_pos_next);
-				editor_data->get_undo_redo().add_undo_method(bottom_node->get_parent(), "move_child", bottom_node, bottom_node_pos);
+				editor_data->get_undo_redo().add_do_method_compat(top_node->get_parent(), "move_child", top_node, top_node_pos_next);
+				editor_data->get_undo_redo().add_undo_method_compat(bottom_node->get_parent(), "move_child", bottom_node, bottom_node_pos);
 			}
 
 			editor_data->get_undo_redo().commit_action();
@@ -563,7 +563,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			editor_data->get_undo_redo().create_action(TTR("Duplicate Node(s)"));
-			editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
+			editor_data->get_undo_redo().add_do_method_compat(editor_selection, "clear");
 
 			Node *dupsingle = nullptr;
 			List<Node *> editable_children;
@@ -594,23 +594,23 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
-				editor_data->get_undo_redo().add_do_method(add_below_node, "add_sibling", dup);
+				editor_data->get_undo_redo().add_do_method_compat(add_below_node, "add_sibling", dup);
 
 				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 					if (!duplimap.has(F->get())) {
 						continue;
 					}
 					Node *d = duplimap[F->get()];
-					editor_data->get_undo_redo().add_do_method(d, "set_owner", node->get_owner());
+					editor_data->get_undo_redo().add_do_method_compat(d, "set_owner", node->get_owner());
 				}
-				editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
-				editor_data->get_undo_redo().add_undo_method(parent, "remove_child", dup);
+				editor_data->get_undo_redo().add_do_method_compat(editor_selection, "add_node", dup);
+				editor_data->get_undo_redo().add_undo_method_compat(parent, "remove_child", dup);
 				editor_data->get_undo_redo().add_do_reference(dup);
 
 				EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 
-				editor_data->get_undo_redo().add_do_method(ed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
-				editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(dup->get_name())));
+				editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
+				editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(dup->get_name())));
 
 				add_below_node = dup;
 			}
@@ -690,27 +690,27 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			editor_data->get_undo_redo().create_action(TTR("Make node as Root"));
-			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
-			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", node);
-			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
-			editor_data->get_undo_redo().add_do_method(node, "set_filename", root->get_filename());
-			editor_data->get_undo_redo().add_do_method(root, "set_filename", String());
-			editor_data->get_undo_redo().add_do_method(node, "set_owner", (Object *)nullptr);
-			editor_data->get_undo_redo().add_do_method(root, "set_owner", node);
+			editor_data->get_undo_redo().add_do_method_compat(node->get_parent(), "remove_child", node);
+			editor_data->get_undo_redo().add_do_method_compat(editor, "set_edited_scene", node);
+			editor_data->get_undo_redo().add_do_method_compat(node, "add_child", root);
+			editor_data->get_undo_redo().add_do_method_compat(node, "set_filename", root->get_filename());
+			editor_data->get_undo_redo().add_do_method_compat(root, "set_filename", String());
+			editor_data->get_undo_redo().add_do_method_compat(node, "set_owner", (Object *)nullptr);
+			editor_data->get_undo_redo().add_do_method_compat(root, "set_owner", node);
 			_node_replace_owner(root, root, node, MODE_DO);
 
-			editor_data->get_undo_redo().add_undo_method(root, "set_filename", root->get_filename());
-			editor_data->get_undo_redo().add_undo_method(node, "set_filename", String());
-			editor_data->get_undo_redo().add_undo_method(node, "remove_child", root);
-			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", root);
-			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
-			editor_data->get_undo_redo().add_undo_method(node->get_parent(), "move_child", node, node->get_index());
-			editor_data->get_undo_redo().add_undo_method(root, "set_owner", (Object *)nullptr);
-			editor_data->get_undo_redo().add_undo_method(node, "set_owner", root);
+			editor_data->get_undo_redo().add_undo_method_compat(root, "set_filename", root->get_filename());
+			editor_data->get_undo_redo().add_undo_method_compat(node, "set_filename", String());
+			editor_data->get_undo_redo().add_undo_method_compat(node, "remove_child", root);
+			editor_data->get_undo_redo().add_undo_method_compat(editor, "set_edited_scene", root);
+			editor_data->get_undo_redo().add_undo_method_compat(node->get_parent(), "add_child", node);
+			editor_data->get_undo_redo().add_undo_method_compat(node->get_parent(), "move_child", node, node->get_index());
+			editor_data->get_undo_redo().add_undo_method_compat(root, "set_owner", (Object *)nullptr);
+			editor_data->get_undo_redo().add_undo_method_compat(node, "set_owner", root);
 			_node_replace_owner(root, root, root, MODE_UNDO);
 
-			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
-			editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_do_method_compat(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_undo_method_compat(scene_tree, "update_tree");
 			editor_data->get_undo_redo().commit_action();
 		} break;
 		case TOOL_MULTI_EDIT: {
@@ -931,11 +931,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					ERR_FAIL_COND(node->get_filename() == String());
 					undo_redo->create_action(TTR("Make Local"));
-					undo_redo->add_do_method(node, "set_filename", "");
-					undo_redo->add_undo_method(node, "set_filename", node->get_filename());
+					undo_redo->add_do_method_compat(node, "set_filename", "");
+					undo_redo->add_undo_method_compat(node, "set_filename", node->get_filename());
 					_node_replace_owner(node, node, root);
-					undo_redo->add_do_method(scene_tree, "update_tree");
-					undo_redo->add_undo_method(scene_tree, "update_tree");
+					undo_redo->add_do_method_compat(scene_tree, "update_tree");
+					undo_redo->add_undo_method_compat(scene_tree, "update_tree");
 					undo_redo->commit_action();
 				}
 			}
@@ -1024,10 +1024,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			editor_data->get_undo_redo().create_action(TTR("New Scene Root"));
-			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", new_node);
-			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+			editor_data->get_undo_redo().add_do_method_compat(editor, "set_edited_scene", new_node);
+			editor_data->get_undo_redo().add_do_method_compat(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_do_reference(new_node);
-			editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
+			editor_data->get_undo_redo().add_undo_method_compat(editor, "set_edited_scene", (Object *)nullptr);
 			editor_data->get_undo_redo().commit_action();
 
 			editor->edit_node(new_node);
@@ -1196,16 +1196,16 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
-				undo_redo->add_do_method(p_node, "set_owner", p_root);
-				undo_redo->add_undo_method(p_node, "set_owner", p_base);
+				undo_redo->add_do_method_compat(p_node, "set_owner", p_root);
+				undo_redo->add_undo_method_compat(p_node, "set_owner", p_base);
 
 			} break;
 			case MODE_DO: {
-				undo_redo->add_do_method(p_node, "set_owner", p_root);
+				undo_redo->add_do_method_compat(p_node, "set_owner", p_root);
 
 			} break;
 			case MODE_UNDO: {
-				undo_redo->add_undo_method(p_node, "set_owner", p_root);
+				undo_redo->add_undo_method_compat(p_node, "set_owner", p_root);
 
 			} break;
 		}
@@ -1435,12 +1435,12 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 										ERR_FAIL_COND(!EI); //another bug
 									}
 
-									editor_data->get_undo_redo().add_do_method(anim.ptr(), "remove_track", idx);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "add_track", anim->track_get_type(i), idx);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", idx, track_np);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_interpolation_type", idx, anim->track_get_interpolation_type(i));
+									editor_data->get_undo_redo().add_do_method_compat(anim.ptr(), "remove_track", idx);
+									editor_data->get_undo_redo().add_undo_method_compat(anim.ptr(), "add_track", anim->track_get_type(i), idx);
+									editor_data->get_undo_redo().add_undo_method_compat(anim.ptr(), "track_set_path", idx, track_np);
+									editor_data->get_undo_redo().add_undo_method_compat(anim.ptr(), "track_set_interpolation_type", idx, anim->track_get_interpolation_type(i));
 									for (int j = 0; j < anim->track_get_key_count(i); j++) {
-										editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
+										editor_data->get_undo_redo().add_undo_method_compat(anim.ptr(), "track_insert_key", idx, anim->track_get_key_time(i, j), anim->track_get_key_value(i, j), anim->track_get_key_transition(i, j));
 									}
 
 									ran.erase(i); //byebye channel
@@ -1453,8 +1453,8 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 									if (new_path == track_np) {
 										continue; //bleh
 									}
-									editor_data->get_undo_redo().add_do_method(anim.ptr(), "track_set_path", i, new_path);
-									editor_data->get_undo_redo().add_undo_method(anim.ptr(), "track_set_path", i, track_np);
+									editor_data->get_undo_redo().add_do_method_compat(anim.ptr(), "track_set_path", i, new_path);
+									editor_data->get_undo_redo().add_undo_method_compat(anim.ptr(), "track_set_path", i, track_np);
 								}
 							}
 						}
@@ -1602,11 +1602,11 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
-		editor_data->get_undo_redo().add_do_method(new_parent, "add_child", node);
+		editor_data->get_undo_redo().add_do_method_compat(node->get_parent(), "remove_child", node);
+		editor_data->get_undo_redo().add_do_method_compat(new_parent, "add_child", node);
 
 		if (p_position_in_parent >= 0) {
-			editor_data->get_undo_redo().add_do_method(new_parent, "move_child", node, p_position_in_parent + inc);
+			editor_data->get_undo_redo().add_do_method_compat(new_parent, "move_child", node, p_position_in_parent + inc);
 		}
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
@@ -1633,29 +1633,29 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			path_renames[ni].second = fixed_node_path;
 		}
 
-		editor_data->get_undo_redo().add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, p_position_in_parent + inc);
-		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)).plus_file(new_name)), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index());
+		editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, p_position_in_parent + inc);
+		editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)).plus_file(new_name)), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index());
 
 		if (p_keep_global_xform) {
 			if (Object::cast_to<Node2D>(node)) {
-				editor_data->get_undo_redo().add_do_method(node, "set_global_transform", Object::cast_to<Node2D>(node)->get_global_transform());
+				editor_data->get_undo_redo().add_do_method_compat(node, "set_global_transform", Object::cast_to<Node2D>(node)->get_global_transform());
 			}
 			if (Object::cast_to<Node3D>(node)) {
-				editor_data->get_undo_redo().add_do_method(node, "set_global_transform", Object::cast_to<Node3D>(node)->get_global_transform());
+				editor_data->get_undo_redo().add_do_method_compat(node, "set_global_transform", Object::cast_to<Node3D>(node)->get_global_transform());
 			}
 			if (Object::cast_to<Control>(node)) {
-				editor_data->get_undo_redo().add_do_method(node, "set_global_position", Object::cast_to<Control>(node)->get_global_position());
+				editor_data->get_undo_redo().add_do_method_compat(node, "set_global_position", Object::cast_to<Control>(node)->get_global_position());
 			}
 		}
 
-		editor_data->get_undo_redo().add_do_method(this, "_set_owners", edited_scene, owners);
+		editor_data->get_undo_redo().add_do_method_compat(this, "_set_owners", edited_scene, owners);
 
 		if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == node) {
-			editor_data->get_undo_redo().add_do_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
+			editor_data->get_undo_redo().add_do_method_compat(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
 		}
 
-		editor_data->get_undo_redo().add_undo_method(new_parent, "remove_child", node);
-		editor_data->get_undo_redo().add_undo_method(node, "set_name", former_names[ni]);
+		editor_data->get_undo_redo().add_undo_method_compat(new_parent, "remove_child", node);
+		editor_data->get_undo_redo().add_undo_method_compat(node, "set_name", former_names[ni]);
 
 		inc++;
 	}
@@ -1673,22 +1673,22 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 
 		int child_pos = node->get_index();
 
-		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "add_child", node);
-		editor_data->get_undo_redo().add_undo_method(node->get_parent(), "move_child", node, child_pos);
-		editor_data->get_undo_redo().add_undo_method(this, "_set_owners", edited_scene, owners);
+		editor_data->get_undo_redo().add_undo_method_compat(node->get_parent(), "add_child", node);
+		editor_data->get_undo_redo().add_undo_method_compat(node->get_parent(), "move_child", node, child_pos);
+		editor_data->get_undo_redo().add_undo_method_compat(this, "_set_owners", edited_scene, owners);
 		if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == node) {
-			editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
+			editor_data->get_undo_redo().add_undo_method_compat(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", node);
 		}
 
 		if (p_keep_global_xform) {
 			if (Object::cast_to<Node2D>(node)) {
-				editor_data->get_undo_redo().add_undo_method(node, "set_transform", Object::cast_to<Node2D>(node)->get_transform());
+				editor_data->get_undo_redo().add_undo_method_compat(node, "set_transform", Object::cast_to<Node2D>(node)->get_transform());
 			}
 			if (Object::cast_to<Node3D>(node)) {
-				editor_data->get_undo_redo().add_undo_method(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
+				editor_data->get_undo_redo().add_undo_method_compat(node, "set_transform", Object::cast_to<Node3D>(node)->get_transform());
 			}
 			if (Object::cast_to<Control>(node)) {
-				editor_data->get_undo_redo().add_undo_method(node, "set_position", Object::cast_to<Control>(node)->get_position());
+				editor_data->get_undo_redo().add_undo_method_compat(node, "set_position", Object::cast_to<Control>(node)->get_position());
 			}
 		}
 	}
@@ -1750,10 +1750,10 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	editor_data->get_undo_redo().create_action(TTR("Attach Script"));
 	for (List<Node *>::Element *E = selected.front(); E; E = E->next()) {
 		Ref<Script> existing = E->get()->get_script();
-		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script);
-		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
-		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_do_method_compat(E->get(), "set_script", p_script);
+		editor_data->get_undo_redo().add_undo_method_compat(E->get(), "set_script", existing);
+		editor_data->get_undo_redo().add_do_method_compat(this, "_update_script_button");
+		editor_data->get_undo_redo().add_undo_method_compat(this, "_update_script_button");
 	}
 
 	editor_data->get_undo_redo().commit_action();
@@ -1829,10 +1829,10 @@ void SceneTreeDock::_delete_confirm() {
 	}
 
 	if (entire_scene) {
-		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", (Object *)nullptr);
-		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", edited_scene);
-		editor_data->get_undo_redo().add_undo_method(edited_scene, "set_owner", edited_scene->get_owner());
-		editor_data->get_undo_redo().add_undo_method(scene_tree, "update_tree");
+		editor_data->get_undo_redo().add_do_method_compat(editor, "set_edited_scene", (Object *)nullptr);
+		editor_data->get_undo_redo().add_undo_method_compat(editor, "set_edited_scene", edited_scene);
+		editor_data->get_undo_redo().add_undo_method_compat(edited_scene, "set_owner", edited_scene->get_owner());
+		editor_data->get_undo_redo().add_undo_method_compat(scene_tree, "update_tree");
 		editor_data->get_undo_redo().add_undo_reference(edited_scene);
 
 	} else {
@@ -1864,18 +1864,18 @@ void SceneTreeDock::_delete_confirm() {
 				owners.push_back(F->get());
 			}
 
-			editor_data->get_undo_redo().add_do_method(n->get_parent(), "remove_child", n);
-			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "add_child", n);
-			editor_data->get_undo_redo().add_undo_method(n->get_parent(), "move_child", n, n->get_index());
+			editor_data->get_undo_redo().add_do_method_compat(n->get_parent(), "remove_child", n);
+			editor_data->get_undo_redo().add_undo_method_compat(n->get_parent(), "add_child", n);
+			editor_data->get_undo_redo().add_undo_method_compat(n->get_parent(), "move_child", n, n->get_index());
 			if (AnimationPlayerEditor::singleton->get_track_editor()->get_root() == n) {
-				editor_data->get_undo_redo().add_undo_method(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", n);
+				editor_data->get_undo_redo().add_undo_method_compat(AnimationPlayerEditor::singleton->get_track_editor(), "set_root", n);
 			}
-			editor_data->get_undo_redo().add_undo_method(this, "_set_owners", edited_scene, owners);
+			editor_data->get_undo_redo().add_undo_method_compat(this, "_set_owners", edited_scene, owners);
 			editor_data->get_undo_redo().add_undo_reference(n);
 
 			EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-			editor_data->get_undo_redo().add_do_method(ed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
-			editor_data->get_undo_redo().add_undo_method(ed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index());
+			editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
+			editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index());
 		}
 	}
 	editor_data->get_undo_redo().commit_action();
@@ -1945,23 +1945,23 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
 	if (edited_scene) {
-		editor_data->get_undo_redo().add_do_method(p_parent, "add_child", child);
-		editor_data->get_undo_redo().add_do_method(child, "set_owner", edited_scene);
-		editor_data->get_undo_redo().add_do_method(editor_selection, "clear");
-		editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", child);
+		editor_data->get_undo_redo().add_do_method_compat(p_parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method_compat(child, "set_owner", edited_scene);
+		editor_data->get_undo_redo().add_do_method_compat(editor_selection, "clear");
+		editor_data->get_undo_redo().add_do_method_compat(editor_selection, "add_node", child);
 		editor_data->get_undo_redo().add_do_reference(child);
-		editor_data->get_undo_redo().add_undo_method(p_parent, "remove_child", child);
+		editor_data->get_undo_redo().add_undo_method_compat(p_parent, "remove_child", child);
 
 		String new_name = p_parent->validate_child_name(child);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		editor_data->get_undo_redo().add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
-		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).plus_file(new_name)));
+		editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).plus_file(new_name)));
 
 	} else {
-		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
-		editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
+		editor_data->get_undo_redo().add_do_method_compat(editor, "set_edited_scene", child);
+		editor_data->get_undo_redo().add_do_method_compat(scene_tree, "update_tree");
 		editor_data->get_undo_redo().add_do_reference(child);
-		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
+		editor_data->get_undo_redo().add_undo_method_compat(editor, "set_edited_scene", (Object *)nullptr);
 	}
 
 	editor_data->get_undo_redo().commit_action();
@@ -2022,9 +2022,9 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
-			ur->add_do_method(this, "replace_node", n, newnode, true, false);
+			ur->add_do_method_compat(this, "replace_node", n, newnode, true, false);
 			ur->add_do_reference(newnode);
-			ur->add_undo_method(this, "replace_node", newnode, n, false, false);
+			ur->add_undo_method_compat(this, "replace_node", newnode, n, false, false);
 			ur->add_undo_reference(n);
 		}
 
@@ -2339,10 +2339,10 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	Node *n = get_node(p_to);
 	if (n) {
 		editor_data->get_undo_redo().create_action(TTR("Attach Script"));
-		editor_data->get_undo_redo().add_do_method(n, "set_script", scr);
-		editor_data->get_undo_redo().add_undo_method(n, "set_script", n->get_script());
-		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
-		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_do_method_compat(n, "set_script", scr);
+		editor_data->get_undo_redo().add_undo_method_compat(n, "set_script", n->get_script());
+		editor_data->get_undo_redo().add_do_method_compat(this, "_update_script_button");
+		editor_data->get_undo_redo().add_undo_method_compat(this, "_update_script_button");
 		editor_data->get_undo_redo().commit_action();
 	}
 }

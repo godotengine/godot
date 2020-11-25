@@ -62,8 +62,8 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Create Rest Pose from Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
-				ur->add_do_method(bone, "set_rest", bone->get_transform());
-				ur->add_undo_method(bone, "set_rest", bone->get_rest());
+				ur->add_do_method_compat(bone, "set_rest", bone->get_transform());
+				ur->add_undo_method_compat(bone, "set_rest", bone->get_rest());
 			}
 			ur->commit_action();
 
@@ -78,8 +78,8 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 			ur->create_action(TTR("Set Rest Pose to Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
-				ur->add_do_method(bone, "set_transform", bone->get_rest());
-				ur->add_undo_method(bone, "set_transform", bone->get_transform());
+				ur->add_do_method_compat(bone, "set_transform", bone->get_rest());
+				ur->add_undo_method_compat(bone, "set_transform", bone->get_transform());
 			}
 			ur->commit_action();
 

@@ -196,10 +196,10 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 					updating = true;
 					undo_redo->create_action(TTR("Add Triangle"));
-					undo_redo->add_do_method(blend_space.ptr(), "add_triangle", making_triangle[0], making_triangle[1], making_triangle[2]);
-					undo_redo->add_undo_method(blend_space.ptr(), "remove_triangle", blend_space->get_triangle_count());
-					undo_redo->add_do_method(this, "_update_space");
-					undo_redo->add_undo_method(this, "_update_space");
+					undo_redo->add_do_method_compat(blend_space.ptr(), "add_triangle", making_triangle[0], making_triangle[1], making_triangle[2]);
+					undo_redo->add_undo_method_compat(blend_space.ptr(), "remove_triangle", blend_space->get_triangle_count());
+					undo_redo->add_do_method_compat(this, "_update_space");
+					undo_redo->add_undo_method_compat(this, "_update_space");
 					undo_redo->commit_action();
 					updating = false;
 					making_triangle.clear();
@@ -221,12 +221,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			updating = true;
 			undo_redo->create_action(TTR("Move Node Point"));
-			undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
-			undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
-			undo_redo->add_do_method(this, "_update_space");
-			undo_redo->add_undo_method(this, "_update_space");
-			undo_redo->add_do_method(this, "_update_edited_point_pos");
-			undo_redo->add_undo_method(this, "_update_edited_point_pos");
+			undo_redo->add_do_method_compat(blend_space.ptr(), "set_blend_point_position", selected_point, point);
+			undo_redo->add_undo_method_compat(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+			undo_redo->add_do_method_compat(this, "_update_space");
+			undo_redo->add_undo_method_compat(this, "_update_space");
+			undo_redo->add_do_method_compat(this, "_update_edited_point_pos");
+			undo_redo->add_undo_method_compat(this, "_update_edited_point_pos");
 			undo_redo->commit_action();
 			updating = false;
 			_update_edited_point_pos();
@@ -323,10 +323,10 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 
 	updating = true;
 	undo_redo->create_action(TTR("Add Node Point"));
-	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node, add_point_pos);
-	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "add_blend_point", node, add_point_pos);
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -341,10 +341,10 @@ void AnimationNodeBlendSpace2DEditor::_add_animation_type(int p_index) {
 
 	updating = true;
 	undo_redo->create_action(TTR("Add Animation Point"));
-	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", anim, add_point_pos);
-	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "add_blend_point", anim, add_point_pos);
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -621,16 +621,16 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 
 	updating = true;
 	undo_redo->create_action(TTR("Change BlendSpace2D Limits"));
-	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
-	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
-	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
-	undo_redo->add_undo_method(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
-	undo_redo->add_do_method(blend_space.ptr(), "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
-	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
-	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
-	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_max_space", Vector2(max_x_value->get_value(), max_y_value->get_value()));
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_min_space", Vector2(min_x_value->get_value(), min_y_value->get_value()));
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_min_space", blend_space->get_min_space());
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_snap", Vector2(snap_x->get_value(), snap_y->get_value()));
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_snap", blend_space->get_snap());
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -644,12 +644,12 @@ void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
 
 	updating = true;
 	undo_redo->create_action(TTR("Change BlendSpace2D Labels"), UndoRedo::MERGE_ENDS);
-	undo_redo->add_do_method(blend_space.ptr(), "set_x_label", label_x->get_text());
-	undo_redo->add_undo_method(blend_space.ptr(), "set_x_label", blend_space->get_x_label());
-	undo_redo->add_do_method(blend_space.ptr(), "set_y_label", label_y->get_text());
-	undo_redo->add_undo_method(blend_space.ptr(), "set_y_label", blend_space->get_y_label());
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_x_label", label_x->get_text());
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_x_label", blend_space->get_x_label());
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_y_label", label_y->get_text());
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_y_label", blend_space->get_y_label());
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
 	undo_redo->commit_action();
 	updating = false;
 }
@@ -658,21 +658,21 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 	if (selected_point != -1) {
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Point"));
-		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
-		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
+		undo_redo->add_do_method_compat(blend_space.ptr(), "remove_blend_point", selected_point);
+		undo_redo->add_undo_method_compat(blend_space.ptr(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
 
 		//restore triangles using this point
 		for (int i = 0; i < blend_space->get_triangle_count(); i++) {
 			for (int j = 0; j < 3; j++) {
 				if (blend_space->get_triangle_point(i, j) == selected_point) {
-					undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
+					undo_redo->add_undo_method_compat(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
 					break;
 				}
 			}
 		}
 
-		undo_redo->add_do_method(this, "_update_space");
-		undo_redo->add_undo_method(this, "_update_space");
+		undo_redo->add_do_method_compat(this, "_update_space");
+		undo_redo->add_undo_method_compat(this, "_update_space");
 		undo_redo->commit_action();
 		updating = false;
 
@@ -680,11 +680,11 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 	} else if (selected_triangle != -1) {
 		updating = true;
 		undo_redo->create_action(TTR("Remove BlendSpace2D Triangle"));
-		undo_redo->add_do_method(blend_space.ptr(), "remove_triangle", selected_triangle);
-		undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(selected_triangle, 0), blend_space->get_triangle_point(selected_triangle, 1), blend_space->get_triangle_point(selected_triangle, 2), selected_triangle);
+		undo_redo->add_do_method_compat(blend_space.ptr(), "remove_triangle", selected_triangle);
+		undo_redo->add_undo_method_compat(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(selected_triangle, 0), blend_space->get_triangle_point(selected_triangle, 1), blend_space->get_triangle_point(selected_triangle, 2), selected_triangle);
 
-		undo_redo->add_do_method(this, "_update_space");
-		undo_redo->add_undo_method(this, "_update_space");
+		undo_redo->add_do_method_compat(this, "_update_space");
+		undo_redo->add_undo_method_compat(this, "_update_space");
 		undo_redo->commit_action();
 		updating = false;
 
@@ -719,12 +719,12 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 	}
 	updating = true;
 	undo_redo->create_action(TTR("Move Node Point"));
-	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));
-	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
-	undo_redo->add_do_method(this, "_update_edited_point_pos");
-	undo_redo->add_undo_method(this, "_update_edited_point_pos");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
+	undo_redo->add_do_method_compat(this, "_update_edited_point_pos");
+	undo_redo->add_undo_method_compat(this, "_update_edited_point_pos");
 	undo_redo->commit_action();
 	updating = false;
 
@@ -792,10 +792,10 @@ void AnimationNodeBlendSpace2DEditor::_removed_from_graph() {
 
 void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	undo_redo->create_action(TTR("Toggle Auto Triangles"));
-	undo_redo->add_do_method(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
-	undo_redo->add_undo_method(blend_space.ptr(), "set_auto_triangles", blend_space->get_auto_triangles());
-	undo_redo->add_do_method(this, "_update_space");
-	undo_redo->add_undo_method(this, "_update_space");
+	undo_redo->add_do_method_compat(blend_space.ptr(), "set_auto_triangles", auto_triangles->is_pressed());
+	undo_redo->add_undo_method_compat(blend_space.ptr(), "set_auto_triangles", blend_space->get_auto_triangles());
+	undo_redo->add_do_method_compat(this, "_update_space");
+	undo_redo->add_undo_method_compat(this, "_update_space");
 	undo_redo->commit_action();
 }
 

@@ -192,9 +192,9 @@ void TileMapEditor::_menu_option(int p_option) {
 		} break;
 		case OPTION_FIX_INVALID: {
 			undo_redo->create_action(TTR("Fix Invalid Tiles"));
-			undo_redo->add_undo_method(node, "set", "tile_data", node->get("tile_data"));
+			undo_redo->add_undo_method_compat(node, "set", "tile_data", node->get("tile_data"));
 			node->fix_invalid_tiles();
-			undo_redo->add_do_method(node, "set", "tile_data", node->get("tile_data"));
+			undo_redo->add_do_method_compat(node, "set", "tile_data", node->get("tile_data"));
 			undo_redo->commit_action();
 
 		} break;
@@ -294,8 +294,8 @@ void TileMapEditor::_create_set_cell_undo_redo(const Vector2 &p_vec, const CellO
 	Dictionary cell_old = _create_cell_dictionary(p_cell_old.idx, p_cell_old.xf, p_cell_old.yf, p_cell_old.tr, p_cell_old.ac);
 	Dictionary cell_new = _create_cell_dictionary(p_cell_new.idx, p_cell_new.xf, p_cell_new.yf, p_cell_new.tr, p_cell_new.ac);
 
-	undo_redo->add_undo_method(node, "_set_celld", p_vec, cell_old);
-	undo_redo->add_do_method(node, "_set_celld", p_vec, cell_new);
+	undo_redo->add_undo_method_compat(node, "_set_celld", p_vec, cell_old);
+	undo_redo->add_do_method_compat(node, "_set_celld", p_vec, cell_new);
 }
 
 void TileMapEditor::_start_undo(const String &p_action) {
@@ -1309,8 +1309,8 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					undo_redo->create_action(TTR("Bucket Fill"));
 
-					undo_redo->add_do_method(this, "_erase_points", points);
-					undo_redo->add_undo_method(this, "_fill_points", points, pop);
+					undo_redo->add_do_method_compat(this, "_erase_points", points);
+					undo_redo->add_undo_method_compat(this, "_fill_points", points, pop);
 
 					undo_redo->commit_action();
 				}

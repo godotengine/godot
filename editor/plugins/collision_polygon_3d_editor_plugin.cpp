@@ -90,10 +90,10 @@ void CollisionPolygon3DEditor::_menu_option(int p_option) {
 
 void CollisionPolygon3DEditor::_wip_close() {
 	undo_redo->create_action(TTR("Create Polygon3D"));
-	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
-	undo_redo->add_do_method(node, "set_polygon", wip);
-	undo_redo->add_do_method(this, "_polygon_draw");
-	undo_redo->add_undo_method(this, "_polygon_draw");
+	undo_redo->add_undo_method_compat(node, "set_polygon", node->call("get_polygon"));
+	undo_redo->add_do_method_compat(node, "set_polygon", wip);
+	undo_redo->add_do_method_compat(this, "_polygon_draw");
+	undo_redo->add_undo_method_compat(this, "_polygon_draw");
 	wip.clear();
 	wip_active = false;
 	mode = MODE_EDIT;
@@ -178,11 +178,11 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						if (mb->get_control()) {
 							if (poly.size() < 3) {
 								undo_redo->create_action(TTR("Edit Poly"));
-								undo_redo->add_undo_method(node, "set_polygon", poly);
+								undo_redo->add_undo_method_compat(node, "set_polygon", poly);
 								poly.push_back(cpoint);
-								undo_redo->add_do_method(node, "set_polygon", poly);
-								undo_redo->add_do_method(this, "_polygon_draw");
-								undo_redo->add_undo_method(this, "_polygon_draw");
+								undo_redo->add_do_method_compat(node, "set_polygon", poly);
+								undo_redo->add_do_method_compat(this, "_polygon_draw");
+								undo_redo->add_undo_method_compat(this, "_polygon_draw");
 								undo_redo->commit_action();
 								return true;
 							}
@@ -256,10 +256,10 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
 							poly.write[edited_point] = edited_point_pos;
 							undo_redo->create_action(TTR("Edit Poly"));
-							undo_redo->add_do_method(node, "set_polygon", poly);
-							undo_redo->add_undo_method(node, "set_polygon", pre_move_edit);
-							undo_redo->add_do_method(this, "_polygon_draw");
-							undo_redo->add_undo_method(this, "_polygon_draw");
+							undo_redo->add_do_method_compat(node, "set_polygon", poly);
+							undo_redo->add_undo_method_compat(node, "set_polygon", pre_move_edit);
+							undo_redo->add_do_method_compat(this, "_polygon_draw");
+							undo_redo->add_undo_method_compat(this, "_polygon_draw");
 							undo_redo->commit_action();
 
 							edited_point = -1;
@@ -284,11 +284,11 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 					if (closest_idx >= 0) {
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
-						undo_redo->add_undo_method(node, "set_polygon", poly);
+						undo_redo->add_undo_method_compat(node, "set_polygon", poly);
 						poly.remove(closest_idx);
-						undo_redo->add_do_method(node, "set_polygon", poly);
-						undo_redo->add_do_method(this, "_polygon_draw");
-						undo_redo->add_undo_method(this, "_polygon_draw");
+						undo_redo->add_do_method_compat(node, "set_polygon", poly);
+						undo_redo->add_do_method_compat(this, "_polygon_draw");
+						undo_redo->add_undo_method_compat(this, "_polygon_draw");
 						undo_redo->commit_action();
 						return true;
 					}

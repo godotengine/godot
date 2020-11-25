@@ -759,8 +759,8 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			undo_redo->create_action(TTR("Add Bezier Point"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, time, new_point);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, time);
+			undo_redo->add_do_method_compat(animation.ptr(), "track_insert_key", track, time, new_point);
+			undo_redo->add_undo_method_compat(animation.ptr(), "track_remove_key_at_position", track, time);
 			undo_redo->commit_action();
 
 			//then attempt to move
@@ -821,10 +821,10 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (moving_handle != 0 && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		undo_redo->create_action(TTR("Move Bezier Points"));
-		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, moving_handle_left);
-		undo_redo->add_do_method(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, moving_handle_right);
-		undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, animation->bezier_track_get_key_in_handle(track, moving_handle_key));
-		undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, animation->bezier_track_get_key_out_handle(track, moving_handle_key));
+		undo_redo->add_do_method_compat(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, moving_handle_left);
+		undo_redo->add_do_method_compat(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, moving_handle_right);
+		undo_redo->add_undo_method_compat(animation.ptr(), "bezier_track_set_key_in_handle", track, moving_handle_key, animation->bezier_track_get_key_in_handle(track, moving_handle_key));
+		undo_redo->add_undo_method_compat(animation.ptr(), "bezier_track_set_key_out_handle", track, moving_handle_key, animation->bezier_track_get_key_out_handle(track, moving_handle_key));
 		undo_redo->commit_action();
 
 		moving_handle = 0;
@@ -840,7 +840,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			List<AnimMoveRestore> to_restore;
 			// 1-remove the keys
 			for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key", track, E->get());
+				undo_redo->add_do_method_compat(animation.ptr(), "track_remove_key", track, E->get());
 			}
 			// 2- remove overlapped keys
 			for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
@@ -855,7 +855,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					continue; //already in selection, don't save
 				}
 
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_position", track, newtime);
+				undo_redo->add_do_method_compat(animation.ptr(), "track_remove_key_at_position", track, newtime);
 				AnimMoveRestore amr;
 
 				amr.key = animation->track_get_key_value(track, idx);
@@ -876,7 +876,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				float h = key[0];
 				h += moving_selection_offset.y;
 				key[0] = h;
-				undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, newpos, key, 1);
+				undo_redo->add_do_method_compat(animation.ptr(), "track_insert_key", track, newpos, key, 1);
 			}
 
 			// 4-(undo) remove inserted keys
@@ -886,23 +886,23 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				if (newpos<0)
 					continue; //no remove what no inserted
 				*/
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, newpos);
+				undo_redo->add_undo_method_compat(animation.ptr(), "track_remove_key_at_position", track, newpos);
 			}
 
 			// 5-(undo) reinsert keys
 			for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
 				float oldpos = animation->track_get_key_time(track, E->get());
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, oldpos, animation->track_get_key_value(track, E->get()), 1);
+				undo_redo->add_undo_method_compat(animation.ptr(), "track_insert_key", track, oldpos, animation->track_get_key_value(track, E->get()), 1);
 			}
 
 			// 6-(undo) reinsert overlapped keys
 			for (List<AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
 				AnimMoveRestore &amr = E->get();
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, 1);
+				undo_redo->add_undo_method_compat(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, 1);
 			}
 
-			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_do_method_compat(this, "_clear_selection_for_anim", animation);
+			undo_redo->add_undo_method_compat(this, "_clear_selection_for_anim", animation);
 
 			// 7-reselect
 
@@ -910,8 +910,8 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				float oldpos = animation->track_get_key_time(track, E->get());
 				float newpos = editor->snap_time(oldpos + moving_selection_offset.x);
 
-				undo_redo->add_do_method(this, "_select_at_anim", animation, track, newpos);
-				undo_redo->add_undo_method(this, "_select_at_anim", animation, track, oldpos);
+				undo_redo->add_do_method_compat(this, "_select_at_anim", animation, track, newpos);
+				undo_redo->add_undo_method_compat(this, "_select_at_anim", animation, track, oldpos);
 			}
 
 			undo_redo->commit_action();
@@ -1035,8 +1035,8 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 			}
 
 			undo_redo->create_action(TTR("Add Bezier Point"));
-			undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, time, new_point);
-			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, time);
+			undo_redo->add_do_method_compat(animation.ptr(), "track_insert_key", track, time, new_point);
+			undo_redo->add_undo_method_compat(animation.ptr(), "track_remove_key_at_position", track, time);
 			undo_redo->commit_action();
 
 		} break;
@@ -1071,8 +1071,8 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		float dst_time = t + (timeline->get_play_position() - top_time);
 		int existing_idx = animation->track_find_key(track, dst_time, true);
 
-		undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, dst_time, animation->track_get_key_value(track, E->get()), animation->track_get_key_transition(track, E->get()));
-		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, dst_time);
+		undo_redo->add_do_method_compat(animation.ptr(), "track_insert_key", track, dst_time, animation->track_get_key_value(track, E->get()), animation->track_get_key_transition(track, E->get()));
+		undo_redo->add_undo_method_compat(animation.ptr(), "track_remove_key_at_position", track, dst_time);
 
 		Pair<int, float> p;
 		p.first = track;
@@ -1080,7 +1080,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		new_selection_values.push_back(p);
 
 		if (existing_idx != -1) {
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, dst_time, animation->track_get_key_value(track, existing_idx), animation->track_get_key_transition(track, existing_idx));
+			undo_redo->add_undo_method_compat(animation.ptr(), "track_insert_key", track, dst_time, animation->track_get_key_value(track, existing_idx), animation->track_get_key_transition(track, existing_idx));
 		}
 	}
 
@@ -1110,11 +1110,11 @@ void AnimationBezierTrackEdit::delete_selection() {
 		undo_redo->create_action(TTR("Anim Delete Keys"));
 
 		for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
-			undo_redo->add_do_method(animation.ptr(), "track_remove_key", track, E->get());
-			undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, animation->track_get_key_time(track, E->get()), animation->track_get_key_value(track, E->get()), 1);
+			undo_redo->add_do_method_compat(animation.ptr(), "track_remove_key", track, E->get());
+			undo_redo->add_undo_method_compat(animation.ptr(), "track_insert_key", track, animation->track_get_key_time(track, E->get()), animation->track_get_key_value(track, E->get()), 1);
 		}
-		undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-		undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+		undo_redo->add_do_method_compat(this, "_clear_selection_for_anim", animation);
+		undo_redo->add_undo_method_compat(this, "_clear_selection_for_anim", animation);
 		undo_redo->commit_action();
 		//selection.clear();
 	}

@@ -336,25 +336,25 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 							}
 							undo_redo->create_action(TTR("Set Region Rect"));
 							if (node_sprite) {
-								undo_redo->add_do_method(node_sprite, "set_region_rect", rect);
-								undo_redo->add_undo_method(node_sprite, "set_region_rect", node_sprite->get_region_rect());
+								undo_redo->add_do_method_compat(node_sprite, "set_region_rect", rect);
+								undo_redo->add_undo_method_compat(node_sprite, "set_region_rect", node_sprite->get_region_rect());
 							} else if (node_sprite_3d) {
-								undo_redo->add_do_method(node_sprite_3d, "set_region_rect", rect);
-								undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
+								undo_redo->add_do_method_compat(node_sprite_3d, "set_region_rect", rect);
+								undo_redo->add_undo_method_compat(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
 							} else if (node_ninepatch) {
-								undo_redo->add_do_method(node_ninepatch, "set_region_rect", rect);
-								undo_redo->add_undo_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
+								undo_redo->add_do_method_compat(node_ninepatch, "set_region_rect", rect);
+								undo_redo->add_undo_method_compat(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
 							} else if (obj_styleBox.is_valid()) {
-								undo_redo->add_do_method(obj_styleBox.ptr(), "set_region_rect", rect);
-								undo_redo->add_undo_method(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
+								undo_redo->add_do_method_compat(obj_styleBox.ptr(), "set_region_rect", rect);
+								undo_redo->add_undo_method_compat(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
 							} else if (atlas_tex.is_valid()) {
-								undo_redo->add_do_method(atlas_tex.ptr(), "set_region", rect);
-								undo_redo->add_undo_method(atlas_tex.ptr(), "set_region", atlas_tex->get_region());
+								undo_redo->add_do_method_compat(atlas_tex.ptr(), "set_region", rect);
+								undo_redo->add_undo_method_compat(atlas_tex.ptr(), "set_region", atlas_tex->get_region());
 							}
-							undo_redo->add_do_method(this, "_update_rect");
-							undo_redo->add_undo_method(this, "_update_rect");
-							undo_redo->add_do_method(edit_draw, "update");
-							undo_redo->add_undo_method(edit_draw, "update");
+							undo_redo->add_do_method_compat(this, "_update_rect");
+							undo_redo->add_undo_method_compat(this, "_update_rect");
+							undo_redo->add_do_method_compat(edit_draw, "update");
+							undo_redo->add_undo_method_compat(edit_draw, "update");
 							undo_redo->commit_action();
 							break;
 						}
@@ -397,38 +397,38 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					undo_redo->create_action(TTR("Set Margin"));
 					static Side side[4] = { SIDE_TOP, SIDE_BOTTOM, SIDE_LEFT, SIDE_RIGHT };
 					if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
-						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
+						undo_redo->add_do_method_compat(node_ninepatch, "set_patch_margin", side[edited_margin], node_ninepatch->get_patch_margin(side[edited_margin]));
+						undo_redo->add_undo_method_compat(node_ninepatch, "set_patch_margin", side[edited_margin], prev_margin);
 					} else if (obj_styleBox.is_valid()) {
-						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
-						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
+						undo_redo->add_do_method_compat(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], obj_styleBox->get_margin_size(side[edited_margin]));
+						undo_redo->add_undo_method_compat(obj_styleBox.ptr(), "set_margin_size", side[edited_margin], prev_margin);
 						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
 					}
 					edited_margin = -1;
 				} else {
 					undo_redo->create_action(TTR("Set Region Rect"));
 					if (node_sprite) {
-						undo_redo->add_do_method(node_sprite, "set_region_rect", node_sprite->get_region_rect());
-						undo_redo->add_undo_method(node_sprite, "set_region_rect", rect_prev);
+						undo_redo->add_do_method_compat(node_sprite, "set_region_rect", node_sprite->get_region_rect());
+						undo_redo->add_undo_method_compat(node_sprite, "set_region_rect", rect_prev);
 					} else if (node_sprite_3d) {
-						undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
-						undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
+						undo_redo->add_do_method_compat(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
+						undo_redo->add_undo_method_compat(node_sprite_3d, "set_region_rect", rect_prev);
 					} else if (atlas_tex.is_valid()) {
-						undo_redo->add_do_method(atlas_tex.ptr(), "set_region", atlas_tex->get_region());
-						undo_redo->add_undo_method(atlas_tex.ptr(), "set_region", rect_prev);
+						undo_redo->add_do_method_compat(atlas_tex.ptr(), "set_region", atlas_tex->get_region());
+						undo_redo->add_undo_method_compat(atlas_tex.ptr(), "set_region", rect_prev);
 					} else if (node_ninepatch) {
-						undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
-						undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
+						undo_redo->add_do_method_compat(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
+						undo_redo->add_undo_method_compat(node_ninepatch, "set_region_rect", rect_prev);
 					} else if (obj_styleBox.is_valid()) {
-						undo_redo->add_do_method(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
-						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_region_rect", rect_prev);
+						undo_redo->add_do_method_compat(obj_styleBox.ptr(), "set_region_rect", obj_styleBox->get_region_rect());
+						undo_redo->add_undo_method_compat(obj_styleBox.ptr(), "set_region_rect", rect_prev);
 					}
 					drag_index = -1;
 				}
-				undo_redo->add_do_method(this, "_update_rect");
-				undo_redo->add_undo_method(this, "_update_rect");
-				undo_redo->add_do_method(edit_draw, "update");
-				undo_redo->add_undo_method(edit_draw, "update");
+				undo_redo->add_do_method_compat(this, "_update_rect");
+				undo_redo->add_undo_method_compat(this, "_update_rect");
+				undo_redo->add_do_method_compat(edit_draw, "update");
+				undo_redo->add_undo_method_compat(edit_draw, "update");
 				undo_redo->commit_action();
 				drag = false;
 				creating = false;

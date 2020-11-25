@@ -53,10 +53,10 @@ void GradientEditor::_ramp_changed() {
 	editing = true;
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Gradient Edited"));
-	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
-	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
-	undo_redo->add_undo_method(gradient.ptr(), "set_offsets", gradient->get_offsets());
-	undo_redo->add_undo_method(gradient.ptr(), "set_colors", gradient->get_colors());
+	undo_redo->add_do_method_compat(gradient.ptr(), "set_offsets", get_offsets());
+	undo_redo->add_do_method_compat(gradient.ptr(), "set_colors", get_colors());
+	undo_redo->add_undo_method_compat(gradient.ptr(), "set_offsets", gradient->get_offsets());
+	undo_redo->add_undo_method_compat(gradient.ptr(), "set_colors", gradient->get_colors());
 	undo_redo->commit_action();
 	editing = false;
 }

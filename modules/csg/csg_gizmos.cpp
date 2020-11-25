@@ -205,8 +205,8 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Sphere Shape Radius"));
-		ur->add_do_method(s, "set_radius", s->get_radius());
-		ur->add_undo_method(s, "set_radius", p_restore);
+		ur->add_do_method_compat(s, "set_radius", s->get_radius());
+		ur->add_undo_method_compat(s, "set_radius", p_restore);
 		ur->commit_action();
 	}
 
@@ -219,8 +219,8 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Size"));
-		ur->add_do_method(s, "set_size", s->get_size());
-		ur->add_undo_method(s, "set_size", p_restore);
+		ur->add_do_method_compat(s, "set_size", s->get_size());
+		ur->add_undo_method_compat(s, "set_size", p_restore);
 		ur->commit_action();
 	}
 
@@ -238,12 +238,12 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
 			ur->create_action(TTR("Change Cylinder Radius"));
-			ur->add_do_method(s, "set_radius", s->get_radius());
-			ur->add_undo_method(s, "set_radius", p_restore);
+			ur->add_do_method_compat(s, "set_radius", s->get_radius());
+			ur->add_undo_method_compat(s, "set_radius", p_restore);
 		} else {
 			ur->create_action(TTR("Change Cylinder Height"));
-			ur->add_do_method(s, "set_height", s->get_height());
-			ur->add_undo_method(s, "set_height", p_restore);
+			ur->add_do_method_compat(s, "set_height", s->get_height());
+			ur->add_undo_method_compat(s, "set_height", p_restore);
 		}
 
 		ur->commit_action();
@@ -263,12 +263,12 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
 		if (p_idx == 0) {
 			ur->create_action(TTR("Change Torus Inner Radius"));
-			ur->add_do_method(s, "set_inner_radius", s->get_inner_radius());
-			ur->add_undo_method(s, "set_inner_radius", p_restore);
+			ur->add_do_method_compat(s, "set_inner_radius", s->get_inner_radius());
+			ur->add_undo_method_compat(s, "set_inner_radius", p_restore);
 		} else {
 			ur->create_action(TTR("Change Torus Outer Radius"));
-			ur->add_do_method(s, "set_outer_radius", s->get_outer_radius());
-			ur->add_undo_method(s, "set_outer_radius", p_restore);
+			ur->add_do_method_compat(s, "set_outer_radius", s->get_outer_radius());
+			ur->add_undo_method_compat(s, "set_outer_radius", p_restore);
 		}
 
 		ur->commit_action();

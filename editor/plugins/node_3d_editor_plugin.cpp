@@ -1383,8 +1383,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 								continue;
 							}
 
-							undo_redo->add_do_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
-							undo_redo->add_undo_method(sp, "set_global_transform", se->original);
+							undo_redo->add_do_method_compat(sp, "set_global_transform", sp->get_global_gizmo_transform());
+							undo_redo->add_undo_method_compat(sp, "set_global_transform", se->original);
 						}
 						undo_redo->commit_action();
 						_edit.mode = TRANSFORM_NONE;
@@ -2877,8 +2877,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					xform.scale_basis(sp->get_scale());
 				}
 
-				undo_redo->add_do_method(sp, "set_global_transform", xform);
-				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+				undo_redo->add_do_method_compat(sp, "set_global_transform", xform);
+				undo_redo->add_undo_method_compat(sp, "set_global_transform", sp->get_global_gizmo_transform());
 			}
 			undo_redo->commit_action();
 
@@ -2904,8 +2904,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(sp, "set_rotation", camera_transform.basis.get_rotation());
-				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
+				undo_redo->add_do_method_compat(sp, "set_rotation", camera_transform.basis.get_rotation());
+				undo_redo->add_undo_method_compat(sp, "set_rotation", sp->get_rotation());
 			}
 			undo_redo->commit_action();
 
@@ -3727,15 +3727,15 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
+	editor_data->get_undo_redo().add_do_method_compat(parent, "add_child", instanced_scene);
+	editor_data->get_undo_redo().add_do_method_compat(instanced_scene, "set_owner", editor->get_edited_scene());
 	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+	editor_data->get_undo_redo().add_undo_method_compat(parent, "remove_child", instanced_scene);
 
 	String new_name = parent->validate_child_name(instanced_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
+	editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	Node3D *node3d = Object::cast_to<Node3D>(instanced_scene);
 	if (node3d) {
@@ -3748,7 +3748,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
 		global_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo().add_do_method_compat(instanced_scene, "set_global_transform", global_transform);
 	}
 
 	return true;
@@ -4856,8 +4856,8 @@ void Node3DEditor::_xform_dialog_action() {
 			tr.origin += t.origin;
 		}
 
-		undo_redo->add_do_method(sp, "set_global_transform", tr);
-		undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_gizmo_transform());
+		undo_redo->add_do_method_compat(sp, "set_global_transform", tr);
+		undo_redo->add_undo_method_compat(sp, "set_global_transform", sp->get_global_gizmo_transform());
 	}
 	undo_redo->commit_action();
 }
@@ -5082,14 +5082,14 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(spatial, "set_meta", "_edit_lock_", true);
-				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_lock_");
-				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method_compat(spatial, "set_meta", "_edit_lock_", true);
+				undo_redo->add_undo_method_compat(spatial, "remove_meta", "_edit_lock_");
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons");
-			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method_compat(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method_compat(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
@@ -5107,14 +5107,14 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(spatial, "remove_meta", "_edit_lock_");
-				undo_redo->add_undo_method(spatial, "set_meta", "_edit_lock_", true);
-				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method_compat(spatial, "remove_meta", "_edit_lock_");
+				undo_redo->add_undo_method_compat(spatial, "set_meta", "_edit_lock_", true);
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons");
-			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method_compat(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method_compat(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
@@ -5132,14 +5132,14 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(spatial, "set_meta", "_edit_group_", true);
-				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_group_");
-				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_do_method_compat(spatial, "set_meta", "_edit_group_", true);
+				undo_redo->add_undo_method_compat(spatial, "remove_meta", "_edit_group_");
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_group_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons");
-			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method_compat(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method_compat(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 		case MENU_UNGROUP_SELECTED: {
@@ -5156,14 +5156,14 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 					continue;
 				}
 
-				undo_redo->add_do_method(spatial, "remove_meta", "_edit_group_");
-				undo_redo->add_undo_method(spatial, "set_meta", "_edit_group_", true);
-				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_do_method_compat(spatial, "remove_meta", "_edit_group_");
+				undo_redo->add_undo_method_compat(spatial, "set_meta", "_edit_group_", true);
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_group_status_changed");
 			}
 
-			undo_redo->add_do_method(this, "_refresh_menu_icons");
-			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method_compat(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method_compat(this, "_refresh_menu_icons");
 			undo_redo->commit_action();
 		} break;
 	}
@@ -5974,8 +5974,8 @@ void Node3DEditor::snap_selected_nodes_to_floor() {
 					new_transform.origin.y = result.position.y;
 					new_transform.origin = new_transform.origin - position_offset;
 
-					undo_redo->add_do_method(sp, "set_global_transform", new_transform);
-					undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+					undo_redo->add_do_method_compat(sp, "set_global_transform", new_transform);
+					undo_redo->add_undo_method_compat(sp, "set_global_transform", sp->get_global_transform());
 				}
 			}
 

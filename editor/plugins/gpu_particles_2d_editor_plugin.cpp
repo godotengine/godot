@@ -86,9 +86,9 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
-			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", particles, cpu_particles, true, false);
+			ur->add_do_method_compat(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
-			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, particles, false, false);
+			ur->add_undo_method_compat(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, particles, false, false);
 			ur->add_undo_reference(particles);
 			ur->commit_action();
 
@@ -133,8 +133,8 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	}
 
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
-	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
-	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
+	undo_redo->add_do_method_compat(particles, "set_visibility_rect", rect);
+	undo_redo->add_undo_method_compat(particles, "set_visibility_rect", particles->get_visibility_rect());
 	undo_redo->commit_action();
 }
 

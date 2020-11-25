@@ -982,18 +982,18 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 	for (List<CanvasItem *>::Element *E = modified_canvas_items.front(); E; E = E->next()) {
 		CanvasItem *canvas_item = E->get();
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-		undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-		undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
+		undo_redo->add_do_method_compat(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
+		undo_redo->add_undo_method_compat(canvas_item, "_edit_set_state", se->undo_state);
 		if (commit_bones) {
 			for (List<Dictionary>::Element *F = se->pre_drag_bones_undo_state.front(); F; F = F->next()) {
 				canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
-				undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-				undo_redo->add_undo_method(canvas_item, "_edit_set_state", F->get());
+				undo_redo->add_do_method_compat(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
+				undo_redo->add_undo_method_compat(canvas_item, "_edit_set_state", F->get());
 			}
 		}
 	}
-	undo_redo->add_do_method(viewport, "update");
-	undo_redo->add_undo_method(viewport, "update");
+	undo_redo->add_do_method_compat(viewport, "update");
+	undo_redo->add_undo_method_compat(viewport, "update");
 	undo_redo->commit_action();
 }
 
@@ -1146,16 +1146,16 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							vguides[dragged_guide_index] = edited.x;
 							undo_redo->create_action(TTR("Move Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						} else {
 							vguides.push_back(edited.x);
 							undo_redo->create_action(TTR("Create Vertical Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						}
 					} else {
@@ -1163,12 +1163,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							vguides.remove(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Vertical Guide"));
 							if (vguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
+								undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_vertical_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+								undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						}
 					}
@@ -1179,16 +1179,16 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						if (dragged_guide_index >= 0) {
 							hguides[dragged_guide_index] = edited.y;
 							undo_redo->create_action(TTR("Move Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						} else {
 							hguides.push_back(edited.y);
 							undo_redo->create_action(TTR("Create Horizontal Guide"));
-							undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						}
 					} else {
@@ -1196,12 +1196,12 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 							hguides.remove(dragged_guide_index);
 							undo_redo->create_action(TTR("Remove Horizontal Guide"));
 							if (hguides.is_empty()) {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
+								undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "remove_meta", "_edit_horizontal_guides_");
 							} else {
-								undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+								undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
 							}
-							undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
-							undo_redo->add_undo_method(viewport, "update");
+							undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+							undo_redo->add_undo_method_compat(viewport, "update");
 							undo_redo->commit_action();
 						}
 					}
@@ -1213,11 +1213,11 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 						vguides.push_back(edited.x);
 						hguides.push_back(edited.y);
 						undo_redo->create_action(TTR("Create Horizontal and Vertical Guides"));
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
-						undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
-						undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
-						undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
-						undo_redo->add_undo_method(viewport, "update");
+						undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", vguides);
+						undo_redo->add_do_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", hguides);
+						undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_vertical_guides_", prev_vguides);
+						undo_redo->add_undo_method_compat(EditorNode::get_singleton()->get_edited_scene(), "set_meta", "_edit_horizontal_guides_", prev_hguides);
+						undo_redo->add_undo_method_compat(viewport, "update");
 						undo_redo->commit_action();
 					}
 				}
@@ -4450,7 +4450,7 @@ void CanvasItemEditor::_set_anchors_and_offsets_preset(Control::LayoutPreset p_p
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 		Control *control = Object::cast_to<Control>(E->get());
 		if (control) {
-			undo_redo->add_do_method(control, "set_anchors_preset", p_preset);
+			undo_redo->add_do_method_compat(control, "set_anchors_preset", p_preset);
 			switch (p_preset) {
 				case PRESET_TOP_LEFT:
 				case PRESET_TOP_RIGHT:
@@ -4461,7 +4461,7 @@ void CanvasItemEditor::_set_anchors_and_offsets_preset(Control::LayoutPreset p_p
 				case PRESET_CENTER_RIGHT:
 				case PRESET_CENTER_BOTTOM:
 				case PRESET_CENTER:
-					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_KEEP_SIZE);
+					undo_redo->add_do_method_compat(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_KEEP_SIZE);
 					break;
 				case PRESET_LEFT_WIDE:
 				case PRESET_TOP_WIDE:
@@ -4470,10 +4470,10 @@ void CanvasItemEditor::_set_anchors_and_offsets_preset(Control::LayoutPreset p_p
 				case PRESET_VCENTER_WIDE:
 				case PRESET_HCENTER_WIDE:
 				case PRESET_WIDE:
-					undo_redo->add_do_method(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
+					undo_redo->add_do_method_compat(control, "set_offsets_preset", p_preset, Control::PRESET_MODE_MINSIZE);
 					break;
 			}
-			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
+			undo_redo->add_undo_method_compat(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
 
@@ -4493,15 +4493,15 @@ void CanvasItemEditor::_set_anchors_and_offsets_to_keep_ratio() {
 		if (control) {
 			Point2 top_left_anchor = _position_to_anchor(control, Point2());
 			Point2 bottom_right_anchor = _position_to_anchor(control, control->get_size());
-			undo_redo->add_do_method(control, "set_anchor", SIDE_LEFT, top_left_anchor.x, false, true);
-			undo_redo->add_do_method(control, "set_anchor", SIDE_RIGHT, bottom_right_anchor.x, false, true);
-			undo_redo->add_do_method(control, "set_anchor", SIDE_TOP, top_left_anchor.y, false, true);
-			undo_redo->add_do_method(control, "set_anchor", SIDE_BOTTOM, bottom_right_anchor.y, false, true);
-			undo_redo->add_do_method(control, "set_meta", "_edit_use_anchors_", true);
+			undo_redo->add_do_method_compat(control, "set_anchor", SIDE_LEFT, top_left_anchor.x, false, true);
+			undo_redo->add_do_method_compat(control, "set_anchor", SIDE_RIGHT, bottom_right_anchor.x, false, true);
+			undo_redo->add_do_method_compat(control, "set_anchor", SIDE_TOP, top_left_anchor.y, false, true);
+			undo_redo->add_do_method_compat(control, "set_anchor", SIDE_BOTTOM, bottom_right_anchor.y, false, true);
+			undo_redo->add_do_method_compat(control, "set_meta", "_edit_use_anchors_", true);
 
 			bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
-			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
-			undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", use_anchors);
+			undo_redo->add_undo_method_compat(control, "_edit_set_state", control->_edit_get_state());
+			undo_redo->add_undo_method_compat(control, "set_meta", "_edit_use_anchors_", use_anchors);
 
 			anchors_mode = true;
 			anchor_mode_button->set_pressed(anchors_mode);
@@ -4518,8 +4518,8 @@ void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
 	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 		Control *control = Object::cast_to<Control>(E->get());
 		if (control) {
-			undo_redo->add_do_method(control, "set_anchors_preset", p_preset);
-			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
+			undo_redo->add_do_method_compat(control, "set_anchors_preset", p_preset);
+			undo_redo->add_undo_method_compat(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
 
@@ -4874,13 +4874,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_lock_", true);
-				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_lock_");
-				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method_compat(canvas_item, "set_meta", "_edit_lock_", true);
+				undo_redo->add_undo_method_compat(canvas_item, "remove_meta", "_edit_lock_");
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method_compat(viewport, "update", Variant());
+			undo_redo->add_undo_method_compat(viewport, "update", Variant());
 			undo_redo->commit_action();
 		} break;
 		case UNLOCK_SELECTED: {
@@ -4896,13 +4896,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(canvas_item, "remove_meta", "_edit_lock_");
-				undo_redo->add_undo_method(canvas_item, "set_meta", "_edit_lock_", true);
-				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_do_method_compat(canvas_item, "remove_meta", "_edit_lock_");
+				undo_redo->add_undo_method_compat(canvas_item, "set_meta", "_edit_lock_", true);
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_lock_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method_compat(viewport, "update", Variant());
+			undo_redo->add_undo_method_compat(viewport, "update", Variant());
 			undo_redo->commit_action();
 		} break;
 		case GROUP_SELECTED: {
@@ -4918,13 +4918,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_group_", true);
-				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_group_");
-				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_do_method_compat(canvas_item, "set_meta", "_edit_group_", true);
+				undo_redo->add_undo_method_compat(canvas_item, "remove_meta", "_edit_group_");
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method_compat(viewport, "update", Variant());
+			undo_redo->add_undo_method_compat(viewport, "update", Variant());
 			undo_redo->commit_action();
 		} break;
 		case UNGROUP_SELECTED: {
@@ -4940,13 +4940,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(canvas_item, "remove_meta", "_edit_group_");
-				undo_redo->add_undo_method(canvas_item, "set_meta", "_edit_group_", true);
-				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
-				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_do_method_compat(canvas_item, "remove_meta", "_edit_group_");
+				undo_redo->add_undo_method_compat(canvas_item, "set_meta", "_edit_group_", true);
+				undo_redo->add_do_method_compat(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method_compat(this, "emit_signal", "item_group_status_changed");
 			}
-			undo_redo->add_do_method(viewport, "update", Variant());
-			undo_redo->add_undo_method(viewport, "update", Variant());
+			undo_redo->add_do_method_compat(viewport, "update", Variant());
+			undo_redo->add_undo_method_compat(viewport, "update", Variant());
 			undo_redo->commit_action();
 		} break;
 		case ANCHORS_AND_OFFSETS_PRESET_TOP_LEFT: {
@@ -5104,12 +5104,12 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!n2d) {
 					continue;
 				}
-				undo_redo->add_do_method(n2d, "set_position", E->get().pos);
-				undo_redo->add_do_method(n2d, "set_rotation", E->get().rot);
-				undo_redo->add_do_method(n2d, "set_scale", E->get().scale);
-				undo_redo->add_undo_method(n2d, "set_position", n2d->get_position());
-				undo_redo->add_undo_method(n2d, "set_rotation", n2d->get_rotation());
-				undo_redo->add_undo_method(n2d, "set_scale", n2d->get_scale());
+				undo_redo->add_do_method_compat(n2d, "set_position", E->get().pos);
+				undo_redo->add_do_method_compat(n2d, "set_rotation", E->get().rot);
+				undo_redo->add_do_method_compat(n2d, "set_scale", E->get().scale);
+				undo_redo->add_undo_method_compat(n2d, "set_position", n2d->get_position());
+				undo_redo->add_undo_method_compat(n2d, "set_rotation", n2d->get_rotation());
+				undo_redo->add_undo_method_compat(n2d, "set_scale", n2d->get_scale());
 			}
 			undo_redo->commit_action();
 
@@ -5161,16 +5161,16 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (root->has_meta("_edit_horizontal_guides_")) {
 					Array hguides = root->get_meta("_edit_horizontal_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_horizontal_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_horizontal_guides_", hguides);
+					undo_redo->add_do_method_compat(root, "remove_meta", "_edit_horizontal_guides_");
+					undo_redo->add_undo_method_compat(root, "set_meta", "_edit_horizontal_guides_", hguides);
 				}
 				if (root->has_meta("_edit_vertical_guides_")) {
 					Array vguides = root->get_meta("_edit_vertical_guides_");
 
-					undo_redo->add_do_method(root, "remove_meta", "_edit_vertical_guides_");
-					undo_redo->add_undo_method(root, "set_meta", "_edit_vertical_guides_", vguides);
+					undo_redo->add_do_method_compat(root, "remove_meta", "_edit_vertical_guides_");
+					undo_redo->add_undo_method_compat(root, "set_meta", "_edit_vertical_guides_", vguides);
 				}
-				undo_redo->add_undo_method(viewport, "update");
+				undo_redo->add_undo_method_compat(viewport, "update");
 				undo_redo->commit_action();
 			}
 
@@ -5206,13 +5206,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(n2d, "set_meta", "_edit_bone_", true);
-				undo_redo->add_undo_method(n2d, "remove_meta", "_edit_bone_");
+				undo_redo->add_do_method_compat(n2d, "set_meta", "_edit_bone_", true);
+				undo_redo->add_undo_method_compat(n2d, "remove_meta", "_edit_bone_");
 			}
-			undo_redo->add_do_method(this, "_queue_update_bone_list");
-			undo_redo->add_undo_method(this, "_queue_update_bone_list");
-			undo_redo->add_do_method(viewport, "update");
-			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->add_do_method_compat(this, "_queue_update_bone_list");
+			undo_redo->add_undo_method_compat(this, "_queue_update_bone_list");
+			undo_redo->add_do_method_compat(viewport, "update");
+			undo_redo->add_undo_method_compat(viewport, "update");
 			undo_redo->commit_action();
 
 		} break;
@@ -5232,13 +5232,13 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(n2d, "remove_meta", "_edit_bone_");
-				undo_redo->add_undo_method(n2d, "set_meta", "_edit_bone_", n2d->get_meta("_edit_bone_"));
+				undo_redo->add_do_method_compat(n2d, "remove_meta", "_edit_bone_");
+				undo_redo->add_undo_method_compat(n2d, "set_meta", "_edit_bone_", n2d->get_meta("_edit_bone_"));
 			}
-			undo_redo->add_do_method(this, "_queue_update_bone_list");
-			undo_redo->add_undo_method(this, "_queue_update_bone_list");
-			undo_redo->add_do_method(viewport, "update");
-			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->add_do_method_compat(this, "_queue_update_bone_list");
+			undo_redo->add_undo_method_compat(this, "_queue_update_bone_list");
+			undo_redo->add_do_method_compat(viewport, "update");
+			undo_redo->add_undo_method_compat(viewport, "update");
 			undo_redo->commit_action();
 
 		} break;
@@ -5258,11 +5258,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(canvas_item, "set_meta", "_edit_ik_", true);
-				undo_redo->add_undo_method(canvas_item, "remove_meta", "_edit_ik_");
+				undo_redo->add_do_method_compat(canvas_item, "set_meta", "_edit_ik_", true);
+				undo_redo->add_undo_method_compat(canvas_item, "remove_meta", "_edit_ik_");
 			}
-			undo_redo->add_do_method(viewport, "update");
-			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->add_do_method_compat(viewport, "update");
+			undo_redo->add_undo_method_compat(viewport, "update");
 			undo_redo->commit_action();
 
 		} break;
@@ -5282,11 +5282,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 				}
 
-				undo_redo->add_do_method(n2d, "remove_meta", "_edit_ik_");
-				undo_redo->add_undo_method(n2d, "set_meta", "_edit_ik_", n2d->get_meta("_edit_ik_"));
+				undo_redo->add_do_method_compat(n2d, "remove_meta", "_edit_ik_");
+				undo_redo->add_undo_method_compat(n2d, "set_meta", "_edit_ik_", n2d->get_meta("_edit_ik_"));
 			}
-			undo_redo->add_do_method(viewport, "update");
-			undo_redo->add_undo_method(viewport, "update");
+			undo_redo->add_do_method_compat(viewport, "update");
+			undo_redo->add_undo_method_compat(viewport, "update");
 			undo_redo->commit_action();
 
 		} break;
@@ -6258,22 +6258,22 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	Size2 texture_size = texture->get_size();
 
 	if (parent) {
-		editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
-		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_method_compat(parent, "add_child", child);
+		editor_data->get_undo_redo().add_do_method_compat(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
-		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
+		editor_data->get_undo_redo().add_undo_method_compat(parent, "remove_child", child);
 	} else { // if we haven't parent, lets try to make a child as a parent.
-		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
-		editor_data->get_undo_redo().add_do_method(child, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_method_compat(editor, "set_edited_scene", child);
+		editor_data->get_undo_redo().add_do_method_compat(child, "set_owner", editor->get_edited_scene());
 		editor_data->get_undo_redo().add_do_reference(child);
-		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)nullptr);
+		editor_data->get_undo_redo().add_undo_method_compat(editor, "set_edited_scene", (Object *)nullptr);
 	}
 
 	if (parent) {
 		String new_name = parent->validate_child_name(child);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		editor_data->get_undo_redo().add_do_method(ed, "live_debug_create_node", editor->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
-		editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+		editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_create_node", editor->get_edited_scene()->get_path_to(parent), child->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 	}
 
 	// handle with different property for texture
@@ -6312,7 +6312,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 
 	// there's nothing to be used as source position so snapping will work as absolute if enabled
 	target_position = canvas_item_editor->snap_point(target_position);
-	editor_data->get_undo_redo().add_do_method(child, "set_global_position", target_position);
+	editor_data->get_undo_redo().add_do_method_compat(child, "set_global_position", target_position);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
@@ -6335,15 +6335,15 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	instanced_scene->set_filename(ProjectSettings::get_singleton()->localize_path(path));
 
-	editor_data->get_undo_redo().add_do_method(parent, "add_child", instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene, "set_owner", editor->get_edited_scene());
+	editor_data->get_undo_redo().add_do_method_compat(parent, "add_child", instanced_scene);
+	editor_data->get_undo_redo().add_do_method_compat(instanced_scene, "set_owner", editor->get_edited_scene());
 	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent, "remove_child", instanced_scene);
+	editor_data->get_undo_redo().add_undo_method_compat(parent, "remove_child", instanced_scene);
 
 	String new_name = parent->validate_child_name(instanced_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-	editor_data->get_undo_redo().add_do_method(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
-	editor_data->get_undo_redo().add_undo_method(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	editor_data->get_undo_redo().add_do_method_compat(ed, "live_debug_instance_node", editor->get_edited_scene()->get_path_to(parent), path, new_name);
+	editor_data->get_undo_redo().add_undo_method_compat(ed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
 
 	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(parent);
 	if (parent_ci) {
@@ -6355,7 +6355,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 		if (instance_ci) {
 			target_pos += instance_ci->_edit_get_position();
 		}
-		editor_data->get_undo_redo().add_do_method(instanced_scene, "set_position", target_pos);
+		editor_data->get_undo_redo().add_do_method_compat(instanced_scene, "set_position", target_pos);
 	}
 
 	return true;

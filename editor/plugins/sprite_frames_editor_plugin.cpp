@@ -192,12 +192,12 @@ void SpriteFramesEditor::_sheet_add_frames() {
 		at->set_atlas(split_sheet_preview->get_texture());
 		at->set_region(Rect2(x, y, width, height));
 
-		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
-		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
+		undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, at, -1);
+		undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, fc);
 	}
 
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -328,12 +328,12 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 	int count = 0;
 
 	for (List<Ref<Texture2D>>::Element *E = resources.front(); E; E = E->next()) {
-		undo_redo->add_do_method(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
-		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
+		undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, E->get(), p_at_pos == -1 ? -1 : p_at_pos + count);
+		undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, p_at_pos == -1 ? fc : p_at_pos);
 		count++;
 	}
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 
 	undo_redo->commit_action();
 }
@@ -367,10 +367,10 @@ void SpriteFramesEditor::_paste_pressed() {
 	}
 
 	undo_redo->create_action(TTR("Paste Frame"));
-	undo_redo->add_do_method(frames, "add_frame", edited_anim, r);
-	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, frames->get_frame_count(edited_anim));
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, r);
+	undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, frames->get_frame_count(edited_anim));
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -404,10 +404,10 @@ void SpriteFramesEditor::_empty_pressed() {
 	Ref<Texture2D> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
-	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from);
-	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from);
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, r, from);
+	undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, from);
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -427,10 +427,10 @@ void SpriteFramesEditor::_empty2_pressed() {
 	Ref<Texture2D> r;
 
 	undo_redo->create_action(TTR("Add Empty"));
-	undo_redo->add_do_method(frames, "add_frame", edited_anim, r, from + 1);
-	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from + 1);
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, r, from + 1);
+	undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, from + 1);
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -450,12 +450,12 @@ void SpriteFramesEditor::_up_pressed() {
 	sel -= 1;
 
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move - 1));
-	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move));
-	undo_redo->add_undo_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move));
-	undo_redo->add_undo_method(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move - 1));
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move - 1));
+	undo_redo->add_do_method_compat(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move));
+	undo_redo->add_undo_method_compat(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move));
+	undo_redo->add_undo_method_compat(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame(edited_anim, to_move - 1));
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -475,12 +475,12 @@ void SpriteFramesEditor::_down_pressed() {
 	sel += 1;
 
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move + 1));
-	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move));
-	undo_redo->add_undo_method(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move));
-	undo_redo->add_undo_method(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move + 1));
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move + 1));
+	undo_redo->add_do_method_compat(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move));
+	undo_redo->add_undo_method_compat(frames, "set_frame", edited_anim, to_move, frames->get_frame(edited_anim, to_move));
+	undo_redo->add_undo_method_compat(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame(edited_anim, to_move + 1));
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -497,10 +497,10 @@ void SpriteFramesEditor::_delete_pressed() {
 	}
 
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(frames, "remove_frame", edited_anim, to_delete);
-	undo_redo->add_undo_method(frames, "add_frame", edited_anim, frames->get_frame(edited_anim, to_delete), to_delete);
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "remove_frame", edited_anim, to_delete);
+	undo_redo->add_undo_method_compat(frames, "add_frame", edited_anim, frames->get_frame(edited_anim, to_delete), to_delete);
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 	undo_redo->commit_action();
 }
 
@@ -583,17 +583,17 @@ void SpriteFramesEditor::_animation_name_edited() {
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
 	undo_redo->create_action(TTR("Rename Animation"));
-	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
-	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
+	undo_redo->add_do_method_compat(frames, "rename_animation", edited_anim, name);
+	undo_redo->add_undo_method_compat(frames, "rename_animation", name, edited_anim);
 
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", edited_anim);
+		undo_redo->add_do_method_compat(E->get(), "set_animation", name);
+		undo_redo->add_undo_method_compat(E->get(), "set_animation", edited_anim);
 	}
 
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 
 	edited_anim = new_name;
 
@@ -612,15 +612,15 @@ void SpriteFramesEditor::_animation_add() {
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
 	undo_redo->create_action(TTR("Add Animation"));
-	undo_redo->add_do_method(frames, "add_animation", name);
-	undo_redo->add_undo_method(frames, "remove_animation", name);
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(frames, "add_animation", name);
+	undo_redo->add_undo_method_compat(frames, "remove_animation", name);
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 		String current = E->get()->call("get_animation");
-		undo_redo->add_do_method(E->get(), "set_animation", name);
-		undo_redo->add_undo_method(E->get(), "set_animation", current);
+		undo_redo->add_do_method_compat(E->get(), "set_animation", name);
+		undo_redo->add_undo_method_compat(E->get(), "set_animation", current);
 	}
 
 	edited_anim = name;
@@ -644,17 +644,17 @@ void SpriteFramesEditor::_animation_remove() {
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
 	undo_redo->create_action(TTR("Remove Animation"));
-	undo_redo->add_do_method(frames, "remove_animation", edited_anim);
-	undo_redo->add_undo_method(frames, "add_animation", edited_anim);
-	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method_compat(frames, "remove_animation", edited_anim);
+	undo_redo->add_undo_method_compat(frames, "add_animation", edited_anim);
+	undo_redo->add_undo_method_compat(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
+	undo_redo->add_undo_method_compat(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
 	int fc = frames->get_frame_count(edited_anim);
 	for (int i = 0; i < fc; i++) {
 		Ref<Texture2D> frame = frames->get_frame(edited_anim, i);
-		undo_redo->add_undo_method(frames, "add_frame", edited_anim, frame);
+		undo_redo->add_undo_method_compat(frames, "add_frame", edited_anim, frame);
 	}
-	undo_redo->add_do_method(this, "_update_library");
-	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->add_do_method_compat(this, "_update_library");
+	undo_redo->add_undo_method_compat(this, "_update_library");
 
 	edited_anim = StringName();
 
@@ -667,10 +667,10 @@ void SpriteFramesEditor::_animation_loop_changed() {
 	}
 
 	undo_redo->create_action(TTR("Change Animation Loop"));
-	undo_redo->add_do_method(frames, "set_animation_loop", edited_anim, anim_loop->is_pressed());
-	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
-	undo_redo->add_do_method(this, "_update_library", true);
-	undo_redo->add_undo_method(this, "_update_library", true);
+	undo_redo->add_do_method_compat(frames, "set_animation_loop", edited_anim, anim_loop->is_pressed());
+	undo_redo->add_undo_method_compat(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method_compat(this, "_update_library", true);
+	undo_redo->add_undo_method_compat(this, "_update_library", true);
 	undo_redo->commit_action();
 }
 
@@ -680,10 +680,10 @@ void SpriteFramesEditor::_animation_fps_changed(double p_value) {
 	}
 
 	undo_redo->create_action(TTR("Change Animation FPS"), UndoRedo::MERGE_ENDS);
-	undo_redo->add_do_method(frames, "set_animation_speed", edited_anim, p_value);
-	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_do_method(this, "_update_library", true);
-	undo_redo->add_undo_method(this, "_update_library", true);
+	undo_redo->add_do_method_compat(frames, "set_animation_speed", edited_anim, p_value);
+	undo_redo->add_undo_method_compat(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
+	undo_redo->add_do_method_compat(this, "_update_library", true);
+	undo_redo->add_undo_method_compat(this, "_update_library", true);
 
 	undo_redo->commit_action();
 }
@@ -931,19 +931,19 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				}
 
 				undo_redo->create_action(TTR("Move Frame"));
-				undo_redo->add_do_method(frames, "remove_frame", edited_anim, from_frame == -1 ? frames->get_frame_count(edited_anim) : from_frame);
-				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
-				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) - 1 : at_pos);
-				undo_redo->add_undo_method(frames, "add_frame", edited_anim, texture, from_frame);
-				undo_redo->add_do_method(this, "_update_library");
-				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->add_do_method_compat(frames, "remove_frame", edited_anim, from_frame == -1 ? frames->get_frame_count(edited_anim) : from_frame);
+				undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) - 1 : at_pos);
+				undo_redo->add_undo_method_compat(frames, "add_frame", edited_anim, texture, from_frame);
+				undo_redo->add_do_method_compat(this, "_update_library");
+				undo_redo->add_undo_method_compat(this, "_update_library");
 				undo_redo->commit_action();
 			} else {
 				undo_redo->create_action(TTR("Add Frame"));
-				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
-				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
-				undo_redo->add_do_method(this, "_update_library");
-				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->add_do_method_compat(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method_compat(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
+				undo_redo->add_do_method_compat(this, "_update_library");
+				undo_redo->add_undo_method_compat(this, "_update_library");
 				undo_redo->commit_action();
 			}
 		}

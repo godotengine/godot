@@ -118,16 +118,16 @@ void InputMapEditor::_action_edited() {
 
 		setting = true;
 		undo_redo->create_action(TTR("Rename Input Action Event"));
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", add_at);
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", action_prop, action);
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", action_prop, order);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", action_prop);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", add_at, action);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", add_at, order);
-		undo_redo->add_do_method(this, "_update_actions");
-		undo_redo->add_undo_method(this, "_update_actions");
-		undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-		undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+		undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "clear", add_at);
+		undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", action_prop, action);
+		undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set_order", action_prop, order);
+		undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "clear", action_prop);
+		undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", add_at, action);
+		undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set_order", add_at, order);
+		undo_redo->add_do_method_compat(this, "_update_actions");
+		undo_redo->add_undo_method_compat(this, "_update_actions");
+		undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+		undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 		undo_redo->commit_action();
 		setting = false;
 
@@ -139,10 +139,10 @@ void InputMapEditor::_action_edited() {
 		new_action["deadzone"] = ti->get_range(1);
 
 		undo_redo->create_action(TTR("Change Action deadzone"));
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, new_action);
-		undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_action);
-		undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+		undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", name, new_action);
+		undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+		undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", name, old_action);
+		undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 		undo_redo->commit_action();
 	}
 }
@@ -227,12 +227,12 @@ void InputMapEditor::_device_input_add() {
 	action["events"] = events;
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-	undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+	undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", name, action);
+	undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", name, old_val);
+	undo_redo->add_do_method_compat(this, "_update_actions");
+	undo_redo->add_undo_method_compat(this, "_update_actions");
+	undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+	undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 	undo_redo->commit_action();
 
 	_show_last_added(ie, name);
@@ -303,12 +303,12 @@ void InputMapEditor::_press_a_key_confirm() {
 	action["events"] = events;
 
 	undo_redo->create_action(TTR("Add Input Action Event"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-	undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+	undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", name, action);
+	undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", name, old_val);
+	undo_redo->add_do_method_compat(this, "_update_actions");
+	undo_redo->add_undo_method_compat(this, "_update_actions");
+	undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+	undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 	undo_redo->commit_action();
 
 	_show_last_added(ie, name);
@@ -572,13 +572,13 @@ void InputMapEditor::_action_button_pressed(Object *p_obj, int p_column, int p_i
 			int order = ProjectSettings::get_singleton()->get_order(name);
 
 			undo_redo->create_action(TTR("Erase Input Action"));
-			undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", name);
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", name, order);
-			undo_redo->add_do_method(this, "_update_actions");
-			undo_redo->add_undo_method(this, "_update_actions");
-			undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-			undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+			undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "clear", name);
+			undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set_order", name, order);
+			undo_redo->add_do_method_compat(this, "_update_actions");
+			undo_redo->add_undo_method_compat(this, "_update_actions");
+			undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+			undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 			undo_redo->commit_action();
 
 		} else {
@@ -594,12 +594,12 @@ void InputMapEditor::_action_button_pressed(Object *p_obj, int p_column, int p_i
 			action["events"] = events;
 
 			undo_redo->create_action(TTR("Erase Input Action Event"));
-			undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
-			undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
-			undo_redo->add_do_method(this, "_update_actions");
-			undo_redo->add_undo_method(this, "_update_actions");
-			undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-			undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+			undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", name, action);
+			undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set", name, old_val);
+			undo_redo->add_do_method_compat(this, "_update_actions");
+			undo_redo->add_undo_method_compat(this, "_update_actions");
+			undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+			undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 			undo_redo->commit_action();
 		}
 	} else if (p_id == 3) {
@@ -797,12 +797,12 @@ void InputMapEditor::_action_add() {
 	action["deadzone"] = 0.5f;
 	String name = "input/" + action_name->get_text();
 	undo_redo->create_action(TTR("Add Input Action"));
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-	undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+	undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set", name, action);
+	undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "clear", name);
+	undo_redo->add_do_method_compat(this, "_update_actions");
+	undo_redo->add_undo_method_compat(this, "_update_actions");
+	undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+	undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 	undo_redo->commit_action();
 
 	TreeItem *r = input_editor->get_root();
@@ -887,21 +887,21 @@ void InputMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	while (iterator != target) {
 		String iterator_name = "input/" + iterator->get_text(0);
 		int iterator_order = ProjectSettings::get_singleton()->get_order(iterator_name);
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", iterator_name, order);
-		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", iterator_name, iterator_order);
+		undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set_order", iterator_name, order);
+		undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set_order", iterator_name, iterator_order);
 		order = iterator_order;
 		iterator = is_below ? iterator->get_next() : iterator->get_prev();
 	}
 
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", target_name, order);
-	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", selected_name, target_order);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", target_name, target_order);
-	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_name, old_order);
+	undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set_order", target_name, order);
+	undo_redo->add_do_method_compat(ProjectSettings::get_singleton(), "set_order", selected_name, target_order);
+	undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set_order", target_name, target_order);
+	undo_redo->add_undo_method_compat(ProjectSettings::get_singleton(), "set_order", selected_name, old_order);
 
-	undo_redo->add_do_method(this, "_update_actions");
-	undo_redo->add_undo_method(this, "_update_actions");
-	undo_redo->add_do_method(this, "emit_signal", inputmap_changed);
-	undo_redo->add_undo_method(this, "emit_signal", inputmap_changed);
+	undo_redo->add_do_method_compat(this, "_update_actions");
+	undo_redo->add_undo_method_compat(this, "_update_actions");
+	undo_redo->add_do_method_compat(this, "emit_signal", inputmap_changed);
+	undo_redo->add_undo_method_compat(this, "emit_signal", inputmap_changed);
 	undo_redo->commit_action();
 }
 

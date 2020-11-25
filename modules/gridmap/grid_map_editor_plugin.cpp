@@ -471,13 +471,13 @@ void GridMapEditor::_delete_selection() {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
-				undo_redo->add_do_method(node, "set_cell_item", selected, GridMap::INVALID_CELL_ITEM);
-				undo_redo->add_undo_method(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
+				undo_redo->add_do_method_compat(node, "set_cell_item", selected, GridMap::INVALID_CELL_ITEM);
+				undo_redo->add_undo_method_compat(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
 			}
 		}
 	}
-	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
-	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+	undo_redo->add_do_method_compat(this, "_set_selection", !selection.active, selection.begin, selection.end);
+	undo_redo->add_undo_method_compat(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
 }
 
@@ -491,13 +491,13 @@ void GridMapEditor::_fill_selection() {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 				Vector3i selected = Vector3i(i, j, k);
-				undo_redo->add_do_method(node, "set_cell_item", selected, selected_palette, cursor_rot);
-				undo_redo->add_undo_method(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
+				undo_redo->add_do_method_compat(node, "set_cell_item", selected, selected_palette, cursor_rot);
+				undo_redo->add_undo_method_compat(node, "set_cell_item", selected, node->get_cell_item(selected), node->get_cell_item_orientation(selected));
 			}
 		}
 	}
-	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
-	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+	undo_redo->add_do_method_compat(this, "_set_selection", !selection.active, selection.begin, selection.end);
+	undo_redo->add_undo_method_compat(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
 }
 
@@ -592,13 +592,13 @@ void GridMapEditor::_do_paste() {
 		orm.set_orthogonal_index(item.orientation);
 		orm = rot * orm;
 
-		undo_redo->add_do_method(node, "set_cell_item", position, item.cell_item, orm.get_orthogonal_index());
-		undo_redo->add_undo_method(node, "set_cell_item", position, node->get_cell_item(position), node->get_cell_item_orientation(position));
+		undo_redo->add_do_method_compat(node, "set_cell_item", position, item.cell_item, orm.get_orthogonal_index());
+		undo_redo->add_undo_method_compat(node, "set_cell_item", position, node->get_cell_item(position), node->get_cell_item_orientation(position));
 	}
 
 	if (reselect) {
-		undo_redo->add_do_method(this, "_set_selection", true, paste_indicator.begin + ofs, paste_indicator.end + ofs);
-		undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+		undo_redo->add_do_method_compat(this, "_set_selection", true, paste_indicator.begin + ofs, paste_indicator.end + ofs);
+		undo_redo->add_undo_method_compat(this, "_set_selection", selection.active, selection.begin, selection.end);
 	}
 
 	undo_redo->commit_action();
@@ -670,11 +670,11 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 					undo_redo->create_action(TTR("GridMap Paint"));
 					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
 						const SetItem &si = E->get();
-						undo_redo->add_do_method(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
+						undo_redo->add_do_method_compat(node, "set_cell_item", si.position, si.new_value, si.new_orientation);
 					}
 					for (List<SetItem>::Element *E = set_items.back(); E; E = E->prev()) {
 						const SetItem &si = E->get();
-						undo_redo->add_undo_method(node, "set_cell_item", si.position, si.old_value, si.old_orientation);
+						undo_redo->add_undo_method_compat(node, "set_cell_item", si.position, si.old_value, si.old_orientation);
 					}
 
 					undo_redo->commit_action();
@@ -686,8 +686,8 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 			if (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_SELECT) {
 				undo_redo->create_action("GridMap Selection");
-				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
-				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
+				undo_redo->add_do_method_compat(this, "_set_selection", selection.active, selection.begin, selection.end);
+				undo_redo->add_undo_method_compat(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
 				undo_redo->commit_action();
 			}
 

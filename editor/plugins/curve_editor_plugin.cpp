@@ -136,8 +136,8 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 				UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
 
 				ur.create_action(_selected_tangent == TANGENT_NONE ? TTR("Modify Curve Point") : TTR("Modify Curve Tangent"));
-				ur.add_do_method(*_curve_ref, "_set_data", _curve_ref->get_data());
-				ur.add_undo_method(*_curve_ref, "_set_data", _undo_data);
+				ur.add_do_method_compat(*_curve_ref, "_set_data", _curve_ref->get_data());
+				ur.add_undo_method_compat(*_curve_ref, "_set_data", _undo_data);
 				// Note: this will trigger one more "changed" signal even if nothing changes,
 				// but it's ok since it would have fired every frame during the drag anyways
 				ur.commit_action();
@@ -298,8 +298,8 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
 	ur.create_action(TTR("Load Curve Preset"));
 
-	ur.add_do_method(&curve, "_set_data", curve.get_data());
-	ur.add_undo_method(&curve, "_set_data", previous_data);
+	ur.add_do_method_compat(&curve, "_set_data", curve.get_data());
+	ur.add_undo_method_compat(&curve, "_set_data", previous_data);
 
 	ur.commit_action();
 }
@@ -442,8 +442,8 @@ void CurveEditor::add_point(Vector2 pos) {
 	int i = _curve_ref->add_point(point_pos);
 	_curve_ref->remove_point(i);
 
-	ur.add_do_method(*_curve_ref, "add_point", point_pos);
-	ur.add_undo_method(*_curve_ref, "remove_point", i);
+	ur.add_do_method_compat(*_curve_ref, "add_point", point_pos);
+	ur.add_undo_method_compat(*_curve_ref, "remove_point", i);
 
 	ur.commit_action();
 }
@@ -456,8 +456,8 @@ void CurveEditor::remove_point(int index) {
 
 	Curve::Point p = _curve_ref->get_point(index);
 
-	ur.add_do_method(*_curve_ref, "remove_point", index);
-	ur.add_undo_method(*_curve_ref, "add_point", p.pos, p.left_tangent, p.right_tangent, p.left_mode, p.right_mode);
+	ur.add_do_method_compat(*_curve_ref, "remove_point", index);
+	ur.add_undo_method_compat(*_curve_ref, "add_point", p.pos, p.left_tangent, p.right_tangent, p.left_mode, p.right_mode);
 
 	if (index == _selected_point) {
 		set_selected_point(-1);
@@ -486,8 +486,8 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 		Curve::TangentMode prev_mode = _curve_ref->get_point_left_mode(_selected_point);
 		Curve::TangentMode mode = is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR;
 
-		ur.add_do_method(*_curve_ref, "set_point_left_mode", _selected_point, mode);
-		ur.add_undo_method(*_curve_ref, "set_point_left_mode", _selected_point, prev_mode);
+		ur.add_do_method_compat(*_curve_ref, "set_point_left_mode", _selected_point, mode);
+		ur.add_undo_method_compat(*_curve_ref, "set_point_left_mode", _selected_point, prev_mode);
 
 	} else {
 		bool is_linear = _curve_ref->get_point_right_mode(_selected_point) == Curve::TANGENT_LINEAR;
@@ -495,8 +495,8 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 		Curve::TangentMode prev_mode = _curve_ref->get_point_right_mode(_selected_point);
 		Curve::TangentMode mode = is_linear ? Curve::TANGENT_FREE : Curve::TANGENT_LINEAR;
 
-		ur.add_do_method(*_curve_ref, "set_point_right_mode", _selected_point, mode);
-		ur.add_undo_method(*_curve_ref, "set_point_right_mode", _selected_point, prev_mode);
+		ur.add_do_method_compat(*_curve_ref, "set_point_right_mode", _selected_point, mode);
+		ur.add_undo_method_compat(*_curve_ref, "set_point_right_mode", _selected_point, prev_mode);
 	}
 
 	ur.commit_action();

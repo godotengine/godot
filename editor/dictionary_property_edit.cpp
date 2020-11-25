@@ -126,10 +126,10 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 			UndoRedo *ur = EditorNode::get_undo_redo();
 
 			ur->create_action(TTR("Change Dictionary Key"));
-			ur->add_do_method(this, "_set_key", key, p_value);
-			ur->add_undo_method(this, "_set_key", p_value, key);
-			ur->add_do_method(this, "_notif_changev", p_name);
-			ur->add_undo_method(this, "_notif_changev", p_name);
+			ur->add_do_method_compat(this, "_set_key", key, p_value);
+			ur->add_undo_method_compat(this, "_set_key", p_value, key);
+			ur->add_do_method_compat(this, "_notif_changev", p_name);
+			ur->add_undo_method_compat(this, "_notif_changev", p_name);
 			ur->commit_action();
 
 			return true;
@@ -140,10 +140,10 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Dictionary Value"));
-				ur->add_do_method(this, "_set_value", key, p_value);
-				ur->add_undo_method(this, "_set_value", key, value);
-				ur->add_do_method(this, "_notif_changev", p_name);
-				ur->add_undo_method(this, "_notif_changev", p_name);
+				ur->add_do_method_compat(this, "_set_value", key, p_value);
+				ur->add_undo_method_compat(this, "_set_value", key, value);
+				ur->add_do_method_compat(this, "_notif_changev", p_name);
+				ur->add_undo_method_compat(this, "_notif_changev", p_name);
 				ur->commit_action();
 
 				return true;

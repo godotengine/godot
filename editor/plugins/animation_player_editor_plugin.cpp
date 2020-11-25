@@ -166,19 +166,19 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 	if (player->get_autoplay() == current) {
 		//unset
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
+		undo_redo->add_do_method_compat(player, "set_autoplay", "");
+		undo_redo->add_undo_method_compat(player, "set_autoplay", player->get_autoplay());
+		undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+		undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 		undo_redo->commit_action();
 
 	} else {
 		//set
 		undo_redo->create_action(TTR("Toggle Autoplay"));
-		undo_redo->add_do_method(player, "set_autoplay", current);
-		undo_redo->add_undo_method(player, "set_autoplay", player->get_autoplay());
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
+		undo_redo->add_do_method_compat(player, "set_autoplay", current);
+		undo_redo->add_undo_method_compat(player, "set_autoplay", player->get_autoplay());
+		undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+		undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 		undo_redo->commit_action();
 	}
 }
@@ -436,18 +436,18 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
-		undo_redo->add_do_method(player, "set_autoplay", "");
-		undo_redo->add_undo_method(player, "set_autoplay", current);
+		undo_redo->add_do_method_compat(player, "set_autoplay", "");
+		undo_redo->add_undo_method_compat(player, "set_autoplay", current);
 		// Avoid having the autoplay icon linger around if there is only one animation in the player.
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
+		undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
 	}
-	undo_redo->add_do_method(player, "remove_animation", current);
-	undo_redo->add_undo_method(player, "add_animation", current, anim);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->add_do_method_compat(player, "remove_animation", current);
+	undo_redo->add_undo_method_compat(player, "add_animation", current, anim);
+	undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 	if (animation->get_item_count() == 1) {
-		undo_redo->add_do_method(this, "_stop_onion_skinning");
-		undo_redo->add_undo_method(this, "_start_onion_skinning");
+		undo_redo->add_do_method_compat(this, "_stop_onion_skinning");
+		undo_redo->add_undo_method_compat(this, "_start_onion_skinning");
 	}
 	undo_redo->commit_action();
 }
@@ -508,12 +508,12 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		Ref<Animation> anim = player->get_animation(current);
 
 		undo_redo->create_action(TTR("Rename Animation"));
-		undo_redo->add_do_method(player, "rename_animation", current, new_name);
-		undo_redo->add_do_method(anim.ptr(), "set_name", new_name);
-		undo_redo->add_undo_method(player, "rename_animation", new_name, current);
-		undo_redo->add_undo_method(anim.ptr(), "set_name", current);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
+		undo_redo->add_do_method_compat(player, "rename_animation", current, new_name);
+		undo_redo->add_do_method_compat(anim.ptr(), "set_name", new_name);
+		undo_redo->add_undo_method_compat(player, "rename_animation", new_name, current);
+		undo_redo->add_undo_method_compat(anim.ptr(), "set_name", current);
+		undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+		undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 		undo_redo->commit_action();
 
 		_select_anim_by_name(new_name);
@@ -523,13 +523,13 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		new_anim->set_name(new_name);
 
 		undo_redo->create_action(TTR("Add Animation"));
-		undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-		undo_redo->add_undo_method(player, "remove_animation", new_name);
-		undo_redo->add_do_method(this, "_animation_player_changed", player);
-		undo_redo->add_undo_method(this, "_animation_player_changed", player);
+		undo_redo->add_do_method_compat(player, "add_animation", new_name, new_anim);
+		undo_redo->add_undo_method_compat(player, "remove_animation", new_name);
+		undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+		undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 		if (animation->get_item_count() == 0) {
-			undo_redo->add_do_method(this, "_start_onion_skinning");
-			undo_redo->add_undo_method(this, "_stop_onion_skinning");
+			undo_redo->add_do_method_compat(this, "_start_onion_skinning");
+			undo_redo->add_undo_method_compat(this, "_stop_onion_skinning");
 		}
 		undo_redo->commit_action();
 
@@ -547,10 +547,10 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 	String current = animation->get_item_text(animation->get_selected());
 
 	undo_redo->create_action(TTR("Blend Next Changed"));
-	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
-	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->add_do_method_compat(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
+	undo_redo->add_undo_method_compat(player, "animation_set_next", current, player->animation_get_next(current));
+	undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 	undo_redo->commit_action();
 }
 
@@ -632,10 +632,10 @@ void AnimationPlayerEditor::_blend_edited() {
 	float prev_blend_time = player->get_blend_time(current, to);
 
 	undo_redo->create_action(TTR("Change Blend Time"));
-	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
-	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->add_do_method_compat(player, "set_blend_time", current, to, blend_time);
+	undo_redo->add_undo_method_compat(player, "set_blend_time", current, to, prev_blend_time);
+	undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 	undo_redo->commit_action();
 	updating_blends = false;
 }
@@ -733,13 +733,13 @@ void AnimationPlayerEditor::_dialog_action(String p_path) {
 			}
 
 			undo_redo->create_action(TTR("Load Animation"));
-			undo_redo->add_do_method(player, "add_animation", anim_name, res);
-			undo_redo->add_undo_method(player, "remove_animation", anim_name);
+			undo_redo->add_do_method_compat(player, "add_animation", anim_name, res);
+			undo_redo->add_undo_method_compat(player, "remove_animation", anim_name);
 			if (player->has_animation(anim_name)) {
-				undo_redo->add_undo_method(player, "add_animation", anim_name, player->get_animation(anim_name));
+				undo_redo->add_undo_method_compat(player, "add_animation", anim_name, player->get_animation(anim_name));
 			}
-			undo_redo->add_do_method(this, "_animation_player_changed", player);
-			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 			undo_redo->commit_action();
 			break;
 		}
@@ -979,11 +979,11 @@ void AnimationPlayerEditor::_animation_duplicate() {
 	new_anim->set_name(new_name);
 
 	undo_redo->create_action(TTR("Duplicate Animation"));
-	undo_redo->add_do_method(player, "add_animation", new_name, new_anim);
-	undo_redo->add_undo_method(player, "remove_animation", new_name);
-	undo_redo->add_do_method(player, "animation_set_next", new_name, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
+	undo_redo->add_do_method_compat(player, "add_animation", new_name, new_anim);
+	undo_redo->add_undo_method_compat(player, "remove_animation", new_name);
+	undo_redo->add_do_method_compat(player, "animation_set_next", new_name, player->animation_get_next(current));
+	undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 	undo_redo->commit_action();
 
 	for (int i = 0; i < animation->get_item_count(); i++) {
@@ -1150,10 +1150,10 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 			}
 
 			undo_redo->create_action(TTR("Paste Animation"));
-			undo_redo->add_do_method(player, "add_animation", name, anim2);
-			undo_redo->add_undo_method(player, "remove_animation", name);
-			undo_redo->add_do_method(this, "_animation_player_changed", player);
-			undo_redo->add_undo_method(this, "_animation_player_changed", player);
+			undo_redo->add_do_method_compat(player, "add_animation", name, anim2);
+			undo_redo->add_undo_method_compat(player, "remove_animation", name);
+			undo_redo->add_do_method_compat(this, "_animation_player_changed", player);
+			undo_redo->add_undo_method_compat(this, "_animation_player_changed", player);
 			undo_redo->commit_action();
 
 			_select_anim_by_name(name);

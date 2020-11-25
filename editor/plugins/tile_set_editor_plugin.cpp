@@ -716,13 +716,13 @@ void TileSetEditor::_on_tileset_toolbar_confirm() {
 			undo_redo->create_action(TTR("Remove Texture"));
 			for (List<int>::Element *E = ids.front(); E; E = E->next()) {
 				if (tileset->tile_get_texture(E->get())->get_rid() == current_rid) {
-					undo_redo->add_do_method(tileset.ptr(), "remove_tile", E->get());
+					undo_redo->add_do_method_compat(tileset.ptr(), "remove_tile", E->get());
 					_undo_tile_removal(E->get());
 				}
 			}
-			undo_redo->add_do_method(this, "remove_texture", get_current_texture());
-			undo_redo->add_undo_method(this, "add_texture", get_current_texture());
-			undo_redo->add_undo_method(this, "update_texture_list_icon");
+			undo_redo->add_do_method_compat(this, "remove_texture", get_current_texture());
+			undo_redo->add_undo_method_compat(this, "add_texture", get_current_texture());
+			undo_redo->add_undo_method_compat(this, "update_texture_list_icon");
 			undo_redo->commit_action();
 		} break;
 		case TOOL_TILESET_MERGE_SCENE:
@@ -737,13 +737,13 @@ void TileSetEditor::_on_tileset_toolbar_confirm() {
 			tileset->get_tile_list(&ids);
 
 			undo_redo->create_action(option == TOOL_TILESET_MERGE_SCENE ? TTR("Merge Tileset from Scene") : TTR("Create Tileset from Scene"));
-			undo_redo->add_do_method(this, "_undo_redo_import_scene", scene, option == TOOL_TILESET_MERGE_SCENE);
-			undo_redo->add_undo_method(tileset.ptr(), "clear");
+			undo_redo->add_do_method_compat(this, "_undo_redo_import_scene", scene, option == TOOL_TILESET_MERGE_SCENE);
+			undo_redo->add_undo_method_compat(tileset.ptr(), "clear");
 			for (List<int>::Element *E = ids.front(); E; E = E->next()) {
 				_undo_tile_removal(E->get());
 			}
-			undo_redo->add_do_method(this, "edit", tileset);
-			undo_redo->add_undo_method(this, "edit", tileset);
+			undo_redo->add_do_method_compat(this, "edit", tileset);
+			undo_redo->add_undo_method_compat(this, "edit", tileset);
 			undo_redo->commit_action();
 		} break;
 	}
@@ -1336,45 +1336,45 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				if (!edited_region.has_no_area()) {
 					if (get_current_tile() >= 0 && workspace_mode == WORKSPACE_EDIT) {
 						undo_redo->create_action(TTR("Set Tile Region"));
-						undo_redo->add_do_method(tileset.ptr(), "tile_set_region", get_current_tile(), edited_region);
-						undo_redo->add_undo_method(tileset.ptr(), "tile_set_region", get_current_tile(), tileset->tile_get_region(get_current_tile()));
+						undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_region", get_current_tile(), edited_region);
+						undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_region", get_current_tile(), tileset->tile_get_region(get_current_tile()));
 
 						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
 						Size2 workspace_minsize = workspace->get_custom_minimum_size();
 						// If the new region is bigger, just directly change the workspace size to avoid checking all other tiles.
 						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
 							Size2 max_workspace_size = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
-							undo_redo->add_do_method(workspace, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", max_workspace_size);
-							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace, "set_custom_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method_compat(workspace, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace_container, "set_custom_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method_compat(workspace_container, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace_overlay, "set_custom_minimum_size", max_workspace_size);
+							undo_redo->add_undo_method_compat(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
 						} else if (workspace_minsize.x > get_current_texture()->get_size().x + WORKSPACE_MARGIN.x * 2 || workspace_minsize.y > get_current_texture()->get_size().y + WORKSPACE_MARGIN.y * 2) {
-							undo_redo->add_do_method(this, "update_workspace_minsize");
-							undo_redo->add_undo_method(this, "update_workspace_minsize");
+							undo_redo->add_do_method_compat(this, "update_workspace_minsize");
+							undo_redo->add_undo_method_compat(this, "update_workspace_minsize");
 						}
 
 						edited_region = Rect2();
 
-						undo_redo->add_do_method(workspace, "update");
-						undo_redo->add_undo_method(workspace, "update");
-						undo_redo->add_do_method(workspace_overlay, "update");
-						undo_redo->add_undo_method(workspace_overlay, "update");
+						undo_redo->add_do_method_compat(workspace, "update");
+						undo_redo->add_undo_method_compat(workspace, "update");
+						undo_redo->add_do_method_compat(workspace_overlay, "update");
+						undo_redo->add_undo_method_compat(workspace_overlay, "update");
 						undo_redo->commit_action();
 					} else {
 						int t_id = tileset->get_last_unused_tile_id();
 						undo_redo->create_action(TTR("Create Tile"));
-						undo_redo->add_do_method(tileset.ptr(), "create_tile", t_id);
-						undo_redo->add_undo_method(tileset.ptr(), "remove_tile", t_id);
-						undo_redo->add_undo_method(this, "_validate_current_tile_id");
-						undo_redo->add_do_method(tileset.ptr(), "tile_set_texture", t_id, get_current_texture());
-						undo_redo->add_do_method(tileset.ptr(), "tile_set_region", t_id, edited_region);
-						undo_redo->add_do_method(tileset.ptr(), "tile_set_name", t_id, get_current_texture()->get_path().get_file() + " " + String::num(t_id, 0));
+						undo_redo->add_do_method_compat(tileset.ptr(), "create_tile", t_id);
+						undo_redo->add_undo_method_compat(tileset.ptr(), "remove_tile", t_id);
+						undo_redo->add_undo_method_compat(this, "_validate_current_tile_id");
+						undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_texture", t_id, get_current_texture());
+						undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_region", t_id, edited_region);
+						undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_name", t_id, get_current_texture()->get_path().get_file() + " " + String::num(t_id, 0));
 						if (workspace_mode != WORKSPACE_CREATE_SINGLE) {
-							undo_redo->add_do_method(tileset.ptr(), "autotile_set_size", t_id, snap_step);
-							undo_redo->add_do_method(tileset.ptr(), "autotile_set_spacing", t_id, snap_separation.x);
-							undo_redo->add_do_method(tileset.ptr(), "tile_set_tile_mode", t_id, workspace_mode == WORKSPACE_CREATE_AUTOTILE ? TileSet::AUTO_TILE : TileSet::ATLAS_TILE);
+							undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_size", t_id, snap_step);
+							undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_spacing", t_id, snap_separation.x);
+							undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_tile_mode", t_id, workspace_mode == WORKSPACE_CREATE_AUTOTILE ? TileSet::AUTO_TILE : TileSet::ATLAS_TILE);
 						}
 
 						tool_workspacemode[WORKSPACE_EDIT]->set_pressed(true);
@@ -1385,20 +1385,20 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						Size2 workspace_minsize = workspace->get_custom_minimum_size();
 						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
 							Size2 new_workspace_minsize = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
-							undo_redo->add_do_method(workspace, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
-							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", new_workspace_minsize);
-							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method_compat(workspace, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace_container, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method_compat(workspace_container, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method_compat(workspace_overlay, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method_compat(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
 						}
 
 						edited_region = Rect2();
 
-						undo_redo->add_do_method(workspace, "update");
-						undo_redo->add_undo_method(workspace, "update");
-						undo_redo->add_do_method(workspace_overlay, "update");
-						undo_redo->add_undo_method(workspace_overlay, "update");
+						undo_redo->add_do_method_compat(workspace, "update");
+						undo_redo->add_undo_method_compat(workspace, "update");
+						undo_redo->add_do_method_compat(workspace_overlay, "update");
+						undo_redo->add_undo_method_compat(workspace_overlay, "update");
 						undo_redo->commit_action();
 
 						set_current_tile(t_id);
@@ -1432,10 +1432,10 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && current_tile_region.has_point(mb->get_position())) {
 							Vector2 coord((int)((mb->get_position().x - current_tile_region.position.x) / (spacing + size.x)), (int)((mb->get_position().y - current_tile_region.position.y) / (spacing + size.y)));
 							undo_redo->create_action(TTR("Set Tile Icon"));
-							undo_redo->add_do_method(tileset.ptr(), "autotile_set_icon_coordinate", get_current_tile(), coord);
-							undo_redo->add_undo_method(tileset.ptr(), "autotile_set_icon_coordinate", get_current_tile(), tileset->autotile_get_icon_coordinate(get_current_tile()));
-							undo_redo->add_do_method(workspace, "update");
-							undo_redo->add_undo_method(workspace, "update");
+							undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_icon_coordinate", get_current_tile(), coord);
+							undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_icon_coordinate", get_current_tile(), tileset->autotile_get_icon_coordinate(get_current_tile()));
+							undo_redo->add_do_method_compat(workspace, "update");
+							undo_redo->add_undo_method_compat(workspace, "update");
 							undo_redo->commit_action();
 						}
 					}
@@ -1511,10 +1511,10 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 								if (old_mask != new_mask) {
 									undo_redo->create_action(TTR("Edit Tile Bitmask"));
-									undo_redo->add_do_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, new_mask);
-									undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, old_mask);
-									undo_redo->add_do_method(workspace, "update");
-									undo_redo->add_undo_method(workspace, "update");
+									undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, new_mask);
+									undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, old_mask);
+									undo_redo->add_do_method_compat(workspace, "update");
+									undo_redo->add_undo_method_compat(workspace, "update");
 									undo_redo->commit_action();
 								}
 							}
@@ -1588,10 +1588,10 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							}
 							if (old_mask != new_mask) {
 								undo_redo->create_action(TTR("Edit Tile Bitmask"));
-								undo_redo->add_do_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, new_mask);
-								undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, old_mask);
-								undo_redo->add_do_method(workspace, "update");
-								undo_redo->add_undo_method(workspace, "update");
+								undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, new_mask);
+								undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), coord, old_mask);
+								undo_redo->add_do_method_compat(workspace, "update");
+								undo_redo->add_undo_method_compat(workspace, "update");
 								undo_redo->commit_action();
 							}
 						}
@@ -1648,8 +1648,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 
 										undo_redo->create_action(TTR("Edit Collision Polygon"));
 										_set_edited_shape_points(points);
-										undo_redo->add_do_method(this, "_select_edited_shape_coord");
-										undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+										undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+										undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 										undo_redo->commit_action();
 									}
 								} else if (edit_mode == EDITMODE_OCCLUSION) {
@@ -1665,10 +1665,10 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										}
 
 										undo_redo->create_action(TTR("Edit Occlusion Polygon"));
-										undo_redo->add_do_method(edited_occlusion_shape.ptr(), "set_polygon", polygon);
-										undo_redo->add_undo_method(edited_occlusion_shape.ptr(), "set_polygon", edited_occlusion_shape->get_polygon());
-										undo_redo->add_do_method(this, "_select_edited_shape_coord");
-										undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+										undo_redo->add_do_method_compat(edited_occlusion_shape.ptr(), "set_polygon", polygon);
+										undo_redo->add_undo_method_compat(edited_occlusion_shape.ptr(), "set_polygon", edited_occlusion_shape->get_polygon());
+										undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+										undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 										undo_redo->commit_action();
 									}
 								} else if (edit_mode == EDITMODE_NAVIGATION) {
@@ -1686,14 +1686,14 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										}
 
 										undo_redo->create_action(TTR("Edit Navigation Polygon"));
-										undo_redo->add_do_method(edited_navigation_shape.ptr(), "set_vertices", polygon);
-										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "set_vertices", edited_navigation_shape->get_vertices());
-										undo_redo->add_do_method(edited_navigation_shape.ptr(), "clear_polygons");
-										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "clear_polygons");
-										undo_redo->add_do_method(edited_navigation_shape.ptr(), "add_polygon", indices);
-										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "add_polygon", edited_navigation_shape->get_polygon(0));
-										undo_redo->add_do_method(this, "_select_edited_shape_coord");
-										undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+										undo_redo->add_do_method_compat(edited_navigation_shape.ptr(), "set_vertices", polygon);
+										undo_redo->add_undo_method_compat(edited_navigation_shape.ptr(), "set_vertices", edited_navigation_shape->get_vertices());
+										undo_redo->add_do_method_compat(edited_navigation_shape.ptr(), "clear_polygons");
+										undo_redo->add_undo_method_compat(edited_navigation_shape.ptr(), "clear_polygons");
+										undo_redo->add_do_method_compat(edited_navigation_shape.ptr(), "add_polygon", indices);
+										undo_redo->add_undo_method_compat(edited_navigation_shape.ptr(), "add_polygon", edited_navigation_shape->get_polygon(0));
+										undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+										undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 										undo_redo->commit_action();
 									}
 								}
@@ -1798,25 +1798,25 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 		bitmask_map_copy = tileset->autotile_get_bitmask_map(get_current_tile());
 	} else if (p_tool == BITMASK_PASTE) {
 		undo_redo->create_action(TTR("Paste Tile Bitmask"));
-		undo_redo->add_do_method(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
-		undo_redo->add_undo_method(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
+		undo_redo->add_do_method_compat(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
+		undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
 		for (Map<Vector2, uint32_t>::Element *E = bitmask_map_copy.front(); E; E = E->next()) {
-			undo_redo->add_do_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
+			undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
 		}
 		for (Map<Vector2, uint32_t>::Element *E = tileset->autotile_get_bitmask_map(get_current_tile()).front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
 		}
-		undo_redo->add_do_method(workspace, "update");
-		undo_redo->add_undo_method(workspace, "update");
+		undo_redo->add_do_method_compat(workspace, "update");
+		undo_redo->add_undo_method_compat(workspace, "update");
 		undo_redo->commit_action();
 	} else if (p_tool == BITMASK_CLEAR) {
 		undo_redo->create_action(TTR("Clear Tile Bitmask"));
-		undo_redo->add_do_method(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
+		undo_redo->add_do_method_compat(tileset.ptr(), "autotile_clear_bitmask_map", get_current_tile());
 		for (Map<Vector2, uint32_t>::Element *E = tileset->autotile_get_bitmask_map(get_current_tile()).front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask", get_current_tile(), E->key(), E->value());
 		}
-		undo_redo->add_do_method(workspace, "update");
-		undo_redo->add_undo_method(workspace, "update");
+		undo_redo->add_do_method_compat(workspace, "update");
+		undo_redo->add_undo_method_compat(workspace, "update");
 		undo_redo->commit_action();
 	} else if (p_tool == SHAPE_TOGGLE_TYPE) {
 		if (edited_collision_shape.is_valid()) {
@@ -1840,20 +1840,20 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 			}
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == previous_shape) {
-					undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+					undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
 					sd.remove(i);
 					break;
 				}
 			}
 
-			undo_redo->add_do_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
+			undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
 			if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-				undo_redo->add_do_method(tileset.ptr(), "tile_add_shape", get_current_tile(), edited_collision_shape, Transform2D(), false, edited_shape_coord);
+				undo_redo->add_do_method_compat(tileset.ptr(), "tile_add_shape", get_current_tile(), edited_collision_shape, Transform2D(), false, edited_shape_coord);
 			} else {
-				undo_redo->add_do_method(tileset.ptr(), "tile_add_shape", get_current_tile(), edited_collision_shape, Transform2D());
+				undo_redo->add_do_method_compat(tileset.ptr(), "tile_add_shape", get_current_tile(), edited_collision_shape, Transform2D());
 			}
-			undo_redo->add_do_method(this, "_select_edited_shape_coord");
-			undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+			undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+			undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 			undo_redo->commit_action();
 
 			_update_toggle_shape_button();
@@ -1876,21 +1876,21 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 					int t_id = get_current_tile();
 					if (workspace_mode == WORKSPACE_EDIT && t_id >= 0) {
 						undo_redo->create_action(TTR("Remove Tile"));
-						undo_redo->add_do_method(tileset.ptr(), "remove_tile", t_id);
+						undo_redo->add_do_method_compat(tileset.ptr(), "remove_tile", t_id);
 						_undo_tile_removal(t_id);
-						undo_redo->add_do_method(this, "_validate_current_tile_id");
+						undo_redo->add_do_method_compat(this, "_validate_current_tile_id");
 
 						Rect2 tile_region = tileset->tile_get_region(get_current_tile());
 						Size2 tile_workspace_size = tile_region.position + tile_region.size;
 						if (tile_workspace_size.x > get_current_texture()->get_size().x || tile_workspace_size.y > get_current_texture()->get_size().y) {
-							undo_redo->add_do_method(this, "update_workspace_minsize");
-							undo_redo->add_undo_method(this, "update_workspace_minsize");
+							undo_redo->add_do_method_compat(this, "update_workspace_minsize");
+							undo_redo->add_undo_method_compat(this, "update_workspace_minsize");
 						}
 
-						undo_redo->add_do_method(workspace, "update");
-						undo_redo->add_undo_method(workspace, "update");
-						undo_redo->add_do_method(workspace_overlay, "update");
-						undo_redo->add_undo_method(workspace_overlay, "update");
+						undo_redo->add_do_method_compat(workspace, "update");
+						undo_redo->add_undo_method_compat(workspace, "update");
+						undo_redo->add_do_method_compat(workspace_overlay, "update");
+						undo_redo->add_undo_method_compat(workspace_overlay, "update");
 						undo_redo->commit_action();
 					}
 					tool_workspacemode[WORKSPACE_EDIT]->set_pressed(true);
@@ -1904,11 +1904,11 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 						for (int i = 0; i < sd.size(); i++) {
 							if (sd[i].get("shape") == edited_collision_shape) {
 								undo_redo->create_action(TTR("Remove Collision Polygon"));
-								undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+								undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
 								sd.remove(i);
-								undo_redo->add_do_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
-								undo_redo->add_do_method(this, "_select_edited_shape_coord");
-								undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+								undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
+								undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+								undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 								undo_redo->commit_action();
 								break;
 							}
@@ -1919,14 +1919,14 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 					if (!edited_occlusion_shape.is_null()) {
 						undo_redo->create_action(TTR("Remove Occlusion Polygon"));
 						if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
-							undo_redo->add_do_method(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), Ref<OccluderPolygon2D>());
-							undo_redo->add_undo_method(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), tileset->tile_get_light_occluder(get_current_tile()));
+							undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), Ref<OccluderPolygon2D>());
+							undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), tileset->tile_get_light_occluder(get_current_tile()));
 						} else {
-							undo_redo->add_do_method(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
-							undo_redo->add_undo_method(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), tileset->autotile_get_light_occluder(get_current_tile(), edited_shape_coord), edited_shape_coord);
+							undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+							undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), tileset->autotile_get_light_occluder(get_current_tile(), edited_shape_coord), edited_shape_coord);
 						}
-						undo_redo->add_do_method(this, "_select_edited_shape_coord");
-						undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+						undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+						undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 						undo_redo->commit_action();
 					}
 				} break;
@@ -1934,14 +1934,14 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 					if (!edited_navigation_shape.is_null()) {
 						undo_redo->create_action(TTR("Remove Navigation Polygon"));
 						if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
-							undo_redo->add_do_method(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), Ref<NavigationPolygon>());
-							undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), tileset->tile_get_navigation_polygon(get_current_tile()));
+							undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), Ref<NavigationPolygon>());
+							undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), tileset->tile_get_navigation_polygon(get_current_tile()));
 						} else {
-							undo_redo->add_do_method(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
-							undo_redo->add_undo_method(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), tileset->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord), edited_shape_coord);
+							undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
+							undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), tileset->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord), edited_shape_coord);
 						}
-						undo_redo->add_do_method(this, "_select_edited_shape_coord");
-						undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+						undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+						undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 						undo_redo->commit_action();
 					}
 				} break;
@@ -1965,10 +1965,10 @@ void TileSetEditor::_on_priority_changed(float val) {
 	}
 
 	undo_redo->create_action(TTR("Edit Tile Priority"));
-	undo_redo->add_do_method(tileset.ptr(), "autotile_set_subtile_priority", get_current_tile(), edited_shape_coord, (int)val);
-	undo_redo->add_undo_method(tileset.ptr(), "autotile_set_subtile_priority", get_current_tile(), edited_shape_coord, tileset->autotile_get_subtile_priority(get_current_tile(), edited_shape_coord));
-	undo_redo->add_do_method(workspace, "update");
-	undo_redo->add_undo_method(workspace, "update");
+	undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_subtile_priority", get_current_tile(), edited_shape_coord, (int)val);
+	undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_subtile_priority", get_current_tile(), edited_shape_coord, tileset->autotile_get_subtile_priority(get_current_tile(), edited_shape_coord));
+	undo_redo->add_do_method_compat(workspace, "update");
+	undo_redo->add_undo_method_compat(workspace, "update");
 	undo_redo->commit_action();
 }
 
@@ -1978,10 +1978,10 @@ void TileSetEditor::_on_z_index_changed(float val) {
 	}
 
 	undo_redo->create_action(TTR("Edit Tile Z Index"));
-	undo_redo->add_do_method(tileset.ptr(), "autotile_set_z_index", get_current_tile(), edited_shape_coord, (int)val);
-	undo_redo->add_undo_method(tileset.ptr(), "autotile_set_z_index", get_current_tile(), edited_shape_coord, tileset->autotile_get_z_index(get_current_tile(), edited_shape_coord));
-	undo_redo->add_do_method(workspace, "update");
-	undo_redo->add_undo_method(workspace, "update");
+	undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_z_index", get_current_tile(), edited_shape_coord, (int)val);
+	undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_z_index", get_current_tile(), edited_shape_coord, tileset->autotile_get_z_index(get_current_tile(), edited_shape_coord));
+	undo_redo->add_do_method_compat(workspace, "update");
+	undo_redo->add_undo_method_compat(workspace, "update");
 	undo_redo->commit_action();
 }
 
@@ -2014,8 +2014,8 @@ void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> &points) {
 	Ref<ConvexPolygonShape2D> convex = edited_collision_shape;
 	Ref<ConcavePolygonShape2D> concave = edited_collision_shape;
 	if (convex.is_valid()) {
-		undo_redo->add_do_method(convex.ptr(), "set_points", points);
-		undo_redo->add_undo_method(convex.ptr(), "set_points", _get_edited_shape_points());
+		undo_redo->add_do_method_compat(convex.ptr(), "set_points", points);
+		undo_redo->add_undo_method_compat(convex.ptr(), "set_points", _get_edited_shape_points());
 	} else if (concave.is_valid() && points.size() > 1) {
 		PackedVector2Array segments;
 		for (int i = 0; i < points.size() - 1; i++) {
@@ -2024,8 +2024,8 @@ void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> &points) {
 		}
 		segments.push_back(points[points.size() - 1]);
 		segments.push_back(points[0]);
-		undo_redo->add_do_method(concave.ptr(), "set_segments", segments);
-		undo_redo->add_undo_method(concave.ptr(), "set_segments", concave->get_segments());
+		undo_redo->add_do_method_compat(concave.ptr(), "set_segments", segments);
+		undo_redo->add_undo_method_compat(concave.ptr(), "set_segments", concave->get_segments());
 	}
 }
 
@@ -2387,49 +2387,49 @@ void TileSetEditor::_select_edited_shape_coord() {
 }
 
 void TileSetEditor::_undo_tile_removal(int p_id) {
-	undo_redo->add_undo_method(tileset.ptr(), "create_tile", p_id);
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_name", p_id, tileset->tile_get_name(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_texture_offset", p_id, tileset->tile_get_texture_offset(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_material", p_id, tileset->tile_get_material(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_modulate", p_id, tileset->tile_get_modulate(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_occluder_offset", p_id, tileset->tile_get_occluder_offset(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon_offset", p_id, tileset->tile_get_navigation_polygon_offset(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_shape_offset", p_id, 0, tileset->tile_get_shape_offset(p_id, 0));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_shape_transform", p_id, 0, tileset->tile_get_shape_transform(p_id, 0));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_z_index", p_id, tileset->tile_get_z_index(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_texture", p_id, tileset->tile_get_texture(p_id));
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_region", p_id, tileset->tile_get_region(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "create_tile", p_id);
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_name", p_id, tileset->tile_get_name(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_texture_offset", p_id, tileset->tile_get_texture_offset(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_material", p_id, tileset->tile_get_material(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_modulate", p_id, tileset->tile_get_modulate(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_occluder_offset", p_id, tileset->tile_get_occluder_offset(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_navigation_polygon_offset", p_id, tileset->tile_get_navigation_polygon_offset(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shape_offset", p_id, 0, tileset->tile_get_shape_offset(p_id, 0));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shape_transform", p_id, 0, tileset->tile_get_shape_transform(p_id, 0));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_z_index", p_id, tileset->tile_get_z_index(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_texture", p_id, tileset->tile_get_texture(p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_region", p_id, tileset->tile_get_region(p_id));
 	// Necessary to get the version that returns a Array instead of a Vector.
-	undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", p_id, tileset->call("tile_get_shapes", p_id));
+	undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shapes", p_id, tileset->call("tile_get_shapes", p_id));
 	if (tileset->tile_get_tile_mode(p_id) == TileSet::SINGLE_TILE) {
-		undo_redo->add_undo_method(tileset.ptr(), "tile_set_light_occluder", p_id, tileset->tile_get_light_occluder(p_id));
-		undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon", p_id, tileset->tile_get_navigation_polygon(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_light_occluder", p_id, tileset->tile_get_light_occluder(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_navigation_polygon", p_id, tileset->tile_get_navigation_polygon(p_id));
 	} else {
 		Map<Vector2, Ref<OccluderPolygon2D>> oclusion_map = tileset->autotile_get_light_oclusion_map(p_id);
 		for (Map<Vector2, Ref<OccluderPolygon2D>>::Element *E = oclusion_map.front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_light_occluder", p_id, E->value(), E->key());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_light_occluder", p_id, E->value(), E->key());
 		}
 		Map<Vector2, Ref<NavigationPolygon>> navigation_map = tileset->autotile_get_navigation_map(p_id);
 		for (Map<Vector2, Ref<NavigationPolygon>>::Element *E = navigation_map.front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_navigation_polygon", p_id, E->value(), E->key());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_navigation_polygon", p_id, E->value(), E->key());
 		}
 		Map<Vector2, uint32_t> bitmask_map = tileset->autotile_get_bitmask_map(p_id);
 		for (Map<Vector2, uint32_t>::Element *E = bitmask_map.front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask", p_id, E->key(), E->value());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask", p_id, E->key(), E->value());
 		}
 		Map<Vector2, int> priority_map = tileset->autotile_get_priority_map(p_id);
 		for (Map<Vector2, int>::Element *E = priority_map.front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_subtile_priority", p_id, E->key(), E->value());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_subtile_priority", p_id, E->key(), E->value());
 		}
-		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_icon_coordinate", p_id, tileset->autotile_get_icon_coordinate(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_icon_coordinate", p_id, tileset->autotile_get_icon_coordinate(p_id));
 		Map<Vector2, int> z_map = tileset->autotile_get_z_index_map(p_id);
 		for (Map<Vector2, int>::Element *E = z_map.front(); E; E = E->next()) {
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_z_index", p_id, E->key(), E->value());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_z_index", p_id, E->key(), E->value());
 		}
-		undo_redo->add_undo_method(tileset.ptr(), "tile_set_tile_mode", p_id, tileset->tile_get_tile_mode(p_id));
-		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_size", p_id, tileset->autotile_get_size(p_id));
-		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_spacing", p_id, tileset->autotile_get_spacing(p_id));
-		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask_mode", p_id, tileset->autotile_get_bitmask_mode(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_tile_mode", p_id, tileset->tile_get_tile_mode(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_size", p_id, tileset->autotile_get_size(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_spacing", p_id, tileset->autotile_get_spacing(p_id));
+		undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_bitmask_mode", p_id, tileset->autotile_get_bitmask_mode(p_id));
 	}
 }
 
@@ -2937,22 +2937,22 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			undo_redo->create_action(TTR("Create Collision Polygon"));
 			// Necessary to get the version that returns a Array instead of a Vector.
 			Array sd = tileset->call("tile_get_shapes", get_current_tile());
-			undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+			undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
 			for (int i = 0; i < sd.size(); i++) {
 				if (sd[i].get("shape") == edited_collision_shape) {
 					sd.remove(i);
 					break;
 				}
 			}
-			undo_redo->add_do_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
+			undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
 			if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-				undo_redo->add_do_method(tileset.ptr(), "tile_add_shape", get_current_tile(), shape, Transform2D(), false, edited_shape_coord);
+				undo_redo->add_do_method_compat(tileset.ptr(), "tile_add_shape", get_current_tile(), shape, Transform2D(), false, edited_shape_coord);
 			} else {
-				undo_redo->add_do_method(tileset.ptr(), "tile_add_shape", get_current_tile(), shape, Transform2D());
+				undo_redo->add_do_method_compat(tileset.ptr(), "tile_add_shape", get_current_tile(), shape, Transform2D());
 			}
 			tools[TOOL_SELECT]->set_pressed(true);
-			undo_redo->add_do_method(this, "_select_edited_shape_coord");
-			undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+			undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+			undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 			undo_redo->commit_action();
 		} else {
 			tools[TOOL_SELECT]->set_pressed(true);
@@ -2973,15 +2973,15 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 
 		undo_redo->create_action(TTR("Create Occlusion Polygon"));
 		if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-			undo_redo->add_do_method(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), shape, edited_shape_coord);
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), tileset->autotile_get_light_occluder(get_current_tile(), edited_shape_coord), edited_shape_coord);
+			undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), shape, edited_shape_coord);
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_light_occluder", get_current_tile(), tileset->autotile_get_light_occluder(get_current_tile(), edited_shape_coord), edited_shape_coord);
 		} else {
-			undo_redo->add_do_method(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), shape);
-			undo_redo->add_undo_method(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), tileset->tile_get_light_occluder(get_current_tile()));
+			undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), shape);
+			undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_light_occluder", get_current_tile(), tileset->tile_get_light_occluder(get_current_tile()));
 		}
 		tools[TOOL_SELECT]->set_pressed(true);
-		undo_redo->add_do_method(this, "_select_edited_shape_coord");
-		undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+		undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+		undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 		undo_redo->commit_action();
 	} else if (edit_mode == EDITMODE_NAVIGATION) {
 		Ref<NavigationPolygon> shape = memnew(NavigationPolygon);
@@ -3001,15 +3001,15 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 
 		undo_redo->create_action(TTR("Create Navigation Polygon"));
 		if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-			undo_redo->add_do_method(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), shape, edited_shape_coord);
-			undo_redo->add_undo_method(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), tileset->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord), edited_shape_coord);
+			undo_redo->add_do_method_compat(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), shape, edited_shape_coord);
+			undo_redo->add_undo_method_compat(tileset.ptr(), "autotile_set_navigation_polygon", get_current_tile(), tileset->autotile_get_navigation_polygon(get_current_tile(), edited_shape_coord), edited_shape_coord);
 		} else {
-			undo_redo->add_do_method(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), shape);
-			undo_redo->add_undo_method(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), tileset->tile_get_navigation_polygon(get_current_tile()));
+			undo_redo->add_do_method_compat(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), shape);
+			undo_redo->add_undo_method_compat(tileset.ptr(), "tile_set_navigation_polygon", get_current_tile(), tileset->tile_get_navigation_polygon(get_current_tile()));
 		}
 		tools[TOOL_SELECT]->set_pressed(true);
-		undo_redo->add_do_method(this, "_select_edited_shape_coord");
-		undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+		undo_redo->add_do_method_compat(this, "_select_edited_shape_coord");
+		undo_redo->add_undo_method_compat(this, "_select_edited_shape_coord");
 		undo_redo->commit_action();
 	}
 	tileset->_change_notify("");
