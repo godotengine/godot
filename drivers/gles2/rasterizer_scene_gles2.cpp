@@ -2300,7 +2300,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (!unshaded && e->light_index < RenderList::MAX_LIGHTS) {
 				light = render_light_instances[e->light_index];
-				if (e->light_mode == LightMode::LIGHTMODE_LIGHTMAP && light->light_ptr->bake_mode == VS::LIGHT_BAKE_ALL) {
+				if (e->instance->baked_light && light->light_ptr->bake_mode == VS::LIGHT_BAKE_ALL) {
 					light = NULL; // Don't use this light, it is already included in the lightmap
 				}
 			}
