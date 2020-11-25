@@ -360,15 +360,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_CAST_TO_NATIVE: {
-				Variant class_name = _constants_ptr[_code_ptr[ip + 1]];
-				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(class_name.operator Object *());
-
 				text += "cast native ";
 				text += DADDR(2);
 				text += " = ";
 				text += DADDR(1);
 				text += " as ";
-				text += nc->get_name();
+				text += DADDR(3);
 
 				incr += 4;
 			} break;
