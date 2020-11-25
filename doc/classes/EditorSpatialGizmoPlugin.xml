@@ -122,7 +122,7 @@
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
-			<argument index="1" name="gizmo" type="EditorSpatialGizmo">
+			<argument index="1" name="gizmo" type="EditorSpatialGizmo" default="null">
 			</argument>
 			<description>
 				Gets material from the internal list of materials. If an [EditorSpatialGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
