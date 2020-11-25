@@ -139,7 +139,9 @@ public:
 	// virtual void write_elseif(const Address &p_condition) = 0; This kind of makes things more difficult for no real benefit.
 	virtual void write_else() = 0;
 	virtual void write_endif() = 0;
-	virtual void write_for(const Address &p_variable, const Address &p_list) = 0;
+	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
+	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) = 0;
+	virtual void write_for() = 0;
 	virtual void write_endfor() = 0;
 	virtual void start_while_condition() = 0; // Used to allow a jump to the expression evaluation.
 	virtual void write_while(const Address &p_condition) = 0;
