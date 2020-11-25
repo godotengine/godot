@@ -978,7 +978,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 
 						if (!call->arguments[i]->is_constant) {
 							all_is_constant = false;
-						} else {
+						} else if (all_is_constant) {
 							args.write[i] = call->arguments[i]->reduced_value;
 						}
 
@@ -1011,11 +1011,15 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					}
 				}
 
-				GDScriptParser::DataType list_type;
-				list_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				list_type.kind = GDScriptParser::DataType::BUILTIN;
-				list_type.builtin_type = Variant::ARRAY;
-				p_for->list->set_datatype(list_type);
+				if (p_for->list->is_constant) {
+					p_for->list->set_datatype(type_from_variant(p_for->list->reduced_value, p_for->list));
+				} else {
+					GDScriptParser::DataType list_type;
+					list_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+					list_type.kind = GDScriptParser::DataType::BUILTIN;
+					list_type.builtin_type = Variant::ARRAY;
+					p_for->list->set_datatype(list_type);
+				}
 			}
 		}
 	}
