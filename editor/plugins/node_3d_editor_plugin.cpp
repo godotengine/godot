@@ -6847,7 +6847,7 @@ void EditorNode3DGizmoPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_handle_material", "name", "billboard", "texture"), &EditorNode3DGizmoPlugin::create_handle_material, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_material", "name", "material"), &EditorNode3DGizmoPlugin::add_material);
 
-	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material); //, DEFVAL(Ref<EditorNode3DGizmo>()));
+	ClassDB::bind_method(D_METHOD("get_material", "name", "gizmo"), &EditorNode3DGizmoPlugin::get_material, DEFVAL(Ref<EditorNode3DGizmo>()));
 
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_name"));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "get_priority"));
