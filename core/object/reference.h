@@ -252,8 +252,6 @@ public:
 	WeakRef() {}
 };
 
-#ifdef PTRCALL_ENABLED
-
 template <class T>
 struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
@@ -271,8 +269,6 @@ struct PtrToArg<const Ref<T> &> {
 		return Ref<T>((T *)p_ptr);
 	}
 };
-
-#endif // PTRCALL_ENABLED
 
 #ifdef DEBUG_METHODS_ENABLED
 

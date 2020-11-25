@@ -67,7 +67,6 @@ if "TERM" in os.environ:
 env_base.AppendENVPath("PATH", os.getenv("PATH"))
 env_base.AppendENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 env_base.disabled_modules = []
-env_base.use_ptrcall = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
@@ -561,8 +560,6 @@ if selected_platform in platform_list:
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
-    if env.use_ptrcall:
-        env.Append(CPPDEFINES=["PTRCALL_ENABLED"])
     if env["tools"]:
         env.Append(CPPDEFINES=["TOOLS_ENABLED"])
     if env["disable_3d"]:

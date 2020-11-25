@@ -370,7 +370,6 @@ public:
 #ifdef NEED_LONG_INT
 	Variant(signed long p_long); // real one
 	Variant(unsigned long p_long);
-//Variant(long unsigned int p_long);
 #endif
 	Variant(signed short p_short); // real one
 	Variant(unsigned short p_short);
@@ -471,10 +470,8 @@ public:
 	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
 	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
 	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
-#ifdef PTRCALL_ENABLED
 	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
-#endif
 
 	void zero();
 	Variant duplicate(bool deep = false) const;
