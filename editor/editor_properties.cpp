@@ -91,6 +91,7 @@ void EditorPropertyText::set_placeholder(const String &p_string) {
 }
 
 void EditorPropertyText::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyText::update_property);
 }
 
 EditorPropertyText::EditorPropertyText() {
@@ -153,6 +154,7 @@ void EditorPropertyMultilineText::_notification(int p_what) {
 }
 
 void EditorPropertyMultilineText::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyMultilineText::update_property);
 }
 
 EditorPropertyMultilineText::EditorPropertyMultilineText() {
@@ -202,6 +204,7 @@ void EditorPropertyTextEnum::setup(const Vector<String> &p_options, bool p_strin
 }
 
 void EditorPropertyTextEnum::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyTextEnum::update_property);
 }
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
@@ -284,6 +287,7 @@ void EditorPropertyPath::_path_focus_exited() {
 }
 
 void EditorPropertyPath::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyPath::update_property);
 }
 
 EditorPropertyPath::EditorPropertyPath() {
@@ -332,6 +336,7 @@ void EditorPropertyClassName::_dialog_created() {
 }
 
 void EditorPropertyClassName::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyClassName::update_property);
 }
 
 EditorPropertyClassName::EditorPropertyClassName() {
@@ -433,6 +438,7 @@ void EditorPropertyMember::update_property() {
 }
 
 void EditorPropertyMember::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyMember::update_property);
 }
 
 EditorPropertyMember::EditorPropertyMember() {
@@ -456,6 +462,7 @@ void EditorPropertyCheck::update_property() {
 }
 
 void EditorPropertyCheck::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyCheck::update_property);
 }
 
 EditorPropertyCheck::EditorPropertyCheck() {
@@ -502,6 +509,7 @@ void EditorPropertyEnum::set_option_button_clip(bool p_enable) {
 }
 
 void EditorPropertyEnum::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyEnum::update_property);
 }
 
 EditorPropertyEnum::EditorPropertyEnum() {
@@ -566,6 +574,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 }
 
 void EditorPropertyFlags::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyFlags::update_property);
 }
 
 EditorPropertyFlags::EditorPropertyFlags() {
@@ -768,6 +777,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 }
 
 void EditorPropertyLayers::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyLayers::update_property);
 }
 
 EditorPropertyLayers::EditorPropertyLayers() {
@@ -813,6 +823,7 @@ void EditorPropertyInteger::update_property() {
 }
 
 void EditorPropertyInteger::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyInteger::update_property);
 }
 
 void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, bool p_allow_greater, bool p_allow_lesser) {
@@ -861,6 +872,7 @@ void EditorPropertyObjectID::setup(const String &p_base_type) {
 }
 
 void EditorPropertyObjectID::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyObjectID::update_property);
 }
 
 EditorPropertyObjectID::EditorPropertyObjectID() {
@@ -888,6 +900,7 @@ void EditorPropertyFloat::update_property() {
 }
 
 void EditorPropertyFloat::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyFloat::update_property);
 }
 
 void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser) {
@@ -1094,6 +1107,7 @@ void EditorPropertyEasing::_notification(int p_what) {
 }
 
 void EditorPropertyEasing::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyEasing::update_property);
 }
 
 EditorPropertyEasing::EditorPropertyEasing() {
@@ -1158,6 +1172,7 @@ void EditorPropertyVector2::_notification(int p_what) {
 }
 
 void EditorPropertyVector2::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyVector2::update_property);
 }
 
 void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1244,6 +1259,7 @@ void EditorPropertyRect2::_notification(int p_what) {
 }
 
 void EditorPropertyRect2::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyRect2::update_property);
 }
 
 void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1339,6 +1355,7 @@ void EditorPropertyVector3::_notification(int p_what) {
 }
 
 void EditorPropertyVector3::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyVector3::update_property);
 }
 
 void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1421,6 +1438,7 @@ void EditorPropertyVector2i::_notification(int p_what) {
 }
 
 void EditorPropertyVector2i::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyVector2i::update_property);
 }
 
 void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider) {
@@ -1507,6 +1525,7 @@ void EditorPropertyRect2i::_notification(int p_what) {
 }
 
 void EditorPropertyRect2i::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyRect2i::update_property);
 }
 
 void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_no_slider) {
@@ -1591,6 +1610,7 @@ void EditorPropertyVector3i::_notification(int p_what) {
 }
 
 void EditorPropertyVector3i::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyVector3i::update_property);
 }
 
 void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider) {
@@ -1676,6 +1696,7 @@ void EditorPropertyPlane::_notification(int p_what) {
 }
 
 void EditorPropertyPlane::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyPlane::update_property);
 }
 
 void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1762,6 +1783,7 @@ void EditorPropertyQuat::_notification(int p_what) {
 }
 
 void EditorPropertyQuat::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyQuat::update_property);
 }
 
 void EditorPropertyQuat::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1851,6 +1873,7 @@ void EditorPropertyAABB::_notification(int p_what) {
 }
 
 void EditorPropertyAABB::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyAABB::update_property);
 }
 
 void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -1927,6 +1950,7 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 }
 
 void EditorPropertyTransform2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyTransform2D::update_property);
 }
 
 void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -2008,6 +2032,7 @@ void EditorPropertyBasis::_notification(int p_what) {
 }
 
 void EditorPropertyBasis::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyBasis::update_property);
 }
 
 void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -2097,6 +2122,7 @@ void EditorPropertyTransform::_notification(int p_what) {
 }
 
 void EditorPropertyTransform::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyTransform::update_property);
 }
 
 void EditorPropertyTransform::setup(double p_min, double p_max, double p_step, bool p_no_slider) {
@@ -2155,6 +2181,7 @@ void EditorPropertyColor::_picker_created() {
 }
 
 void EditorPropertyColor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyColor::update_property);
 }
 
 void EditorPropertyColor::update_property() {
@@ -2298,6 +2325,7 @@ void EditorPropertyNodePath::_notification(int p_what) {
 }
 
 void EditorPropertyNodePath::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_property"), &EditorPropertyNodePath::update_property);
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
