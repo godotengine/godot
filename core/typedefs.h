@@ -92,7 +92,7 @@
 #endif
 
 #ifndef SGN
-#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) == 0) ? (0.0) : (((m_v) < 0) ? (-1.0) : (+1.0)))
 #endif
 
 #ifndef MIN
