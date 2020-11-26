@@ -752,6 +752,9 @@ public:
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 	virtual void render_target_do_clear_request(RID p_render_target) = 0;
 
+	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) = 0;
+	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;
+
 	virtual RS::InstanceType get_base_type(RID p_rid) const = 0;
 	virtual bool free(RID p_rid) = 0;
 
@@ -1324,7 +1327,7 @@ public:
 		}
 	};
 
-	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) = 0;
+	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
@@ -1336,12 +1339,14 @@ public:
 		Transform2D xform;
 		Transform2D xform_cache;
 		int light_mask;
+		bool sdf_collision;
 		RS::CanvasOccluderPolygonCullMode cull_cache;
 
 		LightOccluderInstance *next;
 
 		LightOccluderInstance() {
 			enabled = true;
+			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
 			cull_cache = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
@@ -1354,8 +1359,10 @@ public:
 	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
 	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) = 0;
 
+	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) = 0;
+
 	virtual RID occluder_polygon_create() = 0;
-	virtual void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) = 0;
+	virtual void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) = 0;
 	virtual void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) = 0;
 	virtual void set_shadow_texture_size(int p_size) = 0;
 

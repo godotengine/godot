@@ -6029,6 +6029,8 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 		rt->backbuffer_uniform_set = RID(); //chain deleted
 	}
 
+	_render_target_clear_sdf(rt);
+
 	rt->framebuffer = RID();
 	rt->color = RID();
 }
@@ -6297,6 +6299,275 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
+}
+
+void RasterizerStorageRD::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (rt->sdf_oversize == p_size && rt->sdf_scale == p_scale) {
+		return;
+	}
+
+	rt->sdf_oversize = p_size;
+	rt->sdf_scale = p_scale;
+
+	_render_target_clear_sdf(rt);
+}
+
+Rect2i RasterizerStorageRD::_render_target_get_sdf_rect(const RenderTarget *rt) const {
+	Size2i margin;
+	int scale;
+	switch (rt->sdf_oversize) {
+		case RS::VIEWPORT_SDF_OVERSIZE_100_PERCENT: {
+			scale = 100;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT: {
+			scale = 120;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_150_PERCENT: {
+			scale = 150;
+		} break;
+		case RS::VIEWPORT_SDF_OVERSIZE_200_PERCENT: {
+			scale = 200;
+		} break;
+		default: {
+		}
+	}
+
+	margin = (rt->size * scale / 100) - rt->size;
+
+	Rect2i r(Vector2i(), rt->size);
+	r.position -= margin;
+	r.size += margin * 2;
+
+	return r;
+}
+
+Rect2i RasterizerStorageRD::render_target_get_sdf_rect(RID p_render_target) const {
+	const RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, Rect2i());
+
+	return _render_target_get_sdf_rect(rt);
+}
+
+RID RasterizerStorageRD::render_target_get_sdf_texture(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+	if (rt->sdf_buffer_read.is_null()) {
+		// no texture, create a dummy one for the 2D uniform set
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+		tformat.type = RD::TEXTURE_TYPE_2D;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		zeromem(pv.ptrw(), 16 * 4);
+		Vector<Vector<uint8_t>> vpv;
+
+		rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+	}
+
+	return rt->sdf_buffer_read;
+}
+
+void RasterizerStorageRD::_render_target_allocate_sdf(RenderTarget *rt) {
+	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_valid());
+	if (rt->sdf_buffer_read.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_read);
+		rt->sdf_buffer_read = RID();
+	}
+
+	Size2i size = _render_target_get_sdf_rect(rt).size;
+
+	RD::TextureFormat tformat;
+	tformat.format = RD::DATA_FORMAT_R8_UNORM;
+	tformat.width = size.width;
+	tformat.height = size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	tformat.type = RD::TEXTURE_TYPE_2D;
+
+	rt->sdf_buffer_write = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	{
+		Vector<RID> write_fb;
+		write_fb.push_back(rt->sdf_buffer_write);
+		rt->sdf_buffer_write_fb = RD::get_singleton()->framebuffer_create(write_fb);
+	}
+
+	int scale;
+	switch (rt->sdf_scale) {
+		case RS::VIEWPORT_SDF_SCALE_100_PERCENT: {
+			scale = 100;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+			scale = 50;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+			scale = 25;
+		} break;
+		default: {
+			scale = 100;
+		} break;
+	}
+
+	rt->process_size = size * scale / 100;
+	rt->process_size.x = MAX(rt->process_size.x, 1);
+	rt->process_size.y = MAX(rt->process_size.y, 1);
+
+	tformat.format = RD::DATA_FORMAT_R16G16_UINT;
+	tformat.width = rt->process_size.width;
+	tformat.height = rt->process_size.height;
+	tformat.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+
+	rt->sdf_buffer_process[0] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+	rt->sdf_buffer_process[1] = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	tformat.format = RD::DATA_FORMAT_R16_UNORM;
+	tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+
+	rt->sdf_buffer_read = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+	{
+		Vector<RD::Uniform> uniforms;
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 1;
+			u.ids.push_back(rt->sdf_buffer_write);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 2;
+			u.ids.push_back(rt->sdf_buffer_read);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 3;
+			u.ids.push_back(rt->sdf_buffer_process[0]);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_IMAGE;
+			u.binding = 4;
+			u.ids.push_back(rt->sdf_buffer_process[1]);
+			uniforms.push_back(u);
+		}
+
+		rt->sdf_buffer_process_uniform_sets[0] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+		SWAP(uniforms.write[2].ids.write[0], uniforms.write[3].ids.write[0]);
+		rt->sdf_buffer_process_uniform_sets[1] = RD::get_singleton()->uniform_set_create(uniforms, rt_sdf.shader.version_get_shader(rt_sdf.shader_version, 0), 0);
+	}
+}
+
+void RasterizerStorageRD::_render_target_clear_sdf(RenderTarget *rt) {
+	if (rt->sdf_buffer_read.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_read);
+		rt->sdf_buffer_read = RID();
+	}
+	if (rt->sdf_buffer_write_fb.is_valid()) {
+		RD::get_singleton()->free(rt->sdf_buffer_write);
+		RD::get_singleton()->free(rt->sdf_buffer_process[0]);
+		RD::get_singleton()->free(rt->sdf_buffer_process[1]);
+		rt->sdf_buffer_write = RID();
+		rt->sdf_buffer_write_fb = RID();
+		rt->sdf_buffer_process[0] = RID();
+		rt->sdf_buffer_process[1] = RID();
+		rt->sdf_buffer_process_uniform_sets[0] = RID();
+		rt->sdf_buffer_process_uniform_sets[1] = RID();
+	}
+}
+
+RID RasterizerStorageRD::render_target_get_sdf_framebuffer(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (rt->sdf_buffer_write_fb.is_null()) {
+		_render_target_allocate_sdf(rt);
+	}
+
+	return rt->sdf_buffer_write_fb;
+}
+void RasterizerStorageRD::render_target_sdf_process(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	ERR_FAIL_COND(rt->sdf_buffer_write_fb.is_null());
+
+	RenderTargetSDF::PushConstant push_constant;
+
+	Rect2i r = _render_target_get_sdf_rect(rt);
+
+	push_constant.size[0] = r.size.width;
+	push_constant.size[1] = r.size.height;
+	push_constant.stride = 0;
+	push_constant.shift = 0;
+	push_constant.base_size[0] = r.size.width;
+	push_constant.base_size[1] = r.size.height;
+
+	bool shrink = false;
+
+	switch (rt->sdf_scale) {
+		case RS::VIEWPORT_SDF_SCALE_50_PERCENT: {
+			push_constant.size[0] >>= 1;
+			push_constant.size[1] >>= 1;
+			push_constant.shift = 1;
+			shrink = true;
+		} break;
+		case RS::VIEWPORT_SDF_SCALE_25_PERCENT: {
+			push_constant.size[0] >>= 2;
+			push_constant.size[1] >>= 2;
+			push_constant.shift = 2;
+			shrink = true;
+		} break;
+		default: {
+		};
+	}
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+	/* Load */
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_LOAD_SHRINK : RenderTargetSDF::SHADER_LOAD]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[1], 0); //fill [0]
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+
+	/* Process */
+
+	int stride = nearest_power_of_2_templated(MAX(push_constant.size[0], push_constant.size[1]) / 2);
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[RenderTargetSDF::SHADER_PROCESS]);
+
+	RD::get_singleton()->compute_list_add_barrier(compute_list);
+	bool swap = false;
+
+	//jumpflood
+	while (stride > 0) {
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
+		push_constant.stride = stride;
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+		stride /= 2;
+		swap = !swap;
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
+	}
+
+	/* Store */
+
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, rt_sdf.pipelines[shrink ? RenderTargetSDF::SHADER_STORE_SHRINK : RenderTargetSDF::SHADER_STORE]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, rt->sdf_buffer_process_uniform_sets[swap ? 1 : 0], 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RenderTargetSDF::PushConstant));
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.size[0], push_constant.size[1], 1, 8, 8, 1);
+
+	RD::get_singleton()->compute_list_end();
 }
 
 void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps) {
@@ -8153,6 +8424,24 @@ RasterizerStorageRD::RasterizerStorageRD() {
 
 		for (int i = 0; i < ParticlesShader::COPY_MODE_MAX; i++) {
 			particles_shader.copy_pipelines[i] = RD::get_singleton()->compute_pipeline_create(particles_shader.copy_shader.version_get_shader(particles_shader.copy_shader_version, i));
+		}
+	}
+
+	{
+		Vector<String> sdf_modes;
+		sdf_modes.push_back("\n#define MODE_LOAD\n");
+		sdf_modes.push_back("\n#define MODE_LOAD_SHRINK\n");
+		sdf_modes.push_back("\n#define MODE_PROCESS\n");
+		sdf_modes.push_back("\n#define MODE_PROCESS_OPTIMIZED\n");
+		sdf_modes.push_back("\n#define MODE_STORE\n");
+		sdf_modes.push_back("\n#define MODE_STORE_SHRINK\n");
+
+		rt_sdf.shader.initialize(sdf_modes);
+
+		rt_sdf.shader_version = rt_sdf.shader.version_create();
+
+		for (int i = 0; i < RenderTargetSDF::SHADER_MAX; i++) {
+			rt_sdf.pipelines[i] = RD::get_singleton()->compute_pipeline_create(rt_sdf.shader.version_get_shader(rt_sdf.shader_version, i));
 		}
 	}
 }

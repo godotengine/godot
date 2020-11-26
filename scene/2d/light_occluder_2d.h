@@ -84,7 +84,7 @@ class LightOccluder2D : public Node2D {
 	bool enabled;
 	int mask;
 	Ref<OccluderPolygon2D> occluder_polygon;
-
+	bool sdf_collision;
 	void _poly_changed();
 
 protected:
@@ -102,6 +102,9 @@ public:
 
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
+
+	void set_as_sdf_collision(bool p_enable);
+	bool is_set_as_sdf_collision() const;
 
 	String get_configuration_warning() const override;
 

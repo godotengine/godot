@@ -159,6 +159,21 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
+	enum SDFOversize {
+		SDF_OVERSIZE_100_PERCENT,
+		SDF_OVERSIZE_120_PERCENT,
+		SDF_OVERSIZE_150_PERCENT,
+		SDF_OVERSIZE_200_PERCENT,
+		SDF_OVERSIZE_MAX
+	};
+
+	enum SDFScale {
+		SDF_SCALE_100_PERCENT,
+		SDF_SCALE_50_PERCENT,
+		SDF_SCALE_25_PERCENT,
+		SDF_SCALE_MAX
+	};
+
 	enum {
 		SUBWINDOW_CANVAS_LAYER = 1024
 	};
@@ -284,6 +299,9 @@ private:
 	bool use_debanding = false;
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
+
+	SDFOversize sdf_oversize;
+	SDFScale sdf_scale;
 
 	enum SubWindowDrag {
 		SUB_WINDOW_DRAG_DISABLED,
@@ -572,6 +590,12 @@ public:
 
 	bool gui_is_dragging() const;
 
+	void set_sdf_oversize(SDFOversize p_sdf_oversize);
+	SDFOversize get_sdf_oversize() const;
+
+	void set_sdf_scale(SDFScale p_sdf_scale);
+	SDFScale get_sdf_scale() const;
+
 	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
 	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
 
@@ -650,6 +674,8 @@ VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
+VARIANT_ENUM_CAST(Viewport::SDFScale);
+VARIANT_ENUM_CAST(Viewport::SDFOversize);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);

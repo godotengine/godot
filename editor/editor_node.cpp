@@ -511,6 +511,11 @@ void EditorNode::_notification(int p_what) {
 				scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
 				bool snap_2d_vertices = GLOBAL_GET("rendering/quality/2d/snap_2d_vertices_to_pixel");
 				scene_root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+
+				Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_GET("rendering/quality/2d_sdf/oversize")));
+				scene_root->set_sdf_oversize(sdf_oversize);
+				Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/quality/2d_sdf/scale")));
+				scene_root->set_sdf_scale(sdf_scale);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();

@@ -30,6 +30,7 @@
 
 #include "rasterizer_canvas_rd.h"
 #include "core/config/project_settings.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "rasterizer_rd.h"
 
@@ -1051,10 +1052,19 @@ RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_
 	}
 
 	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		u.binding = 7;
+		RID sdf = storage->render_target_get_sdf_texture(p_to_render_target);
+		u.ids.push_back(sdf);
+		uniforms.push_back(u);
+	}
+
+	{
 		//needs samplers for the material (uses custom textures) create them
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_SAMPLER;
-		u.binding = 7;
+		u.binding = 8;
 		u.ids.resize(12);
 		RID *ids_ptr = u.ids.ptrw();
 		ids_ptr[0] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -1075,7 +1085,7 @@ RID RasterizerCanvasRD::_create_base_uniform_set(RID p_to_render_target, bool p_
 	{
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-		u.binding = 8;
+		u.binding = 9;
 		u.ids.push_back(storage->global_variables_get_storage_buffer());
 		uniforms.push_back(u);
 	}
@@ -1182,7 +1192,8 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel) {
+void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) {
+	r_sdf_used = false;
 	int item_count = 0;
 
 	//setup canvas state uniforms if needed
@@ -1365,6 +1376,25 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 
 		state_buffer.directional_light_count = directional_light_count;
 
+		Vector2 canvas_scale = p_canvas_transform.get_scale();
+
+		state_buffer.sdf_to_screen[0] = render_target_size.width / canvas_scale.x;
+		state_buffer.sdf_to_screen[1] = render_target_size.height / canvas_scale.y;
+
+		state_buffer.screen_to_sdf[0] = 1.0 / state_buffer.sdf_to_screen[0];
+		state_buffer.screen_to_sdf[1] = 1.0 / state_buffer.sdf_to_screen[1];
+
+		Rect2 sdf_rect = storage->render_target_get_sdf_rect(p_to_render_target);
+		Rect2 sdf_tex_rect(sdf_rect.position / canvas_scale, sdf_rect.size / canvas_scale);
+
+		state_buffer.sdf_to_tex[0] = 1.0 / sdf_tex_rect.size.width;
+		state_buffer.sdf_to_tex[1] = 1.0 / sdf_tex_rect.size.height;
+		state_buffer.sdf_to_tex[2] = -sdf_tex_rect.position.x / sdf_tex_rect.size.width;
+		state_buffer.sdf_to_tex[3] = -sdf_tex_rect.position.y / sdf_tex_rect.size.height;
+
+		//print_line("w: " + itos(ssize.width) + " s: " + rtos(canvas_scale));
+		state_buffer.tex_to_sdf = 1.0 / ((canvas_scale.x + canvas_scale.y) * 0.5);
+
 		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
 	}
 
@@ -1402,6 +1432,9 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 					}
 				}
 
+				if (md->shader_data->uses_sdf) {
+					r_sdf_used = true;
+				}
 				if (md->last_frame != RasterizerRD::singleton->get_frame_number()) {
 					md->last_frame = RasterizerRD::singleton->get_frame_number();
 					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
@@ -1687,18 +1720,102 @@ void RasterizerCanvasRD::light_update_directional_shadow(RID p_rid, int p_shadow
 	cl->shadow.directional_xform = to_shadow * to_light_xform;
 }
 
+void RasterizerCanvasRD::render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) {
+	RID fb = storage->render_target_get_sdf_framebuffer(p_render_target);
+	Rect2i rect = storage->render_target_get_sdf_rect(p_render_target);
+
+	Transform2D to_sdf;
+	to_sdf.elements[0] *= rect.size.width;
+	to_sdf.elements[1] *= rect.size.height;
+	to_sdf.elements[2] = rect.position;
+
+	Transform2D to_clip;
+	to_clip.elements[0] *= 2.0;
+	to_clip.elements[1] *= 2.0;
+	to_clip.elements[2] = -Vector2(1.0, 1.0);
+
+	to_clip = to_clip * to_sdf.affine_inverse();
+
+	Vector<Color> cc;
+	cc.push_back(Color(0, 0, 0, 0));
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc);
+
+	CameraMatrix projection;
+
+	ShadowRenderPushConstant push_constant;
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+		}
+	}
+
+	push_constant.direction[0] = 0.0;
+	push_constant.direction[1] = 0.0;
+	push_constant.z_far = 0;
+	push_constant.pad = 0;
+
+	LightOccluderInstance *instance = p_occluders;
+
+	while (instance) {
+		OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
+
+		if (!co || co->sdf_index_array.is_null()) {
+			instance = instance->next;
+			continue;
+		}
+
+		_update_transform_2d_to_mat2x4(to_clip * instance->xform_cache, push_constant.modelview);
+
+		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.sdf_render_pipelines[co->sdf_is_lines ? SHADOW_RENDER_SDF_LINES : SHADOW_RENDER_SDF_TRIANGLES]);
+		RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->sdf_vertex_array);
+		RD::get_singleton()->draw_list_bind_index_array(draw_list, co->sdf_index_array);
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(ShadowRenderPushConstant));
+
+		RD::get_singleton()->draw_list_draw(draw_list, true);
+
+		instance = instance->next;
+	}
+
+	RD::get_singleton()->draw_list_end();
+
+	storage->render_target_sdf_process(p_render_target); //done rendering, process it
+}
+
 RID RasterizerCanvasRD::occluder_polygon_create() {
 	OccluderPolygon occluder;
-	occluder.point_count = 0;
+	occluder.line_point_count = 0;
+	occluder.sdf_point_count = 0;
+	occluder.sdf_index_count = 0;
 	occluder.cull_mode = RS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED;
 	return occluder_polygon_owner.make_rid(occluder);
 }
 
-void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines) {
+void RasterizerCanvasRD::occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed) {
 	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!oc);
 
-	if (oc->point_count != p_lines.size() && oc->vertex_array.is_valid()) {
+	Vector<Vector2> lines;
+	int lc = p_points.size() * 2;
+
+	lines.resize(lc - (p_closed ? 0 : 2));
+	{
+		Vector2 *w = lines.ptrw();
+		const Vector2 *r = p_points.ptr();
+
+		int max = lc / 2;
+		if (!p_closed) {
+			max--;
+		}
+		for (int i = 0; i < max; i++) {
+			Vector2 a = r[i];
+			Vector2 b = r[(i + 1) % (lc / 2)];
+			w[i * 2 + 0] = a;
+			w[i * 2 + 1] = b;
+		}
+	}
+
+	if (oc->line_point_count != lines.size() && oc->vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->vertex_array);
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
@@ -1708,12 +1825,14 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 		oc->vertex_buffer = RID();
 		oc->index_array = RID();
 		oc->index_buffer = RID();
+
+		oc->line_point_count = lines.size();
 	}
 
-	if (p_lines.size()) {
+	if (lines.size()) {
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
-		int lc = p_lines.size();
+		lc = lines.size();
 
 		geometry.resize(lc * 6 * sizeof(float));
 		indices.resize(lc * 3 * sizeof(uint16_t));
@@ -1724,7 +1843,7 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 			uint8_t *iw = indices.ptrw();
 			uint16_t *iwptr = (uint16_t *)iw;
 
-			const Vector2 *lr = p_lines.ptr();
+			const Vector2 *lr = lines.ptr();
 
 			const int POLY_HEIGHT = 16384;
 
@@ -1778,6 +1897,62 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 			RD::get_singleton()->buffer_update(oc->index_buffer, 0, indices.size(), ir);
 		}
 	}
+
+	// sdf
+
+	Vector<int> sdf_indices;
+
+	if (p_closed) {
+		sdf_indices = Geometry2D::triangulate_polygon(p_points);
+		oc->sdf_is_lines = false;
+	} else {
+		int max = p_points.size();
+		sdf_indices.resize(max * 2);
+
+		int *iw = sdf_indices.ptrw();
+		for (int i = 0; i < max; i++) {
+			iw[i * 2 + 0] = i;
+			iw[i * 2 + 1] = (i + 1) % max;
+		}
+		oc->sdf_is_lines = true;
+	}
+
+	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array.is_valid()) {
+		RD::get_singleton()->free(oc->sdf_vertex_array);
+		RD::get_singleton()->free(oc->sdf_vertex_buffer);
+		RD::get_singleton()->free(oc->sdf_index_array);
+		RD::get_singleton()->free(oc->sdf_index_buffer);
+
+		oc->sdf_vertex_array = RID();
+		oc->sdf_vertex_buffer = RID();
+		oc->sdf_index_array = RID();
+		oc->sdf_index_buffer = RID();
+
+		oc->sdf_index_count = sdf_indices.size();
+		oc->sdf_point_count = p_points.size();
+
+		oc->sdf_is_lines = false;
+	}
+
+	if (sdf_indices.size()) {
+		if (oc->sdf_vertex_array.is_null()) {
+			//create from scratch
+			//vertices
+			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(real_t), p_points.to_byte_array());
+			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.to_byte_array());
+			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
+
+			Vector<RID> buffer;
+			buffer.push_back(oc->sdf_vertex_buffer);
+			oc->sdf_vertex_array = RD::get_singleton()->vertex_array_create(p_points.size(), shadow_render.sdf_vertex_format, buffer);
+			//indices
+
+		} else {
+			//update existing
+			RD::get_singleton()->buffer_update(oc->vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
+			RD::get_singleton()->buffer_update(oc->index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
+		}
+	}
 }
 
 void RasterizerCanvasRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
@@ -1794,6 +1969,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 	uses_screen_texture = false;
+	uses_sdf = false;
 
 	if (code == String()) {
 		return; //just invalid, but no error
@@ -1801,7 +1977,6 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 
 	ShaderCompilerRD::GeneratedCode gen_code;
 
-	int light_mode = LIGHT_MODE_NORMAL;
 	int blend_mode = BLEND_MODE_MIX;
 	uses_screen_texture = false;
 
@@ -1814,10 +1989,8 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PMALPHA);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
 
-	actions.render_mode_values["unshaded"] = Pair<int *, int>(&light_mode, LIGHT_MODE_UNSHADED);
-	actions.render_mode_values["light_only"] = Pair<int *, int>(&light_mode, LIGHT_MODE_LIGHT_ONLY);
-
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
+	actions.usage_flag_pointers["texture_sdf"] = &uses_sdf;
 
 	actions.uniforms = &uniforms;
 
@@ -2038,6 +2211,7 @@ Variant RasterizerCanvasRD::ShaderData::get_default_parameter(const StringName &
 RasterizerCanvasRD::ShaderData::ShaderData() {
 	valid = false;
 	uses_screen_texture = false;
+	uses_sdf = false;
 }
 
 RasterizerCanvasRD::ShaderData::~ShaderData() {
@@ -2302,6 +2476,11 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		actions.renames["LIGHT"] = "light";
 		actions.renames["SHADOW_MODULATE"] = "shadow_modulate";
 
+		actions.renames["texture_sdf"] = "texture_sdf";
+		actions.renames["texture_sdf_normal"] = "texture_sdf_normal";
+		actions.renames["sdf_to_screen_uv"] = "sdf_to_screen_uv";
+		actions.renames["screen_uv_to_sdf"] = "screen_uv_to_sdf";
+
 		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
@@ -2311,6 +2490,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["light_only"] = "#define MODE_LIGHT_ONLY\n";
 
 		actions.custom_samplers["TEXTURE"] = "texture_sampler";
 		actions.custom_samplers["NORMAL_TEXTURE"] = "texture_sampler";
@@ -2331,7 +2512,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 
 	{ //shadow rendering
 		Vector<String> versions;
-		versions.push_back(String()); //no versions
+		versions.push_back("\n#define MODE_SHADOW\n"); //shadow
+		versions.push_back("\n#define MODE_SDF\n"); //sdf
 		shadow_render.shader.initialize(versions);
 
 		{
@@ -2352,15 +2534,33 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			shadow_render.framebuffer_format = RD::get_singleton()->framebuffer_format_create(attachments);
 		}
 
+		{
+			Vector<RD::AttachmentFormat> attachments;
+
+			RD::AttachmentFormat af_color;
+			af_color.format = RD::DATA_FORMAT_R8_UNORM;
+			af_color.usage_flags = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+			attachments.push_back(af_color);
+
+			shadow_render.sdf_framebuffer_format = RD::get_singleton()->framebuffer_format_create(attachments);
+		}
+
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
-		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32B32_SFLOAT : RD::DATA_FORMAT_R64G64B64_SFLOAT;
 		vd.location = 0;
 		vd.offset = 0;
-		vd.stride = sizeof(float) * 3;
+		vd.stride = sizeof(real_t) * 3;
 		vf.push_back(vd);
 		shadow_render.vertex_format = RD::get_singleton()->vertex_format_create(vf);
+
+		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32_SFLOAT : RD::DATA_FORMAT_R64G64_SFLOAT;
+		vd.stride = sizeof(real_t) * 2;
+
+		vf.write[0] = vd;
+		shadow_render.sdf_vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
 		shadow_render.shader_version = shadow_render.shader.version_create();
 
@@ -2371,7 +2571,11 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			ds.enable_depth_write = true;
 			ds.enable_depth_test = true;
 			ds.depth_compare_operator = RD::COMPARE_OP_LESS;
-			shadow_render.render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.shader.version_get_shader(shadow_render.shader_version, 0), shadow_render.framebuffer_format, shadow_render.vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+			shadow_render.render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.shader.version_get_shader(shadow_render.shader_version, SHADOW_RENDER_MODE_SHADOW), shadow_render.framebuffer_format, shadow_render.vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+
+		for (int i = 0; i < 2; i++) {
+			shadow_render.sdf_render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.shader.version_get_shader(shadow_render.shader_version, SHADOW_RENDER_MODE_SDF), shadow_render.sdf_framebuffer_format, shadow_render.sdf_vertex_format, i == 0 ? RD::RENDER_PRIMITIVE_TRIANGLES : RD::RENDER_PRIMITIVE_LINES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 	}
 
@@ -2482,7 +2686,7 @@ bool RasterizerCanvasRD::free(RID p_rid) {
 		light_set_use_shadow(p_rid, false);
 		canvas_light_owner.free(p_rid);
 	} else if (occluder_polygon_owner.owns(p_rid)) {
-		occluder_polygon_set_shape_as_lines(p_rid, Vector<Vector2>());
+		occluder_polygon_set_shape(p_rid, Vector<Vector2>(), false);
 		occluder_polygon_owner.free(p_rid);
 	} else {
 		return false;

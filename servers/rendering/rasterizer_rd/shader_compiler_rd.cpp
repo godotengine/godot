@@ -1072,6 +1072,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					} else if (onode->op == SL::OP_CONSTRUCT) {
 						code += String(vnode->name);
 					} else {
+						if (p_actions.usage_flag_pointers.has(vnode->name) && !used_flag_pointers.has(vnode->name)) {
+							*p_actions.usage_flag_pointers[vnode->name] = true;
+							used_flag_pointers.insert(vnode->name);
+						}
+
 						if (internal_functions.has(vnode->name)) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
