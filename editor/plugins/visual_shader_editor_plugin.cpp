@@ -102,7 +102,6 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("disconnect_nodes", &VisualShaderGraphPlugin::disconnect_nodes);
 	ClassDB::bind_method("set_node_position", &VisualShaderGraphPlugin::set_node_position);
 	ClassDB::bind_method("set_node_size", &VisualShaderGraphPlugin::set_node_size);
-	ClassDB::bind_method("show_port_preview", &VisualShaderGraphPlugin::show_port_preview);
 	ClassDB::bind_method("update_node", &VisualShaderGraphPlugin::update_node);
 	ClassDB::bind_method("update_node_deferred", &VisualShaderGraphPlugin::update_node_deferred);
 	ClassDB::bind_method("set_input_port_default_value", &VisualShaderGraphPlugin::set_input_port_default_value);
@@ -1558,8 +1557,8 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	undo_redo->create_action(p_port == -1 ? TTR("Hide Port Preview") : TTR("Show Port Preview"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", p_port);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", prev_port);
-	undo_redo->add_do_method(graph_plugin.ptr(), "show_port_preview", (int)type, p_node, p_port);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "show_port_preview", (int)type, p_node, prev_port);
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, p_node);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, p_node);
 	undo_redo->commit_action();
 }
 
@@ -1959,6 +1958,8 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 	undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, to);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->commit_action();
 }
 
@@ -1975,6 +1976,8 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_do_method(graph_plugin.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, to);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, to);
 	undo_redo->commit_action();
 }
 
