@@ -113,6 +113,10 @@ PhysicalBone *SkeletonEditor::create_physical_bone(int bone_id, int bone_child_i
 	CollisionShape *bone_shape = memnew(CollisionShape);
 	bone_shape->set_shape(bone_shape_capsule);
 
+	Transform capsule_transform;
+	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
+	bone_shape->set_transform(capsule_transform);
+
 	Transform body_transform;
 	body_transform.origin = Vector3(0, 0, -half_height);
 
