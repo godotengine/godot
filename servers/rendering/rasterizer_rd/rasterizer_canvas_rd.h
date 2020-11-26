@@ -161,12 +161,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			BLEND_MODE_DISABLED,
 		};
 
-		enum LightMode {
-			LIGHT_MODE_NORMAL,
-			LIGHT_MODE_UNSHADED,
-			LIGHT_MODE_LIGHT_ONLY
-		};
-
 		bool valid;
 		RID version;
 		PipelineVariants pipeline_variants;
@@ -181,7 +175,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		String code;
 		Map<StringName, RID> default_texture_params;
 
-		bool uses_screen_texture;
+		bool uses_screen_texture = false;
+		bool uses_sdf = false;
 
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
@@ -284,11 +279,19 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	struct OccluderPolygon {
 		RS::CanvasOccluderPolygonCullMode cull_mode;
-		int point_count;
+		int line_point_count;
 		RID vertex_buffer;
 		RID vertex_array;
 		RID index_buffer;
 		RID index_array;
+
+		int sdf_point_count;
+		int sdf_index_count;
+		RID sdf_vertex_buffer;
+		RID sdf_vertex_array;
+		RID sdf_index_buffer;
+		RID sdf_index_array;
+		bool sdf_is_lines;
 	};
 
 	struct LightUniform {
@@ -310,12 +313,25 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
 
+	enum ShadowRenderMode {
+		SHADOW_RENDER_MODE_SHADOW,
+		SHADOW_RENDER_MODE_SDF,
+	};
+
+	enum {
+		SHADOW_RENDER_SDF_TRIANGLES,
+		SHADOW_RENDER_SDF_LINES,
+	};
+
 	struct {
 		CanvasOcclusionShaderRD shader;
 		RID shader_version;
 		RID render_pipelines[3];
+		RID sdf_render_pipelines[2];
 		RD::VertexFormatID vertex_format;
+		RD::VertexFormatID sdf_vertex_format;
 		RD::FramebufferFormatID framebuffer_format;
+		RD::FramebufferFormatID sdf_framebuffer_format;
 	} shadow_render;
 
 	/***************/
@@ -336,8 +352,14 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			float time;
 			uint32_t use_pixel_snap;
 
+			float sdf_to_tex[4];
+			float sdf_to_screen[2];
+			float screen_to_sdf[2];
+
 			uint32_t directional_light_count;
-			uint32_t pad[3];
+			float tex_to_sdf;
+			uint32_t pad1;
+			uint32_t pad2;
 		};
 
 		LightUniform *light_uniforms;
@@ -423,11 +445,13 @@ public:
 	void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders);
 	void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders);
 
+	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders);
+
 	RID occluder_polygon_create();
-	void occluder_polygon_set_shape_as_lines(RID p_occluder, const Vector<Vector2> &p_lines);
+	void occluder_polygon_set_shape(RID p_occluder, const Vector<Vector2> &p_points, bool p_closed);
 	void occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode);
 
-	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel);
+	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_light_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used);
 
 	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 

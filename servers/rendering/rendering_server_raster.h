@@ -536,6 +536,7 @@ public:
 	BIND2(viewport_set_global_canvas_transform, RID, const Transform2D &)
 	BIND4(viewport_set_canvas_stacking, RID, RID, int, int)
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
+	BIND3(viewport_set_sdf_oversize_and_scale, RID, ViewportSDFOversize, ViewportSDFScale)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
 	BIND2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
@@ -776,12 +777,12 @@ public:
 	BIND2(canvas_light_occluder_attach_to_canvas, RID, RID)
 	BIND2(canvas_light_occluder_set_enabled, RID, bool)
 	BIND2(canvas_light_occluder_set_polygon, RID, RID)
+	BIND2(canvas_light_occluder_set_as_sdf_collision, RID, bool)
 	BIND2(canvas_light_occluder_set_transform, RID, const Transform2D &)
 	BIND2(canvas_light_occluder_set_light_mask, RID, int)
 
 	BIND0R(RID, canvas_occluder_polygon_create)
 	BIND3(canvas_occluder_polygon_set_shape, RID, const Vector<Vector2> &, bool)
-	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, const Vector<Vector2> &)
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 
