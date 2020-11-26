@@ -1600,7 +1600,7 @@ FRAGMENT_SHADER_CODE
 #endif
 			refprobe1_reflection_normal_blend.a,
 #else
-			normal_interp, vertex_interp, refprobe1_local_matrix,
+			normal, vertex_interp, refprobe1_local_matrix,
 			refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
 #endif
 			refprobe1_exterior, refprobe1_intensity, refprobe1_ambient, roughness,
@@ -1618,7 +1618,7 @@ FRAGMENT_SHADER_CODE
 #endif
 			refprobe2_reflection_normal_blend.a,
 #else
-			normal_interp, vertex_interp, refprobe2_local_matrix,
+			normal, vertex_interp, refprobe2_local_matrix,
 			refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 #endif
 			refprobe2_exterior, refprobe2_intensity, refprobe2_ambient, roughness,
