@@ -200,10 +200,10 @@ Transform2D Camera2D::get_camera_transform() {
 	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
 	Transform2D xform;
+	xform.scale_basis(zoom);
 	if (rotating) {
 		xform.set_rotation(angle);
 	}
-	xform.scale_basis(zoom);
 	xform.set_origin(screen_rect.position /*.floor()*/);
 
 	/*

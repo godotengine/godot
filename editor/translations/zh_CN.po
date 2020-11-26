@@ -76,7 +76,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-11-13 22:59+0000\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -1084,14 +1084,14 @@ msgid "Owners Of:"
 msgstr "拥有者："
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "是否从项目中删除选定文件？（无法恢复）"
+msgstr ""
+"是否从项目中删除所选文件？（无法撤销）\n"
+"你可以在系统回收站中恢复被删除的文件。"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1099,7 +1099,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "要删除的文件被其他资源所依赖。\n"
-"仍然要删除吗？（无法撤销）"
+"仍然要删除吗？（无法撤销）\n"
+"你可以在系统回收站中恢复被删除的文件。"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2343,6 +2344,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"保存编辑器布局时出错。\n"
+"请确认编辑器的用户数据路径可写。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2350,15 +2353,16 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"已覆盖默认编辑器布局。\n"
+"如需恢复默认布局至原始内容，可使用删除布局选项将默认布局删除。"
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "布局名称未找到！"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
-msgstr "重置为默认布局设置。"
+msgstr "已将默认布局恢复为原始内容。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3745,9 +3749,8 @@ msgid "Move To..."
 msgstr "移动..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "移动 Autoload"
+msgstr "移动至回收站"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -8251,8 +8254,23 @@ msgid "Create a new rectangle."
 msgstr "创建新矩形。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "绘制矩形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "创建新多边形。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "移动多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "删除选中项"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -11903,11 +11921,7 @@ msgstr "用于 “编辑器设置” 中自定义构建的 Android SDK 路径是
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "缺失“platform-tools”目录！"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11955,22 +11969,6 @@ msgstr "“Focus Awareness” 只有在当 “Xr Mode” 是 “Oculus Mobile VR
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "“Export AAB” 只有在当启用 “Use Custom Build” 时才有效。"
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12728,6 +12726,21 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "缺失“build-tools”目录！"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "未找到 zipalign 工具。"
+
+#~ msgid "Aligning APK..."
+#~ msgstr "对齐 APK..."
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "无法完成 APK 对齐。"
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "无法删除未对齐 APK。"
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "保存布局出错！"

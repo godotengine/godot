@@ -739,7 +739,7 @@ void SoftBody::_update_cache_pin_points_datas() {
 			w[i].spatial_attachment = Object::cast_to<Spatial>(get_node(w[i].spatial_attachment_path));
 		}
 		if (!w[i].spatial_attachment) {
-			ERR_PRINT("Spatial node not defined in the pinned point, Softbody undefined behaviour!");
+			ERR_PRINT("Spatial node not defined in the pinned point, this is undefined behavior for SoftBody!");
 		}
 	}
 }

@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-10-22 19:41+0000\n"
-"Last-Translator: Sagen Soren <sagensoren03@gmail.com>\n"
+"PO-Revision-Date: 2020-11-26 08:43+0000\n"
+"Last-Translator: Mokarrom Hossain <mhb2016.bzs@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -23,10 +23,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি(),use TYPE_* constants."
 
@@ -38,7 +39,7 @@ msgstr "১ (একটি অক্ষর) দৈর্ঘ্য এর স্�
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "বিন্যাস জানার জন্য যথেষ্ট বাইট নেই, অথবা ভুল ফরম্যাট।"
+msgstr "ডিকোডিং বাইট, বা অবৈধ বিন্যাসের জন্য পর্যাপ্ত পরিমাণে বাইট নেই।"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -117,14 +118,12 @@ msgid "Value:"
 msgstr "মান:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "চাবি সন্নিবেশ করুন"
+msgstr "চাবি ইন্সার্ট করুন"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "নির্বাচিত সমূহ অনুলিপি করুন"
+msgstr "নির্বাচিত key সমূহ অনুলিপি করুন"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -147,9 +146,8 @@ msgid "Anim Delete Keys"
 msgstr "অ্যানিমেশনের (Anim) চাবিগুলো অপসারণ করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+msgstr "অ্যানিমেশন (Anim)কীফ্রেম time পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -168,34 +166,28 @@ msgid "Anim Change Call"
 msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+msgstr "একাধিক অ্যানিমেশন (Anim) কীফ্রেমের সময় পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "অ্যানিমেশন (Anim) ট্র্যানজিশন পরিবর্তন করুন"
+msgstr "একাধিক অ্যানিমেশন (Anim) ট্র্যানজিশন পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
+msgstr "একাধিক অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+msgstr "একাধিক অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
+msgstr "একাধিক অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
+msgstr "অ্যানিমেশনের ব্যাপ্তিকাল পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -203,51 +195,44 @@ msgid "Change Animation Loop"
 msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Property Track"
-msgstr "প্রপার্টি:"
+msgstr "বৈশিষ্ট্য ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "রুপান্তরের ধরণ"
+msgstr "3D রূপান্তর ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "কল মেথড ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "বেজিয়ার কার্ভ ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "অডিও প্লেব্যাক ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "অ্যানিমেশনের চালনা বন্ধ করুন। (S)"
+msgstr "অ্যানিমেশন প্লেব্যাক ট্র্যাক"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সময় সেকেন্ডে)।"
+msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (ফ্রেমে)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সময় সেকেন্ডে)।"
+msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সেকেন্ডে)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "অ্যানিমেশন (Anim) ট্র্যাক যোগ করুন"
+msgstr "ট্র্যাক যোগ করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "অ্যানিমেশন (Animation) জুম (zoom) করুন।"
+msgstr "অ্যানিমেশন (Animation) লুপিং"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -255,33 +240,28 @@ msgid "Functions:"
 msgstr "ফাংশনগুলি:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "অডিও শ্রোতা"
+msgstr "অডিও ক্লিপস:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Clips:"
-msgstr "ক্লিপসমূহ"
+msgstr "অ্যানিমেশন ক্লিপসমূহ :"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "শ্রেণীবিন্যাস/সারির মান পরিবর্তন করুন"
+msgstr "ট্র্যাক পাথ (পথ) পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "বিক্ষেপ-হীন মোড"
+msgstr "এই ট্র্যাকটি চালু / বন্ধ টগল করুন।"
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "আপডেট মোড (কীভাবে এই সম্পত্তি সেট করা আছে)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "অ্যানিমেশনের নোড"
+msgstr "ইন্টারপোলেশন মোড"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -293,9 +273,8 @@ msgid "Remove this track."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "X-ফেড/বিলীন সময় (সেঃ):"
+msgstr "সময় (সেঃ): "
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -315,13 +294,12 @@ msgid "Trigger"
 msgstr "ট্রিগার/চালনা করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "গঠনবিন্যাস"
+msgstr "ক্যাপচার"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "নিকটতম"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -330,45 +308,40 @@ msgstr "রৈখিক/লিনিয়ার"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "ঘন"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "ক্ল্যাম্প লুপ ইন্টারপ"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Wrap লুপ ইন্টারপ"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "চাবি সন্নিবেশ করুন"
+msgstr "চাবি ইন্সার্ট করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "নোড(সমূহ) প্রতিলিপি করুন"
+msgstr "কী (সমূহ) প্রতিলিপি করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "নোড(সমূহ) অপসারণ করুন"
+msgstr "কী (সমূহ) অপসারণ করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "অ্যানিমেশনের নাম পরিবর্তন করুন:"
+msgstr "অ্যানিমেশন আপডেট মোড পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "অ্যানিমেশনের নোড"
+msgstr "অ্যানিমেশন ইন্টারপোলেশন মোড পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
+msgstr "অ্যানিমেশনের লুপ মোড পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -400,7 +373,7 @@ msgstr "অ্যানিমেশনে (Anim) অন্তর্ভুক্�
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "অ্যানিমেশনপ্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -415,14 +388,12 @@ msgid "Anim Insert Key"
 msgstr "অ্যানিমেশনে (Anim) চাবি যোগ করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "অ্যানিমেশনের FPS পরিবর্তন করুন"
+msgstr "অ্যানিমেশনের ধাপ পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Autoload সমূহ পুনর্বিন্যস্ত করুন"
+msgstr "ট্র্যাকগুলি পুনর্বিন্যস্ত করুন"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -442,7 +413,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "একটি অ্যানিমেশন প্লেয়ার নিজেই অ্যানিমেট করতে পারে না, কেবল অন্য প্লেয়ার।"
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -494,9 +465,8 @@ msgid "Anim Move Keys"
 msgstr "অ্যানিমেশনে (Anim) চাবি/কী-সমুহ সরান"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "রিসোর্সের ক্লীপবোর্ড খালি!"
+msgstr "ক্লীপবোর্ড খালি"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -555,12 +525,12 @@ msgstr "অ্যানিমেশনের তালিকাটি কার�
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "সেকেন্ড"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "FPS"
-msgstr "এফ পি এস"
+msgstr "এফপিএস"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -573,9 +543,8 @@ msgid "Edit"
 msgstr "সম্পাদন করুন (Edit)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "অ্যানিমেশন"
+msgstr "অ্যানিমেশন বৈশিষ্ট্য"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -604,12 +573,10 @@ msgid "Delete Selection"
 msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "পরবর্তী ধাপে যান"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "পূর্ববর্তী ধাপে যান"
 
@@ -8952,8 +8919,23 @@ msgstr "নতুন তৈরি করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "New Rectangle"
+msgstr "রেক্ট্যাঙ্গল পেইন্ট"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "পলিগন সরান"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "নির্বাচিত সমূহ অপসারণ করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -12874,10 +12856,6 @@ msgid "Missing 'platform-tools' directory!"
 msgstr ""
 
 #: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12920,22 +12898,6 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
 msgstr ""
 
 #: platform/android/export/export.cpp

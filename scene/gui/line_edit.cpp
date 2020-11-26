@@ -73,6 +73,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			if (!text.empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
+				update();
 				return;
 			}
 

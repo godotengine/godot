@@ -72,6 +72,12 @@
 	[self observeVideoAudio];
 }
 
+- (void)layoutSubviews {
+	[super layoutSubviews];
+
+	self.avPlayerLayer.frame = self.bounds;
+}
+
 - (void)observeVideoAudio {
 	printf("******** adding observer for sound routing changes\n");
 	[[NSNotificationCenter defaultCenter]

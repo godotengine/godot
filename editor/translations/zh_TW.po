@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-11-17 11:07+0000\n"
+"PO-Revision-Date: 2020-11-20 23:08+0000\n"
 "Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -1037,14 +1037,14 @@ msgid "Owners Of:"
 msgstr "為下列之擁有者："
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Remove selected files from the project? (no undo)\n"
 "You can find the removed files in the system trash to restore them."
-msgstr "確定要將所選檔案自專案中移除嗎？（無法復原）"
+msgstr ""
+"確定要將所選檔案自專案中移除嗎？（無法復原）\n"
+"移除的檔案可在稍後於系統資源回收桶內找到。"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "The files being removed are required by other resources in order for them to "
 "work.\n"
@@ -1052,7 +1052,8 @@ msgid ""
 "You can find the removed files in the system trash to restore them."
 msgstr ""
 "有其他資源需要正在刪除的檔案才能正常運作。\n"
-"依然要移除嗎？（無法復原）"
+"依然要移除嗎？（無法復原）\n"
+"移除的檔案可在稍後於系統資源回收桶內找到。"
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
@@ -2298,6 +2299,8 @@ msgid ""
 "An error occurred while trying to save the editor layout.\n"
 "Make sure the editor's user data path is writable."
 msgstr ""
+"保存編輯器畫面配置時發生錯誤。\n"
+"請確認編輯器的使用者資料路徑是否可寫入。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2305,13 +2308,14 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
+"預設編輯器畫面配置已被複寫。\n"
+"若要恢復預設的畫面配置，請使用 [刪除配置] 選項，並刪除預設畫面配置。"
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
 msgstr "找不到配置名稱！"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restored the Default layout to its base settings."
 msgstr "已將預設配置還原至基本設定。"
 
@@ -3700,9 +3704,8 @@ msgid "Move To..."
 msgstr "移動至..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Move to Trash"
-msgstr "移動 Autoload"
+msgstr "移動至資源回收桶"
 
 #: editor/filesystem_dock.cpp
 msgid "New Scene..."
@@ -8207,8 +8210,23 @@ msgid "Create a new rectangle."
 msgstr "建立新矩形。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Rectangle"
+msgstr "矩形繪製"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "建立新多邊形。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "New Polygon"
+msgstr "移動多邊形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Selected Shape"
+msgstr "刪除所選"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
@@ -11858,11 +11876,7 @@ msgstr "編輯器設定中用於自定義設定之 Android SDK 路徑無效。"
 
 #: platform/android/export/export.cpp
 msgid "Missing 'platform-tools' directory!"
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Missing 'build-tools' directory!"
-msgstr ""
+msgstr "缺少「platform-tools」資料夾！"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11915,22 +11929,6 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
 msgstr "「Export AAB」僅於「Use Custom Build」啟用時可用。"
-
-#: platform/android/export/export.cpp
-msgid "Unable to find the zipalign tool."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Aligning APK..."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to complete APK alignment."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Unable to delete unaligned APK."
-msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
@@ -12688,6 +12686,21 @@ msgstr "Varying 變數只可在頂點函式中指派。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+#~ msgid "Missing 'build-tools' directory!"
+#~ msgstr "缺少「build-tools」資料夾！"
+
+#~ msgid "Unable to find the zipalign tool."
+#~ msgstr "找不到 zipalign 工具。"
+
+#~ msgid "Aligning APK..."
+#~ msgstr "正在對齊 APK…"
+
+#~ msgid "Unable to complete APK alignment."
+#~ msgstr "無法完成 APK 對齊。"
+
+#~ msgid "Unable to delete unaligned APK."
+#~ msgstr "無法刪除未對齊的 APK。"
 
 #~ msgid "Error trying to save layout!"
 #~ msgstr "嘗試保存配置時出錯！"
