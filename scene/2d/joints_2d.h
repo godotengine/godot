@@ -47,6 +47,7 @@ class Joint2D : public Node2D {
 	real_t bias;
 
 	bool exclude_from_collision;
+	String warning;
 
 protected:
 	void _update_joint(bool p_only_free = false);
@@ -57,6 +58,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_configuration_warning() const;
+
 	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
 
