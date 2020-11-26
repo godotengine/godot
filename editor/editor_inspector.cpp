@@ -1685,12 +1685,15 @@ void EditorInspector::update_tree() {
 				if (s.is_valid()) {
 					base_type = s->get_instance_base_type();
 				}
+				print_line(base_type);
 				while (s.is_valid()) {
-					StringName name = EditorNode::get_editor_data().script_class_get_name(s->get_path());
-					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-					if (name != StringName() && icon_path.length()) {
-						category->icon = ResourceLoader::load(icon_path, "Texture");
-						break;
+					StringName name = ScriptServer::get_path_script_class(s->get_path());
+					if (name != StringName()) {
+						String icon_path = ScriptServer::get_global_class_icon(name);
+						if (!icon_path.is_empty()) {
+							category->icon = ResourceLoader::load(icon_path, "Texture");
+							break;
+						}
 					}
 					s = s->get_base_script();
 				}
@@ -2511,7 +2514,7 @@ void EditorInspector::_update_script_class_properties(const Object &p_object, Li
 
 	// NodeC -> NodeB -> NodeA
 	while (script.is_valid()) {
-		String n = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+		String n = ScriptServer::get_path_script_class(script->get_path());
 		if (n.length()) {
 			classes.push_front(n);
 		} else if (script->get_path() != String() && script->get_path().find("::") == -1) {

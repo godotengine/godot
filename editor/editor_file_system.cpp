@@ -124,18 +124,6 @@ uint64_t EditorFileSystemDirectory::get_file_modified_time(int p_idx) const {
 	return files[p_idx]->modified_time;
 }
 
-String EditorFileSystemDirectory::get_file_script_class_name(int p_idx) const {
-	return files[p_idx]->script_class_name;
-}
-
-String EditorFileSystemDirectory::get_file_script_class_extends(int p_idx) const {
-	return files[p_idx]->script_class_extends;
-}
-
-String EditorFileSystemDirectory::get_file_script_class_icon_path(int p_idx) const {
-	return files[p_idx]->script_class_icon_path;
-}
-
 StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
 	return files[p_idx]->type;
@@ -156,8 +144,6 @@ void EditorFileSystemDirectory::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_file", "idx"), &EditorFileSystemDirectory::get_file);
 	ClassDB::bind_method(D_METHOD("get_file_path", "idx"), &EditorFileSystemDirectory::get_file_path);
 	ClassDB::bind_method(D_METHOD("get_file_type", "idx"), &EditorFileSystemDirectory::get_file_type);
-	ClassDB::bind_method(D_METHOD("get_file_script_class_name", "idx"), &EditorFileSystemDirectory::get_file_script_class_name);
-	ClassDB::bind_method(D_METHOD("get_file_script_class_extends", "idx"), &EditorFileSystemDirectory::get_file_script_class_extends);
 	ClassDB::bind_method(D_METHOD("get_file_import_is_valid", "idx"), &EditorFileSystemDirectory::get_file_import_is_valid);
 	ClassDB::bind_method(D_METHOD("get_name"), &EditorFileSystemDirectory::get_name);
 	ClassDB::bind_method(D_METHOD("get_path"), &EditorFileSystemDirectory::get_path);
@@ -229,7 +215,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 			} else {
 				Vector<String> split = l.split("::");
-				ERR_CONTINUE(split.size() != 8);
+				ERR_CONTINUE(split.size() != 7);
 				String name = split[0];
 				String file;
 
@@ -242,11 +228,8 @@ void EditorFileSystem::_scan_filesystem() {
 				fc.import_modification_time = split[3].to_int();
 				fc.import_valid = split[4].to_int() != 0;
 				fc.import_group_file = split[5].strip_edges();
-				fc.script_class_name = split[6].get_slice("<>", 0);
-				fc.script_class_extends = split[6].get_slice("<>", 1);
-				fc.script_class_icon_path = split[6].get_slice("<>", 2);
 
-				String deps = split[7].strip_edges();
+				String deps = split[6].strip_edges();
 				if (deps.length()) {
 					Vector<String> dp = deps.split("<>");
 					for (int i = 0; i < dp.size(); i++) {
@@ -755,10 +738,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				fi->import_modified_time = fc->import_modification_time;
 
 				fi->import_valid = fc->import_valid;
-				fi->script_class_name = fc->script_class_name;
 				fi->import_group_file = fc->import_group_file;
-				fi->script_class_extends = fc->script_class_extends;
-				fi->script_class_icon_path = fc->script_class_icon_path;
 
 				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
 					ItemAction ia;
@@ -778,7 +758,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			} else {
 				fi->type = ResourceFormatImporter::get_singleton()->get_resource_type(path);
 				fi->import_group_file = ResourceFormatImporter::get_singleton()->get_import_group_file(path);
-				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
 				fi->import_valid = ResourceLoader::is_import_valid(path);
@@ -797,13 +776,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 				fi->deps = fc->deps;
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
-				fi->script_class_name = fc->script_class_name;
-				fi->script_class_extends = fc->script_class_extends;
-				fi->script_class_icon_path = fc->script_class_icon_path;
 			} else {
 				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
-				fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 				fi->deps = _get_dependencies(path);
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
@@ -917,7 +892,6 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
-					fi->script_class_name = _get_global_script_class(fi->type, path, &fi->script_class_extends, &fi->script_class_icon_path);
 					fi->import_valid = ResourceLoader::is_import_valid(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 
@@ -1184,7 +1158,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		if (p_dir->files[i]->import_group_file != String()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
-		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
+		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file;
 		s += "::";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
@@ -1378,60 +1352,17 @@ Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 	return ret;
 }
 
-String EditorFileSystem::_get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const {
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-		if (ScriptServer::get_language(i)->handles_global_class_type(p_type)) {
-			String global_name;
-			String extends;
-			String icon_path;
-
-			global_name = ScriptServer::get_language(i)->get_global_class_name(p_path, &extends, &icon_path);
-			*r_extends = extends;
-			*r_icon_path = icon_path;
-			return global_name;
-		}
-	}
-	*r_extends = String();
-	*r_icon_path = String();
-	return String();
-}
-
-void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
-	int filecount = p_dir->files.size();
-	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
-	for (int i = 0; i < filecount; i++) {
-		if (files[i]->script_class_name == String()) {
-			continue;
-		}
-
-		String lang;
-		for (int j = 0; j < ScriptServer::get_language_count(); j++) {
-			if (ScriptServer::get_language(j)->handles_global_class_type(files[i]->type)) {
-				lang = ScriptServer::get_language(j)->get_name();
-			}
-		}
-		ScriptServer::add_global_class(files[i]->script_class_name, files[i]->script_class_extends, lang, p_dir->get_file_path(i));
-		EditorNode::get_editor_data().script_class_set_icon_path(files[i]->script_class_name, files[i]->script_class_icon_path);
-		EditorNode::get_editor_data().script_class_set_name(files[i]->file, files[i]->script_class_name);
-	}
-	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-		_scan_script_classes(p_dir->get_subdir(i));
-	}
-}
-
 void EditorFileSystem::update_script_classes() {
 	if (!update_script_classes_queued) {
 		return;
 	}
 
 	update_script_classes_queued = false;
-	ScriptServer::global_classes_clear();
-	if (get_filesystem()) {
-		_scan_script_classes(get_filesystem());
-	}
 
-	ScriptServer::save_global_classes();
-	EditorNode::get_editor_data().script_class_save_icon_paths();
+	ScriptServer::clear_global_classes();
+	if (get_filesystem()) {
+		ScriptServer::_scan_script_classes();
+	}
 
 	// Rescan custom loaders and savers.
 	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
@@ -1509,7 +1440,6 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	fs->files[cpos]->type = type;
-	fs->files[cpos]->script_class_name = _get_global_script_class(type, p_file, &fs->files[cpos]->script_class_extends, &fs->files[cpos]->script_class_icon_path);
 	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->deps = _get_dependencies(p_file);
@@ -2104,6 +2034,9 @@ EditorFileSystem::EditorFileSystem() {
 	first_scan = true;
 	scan_changes_pending = false;
 	revalidate_import_files = false;
+
+	// Initialize script classes in this filesystem
+	update_script_classes();
 }
 
 EditorFileSystem::~EditorFileSystem() {

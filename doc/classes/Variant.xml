@@ -30,8 +30,6 @@
 		        # To get the name of the underlying Object type, you need the `get_class()` method.
 		        print("foo is a(n) %s" % foo.get_class()) # inject the class name into a formatted string.
 		        # Note also that there is not yet any way to get a script's `class_name` string easily.
-		        # To fetch that value, you need to dig deeply into a hidden ProjectSettings setting: an Array of Dictionaries called "_global_script_classes".
-		        # Open your project.godot file to see it up close.
 		[/codeblock]
 		A Variant takes up only 20 bytes and can store almost any engine datatype inside of it. Variants are rarely used to hold information for long periods of time. Instead, they are used mainly for communication, editing, serialization and moving data around.
 		Godot has specifically invested in making its Variant class as flexible as possible; so much so that it is used for a multitude of operations to facilitate communication between all of Godot's systems.

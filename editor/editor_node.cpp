@@ -3734,7 +3734,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 	if (script.is_valid()) {
 		Ref<Script> base_script = script;
 		while (base_script.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+			StringName name = ScriptServer::get_path_script_class(base_script->get_path());
 			if (name != StringName()) {
 				return name;
 			}
@@ -3781,11 +3781,15 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	if (script.is_valid()) {
 		Ref<Script> base_script = script;
 		while (base_script.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
-			if (icon.is_valid()) {
-				return icon;
+			print_line(String("Path ") + base_script->get_path());
+			StringName name = ScriptServer::get_path_script_class(base_script->get_path());
+			if (name != StringName()) {
+				print_line(String("Class name- ") + name);
+				String icon_path = ScriptServer::get_global_class_icon(name);
+				Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
+				if (icon.is_valid()) {
+					return icon;
+				}
 			}
 
 			// should probably be deprecated in 4.x
@@ -3827,11 +3831,13 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		StringName name = p_class;
 
 		while (script.is_valid()) {
-			name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-			String current_icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			icon = _load_custom_class_icon(current_icon_path);
-			if (icon.is_valid()) {
-				return icon;
+			name = ScriptServer::get_path_script_class(script->get_path());
+			if (name != StringName()) {
+				String current_icon_path = ScriptServer::get_global_class_icon(name);
+				icon = _load_custom_class_icon(current_icon_path);
+				if (icon.is_valid()) {
+					return icon;
+				}
 			}
 			script = script->get_base_script();
 		}

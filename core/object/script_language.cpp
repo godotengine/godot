@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -154,21 +155,50 @@ void ScriptServer::unregister_language(ScriptLanguage *p_language) {
 	}
 }
 
-void ScriptServer::init_languages() {
-	{ //load global classes
-		global_classes_clear();
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
+String ScriptServer::_get_global_script_class(const String &p_type, const String &p_path, StringName *r_lang, String *r_extends, String *r_icon_path) {
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		if (ScriptServer::get_language(i)->handles_global_class_type(p_type)) {
+			String global_name = ScriptServer::get_language(i)->get_global_class_name(p_path, r_extends, r_icon_path);
+			*r_lang = ScriptServer::get_language(i)->get_name();
+			return global_name;
+		}
+	}
+	*r_lang = String();
+	*r_extends = String();
+	*r_icon_path = String();
+	return String();
+}
 
-			for (int i = 0; i < script_classes.size(); i++) {
-				Dictionary c = script_classes[i];
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
-					continue;
-				}
-				add_global_class(c["class"], c["base"], c["language"], c["path"]);
+void ScriptServer::_scan_script_classes(const String &p_path) {
+	_Directory dir;
+	dir.open(p_path);
+	dir.list_dir_begin(true);
+	String file;
+	while (!(file = dir.get_next()).is_empty()) {
+		String full_path = p_path;
+		if (!full_path.ends_with("/")) {
+			full_path += "/";
+		}
+		full_path += file;
+		if (dir.current_is_dir()) {
+			_scan_script_classes(full_path);
+		} else {
+			String type = ResourceLoader::get_resource_type(full_path);
+			StringName lang;
+			String extends, icon_path;
+			String class_name = _get_global_script_class(type, full_path, &lang, &extends, &icon_path);
+
+			print_line(icon_path);
+			if (lang != StringName()) {
+				add_global_class(class_name, extends, lang, full_path, icon_path);
 			}
 		}
 	}
+}
+
+void ScriptServer::init_languages() {
+	clear_global_classes();
+	_scan_script_classes();
 
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->init();
@@ -179,7 +209,7 @@ void ScriptServer::finish_languages() {
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->finish();
 	}
-	global_classes_clear();
+	clear_global_classes();
 	languages_finished = true;
 }
 
@@ -204,18 +234,25 @@ void ScriptServer::thread_exit() {
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
+HashMap<String, StringName> ScriptServer::path_to_class;
 
-void ScriptServer::global_classes_clear() {
+void ScriptServer::clear_global_classes() {
 	global_classes.clear();
+	path_to_class.clear();
 }
 
-void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
+void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, const String &p_icon) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
+
 	GlobalScriptClass g;
 	g.language = p_language;
 	g.path = p_path;
 	g.base = p_base;
+	g.icon = p_icon;
+
 	global_classes[p_class] = g;
+	print_line(String() + " Path " + p_path + " clazz " + p_class);
+	path_to_class[p_path] = p_class;
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {
@@ -250,6 +287,11 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	return base;
 }
 
+String ScriptServer::get_global_class_icon(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	return global_classes[p_class].icon;
+}
+
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = nullptr;
 	List<StringName> classes;
@@ -262,27 +304,11 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	}
 }
 
-void ScriptServer::save_global_classes() {
-	List<StringName> gc;
-	get_global_class_list(&gc);
-	Array gcarr;
-	for (List<StringName>::Element *E = gc.front(); E; E = E->next()) {
-		Dictionary d;
-		d["class"] = E->get();
-		d["language"] = global_classes[E->get()].language;
-		d["path"] = global_classes[E->get()].path;
-		d["base"] = global_classes[E->get()].base;
-		gcarr.push_back(d);
+StringName ScriptServer::get_path_script_class(const String &p_path) {
+	if (!path_to_class.has(p_path)) {
+		return StringName();
 	}
-
-	if (gcarr.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
-			ProjectSettings::get_singleton()->clear("_global_script_classes");
-		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_classes", gcarr);
-	}
-	ProjectSettings::get_singleton()->save();
+	return path_to_class[p_path];
 }
 
 ////////////////////
