@@ -216,6 +216,8 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
+	ScrollContainer *get_scroll_container() const;
+
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();
 

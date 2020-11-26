@@ -1352,6 +1352,10 @@ void PopupMenu::get_translatable_strings(List<String> *p_strings) const {
 	}
 }
 
+ScrollContainer *PopupMenu::get_scroll_container() const {
+	return scroll_container;
+}
+
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
 	autohide_areas.push_back(p_area);
 }
@@ -1449,6 +1453,8 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
+
+	ClassDB::bind_method(D_METHOD("get_scroll_container"), &PopupMenu::get_scroll_container);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_item_selection"), "set_hide_on_item_selection", "is_hide_on_item_selection");

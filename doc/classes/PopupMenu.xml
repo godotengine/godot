@@ -338,6 +338,13 @@
 				Returns the tooltip associated with the specified index index [code]idx[/code].
 			</description>
 		</method>
+		<method name="get_scroll_container" qualifiers="const">
+			<return type="ScrollContainer">
+			</return>
+			<description>
+			Returns the [ScrollContainer] of the [PopupMenu].
+			</description>
+		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
