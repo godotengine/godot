@@ -43,6 +43,7 @@ void Joint3D::_update_joint(bool p_only_free) {
 	}
 
 	if (p_only_free || !is_inside_tree()) {
+		warning = String();
 		return;
 	}
 
@@ -52,19 +53,46 @@ void Joint3D::_update_joint(bool p_only_free) {
 	PhysicsBody3D *body_a = Object::cast_to<PhysicsBody3D>(node_a);
 	PhysicsBody3D *body_b = Object::cast_to<PhysicsBody3D>(node_b);
 
-	if (!body_a && body_b) {
-		SWAP(body_a, body_b);
+	if (node_a && !body_a && node_b && !body_b) {
+		warning = TTR("Node A and Node B must be PhysicsBody3Ds");
+		update_configuration_warning();
+		return;
+	}
+
+	if (node_a && !body_a) {
+		warning = TTR("Node A must be a PhysicsBody3D");
+		update_configuration_warning();
+		return;
+	}
+
+	if (node_b && !body_b) {
+		warning = TTR("Node B must be a PhysicsBody3D");
+		update_configuration_warning();
+		return;
+	}
+
+	if (!body_a && !body_b) {
+		warning = TTR("Joint is not connected to any PhysicsBody3Ds");
+		update_configuration_warning();
+		return;
+	}
+
+	if (body_a == body_b) {
+		warning = TTR("Node A and Node B must be different PhysicsBody3Ds");
+		update_configuration_warning();
+		return;
 	}
 
 	if (!body_a) {
-		return;
+		SWAP(body_a, body_b);
 	}
+
+	warning = String();
+	update_configuration_warning();
 
 	joint = _configure_joint(body_a, body_b);
 
-	if (!joint.is_valid()) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
 	PhysicsServer3D::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 
@@ -137,6 +165,19 @@ bool Joint3D::get_exclude_nodes_from_collision() const {
 	return exclude_from_collision;
 }
 
+String Joint3D::get_configuration_warning() const {
+	String node_warning = Node3D::get_configuration_warning();
+
+	if (!warning.empty()) {
+		if (!node_warning.empty()) {
+			node_warning += "\n\n";
+		}
+		node_warning += warning;
+	}
+
+	return node_warning;
+}
+
 void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_node_a", "node"), &Joint3D::set_node_a);
 	ClassDB::bind_method(D_METHOD("get_node_a"), &Joint3D::get_node_a);
@@ -150,8 +191,8 @@ void Joint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_nodes_from_collision", "enable"), &Joint3D::set_exclude_nodes_from_collision);
 	ClassDB::bind_method(D_METHOD("get_exclude_nodes_from_collision"), &Joint3D::get_exclude_nodes_from_collision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_node_a", "get_node_a");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_node_b", "get_node_b");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_a", "get_node_a");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "nodes/node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PhysicsBody3D"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "solver/priority", PROPERTY_HINT_RANGE, "1,8,1"), "set_solver_priority", "get_solver_priority");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision/exclude_nodes"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
